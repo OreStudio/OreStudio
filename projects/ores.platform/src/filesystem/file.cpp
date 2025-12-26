@@ -27,26 +27,18 @@
 
 namespace ores::platform::filesystem {
 
-using namespace ores::telemetry::log;
-
 std::string file::read_content(std::istream& s) {
     s.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     std::string r(
         (std::istreambuf_iterator<char>(s)),
         std::istreambuf_iterator<char>());
-
-    BOOST_LOG_SEV(lg(), trace) << "Total bytes read:" << r.size();
     return r;
 }
 
 std::string file::read_content(const std::filesystem::path& path) {
-    BOOST_LOG_SEV(lg(), trace) << "Reading content for path:"
-                               << path.generic_string();
-
     if (!std::filesystem::exists(path)) {
         static const std::string file_not_found_msg("File not found: ");
         const auto gs(path.generic_string());
-        BOOST_LOG_SEV(lg(), error) << file_not_found_msg << gs;
         BOOST_THROW_EXCEPTION(file_not_found(file_not_found_msg + gs));
     }
 
@@ -69,14 +61,12 @@ file::find_files(const std::filesystem::path& dir) {
     if (!exists(dir)) {
         const std::string directory_not_found("Could not find directory: ");
         const auto gs(dir.generic_string());
-        BOOST_LOG_SEV(lg(), error) << directory_not_found << gs;
         BOOST_THROW_EXCEPTION(file_not_found(directory_not_found + gs));
     }
 
     if (!is_directory(dir)) {
         const std::string invalid_directory("Not a directory: ");
         const auto gs(dir.generic_string());
-        BOOST_LOG_SEV(lg(), error) << invalid_directory << gs;
         BOOST_THROW_EXCEPTION(file_not_found(invalid_directory + gs));
     }
 
@@ -120,15 +110,7 @@ std::filesystem::path file::find_file_recursively_upwards(
     std::filesystem::path starting_directory,
     const std::filesystem::path& relative_file_path) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Starting directory: " << starting_directory
-                               << " relative file path: " << relative_file_path;
-
     if (relative_file_path.is_absolute()) {
-        /*
-         * User is lying, the path is already absolute.
-         */
-        const auto gs(relative_file_path.generic_string());
-        BOOST_LOG_SEV(lg(), debug) << "Path is absolute: " << gs;
         return relative_file_path;
     }
 
@@ -138,7 +120,6 @@ std::filesystem::path file::find_file_recursively_upwards(
     if (!std::filesystem::is_directory(starting_directory)) {
         const std::string invalid_directory("Not a directory: ");
         const auto gs(starting_directory.generic_string());
-        BOOST_LOG_SEV(lg(), error) << invalid_directory << gs;
         BOOST_THROW_EXCEPTION(file_not_found(invalid_directory + gs));
     }
 
@@ -147,24 +128,18 @@ std::filesystem::path file::find_file_recursively_upwards(
 
     do {
         path abs = absolute(directory_path / relative_file_path);
-        BOOST_LOG_SEV(lg(), debug) << "Trying: " << abs.generic_string();
-
         if (exists(abs)) {
-            BOOST_LOG_SEV(lg(), debug) << "Found file.";
             return abs;
         }
 
         directory_path = directory_path.parent_path();
     } while (directory_path.has_parent_path());
 
-    const auto gs(relative_file_path.generic_string());
-    BOOST_LOG_SEV(lg(), debug) << "Could not find file: " << gs;
     return {};
 }
 
 void file::remove(const std::list<std::filesystem::path>& files) {
     for (const auto& f : files) {
-        BOOST_LOG_SEV(lg(), debug) << "Removing file: " << f.generic_string();
         std::filesystem::remove(f);
     }
 }
@@ -173,13 +148,11 @@ void file::remove_empty_directories(const std::filesystem::path& dir) {
     const auto gs(dir.generic_string());
     if (!exists(dir)) {
         const std::string directory_not_found("Could not find directory: ");
-        BOOST_LOG_SEV(lg(), error) << directory_not_found << gs;
         BOOST_THROW_EXCEPTION(file_not_found(directory_not_found + gs));
     }
 
     if (!is_directory(dir)) {
         const std::string invalid_directory("Not a directory: ");
-        BOOST_LOG_SEV(lg(), error) << invalid_directory << gs;
         BOOST_THROW_EXCEPTION(io_error(invalid_directory + gs));
     }
 
@@ -197,12 +170,9 @@ void file::remove_empty_directories(const std::filesystem::path& dir) {
     }
 
     if (is_empty(dir)) {
-        BOOST_LOG_SEV(lg(), debug) << "Removing empty directory: " << gs;
         std::filesystem::remove(dir);
         return;
     }
-
-    BOOST_LOG_SEV(lg(), trace) << "Ignoring non-empty directory: " << gs;
 }
 
 void file::remove_empty_directories(const std::list<std::filesystem::path>& dirs) {
@@ -212,13 +182,9 @@ void file::remove_empty_directories(const std::list<std::filesystem::path>& dirs
 
 void file::recreate_directory(const std::filesystem::path& dir) {
     if (std::filesystem::exists(dir)) {
-        BOOST_LOG_SEV(lg(), debug) << "Path already exists: "
-                                 << dir.generic_string();
-
         if (!is_directory(dir)) {
             const std::string invalid_directory("Not a directory: ");
             const auto gs(dir.generic_string());
-            BOOST_LOG_SEV(lg(), error) << invalid_directory << gs;
             BOOST_THROW_EXCEPTION(io_error(invalid_directory + gs));
         }
 
@@ -226,21 +192,16 @@ void file::recreate_directory(const std::filesystem::path& dir) {
         std::filesystem::remove_all(dir, ec);
         if (ec) {
             const std::string failed_delete("Failed to delete output directory.");
-            BOOST_LOG_SEV(lg(), error) << failed_delete;
             BOOST_THROW_EXCEPTION(io_error(failed_delete));
         }
-        BOOST_LOG_SEV(lg(), debug) << "Deleted output data directory.";
     }
 
     std::error_code ec;
     std::filesystem::create_directories(dir, ec);
     if (ec) {
         const std::string failed_create("Failed to create output directory.");
-        BOOST_LOG_SEV(lg(), error) << failed_create;
         BOOST_THROW_EXCEPTION(io_error(failed_create));
     }
-    BOOST_LOG_SEV(lg(), debug) << "Created output data directory: "
-                             << dir.generic_string();
 }
 
 }

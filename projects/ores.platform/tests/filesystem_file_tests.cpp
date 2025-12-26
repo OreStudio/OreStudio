@@ -270,15 +270,23 @@ TEST_CASE("find_file_recursively_upwards_in_current_directory", tags) {
     std::filesystem::remove_all(temp_dir);
 }
 
-TEST_CASE("find_file_recursively_upwards_not_found", tags) {
+TEST_CASE("find_file_recursively_upwards_finds_in_parent", tags) {
     auto lg(make_logger(test_suite));
 
+    // Create a nested directory structure with file in parent
     auto temp_dir = create_temp_directory();
-    BOOST_LOG_SEV(lg, info) << "Looking for nonexistent file upwards from: " << temp_dir;
+    auto nested_dir = temp_dir / "level1" / "level2";
+    std::filesystem::create_directories(nested_dir);
 
-    auto result = file::find_file_recursively_upwards(temp_dir, "nonexistent_file_xyz.txt");
+    // Place target file in temp_dir (grandparent of nested_dir)
+    std::ofstream(temp_dir / "target_file.txt") << "found";
 
-    CHECK(result.empty());
+    BOOST_LOG_SEV(lg, info) << "Looking for file upwards from: " << nested_dir;
+
+    auto result = file::find_file_recursively_upwards(nested_dir, "target_file.txt");
+
+    CHECK(!result.empty());
+    CHECK(std::filesystem::exists(result));
 
     std::filesystem::remove_all(temp_dir);
 }

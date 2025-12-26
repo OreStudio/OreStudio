@@ -181,4 +181,16 @@ Architecture documentation and diagrams:
 | =cheat_sheet.sql=                 | Quick reference commands                   |
 | =psqlrc.sql=                      | PostgreSQL client configuration            |
 
-| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |
+* SQL Recipes
+
+For executable SQL query examples, see the [[id:C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F][SQL Recipes]] notebook. It contains
+ready-to-run queries for:
+
+- Account management and temporal history
+- RBAC queries (roles, permissions, account assignments)
+- Currency and image lookups
+- Feature flag inspection
+- Session and login tracking
+- Administrative queries (database size, table sizes)
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] | Recipes: [[id:C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F][SQL Recipes]] |

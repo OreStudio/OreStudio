@@ -101,11 +101,18 @@ For =continuous-windows.yml=:
 +    "version-string": "0.0.5",
 #+end_src
 
-7. Update =doc/agile/v0/version_zero.org= adding an entry for the new sprint.
-   Update the GUID and the sprint number.
+7. Update =doc/agile/v0/version_zero.org= adding a row to the Sprints table for
+   the new sprint. The table has three columns: Sprint number, Backlog link, and
+   Mission. Use the GUID from the new sprint backlog file you will create in step
+   9. Example for sprint 08:
 
 #+begin_src diff
-+| [[id:2A3C7481-0984-D344-575B-7BFBB8D5A98B][Sprint Backlog 05]] | implement bootstrap mode; finish up all remaining tasks around domain entities.         |
+ | Sprint | Backlog                                                          | Mission                                                                             |
+ |--------+------------------------------------------------------------------+-------------------------------------------------------------------------------------|
+ |     01 | [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01]] | Create basic project infrastructure; handle currencies front to back.              |
+ ...
+ |     07 | [[id:44AD3D04-EC5A-4039-91DD-7CEA0A18CA92][Sprint Backlog 07]] | Finish reference implementation.                                                   |
++|     08 | [[id:NEW-GUID-HERE][Sprint Backlog 08]] | Sprint mission from step 9.                                                         |
 #+end_src
 
 8. Update the version header file:

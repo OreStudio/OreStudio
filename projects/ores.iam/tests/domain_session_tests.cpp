@@ -213,8 +213,8 @@ TEST_CASE("create_session_with_faker", tags) {
     sut.bytes_received = faker::number::integer<uint64_t>(0, 1000000);
     sut.country_code = faker::location::countryCode();
     sut.city = faker::location::city();
-    sut.latitude = faker::location::latitude();
-    sut.longitude = faker::location::longitude();
+    sut.latitude = faker::number::decimal(-90.0, 90.0);
+    sut.longitude = faker::number::decimal(-180.0, 180.0);
 
     BOOST_LOG_SEV(lg, info) << "Faker session: " << sut;
 

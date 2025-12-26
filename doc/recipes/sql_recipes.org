@@ -1,0 +1,431 @@
+:PROPERTIES:
+:ID: C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F
+:END:
+#+title: SQL Recipes
+#+author: Marco Craveiro
+#+startup: inlineimages
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+
+SQL recipes for directly querying and managing the [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORES Database Schema]].
+
+* Recipes
+  :PROPERTIES:
+  :header-args: :exports both
+  :header-args+: :results raw
+  :header-args+: :engine postgresql
+  :header-args+: :dbhost localhost
+  :header-args+: :dbuser ores
+  :header-args+: :database dancing_lemur_42
+  :END:
+
+** Database Setup
+
+*** Create Template Database
+
+One-time setup to create the =ores_template= database with all schema and
+reference data:
+
+#+begin_src sh :wrap example
+psql -U postgres -f projects/sql/setup_template.sql
+#+end_src
+
+*** Create Instance with Whimsical Name
+
+Create a new database instance with an auto-generated whimsical name:
+
+#+begin_src sh :wrap example
+psql -U postgres -f projects/sql/create_instance.sql
+#+end_src
+
+Example output:
+
+#+begin_example
+Generating whimsical database name...
+Creating database: dancing_lemur_42
+==========================================
+Database created successfully!
+==========================================
+Database name: dancing_lemur_42
+
+Connect with:
+  psql -U ores -d dancing_lemur_42
+#+end_example
+
+*** Create Instance with Specific Name
+
+Create a database with your own name:
+
+#+begin_src sh :wrap example
+psql -U postgres -v db_name='my_ores_db' -f projects/sql/create_instance.sql
+#+end_src
+
+*** List All ORES Databases
+
+List all databases created from the ORES template:
+
+#+begin_src sql
+select * from ores.list_ores_databases();
+#+end_src
+
+** Accounts
+
+*** List All Current Accounts
+
+Get all currently active accounts (where =valid_to= is infinity):
+
+#+begin_src sql
+select id, username, email, version, valid_from
+from ores.accounts
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by username;
+#+end_src
+
+*** List All Account Versions
+
+View the complete temporal history of an account:
+
+#+begin_src sql
+select id, username, email, version, valid_from, valid_to
+from ores.accounts
+where username = 'admin'
+order by valid_from;
+#+end_src
+
+*** Get Account by Username
+
+#+begin_src sql
+select id, username, email, version, valid_from
+from ores.accounts
+where username = 'admin'
+  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+#+end_src
+
+*** Get Account by UUID
+
+#+begin_src sql
+select id, username, email, version, valid_from
+from ores.accounts
+where id = 'your-uuid-here'
+  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+#+end_src
+
+*** Count Active Accounts
+
+#+begin_src sql
+select count(*) as active_accounts
+from ores.accounts
+where valid_to = '9999-12-31 23:59:59'::timestamptz;
+#+end_src
+
+** Login Info
+
+*** List All Login Info
+
+View login tracking for all accounts:
+
+#+begin_src sql
+select li.account_id, a.username, li.last_login, li.failed_logins,
+       li.locked, li.online, li.last_ip
+from ores.login_info li
+join ores.accounts a on a.id = li.account_id
+  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
+order by li.last_login desc nulls last;
+#+end_src
+
+*** Find Locked Accounts
+
+#+begin_src sql
+select li.account_id, a.username, li.failed_logins, li.last_attempt_ip
+from ores.login_info li
+join ores.accounts a on a.id = li.account_id
+  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
+where li.locked = 1;
+#+end_src
+
+*** Find Online Users
+
+#+begin_src sql
+select a.username, li.last_login, li.last_ip
+from ores.login_info li
+join ores.accounts a on a.id = li.account_id
+  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
+where li.online = 1;
+#+end_src
+
+** Sessions
+
+*** List Recent Sessions
+
+#+begin_src sql
+select s.id, a.username, s.start_time, s.end_time,
+       s.client_ip, s.country_code, s.city
+from ores.sessions s
+join ores.accounts a on a.id = s.account_id
+  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
+order by s.start_time desc
+limit 20;
+#+end_src
+
+*** Session Statistics by User
+
+#+begin_src sql
+select a.username,
+       count(*) as total_sessions,
+       sum(s.bytes_sent) as total_bytes_sent,
+       sum(s.bytes_received) as total_bytes_received
+from ores.sessions s
+join ores.accounts a on a.id = s.account_id
+  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
+group by a.username
+order by total_sessions desc;
+#+end_src
+
+** RBAC (Roles and Permissions)
+
+*** List All Roles
+
+#+begin_src sql
+select id, name, description, version
+from ores.roles
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by name;
+#+end_src
+
+*** List All Permissions
+
+#+begin_src sql
+select id, code, description
+from ores.permissions
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by code;
+#+end_src
+
+*** Get Permissions for a Role
+
+#+begin_src sql
+select r.name as role_name, p.code as permission_code, p.description
+from ores.role_permissions rp
+join ores.roles r on r.id = rp.role_id
+  and r.valid_to = '9999-12-31 23:59:59'::timestamptz
+join ores.permissions p on p.id = rp.permission_id
+  and p.valid_to = '9999-12-31 23:59:59'::timestamptz
+where rp.valid_to = '9999-12-31 23:59:59'::timestamptz
+  and r.name = 'admin'
+order by p.code;
+#+end_src
+
+*** Get Roles for an Account
+
+#+begin_src sql
+select a.username, r.name as role_name, ar.assigned_at, ar.assigned_by
+from ores.account_roles ar
+join ores.accounts a on a.id = ar.account_id
+  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
+join ores.roles r on r.id = ar.role_id
+  and r.valid_to = '9999-12-31 23:59:59'::timestamptz
+where ar.valid_to = '9999-12-31 23:59:59'::timestamptz
+  and a.username = 'admin'
+order by r.name;
+#+end_src
+
+*** Get All Permissions for an Account (via Roles)
+
+#+begin_src sql
+select distinct a.username, p.code as permission_code
+from ores.accounts a
+join ores.account_roles ar on ar.account_id = a.id
+  and ar.valid_to = '9999-12-31 23:59:59'::timestamptz
+join ores.role_permissions rp on rp.role_id = ar.role_id
+  and rp.valid_to = '9999-12-31 23:59:59'::timestamptz
+join ores.permissions p on p.id = rp.permission_id
+  and p.valid_to = '9999-12-31 23:59:59'::timestamptz
+where a.valid_to = '9999-12-31 23:59:59'::timestamptz
+  and a.username = 'admin'
+order by p.code;
+#+end_src
+
+*** Check if Account Has Permission
+
+Uses the built-in RBAC function:
+
+#+begin_src sql
+select ores.account_has_permission('admin', 'accounts:create') as has_permission;
+#+end_src
+
+** Currencies
+
+*** List All Currencies
+
+#+begin_src sql
+select iso_code, name, symbol, numeric_code, currency_type
+from ores.currencies
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by iso_code;
+#+end_src
+
+*** Get Currency Details
+
+#+begin_src sql
+select iso_code, name, symbol, fraction_symbol,
+       fractions_per_unit, rounding_type, rounding_precision, format
+from ores.currencies
+where iso_code = 'USD'
+  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+#+end_src
+
+*** Count Currencies by Type
+
+#+begin_src sql
+select currency_type, count(*) as count
+from ores.currencies
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+group by currency_type
+order by count desc;
+#+end_src
+
+*** Get Currency with Flag Image
+
+#+begin_src sql
+select c.iso_code, c.name, c.symbol, i.key as flag_key
+from ores.currencies c
+left join ores.currency_images ci on ci.iso_code = c.iso_code
+  and ci.valid_to = '9999-12-31 23:59:59'::timestamptz
+left join ores.images i on i.image_id = ci.image_id
+  and i.valid_to = '9999-12-31 23:59:59'::timestamptz
+where c.valid_to = '9999-12-31 23:59:59'::timestamptz
+  and c.iso_code = 'GBP';
+#+end_src
+
+** Feature Flags
+
+*** List All Feature Flags
+
+#+begin_src sql
+select name, enabled, description, version
+from ores.feature_flags
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by name;
+#+end_src
+
+*** Check Feature Flag Status
+
+#+begin_src sql
+select name, enabled
+from ores.feature_flags
+where name = 'bootstrap_mode'
+  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+#+end_src
+
+*** List Enabled Features
+
+#+begin_src sql
+select name, description
+from ores.feature_flags
+where enabled = 1
+  and valid_to = '9999-12-31 23:59:59'::timestamptz
+order by name;
+#+end_src
+
+** Images and Tags
+
+*** List All Images
+
+#+begin_src sql
+select image_id, key, description, version
+from ores.images
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by key
+limit 20;
+#+end_src
+
+*** List All Tags
+
+#+begin_src sql
+select tag_id, name, description
+from ores.tags
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by name;
+#+end_src
+
+*** Get Images by Tag
+
+#+begin_src sql
+select i.key, i.description
+from ores.images i
+join ores.image_tags it on it.image_id = i.image_id
+  and it.valid_to = '9999-12-31 23:59:59'::timestamptz
+join ores.tags t on t.tag_id = it.tag_id
+  and t.valid_to = '9999-12-31 23:59:59'::timestamptz
+where i.valid_to = '9999-12-31 23:59:59'::timestamptz
+  and t.name = 'flag'
+order by i.key
+limit 20;
+#+end_src
+
+** Temporal Queries
+
+*** View Entity History
+
+See all versions of an entity over time:
+
+#+begin_src sql
+select id, username, email, version, valid_from, valid_to,
+       case when valid_to = '9999-12-31 23:59:59'::timestamptz
+            then 'current' else 'historical' end as status
+from ores.accounts
+where username = 'admin'
+order by valid_from;
+#+end_src
+
+*** Point-in-Time Query
+
+Get the state of an entity at a specific point in time:
+
+#+begin_src sql
+select id, username, email, version
+from ores.accounts
+where username = 'admin'
+  and valid_from <= '2025-01-15 12:00:00'::timestamptz
+  and valid_to > '2025-01-15 12:00:00'::timestamptz;
+#+end_src
+
+*** Count Entity Versions
+
+#+begin_src sql
+select username, count(*) as version_count
+from ores.accounts
+group by username
+having count(*) > 1
+order by version_count desc;
+#+end_src
+
+** Administrative
+
+*** Database Size
+
+#+begin_src sql
+select pg_size_pretty(pg_database_size(current_database())) as database_size;
+#+end_src
+
+*** Table Sizes
+
+#+begin_src sql
+select schemaname, tablename,
+       pg_size_pretty(pg_total_relation_size(schemaname || '.' || tablename)) as size
+from pg_tables
+where schemaname = 'ores'
+order by pg_total_relation_size(schemaname || '.' || tablename) desc;
+#+end_src
+
+*** Row Counts per Table
+
+Uses PostgreSQL statistics for all tables in the schema:
+
+#+begin_src sql
+select relname as table_name, n_live_tup as rows
+from pg_stat_user_tables
+where schemaname = 'ores'
+order by n_live_tup desc;
+#+end_src
+
+| Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] | Schema: [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][SQL Schema]] |

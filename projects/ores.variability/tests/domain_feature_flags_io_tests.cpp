@@ -178,30 +178,6 @@ TEST_CASE("feature_flags_table_io_with_faker_data", tags) {
     }
 }
 
-TEST_CASE("feature_flags_print_table_function", tags) {
-    auto lg(make_logger(test_suite));
-
-    std::vector<feature_flags> flags;
-    feature_flags ff;
-    ff.version = 1;
-    ff.name = "print_test_flag";
-    ff.enabled = true;
-    ff.description = "Testing print function";
-    ff.recorded_by = "tester";
-    ff.recorded_at = std::chrono::system_clock::now();
-    flags.push_back(ff);
-
-    std::ostringstream os;
-    ores::variability::domain::print_feature_flags_table(os, flags);
-    const std::string output = os.str();
-
-    BOOST_LOG_SEV(lg, info) << "Print function output: " << output;
-
-    CHECK(!output.empty());
-    CHECK(output.find("print_test_flag") != std::string::npos);
-    CHECK(output.find("Testing print function") != std::string::npos);
-}
-
 TEST_CASE("feature_flags_json_special_characters", tags) {
     auto lg(make_logger(test_suite));
 

@@ -35,7 +35,7 @@ struct options final {
     /**
      * @brief Configuration options related to logging, if any.
      */
-    std::optional<utility::log::logging_options> logging;
+    std::optional<telemetry::log::logging_options> logging;
 
     /**
      * @brief Configuration options for connecting to the server.

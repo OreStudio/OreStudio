@@ -55,7 +55,7 @@ public:
      *
      * @return Logging options configured from command line arguments
      */
-    [[nodiscard]] std::optional<utility::log::logging_options> loggingOptions() const;
+    [[nodiscard]] std::optional<telemetry::log::logging_options> loggingOptions() const;
 
     /**
      * @brief Check if logging is enabled.

@@ -221,5 +221,5 @@ TEST_CASE("feature_flags_json_special_characters", tags) {
 
     CHECK(!json_output.empty());
     CHECK(json_output.find("special_flag") != std::string::npos);
-    // JSON should properly escape quotes
+    CHECK(json_output.find("\\\"quotes\\\"") != std::string::npos);
 }

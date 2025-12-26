@@ -47,6 +47,14 @@ std::filesystem::path create_temp_directory() {
     return test_dir;
 }
 
+struct streamable_test_object {
+    int value;
+};
+
+std::ostream& operator<<(std::ostream& os, const streamable_test_object& s) {
+    return os << "value=" << s.value;
+}
+
 }
 
 using ores::platform::filesystem::file;
@@ -141,14 +149,7 @@ TEST_CASE("write_template_to_file", tags) {
     auto temp_dir = std::filesystem::temp_directory_path();
     auto temp_file = temp_dir / ("write_template_" + std::to_string(std::rand()) + ".txt");
 
-    struct streamable {
-        int value;
-        friend std::ostream& operator<<(std::ostream& os, const streamable& s) {
-            return os << "value=" << s.value;
-        }
-    };
-
-    streamable obj{42};
+    streamable_test_object obj{42};
     BOOST_LOG_SEV(lg, info) << "Writing streamable object to file";
     file::write(temp_file, obj);
 

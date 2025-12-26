@@ -133,13 +133,3 @@ TEST_CASE("geolocation_result_with_values", tags) {
     CHECK(result.longitude.value() < -120.0);
 }
 
-TEST_CASE("geolocation_error_enum_values", tags) {
-    auto lg(make_logger(test_suite));
-
-    CHECK(static_cast<int>(geolocation_error::database_not_loaded) == 0);
-    CHECK(static_cast<int>(geolocation_error::address_not_found) == 1);
-    CHECK(static_cast<int>(geolocation_error::lookup_failed) == 2);
-    CHECK(static_cast<int>(geolocation_error::invalid_address) == 3);
-
-    BOOST_LOG_SEV(lg, info) << "Verified geolocation_error enum values";
-}

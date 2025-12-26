@@ -206,8 +206,8 @@ TEST_CASE("export_currency_with_quotes_in_name_is_escaped", tags) {
 
     BOOST_LOG_SEV(lg, info) << "CSV output with quotes:\n" << result;
 
-    // Per RFC 4180, quotes are escaped by doubling them
-    CHECK(result.find("\"\"Quoted\"\"") != std::string::npos);
+    // Per RFC 4180, quotes are escaped by doubling them and the field is quoted
+    CHECK(result.find("\"Test \"\"Quoted\"\" Currency\"") != std::string::npos);
 }
 
 TEST_CASE("export_currency_with_newline_in_description_is_escaped", tags) {

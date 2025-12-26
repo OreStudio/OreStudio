@@ -109,8 +109,8 @@ TEST_CASE("session_duration_calculation", tags) {
     session sut;
     sut.id = boost::uuids::random_generator()();
     sut.account_id = boost::uuids::random_generator()();
-    sut.start_time = std::chrono::system_clock::now() - std::chrono::seconds(3600);
-    sut.end_time = std::chrono::system_clock::now();
+    sut.start_time = std::chrono::system_clock::now();
+    sut.end_time = sut.start_time + std::chrono::seconds(3600);
     sut.client_ip = boost::asio::ip::make_address("10.0.0.1");
     sut.client_identifier = "Test Client";
 
@@ -118,8 +118,7 @@ TEST_CASE("session_duration_calculation", tags) {
 
     auto duration = sut.duration();
     CHECK(duration.has_value());
-    CHECK(duration.value().count() >= 3599);
-    CHECK(duration.value().count() <= 3601);
+    CHECK(duration.value().count() == 3600);
 }
 
 TEST_CASE("session_with_ipv6_address", tags) {
@@ -145,10 +144,20 @@ TEST_CASE("session_serialization_to_json", tags) {
     const auto session_uuid = uuid_gen("123e4567-e89b-12d3-a456-426614174000");
     const auto account_uuid = uuid_gen("987fcdeb-51a2-12d3-a456-426614174999");
 
+    // Use a fixed time point for deterministic output
+    std::tm tm = {};
+    tm.tm_year = 2025 - 1900;
+    tm.tm_mon = 1 - 1;
+    tm.tm_mday = 15;
+    tm.tm_hour = 10;
+    tm.tm_min = 30;
+    tm.tm_sec = 0;
+    const auto fixed_time = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+
     session sut;
     sut.id = session_uuid;
     sut.account_id = account_uuid;
-    sut.start_time = std::chrono::system_clock::now();
+    sut.start_time = fixed_time;
     sut.client_ip = boost::asio::ip::make_address("198.51.100.42");
     sut.client_identifier = "Desktop App";
     sut.client_version_major = 2;

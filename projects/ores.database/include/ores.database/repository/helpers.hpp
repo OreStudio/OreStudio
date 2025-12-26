@@ -54,7 +54,7 @@ inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59";
  * ensure_success(result); // Throws if query failed
  */
 template<typename T>
-void ensure_success(const T& result, utility::log::logger_t& lg) {
+void ensure_success(const T& result, telemetry::log::logger_t& lg) {
     using namespace ores::telemetry::log;
 
     if (!result) {
@@ -79,7 +79,7 @@ void ensure_success(const T& result, utility::log::logger_t& lg) {
  * @example
  * auto ts = make_timestamp("2025-11-25 12:30:45");
  */
-inline auto make_timestamp(const std::string& s, utility::log::logger_t& lg) {
+inline auto make_timestamp(const std::string& s, telemetry::log::logger_t& lg) {
     using namespace ores::telemetry::log;
 
     const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
@@ -108,7 +108,7 @@ inline auto make_timestamp(const std::string& s, utility::log::logger_t& lg) {
  *     "ores.iam.repository.account_repository");
  */
 template<typename EntityType>
-std::string generate_create_table_sql(utility::log::logger_t& lg) {
+std::string generate_create_table_sql(telemetry::log::logger_t& lg) {
     using namespace ores::telemetry::log;
     using namespace sqlgen;
 

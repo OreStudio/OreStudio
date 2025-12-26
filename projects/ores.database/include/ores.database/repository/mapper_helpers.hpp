@@ -57,7 +57,7 @@ template<typename Source, typename Dest, typename MapFunc>
 std::vector<Dest> map_vector(
     const std::vector<Source>& source,
     MapFunc&& map_func,
-    utility::log::logger_t& lg,
+    telemetry::log::logger_t& lg,
     const std::string& log_prefix) {
 
     using namespace ores::telemetry::log;
@@ -110,7 +110,7 @@ timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
  */
 inline sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
 timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp,
-    utility::log::logger_t& lg) {
+    telemetry::log::logger_t& lg) {
     using namespace ores::telemetry::log;
 
     const auto s = std::format("{:%Y-%m-%d %H:%M:%S}", tp);

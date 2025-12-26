@@ -19,7 +19,6 @@
  */
 #include "ores.telemetry/log/telemetry_sink_backend.hpp"
 
-#include <boost/log/expressions.hpp>
 #include <boost/log/attributes/value_extraction.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "ores.telemetry/log/boost_severity.hpp"
@@ -29,8 +28,6 @@
 namespace ores::telemetry::log {
 
 namespace {
-
-namespace expr = boost::log::expressions;
 
 /**
  * @brief Converts boost::posix_time::ptime to std::chrono::system_clock::time_point.
@@ -60,48 +57,49 @@ telemetry_sink_backend::telemetry_sink_backend(
 void telemetry_sink_backend::consume(const boost::log::record_view& rec) {
     domain::log_record telemetry_rec;
 
-    // Extract timestamp
-    auto timestamp_attr = rec[expr::attr<boost::posix_time::ptime>("TimeStamp")];
-    if (timestamp_attr) {
-        telemetry_rec.timestamp = to_system_clock(timestamp_attr.get());
+    // Extract timestamp using boost::log::extract
+    auto timestamp_val = boost::log::extract<boost::posix_time::ptime>(
+        "TimeStamp", rec);
+    if (timestamp_val) {
+        telemetry_rec.timestamp = to_system_clock(timestamp_val.get());
     } else {
         telemetry_rec.timestamp = std::chrono::system_clock::now();
     }
 
     // Extract and convert severity
-    auto severity_attr = rec[expr::attr<boost_severity>("Severity")];
-    if (severity_attr) {
-        telemetry_rec.severity = to_domain_severity(severity_attr.get());
+    auto severity_val = boost::log::extract<boost_severity>("Severity", rec);
+    if (severity_val) {
+        telemetry_rec.severity = to_domain_severity(severity_val.get());
     } else {
         telemetry_rec.severity = domain::severity_level::info;
     }
 
     // Extract message body
-    auto message_attr = rec[expr::smessage];
-    if (message_attr) {
-        telemetry_rec.body = message_attr.get();
+    auto message_val = boost::log::extract<std::string>("Message", rec);
+    if (message_val) {
+        telemetry_rec.body = message_val.get();
     }
 
     // Extract channel/logger name
-    auto channel_attr = rec[expr::attr<std::string_view>("Channel")];
-    if (channel_attr) {
-        telemetry_rec.logger_name = std::string(channel_attr.get());
+    auto channel_val = boost::log::extract<std::string>("Channel", rec);
+    if (channel_val) {
+        telemetry_rec.logger_name = channel_val.get();
     }
 
     // Extract trace context if present (for log correlation)
-    auto trace_id_attr = rec[expr::attr<std::string>("trace_id")];
-    if (trace_id_attr) {
+    auto trace_id_val = boost::log::extract<std::string>("trace_id", rec);
+    if (trace_id_val) {
         try {
-            telemetry_rec.trace = domain::trace_id::from_hex(trace_id_attr.get());
+            telemetry_rec.trace = domain::trace_id::from_hex(trace_id_val.get());
         } catch (...) {
             // Invalid trace_id format - leave as nullopt
         }
     }
 
-    auto span_id_attr = rec[expr::attr<std::string>("span_id")];
-    if (span_id_attr) {
+    auto span_id_val = boost::log::extract<std::string>("span_id", rec);
+    if (span_id_val) {
         try {
-            telemetry_rec.span = domain::span_id::from_hex(span_id_attr.get());
+            telemetry_rec.span = domain::span_id::from_hex(span_id_val.get());
         } catch (...) {
             // Invalid span_id format - leave as nullopt
         }

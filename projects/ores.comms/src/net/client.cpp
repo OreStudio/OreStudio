@@ -97,6 +97,11 @@ client::client(client_options config,
 }
 
 client::~client() {
+    // Stop recording if active
+    if (recorder_) {
+        recorder_->stop();
+    }
+
     // Ensure disconnect is called to stop any running coroutines
     disconnect();
 
@@ -629,6 +634,41 @@ void client::set_notification_callback(notification_callback_t callback) {
     notification_callback_ = std::move(callback);
 }
 
+std::expected<std::filesystem::path, recording::session_file_error>
+client::enable_recording(const std::filesystem::path& output_directory) {
+    std::lock_guard guard{state_mutex_};
+
+    if (!recorder_) {
+        recorder_ = std::make_unique<recording::session_recorder>();
+    }
+
+    // Get server address for the recording header
+    std::string server_address = config_.host + ":" + std::to_string(config_.port);
+
+    auto result = recorder_->start(output_directory, server_address, session_compression_);
+    if (result) {
+        BOOST_LOG_SEV(lg(), info) << "Session recording enabled: " << *result;
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Failed to enable session recording";
+    }
+
+    return result;
+}
+
+void client::disable_recording() {
+    std::lock_guard guard{state_mutex_};
+
+    if (recorder_) {
+        recorder_->stop();
+        BOOST_LOG_SEV(lg(), info) << "Session recording disabled";
+    }
+}
+
+bool client::is_recording() const {
+    std::lock_guard guard{state_mutex_};
+    return recorder_ && recorder_->is_recording();
+}
+
 boost::asio::awaitable<void> client::run_heartbeat() {
     if (!config_.heartbeat_enabled) {
         BOOST_LOG_SEV(lg(), debug) << "Heartbeat disabled in configuration";
@@ -788,6 +828,11 @@ client::send_request(messaging::frame request_frame) {
 
         co_await conn_->write_frame(frame_to_send);
 
+        // Record the sent frame if recording is active (direct path)
+        if (recorder_ && recorder_->is_recording()) {
+            recorder_->record_sent(frame_to_send);
+        }
+
         auto response_result = co_await conn_->read_frame();
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read response frame, error "
@@ -801,6 +846,11 @@ client::send_request(messaging::frame request_frame) {
             }
             BOOST_LOG_SEV(lg(), warn) << "Connection lost";
             co_return std::unexpected(response_result.error());
+        }
+
+        // Record the received frame if recording is active (direct path)
+        if (recorder_ && recorder_->is_recording()) {
+            recorder_->record_received(*response_result);
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Received response "
@@ -859,6 +909,11 @@ boost::asio::awaitable<void> client::write_frame(const messaging::frame& f) {
 
     // Now we're on the strand - safe to write
     co_await conn_->write_frame(f);
+
+    // Record the sent frame if recording is active
+    if (recorder_ && recorder_->is_recording()) {
+        recorder_->record_sent(f);
+    }
 }
 
 boost::asio::awaitable<void> client::run_message_loop() {
@@ -896,6 +951,12 @@ boost::asio::awaitable<void> client::run_message_loop() {
             }
 
             const auto& frame = *frame_result;
+
+            // Record the received frame if recording is active
+            if (recorder_ && recorder_->is_recording()) {
+                recorder_->record_received(frame);
+            }
+
             const auto msg_type = frame.header().type;
             const auto corr_id = frame.correlation_id();
 

@@ -19,6 +19,7 @@
  */
 #include "ores.utility/convert/base64_converter.hpp"
 
+#include <stdexcept>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/kdf.h>

@@ -419,19 +419,13 @@ order by pg_total_relation_size(schemaname || '.' || tablename) desc;
 
 *** Row Counts per Table
 
+Uses PostgreSQL statistics for all tables in the schema:
+
 #+begin_src sql
-select 'accounts' as table_name, count(*) as rows from ores.accounts
-union all
-select 'currencies', count(*) from ores.currencies
-union all
-select 'feature_flags', count(*) from ores.feature_flags
-union all
-select 'roles', count(*) from ores.roles
-union all
-select 'permissions', count(*) from ores.permissions
-union all
-select 'images', count(*) from ores.images
-order by rows desc;
+select relname as table_name, n_live_tup as rows
+from pg_stat_user_tables
+where schemaname = 'ores'
+order by n_live_tup desc;
 #+end_src
 
 | Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] | Schema: [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][SQL Schema]] |

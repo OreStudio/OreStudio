@@ -100,102 +100,19 @@ Add all market data from ORE, including Calendars, etc.
 
 Add all market data from ORE, including Calendars, etc.
 
-* Sprints                                              :taskjuggler_resource:
+* Sprints
 
 This version is made up of the following sprints, organised by their [[id:57A7FABC-21FE-5124-45EB-9685D0712176][Sprint
 Backlogs]]. The last entry is the active sprint.
 
-** Sprint 01
-   :PROPERTIES:
-   :resource_id: s01
-   :END:
-
-- [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01:]] Create basic project infrastructure; handle currencies front to back.
-
-** Sprint 02
-   :PROPERTIES:
-   :resource_id: s02
-   :END:
-
-- [[id:0DFDAF4D-E299-98E4-25C3-5BB6500E5BA8][Sprint Backlog 02]]: Create basic project infrastructure; add client and server support.
-
-** Sprint 03
-   :PROPERTIES:
-   :resource_id: s03
-   :END:
-
-- [[id:D35D43C9-46BF-9A94-F03B-A3B706020498][Sprint Backlog 03]]: Update UI layer to use new socket code; finish login related functionality.
-
-** Sprint 04
-   :PROPERTIES:
-   :resource_id: s04
-   :END:
-
-- [[id:5A85BDB5-E915-3A44-04AB-771ACE91992B][Sprint Backlog 04]]: Code review all code using LLMs; implement claude code skills for common functionality.
-
-** Sprint 05
-   :PROPERTIES:
-   :resource_id: s05
-   :END:
-
-** Sprint 06
-   :PROPERTIES:
-   :resource_id: s06
-   :END:
-
-** Sprint 07
-   :PROPERTIES:
-   :resource_id: s07
-   :END:
-
-** Sprint 08
-   :PROPERTIES:
-   :resource_id: s08
-   :END:
-
-** Sprint 09
-   :PROPERTIES:
-   :resource_id: s09
-   :END:
-
-** Sprint 10
-   :PROPERTIES:
-   :resource_id: s10
-   :END:
-
-** Sprint 11
-   :PROPERTIES:
-   :resource_id: s11
-   :END:
-
-** Sprint 12
-   :PROPERTIES:
-   :resource_id: s12
-   :END:
-
-** Sprint 13
-   :PROPERTIES:
-   :resource_id: s13
-   :END:
-
-** Sprint 14
-   :PROPERTIES:
-   :resource_id: s14
-   :END:
-
-** Sprint 15
-   :PROPERTIES:
-   :resource_id: s15
-   :END:
-
-** Sprint 16
-   :PROPERTIES:
-   :resource_id: s16
-   :END:
+| Sprint | Backlog                                                          | Mission                                                                             |
+|--------+------------------------------------------------------------------+-------------------------------------------------------------------------------------|
+|     01 | [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01]] | Create basic project infrastructure; handle currencies front to back.              |
+|     02 | [[id:0DFDAF4D-E299-98E4-25C3-5BB6500E5BA8][Sprint Backlog 02]] | Create basic project infrastructure; add client and server support.                |
+|     03 | [[id:D35D43C9-46BF-9A94-F03B-A3B706020498][Sprint Backlog 03]] | Update UI layer to use new socket code; finish login related functionality.        |
+|     04 | [[id:5A85BDB5-E915-3A44-04AB-771ACE91992B][Sprint Backlog 04]] | Code review all code using LLMs; implement claude code skills for common features. |
+|     05 | [[id:2A3C7481-0984-D344-575B-7BFBB8D5A98B][Sprint Backlog 05]] | Implement bootstrap mode; finish up all remaining tasks around domain entities.    |
+|     06 | [[id:DBBD0C4F-EA14-4684-7583-D78AAF7AABFF][Sprint Backlog 06]] | Finish domain entity tasks; templatise domain entity generation.                   |
+|     07 | [[id:44AD3D04-EC5A-4039-91DD-7CEA0A18CA92][Sprint Backlog 07]] | Finish reference implementation.                                                   |
 
 | Previous: [[id:57A7FABC-21FE-5124-45EB-9685D0712176][Sprint Backlog]] |
-
-* Footer
-
-| [[id:2A3C7481-0984-D344-575B-7BFBB8D5A98B][Sprint Backlog 05]] | implement bootstrap mode; finish up all remaining tasks around domain entities.         |
-| [[id:44AD3D04-EC5A-4039-91DD-7CEA0A18CA92][Sprint Backlog 07]] | finish reference implementation; add entity versioning.                                  |

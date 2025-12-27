@@ -37,7 +37,7 @@ The system is organised into four architectural layers:
 - *Utility*: UUID generation, base32/base64 encoding, geolocation, string
   conversion, faker utilities. No ores dependencies.
 - *Platform*: Filesystem utilities, environment variables, network info,
-  process management. Depends on: utility.
+  cross-platform time utilities. Depends on: utility.
 - *Telemetry*: Logging infrastructure (Boost.Log integration), distributed
   tracing (trace_id, span_id), log record export, severity levels.
   Depends on: platform.
@@ -52,11 +52,13 @@ The system is organised into four architectural layers:
 - *Communications*: Binary protocol over SSL/TLS for client-server messaging.
   Publishes connection lifecycle events (connected, disconnected, reconnecting,
   reconnected) to event bus.
-- *Testing*: Catch2 integration with database isolation and logging.
+- *Testing*: Catch2 integration with database isolation and logging listeners.
 - *Eventing*: Event-driven architecture with in-process publish/subscribe event
   bus, PostgreSQL LISTEN/NOTIFY integration, and entity change notifications.
-- *Assets*: Asset management and provisioning utilities.
-- Depends on: Foundation.
+- *Assets*: Asset management for images and visual resources. Binary image
+  storage, hierarchical tagging, currency-to-image linking, messaging handlers
+  (0x4000-0x4FFF).
+- Depends on: Foundation (telemetry, database).
 
 ** Domain Layer
 

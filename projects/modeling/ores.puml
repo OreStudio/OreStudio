@@ -26,6 +26,43 @@ end note
 
 ' Foundation Layer
 package "Foundation Layer" #F2F2F2 {
+    component [ores.utility] as utility #F7E5FF
+
+    note right of utility
+    Foundation utilities with minimal dependencies:
+    - UUID: UUID v7 generation for time-ordered unique identifiers
+    - String: Type conversion and string manipulation
+    - Converter: Base32/Base64 encoding and decoding
+    - Program Options: Environment mapper factory for CLI configuration
+    No ores dependencies (base of the dependency tree).
+    Organized into: uuid, string, convert, program_options namespaces.
+    end note
+
+    component [ores.platform] as platform #F7E5FF
+
+    note right of platform
+    Platform-specific utilities for OS and hardware interaction:
+    - Environment: Environment variable access with type conversion
+    - Filesystem: File I/O, directory operations, recursive search
+    - Network: Hostname, MAC address, machine ID, process ID
+    - Time: Cross-platform time utilities (gmtime_safe, localtime_safe)
+    Provides cross-platform abstractions for system-level operations.
+    Organized into: environment, filesystem, net, time namespaces.
+    end note
+
+    component [ores.telemetry] as telemetry #F7E5FF
+
+    note right of telemetry
+    Unified observability component for logging and distributed tracing:
+    - Logging: Boost.Log integration with lifecycle management
+    - Tracing: OpenTelemetry-aligned trace_id/span_id generation
+    - Correlation: Log records linked to traces and spans
+    - Export: JSON Lines file exporter for log shipping
+    - Resources: Machine/service identity with host_id derivation
+    Provides observability infrastructure for all ORE Studio components.
+    Organized into: domain, generators, log, exp namespaces.
+    end note
+
     component [ores.database] as database #F7E5FF
 
     note right of database
@@ -36,32 +73,7 @@ package "Foundation Layer" #F2F2F2 {
     - Health Monitor: Continuous database availability checking with callbacks
     - Repository Helpers: Bitemporal operations, timestamp conversion, SQL generation
     - Configuration: CLI options parsing for database credentials
-    No dependencies on other ORE Studio components (base of the dependency tree).
     Organized into: database (core), repository (helpers) namespaces.
-    end note
-
-    component [ores.utility] as utility #F7E5FF
-
-    note right of utility
-    Foundation utilities with minimal dependencies:
-    - Logging: Boost.Log integration with per-module and per-test-case support
-    - UUID: UUID v7 generation for time-ordered unique identifiers
-    - String: Type conversion and string manipulation
-    - DateTime: Time formatting and relative time display
-    - Converter: Base32/Base64 encoding and decoding
-    - Program Options: Environment mapper factory for CLI configuration
-    Organized into: log, uuid, string, datetime, convert, program_options namespaces.
-    end note
-
-    component [ores.platform] as platform #F7E5FF
-
-    note right of platform
-    Platform-specific utilities for OS and hardware interaction:
-    - Environment: Environment variable access with type conversion
-    - Filesystem: File I/O, directory operations, recursive search
-    - Network: Hostname, MAC address, machine ID, process ID
-    Provides cross-platform abstractions for system-level operations.
-    Organized into: environment, filesystem, net namespaces.
     end note
 
     component [ores.variability] as variability #F7E5FF
@@ -120,6 +132,19 @@ package "Infrastructure Layer" #F2F2F2 {
     - Database Helpers: Table truncation and context management
     - Template Databases: Tests clone from ores_template with full schema
     - Configuration: Environment-driven via TEST_ORES_DB_* variables
+    end note
+
+    component [ores.assets] as assets #F7E5FF
+
+    note right of assets
+    Asset management for images and visual resources:
+    - Images: Binary image storage with MIME type and dimensions
+    - Tags: Hierarchical tagging system for asset organization
+    - Currency Images: Links currencies to flag/icon images
+    - Messaging: Protocol handlers for asset operations (0x4000-0x4FFF)
+    - Generators: Test data generation for images and tags
+    Provides centralized asset storage and retrieval for UI components.
+    Organized into: domain, repository, messaging, generators namespaces.
     end note
 }
 
@@ -214,54 +239,59 @@ package "Application Layer" #F2F2F2 {
     end note
 }
 
-' Dependencies - Foundation Layer (ores.database is the base)
+' Dependencies - Foundation Layer (utility is the base)
 platform --> utility
-variability --> utility
+telemetry --> platform
+database --> telemetry
 variability --> database
 
 ' Dependencies - Infrastructure to Foundation
-eventing --> utility
+eventing --> telemetry
 eventing --> database
-comms --> utility
+comms --> telemetry
 comms --> database
 comms --> eventing
-testing --> utility
+testing --> telemetry
 testing --> platform
 testing --> database
+assets --> telemetry
+assets --> database
 
 ' Dependencies - Domain to Foundation/Infrastructure
-risk --> utility
+risk --> telemetry
 risk --> platform
 risk --> database
 iam --> variability
 iam --> comms
-iam --> utility
+iam --> telemetry
 iam --> database
 
 ' Dependencies - Shell to Foundation/Domain/Infrastructure
-shell --> utility
+shell --> telemetry
 shell --> variability
 shell --> iam
 shell --> comms
 
 ' Dependencies - Applications to all layers
-cli --> utility
+cli --> telemetry
 cli --> variability
 cli --> iam
 cli --> risk
 
-qt --> utility
+qt --> telemetry
 qt --> iam
 qt --> risk
 qt --> comms
 qt --> eventing
+qt --> assets
 
-service --> utility
+service --> telemetry
 service --> database
 service --> iam
 service --> risk
 service --> comms
 service --> eventing
+service --> assets
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.puml"

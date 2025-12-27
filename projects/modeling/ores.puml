@@ -88,6 +88,19 @@ package "Foundation Layer" #F2F2F2 {
     Provides clean separation between system configuration concerns and business logic.
     Organized into: domain (core entities) and repository (ORM and persistence) namespaces.
     end note
+
+    component [ores.geo] as geo #F7E5FF
+
+    note right of geo
+    Geolocation services for IP-to-location lookups:
+    - MaxMind Integration: Uses GeoLite2-City database (MMDB format) for lookups
+    - IP to Location: Maps IP addresses to country, city, and coordinates
+    - Thread Safe: All lookup operations are thread-safe for concurrent access
+    - PostgreSQL Storage: Optional storage of geolocation data in PostgreSQL
+    - PIMPL Pattern: Encapsulates MaxMind library dependencies
+    Used primarily for session tracking to record login locations.
+    Organized into: service (geolocation_service) namespace.
+    end note
 }
 
 ' Infrastructure Layer
@@ -265,6 +278,7 @@ iam --> variability
 iam --> comms
 iam --> telemetry
 iam --> database
+iam --> geo
 
 ' Dependencies - Shell to Foundation/Domain/Infrastructure
 shell --> telemetry
@@ -292,6 +306,7 @@ service --> risk
 service --> comms
 service --> eventing
 service --> assets
+service --> geo
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.puml"

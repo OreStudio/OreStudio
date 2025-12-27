@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E
+:END:
+#+title: ORE Studio Platform Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Cross-platform abstractions for operating system services in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Platform Component Diagram
+[[file:ores.platform.png][file:ores.platform.png]]
+
+Provides cross-platform abstractions for OS-level functionality that varies
+between platforms. This component isolates platform-specific code, allowing
+higher layers to use consistent APIs. Key namespaces:
+
+- environment: Environment variable access with type conversion
+- filesystem: File I/O utilities, directory operations, recursive search
+- net: Network and hardware identification (hostname, MAC address, machine ID)
+- time: Cross-platform time conversion utilities
+
+This module depends only on [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]], making it part of the foundation
+layer upon which telemetry and other components are built.
+
+| Namespace     | Purpose                                            |
+|---------------+----------------------------------------------------|
+| =environment= | Environment variable access with type conversion   |
+| =filesystem=  | File operations and directory manipulation         |
+| =net=         | Network info, machine identity, process ID         |
+| =time=        | Cross-platform time_t to tm struct conversion      |
+
+* Filesystem Utilities
+
+The =filesystem= namespace provides utilities for common file operations:
+
+- *file*: Core file operations class with methods for reading, writing, and
+  finding files recursively
+- *file_not_found*: Exception thrown when a requested file does not exist
+- *io_error*: Exception thrown when an I/O operation fails
+
+** Basic Usage
+
+#+begin_src cpp
+#include "ores.platform/filesystem/file.hpp"
+
+using ores::platform::filesystem::file;
+
+// Read file contents
+std::string content = file::read_content("/path/to/file.txt");
+
+// Write content to file
+file::write_content("/path/to/output.txt", "Hello, World!");
+
+// Find all files in a directory recursively
+auto files = file::find_files("/path/to/directory");
+
+// Find file by searching upwards from a starting directory
+auto config = file::find_file_recursively_upwards(
+    std::filesystem::current_path(), "config.yml");
+#+end_src
+
+* Environment Variables
+
+The =environment= namespace provides utilities for reading and writing
+environment variables with type conversion:
+
+#+begin_src cpp
+#include "ores.platform/environment/environment.hpp"
+
+using ores::platform::environment::environment;
+
+// Get optional value
+auto value = environment::get_value("MY_VAR");
+if (value) {
+    // use *value
+}
+
+// Get with default
+std::string host = environment::get_value_or_default("HOST", "localhost");
+
+// Get as integer with default
+int port = environment::get_int_value_or_default("PORT", 8080);
+
+// Set a value
+environment::set_value("MY_VAR", "new_value");
+#+end_src
+
+* Network Information
+
+The =net= namespace provides utilities for retrieving network and hardware
+identification information, useful for distributed systems:
+
+#+begin_src cpp
+#include "ores.platform/net/network_info.hpp"
+
+using namespace ores::platform::net;
+
+// Get hostname
+std::string hostname = get_hostname();
+
+// Get primary MAC address (formatted as "00:1a:2b:3c:4d:5e")
+auto mac = get_primary_mac_address();
+
+// Derive stable machine identifier (hex-encoded hash)
+std::string machine_id = derive_machine_id();
+
+// Get 16-bit machine ID hash for embedding in IDs
+std::uint16_t id_hash = derive_machine_id_hash();
+
+// Get current process ID
+std::int64_t pid = get_process_id();
+#+end_src
+
+* Time Utilities
+
+The =time= namespace provides cross-platform wrappers for time conversion
+functions that differ between POSIX and Windows:
+
+#+begin_src cpp
+#include "ores.platform/time/time_utils.hpp"
+
+using ores::platform::time::time_utils;
+
+std::time_t now = std::time(nullptr);
+std::tm utc_time{};
+std::tm local_time{};
+
+// Convert to UTC (cross-platform)
+time_utils::gmtime_safe(&now, &utc_time);
+
+// Convert to local time (cross-platform)
+time_utils::localtime_safe(&now, &local_time);
+#+end_src
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

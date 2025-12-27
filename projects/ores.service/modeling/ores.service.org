@@ -31,4 +31,81 @@ features:
 The component is organized into namespaces: config (option parsing and
 configuration), and app (application hosting and execution).
 
+* Configuration
+
+The service is configured via command-line arguments and environment variables.
+Environment variables use the ~SERVICE_~ prefix (e.g., ~SERVICE_PORT=8080~).
+
+** Server Options
+
+| Option                  | Env Variable                | Default          | Description                          |
+|-------------------------+-----------------------------+------------------+--------------------------------------|
+| ~--port, -p~            | ~SERVICE_PORT~              | 55555            | Port to listen on                    |
+| ~--max-connections, -m~ | ~SERVICE_MAX_CONNECTIONS~   | 10               | Max concurrent connections           |
+| ~--certificate, -c~     | ~SERVICE_CERTIFICATE~       | server.crt       | Path to SSL certificate              |
+| ~--private-key, -k~     | ~SERVICE_PRIVATE_KEY~       | server.key       | Path to SSL private key              |
+| ~--identifier, -i~      | ~SERVICE_IDENTIFIER~        | ores-service-v1  | Server identifier for handshake      |
+| ~--geolocation-database, -g~ | ~SERVICE_GEOLOCATION_DATABASE~ | (none)    | Path to MaxMind GeoLite2-City.mmdb   |
+
+** Database Options
+
+See ~ores.database~ for database configuration options (~--db-host~, ~--db-port~,
+~--db-name~, ~--db-user~, ~--db-password~).
+
+** Logging Options
+
+See ~ores.telemetry~ for logging configuration options.
+
+* Session Tracking
+
+The service tracks user sessions with the following data:
+
+- Session lifecycle: start time, end time, duration
+- Client information: IP address, client identifier, protocol version
+- Traffic metrics: bytes sent/received
+- Geolocation: country, city, coordinates (if configured)
+
+** Geolocation Configuration
+
+Geolocation maps client IP addresses to physical locations. Two approaches:
+
+*** Option 1: MaxMind mmdb File (Recommended)
+
+1. Download GeoLite2-City from MaxMind (requires free account)
+2. Start the service with ~--geolocation-database /path/to/GeoLite2-City.mmdb~
+
+#+begin_src shell
+ores.service --geolocation-database /opt/geoip/GeoLite2-City.mmdb
+#+end_src
+
+Or via environment variable:
+#+begin_src shell
+export SERVICE_GEOLOCATION_DATABASE=/opt/geoip/GeoLite2-City.mmdb
+#+end_src
+
+*** Option 2: PostgreSQL with ip4r Extension (Future)
+
+The MaxMind data can be imported directly into PostgreSQL:
+
+1. Install the ~ip4r~ extension for efficient IP range lookups
+2. Download MaxMind GeoLite2 CSV format
+3. Import into PostgreSQL tables
+4. Query using ~ip4r~ range operators
+
+This approach keeps all data in the database but requires additional setup.
+See ~projects/sql/schema/geolocation_create.sql~ for the schema (if implemented).
+
+** Session Statistics
+
+Session data is aggregated into daily statistics including:
+- Session counts
+- Average duration
+- Total bytes transferred
+- Unique countries/cities
+
+Use the shell commands to view session data:
+- ~accounts sessions~ - List session history
+- ~accounts active-sessions~ - Show active sessions
+- ~accounts session-stats~ - Show 30-day statistics
+
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

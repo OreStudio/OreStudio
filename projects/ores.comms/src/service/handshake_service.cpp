@@ -39,7 +39,7 @@ using messaging::select_compression;
 using messaging::PROTOCOL_VERSION_MAJOR;
 using messaging::PROTOCOL_VERSION_MINOR;
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 boost::asio::awaitable<messaging::compression_type> handshake_service::perform_client_handshake(
     net::connection& conn,

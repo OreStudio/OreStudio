@@ -22,7 +22,7 @@
 #include "ores.variability/domain/system_flags.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 
 namespace {
@@ -33,7 +33,7 @@ const std::string table_name("ores.feature_flags");
 
 }
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using namespace ores::variability::service;
 using namespace ores::variability::domain;
 

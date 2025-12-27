@@ -38,7 +38,7 @@ namespace ores::qt {
 
 using comms::messaging::frame;
 using comms::messaging::message_type;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 namespace {
     // Event type name for currency changes

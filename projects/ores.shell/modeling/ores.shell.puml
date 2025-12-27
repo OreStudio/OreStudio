@@ -88,7 +88,7 @@ namespace ores #F2F2F2 {
             end note
 
             struct options #F7E5FF {
-                +{field} logging std::optional<utility::log::logging_options>
+                +{field} logging std::optional<telemetry::log::logging_options>
                 +{field} connection std::optional<comms::net::client_options>
                 +{field} login std::optional<login_options>
             }

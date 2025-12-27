@@ -23,7 +23,7 @@
 #include <sstream>
 #include <boost/program_options.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.utility/streaming/std_optional.hpp" // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.cli/config/entity.hpp"
@@ -37,7 +37,7 @@ const std::string tags("[parsing]");
 
 }
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using ores::cli::config::parser;
 using ores::cli::config::entity;
 using ores::cli::config::format;

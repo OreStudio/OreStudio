@@ -25,7 +25,6 @@
 #include <optional>
 #include <expected>
 #include <boost/asio/ip/address.hpp>
-#include "ores.utility/log/make_logger.hpp"
 
 namespace ores::utility::geo {
 
@@ -59,16 +58,6 @@ enum class geolocation_error {
  * Database loading/reloading should be done before concurrent lookups.
  */
 class geolocation_service {
-private:
-    inline static std::string_view logger_name =
-        "ores.utility.geo.geolocation_service";
-
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::utility::log;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
 public:
     /**
      * @brief Construct a geolocation service without loading a database.

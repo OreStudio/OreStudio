@@ -22,7 +22,7 @@
 #include <set>
 #include <regex>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
@@ -32,7 +32,7 @@ const std::string tags("[faker]");
 }
 
 using ores::utility::faker::internet;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("internet_endpoint_format", tags) {
     auto lg(make_logger(test_suite));

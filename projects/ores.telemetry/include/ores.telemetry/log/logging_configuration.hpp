@@ -17,15 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_LOG_LOGGING_CONFIGURATION_HPP
-#define ORES_UTILITY_LOG_LOGGING_CONFIGURATION_HPP
+#ifndef ORES_TELEMETRY_LOG_LOGGING_CONFIGURATION_HPP
+#define ORES_TELEMETRY_LOG_LOGGING_CONFIGURATION_HPP
 
 #include <string>
 #include <optional>
 #include <boost/program_options.hpp>
-#include "ores.utility/log/logging_options.hpp"
+#include "ores.telemetry/log/logging_options.hpp"
 
-namespace ores::utility::log {
+namespace ores::telemetry::log {
 
 /**
  * @brief Centralized manager for logging configuration parsing.

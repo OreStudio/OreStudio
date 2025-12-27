@@ -29,7 +29,7 @@
 namespace ores::risk::csv {
 
 using domain::currency;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using ores::utility::datetime::datetime;
 
 std::string exporter::escape_csv_field(const std::string& field) {

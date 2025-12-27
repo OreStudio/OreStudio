@@ -31,7 +31,7 @@ namespace ores::qt {
 
 using comms::messaging::frame;
 using comms::messaging::message_type;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
     : QObject(parent),

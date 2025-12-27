@@ -31,7 +31,7 @@ namespace ores::iam::repository {
 
 using namespace sqlgen;
 using namespace sqlgen::literals;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using namespace ores::database::repository;
 
 std::string role_permission_repository::sql() {

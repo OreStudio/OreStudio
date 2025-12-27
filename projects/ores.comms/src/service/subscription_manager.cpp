@@ -21,7 +21,7 @@
 
 namespace ores::comms::service {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 void subscription_manager::register_session(const session_id& id,
                                             notification_callback callback) {

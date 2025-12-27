@@ -21,7 +21,7 @@
 
 #include <filesystem>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.platform/filesystem/file.hpp"
 
 namespace {
@@ -33,7 +33,7 @@ const std::string tags("[orexml]");
 }
 
 using ores::risk::orexml::CurrencyConfig;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("read_currency_config_from_simple_xml", tags) {
     auto lg(make_logger(test_suite));

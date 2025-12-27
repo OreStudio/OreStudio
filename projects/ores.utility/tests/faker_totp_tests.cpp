@@ -21,7 +21,7 @@
 
 #include <set>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
@@ -31,7 +31,7 @@ const std::string tags("[faker]");
 }
 
 using ores::utility::faker::totp;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("totp_secret_default_size", tags) {
     auto lg(make_logger(test_suite));

@@ -24,7 +24,7 @@
 #include <optional>
 #include "ores.shell/config/login_options.hpp"
 #include "ores.comms/net/client_options.hpp"
-#include "ores.utility/log/logging_options.hpp"
+#include "ores.telemetry/log/logging_options.hpp"
 
 namespace ores::shell::config {
 
@@ -35,7 +35,7 @@ struct options final {
     /**
      * @brief Configuration options related to logging, if any.
      */
-    std::optional<utility::log::logging_options> logging;
+    std::optional<telemetry::log::logging_options> logging;
 
     /**
      * @brief Configuration options for connecting to the server.

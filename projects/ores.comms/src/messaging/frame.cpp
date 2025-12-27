@@ -59,7 +59,7 @@ bool is_valid_message_type(std::uint16_t type) {
 
 namespace ores::comms::messaging {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 frame::frame() : header_{}, payload_{} {
     header_.magic = PROTOCOL_MAGIC;

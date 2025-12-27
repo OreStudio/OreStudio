@@ -9,19 +9,24 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. Seethe GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
- * You should have received a copy of the GNU General PublicLicense along with
+ * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_LOG_LOG_HPP
-#define ORES_UTILITY_LOG_LOG_HPP
+#ifndef ORES_TELEMETRY_LOG_LOG_HPP
+#define ORES_TELEMETRY_LOG_LOG_HPP
 
 /**
  * @brief Implements logging for ORE Studio.
+ *
+ * This namespace contains the logging infrastructure, built on top of
+ * Boost.Log with integration to the telemetry system for log correlation
+ * with distributed traces.
  */
-namespace ores::utility::log {}
+namespace ores::telemetry::log {}
 
 #endif

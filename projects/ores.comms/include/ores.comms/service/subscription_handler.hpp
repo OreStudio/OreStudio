@@ -21,7 +21,7 @@
 #define ORES_COMMS_SERVICE_SUBSCRIPTION_HANDLER_HPP
 
 #include <memory>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.comms/service/subscription_manager.hpp"
 
@@ -39,7 +39,7 @@ namespace ores::comms::service {
 class subscription_handler final : public messaging::message_handler {
 private:
     [[nodiscard]] static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(
             "ores.comms.service.subscription_handler");
         return instance;

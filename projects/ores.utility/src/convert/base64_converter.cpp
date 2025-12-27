@@ -19,6 +19,7 @@
  */
 #include "ores.utility/convert/base64_converter.hpp"
 
+#include <stdexcept>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/kdf.h>
@@ -27,8 +28,6 @@
 
 namespace ores::utility::converter {
 
-using namespace ores::utility::log;
-
 std::string base64_converter::convert(const std::vector<unsigned char>& data) {
     BIO *bio = nullptr, *b64 = nullptr;
     BUF_MEM *bufferPtr = nullptr;
@@ -36,13 +35,11 @@ std::string base64_converter::convert(const std::vector<unsigned char>& data) {
     try {
         b64 = BIO_new(BIO_f_base64());
         if (!b64) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to create Base64 BIO";
             throw std::runtime_error("Base64 encode: BIO creation failed");
         }
         bio = BIO_new(BIO_s_mem());
         if (!bio) {
             BIO_free_all(b64);
-            BOOST_LOG_SEV(lg(), error) << "Failed to create memory BIO";
             throw std::runtime_error("Base64 encode: Memory BIO creation failed");
         }
         bio = BIO_push(b64, bio);
@@ -65,19 +62,16 @@ base64_converter::convert(const std::string& encoded) {
 
     try {
         if (encoded.empty()) {
-            BOOST_LOG_SEV(lg(), error) << "Base64 decode: Empty input";
             throw std::runtime_error("Base64 decode: Empty input");
         }
 
         b64 = BIO_new(BIO_f_base64());
         if (!b64) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to create Base64 BIO";
             throw std::runtime_error("Base64 decode: BIO creation failed");
         }
         bio = BIO_new_mem_buf(encoded.c_str(), -1);
         if (!bio) {
             BIO_free_all(b64);
-            BOOST_LOG_SEV(lg(), error) << "Failed to create memory BIO";
             throw std::runtime_error("Base64 decode: Memory BIO creation failed");
         }
         bio = BIO_push(b64, bio);
@@ -87,7 +81,6 @@ base64_converter::convert(const std::string& encoded) {
         int decoded_len = BIO_read(bio, decoded.data(), decoded.size());
         if (decoded_len < 0) {
             BIO_free_all(bio);
-            BOOST_LOG_SEV(lg(), error) << "Base64 decode failed";
             throw std::runtime_error("Base64 decode failed");
         }
         decoded.resize(decoded_len);

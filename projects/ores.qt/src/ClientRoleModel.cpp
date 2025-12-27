@@ -28,7 +28,7 @@
 
 namespace ores::qt {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 ClientRoleModel::
 ClientRoleModel(ClientManager* clientManager, QObject* parent)

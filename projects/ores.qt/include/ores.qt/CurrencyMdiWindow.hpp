@@ -29,7 +29,7 @@
 #include <QSortFilterProxyModel>
 #include <memory>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.qt/ClientCurrencyModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 
@@ -48,7 +48,7 @@ private:
         "ores.qt.currency_mdi_window";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

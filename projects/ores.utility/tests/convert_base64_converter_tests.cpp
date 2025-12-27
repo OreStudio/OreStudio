@@ -20,7 +20,7 @@
 #include "ores.utility/convert/base64_converter.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
@@ -30,7 +30,7 @@ const std::string tags("[convert]");
 }
 
 using ores::utility::converter::base64_converter;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("base64_encode_empty_input", tags) {
     auto lg(make_logger(test_suite));

@@ -36,6 +36,7 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.telemetry.lib
         ores.utility.lib
         ores.database.lib
     PRIVATE

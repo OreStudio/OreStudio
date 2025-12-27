@@ -23,7 +23,7 @@
 
 namespace ores::risk::messaging {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 void registrar::register_handlers(comms::net::server& server,
     database::context ctx,

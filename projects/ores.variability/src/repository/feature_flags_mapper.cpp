@@ -25,7 +25,7 @@
 
 namespace ores::variability::repository {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using namespace ores::database::repository;
 
 domain::feature_flags feature_flags_mapper::map(const feature_flags_entity& v) {

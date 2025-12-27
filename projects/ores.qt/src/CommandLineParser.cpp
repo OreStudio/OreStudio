@@ -94,13 +94,13 @@ bool CommandLineParser::isLoggingEnabled() const {
     return parser_.isSet("log-enabled");
 }
 
-std::optional<utility::log::logging_options> CommandLineParser::loggingOptions() const {
+std::optional<telemetry::log::logging_options> CommandLineParser::loggingOptions() const {
     // If logging is not enabled, return nullopt to disable logging
     if (!isLoggingEnabled()) {
         return std::nullopt;
     }
 
-    utility::log::logging_options r;
+    telemetry::log::logging_options r;
 
     // Build the filename
     std::string filename = parser_.value("log-filename").toStdString();

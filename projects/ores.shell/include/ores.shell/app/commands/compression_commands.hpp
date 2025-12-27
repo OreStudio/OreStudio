@@ -22,7 +22,7 @@
 
 #include <cstdint>
 #include <string>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.comms/messaging/handshake_protocol.hpp"
 
 namespace cli {
@@ -45,7 +45,7 @@ private:
         "ores.shell.app.commands.compression";
 
     static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

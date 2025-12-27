@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,20 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_LOG_LOGGING_OPTIONS_VALIDATOR_HPP
-#define ORES_UTILITY_LOG_LOGGING_OPTIONS_VALIDATOR_HPP
+#ifndef ORES_TELEMETRY_LOG_LOGGING_EXCEPTION_HPP
+#define ORES_TELEMETRY_LOG_LOGGING_EXCEPTION_HPP
 
-#include "ores.utility/log/logging_options.hpp"
+#include <string>
+#include <boost/exception/info.hpp>
 
-namespace ores::utility::log {
+namespace ores::telemetry::log {
 
 /**
- * @brief Checks the validity of the supplied logging options.
+ * @brief An exception has occurred during logging.
  */
-class logging_options_validator final {
+class logging_exception : public virtual std::exception,
+                          public virtual boost::exception {
 public:
-    logging_options_validator() = delete;
-    static void validate(const logging_options& cfg);
+    explicit logging_exception(std::string_view message = "")
+        : message_(message) {}
+
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
+    }
+
+private:
+    std::string message_;
 };
 
 }

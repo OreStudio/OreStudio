@@ -22,7 +22,7 @@
 
 #include <string>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace ores::testing {
 
@@ -39,7 +39,7 @@ private:
         "ores.testing.database_lifecycle_listener";
 
     static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

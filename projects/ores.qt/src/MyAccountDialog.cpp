@@ -32,7 +32,7 @@
 
 namespace ores::qt {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 MyAccountDialog::MyAccountDialog(ClientManager* clientManager, QWidget* parent)
     : QDialog(parent),

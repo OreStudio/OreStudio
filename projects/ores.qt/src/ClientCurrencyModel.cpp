@@ -32,7 +32,7 @@
 
 namespace ores::qt {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 ClientCurrencyModel::
 ClientCurrencyModel(ClientManager* clientManager, ImageCache* imageCache,

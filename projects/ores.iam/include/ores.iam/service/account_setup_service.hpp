@@ -25,7 +25,7 @@
 #include "ores.iam/domain/account.hpp"
 #include "ores.iam/service/account_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace ores::iam::service {
 
@@ -45,7 +45,7 @@ private:
         "ores.iam.service.account_setup_service";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

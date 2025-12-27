@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_LOG_LOGGING_OPTIONS_HPP
-#define ORES_UTILITY_LOG_LOGGING_OPTIONS_HPP
+#ifndef ORES_TELEMETRY_LOG_LOGGING_OPTIONS_HPP
+#define ORES_TELEMETRY_LOG_LOGGING_OPTIONS_HPP
 
 #include <iosfwd>
 #include <string>
 #include <filesystem>
 
-namespace ores::utility::log {
+namespace ores::telemetry::log {
 
 /**
  * @brief Options related to logging.

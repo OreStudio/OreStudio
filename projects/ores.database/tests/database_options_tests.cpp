@@ -20,7 +20,7 @@
 #include "ores.database/domain/database_options.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
@@ -30,7 +30,7 @@ const std::string tags("[database]");
 }
 
 using namespace ores::database;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("database_options_to_credentials", tags) {
     auto lg(make_logger(test_suite));

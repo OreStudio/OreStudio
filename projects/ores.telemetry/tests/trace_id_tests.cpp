@@ -24,7 +24,7 @@
 #include <set>
 #include <thread>
 #include <vector>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
@@ -35,7 +35,7 @@ const std::string tags("[trace_id]");
 
 using namespace ores::telemetry::domain;
 using namespace ores::telemetry::generators;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("default_trace_id_is_invalid", tags) {
     auto lg(make_logger(test_suite));

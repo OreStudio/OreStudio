@@ -24,7 +24,7 @@
 #include "ores.iam/repository/account_repository.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 
 namespace ores::iam::service {
@@ -52,7 +52,7 @@ private:
         "ores.iam.service.bootstrap_mode_service";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

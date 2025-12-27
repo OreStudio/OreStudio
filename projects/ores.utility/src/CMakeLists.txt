@@ -44,8 +44,6 @@ find_package(maxminddb CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         OpenSSL::SSL
-        Boost::log
-        Boost::program_options
         Boost::exception
         reflectcpp::reflectcpp
         maxminddb::maxminddb

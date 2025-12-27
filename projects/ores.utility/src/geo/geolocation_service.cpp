@@ -23,8 +23,6 @@
 
 namespace ores::utility::geo {
 
-using namespace ores::utility::log;
-
 struct geolocation_service::impl {
     MMDB_s mmdb;
     bool loaded = false;
@@ -56,15 +54,10 @@ bool geolocation_service::load(const std::string& database_path) {
 
     int status = MMDB_open(database_path.c_str(), MMDB_MODE_MMAP, &pimpl_->mmdb);
     if (status != MMDB_SUCCESS) {
-        BOOST_LOG_SEV(lg(), error)
-            << "Failed to load MaxMind database: " << database_path
-            << ", error: " << MMDB_strerror(status);
         return false;
     }
 
     pimpl_->loaded = true;
-    BOOST_LOG_SEV(lg(), info) << "Loaded MaxMind database: " << database_path
-                              << ", type: " << pimpl_->mmdb.metadata.database_type;
     return true;
 }
 
@@ -108,18 +101,14 @@ geolocation_service::lookup(const std::string& ip_string) const {
         &pimpl_->mmdb, ip_string.c_str(), &gai_error, &mmdb_error);
 
     if (gai_error != 0) {
-        BOOST_LOG_SEV(lg(), debug) << "Invalid IP address: " << ip_string;
         return std::unexpected(geolocation_error::invalid_address);
     }
 
     if (mmdb_error != MMDB_SUCCESS) {
-        BOOST_LOG_SEV(lg(), debug) << "MMDB lookup error for " << ip_string
-                                   << ": " << MMDB_strerror(mmdb_error);
         return std::unexpected(geolocation_error::lookup_failed);
     }
 
     if (!result.found_entry) {
-        BOOST_LOG_SEV(lg(), debug) << "No entry found for IP: " << ip_string;
         return std::unexpected(geolocation_error::address_not_found);
     }
 
@@ -158,10 +147,6 @@ geolocation_service::lookup(const std::string& ip_string) const {
     if (status == MMDB_SUCCESS) {
         geo_result.longitude = get_double_value(&entry_data);
     }
-
-    BOOST_LOG_SEV(lg(), trace) << "Geolocation for " << ip_string
-                               << ": country=" << geo_result.country_code
-                               << ", city=" << geo_result.city;
 
     return geo_result;
 }

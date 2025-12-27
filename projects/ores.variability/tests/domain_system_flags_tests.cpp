@@ -22,7 +22,7 @@
 #include <sstream>
 #include <catch2/catch_test_macros.hpp>
 #include <magic_enum/magic_enum.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
@@ -37,7 +37,7 @@ using ores::variability::domain::system_flag_definitions;
 using ores::variability::domain::to_flag_name;
 using ores::variability::domain::from_flag_name;
 using ores::variability::domain::get_definition;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("to_flag_name_converts_bootstrap_mode", tags) {
     auto lg(make_logger(test_suite));

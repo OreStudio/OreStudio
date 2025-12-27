@@ -96,7 +96,7 @@ Include headers based on test type:
   #+begin_src cpp
   #include <catch2/catch_test_macros.hpp>
   #include <faker-cxx/faker.h> // IWYU pragma: keep.
-  #include "ores.utility/log/make_logger.hpp"
+  #include "ores.telemetry/log/make_logger.hpp"
   #include "COMPONENT/domain/CLASS_json_io.hpp" // IWYU pragma: keep.
   #+end_src
 
@@ -105,7 +105,7 @@ Include headers based on test type:
   #+begin_src cpp
   #include <catch2/catch_test_macros.hpp>
   #include <boost/uuid/uuid_io.hpp>
-  #include "ores.utility/log/make_logger.hpp"
+  #include "ores.telemetry/log/make_logger.hpp"
   #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
   #include "COMPONENT/generators/CLASS_generator.hpp"
   #include "ores.testing/database_helper.hpp"

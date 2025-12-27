@@ -54,7 +54,7 @@
 namespace ores::qt {
 
 using comms::messaging::message_type;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 CurrencyMdiWindow::
 CurrencyMdiWindow(ClientManager* clientManager,

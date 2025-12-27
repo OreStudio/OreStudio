@@ -25,7 +25,7 @@
 
 namespace ores::database::repository {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 namespace {
 
@@ -67,7 +67,7 @@ std::string build_connection_string(const sqlgen::postgres::Credentials& creds) 
 } // anonymous namespace
 
 std::vector<std::string> execute_raw_string_query(context ctx,
-    const std::string& sql, utility::log::logger_t& lg,
+    const std::string& sql, telemetry::log::logger_t& lg,
     const std::string& operation_desc) {
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
@@ -108,7 +108,7 @@ std::vector<std::string> execute_raw_string_query(context ctx,
 }
 
 std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
-    context ctx, const std::string& sql, utility::log::logger_t& lg,
+    context ctx, const std::string& sql, telemetry::log::logger_t& lg,
     const std::string& operation_desc) {
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
@@ -156,7 +156,7 @@ std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
 }
 
 std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_query(
-    context ctx, const std::string& sql, utility::log::logger_t& lg,
+    context ctx, const std::string& sql, telemetry::log::logger_t& lg,
     const std::string& operation_desc) {
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;

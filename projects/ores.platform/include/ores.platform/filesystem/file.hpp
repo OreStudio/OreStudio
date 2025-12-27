@@ -26,22 +26,11 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
-#include "ores.utility/log/make_logger.hpp"
 #include "ores.platform/filesystem/io_error.hpp"
 
 namespace ores::platform::filesystem {
 
 class file final {
-private:
-    inline static std::string_view logger_name =
-        "ores.platform.filesystem.file";
-
-    static auto& lg() {
-        using namespace ores::utility::log;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
 public:
     /**
      * @brief Returns the contents of the file.

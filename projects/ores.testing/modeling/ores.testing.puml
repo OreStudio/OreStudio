@@ -107,7 +107,7 @@ namespace ores #F2F2F2 {
             +assertionEnded(Catch::AssertionStats const& assertionStats) : void
             +sectionStarting(Catch::SectionInfo const& sectionInfo) : void
             +sectionEnded(Catch::SectionStats const& sectionStats) : void
-            -{field} lifecycle_manager_ : std::shared_ptr<utility::log::lifecycle_manager>
+            -{field} lifecycle_manager_ : std::shared_ptr<telemetry::log::lifecycle_manager>
         }
 
         note top of logging_listener

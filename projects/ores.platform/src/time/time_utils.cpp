@@ -17,31 +17,34 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_LOG_LOGGING_EXCEPTION_HPP
-#define ORES_UTILITY_LOG_LOGGING_EXCEPTION_HPP
+#include "ores.platform/time/time_utils.hpp"
 
-#include <string>
-#include <boost/exception/info.hpp>
+namespace ores::platform::time {
 
-namespace ores::utility::log {
-
-/**
- * @brief An exception has occurred during logging.
- */
-class logging_exception : public virtual std::exception,
-                          public virtual boost::exception {
-public:
-    explicit logging_exception(std::string_view message = "")
-        : message_(message) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
+std::tm* time_utils::gmtime_safe(const std::time_t* time, std::tm* result) {
+#ifdef _WIN32
+    // Windows: gmtime_s has reversed parameter order and returns errno_t
+    if (gmtime_s(result, time) == 0) {
+        return result;
     }
-
-private:
-    std::string message_;
-};
-
+    return nullptr;
+#else
+    // POSIX: gmtime_r returns pointer to result
+    return gmtime_r(time, result);
+#endif
 }
 
+std::tm* time_utils::localtime_safe(const std::time_t* time, std::tm* result) {
+#ifdef _WIN32
+    // Windows: localtime_s has reversed parameter order and returns errno_t
+    if (localtime_s(result, time) == 0) {
+        return result;
+    }
+    return nullptr;
+#else
+    // POSIX: localtime_r returns pointer to result
+    return localtime_r(time, result);
 #endif
+}
+
+}

@@ -24,7 +24,7 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.risk/domain/currency_json_io.hpp" // IWYU pragma: keep.
@@ -50,7 +50,7 @@ make_system_flags(ores::database::context& ctx) {
 }
 
 using namespace ores;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using ores::risk::domain::currency;
 using namespace ores::risk::messaging;
 using namespace ores::risk::generators;

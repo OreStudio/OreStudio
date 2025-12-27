@@ -26,7 +26,7 @@
 #include <optional>
 #include <expected>
 #include <boost/uuid/uuid.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.iam/domain/session.hpp"
 
@@ -58,7 +58,7 @@ private:
         "ores.comms.service.auth_session_service";
 
     static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

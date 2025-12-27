@@ -27,7 +27,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.iam/domain/permission.hpp"
 
 namespace {
@@ -43,7 +43,7 @@ using ores::iam::eventing::permissions_changed_event;
 using ores::eventing::domain::event_traits;
 using ores::eventing::domain::has_event_traits;
 using namespace ores::iam::domain::permissions;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("event_traits_role_assigned_event", tags) {
     auto lg(make_logger(test_suite));

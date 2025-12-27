@@ -33,7 +33,7 @@ namespace ores::iam::repository {
 
 using namespace sqlgen;
 using namespace sqlgen::literals;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using namespace ores::database::repository;
 
 session_repository::session_repository(context ctx)

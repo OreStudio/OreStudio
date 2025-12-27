@@ -27,11 +27,11 @@
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
-#include "ores.utility/log/make_logger.hpp"
-#include "ores.utility/log/lifecycle_manager.hpp"
-#include "ores.utility/log/logging_options.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.telemetry/log/lifecycle_manager.hpp"
+#include "ores.telemetry/log/logging_options.hpp"
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 namespace {
 

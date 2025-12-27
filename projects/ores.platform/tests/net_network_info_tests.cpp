@@ -20,7 +20,7 @@
 #include "ores.platform/net/network_info.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
@@ -30,7 +30,7 @@ const std::string tags("[net]");
 }
 
 using namespace ores::platform::net;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("get_hostname_returns_non_empty_string", tags) {
     auto lg(make_logger(test_suite));

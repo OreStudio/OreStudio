@@ -24,7 +24,7 @@
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.iam/domain/role.hpp"
 
 namespace ores::qt {
@@ -43,7 +43,7 @@ private:
         "ores.qt.client_role_model";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

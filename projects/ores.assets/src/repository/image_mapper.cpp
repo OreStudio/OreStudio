@@ -23,7 +23,7 @@
 
 namespace ores::assets::repository {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using namespace ores::database::repository;
 
 domain::image image_mapper::map(const image_entity& v) {

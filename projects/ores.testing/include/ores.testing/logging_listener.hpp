@@ -22,7 +22,7 @@
 
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
-#include "ores.utility/log/lifecycle_manager.hpp"
+#include "ores.telemetry/log/lifecycle_manager.hpp"
 
 namespace ores::testing {
 
@@ -78,7 +78,7 @@ public:
     void sectionEnded(Catch::SectionStats const& sectionStats) override;
 
 private:
-    std::shared_ptr<utility::log::lifecycle_manager> lifecycle_manager_;
+    std::shared_ptr<telemetry::log::lifecycle_manager> lifecycle_manager_;
 };
 
 }

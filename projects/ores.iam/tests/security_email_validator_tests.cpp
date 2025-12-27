@@ -20,7 +20,7 @@
 #include "ores.iam/security/email_validator.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
@@ -30,7 +30,7 @@ const std::string tags("[security][email]");
 }
 
 using ores::iam::security::email_validator;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("valid_email_passes_validation", tags) {
     auto lg(make_logger(test_suite));

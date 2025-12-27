@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/log/lifecycle_manager.hpp"
+#include "ores.telemetry/log/lifecycle_manager.hpp"
 
 #include <string_view>
 #include <boost/make_shared.hpp>
@@ -30,15 +30,15 @@
 #include <boost/log/expressions.hpp>
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/support/date_time.hpp>
-#include "ores.utility/log/logging_options_validator.hpp"
+#include "ores.telemetry/log/logging_options_validator.hpp"
 
-namespace ores::utility::log {
+namespace ores::telemetry::log {
 
 using namespace boost::log;
 
 boost::shared_ptr<lifecycle_manager::file_sink_type>
 lifecycle_manager::make_file_sink(std::filesystem::path path,
-    const severity_level severity, std::string tag) {
+    const boost_severity severity, std::string tag) {
 
     const std::string extension(".log");
     if (path.extension() != extension)
@@ -57,11 +57,11 @@ lifecycle_manager::make_file_sink(std::filesystem::path path,
     if (!tag.empty()) {
         const std::string tag_attr("Tag");
         sink->set_filter(
-            expressions::attr<severity_level>(severity_attr) >= severity &&
+            expressions::attr<boost_severity>(severity_attr) >= severity &&
             expressions::has_attr(tag_attr) &&
             expressions::attr<std::string>(tag_attr) == tag);
     } else {
-        sink->set_filter(expressions::attr<severity_level>(
+        sink->set_filter(expressions::attr<boost_severity>(
                 severity_attr) >= severity);
     }
 
@@ -72,14 +72,14 @@ lifecycle_manager::make_file_sink(std::filesystem::path path,
     sink->set_formatter(expressions::format(record_format)
         % expressions::format_date_time<boost::posix_time::ptime>(
             time_stamp_attr, time_stamp_format)
-        % expressions::attr<severity_level>(severity_attr)
+        % expressions::attr<boost_severity>(severity_attr)
         % expressions::attr<std::string_view>(channel_attr)
         % expressions::smessage);
     return sink;
 }
 
 boost::shared_ptr<lifecycle_manager::console_sink_type> lifecycle_manager::
-make_console_sink(const severity_level severity, std::string tag) {
+make_console_sink(const boost_severity severity, std::string tag) {
     boost::shared_ptr<std::ostream> os(&std::cout, boost::null_deleter());
     auto backend(boost::make_shared<sinks::text_ostream_backend>());
     backend->add_stream(os);
@@ -91,11 +91,11 @@ make_console_sink(const severity_level severity, std::string tag) {
     if (!tag.empty()) {
         const std::string tag_attr("Tag");
         sink->set_filter(
-            expressions::attr<severity_level>(severity_attr) >= severity &&
+            expressions::attr<boost_severity>(severity_attr) >= severity &&
             expressions::has_attr(tag_attr) &&
             expressions::attr<std::string>(tag_attr) == tag);
     } else {
-        sink->set_filter(expressions::attr<severity_level>(
+        sink->set_filter(expressions::attr<boost_severity>(
                 severity_attr) >= severity);
     }
 
@@ -106,7 +106,7 @@ make_console_sink(const severity_level severity, std::string tag) {
     sink->set_formatter(expressions::format(record_format)
         % expressions::format_date_time<boost::posix_time::ptime>(
             time_stamp_attr, time_stamp_format)
-        % expressions::attr<severity_level>(severity_attr)
+        % expressions::attr<boost_severity>(severity_attr)
         % expressions::attr<std::string_view>(channel_attr)
         % expressions::smessage);
 
@@ -136,7 +136,7 @@ lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg) {
      * console and file, if enabled. We don't have to worry about making sure
      * that at least one is enabled - that is the validator's job.
      */
-    const auto sl(to_severity_level(cfg.severity));
+    const auto sl(to_boost_severity(cfg.severity));
     if (cfg.output_to_console) {
         console_sink_ = make_console_sink(sl, cfg.tag);
         boost::log::core::get()->add_sink(console_sink_);
@@ -158,11 +158,33 @@ lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg) {
 
 lifecycle_manager::~lifecycle_manager() {
     auto core(boost::log::core::get());
+
+    // Stop and flush the telemetry sink first (it's async)
+    if (telemetry_sink_) {
+        telemetry_sink_->stop();
+        telemetry_sink_->flush();
+        core->remove_sink(telemetry_sink_);
+    }
+
     if (file_sink_)
         core->remove_sink(file_sink_);
 
     if (console_sink_)
         core->remove_sink(console_sink_);
+}
+
+void lifecycle_manager::add_telemetry_sink(
+    std::shared_ptr<domain::resource> resource,
+    telemetry_sink_backend::log_record_handler handler) {
+
+    auto backend = boost::make_shared<telemetry_sink_backend>(
+        std::move(resource), std::move(handler));
+
+    telemetry_sink_ = boost::make_shared<telemetry_sink_type>(backend);
+
+    // The telemetry sink receives all log records (no filtering by severity)
+    // Filtering can be done in the handler if needed
+    boost::log::core::get()->add_sink(telemetry_sink_);
 }
 
 }

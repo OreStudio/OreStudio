@@ -20,7 +20,7 @@
 #ifndef ORES_EVENTING_SERVICE_REGISTRAR_HPP
 #define ORES_EVENTING_SERVICE_REGISTRAR_HPP
 
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.eventing/service/postgres_event_source.hpp"
 
 namespace ores::eventing::service {
@@ -41,7 +41,7 @@ namespace ores::eventing::service {
 class registrar {
 private:
     [[nodiscard]] static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger("ores.eventing.service.registrar");
         return instance;
     }
@@ -59,7 +59,7 @@ public:
     static void register_mapping(postgres_event_source& source,
                                  const std::string& entity_name,
                                  const std::string& channel_name) {
-        BOOST_LOG_SEV(lg(), utility::log::info)
+        BOOST_LOG_SEV(lg(), telemetry::log::info)
             << "Registering event mapping: " << entity_name
             << " -> " << channel_name;
         source.register_mapping<Event>(entity_name, channel_name);

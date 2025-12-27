@@ -35,7 +35,7 @@
 #include <boost/asio/strand.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_context.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.comms/net/client_options.hpp"
 #include "ores.comms/net/connection.hpp"
@@ -114,7 +114,7 @@ private:
     inline static std::string_view logger_name = "ores.comms.net.client";
 
     static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }
@@ -348,7 +348,7 @@ public:
               messaging::message_type RequestMsgType>
     std::expected<ResponseType, messaging::error_code>
     process_request(RequestType request) {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
 
         auto payload = request.serialize();
         messaging::frame request_frame(RequestMsgType, 0, std::move(payload));
@@ -388,7 +388,7 @@ public:
               messaging::message_type RequestMsgType>
     boost::asio::awaitable<std::expected<ResponseType, messaging::error_code>>
     process_request_async(RequestType request) {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
 
         auto payload = request.serialize();
         messaging::frame request_frame(RequestMsgType, 0, std::move(payload));

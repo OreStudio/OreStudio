@@ -27,7 +27,7 @@
 
 namespace ores::eventing::service {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 postgres_listener_service::postgres_listener_service(
     database::context ctx,

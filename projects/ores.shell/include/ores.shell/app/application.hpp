@@ -21,7 +21,7 @@
 #define ORES_SHELL_APP_APPLICATION_HPP
 
 #include <optional>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.comms/net/client_options.hpp"
 #include "ores.shell/config/login_options.hpp"
 
@@ -36,7 +36,7 @@ private:
         "ores.shell.app.application";
 
     static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

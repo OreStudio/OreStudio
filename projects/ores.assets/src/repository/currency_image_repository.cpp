@@ -30,7 +30,7 @@ namespace ores::assets::repository {
 
 using namespace sqlgen;
 using namespace sqlgen::literals;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 using namespace ores::database::repository;
 
 std::string currency_image_repository::sql() {

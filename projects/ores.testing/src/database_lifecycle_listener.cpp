@@ -24,7 +24,7 @@
 
 namespace ores::testing {
 
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 void database_lifecycle_listener::
 testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/) {

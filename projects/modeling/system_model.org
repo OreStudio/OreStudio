@@ -33,7 +33,7 @@ The system is organised into four architectural layers:
 
 ** Foundation Layer
 
-- Components: [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]], ores.platform, ores.telemetry, [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]].
+- Components: [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]], [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]], [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]].
 - *Utility*: UUID generation, base32/base64 encoding, geolocation, string
   conversion, faker utilities. No ores dependencies.
 - *Platform*: Filesystem utilities, environment variables, network info,

@@ -19,7 +19,7 @@
  */
 #include <iostream>
 #include <exception>
-#include "ores.utility/log/lifecycle_manager.hpp"
+#include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.comms.analyser/config/parser.hpp"
 #include "ores.comms.analyser/app/application.hpp"
 
@@ -33,7 +33,7 @@ int main(int argc, const char* argv[]) {
         }
 
         // Initialize logging
-        ores::utility::log::lifecycle_manager::initialise("ores.comms.analyser");
+        ores::telemetry::log::lifecycle_manager::initialise("ores.comms.analyser");
 
         // Run the application
         ores::comms::analyser::app::application app(std::move(*opts));

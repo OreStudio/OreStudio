@@ -28,7 +28,7 @@
 #include <expected>
 #include <filesystem>
 #include <boost/uuid/uuid.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/recording/session_file.hpp"
 
@@ -75,7 +75,7 @@ private:
     inline static std::string_view logger_name = "ores.comms.analyser.domain.session_reader";
 
     static auto& lg() {
-        using namespace ores::utility::log;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }

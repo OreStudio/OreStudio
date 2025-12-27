@@ -28,7 +28,7 @@
 #include <expected>
 #include <filesystem>
 #include <boost/uuid/uuid.hpp>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/recording/session_file.hpp"
 

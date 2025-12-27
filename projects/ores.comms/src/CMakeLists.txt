@@ -37,8 +37,8 @@ target_include_directories(${lib_target_name} PUBLIC
     # We cannot link against ores.iam due to circular dependency chain
     # (ores.comms -> ores.iam -> ores.variability -> ores.comms).
     ${CMAKE_SOURCE_DIR}/projects/ores.iam/include
-    # Required for session_recorder.hpp which uses ores.utility/log
-    ${CMAKE_SOURCE_DIR}/projects/ores.utility/include)
+    # Required for session_recorder.hpp which uses ores.telemetry/log
+    ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC

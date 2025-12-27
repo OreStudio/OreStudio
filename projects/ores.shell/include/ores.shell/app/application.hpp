@@ -22,6 +22,7 @@
 
 #include <optional>
 #include "ores.telemetry/log/make_logger.hpp"
+#include "ores.telemetry/domain/telemetry_context.hpp"
 #include "ores.comms/net/client_options.hpp"
 #include "ores.shell/config/login_options.hpp"
 
@@ -44,9 +45,15 @@ private:
 public:
     /**
      * @brief Construct application with configuration.
+     *
+     * @param connection_config Optional connection configuration for auto-connect.
+     * @param login_config Optional login credentials for auto-login.
+     * @param telemetry_ctx Optional telemetry context for distributed tracing.
      */
-    explicit application(std::optional<comms::net::client_options> connection_config = std::nullopt,
-                         std::optional<config::login_options> login_config = std::nullopt);
+    explicit application(
+        std::optional<comms::net::client_options> connection_config = std::nullopt,
+        std::optional<config::login_options> login_config = std::nullopt,
+        std::optional<telemetry::domain::telemetry_context> telemetry_ctx = std::nullopt);
 
     application(const application&) = delete;
     application& operator=(const application&) = delete;
@@ -61,6 +68,7 @@ public:
 private:
     std::optional<comms::net::client_options> connection_config_;
     std::optional<config::login_options> login_config_;
+    std::optional<telemetry::domain::telemetry_context> telemetry_ctx_;
 };
 
 }

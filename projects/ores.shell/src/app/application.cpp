@@ -33,10 +33,13 @@ using namespace ores::telemetry::log;
 using comms::net::client_session;
 using comms::net::client_session_info;
 
-application::application(std::optional<comms::net::client_options> connection_config,
-                         std::optional<config::login_options> login_config)
+application::application(
+    std::optional<comms::net::client_options> connection_config,
+    std::optional<config::login_options> login_config,
+    std::optional<telemetry::domain::telemetry_context> telemetry_ctx)
     : connection_config_(std::move(connection_config)),
-      login_config_(std::move(login_config)) {
+      login_config_(std::move(login_config)),
+      telemetry_ctx_(std::move(telemetry_ctx)) {
 }
 
 namespace {
@@ -128,6 +131,12 @@ void check_bootstrap_status(client_session& session, std::ostream& out) {
 
 void application::run() const {
     BOOST_LOG_SEV(lg(), info) << "Starting client REPL";
+    if (telemetry_ctx_) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Telemetry context active - trace_id: "
+            << telemetry_ctx_->get_trace_id().to_hex()
+            << ", span_id: " << telemetry_ctx_->get_span_id().to_hex();
+    }
 
     try {
         client_session session;

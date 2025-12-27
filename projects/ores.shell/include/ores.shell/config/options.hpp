@@ -25,6 +25,7 @@
 #include "ores.shell/config/login_options.hpp"
 #include "ores.comms/net/client_options.hpp"
 #include "ores.telemetry/log/logging_options.hpp"
+#include "ores.telemetry/export/telemetry_options.hpp"
 
 namespace ores::shell::config {
 
@@ -46,6 +47,11 @@ struct options final {
      * @brief Configuration options for logging in to the server.
      */
     std::optional<login_options> login;
+
+    /**
+     * @brief Configuration options for telemetry export, if any.
+     */
+    std::optional<telemetry::exp::telemetry_options> telemetry;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

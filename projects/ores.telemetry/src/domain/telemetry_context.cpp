@@ -36,6 +36,15 @@ telemetry_context::telemetry_context(span_context ctx,
                                      std::shared_ptr<resource> res)
     : ctx_(std::move(ctx)), resource_(std::move(res)) {}
 
+telemetry_context telemetry_context::create_root(std::shared_ptr<resource> res) {
+    span_context ctx;
+    ctx.trace = g_trace_gen();
+    ctx.span = g_span_gen();
+    ctx.trace_flags = 0x01; // sampled
+
+    return telemetry_context(ctx, std::move(res));
+}
+
 const span_context& telemetry_context::context() const {
     return ctx_;
 }

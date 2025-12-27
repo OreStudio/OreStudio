@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C
+:END:
+#+title: ORE Studio Geo Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Geolocation services for IP-to-location lookups in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Geo Component Diagram
+[[file:ores.geo.png][file:ores.geo.png]]
+
+Provides geolocation capabilities for mapping IP addresses to geographic
+locations. Used primarily for session tracking to record where logins
+originate from. Key features:
+
+- MaxMind Integration: Uses GeoLite2-City database (MMDB format) for lookups
+- IP to Location: Maps IP addresses to country, city, and coordinates
+- Thread Safe: All lookup operations are thread-safe for concurrent access
+- PostgreSQL Storage: Optional storage of geolocation data in PostgreSQL
+- PIMPL Pattern: Encapsulates MaxMind library dependencies
+
+The service namespace provides the geolocation_service implementation that
+wraps the MaxMind libmaxminddb library.
+
+* Data Sources
+
+** MaxMind GeoLite2-City
+
+The primary data source is the MaxMind GeoLite2-City database:
+
+- Format: MMDB (MaxMind DB) binary format
+- Download: https://dev.maxmind.com/geoip/geolite2-free-geolocation-data
+- Updates: Monthly updates available from MaxMind
+- License: CC BY-SA 4.0 (requires attribution)
+
+** PostgreSQL Storage
+
+For environments where filesystem access is limited, geolocation data can
+be stored in PostgreSQL:
+
+- Schema: projects/sql/schema/geolocation_create.sql
+- Import: projects/sql/data/geolocation_import.sql
+- Uses PostgreSQL native inet type with GiST indexes for efficient lookups
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

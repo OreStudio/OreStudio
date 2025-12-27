@@ -1,0 +1,214 @@
+:PROPERTIES:
+:ID: 8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D
+:END:
+#+title: ORE Studio Telemetry Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Observability library providing logging and distributed tracing for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Telemetry Component Diagram
+[[file:ores.telemetry.png][file:ores.telemetry.png]]
+
+The telemetry component provides unified observability infrastructure aligned with
+OpenTelemetry concepts. Key features:
+
+- Logging: Boost.Log integration with lifecycle management
+- Tracing: OpenTelemetry-aligned trace_id and span_id generation
+- Correlation: Log records linked to traces and spans for distributed debugging
+- Export: JSON Lines file exporter for log shipping
+- Resources: Machine/service identity with automatic host_id derivation
+
+The component is organized into four namespaces:
+
+| Namespace    | Purpose                                            |
+|--------------+----------------------------------------------------|
+| =domain=     | Core types: trace_id, span_id, log_record, resource |
+| =generators= | ID generators for traces and spans                 |
+| =log=        | Boost.Log integration and lifecycle management     |
+| =exp=        | Exporters for log records                          |
+
+* Logging Infrastructure
+
+The logging infrastructure is built on Boost.Log and provides:
+
+- Per-module loggers with channel-based filtering
+- Configurable severity levels (trace, debug, info, warn, error)
+- Console and file sinks with rotation
+- Thread-safe asynchronous logging
+
+** Basic Usage
+
+#+begin_src cpp
+#include "ores.telemetry/log/make_logger.hpp"
+
+namespace {
+    const std::string logger_name("my_component");
+    auto& lg() {
+        static auto r = telemetry::log::make_channel_logger(logger_name);
+        return r;
+    }
+}
+
+void do_work() {
+    BOOST_LOG_SEV(lg(), telemetry::log::info) << "Starting operation";
+    // ... work ...
+    BOOST_LOG_SEV(lg(), telemetry::log::debug) << "Operation complete";
+}
+#+end_src
+
+** Lifecycle Management
+
+The =lifecycle_manager= class handles initialization and shutdown of all logging
+sinks. Applications create a single instance at startup:
+
+#+begin_src cpp
+#include "ores.telemetry/log/lifecycle_manager.hpp"
+
+int main() {
+    telemetry::log::logging_options opts;
+    opts.severity = "info";
+    opts.filename = "app.log";
+    opts.output_directory = "/var/log/ores";
+    opts.output_to_console = true;
+
+    telemetry::log::lifecycle_manager lm(opts);
+    // ... application runs ...
+    // Logging is automatically shut down when lm goes out of scope
+}
+#+end_src
+
+* Telemetry Export
+
+The telemetry component can export log records to external systems for centralized
+log aggregation and analysis. This is an opt-in feature that requires explicit
+configuration.
+
+** Enabling Log Export
+
+To enable log export, add a telemetry sink to the lifecycle manager:
+
+#+begin_src cpp
+#include "ores.telemetry/log/lifecycle_manager.hpp"
+#include "ores.telemetry/export/file_log_exporter.hpp"
+#include "ores.telemetry/domain/resource.hpp"
+
+int main() {
+    // Create logging with standard options
+    telemetry::log::logging_options opts;
+    opts.severity = "info";
+    opts.filename = "app.log";
+    opts.output_directory = "/var/log/ores";
+
+    telemetry::log::lifecycle_manager lm(opts);
+
+    // Create resource describing this service
+    auto resource = telemetry::domain::resource::from_environment(
+        "ores-service", "1.0.0");
+
+    // Create file exporter for JSON Lines output
+    auto exporter = std::make_shared<telemetry::exp::file_log_exporter>(
+        "/var/log/ores/telemetry.jsonl");
+
+    // Add telemetry sink - all logs now also exported
+    lm.add_telemetry_sink(resource, [exporter](auto rec) {
+        exporter->export_record(std::move(rec));
+    });
+
+    // ... application runs ...
+}
+#+end_src
+
+** Export Format
+
+The =file_log_exporter= writes log records in JSON Lines format (one JSON object
+per line), making it easy to ingest into log aggregation systems like Elasticsearch,
+Loki, or Splunk.
+
+Example output:
+
+#+begin_src json
+{"timestamp":"2025-01-15T10:30:45.123Z","severity":"INFO","body":"Connection established","logger":"comms.client","trace_id":"0123456789abcdef0123456789abcdef","span_id":"fedcba9876543210","service":"ores-service"}
+{"timestamp":"2025-01-15T10:30:45.456Z","severity":"DEBUG","body":"Received handshake response","logger":"comms.protocol"}
+#+end_src
+
+Fields in exported records:
+
+| Field       | Description                                          |
+|-------------+------------------------------------------------------|
+| =timestamp= | ISO 8601 timestamp with millisecond precision        |
+| =severity=  | Log level (TRACE, DEBUG, INFO, WARN, ERROR, FATAL)   |
+| =body=      | The log message                                      |
+| =logger=    | Name of the logger/component                         |
+| =trace_id=  | 32-character hex trace ID (if present)               |
+| =span_id=   | 16-character hex span ID (if present)                |
+| =service=   | Service name from resource                           |
+
+* Trace Correlation
+
+Log records can be correlated with distributed traces by including =trace_id= and
+=span_id= attributes. When logs are exported with trace context, they can be
+linked to specific operations in a distributed tracing system.
+
+** How It Works
+
+1. The =telemetry_sink_backend= intercepts all Boost.Log records
+2. It extracts =trace_id= and =span_id= from log attributes (if present)
+3. It creates a =domain::log_record= with the trace context
+4. The handler (exporter) writes the record with trace correlation
+
+** Adding Trace Context to Logs
+
+To correlate logs with traces, add trace attributes when logging:
+
+#+begin_src cpp
+#include "ores.telemetry/domain/telemetry_context.hpp"
+
+void handle_request(const telemetry::domain::telemetry_context& ctx) {
+    // The context carries trace_id and span_id through the call chain
+    BOOST_LOG_SEV(lg(), telemetry::log::info)
+        << boost::log::add_value("trace_id", ctx.get_trace_id().to_hex())
+        << boost::log::add_value("span_id", ctx.get_span_id().to_hex())
+        << "Processing request";
+}
+#+end_src
+
+* Custom Exporters
+
+You can implement custom exporters by implementing the =log_exporter= interface:
+
+#+begin_src cpp
+#include "ores.telemetry/export/log_exporter.hpp"
+
+class my_exporter : public telemetry::exp::log_exporter {
+public:
+    void export_record(telemetry::domain::log_record record) override {
+        // Send to your log aggregation system
+    }
+
+    void flush() override {
+        // Flush any buffered records
+    }
+
+    void shutdown() override {
+        // Clean up resources
+    }
+};
+#+end_src
+
+* Future Enhancements
+
+Planned features for the telemetry component:
+
+- OTLP exporter for direct integration with OpenTelemetry collectors
+- Span creation and management APIs
+- Metrics support
+- Baggage propagation for cross-service context
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

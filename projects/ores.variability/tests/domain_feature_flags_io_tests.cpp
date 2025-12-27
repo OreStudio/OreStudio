@@ -21,7 +21,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.variability/domain/feature_flags_json_io.hpp" // IWYU pragma: keep.
 #include "ores.variability/domain/feature_flags_table.hpp"
 #include "ores.variability/domain/feature_flags_table_io.hpp" // IWYU pragma: keep.
@@ -34,7 +34,7 @@ const std::string tags("[domain][io]");
 }
 
 using ores::variability::domain::feature_flags;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("feature_flags_json_output_contains_all_fields", tags) {
     auto lg(make_logger(test_suite));

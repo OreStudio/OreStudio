@@ -117,12 +117,9 @@ std::vector<std::byte> submit_log_records_request::serialize() const {
          */
         std::string service_name;
         if (rec.source_resource) {
-            const auto& attrs = rec.source_resource->attributes();
-            auto it = attrs.find("service.name");
-            if (it != attrs.end()) {
-                if (auto* str = std::get_if<std::string>(&it->second)) {
-                    service_name = *str;
-                }
+            auto sn = rec.source_resource->service_name();
+            if (sn) {
+                service_name = *sn;
             }
         }
         writer::write_string(buffer, service_name);

@@ -36,6 +36,12 @@ namespace ores::comms::messaging {
 class reader {
 public:
     /**
+     * @brief Helper to read a single byte.
+     */
+    static std::expected<std::uint8_t, error_code>
+    read_uint8(std::span<const std::byte>& data);
+
+    /**
      * @brief Helper to read a 16-bit integer in network byte order.
      */
     static std::expected<std::uint16_t, error_code>

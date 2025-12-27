@@ -35,6 +35,12 @@ namespace ores::comms::messaging {
 class writer {
 public:
     /**
+     * @brief Helper to write a single byte.
+     */
+    static void write_uint8(std::vector<std::byte>& buffer,
+        std::uint8_t value);
+
+    /**
      * @brief Helper to write a 16-bit integer in network byte order.
      */
     static void write_uint16(std::vector<std::byte>& buffer,

@@ -42,6 +42,7 @@
 #include "ores.comms/net/pending_request_map.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
+#include "ores.comms/recording/session_recorder.hpp"
 
 namespace ores::comms::net {
 
@@ -309,6 +310,36 @@ public:
      */
     void set_notification_callback(notification_callback_t callback);
 
+    // =========================================================================
+    // Session Recording
+    // =========================================================================
+
+    /**
+     * @brief Enable session recording to the specified directory.
+     *
+     * Creates a new session recording file in the specified directory.
+     * The file will contain all frames sent and received during the session.
+     * Recording can be started before or after connecting.
+     *
+     * @param output_directory Directory where the session file will be created
+     * @return Expected containing the full path to the created file, or error
+     */
+    std::expected<std::filesystem::path, recording::session_file_error>
+    enable_recording(const std::filesystem::path& output_directory);
+
+    /**
+     * @brief Disable session recording.
+     *
+     * Stops recording and closes the session file. Safe to call when not
+     * recording or already disabled.
+     */
+    void disable_recording();
+
+    /**
+     * @brief Check if session recording is currently active.
+     */
+    bool is_recording() const;
+
     /**
      * @brief Send a request frame and receive response frame (async version).
      *
@@ -491,6 +522,9 @@ private:
 
     // Session compression type negotiated during handshake
     messaging::compression_type session_compression_{messaging::compression_type::none};
+
+    // Session recording (shared_ptr for thread-safe atomic access)
+    std::shared_ptr<recording::session_recorder> recorder_;
 };
 
 }

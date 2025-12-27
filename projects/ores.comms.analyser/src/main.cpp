@@ -32,8 +32,8 @@ int main(int argc, const char* argv[]) {
             return 0;
         }
 
-        // Initialize logging
-        ores::telemetry::log::lifecycle_manager::initialise("ores.comms.analyser");
+        // Initialize logging (disabled for this simple CLI tool)
+        ores::telemetry::log::lifecycle_manager lm(std::nullopt);
 
         // Run the application
         ores::comms::analyser::app::application app(std::move(*opts));

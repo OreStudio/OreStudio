@@ -47,7 +47,7 @@
 #include "ores.comms/net/server.hpp"
 #include "ores.comms/service/subscription_manager.hpp"
 #include "ores.comms/service/subscription_handler.hpp"
-#include "ores.utility/geo/geolocation_service.hpp"
+#include "ores.geo/service/geolocation_service.hpp"
 #include "ores.service/app/application_exception.hpp"
 
 namespace ores::service::app {
@@ -182,7 +182,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     auto srv = std::make_shared<ores::comms::net::server>(cfg.server, subscription_mgr);
 
     // Create geolocation service if path is configured
-    auto geo_service = std::make_shared<utility::geo::geolocation_service>();
+    auto geo_service = std::make_shared<geo::service::geolocation_service>();
     if (cfg.geolocation_database_path.has_value()) {
         if (geo_service->load(cfg.geolocation_database_path.value())) {
             BOOST_LOG_SEV(lg(), info) << "Geolocation database loaded: "

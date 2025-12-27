@@ -30,7 +30,7 @@ void registrar::register_handlers(comms::net::server& server,
     database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
     std::shared_ptr<service::authorization_service> auth_service,
-    std::shared_ptr<utility::geo::geolocation_service> geo_service) {
+    std::shared_ptr<geo::service::geolocation_service> geo_service) {
     BOOST_LOG_SEV(lg(), debug) << "Registering message handlers.";
 
     auto handler = std::make_shared<accounts_message_handler>(

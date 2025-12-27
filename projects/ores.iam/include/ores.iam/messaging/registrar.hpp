@@ -26,7 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
-#include "ores.utility/geo/geolocation_service.hpp"
+#include "ores.geo/service/geolocation_service.hpp"
 
 namespace ores::iam::messaging {
 
@@ -56,7 +56,7 @@ public:
         database::context ctx,
         std::shared_ptr<variability::service::system_flags_service> system_flags,
         std::shared_ptr<service::authorization_service> auth_service,
-        std::shared_ptr<utility::geo::geolocation_service> geo_service);
+        std::shared_ptr<geo::service::geolocation_service> geo_service);
 };
 
 }

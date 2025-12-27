@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_GEO_GEOLOCATION_SERVICE_HPP
-#define ORES_UTILITY_GEO_GEOLOCATION_SERVICE_HPP
+#ifndef ORES_GEO_SERVICE_GEOLOCATION_SERVICE_HPP
+#define ORES_GEO_SERVICE_GEOLOCATION_SERVICE_HPP
 
 #include <string>
 #include <memory>
@@ -26,7 +26,7 @@
 #include <expected>
 #include <boost/asio/ip/address.hpp>
 
-namespace ores::utility::geo {
+namespace ores::geo::service {
 
 /**
  * @brief Result of a geolocation lookup.

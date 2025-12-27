@@ -17,21 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/geo/geolocation_service.hpp"
+#include "ores.geo/service/geolocation_service.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
-const std::string_view test_suite("ores.utility.tests");
-const std::string tags("[geo]");
+const std::string_view test_suite("ores.geo.tests");
+const std::string tags("[service]");
 
 }
 
-using ores::utility::geo::geolocation_service;
-using ores::utility::geo::geolocation_error;
-using ores::utility::geo::geolocation_result;
+using ores::geo::service::geolocation_service;
+using ores::geo::service::geolocation_error;
+using ores::geo::service::geolocation_result;
 using namespace ores::telemetry::log;
 
 TEST_CASE("default_construction_creates_unloaded_service", tags) {
@@ -132,4 +132,3 @@ TEST_CASE("geolocation_result_with_values", tags) {
     CHECK(result.longitude.has_value());
     CHECK(result.longitude.value() < -120.0);
 }
-

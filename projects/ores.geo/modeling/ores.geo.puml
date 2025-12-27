@@ -1,0 +1,65 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+
+title ores.geo Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "Geolocation services for IP-to-location lookups using MaxMind GeoLite2-City database" as ores_geo_note
+    geo --- ores_geo_note
+    namespace geo #F2F2F2 {
+
+        namespace service #E6E6FA {
+
+            class geolocation_result <<struct>> {
+                +country_code : string
+                +city : string
+                +latitude : optional<double>
+                +longitude : optional<double>
+            }
+
+            enum geolocation_error {
+                database_not_loaded
+                address_not_found
+                lookup_failed
+                invalid_address
+            }
+
+            class geolocation_service {
+                +geolocation_service()
+                +geolocation_service(database_path : string)
+                +load(database_path : string) : bool
+                +is_loaded() : bool
+                +lookup(ip : address) : expected<geolocation_result, geolocation_error>
+                +lookup(ip_string : string) : expected<geolocation_result, geolocation_error>
+                -pimpl_ : unique_ptr<impl>
+            }
+
+            geolocation_service ..> geolocation_result : returns
+            geolocation_service ..> geolocation_error : returns
+
+        }
+
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.geo.puml"
+' End:
+@enduml

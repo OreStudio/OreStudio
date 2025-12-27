@@ -30,7 +30,7 @@
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/repository/session_repository.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
-#include "ores.utility/geo/geolocation_service.hpp"
+#include "ores.geo/service/geolocation_service.hpp"
 
 namespace ores::iam::messaging {
 
@@ -90,7 +90,7 @@ public:
         std::shared_ptr<variability::service::system_flags_service> system_flags,
         std::shared_ptr<comms::service::auth_session_service> sessions,
         std::shared_ptr<service::authorization_service> auth_service,
-        std::shared_ptr<utility::geo::geolocation_service> geo_service);
+        std::shared_ptr<geo::service::geolocation_service> geo_service);
 
     using handler_result = boost::asio::awaitable<
         std::expected<std::vector<std::byte>, comms::messaging::error_code>
@@ -404,7 +404,7 @@ private:
     std::shared_ptr<service::authorization_service> auth_service_;
     service::account_setup_service setup_service_;
     repository::session_repository session_repo_;
-    std::shared_ptr<utility::geo::geolocation_service> geo_service_;
+    std::shared_ptr<geo::service::geolocation_service> geo_service_;
 };
 
 }

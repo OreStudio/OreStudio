@@ -15,7 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.service")
+set(name "ores.geo")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
@@ -25,8 +25,6 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 set(lib_files ${files})
-list(FILTER lib_files EXCLUDE REGEX "main.cpp")
-
 add_library(${lib_target_name} ${lib_files})
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
@@ -34,38 +32,13 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.service/include)
+    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+
+find_package(unofficial-maxminddb CONFIG REQUIRED)
 
 target_link_libraries(${lib_target_name}
-    PUBLIC
-        ores.iam.lib
-        ores.risk.lib
-        ores.variability.lib
-        ores.assets.lib
-        ores.eventing.lib
-        ores.comms.lib
-        ores.telemetry.lib
-        ores.utility.lib
-        ores.geo.lib)
+    PRIVATE
+        unofficial::maxminddb::maxminddb
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
-
-set(exe_binary_name ${name})
-set(exe_target_name ${name}.exe)
-
-set(exe_files ${files})
-list(FILTER exe_files INCLUDE REGEX "main.cpp")
-
-add_executable(${exe_target_name} ${exe_files})
-set_target_properties(${exe_target_name} PROPERTIES
-    OUTPUT_NAME ${exe_binary_name})
-
-target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.service/include)
-
-target_link_libraries(${exe_target_name}
-    PRIVATE
-        ${lib_target_name}
-        ${CMAKE_THREAD_LIBS_INIT})
-
-install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)

@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/geo/geolocation_service.hpp"
+#include "ores.geo/service/geolocation_service.hpp"
 
 #include <maxminddb.h>
 
-namespace ores::utility::geo {
+namespace ores::geo::service {
 
 struct geolocation_service::impl {
     MMDB_s mmdb;

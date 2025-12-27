@@ -32,7 +32,11 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/include)
+    ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/include
+    # Header-only dependency on ores.comms for reader/writer utilities.
+    # We cannot link against ores.comms due to circular dependency chain
+    # (ores.telemetry -> ores.eventing -> ores.comms).
+    ${CMAKE_SOURCE_DIR}/projects/ores.comms/include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC

@@ -28,6 +28,9 @@ const std::string telemetry_service_name_arg("telemetry-service-name");
 const std::string telemetry_service_version_arg("telemetry-service-version");
 const std::string telemetry_output_file_arg("telemetry-output-file");
 const std::string telemetry_output_dir_arg("telemetry-output-directory");
+const std::string telemetry_streaming_enabled_arg("telemetry-streaming-enabled");
+const std::string telemetry_batch_size_arg("telemetry-batch-size");
+const std::string telemetry_flush_interval_arg("telemetry-flush-interval");
 
 }
 
@@ -56,7 +59,16 @@ telemetry_configuration::make_options_description(
             "Name of the telemetry output file (JSON Lines format).")
         ("telemetry-output-directory",
             value<std::string>()->default_value("log"),
-            "Directory in which to place the telemetry output file.");
+            "Directory in which to place the telemetry output file.")
+        ("telemetry-streaming-enabled",
+            "Enable streaming of log records to the server. When enabled, "
+            "log records are batched and sent to the connected server.")
+        ("telemetry-batch-size",
+            value<std::uint32_t>()->default_value(50),
+            "Number of records to batch before sending to the server.")
+        ("telemetry-flush-interval",
+            value<std::uint64_t>()->default_value(5),
+            "Maximum seconds to wait before flushing a partial batch.");
 
     return r;
 }
@@ -73,6 +85,10 @@ read_options(const boost::program_options::variables_map& vm) {
     r.service_version = vm[telemetry_service_version_arg].as<std::string>();
     r.output_file = vm[telemetry_output_file_arg].as<std::string>();
     r.output_directory = vm[telemetry_output_dir_arg].as<std::string>();
+    r.streaming_enabled = vm.count(telemetry_streaming_enabled_arg) != 0;
+    r.batch_size = vm[telemetry_batch_size_arg].as<std::uint32_t>();
+    r.flush_interval = std::chrono::seconds(
+        vm[telemetry_flush_interval_arg].as<std::uint64_t>());
 
     return r;
 }

@@ -20,6 +20,8 @@
 #ifndef ORES_TELEMETRY_EXPORT_TELEMETRY_OPTIONS_HPP
 #define ORES_TELEMETRY_EXPORT_TELEMETRY_OPTIONS_HPP
 
+#include <chrono>
+#include <cstdint>
 #include <iosfwd>
 #include <string>
 #include <filesystem>
@@ -64,6 +66,40 @@ struct telemetry_options final {
      * directory. If empty, the current working directory is used.
      */
     std::filesystem::path output_directory;
+
+    /**
+     * @brief Enable streaming of log records to the server.
+     *
+     * When enabled, log records are batched and sent to the server in addition
+     * to being written to the local file. If the connection is not available,
+     * records are buffered locally and sent when the connection is restored.
+     *
+     * Default: false (file-only export).
+     */
+    bool streaming_enabled = false;
+
+    /**
+     * @brief Number of records to batch before sending to the server.
+     *
+     * Records are accumulated until this threshold is reached, at which point
+     * they are sent as a single batch. Larger batch sizes improve network
+     * efficiency at the cost of higher memory usage and potential data loss
+     * on crash.
+     *
+     * Default: 50 records.
+     */
+    std::uint32_t batch_size = 50;
+
+    /**
+     * @brief Maximum time to wait before flushing a partial batch.
+     *
+     * Even if batch_size hasn't been reached, records will be sent after this
+     * interval to ensure timely delivery. This balances network efficiency
+     * with latency requirements.
+     *
+     * Default: 5 seconds.
+     */
+    std::chrono::seconds flush_interval{5};
 };
 
 std::ostream& operator<<(std::ostream& s, const telemetry_options& v);

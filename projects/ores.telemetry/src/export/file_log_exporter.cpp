@@ -22,6 +22,7 @@
 #include <format>
 #include <chrono>
 #include <stdexcept>
+#include "ores.platform/time/time_utils.hpp"
 
 namespace ores::telemetry::exp {
 
@@ -52,7 +53,7 @@ std::string format_timestamp(
         tp.time_since_epoch()) % 1000;
 
     std::tm tm_val{};
-    gmtime_r(&time_t_val, &tm_val);
+    platform::time::time_utils::gmtime_safe(&time_t_val, &tm_val);
 
     return std::format("{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}.{:03d}Z",
         tm_val.tm_year + 1900, tm_val.tm_mon + 1, tm_val.tm_mday,

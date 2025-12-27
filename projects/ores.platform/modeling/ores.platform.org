@@ -12,7 +12,7 @@ Cross-platform abstractions for operating system services in [[id:D04D3476-D7C5-
 
 Diagram:
 
-#+attr_html: :width 100% :alt Description
+#+attr_html: :width 100% :alt ORE Studio Platform Component Diagram
 #+caption: ORE Studio Platform Component Diagram
 [[file:ores.platform.png][file:ores.platform.png]]
 

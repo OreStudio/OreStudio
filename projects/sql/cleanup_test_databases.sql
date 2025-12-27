@@ -27,50 +27,45 @@
  * or are interrupted.
  */
 
+-- View that identifies all test databases on the server.
+-- Centralizes the test database detection logic for use by all cleanup functions.
+CREATE OR REPLACE VIEW test_databases AS
+SELECT d.datname::TEXT AS database_name
+FROM pg_database d
+WHERE d.datname LIKE 'ores_test_%'
+   OR d.datname LIKE 'oresdb_test_%'
+ORDER BY d.datname;
+
 -- Lists all test databases on the server.
 -- Returns database name only (no superuser privileges required).
 CREATE OR REPLACE FUNCTION list_test_databases()
 RETURNS TABLE(database_name TEXT) AS $$
 BEGIN
     RETURN QUERY
-    SELECT d.datname::TEXT
-    FROM pg_database d
-    WHERE d.datname LIKE 'ores_test_%'
-       OR d.datname LIKE 'oresdb_test_%'
-    ORDER BY d.datname;
+    SELECT td.database_name FROM test_databases td;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 -- Generates SQL commands to drop all test databases.
 -- The returned commands must be executed outside of any transaction.
--- Parameters:
---   dry_run: If TRUE, just returns the commands without executing (default: TRUE)
--- Returns: SQL commands to execute
 CREATE OR REPLACE FUNCTION generate_cleanup_test_databases_sql()
 RETURNS TEXT AS $$
 DECLARE
-    db_record RECORD;
-    sql_commands TEXT := '';
-    db_count INT := 0;
+    sql_commands TEXT;
+    db_count INT;
 BEGIN
-    FOR db_record IN
-        SELECT datname::TEXT AS name
-        FROM pg_database
-        WHERE datname LIKE 'ores_test_%'
-           OR datname LIKE 'oresdb_test_%'
-        ORDER BY datname
-    LOOP
-        sql_commands := sql_commands ||
-            format('DROP DATABASE IF EXISTS %I;', db_record.name) || E'\n';
-        db_count := db_count + 1;
-    END LOOP;
+    SELECT
+        count(*),
+        string_agg(format('DROP DATABASE IF EXISTS %I;', database_name), E'\n' ORDER BY database_name)
+    INTO db_count, sql_commands
+    FROM test_databases;
 
     IF db_count = 0 THEN
         RETURN '-- No test databases found to clean up.';
     END IF;
 
     RETURN format(E'-- Found %s test database(s) to clean up:\n', db_count) ||
-           sql_commands;
+           sql_commands || E'\n';
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
@@ -94,11 +89,7 @@ DECLARE
     drop_sql TEXT;
 BEGIN
     FOR db_record IN
-        SELECT datname::TEXT AS name
-        FROM pg_database
-        WHERE datname LIKE 'ores_test_%'
-           OR datname LIKE 'oresdb_test_%'
-        ORDER BY datname
+        SELECT td.database_name AS name FROM test_databases td
     LOOP
         BEGIN
             -- First terminate any active connections

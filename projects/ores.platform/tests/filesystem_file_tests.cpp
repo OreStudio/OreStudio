@@ -22,7 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <fstream>
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.platform/filesystem/file_not_found.hpp"
 #include "ores.platform/filesystem/io_error.hpp"
 
@@ -60,7 +60,7 @@ std::ostream& operator<<(std::ostream& os, const streamable_test_object& s) {
 using ores::platform::filesystem::file;
 using ores::platform::filesystem::file_not_found;
 using ores::platform::filesystem::io_error;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("read_content_from_existing_file", tags) {
     auto lg(make_logger(test_suite));

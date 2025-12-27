@@ -23,7 +23,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.iam/domain/session_json_io.hpp" // IWYU pragma: keep.
 
 namespace {
@@ -35,7 +35,7 @@ const std::string tags("[domain]");
 
 using ores::iam::domain::session;
 using ores::iam::domain::session_statistics;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("create_session_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));

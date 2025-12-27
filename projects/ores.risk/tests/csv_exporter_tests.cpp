@@ -21,7 +21,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/log/make_logger.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include "ores.risk/domain/currency.hpp"
 
 namespace {
@@ -44,7 +44,7 @@ std::chrono::system_clock::time_point make_timepoint(int year, int month, int da
 
 using ores::risk::csv::exporter;
 using ores::risk::domain::currency;
-using namespace ores::utility::log;
+using namespace ores::telemetry::log;
 
 TEST_CASE("export_empty_currency_list_returns_header_only", tags) {
     auto lg(make_logger(test_suite));

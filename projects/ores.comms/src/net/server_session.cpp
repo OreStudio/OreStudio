@@ -36,10 +36,12 @@ using namespace ores::telemetry::log;
 server_session::server_session(std::unique_ptr<connection> conn, std::string server_id,
     std::shared_ptr<messaging::message_dispatcher> dispatcher,
     boost::asio::any_io_executor io_executor,
+    std::shared_ptr<service::auth_session_service> sessions,
     std::shared_ptr<service::subscription_manager> subscription_mgr)
     : conn_(std::move(conn)),
       server_id_(std::move(server_id)),
       dispatcher_(std::move(dispatcher)),
+      sessions_(std::move(sessions)),
       subscription_mgr_(std::move(subscription_mgr)),
       sequence_number_(0),
       handshake_complete_(false),
@@ -152,13 +154,24 @@ boost::asio::awaitable<void> server_session::run() {
 }
 
 boost::asio::awaitable<bool> server_session::perform_handshake() {
-    auto compression_result = co_await service::handshake_service::perform_server_handshake(
+    auto handshake_result = co_await service::handshake_service::perform_server_handshake(
         *conn_, ++sequence_number_, server_id_);
 
-    if (compression_result) {
-        session_compression_ = *compression_result;
+    if (handshake_result) {
+        session_compression_ = handshake_result->compression;
         handshake_complete_ = true;
         BOOST_LOG_SEV(lg(), info) << "Session compression set to: " << session_compression_;
+
+        // Store client info from handshake for later use during login
+        if (sessions_) {
+            service::client_info info{
+                .client_identifier = handshake_result->client_identifier,
+                .client_version_major = handshake_result->client_version_major,
+                .client_version_minor = handshake_result->client_version_minor
+            };
+            sessions_->store_client_info(conn_->remote_address(), std::move(info));
+        }
+
         co_return true;
     }
 

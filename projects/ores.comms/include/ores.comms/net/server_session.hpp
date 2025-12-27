@@ -31,6 +31,7 @@
 #include "ores.comms/net/connection.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.comms/messaging/message_dispatcher.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
 
 namespace ores::comms::service { class subscription_manager; }
 
@@ -77,11 +78,13 @@ public:
      * @param server_id Server identifier for handshake
      * @param dispatcher Message dispatcher for handling requests
      * @param io_executor The executor to use for async operations
+     * @param sessions Auth session service for storing client info
      * @param subscription_mgr Optional subscription manager for event notifications
      */
     explicit server_session(std::unique_ptr<connection> conn, std::string server_id,
         std::shared_ptr<messaging::message_dispatcher> dispatcher,
         boost::asio::any_io_executor io_executor,
+        std::shared_ptr<service::auth_session_service> sessions,
         std::shared_ptr<service::subscription_manager> subscription_mgr = nullptr);
 
     /**
@@ -173,6 +176,7 @@ private:
     std::unique_ptr<connection> conn_;
     std::string server_id_;
     std::shared_ptr<messaging::message_dispatcher> dispatcher_;
+    std::shared_ptr<service::auth_session_service> sessions_;
     std::shared_ptr<service::subscription_manager> subscription_mgr_;
     std::uint32_t sequence_number_;
     bool handshake_complete_;

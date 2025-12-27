@@ -267,6 +267,13 @@ public:
         std::uint32_t offset = 0);
 
     /**
+     * @brief Get active sessions for the current user.
+     *
+     * @return List of active sessions or nullopt on error
+     */
+    std::optional<std::vector<iam::domain::session>> getActiveSessions();
+
+    /**
      * @brief Get the current client (internal use only).
      */
     std::shared_ptr<comms::net::client> getClient() const { return client_; }

@@ -161,6 +161,43 @@ public:
     static void process_bootstrap(std::ostream& out,
         comms::net::client_session& session,
         std::string username, std::string password, std::string email);
+
+    /**
+     * @brief Process a list sessions request.
+     *
+     * Lists session history for the current user or specified account.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param account_id Optional account ID (empty for own sessions)
+     */
+    static void process_list_sessions(std::ostream& out,
+        comms::net::client_session& session,
+        std::string account_id = "");
+
+    /**
+     * @brief Process an active sessions request.
+     *
+     * Lists currently active sessions for the current user.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     */
+    static void process_active_sessions(std::ostream& out,
+        comms::net::client_session& session);
+
+    /**
+     * @brief Process a session statistics request.
+     *
+     * Displays session statistics for the specified time range.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param days Number of days to retrieve statistics for (default 30)
+     */
+    static void process_session_stats(std::ostream& out,
+        comms::net::client_session& session,
+        int days = 30);
 };
 
 }

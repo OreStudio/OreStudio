@@ -66,6 +66,7 @@ private slots:
     void onChangePasswordResult(bool success, const QString& error_message);
     void onSaveEmailClicked();
     void onSaveEmailResult(bool success, const QString& error_message);
+    void onViewSessionsClicked();
     void onCloseClicked();
 
 signals:
@@ -75,6 +76,7 @@ signals:
 private:
     void setupUI();
     void loadAccountInfo();
+    void loadSessionInfo();
     void enablePasswordForm(bool enabled);
     bool validatePasswordInput();
 
@@ -84,6 +86,12 @@ private:
     QLineEdit* email_edit_;
     QPushButton* save_email_button_;
     QLabel* email_status_label_;
+
+    // Sessions section
+    QGroupBox* sessions_group_;
+    QLabel* active_sessions_label_;
+    QLabel* current_session_label_;
+    QPushButton* view_sessions_button_;
 
     // Password change section
     QGroupBox* password_group_;

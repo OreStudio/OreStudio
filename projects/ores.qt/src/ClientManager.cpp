@@ -583,4 +583,61 @@ std::optional<SessionListResult> ClientManager::listSessions(
     }
 }
 
+std::optional<std::vector<iam::domain::session>> ClientManager::getActiveSessions() {
+    if (!isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot get active sessions: not connected";
+        return std::nullopt;
+    }
+
+    try {
+        iam::messaging::get_active_sessions_request request{};
+
+        auto payload = request.serialize();
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::get_active_sessions_request,
+            0,
+            std::move(payload)
+        );
+
+        auto response_result = client_->send_request_sync(std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Get active sessions failed: network error";
+            return std::nullopt;
+        }
+
+        const auto& header = response_result->header();
+
+        // Decompress payload
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "Get active sessions failed: decompression error";
+            return std::nullopt;
+        }
+
+        // Check for error response
+        if (header.type == comms::messaging::message_type::error_response) {
+            auto error_resp = comms::messaging::error_response::deserialize(*payload_result);
+            BOOST_LOG_SEV(lg(), error) << "Get active sessions failed: "
+                << (error_resp ? error_resp->message : "unknown error");
+            return std::nullopt;
+        }
+
+        auto response = iam::messaging::get_active_sessions_response::deserialize(*payload_result);
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Get active sessions failed: invalid response";
+            return std::nullopt;
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Retrieved " << response->sessions.size()
+                                   << " active sessions";
+
+        return std::move(response->sessions);
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Get active sessions exception: " << e.what();
+        return std::nullopt;
+    }
+}
+
 }

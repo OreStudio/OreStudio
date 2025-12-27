@@ -19,13 +19,16 @@
  */
 #include "ores.shell/app/commands/accounts_commands.hpp"
 
+#include <iomanip>
 #include <ostream>
+#include <sstream>
 #include <functional>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
+#include "ores.iam/messaging/session_protocol.hpp"
 #include "ores.iam/domain/account_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.iam/domain/login_info_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.shell/app/commands/rbac_commands.hpp"
@@ -106,6 +109,28 @@ register_commands(cli::Menu& root_menu, client_session& session) {
         rbac_commands::process_get_account_permissions(std::ref(out), std::ref(session),
             std::move(account_id));
     }, "List effective permissions for an account (account_id)");
+
+    // Session commands
+    accounts_menu->Insert("sessions", [&session](std::ostream& out) {
+        process_list_sessions(std::ref(out), std::ref(session));
+    }, "List your session history");
+
+    accounts_menu->Insert("sessions-for", [&session](std::ostream& out,
+            std::string account_id) {
+        process_list_sessions(std::ref(out), std::ref(session), std::move(account_id));
+    }, "List sessions for an account (account_id) - requires accounts:read permission");
+
+    accounts_menu->Insert("active-sessions", [&session](std::ostream& out) {
+        process_active_sessions(std::ref(out), std::ref(session));
+    }, "List your currently active sessions");
+
+    accounts_menu->Insert("session-stats", [&session](std::ostream& out) {
+        process_session_stats(std::ref(out), std::ref(session));
+    }, "Show session statistics for the last 30 days");
+
+    accounts_menu->Insert("session-stats-days", [&session](std::ostream& out, int days) {
+        process_session_stats(std::ref(out), std::ref(session), days);
+    }, "Show session statistics for the specified number of days");
 
     root_menu.Insert(std::move(accounts_menu));
 
@@ -384,6 +409,234 @@ process_bootstrap(std::ostream& out, client_session& session,
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Bootstrap failed: " << response.error_message;
         out << "✗ Bootstrap failed: " << response.error_message << std::endl;
+    }
+}
+
+namespace {
+
+std::string format_bytes(std::uint64_t bytes) {
+    if (bytes >= 1024 * 1024) {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2) << (bytes / (1024.0 * 1024.0)) << " MB";
+        return oss.str();
+    } else if (bytes >= 1024) {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2) << (bytes / 1024.0) << " KB";
+        return oss.str();
+    }
+    return std::to_string(bytes) + " B";
+}
+
+std::string format_duration(std::chrono::seconds dur) {
+    auto hours = std::chrono::duration_cast<std::chrono::hours>(dur);
+    auto mins = std::chrono::duration_cast<std::chrono::minutes>(dur - hours);
+    if (hours.count() > 0) {
+        return std::to_string(hours.count()) + "h " + std::to_string(mins.count()) + "m";
+    }
+    return std::to_string(mins.count()) + "m";
+}
+
+std::string format_time(std::chrono::system_clock::time_point tp) {
+    auto time_t = std::chrono::system_clock::to_time_t(tp);
+    std::ostringstream oss;
+    oss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S");
+    return oss.str();
+}
+
+}
+
+void accounts_commands::
+process_list_sessions(std::ostream& out, client_session& session,
+    std::string account_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating list sessions request.";
+
+    boost::uuids::uuid parsed_id{};
+    if (!account_id.empty()) {
+        try {
+            parsed_id = boost::lexical_cast<boost::uuids::uuid>(account_id);
+        } catch (const boost::bad_lexical_cast&) {
+            BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
+            out << "✗ Invalid account ID format. Expected UUID." << std::endl;
+            return;
+        }
+    }
+
+    using iam::messaging::list_sessions_request;
+    using iam::messaging::list_sessions_response;
+    auto result = session.process_authenticated_request<list_sessions_request,
+                                                        list_sessions_response,
+                                                        message_type::list_sessions_request>
+        (list_sessions_request{.account_id = parsed_id, .limit = 50});
+
+    if (!result) {
+        out << "✗ " << to_string(result.error()) << std::endl;
+        return;
+    }
+
+    const auto& sessions = result->sessions;
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                              << sessions.size() << " sessions (total: "
+                              << result->total_count << ").";
+
+    if (sessions.empty()) {
+        out << "No sessions found." << std::endl;
+        return;
+    }
+
+    out << "Sessions (showing " << sessions.size() << " of "
+        << result->total_count << "):" << std::endl;
+    out << std::string(80, '-') << std::endl;
+
+    for (const auto& s : sessions) {
+        out << "  Start: " << format_time(s.start_time);
+        if (s.end_time) {
+            out << " - End: " << format_time(*s.end_time);
+            if (auto dur = s.duration()) {
+                out << " (" << format_duration(*dur) << ")";
+            }
+        } else {
+            out << " [ACTIVE]";
+        }
+        out << std::endl;
+        out << "    IP: " << s.client_ip.to_string();
+        if (!s.country_code.empty() || !s.city.empty()) {
+            out << " (" << s.country_code;
+            if (!s.city.empty()) out << ", " << s.city;
+            out << ")";
+        }
+        out << std::endl;
+        if (!s.client_identifier.empty()) {
+            out << "    Client: " << s.client_identifier
+                << " v" << s.client_version_major << "." << s.client_version_minor;
+        }
+        if (s.bytes_sent > 0 || s.bytes_received > 0) {
+            out << "    Data: sent=" << format_bytes(s.bytes_sent)
+                << ", recv=" << format_bytes(s.bytes_received);
+        }
+        out << std::endl;
+    }
+}
+
+void accounts_commands::
+process_active_sessions(std::ostream& out, client_session& session) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating active sessions request.";
+
+    using iam::messaging::get_active_sessions_request;
+    using iam::messaging::get_active_sessions_response;
+    auto result = session.process_authenticated_request<get_active_sessions_request,
+                                                        get_active_sessions_response,
+                                                        message_type::get_active_sessions_request>
+        (get_active_sessions_request{});
+
+    if (!result) {
+        out << "✗ " << to_string(result.error()) << std::endl;
+        return;
+    }
+
+    const auto& sessions = result->sessions;
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                              << sessions.size() << " active sessions.";
+
+    if (sessions.empty()) {
+        out << "No active sessions." << std::endl;
+        return;
+    }
+
+    out << "Active Sessions (" << sessions.size() << "):" << std::endl;
+    out << std::string(80, '-') << std::endl;
+
+    for (const auto& s : sessions) {
+        out << "  Started: " << format_time(s.start_time);
+        if (auto dur = s.duration()) {
+            out << " (running for " << format_duration(*dur) << ")";
+        }
+        out << std::endl;
+        out << "    IP: " << s.client_ip.to_string();
+        if (!s.country_code.empty() || !s.city.empty()) {
+            out << " (" << s.country_code;
+            if (!s.city.empty()) out << ", " << s.city;
+            out << ")";
+        }
+        out << std::endl;
+        if (!s.client_identifier.empty()) {
+            out << "    Client: " << s.client_identifier
+                << " v" << s.client_version_major << "." << s.client_version_minor
+                << std::endl;
+        }
+    }
+}
+
+void accounts_commands::
+process_session_stats(std::ostream& out, client_session& session, int days) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating session statistics request for "
+                               << days << " days.";
+
+    auto end_date = std::chrono::system_clock::now();
+    auto start_date = end_date - std::chrono::hours(24 * days);
+
+    using iam::messaging::get_session_statistics_request;
+    using iam::messaging::get_session_statistics_response;
+    auto result = session.process_authenticated_request<get_session_statistics_request,
+                                                        get_session_statistics_response,
+                                                        message_type::get_session_statistics_request>
+        (get_session_statistics_request{
+            .start_date = start_date,
+            .end_date = end_date
+        });
+
+    if (!result) {
+        out << "✗ " << to_string(result.error()) << std::endl;
+        return;
+    }
+
+    const auto& stats = result->statistics;
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                              << stats.size() << " daily statistics.";
+
+    if (stats.empty()) {
+        out << "No session statistics available for the last "
+            << days << " days." << std::endl;
+        return;
+    }
+
+    out << "Session Statistics (last " << days << " days):" << std::endl;
+    out << std::string(80, '-') << std::endl;
+
+    std::uint64_t total_sessions = 0;
+    std::uint64_t total_bytes_sent = 0;
+    std::uint64_t total_bytes_recv = 0;
+    double total_duration = 0;
+
+    for (const auto& s : stats) {
+        total_sessions += s.session_count;
+        total_bytes_sent += s.total_bytes_sent;
+        total_bytes_recv += s.total_bytes_received;
+        total_duration += s.avg_duration_seconds * s.session_count;
+    }
+
+    double avg_duration = total_sessions > 0 ? total_duration / total_sessions : 0;
+
+    out << "  Total Sessions: " << total_sessions << std::endl;
+    out << "  Avg Duration: " << format_duration(std::chrono::seconds(static_cast<int>(avg_duration)))
+        << std::endl;
+    out << "  Total Data Sent: " << format_bytes(total_bytes_sent) << std::endl;
+    out << "  Total Data Received: " << format_bytes(total_bytes_recv) << std::endl;
+
+    if (!stats.empty()) {
+        const auto& latest = stats.front();
+        if (latest.unique_countries > 0) {
+            out << "  Countries (latest): " << latest.unique_countries << std::endl;
+        }
+    }
+
+    out << std::endl << "Daily breakdown:" << std::endl;
+    for (const auto& s : stats) {
+        out << "  " << format_time(s.date).substr(0, 10)
+            << ": " << s.session_count << " sessions";
+        if (s.avg_duration_seconds > 0) {
+            out << ", avg " << format_duration(std::chrono::seconds(static_cast<int>(s.avg_duration_seconds)));
+        }
+        out << std::endl;
     }
 }
 

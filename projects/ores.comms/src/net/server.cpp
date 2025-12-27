@@ -206,10 +206,10 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
             auto conn = std::make_unique<connection>(
                 connection::ssl_socket(std::move(socket), ssl_ctx_));
 
-            // Create session with subscription manager
+            // Create session with auth session service and subscription manager
             auto sess = std::make_shared<server_session>(std::move(conn),
                 options_.server_identifier, dispatcher_,
-                io_context.get_executor(), subscription_mgr_);
+                io_context.get_executor(), sessions_, subscription_mgr_);
 
             // Add to active sessions list
             {

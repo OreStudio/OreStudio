@@ -19,9 +19,9 @@
  */
 #include "ores.comms/recording/session_file.hpp"
 
-#include <iomanip>
 #include <sstream>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.utility/datetime/datetime.hpp"
 
 namespace ores::comms::recording {
 
@@ -29,15 +29,12 @@ std::string generate_session_filename(
     const boost::uuids::uuid& session_id,
     std::chrono::system_clock::time_point start_time) {
 
-    // Format timestamp as YYYYMMDD-HHMMSS
-    const auto time_t_val = std::chrono::system_clock::to_time_t(start_time);
-    std::tm tm_val{};
-    localtime_r(&time_t_val, &tm_val);
+    // Format timestamp as YYYYMMDD-HHMMSS using cross-platform utility
+    auto timestamp_str = ores::utility::datetime::datetime::format_time_point(
+        start_time, "%Y%m%d-%H%M%S");
 
     std::ostringstream oss;
-    oss << "session-"
-        << std::put_time(&tm_val, "%Y%m%d-%H%M%S")
-        << "-";
+    oss << "session-" << timestamp_str << "-";
 
     // Use first 8 characters of UUID (short form)
     std::ostringstream uuid_oss;

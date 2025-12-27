@@ -24,6 +24,10 @@
 
 namespace ores::comms::messaging {
 
+void writer::write_uint8(std::vector<std::byte>& buffer, std::uint8_t value) {
+    buffer.push_back(static_cast<std::byte>(value));
+}
+
 void writer::
 write_uint16(std::vector<std::byte>& buffer, std::uint16_t value) {
     buffer.push_back(static_cast<std::byte>(value >> 8));

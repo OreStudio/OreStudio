@@ -52,7 +52,7 @@ int application::read_session() {
     auto result = domain::session_reader::read(opts_.input_file);
     if (!result) {
         std::cerr << "Error reading session file: "
-                  << static_cast<int>(result.error()) << "\n";
+                  << magic_enum::enum_name(result.error()) << "\n";
         return 1;
     }
 
@@ -66,7 +66,7 @@ int application::show_info() {
     auto result = domain::session_reader::read_metadata(opts_.input_file);
     if (!result) {
         std::cerr << "Error reading session file: "
-                  << static_cast<int>(result.error()) << "\n";
+                  << magic_enum::enum_name(result.error()) << "\n";
         return 1;
     }
 

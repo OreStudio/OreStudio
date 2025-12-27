@@ -27,17 +27,6 @@ namespace ores::comms::recording {
 
 using namespace ores::utility::log;
 
-namespace {
-
-/**
- * @brief Helper to write a single byte to a buffer.
- */
-void write_uint8(std::vector<std::byte>& buffer, std::uint8_t value) {
-    buffer.push_back(static_cast<std::byte>(value));
-}
-
-}
-
 session_recorder::~session_recorder() {
     stop();
 }
@@ -146,7 +135,7 @@ session_file_error session_recorder::write_header(
 
     // Write magic (8 bytes)
     for (const auto& byte : SESSION_FILE_MAGIC) {
-        write_uint8(buffer, byte);
+        messaging::writer::write_uint8(buffer, byte);
     }
 
     // Write version and reserved
@@ -172,11 +161,11 @@ session_file_error session_recorder::write_header(
     messaging::writer::write_uint16(buffer, addr_length);
 
     // Write compression type
-    write_uint8(buffer, static_cast<std::uint8_t>(compression));
+    messaging::writer::write_uint8(buffer, static_cast<std::uint8_t>(compression));
 
     // Write reserved2 (21 bytes of zeros)
     for (int i = 0; i < 21; ++i) {
-        write_uint8(buffer, 0);
+        messaging::writer::write_uint8(buffer, 0);
     }
 
     // Write header to file
@@ -221,11 +210,11 @@ void session_recorder::record_frame(const messaging::frame& f, frame_direction d
 
     messaging::writer::write_int64(header_buffer, offset);
     messaging::writer::write_uint32(header_buffer, static_cast<std::uint32_t>(frame_data.size()));
-    write_uint8(header_buffer, static_cast<std::uint8_t>(direction));
+    messaging::writer::write_uint8(header_buffer, static_cast<std::uint8_t>(direction));
 
     // Write reserved (3 bytes of zeros)
     for (int i = 0; i < 3; ++i) {
-        write_uint8(header_buffer, 0);
+        messaging::writer::write_uint8(header_buffer, 0);
     }
 
     // Write record header

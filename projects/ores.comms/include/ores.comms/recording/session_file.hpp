@@ -94,9 +94,9 @@ static_assert(sizeof(session_file_header) == session_file_header::size,
  *
  * Layout (16 bytes):
  * +0:  timestamp_offset_us (8 bytes) - Microseconds since session start
- * +4:  frame_size (4 bytes)          - Size of the frame data (header + payload)
- * +8:  direction (1 byte)            - Sent or received
- * +9:  reserved (3 bytes)            - Reserved for future use
+ * +8:  frame_size (4 bytes)          - Size of the frame data (header + payload)
+ * +12: direction (1 byte)            - Sent or received
+ * +13: reserved (3 bytes)            - Reserved for future use
  *
  * Following the record header:
  * - Frame data (frame_size bytes) - The raw serialized frame
@@ -124,7 +124,8 @@ enum class session_file_error {
     invalid_magic,
     unsupported_version,
     corrupt_file,
-    unexpected_eof
+    end_of_file,     ///< Clean end of file at frame boundary
+    unexpected_eof   ///< Truncated file in middle of read
 };
 
 /**

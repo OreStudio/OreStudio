@@ -29,19 +29,6 @@ using namespace ores::utility::log;
 using namespace ores::comms::recording;
 using namespace ores::comms::messaging;
 
-namespace {
-
-/**
- * @brief Helper to read a single byte from span.
- */
-std::uint8_t read_uint8(std::span<const std::byte>& data) {
-    auto byte = static_cast<std::uint8_t>(data[0]);
-    data = data.subspan(1);
-    return byte;
-}
-
-}
-
 std::expected<session_data, session_file_error>
 session_reader::read(const std::filesystem::path& file_path) {
     std::ifstream file(file_path, std::ios::binary);
@@ -71,11 +58,11 @@ session_reader::read(const std::filesystem::path& file_path) {
     data.metadata = metadata;
 
     // Read all frame records
-    while (file.peek() != EOF) {
+    while (true) {
         auto frame_result = read_frame_record(file);
         if (!frame_result) {
-            if (frame_result.error() == session_file_error::unexpected_eof) {
-                // End of file reached, this is normal
+            if (frame_result.error() == session_file_error::end_of_file) {
+                // Clean end of file reached, this is normal
                 break;
             }
             return std::unexpected(frame_result.error());
@@ -130,7 +117,8 @@ session_reader::read_header(std::ifstream& file) {
 
     // Validate magic
     for (size_t i = 0; i < SESSION_FILE_MAGIC.size(); ++i) {
-        if (read_uint8(data) != SESSION_FILE_MAGIC[i]) {
+        auto byte_result = reader::read_uint8(data);
+        if (!byte_result || *byte_result != SESSION_FILE_MAGIC[i]) {
             BOOST_LOG_SEV(lg(), error) << "Invalid session file magic";
             return std::unexpected(session_file_error::invalid_magic);
         }
@@ -175,7 +163,11 @@ session_reader::read_header(std::ifstream& file) {
     }
 
     // Read compression type
-    auto compression = static_cast<compression_type>(read_uint8(data));
+    auto compression_result = reader::read_uint8(data);
+    if (!compression_result) {
+        return std::unexpected(session_file_error::corrupt_file);
+    }
+    auto compression = static_cast<compression_type>(*compression_result);
 
     // Skip reserved2 (21 bytes) - already at correct offset
 
@@ -196,10 +188,18 @@ session_reader::read_frame_record(std::ifstream& file) {
     // Read frame record header
     std::vector<std::byte> header_buffer(frame_record_header::size);
     file.read(reinterpret_cast<char*>(header_buffer.data()), header_buffer.size());
-    if (file.eof()) {
+    const auto bytes_read = file.gcount();
+    if (bytes_read == 0 && file.eof()) {
+        // Clean EOF at frame boundary
+        return std::unexpected(session_file_error::end_of_file);
+    }
+    if (bytes_read < static_cast<std::streamsize>(header_buffer.size())) {
+        // Partial read - truncated file
+        BOOST_LOG_SEV(lg(), error) << "Truncated frame record header: read "
+                                   << bytes_read << " of " << header_buffer.size() << " bytes";
         return std::unexpected(session_file_error::unexpected_eof);
     }
-    if (!file.good()) {
+    if (!file.good() && !file.eof()) {
         BOOST_LOG_SEV(lg(), error) << "Failed to read frame record header";
         return std::unexpected(session_file_error::file_read_failed);
     }
@@ -212,12 +212,23 @@ session_reader::read_frame_record(std::ifstream& file) {
         return std::unexpected(session_file_error::corrupt_file);
     }
 
-    auto direction = static_cast<frame_direction>(read_uint8(header_data));
+    auto direction_result = reader::read_uint8(header_data);
+    if (!direction_result) {
+        return std::unexpected(session_file_error::corrupt_file);
+    }
+    auto direction = static_cast<frame_direction>(*direction_result);
     // Skip reserved (3 bytes)
 
     // Read frame data
     std::vector<std::byte> frame_data(*frame_size_result);
     file.read(reinterpret_cast<char*>(frame_data.data()), *frame_size_result);
+    const auto frame_bytes_read = file.gcount();
+    if (frame_bytes_read < static_cast<std::streamsize>(*frame_size_result)) {
+        // Partial read - truncated file
+        BOOST_LOG_SEV(lg(), error) << "Truncated frame data: read "
+                                   << frame_bytes_read << " of " << *frame_size_result << " bytes";
+        return std::unexpected(session_file_error::unexpected_eof);
+    }
     if (!file.good() && !file.eof()) {
         BOOST_LOG_SEV(lg(), error) << "Failed to read frame data";
         return std::unexpected(session_file_error::file_read_failed);

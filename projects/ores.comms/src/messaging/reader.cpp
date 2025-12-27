@@ -23,6 +23,16 @@
 
 namespace ores::comms::messaging {
 
+std::expected<std::uint8_t, error_code>
+reader::read_uint8(std::span<const std::byte>& data) {
+    if (data.size() < 1) {
+        return std::unexpected(error_code::payload_too_large);
+    }
+    auto value = std::to_integer<std::uint8_t>(data[0]);
+    data = data.subspan(1);
+    return value;
+}
+
 std::expected<std::uint16_t, error_code>
 reader::read_uint16(std::span<const std::byte>& data) {
     if (data.size() < 2) {

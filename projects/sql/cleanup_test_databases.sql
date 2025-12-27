@@ -28,18 +28,16 @@
  */
 
 -- Lists all test databases on the server.
--- Returns database name and last modification time.
+-- Returns database name only (no superuser privileges required).
 CREATE OR REPLACE FUNCTION list_test_databases()
-RETURNS TABLE(database_name TEXT, last_modified TIMESTAMP WITH TIME ZONE) AS $$
+RETURNS TABLE(database_name TEXT) AS $$
 BEGIN
     RETURN QUERY
-    SELECT
-        d.datname::TEXT,
-        (pg_stat_file('base/' || d.oid)).modification AS last_modified
+    SELECT d.datname::TEXT
     FROM pg_database d
     WHERE d.datname LIKE 'ores_test_%'
        OR d.datname LIKE 'oresdb_test_%'
-    ORDER BY last_modified DESC;
+    ORDER BY d.datname;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 

@@ -72,8 +72,7 @@ std::optional<options> parser::parse(int argc, const char* argv[]) {
     }
 
     if (vm.count("version")) {
-        std::cout << "ores.comms.analyser version "
-                  << ::ores::utility::version::version::current_version() << "\n";
+        std::cout << "ores.comms.analyser version " << ORES_VERSION << "\n";
         return std::nullopt;
     }
 

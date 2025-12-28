@@ -99,8 +99,8 @@ client::client(client_options config,
 
 client::~client() {
     // Stop recording if active
-    if (recorder_) {
-        recorder_->stop();
+    if (auto recorder = recorder_.load()) {
+        recorder->stop();
     }
 
     // Ensure disconnect is called to stop any running coroutines

@@ -637,11 +637,16 @@ void client::set_notification_callback(notification_callback_t callback) {
 
 std::expected<std::filesystem::path, recording::session_file_error>
 client::enable_recording(const std::filesystem::path& output_directory) {
-    // Create new recorder or reuse existing one
+    // Create new recorder or reuse existing one (thread-safe initialization)
     auto recorder = recorder_.load();
     if (!recorder) {
-        recorder = std::make_shared<recording::session_recorder>();
-        recorder_.store(recorder);
+        auto new_recorder = std::make_shared<recording::session_recorder>();
+        std::shared_ptr<recording::session_recorder> expected = nullptr;
+        if (recorder_.compare_exchange_strong(expected, new_recorder)) {
+            recorder = new_recorder;
+        } else {
+            recorder = expected;
+        }
     }
 
     // Get server address for the recording header

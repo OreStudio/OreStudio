@@ -17,21 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/datetime/relative_time_formatter.hpp"
+#include "ores.platform/time/relative_time_formatter.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
-const std::string_view test_suite("ores.utility.tests");
-const std::string tags("[datetime][relative_time_formatter]");
+const std::string_view test_suite("ores.platform.tests");
+const std::string tags("[time][relative_time_formatter]");
 
 using namespace std::chrono;
 using namespace std::chrono_literals;
-using ores::utility::datetime::relative_time_formatter;
-using ores::utility::datetime::numeric_style;
-using ores::utility::datetime::time_unit;
+using ores::platform::time::relative_time_formatter;
+using ores::platform::time::numeric_style;
+using ores::platform::time::time_unit;
 
 // Helper to create a time point at a specific offset from reference
 system_clock::time_point offset_from(system_clock::time_point ref, seconds offset) {

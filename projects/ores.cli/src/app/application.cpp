@@ -35,7 +35,7 @@
 #include "ores.utility/streaming/std_vector.hpp"  // IWYU pragma: keep.
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/domain/database_options.hpp"
-#include "ores.utility/datetime/datetime.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.risk/orexml/importer.hpp"
 #include "ores.risk/orexml/exporter.hpp"
 #include "ores.risk/csv/exporter.hpp"

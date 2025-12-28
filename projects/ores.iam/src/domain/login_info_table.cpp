@@ -21,7 +21,7 @@
 
 #include <fort.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.utility/datetime/datetime.hpp"
+#include "ores.platform/time/datetime.hpp"
 
 namespace ores::iam::domain {
 
@@ -37,7 +37,7 @@ std::string convert_to_table(const std::vector<login_info>& v) {
         std::string online_status = li.online ? "Y" : "N";
 
         // Format the timestamp using cross-platform utility
-        using utility::datetime::datetime;
+        using platform::time::datetime;
         auto timestamp_str = datetime::format_time_point(li.last_login,
             "%Y-%m-%d %H:%M:%S");
 

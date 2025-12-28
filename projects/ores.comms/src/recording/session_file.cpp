@@ -21,7 +21,7 @@
 
 #include <sstream>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.utility/datetime/datetime.hpp"
+#include "ores.platform/time/datetime.hpp"
 
 namespace ores::comms::recording {
 
@@ -30,7 +30,7 @@ std::string generate_session_filename(
     std::chrono::system_clock::time_point start_time) {
 
     // Format timestamp as YYYYMMDD-HHMMSS using cross-platform utility
-    auto timestamp_str = ores::utility::datetime::datetime::format_time_point(
+    auto timestamp_str = ores::platform::time::datetime::format_time_point(
         start_time, "%Y%m%d-%H%M%S");
 
     std::ostringstream oss;

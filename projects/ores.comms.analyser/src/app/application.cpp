@@ -24,7 +24,7 @@
 #include <sstream>
 #include <magic_enum/magic_enum.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.utility/datetime/datetime.hpp"
+#include "ores.platform/time/datetime.hpp"
 
 namespace ores::comms::analyser::app {
 
@@ -76,7 +76,7 @@ int application::show_info() {
 }
 
 void application::print_header(const domain::session_metadata& metadata) {
-    using namespace ores::utility::datetime;
+    using namespace ores::platform::time;
 
     std::cout << "ores.comms.analyser:\n";
     std::cout << "  File: \"" << opts_.input_file.filename().string() << "\"\n";

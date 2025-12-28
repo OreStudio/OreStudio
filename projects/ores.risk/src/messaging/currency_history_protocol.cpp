@@ -23,7 +23,7 @@
 #include <expected>
 #include "ores.comms/messaging/reader.hpp"
 #include "ores.comms/messaging/writer.hpp"
-#include "ores.utility/datetime/datetime.hpp"
+#include "ores.platform/time/datetime.hpp"
 
 using namespace ores::risk;
 using namespace ores::comms::messaging;
@@ -48,13 +48,13 @@ void serialize_currency_version(std::vector<std::byte>& buffer, const domain::cu
     writer::write_string(buffer, version.data.currency_type);
     writer::write_string(buffer, version.data.recorded_by);
     writer::write_string(buffer,
-        ores::utility::datetime::datetime::format_time_point(version.data.recorded_at));
+        ores::platform::time::datetime::format_time_point(version.data.recorded_at));
 
     // Write version metadata
     writer::write_uint32(buffer, static_cast<std::uint32_t>(version.version_number));
     writer::write_string(buffer, version.recorded_by);
     writer::write_string(buffer,
-        ores::utility::datetime::datetime::format_time_point(version.recorded_at));
+        ores::platform::time::datetime::format_time_point(version.recorded_at));
     writer::write_string(buffer, version.change_summary);
 }
 
@@ -113,7 +113,7 @@ deserialize_currency_version(std::span<const std::byte>& data) {
 
     auto recorded_at = reader::read_string(data);
     if (!recorded_at) return std::unexpected(recorded_at.error());
-    version.data.recorded_at = ores::utility::datetime::datetime::parse_time_point(*recorded_at);
+    version.data.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at);
 
     // Read version metadata
     auto version_number = reader::read_uint32(data);
@@ -126,7 +126,7 @@ deserialize_currency_version(std::span<const std::byte>& data) {
 
     auto version_recorded_at = reader::read_string(data);
     if (!version_recorded_at) return std::unexpected(version_recorded_at.error());
-    version.recorded_at = ores::utility::datetime::datetime::parse_time_point(*version_recorded_at);
+    version.recorded_at = ores::platform::time::datetime::parse_time_point(*version_recorded_at);
 
     auto change_summary = reader::read_string(data);
     if (!change_summary) return std::unexpected(change_summary.error());

@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_STREAMING_TIME_POINT_PARSER_HPP
-#define ORES_UTILITY_STREAMING_TIME_POINT_PARSER_HPP
+#ifndef ORES_PLATFORM_TIME_TIME_POINT_PARSER_HPP
+#define ORES_PLATFORM_TIME_TIME_POINT_PARSER_HPP
 
 #include <chrono>
 #include <string>
 #include <rfl.hpp>
-#include "ores.utility/datetime/datetime.hpp"
+#include "ores.platform/time/datetime.hpp"
 
 namespace rfl::parsing {
 
@@ -41,7 +41,7 @@ struct Parser<ReaderType, WriterType,
             return rfl::Unexpected(Error(str_result.error()->what()));
         }
         try {
-            return ores::utility::datetime::datetime::parse_time_point(
+            return ores::platform::time::datetime::parse_time_point(
                 str_result.value());
         } catch (const std::exception& e) {
             return rfl::Unexpected(Error(e.what()));
@@ -52,7 +52,7 @@ struct Parser<ReaderType, WriterType,
     static void write(const WriterType& _w,
                       const std::chrono::system_clock::time_point& _tp,
                       const P& _parent) noexcept {
-        const auto str = ores::utility::datetime::datetime::format_time_point(_tp);
+        const auto str = ores::platform::time::datetime::format_time_point(_tp);
         Parser<ReaderType, WriterType, std::string, ProcessorsType>::write(
             _w, str, _parent);
     }

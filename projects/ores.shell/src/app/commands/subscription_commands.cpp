@@ -24,13 +24,13 @@
 #include <vector>
 #include <functional>
 #include <cli/cli.h>
-#include "ores.utility/datetime/datetime.hpp"
+#include "ores.platform/time/datetime.hpp"
 
 namespace ores::shell::app::commands {
 
 using namespace ores::telemetry::log;
 using comms::net::client_session;
-using utility::datetime::datetime;
+using platform::time::datetime;
 
 namespace {
 

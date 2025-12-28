@@ -24,7 +24,7 @@
 #include <ostream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.utility/streaming/time_point_parser.hpp"
+#include "ores.platform/time/time_point_parser.hpp"
 #include "ores.utility/streaming/uuid_parser.hpp"
 
 namespace std {

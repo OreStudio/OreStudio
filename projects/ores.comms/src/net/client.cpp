@@ -98,8 +98,13 @@ client::client(client_options config,
 }
 
 client::~client() {
-    // Stop recording if active
-    if (auto recorder = std::atomic_load(&recorder_)) {
+    // Stop recording if active (get copy under lock, then operate outside lock)
+    std::shared_ptr<recording::session_recorder> recorder;
+    {
+        std::lock_guard guard{state_mutex_};
+        recorder = recorder_;
+    }
+    if (recorder) {
         recorder->stop();
     }
 
@@ -637,16 +642,14 @@ void client::set_notification_callback(notification_callback_t callback) {
 
 std::expected<std::filesystem::path, recording::session_file_error>
 client::enable_recording(const std::filesystem::path& output_directory) {
-    // Create new recorder or reuse existing one (thread-safe initialization)
-    auto recorder = std::atomic_load(&recorder_);
-    if (!recorder) {
-        auto new_recorder = std::make_shared<recording::session_recorder>();
-        std::shared_ptr<recording::session_recorder> expected = nullptr;
-        if (std::atomic_compare_exchange_strong(&recorder_, &expected, new_recorder)) {
-            recorder = new_recorder;
-        } else {
-            recorder = expected;
+    // Create new recorder or reuse existing one (thread-safe initialization under mutex)
+    std::shared_ptr<recording::session_recorder> recorder;
+    {
+        std::lock_guard guard{state_mutex_};
+        if (!recorder_) {
+            recorder_ = std::make_shared<recording::session_recorder>();
         }
+        recorder = recorder_;
     }
 
     // Get server address for the recording header
@@ -663,7 +666,11 @@ client::enable_recording(const std::filesystem::path& output_directory) {
 }
 
 void client::disable_recording() {
-    auto recorder = std::atomic_load(&recorder_);
+    std::shared_ptr<recording::session_recorder> recorder;
+    {
+        std::lock_guard guard{state_mutex_};
+        recorder = recorder_;
+    }
     if (recorder) {
         recorder->stop();
         BOOST_LOG_SEV(lg(), info) << "Session recording disabled";
@@ -671,7 +678,11 @@ void client::disable_recording() {
 }
 
 bool client::is_recording() const {
-    auto recorder = std::atomic_load(&recorder_);
+    std::shared_ptr<recording::session_recorder> recorder;
+    {
+        std::lock_guard guard{state_mutex_};
+        recorder = recorder_;
+    }
     return recorder && recorder->is_recording();
 }
 
@@ -834,9 +845,14 @@ client::send_request(messaging::frame request_frame) {
 
         co_await conn_->write_frame(frame_to_send);
 
-        // Record the sent frame if recording is active (direct path, thread-safe)
-        if (auto recorder = std::atomic_load(&recorder_); recorder && recorder->is_recording()) {
-            recorder->record_sent(frame_to_send);
+        // Record the sent frame if recording is active (direct path)
+        std::shared_ptr<recording::session_recorder> sent_recorder;
+        {
+            std::lock_guard guard{state_mutex_};
+            sent_recorder = recorder_;
+        }
+        if (sent_recorder && sent_recorder->is_recording()) {
+            sent_recorder->record_sent(frame_to_send);
         }
 
         auto response_result = co_await conn_->read_frame();
@@ -854,9 +870,14 @@ client::send_request(messaging::frame request_frame) {
             co_return std::unexpected(response_result.error());
         }
 
-        // Record the received frame if recording is active (direct path, thread-safe)
-        if (auto recorder = std::atomic_load(&recorder_); recorder && recorder->is_recording()) {
-            recorder->record_received(*response_result);
+        // Record the received frame if recording is active (direct path)
+        std::shared_ptr<recording::session_recorder> recv_recorder;
+        {
+            std::lock_guard guard{state_mutex_};
+            recv_recorder = recorder_;
+        }
+        if (recv_recorder && recv_recorder->is_recording()) {
+            recv_recorder->record_received(*response_result);
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Received response "
@@ -916,8 +937,13 @@ boost::asio::awaitable<void> client::write_frame(const messaging::frame& f) {
     // Now we're on the strand - safe to write
     co_await conn_->write_frame(f);
 
-    // Record the sent frame if recording is active (thread-safe atomic load)
-    if (auto recorder = std::atomic_load(&recorder_); recorder && recorder->is_recording()) {
+    // Record the sent frame if recording is active
+    std::shared_ptr<recording::session_recorder> recorder;
+    {
+        std::lock_guard guard{state_mutex_};
+        recorder = recorder_;
+    }
+    if (recorder && recorder->is_recording()) {
         recorder->record_sent(f);
     }
 }
@@ -958,8 +984,13 @@ boost::asio::awaitable<void> client::run_message_loop() {
 
             const auto& frame = *frame_result;
 
-            // Record the received frame if recording is active (thread-safe atomic load)
-            if (auto recorder = std::atomic_load(&recorder_); recorder && recorder->is_recording()) {
+            // Record the received frame if recording is active
+            std::shared_ptr<recording::session_recorder> recorder;
+            {
+                std::lock_guard guard{state_mutex_};
+                recorder = recorder_;
+            }
+            if (recorder && recorder->is_recording()) {
                 recorder->record_received(frame);
             }
 

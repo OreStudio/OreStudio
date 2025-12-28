@@ -68,6 +68,9 @@ create extension if not exists btree_gist;
 \ir ../schema/image_tags_create.sql
 \ir ../schema/currency_images_create.sql
 
+-- Geolocation tables and functions
+\ir ../schema/geolocation_create.sql
+
 -- Reference data (immutable, belongs in template)
 \ir ../data/load_flags.sql
 \ir ../data/flags_populate.sql

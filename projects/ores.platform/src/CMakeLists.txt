@@ -39,8 +39,8 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         Boost::boost
         Boost::exception
+        reflectcpp::reflectcpp
     PRIVATE
-        Boost::process
-        ores.utility.lib)
+        Boost::process)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

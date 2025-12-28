@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_DATETIME_DATETIME_HPP
-#define ORES_UTILITY_DATETIME_DATETIME_HPP
+#ifndef ORES_PLATFORM_TIME_DATETIME_HPP
+#define ORES_PLATFORM_TIME_DATETIME_HPP
 
 #include <chrono>
 #include <string>
 
-namespace ores::utility::datetime {
+namespace ores::platform::time {
 
 /**
  * @brief Utilities for date and time operations.
@@ -58,6 +58,7 @@ public:
      * @param str String to parse.
      * @param format Format string (e.g., "%Y-%m-%d %H:%M:%S").
      * @return Parsed time point.
+     * @throws std::invalid_argument if the string cannot be parsed.
      */
     static std::chrono::system_clock::time_point parse_time_point(
         const std::string& str,

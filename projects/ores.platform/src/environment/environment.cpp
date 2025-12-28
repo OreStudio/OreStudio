@@ -22,7 +22,7 @@
 #include "ores.platform/environment/environment.hpp"
 
 #include <cstdlib>
-#include "ores.utility/string/converter.hpp"
+#include <string>
 
 namespace ores::platform::environment {
 
@@ -47,7 +47,7 @@ get_int_value_or_default(const std::string& name, int default_value) {
         return default_value;
 
     try {
-        return ores::utility::string::converter::string_to_int(value.value());
+        return std::stoi(value.value());
     } catch(...) {
         return default_value;
     }

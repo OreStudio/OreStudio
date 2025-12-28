@@ -24,13 +24,13 @@
 #include <sstream>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.utility/datetime/datetime.hpp"
+#include "ores.platform/time/datetime.hpp"
 
 namespace ores::risk::csv {
 
 using domain::currency;
 using namespace ores::telemetry::log;
-using ores::utility::datetime::datetime;
+using ores::platform::time::datetime;
 
 std::string exporter::escape_csv_field(const std::string& field) {
     // Check if field contains special characters that need escaping

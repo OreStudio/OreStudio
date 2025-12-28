@@ -20,7 +20,7 @@
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 #include <QDateTime>
-#include "ores.utility/datetime/relative_time_formatter.hpp"
+#include "ores.platform/time/relative_time_formatter.hpp"
 
 namespace ores::qt {
 
@@ -60,13 +60,13 @@ QString relative_time_helper::format(const QString& recorded_at) {
     if (!tp.has_value())
         return recorded_at; // Return original if parsing fails
 
-    utility::datetime::relative_time_formatter formatter;
+    platform::time::relative_time_formatter formatter;
     return QString::fromStdString(formatter.format(*tp));
 }
 
 QString relative_time_helper::format(
     const std::chrono::system_clock::time_point& recorded_at) {
-    utility::datetime::relative_time_formatter formatter;
+    platform::time::relative_time_formatter formatter;
     return QString::fromStdString(formatter.format(recorded_at));
 }
 

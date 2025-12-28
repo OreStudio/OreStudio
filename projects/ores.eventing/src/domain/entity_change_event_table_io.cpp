@@ -20,7 +20,7 @@
 #include "ores.eventing/domain/entity_change_event_table_io.hpp"
 
 #include <fort.hpp>
-#include "ores.utility/datetime/datetime.hpp"
+#include "ores.platform/time/datetime.hpp"
 
 namespace ores::eventing::domain {
 
@@ -32,7 +32,7 @@ std::ostream& operator<<(std::ostream& s, const std::vector<entity_change_event>
           << "Entity" << "Timestamp" << fort::endr;
 
     for (const auto& item : v) {
-        using utility::datetime::datetime;
+        using platform::time::datetime;
         auto timestamp_str = datetime::format_time_point(item.timestamp,
                 "%Y-%m-%d %H:%M:%S");
 

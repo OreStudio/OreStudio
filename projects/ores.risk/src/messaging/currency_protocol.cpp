@@ -23,7 +23,7 @@
 #include <expected>
 #include "ores.comms/messaging/reader.hpp"
 #include "ores.comms/messaging/writer.hpp"
-#include "ores.utility/datetime/datetime.hpp"
+#include "ores.platform/time/datetime.hpp"
 
 using namespace ores::risk;
 using namespace ores::comms::messaging;
@@ -47,7 +47,7 @@ void serialize_currency(std::vector<std::byte>& buffer, const domain::currency& 
     writer::write_string(buffer, currency.currency_type);
     writer::write_string(buffer, currency.recorded_by);
     writer::write_string(buffer,
-        ores::utility::datetime::datetime::format_time_point(currency.recorded_at));
+        ores::platform::time::datetime::format_time_point(currency.recorded_at));
 }
 
 std::expected<domain::currency, error_code>
@@ -104,7 +104,11 @@ deserialize_currency(std::span<const std::byte>& data) {
 
     auto recorded_at = reader::read_string(data);
     if (!recorded_at) return std::unexpected(recorded_at.error());
-    currency.recorded_at = ores::utility::datetime::datetime::parse_time_point(*recorded_at);
+    try {
+        currency.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at);
+    } catch (const std::invalid_argument&) {
+        return std::unexpected(error_code::invalid_request);
+    }
 
     return currency;
 }
@@ -274,7 +278,7 @@ std::vector<std::byte> get_currencies_response::serialize() const {
         writer::write_string(buffer, currency.currency_type);
         writer::write_string(buffer, currency.recorded_by);
         writer::write_string(buffer,
-            ores::utility::datetime::datetime::format_time_point(currency.recorded_at));
+            ores::platform::time::datetime::format_time_point(currency.recorded_at));
     }
 
     return buffer;
@@ -353,7 +357,11 @@ get_currencies_response::deserialize(std::span<const std::byte> data) {
 
         auto recorded_at = reader::read_string(data);
         if (!recorded_at) return std::unexpected(recorded_at.error());
-        currency.recorded_at = ores::utility::datetime::datetime::parse_time_point(*recorded_at);
+        try {
+            currency.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at);
+        } catch (const std::invalid_argument&) {
+            return std::unexpected(error_code::invalid_request);
+        }
 
         response.currencies.push_back(std::move(currency));
     }

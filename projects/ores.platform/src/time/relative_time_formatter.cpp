@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.utility/datetime/relative_time_formatter.hpp"
+#include "ores.platform/time/relative_time_formatter.hpp"
 
 #include <cmath>
 #include <stdexcept>
 
-namespace ores::utility::datetime {
+namespace ores::platform::time {
 
 namespace {
 

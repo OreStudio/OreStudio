@@ -22,7 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.utility/datetime/datetime.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.risk/generators/currency_generator.hpp"
 
@@ -236,11 +236,11 @@ TEST_CASE("get_currency_history_response_serialize_deserialize", tags) {
         ver.data.format = "#,##0.00";
         ver.data.currency_type = "Major";
         ver.data.recorded_by = "admin";
-        ver.data.recorded_at = ores::utility::datetime::datetime::parse_time_point(
+        ver.data.recorded_at = ores::platform::time::datetime::parse_time_point(
             "2025-01-0" + std::to_string(i) + " 10:00:00");
         ver.version_number = i;
         ver.recorded_by = "admin";
-        ver.recorded_at = ores::utility::datetime::datetime::parse_time_point(
+        ver.recorded_at = ores::platform::time::datetime::parse_time_point(
             "2025-01-0" + std::to_string(i) + " 10:00:00");
         ver.change_summary = "Version " + std::to_string(i);
         original.history.versions.push_back(ver);

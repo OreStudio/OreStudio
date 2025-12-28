@@ -503,7 +503,7 @@ private:
     std::unique_ptr<connection> conn_;
     std::uint32_t sequence_number_;
     std::atomic<connection_state> state_;
-    mutable std::mutex state_mutex_; // Protects conn_, sequence_number_, and callbacks
+    mutable std::mutex state_mutex_; // Protects conn_, sequence_number_, callbacks, and recorder_
     disconnect_callback_t disconnect_callback_;
     reconnecting_callback_t reconnecting_callback_;
     reconnected_callback_t reconnected_callback_;
@@ -523,8 +523,7 @@ private:
     // Session compression type negotiated during handshake
     messaging::compression_type session_compression_{messaging::compression_type::none};
 
-    // Session recording (shared_ptr with atomic free functions for thread-safe access)
-    // Note: std::atomic<shared_ptr<T>> is not supported on all platforms (e.g., MacOS libc++)
+    // Session recording (protected by state_mutex_ for thread-safe access)
     std::shared_ptr<recording::session_recorder> recorder_;
 };
 

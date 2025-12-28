@@ -61,7 +61,7 @@ geolocation_service::lookup(const std::string& ip_string) const {
 
         return geo_result;
 
-    } catch (const std::exception&) {
+    } catch (const std::runtime_error&) {
         return std::unexpected(geolocation_error::lookup_failed);
     }
 }

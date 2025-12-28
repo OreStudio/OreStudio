@@ -150,12 +150,12 @@ begin
     -- Try IPv4 first (more common)
     return query
     select
-        l.country_iso_code,
+        l.country_iso_code as country_code,
         l.country_name,
         l.city_name,
-        coalesce(b.latitude, 0.0),
-        coalesce(b.longitude, 0.0),
-        coalesce(b.accuracy_radius, 0)
+        coalesce(b.latitude, 0.0) as latitude,
+        coalesce(b.longitude, 0.0) as longitude,
+        coalesce(b.accuracy_radius, 0) as accuracy_radius
     from ores.geoip_blocks_ipv4 b
     left join ores.geoip_locations l on l.geoname_id = b.geoname_id
     where b.network >> ip_address
@@ -169,12 +169,12 @@ begin
     -- Try IPv6
     return query
     select
-        l.country_iso_code,
+        l.country_iso_code as country_code,
         l.country_name,
         l.city_name,
-        coalesce(b.latitude, 0.0),
-        coalesce(b.longitude, 0.0),
-        coalesce(b.accuracy_radius, 0)
+        coalesce(b.latitude, 0.0) as latitude,
+        coalesce(b.longitude, 0.0) as longitude,
+        coalesce(b.accuracy_radius, 0) as accuracy_radius
     from ores.geoip_blocks_ipv6 b
     left join ores.geoip_locations l on l.geoname_id = b.geoname_id
     where b.network >> ip_address

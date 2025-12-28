@@ -30,8 +30,8 @@
  * Usage:
  *   psql -d your_database -v data_dir='/path/to/GeoLite2-City-CSV' -f geolocation_import.sql
  *
- * Note: The COPY commands require superuser or COPY permission.
- * For non-superuser, use \copy instead (requires psql client).
+ * Note: This script uses the \copy meta-command, which requires psql to
+ * be used for execution. It reads files from the client-side.
  */
 
 -- Clear existing data

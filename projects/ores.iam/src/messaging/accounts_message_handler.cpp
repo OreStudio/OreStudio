@@ -297,7 +297,7 @@ handle_login_request(std::span<const std::byte> payload,
         }
 
         // Perform geolocation lookup if service is available
-        if (geo_service_ && geo_service_->is_loaded()) {
+        if (geo_service_) {
             auto geo_result = geo_service_->lookup(ip_address);
             if (geo_result) {
                 sess->country_code = geo_result->country_code;

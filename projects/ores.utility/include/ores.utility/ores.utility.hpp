@@ -26,14 +26,20 @@
  * Provides core infrastructure and helper functions that don't fit into
  * domain-specific modules. Key namespaces:
  *
- * - filesystem: File I/O utilities, directory operations, recursive search
+ * - converter: Base64 and Base32 encoding/decoding utilities
+ * - datetime: Date/time formatting and parsing utilities
+ * - faker: Test data generation (TOTP secrets, datetime, network endpoints)
+ * - geo: IP geolocation services using MaxMind database
+ * - program_options: Environment variable mapping for Boost.Program_options
+ * - rfl: Custom reflect-cpp reflectors for common types
+ * - streaming: iostream operators for std types
  * - string: Type conversion and string manipulation utilities
  * - uuid: UUID v7 generation for time-ordered unique identifiers
- * - environment: Environment variable access with type conversion
- * - geo: Geolocation services
- * - convert: Base64/Base32 encoding utilities
+ * - version: Application version utilities
  *
- * Note: Logging functionality has moved to ores.telemetry.
+ * Note: Platform abstractions (filesystem, environment, time, net) have moved
+ * to ores.platform. Database and logging functionality have moved to
+ * ores.database and ores.telemetry respectively.
  *
  * This module has no dependencies on other ORE Studio components, making it
  * the foundation layer upon which all other modules are built.

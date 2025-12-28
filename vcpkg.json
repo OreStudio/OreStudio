@@ -27,7 +27,6 @@
         "cli",
         "faker-cxx",
         "catch2",
-        "libfort",
-        "libmaxminddb"
+        "libfort"
     ]
 }

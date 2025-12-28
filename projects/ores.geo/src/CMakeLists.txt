@@ -34,11 +34,10 @@ set_target_properties(${lib_target_name}
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
-find_package(unofficial-maxminddb CONFIG REQUIRED)
-
 target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.database.lib
     PRIVATE
-        unofficial::maxminddb::maxminddb
         Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

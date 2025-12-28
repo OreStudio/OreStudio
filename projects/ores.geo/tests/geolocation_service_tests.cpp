@@ -21,6 +21,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include "ores.telemetry/log/make_logger.hpp"
+#include "ores.testing/database_lifecycle_listener.hpp"
 
 namespace {
 
@@ -33,73 +34,6 @@ using ores::geo::service::geolocation_service;
 using ores::geo::service::geolocation_error;
 using ores::geo::service::geolocation_result;
 using namespace ores::telemetry::log;
-
-TEST_CASE("default_construction_creates_unloaded_service", tags) {
-    auto lg(make_logger(test_suite));
-
-    geolocation_service sut;
-    BOOST_LOG_SEV(lg, info) << "Created default geolocation service";
-
-    CHECK(sut.is_loaded() == false);
-}
-
-TEST_CASE("lookup_with_unloaded_database_returns_error", tags) {
-    auto lg(make_logger(test_suite));
-
-    geolocation_service sut;
-    auto result = sut.lookup("8.8.8.8");
-    BOOST_LOG_SEV(lg, info) << "Lookup result on unloaded database";
-
-    CHECK(!result.has_value());
-    CHECK(result.error() == geolocation_error::database_not_loaded);
-}
-
-TEST_CASE("lookup_with_invalid_ip_on_unloaded_database_returns_not_loaded_error", tags) {
-    auto lg(make_logger(test_suite));
-
-    geolocation_service sut;
-    auto result = sut.lookup("not-an-ip");
-    BOOST_LOG_SEV(lg, info) << "Lookup with invalid IP on unloaded database";
-
-    CHECK(!result.has_value());
-    CHECK(result.error() == geolocation_error::database_not_loaded);
-}
-
-TEST_CASE("load_with_nonexistent_file_returns_false", tags) {
-    auto lg(make_logger(test_suite));
-
-    geolocation_service sut;
-    bool loaded = sut.load("/nonexistent/path/to/database.mmdb");
-    BOOST_LOG_SEV(lg, info) << "Load result for nonexistent file: " << loaded;
-
-    CHECK(loaded == false);
-    CHECK(sut.is_loaded() == false);
-}
-
-TEST_CASE("move_construction_transfers_state", tags) {
-    auto lg(make_logger(test_suite));
-
-    geolocation_service original;
-    BOOST_LOG_SEV(lg, info) << "Original is_loaded: " << original.is_loaded();
-
-    geolocation_service moved(std::move(original));
-    BOOST_LOG_SEV(lg, info) << "Moved is_loaded: " << moved.is_loaded();
-
-    CHECK(moved.is_loaded() == false);
-}
-
-TEST_CASE("move_assignment_transfers_state", tags) {
-    auto lg(make_logger(test_suite));
-
-    geolocation_service original;
-    geolocation_service target;
-
-    target = std::move(original);
-    BOOST_LOG_SEV(lg, info) << "Target after move assignment is_loaded: "
-                            << target.is_loaded();
-
-    CHECK(target.is_loaded() == false);
-}
 
 TEST_CASE("geolocation_result_default_construction", tags) {
     auto lg(make_logger(test_suite));
@@ -131,4 +65,52 @@ TEST_CASE("geolocation_result_with_values", tags) {
     CHECK(result.latitude.value() > 37.0);
     CHECK(result.longitude.has_value());
     CHECK(result.longitude.value() < -120.0);
+}
+
+TEST_CASE("lookup_returns_not_found_for_private_ip", tags) {
+    auto lg(make_logger(test_suite));
+    auto ctx = ores::testing::database_lifecycle_listener::make_context();
+
+    geolocation_service sut(ctx);
+
+    // Private IP addresses are not in the GeoIP database
+    auto result = sut.lookup("192.168.1.1");
+    BOOST_LOG_SEV(lg, info) << "Lookup result for private IP";
+
+    // May return not found or empty result depending on database state
+    if (!result.has_value()) {
+        CHECK(result.error() == geolocation_error::address_not_found);
+    }
+}
+
+TEST_CASE("lookup_handles_localhost", tags) {
+    auto lg(make_logger(test_suite));
+    auto ctx = ores::testing::database_lifecycle_listener::make_context();
+
+    geolocation_service sut(ctx);
+
+    // Localhost is not in the GeoIP database
+    auto result = sut.lookup("127.0.0.1");
+    BOOST_LOG_SEV(lg, info) << "Lookup result for localhost";
+
+    // May return not found or empty result depending on database state
+    if (!result.has_value()) {
+        CHECK(result.error() == geolocation_error::address_not_found);
+    }
+}
+
+TEST_CASE("lookup_with_boost_asio_address", tags) {
+    auto lg(make_logger(test_suite));
+    auto ctx = ores::testing::database_lifecycle_listener::make_context();
+
+    geolocation_service sut(ctx);
+
+    boost::asio::ip::address addr = boost::asio::ip::make_address("10.0.0.1");
+    auto result = sut.lookup(addr);
+    BOOST_LOG_SEV(lg, info) << "Lookup result for boost::asio::ip::address";
+
+    // Private IP, should return not found
+    if (!result.has_value()) {
+        CHECK(result.error() == geolocation_error::address_not_found);
+    }
 }

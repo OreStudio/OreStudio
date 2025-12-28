@@ -181,21 +181,8 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     // Create server with subscription manager
     auto srv = std::make_shared<ores::comms::net::server>(cfg.server, subscription_mgr);
 
-    // Create geolocation service if path is configured
-    auto geo_service = std::make_shared<geo::service::geolocation_service>();
-    if (cfg.geolocation_database_path.has_value()) {
-        if (geo_service->load(cfg.geolocation_database_path.value())) {
-            BOOST_LOG_SEV(lg(), info) << "Geolocation database loaded: "
-                                      << cfg.geolocation_database_path.value();
-        } else {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to load geolocation database: "
-                                      << cfg.geolocation_database_path.value()
-                                      << " - geolocation will be disabled";
-        }
-    } else {
-        BOOST_LOG_SEV(lg(), info) << "Geolocation database path not configured"
-                                  << " - geolocation will be disabled";
-    }
+    // Create geolocation service using PostgreSQL geoip tables
+    auto geo_service = std::make_shared<geo::service::geolocation_service>(ctx);
 
     // Register subsystem handlers
     ores::risk::messaging::registrar::register_handlers(*srv, ctx, system_flags);

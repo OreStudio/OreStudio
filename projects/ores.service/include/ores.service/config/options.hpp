@@ -44,12 +44,6 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
-    /**
-     * @brief Path to the MaxMind GeoLite2-City.mmdb database file.
-     *
-     * If not set or the file doesn't exist, geolocation will be disabled.
-     */
-    std::optional<std::string> geolocation_database_path;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

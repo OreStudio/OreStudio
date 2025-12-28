@@ -44,7 +44,6 @@ const std::string server_max_connections_arg("max-connections");
 const std::string server_certificate_arg("certificate");
 const std::string server_private_key_arg("private-key");
 const std::string server_identifier_arg("identifier");
-const std::string geolocation_database_arg("geolocation-database");
 
 using boost::program_options::value;
 using boost::program_options::variables_map;
@@ -81,9 +80,7 @@ options_description make_options_description() {
         ("private-key,k", value<std::string>()->default_value("server.key"),
             "Path to SSL private key file. Defaults to 'server.key'.")
         ("identifier,i", value<std::string>()->default_value("ores-service-v1"),
-            "Server identifier for handshake.")
-        ("geolocation-database,g", value<std::string>(),
-            "Path to MaxMind GeoLite2-City.mmdb file for IP geolocation.");
+            "Server identifier for handshake.");
 
     const auto dod(database_configuration::make_options_description());
 
@@ -180,10 +177,6 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     r.logging = logging_configuration::read_options(vm);
     r.server = read_server_configuration(vm);
     r.database = database_configuration::read_options(vm);
-
-    if (vm.count(geolocation_database_arg) != 0) {
-        r.geolocation_database_path = vm[geolocation_database_arg].as<std::string>();
-    }
 
     return r;
 }

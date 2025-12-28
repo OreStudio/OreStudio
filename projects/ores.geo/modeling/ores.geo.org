@@ -20,33 +20,47 @@ Provides geolocation capabilities for mapping IP addresses to geographic
 locations. Used primarily for session tracking to record where logins
 originate from. Key features:
 
-- MaxMind Integration: Uses GeoLite2-City database (MMDB format) for lookups
+- PostgreSQL Storage: Stores MaxMind GeoLite2-City data in PostgreSQL
 - IP to Location: Maps IP addresses to country, city, and coordinates
 - Thread Safe: All lookup operations are thread-safe for concurrent access
-- PostgreSQL Storage: Optional storage of geolocation data in PostgreSQL
-- PIMPL Pattern: Encapsulates MaxMind library dependencies
+- GiST Indexes: Uses PostgreSQL native inet type with GiST indexes for efficient lookups
 
 The service namespace provides the geolocation_service implementation that
-wraps the MaxMind libmaxminddb library.
+queries PostgreSQL geoip tables.
 
-* Data Sources
+* Data Source
 
-** MaxMind GeoLite2-City
+** MaxMind GeoLite2-City CSV
 
-The primary data source is the MaxMind GeoLite2-City database:
+The data source is the MaxMind GeoLite2-City database in CSV format:
 
-- Format: MMDB (MaxMind DB) binary format
 - Download: https://dev.maxmind.com/geoip/geolite2-free-geolocation-data
+- Format: CSV files for import into PostgreSQL
 - Updates: Monthly updates available from MaxMind
 - License: CC BY-SA 4.0 (requires attribution)
 
-** PostgreSQL Storage
+** PostgreSQL Schema
 
-For environments where filesystem access is limited, geolocation data can
-be stored in PostgreSQL:
+Geolocation data is stored in PostgreSQL with the following tables:
 
-- Schema: projects/sql/schema/geolocation_create.sql
-- Import: projects/sql/data/geolocation_import.sql
-- Uses PostgreSQL native inet type with GiST indexes for efficient lookups
+- =geoip_locations=: Country, city, and timezone data
+- =geoip_blocks_ipv4=: IPv4 CIDR blocks mapped to locations
+- =geoip_blocks_ipv6=: IPv6 CIDR blocks mapped to locations
+- =geoip_lookup()=: Function to lookup IP address and return location data
+
+** Setup Instructions
+
+1. Create the schema:
+   #+begin_src sql
+   psql -d ores -f projects/sql/schema/geolocation_create.sql
+   #+end_src
+
+2. Download and extract GeoLite2-City-CSV.zip from MaxMind
+
+3. Import the data:
+   #+begin_src sql
+   psql -d ores -v data_dir='/path/to/GeoLite2-City-CSV' \
+        -f projects/sql/data/geolocation_import.sql
+   #+end_src
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

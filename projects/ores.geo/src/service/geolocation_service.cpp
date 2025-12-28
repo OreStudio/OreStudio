@@ -19,69 +19,10 @@
  */
 #include "ores.geo/service/geolocation_service.hpp"
 
-#include <maxminddb.h>
-
 namespace ores::geo::service {
 
-struct geolocation_service::impl {
-    MMDB_s mmdb;
-    bool loaded = false;
-};
-
-geolocation_service::geolocation_service()
-    : pimpl_(std::make_unique<impl>()) {}
-
-geolocation_service::geolocation_service(const std::string& database_path)
-    : pimpl_(std::make_unique<impl>()) {
-    load(database_path);
-}
-
-geolocation_service::~geolocation_service() {
-    if (pimpl_ && pimpl_->loaded) {
-        MMDB_close(&pimpl_->mmdb);
-    }
-}
-
-geolocation_service::geolocation_service(geolocation_service&&) noexcept = default;
-geolocation_service& geolocation_service::operator=(geolocation_service&&) noexcept = default;
-
-bool geolocation_service::load(const std::string& database_path) {
-    // Close any previously loaded database
-    if (pimpl_->loaded) {
-        MMDB_close(&pimpl_->mmdb);
-        pimpl_->loaded = false;
-    }
-
-    int status = MMDB_open(database_path.c_str(), MMDB_MODE_MMAP, &pimpl_->mmdb);
-    if (status != MMDB_SUCCESS) {
-        return false;
-    }
-
-    pimpl_->loaded = true;
-    return true;
-}
-
-bool geolocation_service::is_loaded() const {
-    return pimpl_ && pimpl_->loaded;
-}
-
-namespace {
-
-std::optional<std::string> get_string_value(MMDB_entry_data_s* entry_data) {
-    if (entry_data->has_data && entry_data->type == MMDB_DATA_TYPE_UTF8_STRING) {
-        return std::string(entry_data->utf8_string, entry_data->data_size);
-    }
-    return std::nullopt;
-}
-
-std::optional<double> get_double_value(MMDB_entry_data_s* entry_data) {
-    if (entry_data->has_data && entry_data->type == MMDB_DATA_TYPE_DOUBLE) {
-        return entry_data->double_value;
-    }
-    return std::nullopt;
-}
-
-}
+geolocation_service::geolocation_service(database::context ctx)
+    : ctx_(std::move(ctx)) {}
 
 std::expected<geolocation_result, geolocation_error>
 geolocation_service::lookup(const boost::asio::ip::address& ip) const {
@@ -90,65 +31,39 @@ geolocation_service::lookup(const boost::asio::ip::address& ip) const {
 
 std::expected<geolocation_result, geolocation_error>
 geolocation_service::lookup(const std::string& ip_string) const {
-    if (!is_loaded()) {
-        return std::unexpected(geolocation_error::database_not_loaded);
+    auto conn = ctx_.acquire();
+    if (!conn) {
+        return std::unexpected(geolocation_error::database_not_available);
     }
 
-    int gai_error = 0;
-    int mmdb_error = 0;
+    try {
+        // Query the geoip_lookup function
+        const std::string query =
+            "SELECT country_code, city_name, latitude, longitude "
+            "FROM ores.geoip_lookup($1::inet)";
 
-    MMDB_lookup_result_s result = MMDB_lookup_string(
-        &pimpl_->mmdb, ip_string.c_str(), &gai_error, &mmdb_error);
+        auto result = conn->exec_params(query, ip_string);
 
-    if (gai_error != 0) {
-        return std::unexpected(geolocation_error::invalid_address);
-    }
+        if (result.empty()) {
+            return std::unexpected(geolocation_error::address_not_found);
+        }
 
-    if (mmdb_error != MMDB_SUCCESS) {
+        geolocation_result geo_result;
+        geo_result.country_code = result[0]["country_code"].as<std::string>("");
+        geo_result.city = result[0]["city_name"].as<std::string>("");
+
+        if (!result[0]["latitude"].is_null()) {
+            geo_result.latitude = result[0]["latitude"].as<double>();
+        }
+        if (!result[0]["longitude"].is_null()) {
+            geo_result.longitude = result[0]["longitude"].as<double>();
+        }
+
+        return geo_result;
+
+    } catch (const std::exception&) {
         return std::unexpected(geolocation_error::lookup_failed);
     }
-
-    if (!result.found_entry) {
-        return std::unexpected(geolocation_error::address_not_found);
-    }
-
-    geolocation_result geo_result;
-    MMDB_entry_data_s entry_data;
-    int status;
-
-    // Get country ISO code
-    status = MMDB_get_value(&result.entry, &entry_data,
-        "country", "iso_code", NULL);
-    if (status == MMDB_SUCCESS) {
-        if (auto val = get_string_value(&entry_data)) {
-            geo_result.country_code = *val;
-        }
-    }
-
-    // Get city name (English)
-    status = MMDB_get_value(&result.entry, &entry_data,
-        "city", "names", "en", NULL);
-    if (status == MMDB_SUCCESS) {
-        if (auto val = get_string_value(&entry_data)) {
-            geo_result.city = *val;
-        }
-    }
-
-    // Get latitude
-    status = MMDB_get_value(&result.entry, &entry_data,
-        "location", "latitude", NULL);
-    if (status == MMDB_SUCCESS) {
-        geo_result.latitude = get_double_value(&entry_data);
-    }
-
-    // Get longitude
-    status = MMDB_get_value(&result.entry, &entry_data,
-        "location", "longitude", NULL);
-    if (status == MMDB_SUCCESS) {
-        geo_result.longitude = get_double_value(&entry_data);
-    }
-
-    return geo_result;
 }
 
 }

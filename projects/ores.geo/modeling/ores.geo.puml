@@ -21,7 +21,7 @@ title ores.geo Component
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "Geolocation services for IP-to-location lookups using MaxMind GeoLite2-City database" as ores_geo_note
+    note "Geolocation services for IP-to-location lookups using PostgreSQL geoip tables" as ores_geo_note
     geo --- ores_geo_note
     namespace geo #F2F2F2 {
 
@@ -35,20 +35,17 @@ namespace ores #F2F2F2 {
             }
 
             enum geolocation_error {
-                database_not_loaded
+                database_not_available
                 address_not_found
                 lookup_failed
                 invalid_address
             }
 
             class geolocation_service {
-                +geolocation_service()
-                +geolocation_service(database_path : string)
-                +load(database_path : string) : bool
-                +is_loaded() : bool
+                +geolocation_service(ctx : database::context)
                 +lookup(ip : address) : expected<geolocation_result, geolocation_error>
                 +lookup(ip_string : string) : expected<geolocation_result, geolocation_error>
-                -pimpl_ : unique_ptr<impl>
+                -ctx_ : database::context
             }
 
             geolocation_service ..> geolocation_result : returns

@@ -93,11 +93,10 @@ package "Foundation Layer" #F2F2F2 {
 
     note right of geo
     Geolocation services for IP-to-location lookups:
-    - MaxMind Integration: Uses GeoLite2-City database (MMDB format) for lookups
+    - PostgreSQL Storage: Stores MaxMind GeoLite2-City data in geoip tables
     - IP to Location: Maps IP addresses to country, city, and coordinates
     - Thread Safe: All lookup operations are thread-safe for concurrent access
-    - PostgreSQL Storage: Optional storage of geolocation data in PostgreSQL
-    - PIMPL Pattern: Encapsulates MaxMind library dependencies
+    - GiST Indexes: Uses PostgreSQL native inet type for efficient lookups
     Used primarily for session tracking to record login locations.
     Organized into: service (geolocation_service) namespace.
     end note

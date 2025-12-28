@@ -58,6 +58,7 @@ public:
      * @param str String to parse.
      * @param format Format string (e.g., "%Y-%m-%d %H:%M:%S").
      * @return Parsed time point.
+     * @throws std::invalid_argument if the string cannot be parsed.
      */
     static std::chrono::system_clock::time_point parse_time_point(
         const std::string& str,

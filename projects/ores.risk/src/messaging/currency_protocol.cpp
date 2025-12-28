@@ -104,7 +104,11 @@ deserialize_currency(std::span<const std::byte>& data) {
 
     auto recorded_at = reader::read_string(data);
     if (!recorded_at) return std::unexpected(recorded_at.error());
-    currency.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at);
+    try {
+        currency.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at);
+    } catch (const std::invalid_argument&) {
+        return std::unexpected(error_code::invalid_request);
+    }
 
     return currency;
 }
@@ -353,7 +357,11 @@ get_currencies_response::deserialize(std::span<const std::byte> data) {
 
         auto recorded_at = reader::read_string(data);
         if (!recorded_at) return std::unexpected(recorded_at.error());
-        currency.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at);
+        try {
+            currency.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at);
+        } catch (const std::invalid_argument&) {
+            return std::unexpected(error_code::invalid_request);
+        }
 
         response.currencies.push_back(std::move(currency));
     }

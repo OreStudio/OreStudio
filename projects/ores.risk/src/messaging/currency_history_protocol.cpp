@@ -113,7 +113,11 @@ deserialize_currency_version(std::span<const std::byte>& data) {
 
     auto recorded_at = reader::read_string(data);
     if (!recorded_at) return std::unexpected(recorded_at.error());
-    version.data.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at);
+    try {
+        version.data.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at);
+    } catch (const std::invalid_argument&) {
+        return std::unexpected(error_code::invalid_request);
+    }
 
     // Read version metadata
     auto version_number = reader::read_uint32(data);
@@ -126,7 +130,11 @@ deserialize_currency_version(std::span<const std::byte>& data) {
 
     auto version_recorded_at = reader::read_string(data);
     if (!version_recorded_at) return std::unexpected(version_recorded_at.error());
-    version.recorded_at = ores::platform::time::datetime::parse_time_point(*version_recorded_at);
+    try {
+        version.recorded_at = ores::platform::time::datetime::parse_time_point(*version_recorded_at);
+    } catch (const std::invalid_argument&) {
+        return std::unexpected(error_code::invalid_request);
+    }
 
     auto change_summary = reader::read_string(data);
     if (!change_summary) return std::unexpected(change_summary.error());

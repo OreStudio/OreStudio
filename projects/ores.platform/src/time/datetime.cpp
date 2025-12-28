@@ -23,6 +23,7 @@
 #include <ctime>
 #include <iomanip>
 #include <sstream>
+#include <stdexcept>
 
 namespace ores::platform::time {
 
@@ -63,6 +64,11 @@ std::chrono::system_clock::time_point datetime::parse_time_point(
     std::tm tm = {};
     std::istringstream ss(str);
     ss >> std::get_time(&tm, format.c_str());
+
+    if (ss.fail()) {
+        throw std::invalid_argument("Failed to parse time string: " + str);
+    }
+
     return std::chrono::system_clock::from_time_t(std::mktime(&tm));
 }
 

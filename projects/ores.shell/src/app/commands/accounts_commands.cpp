@@ -27,6 +27,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <cli/cli.h>
+#include "ores.platform/time/datetime.hpp"
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
@@ -438,10 +439,7 @@ std::string format_duration(std::chrono::seconds dur) {
 }
 
 std::string format_time(std::chrono::system_clock::time_point tp) {
-    auto time_t = std::chrono::system_clock::to_time_t(tp);
-    std::ostringstream oss;
-    oss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S");
-    return oss.str();
+    return ores::platform::time::datetime::format_time_point(tp);
 }
 
 }

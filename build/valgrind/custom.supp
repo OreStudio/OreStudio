@@ -37,7 +37,7 @@
    match-leak-kinds: reachable
    fun:_Znwm
    fun:_ZN5boost3log12v2s_mt_posix7sources3aux18get_severity_levelEv
-   fun:_ZN5boost3log12v2s_mt_posix7sources3aux14severity_levelIN4ores7utility3log14severity_levelEE9set_valueES8_
+   fun:_ZN5boost3log12v2s_mt_posix7sources3aux14severity_levelIN4ores9telemetry3log14boost_severityEE9set_valueES8_
    ...
 }
 {
@@ -101,7 +101,7 @@
    fun:_ZN5boost6detail24add_thread_exit_functionEPNS0_25thread_exit_function_baseE
    fun:_ZN5boost11this_thread14at_thread_exitIZNS_3log12v2s_mt_posix7sources3aux18get_severity_levelEvEUlvE_EEvT_
    fun:_ZN5boost3log12v2s_mt_posix7sources3aux18get_severity_levelEv
-   fun:_ZN5boost3log12v2s_mt_posix7sources3aux14severity_levelIN4ores7utility3log14severity_levelEE9set_valueES8_
+   fun:_ZN5boost3log12v2s_mt_posix7sources3aux14severity_levelIN4ores9telemetry3log14boost_severityEE9set_valueES8_
    ...
    fun:main
 }

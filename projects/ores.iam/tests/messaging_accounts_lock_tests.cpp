@@ -129,7 +129,7 @@ TEST_CASE("handle_unlock_account_request", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Use a consistent remote address for admin session
     const std::string admin_endpoint = internet::endpoint();
@@ -230,7 +230,7 @@ TEST_CASE("handle_unlock_account_request_non_admin", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Use a consistent remote address for admin session (to create accounts)
     const std::string admin_endpoint = internet::endpoint();
@@ -311,7 +311,7 @@ TEST_CASE("handle_lock_account_request", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Use a consistent remote address for admin session
     const std::string admin_endpoint = internet::endpoint();
@@ -405,7 +405,7 @@ TEST_CASE("handle_lock_account_request_unauthenticated", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Use admin endpoint to create the account
     const std::string admin_endpoint = internet::endpoint();
@@ -456,7 +456,7 @@ TEST_CASE("handle_unlock_account_request_unauthenticated", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Use admin endpoint to create the account
     const std::string admin_endpoint = internet::endpoint();

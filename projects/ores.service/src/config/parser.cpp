@@ -177,6 +177,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     r.logging = logging_configuration::read_options(vm);
     r.server = read_server_configuration(vm);
     r.database = database_configuration::read_options(vm);
+
     return r;
 }
 

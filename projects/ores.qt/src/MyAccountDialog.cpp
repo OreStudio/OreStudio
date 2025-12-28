@@ -26,9 +26,11 @@
 #include <QFutureWatcher>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/SessionHistoryDialog.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.iam/messaging/protocol.hpp"
+#include "ores.iam/domain/session.hpp"
 
 namespace ores::qt {
 
@@ -40,6 +42,10 @@ MyAccountDialog::MyAccountDialog(ClientManager* clientManager, QWidget* parent)
       email_edit_(new QLineEdit(this)),
       save_email_button_(new QPushButton("Save", this)),
       email_status_label_(new QLabel(this)),
+      sessions_group_(new QGroupBox("Sessions", this)),
+      active_sessions_label_(new QLabel(this)),
+      current_session_label_(new QLabel(this)),
+      view_sessions_button_(new QPushButton("View Session History", this)),
       password_group_(new QGroupBox("Change Password", this)),
       new_password_edit_(new QLineEdit(this)),
       confirm_password_edit_(new QLineEdit(this)),
@@ -50,12 +56,15 @@ MyAccountDialog::MyAccountDialog(ClientManager* clientManager, QWidget* parent)
 
     setupUI();
     loadAccountInfo();
+    loadSessionInfo();
 
     // Connect signals
     connect(change_password_button_, &QPushButton::clicked,
             this, &MyAccountDialog::onChangePasswordClicked);
     connect(save_email_button_, &QPushButton::clicked,
             this, &MyAccountDialog::onSaveEmailClicked);
+    connect(view_sessions_button_, &QPushButton::clicked,
+            this, &MyAccountDialog::onViewSessionsClicked);
     connect(close_button_, &QPushButton::clicked,
             this, &MyAccountDialog::onCloseClicked);
     connect(this, &MyAccountDialog::changePasswordCompleted,
@@ -103,6 +112,25 @@ void MyAccountDialog::setupUI() {
     email_status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
     account_layout->addRow("", email_status_label_);
 
+    // Sessions Group
+    auto* sessions_layout = new QFormLayout(sessions_group_);
+    sessions_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+
+    active_sessions_label_->setText("Loading...");
+    active_sessions_label_->setStyleSheet("QLabel { font-weight: bold; }");
+    sessions_layout->addRow("Active Sessions:", active_sessions_label_);
+
+    current_session_label_->setText("");
+    current_session_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
+    sessions_layout->addRow("", current_session_label_);
+
+    view_sessions_button_->setIcon(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_history_20_regular.svg", iconColor));
+    auto* sessions_button_layout = new QHBoxLayout();
+    sessions_button_layout->addStretch();
+    sessions_button_layout->addWidget(view_sessions_button_);
+    sessions_layout->addRow(sessions_button_layout);
+
     // Password Change Group
     auto* password_layout = new QFormLayout(password_group_);
     password_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
@@ -143,6 +171,7 @@ void MyAccountDialog::setupUI() {
     // Main layout
     auto* main_layout = new QVBoxLayout(this);
     main_layout->addWidget(account_group);
+    main_layout->addWidget(sessions_group_);
     main_layout->addWidget(password_group_);
     main_layout->addSpacing(10);
     main_layout->addLayout(button_layout);
@@ -466,6 +495,72 @@ void MyAccountDialog::onSaveEmailResult(bool success, const QString& error_messa
 void MyAccountDialog::onCloseClicked() {
     BOOST_LOG_SEV(lg(), trace) << "On close clicked.";
     accept();
+}
+
+void MyAccountDialog::loadSessionInfo() {
+    BOOST_LOG_SEV(lg(), debug) << "Loading session info.";
+
+    if (!clientManager_) {
+        BOOST_LOG_SEV(lg(), error) << "Client manager not available.";
+        active_sessions_label_->setText("N/A");
+        return;
+    }
+
+    // Load session info asynchronously
+    auto* watcher = new QFutureWatcher<std::optional<std::vector<iam::domain::session>>>(this);
+    connect(watcher, &QFutureWatcher<std::optional<std::vector<iam::domain::session>>>::finished,
+            [this, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result) {
+            const auto& sessions = *result;
+            active_sessions_label_->setText(QString::number(sessions.size()));
+
+            if (!sessions.empty()) {
+                // Show info about the current session (first active session)
+                const auto& current = sessions.front();
+                QString info = QString("Current: %1 (%2)")
+                    .arg(QString::fromStdString(current.client_identifier.empty()
+                        ? "Unknown Client" : current.client_identifier))
+                    .arg(QString::fromStdString(current.client_ip.to_string()));
+                current_session_label_->setText(info);
+            }
+        } else {
+            active_sessions_label_->setText("Error loading");
+            active_sessions_label_->setStyleSheet("QLabel { color: #f00; font-weight: bold; }");
+        }
+    });
+
+    QFuture<std::optional<std::vector<iam::domain::session>>> future = QtConcurrent::run(
+        [this]() -> std::optional<std::vector<iam::domain::session>> {
+            return clientManager_->getActiveSessions();
+        }
+    );
+
+    watcher->setFuture(future);
+}
+
+void MyAccountDialog::onViewSessionsClicked() {
+    BOOST_LOG_SEV(lg(), debug) << "View sessions clicked.";
+
+    if (!clientManager_) {
+        MessageBoxHelper::critical(this, "Internal Error", "Client manager not initialized");
+        return;
+    }
+
+    auto accountId = clientManager_->accountId();
+    if (!accountId) {
+        MessageBoxHelper::warning(this, "Not Logged In", "Please log in to view session history.");
+        return;
+    }
+
+    // Open session history dialog
+    auto* sessionDialog = new SessionHistoryDialog(clientManager_, this);
+    sessionDialog->setAccount(*accountId, QString::fromStdString(clientManager_->currentUsername()));
+    sessionDialog->setAttribute(Qt::WA_DeleteOnClose);
+    sessionDialog->setModal(false);
+    sessionDialog->show();
 }
 
 }

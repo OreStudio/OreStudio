@@ -135,7 +135,7 @@ session_reader::read_header(std::ifstream& file) {
     }
 
     // Read reserved1
-    reader::read_uint16(data); // skip reserved1
+    (void)reader::read_uint16(data); // skip reserved1
 
     // Read protocol version
     auto protocol_major_result = reader::read_uint16(data);

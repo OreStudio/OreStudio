@@ -132,7 +132,7 @@ boost::asio::awaitable<messaging::compression_type> handshake_service::perform_c
     co_return response.selected_compression;
 }
 
-boost::asio::awaitable<std::optional<messaging::compression_type>>
+boost::asio::awaitable<std::optional<handshake_result>>
 handshake_service::perform_server_handshake(
     net::connection& conn,
     std::uint32_t sequence,
@@ -242,7 +242,14 @@ handshake_service::perform_server_handshake(
 
         BOOST_LOG_SEV(lg(), info) << "Server handshake completed successfully. "
                                  << "Session compression: " << selected_compression;
-        co_return selected_compression;
+
+        // Return full handshake result including client info
+        co_return handshake_result{
+            .compression = selected_compression,
+            .client_identifier = request.client_identifier,
+            .client_version_major = request.client_version_major,
+            .client_version_minor = request.client_version_minor
+        };
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Exception during server handshake: " << e.what();

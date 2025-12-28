@@ -45,6 +45,18 @@ struct session_info {
 };
 
 /**
+ * @brief Client information captured during handshake.
+ *
+ * Stored by remote address after successful handshake, retrieved during
+ * login to populate session tracking fields.
+ */
+struct client_info {
+    std::string client_identifier;
+    std::uint16_t client_version_major = 0;
+    std::uint16_t client_version_minor = 0;
+};
+
+/**
  * @brief Centralized authentication session management service.
  *
  * Tracks authenticated sessions by remote address. This service is shared
@@ -143,6 +155,35 @@ public:
     get_all_sessions() const;
 
     /**
+     * @brief Store client info from handshake.
+     *
+     * Called after successful handshake to store client details for later use
+     * when creating a session during login.
+     *
+     * @param remote_address The client's remote address
+     * @param info Client information from handshake
+     */
+    void store_client_info(const std::string& remote_address, client_info info);
+
+    /**
+     * @brief Get client info for a remote address.
+     *
+     * @param remote_address The client's remote address
+     * @return Client info if stored, nullopt otherwise
+     */
+    [[nodiscard]] std::optional<client_info>
+    get_client_info(const std::string& remote_address) const;
+
+    /**
+     * @brief Remove client info for a remote address.
+     *
+     * Called when connection is closed to clean up stored handshake data.
+     *
+     * @param remote_address The client's remote address
+     */
+    void remove_client_info(const std::string& remote_address);
+
+    /**
      * @brief Check if a request is authorized based on message type and session.
      *
      * Centralizes authentication logic for all message types:
@@ -169,6 +210,9 @@ private:
 
     mutable std::mutex session_mutex_;
     std::map<std::string, std::shared_ptr<iam::domain::session>> sessions_;
+
+    mutable std::mutex client_info_mutex_;
+    std::map<std::string, client_info> client_infos_;
 };
 
 }

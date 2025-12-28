@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
+#include "ores.geo/service/geolocation_service.hpp"
 
 namespace ores::iam::messaging {
 
@@ -39,6 +40,7 @@ namespace ores::iam::messaging {
  * @param ctx Database context for repository access
  * @param system_flags Shared system flags service for flag access
  * @param auth_service Shared authorization service for RBAC permission checks
+ * @param geo_service Shared geolocation service for IP to location lookups
  */
 class registrar {
 private:
@@ -53,7 +55,8 @@ public:
     static void register_handlers(comms::net::server& server,
         database::context ctx,
         std::shared_ptr<variability::service::system_flags_service> system_flags,
-        std::shared_ptr<service::authorization_service> auth_service);
+        std::shared_ptr<service::authorization_service> auth_service,
+        std::shared_ptr<geo::service::geolocation_service> geo_service);
 };
 
 }

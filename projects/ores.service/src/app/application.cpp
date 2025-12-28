@@ -47,6 +47,7 @@
 #include "ores.comms/net/server.hpp"
 #include "ores.comms/service/subscription_manager.hpp"
 #include "ores.comms/service/subscription_handler.hpp"
+#include "ores.geo/service/geolocation_service.hpp"
 #include "ores.service/app/application_exception.hpp"
 
 namespace ores::service::app {
@@ -180,9 +181,13 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     // Create server with subscription manager
     auto srv = std::make_shared<ores::comms::net::server>(cfg.server, subscription_mgr);
 
+    // Create geolocation service using PostgreSQL geoip tables
+    auto geo_service = std::make_shared<geo::service::geolocation_service>(ctx);
+
     // Register subsystem handlers
     ores::risk::messaging::registrar::register_handlers(*srv, ctx, system_flags);
-    ores::iam::messaging::registrar::register_handlers(*srv, ctx, system_flags, auth_service);
+    ores::iam::messaging::registrar::register_handlers(*srv, ctx, system_flags, auth_service,
+        geo_service);
     ores::variability::messaging::registrar::register_handlers(*srv, ctx);
     ores::assets::messaging::registrar::register_handlers(*srv, ctx);
 

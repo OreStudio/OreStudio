@@ -17,16 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_GEO_GEOLOCATION_SERVICE_HPP
-#define ORES_UTILITY_GEO_GEOLOCATION_SERVICE_HPP
+#ifndef ORES_GEO_SERVICE_GEOLOCATION_SERVICE_HPP
+#define ORES_GEO_SERVICE_GEOLOCATION_SERVICE_HPP
 
 #include <string>
-#include <memory>
 #include <optional>
 #include <expected>
 #include <boost/asio/ip/address.hpp>
+#include "ores.database/domain/context.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 
-namespace ores::utility::geo {
+namespace ores::geo::service {
 
 /**
  * @brief Result of a geolocation lookup.
@@ -42,7 +43,7 @@ struct geolocation_result {
  * @brief Error codes for geolocation lookup failures.
  */
 enum class geolocation_error {
-    database_not_loaded,
+    database_not_available,
     address_not_found,
     lookup_failed,
     invalid_address
@@ -51,48 +52,19 @@ enum class geolocation_error {
 /**
  * @brief Service for looking up geographic location from IP addresses.
  *
- * Uses MaxMind GeoLite2-City database for lookups. The database file
- * must be provided at construction time and can be updated at runtime.
+ * Uses PostgreSQL geoip tables for lookups. The tables must be populated
+ * with MaxMind GeoLite2-City CSV data using the geolocation_import.sql script.
  *
- * Thread-safety: All public methods are thread-safe for read operations.
- * Database loading/reloading should be done before concurrent lookups.
+ * Thread-safety: All public methods are thread-safe.
  */
 class geolocation_service {
 public:
     /**
-     * @brief Construct a geolocation service without loading a database.
+     * @brief Construct a geolocation service with database context.
      *
-     * Lookups will return database_not_loaded error until load() is called.
+     * @param ctx Database context for PostgreSQL queries
      */
-    geolocation_service();
-
-    /**
-     * @brief Construct a geolocation service and load the database.
-     *
-     * @param database_path Path to MaxMind GeoLite2-City.mmdb file
-     */
-    explicit geolocation_service(const std::string& database_path);
-
-    ~geolocation_service();
-
-    // Non-copyable, movable
-    geolocation_service(const geolocation_service&) = delete;
-    geolocation_service& operator=(const geolocation_service&) = delete;
-    geolocation_service(geolocation_service&&) noexcept;
-    geolocation_service& operator=(geolocation_service&&) noexcept;
-
-    /**
-     * @brief Load or reload the MaxMind database.
-     *
-     * @param database_path Path to MaxMind GeoLite2-City.mmdb file
-     * @return true if database was loaded successfully
-     */
-    bool load(const std::string& database_path);
-
-    /**
-     * @brief Check if the database is loaded.
-     */
-    [[nodiscard]] bool is_loaded() const;
+    explicit geolocation_service(database::context ctx);
 
     /**
      * @brief Look up geolocation for an IP address.
@@ -113,8 +85,16 @@ public:
     lookup(const std::string& ip_string) const;
 
 private:
-    struct impl;
-    std::unique_ptr<impl> pimpl_;
+    inline static std::string_view logger_name =
+        "ores.geo.service.geolocation_service";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::telemetry::log;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+    database::context ctx_;
 };
 
 }

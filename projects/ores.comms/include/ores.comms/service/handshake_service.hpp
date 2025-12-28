@@ -33,6 +33,16 @@ namespace ores::comms::net { class connection; }
 namespace ores::comms::service {
 
 /**
+ * @brief Result of a successful server-side handshake.
+ */
+struct handshake_result {
+    messaging::compression_type compression;
+    std::string client_identifier;
+    std::uint16_t client_version_major;
+    std::uint16_t client_version_minor;
+};
+
+/**
  * @brief Service for managing protocol handshake between client and server.
  *
  * Encapsulates the handshake protocol logic for both client and server sides,
@@ -82,9 +92,10 @@ public:
      * @param conn Connection to perform handshake on
      * @param sequence Sequence number for response frame
      * @param server_identifier Server identifier string
-     * @return The negotiated compression type on success, std::nullopt on failure
+     * @return Handshake result with compression and client info on success,
+     *         std::nullopt on failure
      */
-    static boost::asio::awaitable<std::optional<messaging::compression_type>>
+    static boost::asio::awaitable<std::optional<handshake_result>>
     perform_server_handshake(
         net::connection& conn,
         std::uint32_t sequence,

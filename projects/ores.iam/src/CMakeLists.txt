@@ -38,6 +38,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.variability.lib
         ores.eventing.lib
+        ores.geo.lib
     PRIVATE
         faker-cxx::faker-cxx
         libfort::fort)

@@ -125,6 +125,35 @@ auth_session_service::get_all_sessions() const {
     return result;
 }
 
+void auth_session_service::store_client_info(const std::string& remote_address,
+    client_info info) {
+    std::lock_guard lock(client_info_mutex_);
+    BOOST_LOG_SEV(lg(), debug) << "Storing client info for " << remote_address
+                               << " client=" << info.client_identifier
+                               << " version=" << info.client_version_major
+                               << "." << info.client_version_minor;
+    client_infos_[remote_address] = std::move(info);
+}
+
+std::optional<client_info>
+auth_session_service::get_client_info(const std::string& remote_address) const {
+    std::lock_guard lock(client_info_mutex_);
+    auto it = client_infos_.find(remote_address);
+    if (it != client_infos_.end()) {
+        return it->second;
+    }
+    return std::nullopt;
+}
+
+void auth_session_service::remove_client_info(const std::string& remote_address) {
+    std::lock_guard lock(client_info_mutex_);
+    auto it = client_infos_.find(remote_address);
+    if (it != client_infos_.end()) {
+        BOOST_LOG_SEV(lg(), debug) << "Removing client info for " << remote_address;
+        client_infos_.erase(it);
+    }
+}
+
 bool auth_session_service::requires_authentication(messaging::message_type type) {
     using messaging::message_type;
 

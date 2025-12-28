@@ -251,7 +251,7 @@ TEST_CASE("submit_log_records_request_with_special_characters", tags) {
 
     REQUIRE(r.has_value());
     REQUIRE(r->records.size() == 1);
-    CHECK(r->records[0].body == rec.body);
+    CHECK(r->records[0].body == rq.records[0].body);
 }
 
 TEST_CASE("submit_log_records_request_empty_strings", tags) {

@@ -25,7 +25,7 @@
 #include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.telemetry/domain/resource.hpp"
 #include "ores.telemetry/domain/telemetry_context.hpp"
-#include "ores.telemetry/export/file_log_exporter.hpp"
+#include "ores.telemetry/export/hybrid_log_exporter.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.shell/app/application.hpp"
 #include "ores.shell/config/parser.hpp"
@@ -63,7 +63,7 @@ int host::execute(const std::vector<std::string>& args,
     /*
      * Set up telemetry export if enabled.
      */
-    std::shared_ptr<telemetry::exp::file_log_exporter> exporter;
+    std::shared_ptr<telemetry::exp::hybrid_log_exporter> exporter;
     std::optional<telemetry::domain::telemetry_context> telemetry_ctx;
     if (cfg.telemetry) {
         const auto& tcfg(*cfg.telemetry);
@@ -86,9 +86,20 @@ int host::execute(const std::vector<std::string>& args,
         auto path = tcfg.output_directory / tcfg.output_file;
 
         /*
-         * Create the file exporter for JSON Lines output.
+         * Create the hybrid exporter for JSON Lines output with optional streaming.
+         *
+         * When streaming is enabled, records are batched and sent to the server
+         * in addition to being written to the local file. The send callback
+         * needs access to the client session for sending, which requires
+         * integration with the application's connection management.
+         *
+         * TODO: Wire up send_callback to client_session for server streaming.
+         * This requires refactoring client_session to be created earlier and
+         * shared between the application and the exporter.
          */
-        exporter = std::make_shared<telemetry::exp::file_log_exporter>(path);
+        telemetry::exp::send_records_callback send_callback = nullptr;
+        exporter = std::make_shared<telemetry::exp::hybrid_log_exporter>(
+            path, tcfg, std::move(send_callback));
 
         /*
          * Add the telemetry sink to capture all log records.
@@ -98,6 +109,12 @@ int host::execute(const std::vector<std::string>& args,
         });
         BOOST_LOG_SEV(lg(), info)
             << "Telemetry export enabled, writing to: " << path;
+        if (tcfg.streaming_enabled) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Telemetry streaming enabled (batch_size="
+                << tcfg.batch_size << ", flush_interval="
+                << tcfg.flush_interval.count() << "s)";
+        }
         BOOST_LOG_SEV(lg(), info)
             << "Telemetry context created - trace_id: "
             << telemetry_ctx->get_trace_id().to_hex();

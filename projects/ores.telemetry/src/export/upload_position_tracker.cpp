@@ -20,8 +20,19 @@
 #include "ores.telemetry/export/upload_position_tracker.hpp"
 
 #include <fstream>
+#include "ores.telemetry/log/make_logger.hpp"
 
 namespace ores::telemetry::exp {
+
+namespace {
+
+auto& lg() {
+    using namespace ores::telemetry::log;
+    static auto instance = make_logger("ores.telemetry.export.upload_position_tracker");
+    return instance;
+}
+
+}
 
 upload_position_tracker::upload_position_tracker(
     std::filesystem::path log_file_path)
@@ -72,11 +83,16 @@ std::uint64_t upload_position_tracker::load_position_from_file() const {
 
 void upload_position_tracker::save_position_to_file(
     std::uint64_t position) const {
+    using namespace ores::telemetry::log;
+
     std::ofstream file(marker_file_path_,
         std::ios::binary | std::ios::trunc);
 
     if (!file) {
-        // TODO: log warning
+        BOOST_LOG_SEV(lg(), warn)
+            << "Failed to save upload position to marker file: "
+            << marker_file_path_
+            << ". Telemetry records may be re-uploaded on restart.";
         return;
     }
 

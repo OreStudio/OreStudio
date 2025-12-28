@@ -187,6 +187,7 @@ read_login_configuration(const variables_map& vm) {
 std::optional<options>
 parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     using ores::telemetry::log::logging_configuration;
+    using ores::telemetry::exp::telemetry_configuration;
     using ores::utility::program_options::environment_mapper_factory;
 
     const auto od(make_options_description());

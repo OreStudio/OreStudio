@@ -256,22 +256,19 @@ void hybrid_log_exporter::flush_thread_func() {
     while (!shutdown_requested_) {
         std::unique_lock<std::mutex> lock(batch_mutex_);
 
-        // Wait for flush_interval or shutdown
-        flush_cv_.wait_for(lock, options_.flush_interval, [this]() {
-            return shutdown_requested_.load() || connected_.load();
+        // Wait for the flush interval, or until notified for shutdown.
+        flush_cv_.wait_for(lock, options_.flush_interval, [this] {
+            return shutdown_requested_.load();
         });
 
         if (shutdown_requested_) {
             break;
         }
 
-        // Check if enough time has passed since last flush
-        auto now = std::chrono::steady_clock::now();
-        if (now - last_flush_time_ >= options_.flush_interval) {
-            if (connected_ && !pending_batch_.empty()) {
-                lock.unlock();
-                send_batch();
-            }
+        // After waiting, if we are connected and have records, send them.
+        if (connected_ && !pending_batch_.empty()) {
+            lock.unlock();
+            send_batch();
         }
     }
 }

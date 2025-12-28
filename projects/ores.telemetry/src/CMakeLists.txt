@@ -33,9 +33,9 @@ set_target_properties(${lib_target_name}
 
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/include
-    # Header-only dependency on ores.comms for reader/writer utilities.
-    # We cannot link against ores.comms due to circular dependency chain
-    # (ores.telemetry -> ores.eventing -> ores.comms).
+    # Header-only dependency on ores.comms for error_code type in protocol header.
+    # We do NOT use ores.comms reader/writer implementations to avoid circular
+    # dependency (ores.telemetry -> ores.eventing -> ores.comms).
     ${CMAKE_SOURCE_DIR}/projects/ores.comms/include)
 
 target_link_libraries(${lib_target_name}

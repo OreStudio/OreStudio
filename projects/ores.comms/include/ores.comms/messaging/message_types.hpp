@@ -265,6 +265,7 @@ enum class error_code {
     username_taken = 0x0016,
     email_taken = 0x0017,
     signup_requires_authorization = 0x0018,
+    payload_incomplete = 0x0019,
     last_value
 };
 

@@ -523,8 +523,8 @@ private:
     // Session compression type negotiated during handshake
     messaging::compression_type session_compression_{messaging::compression_type::none};
 
-    // Session recording (shared_ptr for thread-safe atomic access)
-    std::shared_ptr<recording::session_recorder> recorder_;
+    // Session recording (atomic shared_ptr for thread-safe access)
+    std::atomic<std::shared_ptr<recording::session_recorder>> recorder_;
 };
 
 }

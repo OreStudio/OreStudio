@@ -99,8 +99,8 @@ client::client(client_options config,
 
 client::~client() {
     // Stop recording if active
-    if (recorder_) {
-        recorder_->stop();
+    if (auto recorder = recorder_.load()) {
+        recorder->stop();
     }
 
     // Ensure disconnect is called to stop any running coroutines
@@ -637,11 +637,16 @@ void client::set_notification_callback(notification_callback_t callback) {
 
 std::expected<std::filesystem::path, recording::session_file_error>
 client::enable_recording(const std::filesystem::path& output_directory) {
-    // Create new recorder or reuse existing one
-    auto recorder = std::atomic_load(&recorder_);
+    // Create new recorder or reuse existing one (thread-safe initialization)
+    auto recorder = recorder_.load();
     if (!recorder) {
-        recorder = std::make_shared<recording::session_recorder>();
-        std::atomic_store(&recorder_, recorder);
+        auto new_recorder = std::make_shared<recording::session_recorder>();
+        std::shared_ptr<recording::session_recorder> expected = nullptr;
+        if (recorder_.compare_exchange_strong(expected, new_recorder)) {
+            recorder = new_recorder;
+        } else {
+            recorder = expected;
+        }
     }
 
     // Get server address for the recording header
@@ -658,7 +663,7 @@ client::enable_recording(const std::filesystem::path& output_directory) {
 }
 
 void client::disable_recording() {
-    auto recorder = std::atomic_load(&recorder_);
+    auto recorder = recorder_.load();
     if (recorder) {
         recorder->stop();
         BOOST_LOG_SEV(lg(), info) << "Session recording disabled";
@@ -666,7 +671,7 @@ void client::disable_recording() {
 }
 
 bool client::is_recording() const {
-    auto recorder = std::atomic_load(&recorder_);
+    auto recorder = recorder_.load();
     return recorder && recorder->is_recording();
 }
 
@@ -830,7 +835,7 @@ client::send_request(messaging::frame request_frame) {
         co_await conn_->write_frame(frame_to_send);
 
         // Record the sent frame if recording is active (direct path, thread-safe)
-        if (auto recorder = std::atomic_load(&recorder_); recorder && recorder->is_recording()) {
+        if (auto recorder = recorder_.load(); recorder && recorder->is_recording()) {
             recorder->record_sent(frame_to_send);
         }
 
@@ -850,7 +855,7 @@ client::send_request(messaging::frame request_frame) {
         }
 
         // Record the received frame if recording is active (direct path, thread-safe)
-        if (auto recorder = std::atomic_load(&recorder_); recorder && recorder->is_recording()) {
+        if (auto recorder = recorder_.load(); recorder && recorder->is_recording()) {
             recorder->record_received(*response_result);
         }
 
@@ -912,7 +917,7 @@ boost::asio::awaitable<void> client::write_frame(const messaging::frame& f) {
     co_await conn_->write_frame(f);
 
     // Record the sent frame if recording is active (thread-safe atomic load)
-    if (auto recorder = std::atomic_load(&recorder_); recorder && recorder->is_recording()) {
+    if (auto recorder = recorder_.load(); recorder && recorder->is_recording()) {
         recorder->record_sent(f);
     }
 }
@@ -954,7 +959,7 @@ boost::asio::awaitable<void> client::run_message_loop() {
             const auto& frame = *frame_result;
 
             // Record the received frame if recording is active (thread-safe atomic load)
-            if (auto recorder = std::atomic_load(&recorder_); recorder && recorder->is_recording()) {
+            if (auto recorder = recorder_.load(); recorder && recorder->is_recording()) {
                 recorder->record_received(frame);
             }
 

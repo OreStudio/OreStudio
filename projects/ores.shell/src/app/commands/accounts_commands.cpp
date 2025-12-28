@@ -572,7 +572,7 @@ process_session_stats(std::ostream& out, client_session& session, int days) {
                                << days << " days.";
 
     auto end_date = std::chrono::system_clock::now();
-    auto start_date = end_date - std::chrono::hours(24 * days);
+    auto start_time = end_date - std::chrono::hours(24 * days);
 
     using iam::messaging::get_session_statistics_request;
     using iam::messaging::get_session_statistics_response;
@@ -580,12 +580,13 @@ process_session_stats(std::ostream& out, client_session& session, int days) {
                                                         get_session_statistics_response,
                                                         message_type::get_session_statistics_request>
         (get_session_statistics_request{
-            .start_date = start_date,
-            .end_date = end_date
+            .account_id = boost::uuids::nil_uuid(),
+            .start_time = start_time,
+            .end_time = end_date
         });
 
     if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
         return;
     }
 

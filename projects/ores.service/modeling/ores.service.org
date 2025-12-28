@@ -45,7 +45,6 @@ Environment variables use the ~SERVICE_~ prefix (e.g., ~SERVICE_PORT=8080~).
 | ~--certificate, -c~     | ~SERVICE_CERTIFICATE~       | server.crt       | Path to SSL certificate              |
 | ~--private-key, -k~     | ~SERVICE_PRIVATE_KEY~       | server.key       | Path to SSL private key              |
 | ~--identifier, -i~      | ~SERVICE_IDENTIFIER~        | ores-service-v1  | Server identifier for handshake      |
-| ~--geolocation-database, -g~ | ~SERVICE_GEOLOCATION_DATABASE~ | (none)    | Path to MaxMind GeoLite2-City.mmdb   |
 
 ** Database Options
 
@@ -63,37 +62,31 @@ The service tracks user sessions with the following data:
 - Session lifecycle: start time, end time, duration
 - Client information: IP address, client identifier, protocol version
 - Traffic metrics: bytes sent/received
-- Geolocation: country, city, coordinates (if configured)
+- Geolocation: country, city, coordinates (from PostgreSQL geoip tables)
 
-** Geolocation Configuration
+** Geolocation Setup
 
-Geolocation maps client IP addresses to physical locations. Two approaches:
+Geolocation maps client IP addresses to physical locations using PostgreSQL
+geoip tables populated with MaxMind GeoLite2-City CSV data.
 
-*** Option 1: MaxMind mmdb File (Recommended)
+*** Setup Instructions
 
-1. Download GeoLite2-City from MaxMind (requires free account)
-2. Start the service with ~--geolocation-database /path/to/GeoLite2-City.mmdb~
+1. Create the geoip tables:
+   #+begin_src shell
+   psql -d ores -f projects/sql/schema/geolocation_create.sql
+   #+end_src
 
-#+begin_src shell
-ores.service --geolocation-database /opt/geoip/GeoLite2-City.mmdb
-#+end_src
+2. Download GeoLite2-City-CSV.zip from MaxMind (requires free account):
+   https://dev.maxmind.com/geoip/geolite2-free-geolocation-data
 
-Or via environment variable:
-#+begin_src shell
-export SERVICE_GEOLOCATION_DATABASE=/opt/geoip/GeoLite2-City.mmdb
-#+end_src
+3. Extract and import the data:
+   #+begin_src shell
+   psql -d ores -v data_dir='/path/to/GeoLite2-City-CSV' \
+        -f projects/sql/data/geolocation_import.sql
+   #+end_src
 
-*** Option 2: PostgreSQL with ip4r Extension (Future)
-
-The MaxMind data can be imported directly into PostgreSQL:
-
-1. Install the ~ip4r~ extension for efficient IP range lookups
-2. Download MaxMind GeoLite2 CSV format
-3. Import into PostgreSQL tables
-4. Query using ~ip4r~ range operators
-
-This approach keeps all data in the database but requires additional setup.
-See ~projects/sql/schema/geolocation_create.sql~ for the schema (if implemented).
+The import creates indexed tables for efficient IP range lookups using
+PostgreSQL's native inet type with GiST indexes.
 
 ** Session Statistics
 

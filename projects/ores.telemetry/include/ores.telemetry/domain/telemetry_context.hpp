@@ -59,6 +59,17 @@ public:
                                std::shared_ptr<resource> res);
 
     /**
+     * @brief Creates a root telemetry context for a new trace.
+     *
+     * This is used to start a new trace at the entry point of an application
+     * or service. The root context has a newly generated trace_id and span_id.
+     *
+     * @param res The resource describing the entity producing telemetry.
+     * @return A telemetry context with a new trace_id and span_id.
+     */
+    static telemetry_context create_root(std::shared_ptr<resource> res);
+
+    /**
      * @brief Gets the current span context.
      */
     const span_context& context() const;

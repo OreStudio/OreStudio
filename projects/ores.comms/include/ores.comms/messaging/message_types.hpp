@@ -25,7 +25,7 @@
 
 // Configure magic_enum to support our enum value ranges
 #define MAGIC_ENUM_RANGE_MIN 0
-#define MAGIC_ENUM_RANGE_MAX 0x5000
+#define MAGIC_ENUM_RANGE_MAX 0x6000
 
 #include <magic_enum/magic_enum.hpp>
 
@@ -98,8 +98,13 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // get_session_statistics_request/response for aggregated session metrics.
 // Sessions now track bytes sent/received, client version, and geolocation.
 // Session data is stored in a TimescaleDB hypertable for time-series analysis.
+//
+// Version 15.1 adds telemetry subsystem for log record streaming. New messages:
+// submit_log_records_request for fire-and-forget batched log record submission.
+// Clients can stream telemetry data to the server for centralized storage and
+// analysis. Controlled by telemetry.streaming.enabled feature flag.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 15;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -112,6 +117,8 @@ constexpr std::uint16_t VARIABILITY_SUBSYSTEM_MIN = 0x3000;
 constexpr std::uint16_t VARIABILITY_SUBSYSTEM_MAX = 0x3FFF;
 constexpr std::uint16_t ASSETS_SUBSYSTEM_MIN = 0x4000;
 constexpr std::uint16_t ASSETS_SUBSYSTEM_MAX = 0x4FFF;
+constexpr std::uint16_t TELEMETRY_SUBSYSTEM_MIN = 0x5000;
+constexpr std::uint16_t TELEMETRY_SUBSYSTEM_MAX = 0x5FFF;
 
 /**
  * @brief Compression algorithm used for payload compression.
@@ -226,6 +233,9 @@ enum class message_type {
     get_images_request = 0x4002,
     get_images_response = 0x4003,
 
+    // Telemetry subsystem messages (0x5000 - 0x5FFF)
+    submit_log_records_request = 0x5000,
+
     last_value
 };
 
@@ -255,6 +265,7 @@ enum class error_code {
     username_taken = 0x0016,
     email_taken = 0x0017,
     signup_requires_authorization = 0x0018,
+    payload_incomplete = 0x0019,
     last_value
 };
 

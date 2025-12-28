@@ -26,6 +26,7 @@
 #include "ores.shell/config/parser_exception.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.telemetry/log/logging_configuration.hpp"
+#include "ores.telemetry/export/telemetry_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 
 namespace {
@@ -58,6 +59,7 @@ using ores::shell::config::parser_exception;
  */
 options_description make_options_description() {
     using ores::telemetry::log::logging_configuration;
+    using ores::telemetry::exp::telemetry_configuration;
 
     options_description god("General");
     god.add_options()
@@ -66,6 +68,9 @@ options_description make_options_description() {
 
     const auto lod(logging_configuration::make_options_description(
             "ores.shell.log"));
+
+    const auto tod(telemetry_configuration::make_options_description(
+            "ores-shell", ORES_VERSION));
 
     options_description cod("Connection");
     cod.add_options()
@@ -84,7 +89,7 @@ options_description make_options_description() {
             "Password for authentication");
 
     options_description r;
-    r.add(god).add(lod).add(cod).add(lod2);
+    r.add(god).add(lod).add(tod).add(cod).add(lod2);
     return r;
 }
 
@@ -182,6 +187,7 @@ read_login_configuration(const variables_map& vm) {
 std::optional<options>
 parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     using ores::telemetry::log::logging_configuration;
+    using ores::telemetry::exp::telemetry_configuration;
     using ores::utility::program_options::environment_mapper_factory;
 
     const auto od(make_options_description());
@@ -211,6 +217,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     // Parse configuration
     options r;
     r.logging = logging_configuration::read_options(vm);
+    r.telemetry = telemetry_configuration::read_options(vm);
     r.connection = read_connection_configuration(vm);
     r.login = read_login_configuration(vm);
     return r;

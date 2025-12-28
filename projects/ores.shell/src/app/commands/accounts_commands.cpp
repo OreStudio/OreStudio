@@ -25,6 +25,7 @@
 #include <functional>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 #include <cli/cli.h>
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
@@ -632,7 +633,7 @@ process_session_stats(std::ostream& out, client_session& session, int days) {
 
     out << std::endl << "Daily breakdown:" << std::endl;
     for (const auto& s : stats) {
-        out << "  " << format_time(s.date).substr(0, 10)
+        out << "  " << format_time(s.period_start).substr(0, 10)
             << ": " << s.session_count << " sessions";
         if (s.avg_duration_seconds > 0) {
             out << ", avg " << format_duration(std::chrono::seconds(static_cast<int>(s.avg_duration_seconds)));

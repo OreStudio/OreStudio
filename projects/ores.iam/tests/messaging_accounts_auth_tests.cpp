@@ -128,7 +128,7 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Set up authenticated admin session for account creation
     const auto admin_endpoint = internet::endpoint();
@@ -183,7 +183,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Set up authenticated admin session for account creation
     const auto admin_endpoint = internet::endpoint();
@@ -236,7 +236,7 @@ TEST_CASE("handle_login_request_non_existent_user", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     login_request lrq;
     lrq.username = "non_existent_user_" +
@@ -272,7 +272,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Use a consistent remote address for admin session
     const std::string admin_endpoint = internet::endpoint();
@@ -386,7 +386,7 @@ TEST_CASE("handle_change_password_request_success", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Set up authenticated admin session for account creation
     const std::string admin_endpoint = internet::endpoint();
@@ -470,7 +470,7 @@ TEST_CASE("handle_change_password_request_unauthenticated", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Try to change password without being logged in (no session established)
     change_password_request cp_rq;
@@ -502,7 +502,7 @@ TEST_CASE("handle_change_password_request_weak_password", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Set up authenticated admin session for account creation
     const std::string admin_endpoint = internet::endpoint();

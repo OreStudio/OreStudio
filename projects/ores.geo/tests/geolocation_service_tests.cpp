@@ -21,7 +21,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include "ores.telemetry/log/make_logger.hpp"
-#include "ores.testing/database_lifecycle_listener.hpp"
+#include "ores.testing/database_helper.hpp"
 
 namespace {
 
@@ -69,9 +69,9 @@ TEST_CASE("geolocation_result_with_values", tags) {
 
 TEST_CASE("lookup_returns_not_found_for_private_ip", tags) {
     auto lg(make_logger(test_suite));
-    auto ctx = ores::testing::database_lifecycle_listener::make_context();
+    ores::testing::database_helper h;
 
-    geolocation_service sut(ctx);
+    geolocation_service sut(h.context());
 
     // Private IP addresses are not in the GeoIP database
     auto result = sut.lookup("192.168.1.1");
@@ -85,9 +85,9 @@ TEST_CASE("lookup_returns_not_found_for_private_ip", tags) {
 
 TEST_CASE("lookup_handles_localhost", tags) {
     auto lg(make_logger(test_suite));
-    auto ctx = ores::testing::database_lifecycle_listener::make_context();
+    ores::testing::database_helper h;
 
-    geolocation_service sut(ctx);
+    geolocation_service sut(h.context());
 
     // Localhost is not in the GeoIP database
     auto result = sut.lookup("127.0.0.1");
@@ -101,9 +101,9 @@ TEST_CASE("lookup_handles_localhost", tags) {
 
 TEST_CASE("lookup_with_boost_asio_address", tags) {
     auto lg(make_logger(test_suite));
-    auto ctx = ores::testing::database_lifecycle_listener::make_context();
+    ores::testing::database_helper h;
 
-    geolocation_service sut(ctx);
+    geolocation_service sut(h.context());
 
     boost::asio::ip::address addr = boost::asio::ip::make_address("10.0.0.1");
     auto result = sut.lookup(addr);

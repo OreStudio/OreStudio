@@ -120,7 +120,7 @@ TEST_CASE("handle_single_create_account_request", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Set up authenticated admin session
     const auto test_endpoint = internet::endpoint();
@@ -158,7 +158,7 @@ TEST_CASE("handle_many_create_account_requests", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Set up authenticated admin session
     const auto test_endpoint = internet::endpoint();
@@ -198,7 +198,7 @@ TEST_CASE("handle_list_accounts_request_empty", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Set up authenticated admin session
     const auto test_endpoint = internet::endpoint();
@@ -233,7 +233,7 @@ TEST_CASE("handle_list_accounts_request_with_accounts", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Set up authenticated admin session
     const auto test_endpoint = internet::endpoint();
@@ -286,7 +286,7 @@ TEST_CASE("handle_delete_account_request_success", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Set up authenticated admin session
     const auto test_endpoint = internet::endpoint();
@@ -343,7 +343,7 @@ TEST_CASE("handle_delete_account_request_non_existent_account", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     // Set up authenticated admin session
     const auto test_endpoint = internet::endpoint();
@@ -381,7 +381,7 @@ TEST_CASE("handle_invalid_message_type", tags) {
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
-    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service);
+    accounts_message_handler sut(h.context(), system_flags, sessions, auth_service, nullptr);
 
     std::vector<std::byte> empty_payload;
     boost::asio::io_context io_ctx;

@@ -24,7 +24,7 @@
 #include <optional>
 #include <expected>
 #include <boost/asio/ip/address.hpp>
-#include "ores.database/database/context.hpp"
+#include "ores.database/domain/context.hpp"
 
 namespace ores::geo::service {
 

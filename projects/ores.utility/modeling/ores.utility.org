@@ -12,20 +12,144 @@ Foundation utilities used across all [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][
 
 Diagram:
 
-#+attr_html: :width 100% :alt Description
+#+attr_html: :width 100% :alt ORE Studio Utility Component Diagram
 #+caption: ORE Studio Utility Component Diagram
 [[file:ores.utility.png][file:ores.utility.png]]
 
 Provides core infrastructure and helper functions that don't fit into
 domain-specific modules. Key namespaces:
 
-- database: PostgreSQL connection management with libpq integration
-- repository: Database context abstraction for ORM operations
-- log: Boost.Log integration with per-module and per-test-case logging
+- converter: Base64 and Base32 encoding/decoding utilities
+- datetime: Date/time formatting and parsing utilities
+- faker: Test data generation (TOTP secrets, datetime, network endpoints)
+- geo: IP geolocation services using MaxMind database
+- program_options: Environment variable mapping for Boost.Program_options
+- rfl: Custom reflect-cpp reflectors for common types (UUID, time_point, IP address)
+- streaming: iostream operators for std types (vector, optional, time_point, uuid)
 - string: Type conversion and string manipulation utilities
 - uuid: UUID v7 generation for time-ordered unique identifiers
+- version: Application version utilities
+
+| Namespace         | Purpose                                               |
+|-------------------+-------------------------------------------------------|
+| =converter=       | Base64/Base32 encoding and decoding                   |
+| =datetime=        | Time point formatting and parsing                     |
+| =faker=           | Test data generation for testing                      |
+| =geo=             | IP address geolocation lookups                        |
+| =program_options= | Environment variable to option mapping                |
+| =rfl=             | Reflection library custom type reflectors             |
+| =streaming=       | iostream operators for standard library types         |
+| =string=          | String manipulation and conversion utilities          |
+| =uuid=            | RFC 9562 UUID v7 generator                            |
+| =version=         | Application version information                       |
 
 This module has no dependencies on other ORE Studio components, making it
 the foundation layer upon which all other modules are built.
+
+Note: Database, repository and logging functionality previously in this
+component have been moved to [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.database]] and [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]] respectively.
+Platform abstractions (filesystem, environment, time, net) have been moved
+to [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]].
+
+* UUID v7 Generator
+
+The =uuid= namespace provides a UUID v7 generator based on RFC 9562:
+
+#+begin_src cpp
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
+
+using ores::utility::uuid::uuid_v7_generator;
+
+uuid_v7_generator gen;
+boost::uuids::uuid id = gen();  // Time-sortable UUID
+#+end_src
+
+UUID v7 combines a 48-bit Unix timestamp with random data, making them ideal
+for distributed database primary keys (sortable by generation time with low
+collision probability).
+
+* Base64/Base32 Encoding
+
+The =converter= namespace provides encoding utilities:
+
+#+begin_src cpp
+#include "ores.utility/convert/base64_converter.hpp"
+#include "ores.utility/convert/base32_converter.hpp"
+
+using ores::utility::converter::base64_converter;
+using ores::utility::converter::base32_converter;
+
+// Base64 encode/decode
+std::vector<uint8_t> data = {0x48, 0x65, 0x6c, 0x6c, 0x6f};
+std::string encoded = base64_converter::convert(data);
+std::vector<uint8_t> decoded = base64_converter::convert(encoded);
+#+end_src
+
+* DateTime Utilities
+
+The =datetime= namespace provides time point formatting and parsing:
+
+#+begin_src cpp
+#include "ores.utility/datetime/datetime.hpp"
+
+using ores::utility::datetime::datetime;
+
+auto now = std::chrono::system_clock::now();
+
+// Format as local time
+std::string local = datetime::format_time_point(now, "%Y-%m-%d %H:%M:%S");
+
+// Format as UTC
+std::string utc = datetime::format_time_point_utc(now);
+
+// Parse string to time_point
+auto tp = datetime::parse_time_point("2025-01-15 14:30:00");
+#+end_src
+
+* Geolocation Service
+
+The =geo= namespace provides IP address geolocation using MaxMind GeoLite2:
+
+#+begin_src cpp
+#include "ores.utility/geo/geolocation_service.hpp"
+
+using ores::utility::geo::geolocation_service;
+
+geolocation_service geo("/path/to/GeoLite2-City.mmdb");
+
+auto result = geo.lookup("8.8.8.8");
+if (result) {
+    std::cout << result->country_code << ", " << result->city << "\n";
+}
+#+end_src
+
+* Faker Utilities
+
+The =faker= namespace generates test data for testing purposes:
+
+#+begin_src cpp
+#include "ores.utility/faker/internet.hpp"
+#include "ores.utility/faker/totp.hpp"
+
+using ores::utility::faker::internet;
+using ores::utility::faker::totp;
+
+// Generate random network endpoint
+std::string endpoint = internet::endpoint();  // e.g., "192.168.1.50:8080"
+
+// Generate random IPv4 address
+boost::asio::ip::address ip = internet::ipv4();
+
+// Generate TOTP secret for testing
+std::string secret = totp::totp_secret();
+#+end_src
+
+* Reflect-cpp Reflectors
+
+The =rfl= namespace provides custom reflectors for serialization of common types:
+
+- =boost::uuids::uuid=: Serializes as string
+- =std::chrono::system_clock::time_point=: Serializes as ISO 8601 UTC string
+- =boost::asio::ip::address=: Serializes as string (IPv4/IPv6)
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

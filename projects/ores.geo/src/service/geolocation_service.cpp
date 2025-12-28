@@ -18,6 +18,7 @@
  *
  */
 #include "ores.geo/service/geolocation_service.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 
 namespace ores::geo::service {
 
@@ -31,32 +32,32 @@ geolocation_service::lookup(const boost::asio::ip::address& ip) const {
 
 std::expected<geolocation_result, geolocation_error>
 geolocation_service::lookup(const std::string& ip_string) const {
-    auto conn = ctx_.acquire();
-    if (!conn) {
-        return std::unexpected(geolocation_error::database_not_available);
-    }
-
     try {
-        // Query the geoip_lookup function
-        const std::string query =
+        const std::string sql =
             "SELECT country_code, city_name, latitude, longitude "
-            "FROM ores.geoip_lookup($1::inet)";
+            "FROM ores.geoip_lookup('" + ip_string + "'::inet)";
 
-        auto result = conn->exec_params(query, ip_string);
+        auto rows = database::repository::execute_raw_multi_column_query(
+            ctx_, sql, lg(), "Geolocation lookup for " + ip_string);
 
-        if (result.empty()) {
+        if (rows.empty()) {
             return std::unexpected(geolocation_error::address_not_found);
         }
 
+        const auto& row = rows[0];
         geolocation_result geo_result;
-        geo_result.country_code = result[0]["country_code"].as<std::string>("");
-        geo_result.city = result[0]["city_name"].as<std::string>("");
 
-        if (!result[0]["latitude"].is_null()) {
-            geo_result.latitude = result[0]["latitude"].as<double>();
+        if (row.size() >= 1 && row[0].has_value()) {
+            geo_result.country_code = row[0].value();
         }
-        if (!result[0]["longitude"].is_null()) {
-            geo_result.longitude = result[0]["longitude"].as<double>();
+        if (row.size() >= 2 && row[1].has_value()) {
+            geo_result.city = row[1].value();
+        }
+        if (row.size() >= 3 && row[2].has_value()) {
+            geo_result.latitude = std::stod(row[2].value());
+        }
+        if (row.size() >= 4 && row[3].has_value()) {
+            geo_result.longitude = std::stod(row[3].value());
         }
 
         return geo_result;

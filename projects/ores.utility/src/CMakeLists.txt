@@ -43,6 +43,7 @@ find_package(maxminddb CONFIG REQUIRED)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.platform.lib
         OpenSSL::SSL
         Boost::exception
         reflectcpp::reflectcpp

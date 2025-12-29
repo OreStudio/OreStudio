@@ -20,12 +20,16 @@
 #include "ores.wt/app/ore_application.hpp"
 #include "ores.wt/app/currency_list_widget.hpp"
 #include "ores.wt/app/currency_dialog.hpp"
+#include "ores.wt/app/account_list_widget.hpp"
+#include "ores.wt/app/account_dialog.hpp"
 #include <Wt/WBootstrap5Theme.h>
 #include <Wt/WNavigationBar.h>
 #include <Wt/WMenu.h>
 #include <Wt/WStackedWidget.h>
 #include <Wt/WText.h>
 #include <Wt/WMessageBox.h>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::wt::app {
 
@@ -96,9 +100,11 @@ void ore_application::show_main_view() {
     load_sample_currencies();
     menu->addItem("Currencies", std::move(currency_widget));
 
-    auto accounts_text = std::make_unique<Wt::WText>(
-        "<p>Account management coming soon...</p>");
-    menu->addItem("Accounts", std::move(accounts_text));
+    auto account_widget = std::make_unique<account_list_widget>();
+    account_list_widget_ = account_widget.get();
+    setup_account_handlers();
+    load_sample_accounts();
+    menu->addItem("Accounts", std::move(account_widget));
 
     navbar->addMenu(std::move(left_menu));
 
@@ -138,14 +144,7 @@ void ore_application::show_add_currency_dialog() {
     auto dialog = addChild(
         std::make_unique<currency_dialog>(currency_dialog::mode::add));
 
-    dialog->saved().connect([this, dialog](const currency_data& data) {
-        currency_row row;
-        row.iso_code = data.iso_code;
-        row.name = data.name;
-        row.symbol = data.symbol;
-        row.numeric_code = data.numeric_code;
-        row.currency_type = data.currency_type;
-        row.version = 1;
+    dialog->saved().connect([this, dialog](const currency_data&) {
         load_sample_currencies();
         removeChild(dialog);
     });
@@ -188,9 +187,135 @@ void ore_application::confirm_delete_currency(const std::string& iso_code) {
         Wt::Icon::Warning,
         Wt::StandardButton::Yes | Wt::StandardButton::No));
 
-    msg_box->buttonClicked().connect([this, msg_box, iso_code](Wt::StandardButton btn) {
+    msg_box->buttonClicked().connect([this, msg_box](Wt::StandardButton btn) {
         if (btn == Wt::StandardButton::Yes) {
             load_sample_currencies();
+        }
+        removeChild(msg_box);
+    });
+
+    msg_box->show();
+}
+
+void ore_application::setup_account_handlers() {
+    account_list_widget_->add_requested().connect([this] {
+        show_add_account_dialog();
+    });
+
+    account_list_widget_->edit_requested().connect(
+        [this](const boost::uuids::uuid& id) {
+            show_edit_account_dialog(id);
+        });
+
+    account_list_widget_->delete_requested().connect(
+        [this](const boost::uuids::uuid& id) {
+            confirm_delete_account(id);
+        });
+
+    account_list_widget_->lock_requested().connect(
+        [this](const boost::uuids::uuid& id) {
+            confirm_lock_account(id);
+        });
+
+    account_list_widget_->unlock_requested().connect(
+        [this](const boost::uuids::uuid& id) {
+            confirm_unlock_account(id);
+        });
+}
+
+void ore_application::load_sample_accounts() {
+    boost::uuids::random_generator gen;
+    std::vector<account_row> accounts = {
+        {gen(), "admin", "admin@example.com", false, true, 0, 1},
+        {gen(), "john.doe", "john.doe@example.com", false, false, 0, 1},
+        {gen(), "jane.smith", "jane.smith@example.com", false, true, 0, 2},
+        {gen(), "locked_user", "locked@example.com", true, false, 5, 1},
+    };
+    account_list_widget_->set_accounts(accounts);
+}
+
+void ore_application::show_add_account_dialog() {
+    auto dialog = addChild(
+        std::make_unique<account_dialog>(account_dialog::mode::add));
+
+    dialog->saved().connect([this, dialog](const account_data&) {
+        load_sample_accounts();
+        removeChild(dialog);
+    });
+
+    dialog->finished().connect([this, dialog](Wt::DialogCode) {
+        removeChild(dialog);
+    });
+
+    dialog->show();
+}
+
+void ore_application::show_edit_account_dialog(const boost::uuids::uuid& id) {
+    auto dialog = addChild(
+        std::make_unique<account_dialog>(account_dialog::mode::edit));
+
+    account_data data;
+    data.id = id;
+    data.username = "sample_user";
+    data.email = "sample@example.com";
+    dialog->set_account(data);
+
+    dialog->saved().connect([this, dialog](const account_data&) {
+        load_sample_accounts();
+        removeChild(dialog);
+    });
+
+    dialog->finished().connect([this, dialog](Wt::DialogCode) {
+        removeChild(dialog);
+    });
+
+    dialog->show();
+}
+
+void ore_application::confirm_delete_account(const boost::uuids::uuid& id) {
+    auto msg_box = addChild(std::make_unique<Wt::WMessageBox>(
+        "Confirm Delete",
+        "Are you sure you want to delete this account?",
+        Wt::Icon::Warning,
+        Wt::StandardButton::Yes | Wt::StandardButton::No));
+
+    msg_box->buttonClicked().connect([this, msg_box, id](Wt::StandardButton btn) {
+        if (btn == Wt::StandardButton::Yes) {
+            load_sample_accounts();
+        }
+        removeChild(msg_box);
+    });
+
+    msg_box->show();
+}
+
+void ore_application::confirm_lock_account(const boost::uuids::uuid& id) {
+    auto msg_box = addChild(std::make_unique<Wt::WMessageBox>(
+        "Confirm Lock",
+        "Are you sure you want to lock this account?",
+        Wt::Icon::Warning,
+        Wt::StandardButton::Yes | Wt::StandardButton::No));
+
+    msg_box->buttonClicked().connect([this, msg_box, id](Wt::StandardButton btn) {
+        if (btn == Wt::StandardButton::Yes) {
+            load_sample_accounts();
+        }
+        removeChild(msg_box);
+    });
+
+    msg_box->show();
+}
+
+void ore_application::confirm_unlock_account(const boost::uuids::uuid& id) {
+    auto msg_box = addChild(std::make_unique<Wt::WMessageBox>(
+        "Confirm Unlock",
+        "Are you sure you want to unlock this account?",
+        Wt::Icon::Information,
+        Wt::StandardButton::Yes | Wt::StandardButton::No));
+
+    msg_box->buttonClicked().connect([this, msg_box, id](Wt::StandardButton btn) {
+        if (btn == Wt::StandardButton::Yes) {
+            load_sample_accounts();
         }
         removeChild(msg_box);
     });

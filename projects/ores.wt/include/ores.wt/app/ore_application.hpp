@@ -27,6 +27,7 @@
 namespace ores::wt::app {
 
 class currency_list_widget;
+class account_list_widget;
 
 /**
  * @brief Session information for logged-in user.
@@ -63,9 +64,18 @@ private:
     void show_edit_currency_dialog(const std::string& iso_code);
     void confirm_delete_currency(const std::string& iso_code);
 
+    void setup_account_handlers();
+    void load_sample_accounts();
+    void show_add_account_dialog();
+    void show_edit_account_dialog(const boost::uuids::uuid& id);
+    void confirm_delete_account(const boost::uuids::uuid& id);
+    void confirm_lock_account(const boost::uuids::uuid& id);
+    void confirm_unlock_account(const boost::uuids::uuid& id);
+
     session_info session_;
     login_widget* login_widget_ = nullptr;
     currency_list_widget* currency_list_widget_ = nullptr;
+    account_list_widget* account_list_widget_ = nullptr;
 };
 
 }

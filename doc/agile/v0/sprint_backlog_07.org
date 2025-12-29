@@ -17,54 +17,59 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-24 Wed 11:06], for Wednesday, December 24, 2025.
-|      | <75>                                       |        |      |      |       |
-| Tags | Headline                                   | Time   |      |      |     % |
-|------+--------------------------------------------+--------+------+------+-------|
-|      | *Total time*                               | *2:04* |      |      | 100.0 |
-|------+--------------------------------------------+--------+------+------+-------|
-|      | Stories                                    | 2:04   |      |      | 100.0 |
-|      | Active                                     |        | 2:04 |      | 100.0 |
-| code | Add session information to database        |        |      | 1:36 |  77.4 |
-| code | Add UI for roles and permission management |        |      | 0:28 |  22.6 |
+#+CAPTION: Clock summary at [2025-12-28 Sun 15:01], for Sunday, December 28, 2025.
+|      | <75>                                   |        |      |      |       |
+| Tags | Headline                               | Time   |      |      |     % |
+|------+----------------------------------------+--------+------+------+-------|
+|      | *Total time*                           | *1:51* |      |      | 100.0 |
+|------+----------------------------------------+--------+------+------+-------|
+|      | Stories                                | 1:51   |      |      | 100.0 |
+|      | Active                                 |        | 1:51 |      | 100.0 |
+| code | Refactor SQL code                      |        |      | 0:51 |  45.9 |
+| code | Add session recording support to comms |        |      | 1:00 |  54.1 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-24 Wed 11:06]
+#+CAPTION: Clock summary at [2025-12-28 Sun 15:01]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *53:20* |       |      | 100.0 |
+|       | *Total time*                                      | *64:58* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 53:20   |       |      | 100.0 |
-|       | Active                                            |         | 53:20 |      | 100.0 |
-| agile | Sprint and product backlog refinement             |         |       | 1:07 |   2.1 |
-| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   1.7 |
-| code  | Consider compressing payload                      |         |       | 3:05 |   5.8 |
-| code  | Latest currencies should have different colour    |         |       | 1:28 |   2.8 |
-| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   2.7 |
-| code  | Add account management support to qt              |         |       | 3:43 |   7.0 |
-| code  | Add password reset functionality to accounts      |         |       | 1:49 |   3.4 |
-| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |   9.1 |
+|       | Stories                                           | 64:58   |       |      | 100.0 |
+|       | Active                                            |         | 64:58 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 1:07 |   1.7 |
+| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   1.4 |
+| code  | Consider compressing payload                      |         |       | 3:05 |   4.7 |
+| code  | Latest currencies should have different colour    |         |       | 1:28 |   2.3 |
+| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   2.2 |
+| code  | Add account management support to qt              |         |       | 3:43 |   5.7 |
+| code  | Add password reset functionality to accounts      |         |       | 1:49 |   2.8 |
+| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |   7.5 |
 | code  | Add exit confirmation dialog                      |         |       | 0:03 |   0.1 |
-| code  | Improve error messages in shell                   |         |       | 0:23 |   0.7 |
-| code  | Add support for relative time formatting          |         |       | 2:01 |   3.8 |
-| code  | Setup windows laptop with WSL                     |         |       | 5:10 |   9.7 |
-| code  | Add listen/notify to shell                        |         |       | 2:45 |   5.2 |
-| code  | Define type traits for message grouping           |         |       | 0:44 |   1.4 |
-| code  | Rename =accounts= to =iam=                        |         |       | 1:30 |   2.8 |
-| code  | Create the observability component                |         |       | 1:59 |   3.7 |
-| code  | Consider renaming =utility= to =system=           |         |       | 0:25 |   0.8 |
-| code  | Use chrono timepoints for domain entities         |         |       | 1:44 |   3.2 |
-| code  | Use prebuilt qt                                   |         |       | 0:26 |   0.8 |
-| code  | Add flags for currencies                          |         |       | 4:45 |   8.9 |
-| code  | Compilation fixes to current main                 |         |       | 3:47 |   7.1 |
-| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   0.7 |
-| code  | Add sign-up workflow                              |         |       | 0:15 |   0.5 |
-| code  | Implement RBAC enforcement                        |         |       | 6:34 |  12.3 |
-| code  | Add session information to database               |         |       | 1:36 |   3.0 |
-| code  | Add UI for roles and permission management        |         |       | 0:28 |   0.9 |
+| code  | Improve error messages in shell                   |         |       | 0:23 |   0.6 |
+| code  | Add support for relative time formatting          |         |       | 2:01 |   3.1 |
+| code  | Setup windows laptop with WSL                     |         |       | 5:10 |   8.0 |
+| code  | Add listen/notify to shell                        |         |       | 2:45 |   4.2 |
+| code  | Define type traits for message grouping           |         |       | 0:44 |   1.1 |
+| code  | Rename =accounts= to =iam=                        |         |       | 1:30 |   2.3 |
+| code  | Create the observability component                |         |       | 1:59 |   3.1 |
+| code  | Consider renaming =utility= to =system=           |         |       | 0:25 |   0.6 |
+| code  | Use chrono timepoints for domain entities         |         |       | 1:44 |   2.7 |
+| code  | Use prebuilt qt                                   |         |       | 0:26 |   0.7 |
+| code  | Add flags for currencies                          |         |       | 4:45 |   7.3 |
+| code  | Add skills for code review                        |         |       | 0:52 |   1.3 |
+| code  | Compilation fixes to current main                 |         |       | 3:47 |   5.8 |
+| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   0.6 |
+| code  | Add sign-up workflow                              |         |       | 0:15 |   0.4 |
+| code  | Implement RBAC enforcement                        |         |       | 6:34 |  10.1 |
+| code  | Add session information to database               |         |       | 3:36 |   5.5 |
+| code  | Add UI for roles and permission management        |         |       | 0:28 |   0.7 |
+| code  | Improve unit test coverage                        |         |       | 1:00 |   1.5 |
+| code  | Incorporate new telemetry component               |         |       | 4:47 |   7.4 |
+| code  | Refactor SQL code                                 |         |       | 1:29 |   2.3 |
+| code  | Add session recording support to comms            |         |       | 1:30 |   2.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1000,7 +1005,42 @@ CREATE INDEX idx_icon_tags_tag_id ON icon_tags (tag_id);
 #+end_src
 
 
-*** STARTED Compilation fixes to current main                          :code:
+*** COMPLETED Add skills for code review                               :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-25 Thu 09:35]--[2025-12-25 Thu 10:27] =>  0:52
+    :END:
+
+#+begin_quote
+This pull request significantly expands the project's internal documentation by
+introducing several new 'skills' designed to standardize and improve development
+workflows. It provides structured guidance for the initial design phase,
+detailed checklists for both granular pull request reviews and comprehensive
+component audits, and a crucial meta-skill for ensuring the quality and
+consistency of the documentation itself. These additions aim to foster more
+robust, maintainable, and well-understood code development practices.
+
+Highlights:
+
+- New Brainstorming Skill: Introduced a comprehensive skill for structured
+  brainstorming and design, guiding users through understanding ideas, exploring
+  approaches, presenting designs, and documenting outcomes.
+- New Code Review Skills: Added two distinct code review skills: 'Code Review
+  PR' for reviewing pull request changes and 'Code Review Component' for deep
+  audits of entire components, covering aspects like technical debt,
+  modernization, and convention compliance.
+- New Skill Review Skill: Created a meta-skill dedicated to auditing and
+  maintaining the quality, consistency, and accuracy of existing skill
+  documentation, including checks for duplication and conflicts.
+- Skill Catalog Update: The main skill catalog (claude_code_skills.org) has been
+  updated to include and categorize all the newly added skills under
+  'Meta-Skills', 'Design', and 'Code Review'.
+- Documentation Refactoring: The domain-type-creator skill was updated to
+  replace explicit CMake build commands with a reference to the CMake Runner
+  skill, promoting consistency and reducing redundant instructions across
+  documentation.
+#+end_quote
+
+*** COMPLETED Compilation fixes to current main                        :code:
     :LOGBOOK:
     CLOCK: [2025-12-21 Sun 13:19]--[2025-12-21 Sun 13:23] =>  0:04
     CLOCK: [2025-12-21 Sun 13:13]--[2025-12-21 Sun 13:18] =>  0:05
@@ -1038,7 +1078,7 @@ Highlights:
   reporter syntax.
 #+end_quote
 
-*** STARTED Ignore warnings on windows and OSX                         :code:
+*** BLOCKED Ignore warnings on windows and OSX                         :code:
     :LOGBOOK:
     CLOCK: [2025-12-17 Wed 00:09]--[2025-12-17 Wed 00:32] =>  0:23
     :END:
@@ -1056,7 +1096,7 @@ Links:
 - [[https://stackoverflow.com/questions/26458652/ctest-custom-warning-exception][SO: ctest custom warning exception]]
 - [[https://www.reddit.com/r/cmake/comments/1poie3j/ignoring_configure_time_warnings_in_cdash/][reddit: Ignoring configure time warnings in CDash]]
 
-*** STARTED Add sign-up workflow                                       :code:
+*** COMPLETED Add sign-up workflow                                     :code:
     :LOGBOOK:
     CLOCK: [2025-12-22 Mon 00:24]--[2025-12-22 Mon 00:35] =>  0:11
     CLOCK: [2025-12-22 Mon 00:19]--[2025-12-22 Mon 00:23] =>  0:04
@@ -1131,7 +1171,7 @@ At present this fails:
 
 
 
-*** STARTED Implement RBAC enforcement                                 :code:
+*** COMPLETED Implement RBAC enforcement                               :code:
     :LOGBOOK:
     CLOCK: [2025-12-23 Tue 21:10]--[2025-12-23 Tue 23:30] =>  2:20
     CLOCK: [2025-12-23 Tue 17:01]--[2025-12-23 Tue 19:16] =>  2:15
@@ -1199,8 +1239,9 @@ Notes:
 - add tests for all new entities. Code coverage has dropped a lot after adding
   them.
 
-*** STARTED Add session information to database                        :code:
+*** COMPLETED Add session information to database                      :code:
     :LOGBOOK:
+    CLOCK: [2025-12-27 Sat 09:00]--[2025-12-27 Sat 11:00] =>  2:00
     CLOCK: [2025-12-24 Wed 10:19]--[2025-12-24 Wed 10:37] =>  0:18
     CLOCK: [2025-12-24 Wed 09:00]--[2025-12-24 Wed 10:18] =>  1:18
     :END:
@@ -1219,13 +1260,133 @@ Notes:
   etc. We should display this information in the accounts dialog.
 - on the main accounts dialog we should show the number of open sessions.
 
-*** STARTED Add UI for roles and permission management                 :code:
+*** COMPLETED Add UI for roles and permission management               :code:
     :LOGBOOK:
     CLOCK: [2025-12-24 Wed 10:38]--[2025-12-24 Wed 11:06] =>  0:28
     :END:
 
 We added the core infrastructure but we need a way to manage it from Qt and from
 the shell.
+
+*** COMPLETED Improve unit test coverage                               :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-27 Sat 11:00]--[2025-12-27 Sat 12:00] =>  1:00
+    :END:
+
+We are dipping below 70% once more.
+
+#+begin_quote
+This pull request significantly enhances the test coverage across several core
+components of the system. By introducing new unit tests for geolocation
+services, CSV export functionality, filesystem operations, session management,
+currency versioning, and feature flags, it aims to improve the robustness,
+reliability, and maintainability of the codebase. These additions ensure that
+various functionalities behave as expected under different scenarios, including
+edge cases and data serialization.
+
+Highlights:
+
+- Geolocation Service Tests: New unit tests for geolocation_service covering
+  initialization, error handling for unloaded databases, move semantics, and the
+  geolocation_result/geolocation_error structs.
+- CSV Exporter Tests: Comprehensive tests for csv_exporter, ensuring RFC 4180
+  compliance and proper escaping of special characters like commas, quotes, and
+  newlines, along with header validation and multi-currency exports.
+- Filesystem File Operations Tests: Extensive unit tests for filesystem::file
+  operations, including reading/writing content, directory traversal, finding
+  files, upward file searching, remove operations, and recreate_directory
+  functionality.
+- Session Domain Tests: Added tests for the session domain, verifying active
+  status detection, duration calculation, JSON serialization, and the
+  session_statistics struct.
+- Currency Version JSON I/O Tests: Unit tests for JSON serialization of
+  currency_version and currency_version_history objects, ensuring correct data
+  representation.
+- Feature Flags I/O Tests: Tests for feature_flags JSON and table I/O
+  operations, including the print_feature_flags_table function and handling of
+  special characters.
+#+end_quote
+
+*** COMPLETED Incorporate new telemetry component                      :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-27 Sat 20:00]--[2025-12-27 Sat 22:00] =>  2:00
+    CLOCK: [2025-12-26 Fri 10:10]--[2025-12-26 Fri 11:18] =>  1:08
+    CLOCK: [2025-12-25 Thu 12:01]--[2025-12-25 Thu 13:40] =>  1:39
+    :END:
+
+Gemini:
+
+#+begin_quote
+This pull request establishes the foundational telemetry framework for the
+application by introducing a dedicated ores.telemetry module. It systematically
+migrates all existing logging functionalities to this new module and lays out a
+clear roadmap for implementing distributed tracing and OpenTelemetry
+integration. The changes ensure that the application's observability
+capabilities are enhanced and future-proofed, allowing for better monitoring and
+debugging of distributed systems.
+
+Highlights:
+- New Telemetry Component: A new ores.telemetry component has been introduced to
+  centralize all telemetry-related functionalities, including logging and
+  distributed tracing.
+- Logging Infrastructure Migration: The existing logging infrastructure,
+  previously located under ores.utility/log, has been fully migrated to the new
+  ores.telemetry/log module. This involves updating include paths and namespace
+  declarations across numerous files.
+- Distributed Tracing Roadmap: The product_backlog.org document has been updated
+  with a detailed plan for implementing distributed tracing. This includes tasks
+  for instrumenting key components, propagating trace context in the messaging
+  protocol, and establishing span collection and export infrastructure,
+  including an OpenTelemetry Protocol (OTLP) exporter.
+- Boost.Log Integration with Telemetry: New internal components like
+  boost_severity, macros.hpp, and telemetry_sink_backend have been added to
+  seamlessly integrate Boost.Log with the new telemetry system, allowing for
+  automatic extraction of trace and span IDs from log records.
+- File Log Exporter: A file_log_exporter has been added, implementing the
+  log_exporter interface, to export log records in JSON Lines format, suitable
+  for external log processing tools.
+#+end_quote
+
+*** COMPLETED Refactor SQL code                                        :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-28 Sun 09:00]--[2025-12-28 Sun 09:51] =>  0:51
+    CLOCK: [2025-12-26 Fri 11:19]--[2025-12-26 Fri 11:57] =>  0:38
+    :END:
+
+At present we have too many files, scattered around the sql directory. We need
+to add some kind of structure to it.
+
+Gemini (only captures last tasks):
+
+#+begin_quote
+This pull request significantly enhances the project's documentation and
+modeling capabilities by integrating a new set of SQL recipes, a dedicated skill
+for authoring and maintaining these recipes, and detailed documentation for the
+ORES database schema. The changes aim to provide clear, executable examples for
+database interaction and establish a structured approach for expanding and
+maintaining documentation.
+
+Highlights:
+
+- Comprehensive SQL Recipes: Introduced a new, extensive set of SQL recipes
+  providing executable examples for querying and managing the ORES database,
+  covering accounts, RBAC, currencies, feature flags, sessions, and
+  administrative tasks.
+- Recipe Authoring Skill: Added a new 'Recipe Author' skill that guides users on
+  how to create new recipe files and recipe-updating skills, ensuring
+  consistency and best practices for executable documentation.
+- Detailed SQL Schema Documentation: Integrated comprehensive documentation for
+  the ORES Studio SQL Schema, detailing its architecture, bitemporal design
+  patterns, database creation processes, and directory structure.
+#+end_quote
+
+*** COMPLETED Add session recording support to comms                   :code:
+   :LOGBOOK:
+   CLOCK: [2025-12-28 Sun 14:01]--[2025-12-28 Sun 15:01] =>  1:00
+   CLOCK: [2025-12-26 Fri 11:59]--[2025-12-26 Fri 12:29] =>  0:30
+   :END:
+
+We need to be able to record a client session in the socket.
 
 *** Sign-up dialog should be disabled if feature is disabled           :code:
 
@@ -1310,6 +1471,10 @@ Notes:
 - we need a UI to manage the UI options.
 - should be stored in the server and cached locally with a sqlite db.
 
+[[./dashboard_ideas.png]]
+
+[[./dashboard_ideas_II.png]]
+
 *** New feature flags                                                  :code:
 
 - allow sign-ups. If true, users can create their own accounts.
@@ -1328,7 +1493,7 @@ At present the following is not working or is a snag:
 - currencies history is broken, does not show changes diff. Done.
 - version is zero. Done.
 - update the modified by and modified at in currencies to use recorded
-  terminology.
+  terminology. Done.
 - We need to either make the columns configurable, or remove some less useful
   columns such as symbol, fraction etc.
 - save new currency does not close dialog.

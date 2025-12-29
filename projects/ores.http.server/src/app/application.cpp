@@ -23,6 +23,15 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include "ores.http/net/http_server.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.database/service/context_factory.hpp"
+#include "ores.variability/service/system_flags_service.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
+#include "ores.iam/service/authorization_service.hpp"
+#include "ores.http.server/routes/iam_routes.hpp"
+#include "ores.http.server/routes/risk_routes.hpp"
+#include "ores.http.server/routes/variability_routes.hpp"
+#include "ores.http.server/routes/assets_routes.hpp"
 
 namespace ores::http_server::app {
 
@@ -34,6 +43,17 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     BOOST_LOG_SEV(lg(), info) << "Starting HTTP server application...";
     BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
+
+    // Initialize database context
+    BOOST_LOG_SEV(lg(), info) << "Initializing database connection...";
+    database::service::context_factory factory;
+    auto ctx = factory.create(cfg.database);
+
+    // Initialize shared services
+    BOOST_LOG_SEV(lg(), info) << "Initializing shared services...";
+    auto system_flags = std::make_shared<variability::service::system_flags_service>(ctx);
+    auto sessions = std::make_shared<comms::service::auth_session_service>();
+    auto auth_service = std::make_shared<iam::service::authorization_service>(ctx);
 
     // Create HTTP server
     http::net::http_server server(io_ctx, cfg.server);
@@ -54,7 +74,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     BOOST_LOG_SEV(lg(), info) << "Registering API routes...";
 
-    // Example: Add a simple API route
+    // Register API info endpoint
     auto api_info_builder = router->get("/api/v1/info")
         .summary("API Information")
         .description("Returns information about the API")
@@ -66,12 +86,24 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     router->add_route(api_info_builder.build());
     registry->register_route(api_info_builder.build());
 
-    // Register routes with OpenAPI registry
-    for (const auto& route : router->routes()) {
-        registry->register_route(route);
-    }
+    // Register IAM routes (accounts, auth, roles, sessions)
+    routes::iam_routes iam(ctx, system_flags, sessions, auth_service);
+    iam.register_routes(router, registry);
+
+    // Register Risk routes (currencies)
+    routes::risk_routes risk(ctx, sessions);
+    risk.register_routes(router, registry);
+
+    // Register Variability routes (feature flags)
+    routes::variability_routes variability(system_flags, sessions);
+    variability.register_routes(router, registry);
+
+    // Register Assets routes (images)
+    routes::assets_routes assets(ctx, sessions);
+    assets.register_routes(router, registry);
 
     BOOST_LOG_SEV(lg(), info) << "API routes registered, starting server...";
+    BOOST_LOG_SEV(lg(), info) << "Total endpoints: " << router->routes().size();
     BOOST_LOG_SEV(lg(), info) << "OpenAPI spec available at /openapi.json";
     BOOST_LOG_SEV(lg(), info) << "Swagger UI available at /swagger";
 

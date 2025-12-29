@@ -40,11 +40,14 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.http.lib
         ores.iam.lib
+        ores.risk.lib
+        ores.assets.lib
         ores.variability.lib
         ores.telemetry.lib
         ores.utility.lib
         ores.database.lib
-        ores.comms.lib)
+        ores.comms.lib
+        reflectcpp::reflectcpp)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

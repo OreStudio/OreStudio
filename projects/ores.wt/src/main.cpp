@@ -17,33 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <Wt/WApplication.h>
-#include <Wt/WContainerWidget.h>
-#include <Wt/WText.h>
 #include <Wt/WServer.h>
-#include "ores.wt/domain/stub.hpp"
+#include "ores.wt/app/ore_application.hpp"
 
 namespace {
 
-/**
- * @brief Main Wt application class.
- */
-class ore_application final : public Wt::WApplication {
-public:
-    explicit ore_application(const Wt::WEnvironment& env)
-        : Wt::WApplication(env) {
-        setTitle("ORE Studio");
-        root()->addWidget(
-            std::make_unique<Wt::WText>("Welcome to ORE Studio Web Interface"));
-    }
-};
-
-/**
- * @brief Factory function to create application instances.
- */
 std::unique_ptr<Wt::WApplication>
 create_application(const Wt::WEnvironment& env) {
-    return std::make_unique<ore_application>(env);
+    return std::make_unique<ores::wt::app::ore_application>(env);
 }
 
 }

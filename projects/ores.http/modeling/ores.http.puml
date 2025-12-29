@@ -1,0 +1,57 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+
+title ores.http Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "HTTP server library using Boost.Beast with JWT authentication and OpenAPI support" as ores_http_note
+    http --- ores_http_note
+    namespace http #F2F2F2 {
+
+        namespace net {
+            class http_server
+            class http_session
+            class router
+        }
+
+        namespace middleware {
+            class jwt_authenticator
+            class cors_middleware
+        }
+
+        namespace openapi {
+            class endpoint_registry
+            class openapi_generator
+        }
+
+        namespace domain {
+            class http_request
+            class http_response
+            class route
+            class jwt_claims
+        }
+
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.http.puml"
+' End:
+@enduml

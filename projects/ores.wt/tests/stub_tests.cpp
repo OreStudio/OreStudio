@@ -20,20 +20,15 @@
 #include "ores.wt/domain/stub.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
-const std::string test_suite("ores.wt.tests");
 const std::string tags("[domain]");
 
 }
 
 using namespace ores::wt::domain;
-using namespace ores::utility::log;
 
 TEST_CASE("create_stub", tags) {
-    auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, warn) << stub_function();
+    REQUIRE(stub_function() == "STUB code to be removed");
 }

@@ -28,6 +28,7 @@
         "faker-cxx",
         "catch2",
         "libfort",
+        "libharu",
         "wt"
     ]
 }

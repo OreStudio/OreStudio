@@ -23,15 +23,15 @@
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/detached.hpp>
 #include <openssl/crypto.h>
-#include "ores.service/app/host.hpp"
-#include "ores.service/config/parser_exception.hpp"
+#include "ores.comms.service/app/host.hpp"
+#include "ores.comms.service/config/parser_exception.hpp"
 
 namespace {
 
 boost::asio::awaitable<int>
 async_main(int argc, char** argv, boost::asio::io_context& io_ctx) {
-    using ores::service::app::host;
-    using ores::service::config::parser_exception;
+    using ores::comms::service::app::host;
+    using ores::comms::service::config::parser_exception;
 
     try {
         const auto args(std::vector<std::string>(argv + 1, argv + argc));

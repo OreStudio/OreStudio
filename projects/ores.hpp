@@ -50,7 +50,7 @@
  * - Deprecated REPL client (functionality moved to ores.comms)
  * - Depends on: Foundation, Infrastructure, Domain
  *
- * **Application Layer** (`ores.cli`, `ores.qt`, `ores.service`)
+ * **Application Layer** (`ores.cli`, `ores.qt`, `ores.comms.service`)
  * - CLI: Command-line import/export of currencies in multiple formats
  * - Qt: Desktop GUI with MDI interface for visual data management
  * - Service: Multi-client server hosting all backend services

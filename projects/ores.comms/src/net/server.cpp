@@ -166,7 +166,7 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
         if (e.code() == boost::asio::error::address_in_use) {
             BOOST_LOG_SEV(lg(), error)
                 << "Cannot start server: port " << options_.port
-                << " is already in use. Another instance of ores.service may be running. "
+                << " is already in use. Another instance of ores.comms.service may be running. "
                 << "Use 'lsof -i :" << options_.port << "' to find the process.";
         }
         throw;

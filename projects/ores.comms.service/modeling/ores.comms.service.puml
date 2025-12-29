@@ -17,16 +17,19 @@
 @startuml
 !pragma layout smetana
 
-title ores.service Component
+title ores.comms.service Component
 
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "Main service for ORE Studio." as ores_service_note
-    service --- ores_service_note
-    namespace service #F2F2F2 {
-        note "Contains configuration-related entities." as ores_service_config_note
-        config --- ores_service_config_note
+    note "Main comms service for ORE Studio." as ores_comms_service_note
+    comms --- ores_comms_service_note
+    namespace comms #F2F2F2 {
+        note "Main service for ORE Studio." as ores_comms_service_service_note
+        service --- ores_comms_service_service_note
+        namespace service #F2F2F2 {
+            note "Contains configuration-related entities." as ores_comms_service_config_note
+            config --- ores_comms_service_config_note
         namespace config #F2F2F2 {
             '
             ' Layout groupings
@@ -62,7 +65,7 @@ namespace ores #F2F2F2 {
             class parser #ECECEC {
                 +parse(const std::vector<std::string>& arguments, std::ostream& info, std::ostream& error) const : std::optional<options>
             }
-            parser ..> ores::service::config::options
+            parser ..> ores::comms::service::config::options
 
             note top of parser
             Command-line parser implementation using boost program options.
@@ -99,7 +102,7 @@ namespace ores #F2F2F2 {
                 +{field} server : server_options
                 +{field} database : ores::database::database_options
             }
-            options o-- ores::service::config::server_options
+            options o-- ores::comms::service::config::server_options
 
             note top of options
             All of the configuration options required by the service.
@@ -112,8 +115,8 @@ namespace ores #F2F2F2 {
             end note
         }
 
-        note "Contains application-related entities." as ores_service_app_note
-        app --- ores_service_app_note
+            note "Contains application-related entities." as ores_comms_service_app_note
+            app --- ores_comms_service_app_note
         namespace app #F2F2F2 {
             '
             ' Layout groupings
@@ -149,7 +152,7 @@ namespace ores #F2F2F2 {
                 -{method} make_context(const std::optional<database::database_options>& db_opts) : utility::repository::context
                 +run(boost::asio::io_context& io_ctx, const config::options& cfg) const : boost::asio::awaitable<void>
             }
-            application ..> ores::service::config::options
+            application ..> ores::comms::service::config::options
 
             note top of application
             Entry point for the ores service application.
@@ -180,11 +183,12 @@ namespace ores #F2F2F2 {
             note top of host
             Provides hosting services to the application.
             end note
+            }
         }
     }
 }
 
 ' Local Variables:
-' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.service.puml"
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.comms.service.puml"
 ' End:
 @enduml

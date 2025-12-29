@@ -17,30 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SERVICE_APP_APPLICATION_EXCEPTION_HPP
-#define ORES_SERVICE_APP_APPLICATION_EXCEPTION_HPP
+#ifndef ORES_COMMS_SERVICE_CONFIG_OPTIONS_HPP
+#define ORES_COMMS_SERVICE_CONFIG_OPTIONS_HPP
 
-#include <string>
-#include <boost/exception/info.hpp>
+#include <iosfwd>
+#include <optional>
+#include "ores.telemetry/log/logging_options.hpp"
+#include "ores.database/domain/database_options.hpp"
+#include "ores.comms/net/server_options.hpp"
 
-namespace ores::service::app {
+namespace ores::comms::service::config {
 
 /**
- * @brief A fatal error has occurred whilst the application was running.
+ * @brief All of the configuration options required by the service.
  */
-class application_exception : public virtual std::exception,
-                              public virtual boost::exception {
-public:
-    explicit application_exception(std::string_view message = "")
-        : message_(message) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
-    }
-
-private:
-    std::string message_;
+struct options final {
+    /**
+     * @brief Configuration options related to logging, if any.
+     */
+    std::optional<ores::telemetry::log::logging_options> logging;
+    /**
+     * @brief Configuration related to server operations.
+     */
+    comms::net::server_options server;
+    /**
+     * @brief Configuration related to database operations.
+     */
+    ores::database::database_options database;
 };
+
+std::ostream& operator<<(std::ostream& s, const options& v);
 
 }
 

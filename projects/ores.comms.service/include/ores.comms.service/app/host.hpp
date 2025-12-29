@@ -17,24 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SERVICE_APP_APPLICATION_HPP
-#define ORES_SERVICE_APP_APPLICATION_HPP
+#ifndef ORES_COMMS_SERVICE_APP_HOST_HPP
+#define ORES_COMMS_SERVICE_APP_HOST_HPP
 
-#include <optional>
+#include <vector>
+#include <string>
+#include <ostream>
 #include <boost/asio/awaitable.hpp>
 #include "ores.telemetry/log/make_logger.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.database/domain/database_options.hpp"
-#include "ores.service/config/options.hpp"
 
-namespace ores::service::app {
+namespace ores::comms::service::app {
 
 /**
- * @brief Entry point for the ores command line application.
+ * @brief Provides hosting services to the application.
  */
-class application final {
+class host {
 private:
-    inline static std::string_view logger_name = "ores.service.app.application";
+    inline static std::string_view logger_name = "ores.comms.service.app.host";
 
     static auto& lg() {
         using namespace ores::telemetry::log;
@@ -43,17 +42,12 @@ private:
     }
 
 public:
-    application();
-    application(const application&) = delete;
-    application& operator=(const application&) = delete;
-
-private:
-    static database::context
-    make_context(const std::optional<database::database_options>& db_opts);
-
-public:
-    boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
-        const config::options& cfg) const;
+    /**
+     * @brief Executes the console workflow.
+     */
+    static boost::asio::awaitable<int> execute(const std::vector<std::string>& args,
+        std::ostream& std_output, std::ostream& error_output,
+        boost::asio::io_context& io_ctx);
 };
 
 }

@@ -15,7 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.service")
+set(name "ores.comms.service")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
@@ -34,7 +34,7 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.service/include)
+    ${CMAKE_SOURCE_DIR}/projects/ores.comms.service/include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
@@ -61,7 +61,7 @@ set_target_properties(${exe_target_name} PROPERTIES
     OUTPUT_NAME ${exe_binary_name})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.service/include)
+    ${CMAKE_SOURCE_DIR}/projects/ores.comms.service/include)
 
 target_link_libraries(${exe_target_name}
     PRIVATE

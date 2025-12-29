@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.service/config/parser.hpp"
+#include "ores.comms.service/config/parser.hpp"
 
 #include <ostream>
 #include <cstdint>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include "ores.comms/net/server_options.hpp"
-#include "ores.service/config/parser_exception.hpp"
+#include "ores.comms.service/config/parser_exception.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.telemetry/log/logging_configuration.hpp"
 #include "ores.database/config/database_configuration.hpp"
@@ -51,8 +51,8 @@ using boost::program_options::parsed_options;
 using boost::program_options::options_description;
 
 using ores::comms::net::server_options;
-using ores::service::config::options;
-using ores::service::config::parser_exception;
+using ores::comms::service::config::options;
+using ores::comms::service::config::parser_exception;
 
 /**
  * @brief Creates the option descriptions.
@@ -67,7 +67,7 @@ options_description make_options_description() {
         ("version,v", "Output version information and exit.");
 
     const auto lod(logging_configuration::make_options_description(
-            "ores.service.log"));
+            "ores.comms.service.log"));
 
     options_description sod("Server");
     sod.add_options()
@@ -97,7 +97,7 @@ void print_help(const options_description& od, std::ostream& info) {
          << std::endl
          << "Provides network communication capabilities for OreStudio)."
          << std::endl << std::endl
-         << "Usage: ores.service [options]"
+         << "Usage: ores.comms.service [options]"
          << std::endl << std::endl
          << od << std::endl;
 }
@@ -183,7 +183,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
 
 }
 
-namespace ores::service::config {
+namespace ores::comms::service::config {
 
 std::optional<options>
 parser::parse(const std::vector<std::string>& arguments,

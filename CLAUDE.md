@@ -27,8 +27,8 @@ The project is implemented in C++ 23 and uses CMake as the build system.
   messaging infrastructure for feature flag management protocol.
 - `ores.iam`: identity and access management - contains user account management,
   authentication, authorization, and session management functionality.
-- `ores.service`: binary to run the service. Simple host that just instantiates
-  the server defined in comms.
+- `ores.comms.service`: binary to run the service. Simple host that just
+  instantiates the server defined in comms.
 - `ores.client`: deprecated. Code will be in comms instead.
 - `ores.cli`: command line interface that instantiates functionality in risk and
   other core libraries.

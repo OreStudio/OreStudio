@@ -17,19 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.service/app/host.hpp"
+#include "ores.comms.service/app/host.hpp"
 
 #include <cstdlib>
 #include <boost/exception/diagnostic_information.hpp>
 #include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.service/app/application.hpp"
-#include "ores.service/config/parser.hpp"
+#include "ores.comms.service/app/application.hpp"
+#include "ores.comms.service/config/parser.hpp"
 
-namespace ores::service::app {
+namespace ores::comms::service::app {
 
 using namespace ores::telemetry::log;
-using ores::service::config::parser;
+using ores::comms::service::config::parser;
 using ores::telemetry::log::lifecycle_manager;
 
 boost::asio::awaitable<int>
@@ -67,7 +67,7 @@ host::execute(const std::vector<std::string>& args, std::ostream& std_output,
      * Execute the application.
      */
     try {
-        ores::service::app::application app;
+        ores::comms::service::app::application app;
         co_await app.run(io_ctx, cfg);
         co_return EXIT_SUCCESS;
     } catch (const std::exception& e) {

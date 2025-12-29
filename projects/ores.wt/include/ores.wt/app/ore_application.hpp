@@ -26,6 +26,8 @@
 
 namespace ores::wt::app {
 
+class currency_list_widget;
+
 /**
  * @brief Session information for logged-in user.
  */
@@ -55,9 +57,15 @@ private:
     void on_logout();
     void setup_theme();
 
+    void setup_currency_handlers();
+    void load_sample_currencies();
+    void show_add_currency_dialog();
+    void show_edit_currency_dialog(const std::string& iso_code);
+    void confirm_delete_currency(const std::string& iso_code);
+
     session_info session_;
     login_widget* login_widget_ = nullptr;
-    Wt::WContainerWidget* main_container_ = nullptr;
+    currency_list_widget* currency_list_widget_ = nullptr;
 };
 
 }

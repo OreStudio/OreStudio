@@ -18,11 +18,14 @@
  *
  */
 #include "ores.wt/app/ore_application.hpp"
+#include "ores.wt/app/currency_list_widget.hpp"
+#include "ores.wt/app/currency_dialog.hpp"
 #include <Wt/WBootstrap5Theme.h>
 #include <Wt/WNavigationBar.h>
 #include <Wt/WMenu.h>
 #include <Wt/WStackedWidget.h>
 #include <Wt/WText.h>
+#include <Wt/WMessageBox.h>
 
 namespace ores::wt::app {
 
@@ -87,9 +90,11 @@ void ore_application::show_main_view() {
         "<p>You are now logged in to ORE Studio.</p>");
     menu->addItem("Home", std::move(home_text));
 
-    auto currencies_text = std::make_unique<Wt::WText>(
-        "<p>Currency management coming soon...</p>");
-    menu->addItem("Currencies", std::move(currencies_text));
+    auto currency_widget = std::make_unique<currency_list_widget>();
+    currency_list_widget_ = currency_widget.get();
+    setup_currency_handlers();
+    load_sample_currencies();
+    menu->addItem("Currencies", std::move(currency_widget));
 
     auto accounts_text = std::make_unique<Wt::WText>(
         "<p>Account management coming soon...</p>");
@@ -101,6 +106,96 @@ void ore_application::show_main_view() {
     auto logout_item = right_menu->addItem("Logout");
     logout_item->triggered().connect(this, &ore_application::on_logout);
     navbar->addMenu(std::move(right_menu), Wt::AlignmentFlag::Right);
+}
+
+void ore_application::setup_currency_handlers() {
+    currency_list_widget_->add_requested().connect([this] {
+        show_add_currency_dialog();
+    });
+
+    currency_list_widget_->edit_requested().connect([this](const std::string& iso) {
+        show_edit_currency_dialog(iso);
+    });
+
+    currency_list_widget_->delete_requested().connect([this](const std::string& iso) {
+        confirm_delete_currency(iso);
+    });
+}
+
+void ore_application::load_sample_currencies() {
+    std::vector<currency_row> currencies = {
+        {"USD", "United States Dollar", "$", "840", "Fiat", 1},
+        {"EUR", "Euro", "€", "978", "Fiat", 1},
+        {"GBP", "British Pound Sterling", "£", "826", "Fiat", 1},
+        {"JPY", "Japanese Yen", "¥", "392", "Fiat", 1},
+        {"CHF", "Swiss Franc", "CHF", "756", "Fiat", 1},
+        {"BTC", "Bitcoin", "₿", "", "Crypto", 1},
+    };
+    currency_list_widget_->set_currencies(currencies);
+}
+
+void ore_application::show_add_currency_dialog() {
+    auto dialog = addChild(
+        std::make_unique<currency_dialog>(currency_dialog::mode::add));
+
+    dialog->saved().connect([this, dialog](const currency_data& data) {
+        currency_row row;
+        row.iso_code = data.iso_code;
+        row.name = data.name;
+        row.symbol = data.symbol;
+        row.numeric_code = data.numeric_code;
+        row.currency_type = data.currency_type;
+        row.version = 1;
+        load_sample_currencies();
+        removeChild(dialog);
+    });
+
+    dialog->finished().connect([this, dialog](Wt::DialogCode) {
+        removeChild(dialog);
+    });
+
+    dialog->show();
+}
+
+void ore_application::show_edit_currency_dialog(const std::string& iso_code) {
+    auto dialog = addChild(
+        std::make_unique<currency_dialog>(currency_dialog::mode::edit));
+
+    currency_data data;
+    data.iso_code = iso_code;
+    data.name = iso_code + " Currency";
+    data.symbol = "$";
+    data.numeric_code = "000";
+    data.currency_type = "Fiat";
+    dialog->set_currency(data);
+
+    dialog->saved().connect([this, dialog](const currency_data&) {
+        load_sample_currencies();
+        removeChild(dialog);
+    });
+
+    dialog->finished().connect([this, dialog](Wt::DialogCode) {
+        removeChild(dialog);
+    });
+
+    dialog->show();
+}
+
+void ore_application::confirm_delete_currency(const std::string& iso_code) {
+    auto msg_box = addChild(std::make_unique<Wt::WMessageBox>(
+        "Confirm Delete",
+        "Are you sure you want to delete currency " + iso_code + "?",
+        Wt::Icon::Warning,
+        Wt::StandardButton::Yes | Wt::StandardButton::No));
+
+    msg_box->buttonClicked().connect([this, msg_box, iso_code](Wt::StandardButton btn) {
+        if (btn == Wt::StandardButton::Yes) {
+            load_sample_currencies();
+        }
+        removeChild(msg_box);
+    });
+
+    msg_box->show();
 }
 
 void ore_application::on_login_success(const login_result& result) {

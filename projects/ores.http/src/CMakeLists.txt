@@ -41,6 +41,7 @@ target_link_libraries(${lib_target_name}
         ores.telemetry.lib
         ores.utility.lib
         Boost::boost
+        Boost::json
     PRIVATE
         jwt-cpp::jwt-cpp
         OpenSSL::SSL

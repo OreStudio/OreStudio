@@ -20,8 +20,12 @@
 #include "ores.http/middleware/jwt_authenticator.hpp"
 
 #include <jwt-cpp/jwt.h>
+#include <jwt-cpp/traits/boost-json/traits.hpp>
+#include <boost/json.hpp>
 
 namespace ores::http::middleware {
+
+using json_traits = jwt::traits::boost_json;
 
 using namespace ores::telemetry::log;
 
@@ -72,10 +76,10 @@ std::expected<domain::jwt_claims, jwt_error> jwt_authenticator::validate(
     BOOST_LOG_SEV(lg(), trace) << "Validating JWT token";
 
     try {
-        auto decoded = jwt::decode(token);
+        auto decoded = jwt::decode<json_traits>(token);
 
         // Build verifier
-        auto verifier = jwt::verify();
+        auto verifier = jwt::verify<json_traits>();
 
         if (use_rsa_) {
             verifier = verifier.allow_algorithm(jwt::algorithm::rs256(public_key_, "", "", ""));
@@ -129,7 +133,7 @@ std::expected<domain::jwt_claims, jwt_error> jwt_authenticator::validate(
             auto roles_claim = decoded.get_payload_claim("roles");
             auto roles_array = roles_claim.as_array();
             for (const auto& role : roles_array) {
-                claims.roles.push_back(role.get<std::string>());
+                claims.roles.push_back(std::string(role.as_string()));
             }
         }
 
@@ -179,7 +183,7 @@ std::optional<std::string> jwt_authenticator::create_token(
     BOOST_LOG_SEV(lg(), trace) << "Creating JWT token for subject: " << claims.subject;
 
     try {
-        auto token = jwt::create()
+        auto token = jwt::create<json_traits>()
             .set_type("JWT")
             .set_subject(claims.subject)
             .set_issued_at(claims.issued_at)
@@ -199,19 +203,22 @@ std::optional<std::string> jwt_authenticator::create_token(
 
         // Add custom claims
         if (!claims.roles.empty()) {
+            boost::json::array roles_array;
+            for (const auto& role : claims.roles) {
+                roles_array.push_back(boost::json::value(role));
+            }
             token = token.set_payload_claim("roles",
-                jwt::claim(picojson::value(std::vector<picojson::value>(
-                    claims.roles.begin(), claims.roles.end()))));
+                jwt::basic_claim<json_traits>(roles_array));
         }
 
         if (claims.username) {
             token = token.set_payload_claim("username",
-                jwt::claim(std::string(*claims.username)));
+                jwt::basic_claim<json_traits>(std::string(*claims.username)));
         }
 
         if (claims.email) {
             token = token.set_payload_claim("email",
-                jwt::claim(std::string(*claims.email)));
+                jwt::basic_claim<json_traits>(std::string(*claims.email)));
         }
 
         auto signed_token = token.sign(jwt::algorithm::hs256{secret_});

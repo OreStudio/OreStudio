@@ -20,6 +20,7 @@
 #ifndef ORES_HTTP_MESSAGING_HTTP_MESSAGE_ADAPTER_HPP
 #define ORES_HTTP_MESSAGING_HTTP_MESSAGE_ADAPTER_HPP
 
+#include <map>
 #include <span>
 #include <memory>
 #include <string>

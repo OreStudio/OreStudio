@@ -17,42 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WT_APP_LOGIN_WIDGET_HPP
-#define ORES_WT_APP_LOGIN_WIDGET_HPP
+#include "ores.wt/config/options.hpp"
+#include <ostream>
 
-#include <Wt/WContainerWidget.h>
-#include <Wt/WLineEdit.h>
-#include <Wt/WPushButton.h>
-#include <Wt/WText.h>
-#include <Wt/WSignal.h>
+namespace ores::wt::config {
 
-namespace ores::wt::app {
-
-/**
- * @brief Login form widget for user authentication.
- */
-class login_widget : public Wt::WContainerWidget {
-public:
-    login_widget();
-
-    Wt::Signal<std::string, std::string>& login_attempted() {
-        return login_attempted_;
-    }
-
-    void set_status(const std::string& message, bool is_error);
-    void enable_form(bool enabled);
-
-private:
-    void on_login_clicked();
-
-    Wt::WLineEdit* username_edit_;
-    Wt::WLineEdit* password_edit_;
-    Wt::WPushButton* login_button_;
-    Wt::WText* status_text_;
-
-    Wt::Signal<std::string, std::string> login_attempted_;
-};
-
+std::ostream& operator<<(std::ostream& s, const options& v) {
+    s << "options {"
+      << " database: " << v.database.host << ":" << v.database.port
+      << "/" << v.database.database
+      << " logging: " << (v.logging.has_value() ? "enabled" : "disabled")
+      << " }";
+    return s;
 }
 
-#endif
+}

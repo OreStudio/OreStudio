@@ -22,14 +22,21 @@
 #include "ores.wt/app/currency_dialog.hpp"
 #include "ores.wt/app/account_list_widget.hpp"
 #include "ores.wt/app/account_dialog.hpp"
+#include "ores.wt/service/application_context.hpp"
+#include "ores.iam/domain/login_info.hpp"
 #include <Wt/WBootstrap5Theme.h>
 #include <Wt/WNavigationBar.h>
 #include <Wt/WMenu.h>
 #include <Wt/WStackedWidget.h>
 #include <Wt/WText.h>
 #include <Wt/WMessageBox.h>
-#include <boost/uuid/uuid_generators.hpp>
+#include <Wt/WLabel.h>
+#include <Wt/WLineEdit.h>
+#include <Wt/WPushButton.h>
+#include <Wt/WBreak.h>
+#include <unordered_map>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/container_hash/hash.hpp>
 
 namespace ores::wt::app {
 
@@ -37,7 +44,13 @@ ore_application::ore_application(const Wt::WEnvironment& env)
     : Wt::WApplication(env) {
     setTitle("ORE Studio");
     setup_theme();
-    show_login();
+
+    auto& ctx = service::application_context::instance();
+    if (ctx.is_bootstrap_mode()) {
+        show_bootstrap();
+    } else {
+        show_login();
+    }
 }
 
 ore_application* ore_application::instance() {
@@ -70,8 +83,96 @@ void ore_application::show_login() {
     card_body->setStyleClass("card-body");
 
     login_widget_ = card_body->addWidget(std::make_unique<login_widget>());
-    login_widget_->login_succeeded().connect(this,
-        &ore_application::on_login_success);
+    login_widget_->login_attempted().connect(this,
+        &ore_application::on_login_attempt);
+}
+
+void ore_application::show_bootstrap() {
+    root()->clear();
+
+    auto container = root()->addWidget(
+        std::make_unique<Wt::WContainerWidget>());
+    container->setStyleClass("container mt-5");
+
+    auto row = container->addWidget(std::make_unique<Wt::WContainerWidget>());
+    row->setStyleClass("row justify-content-center");
+
+    auto col = row->addWidget(std::make_unique<Wt::WContainerWidget>());
+    col->setStyleClass("col-md-6");
+
+    auto card = col->addWidget(std::make_unique<Wt::WContainerWidget>());
+    card->setStyleClass("card");
+
+    auto card_body = card->addWidget(std::make_unique<Wt::WContainerWidget>());
+    card_body->setStyleClass("card-body");
+
+    card_body->addWidget(std::make_unique<Wt::WText>(
+        "<h2>ORE Studio Setup</h2>"
+        "<p class=\"text-muted\">Create your first administrator account to get started.</p>"));
+
+    auto username_label = card_body->addWidget(
+        std::make_unique<Wt::WLabel>("Username:"));
+    bootstrap_username_ = card_body->addWidget(std::make_unique<Wt::WLineEdit>());
+    bootstrap_username_->setPlaceholderText("Enter admin username");
+    username_label->setBuddy(bootstrap_username_);
+
+    card_body->addWidget(std::make_unique<Wt::WBreak>());
+
+    auto email_label = card_body->addWidget(
+        std::make_unique<Wt::WLabel>("Email:"));
+    bootstrap_email_ = card_body->addWidget(std::make_unique<Wt::WLineEdit>());
+    bootstrap_email_->setPlaceholderText("Enter email address");
+    email_label->setBuddy(bootstrap_email_);
+
+    card_body->addWidget(std::make_unique<Wt::WBreak>());
+
+    auto password_label = card_body->addWidget(
+        std::make_unique<Wt::WLabel>("Password:"));
+    bootstrap_password_ = card_body->addWidget(std::make_unique<Wt::WLineEdit>());
+    bootstrap_password_->setEchoMode(Wt::EchoMode::Password);
+    bootstrap_password_->setPlaceholderText("Enter password");
+    password_label->setBuddy(bootstrap_password_);
+
+    card_body->addWidget(std::make_unique<Wt::WBreak>());
+
+    auto confirm_label = card_body->addWidget(
+        std::make_unique<Wt::WLabel>("Confirm Password:"));
+    bootstrap_confirm_ = card_body->addWidget(std::make_unique<Wt::WLineEdit>());
+    bootstrap_confirm_->setEchoMode(Wt::EchoMode::Password);
+    bootstrap_confirm_->setPlaceholderText("Confirm password");
+    confirm_label->setBuddy(bootstrap_confirm_);
+
+    card_body->addWidget(std::make_unique<Wt::WBreak>());
+    card_body->addWidget(std::make_unique<Wt::WBreak>());
+
+    bootstrap_button_ = card_body->addWidget(
+        std::make_unique<Wt::WPushButton>("Create Administrator"));
+    bootstrap_button_->setStyleClass("btn btn-primary");
+    bootstrap_button_->clicked().connect([this] {
+        const auto username = bootstrap_username_->text().toUTF8();
+        const auto email = bootstrap_email_->text().toUTF8();
+        const auto password = bootstrap_password_->text().toUTF8();
+        const auto confirm = bootstrap_confirm_->text().toUTF8();
+
+        if (username.empty() || email.empty() || password.empty()) {
+            bootstrap_status_->setText("Please fill in all fields.");
+            bootstrap_status_->setStyleClass("text-danger mt-2");
+            return;
+        }
+
+        if (password != confirm) {
+            bootstrap_status_->setText("Passwords do not match.");
+            bootstrap_status_->setStyleClass("text-danger mt-2");
+            return;
+        }
+
+        on_bootstrap_create(username, email, password);
+    });
+
+    card_body->addWidget(std::make_unique<Wt::WBreak>());
+
+    bootstrap_status_ = card_body->addWidget(std::make_unique<Wt::WText>());
+    bootstrap_status_->setStyleClass("mt-2");
 }
 
 void ore_application::show_main_view() {
@@ -89,21 +190,26 @@ void ore_application::show_main_view() {
     auto left_menu = std::make_unique<Wt::WMenu>(contents_stack);
     auto* menu = left_menu.get();
 
+    std::string username = "User";
+    if (session_manager_.session()) {
+        username = session_manager_.session()->username;
+    }
+
     auto home_text = std::make_unique<Wt::WText>(
-        "<h3>Welcome, " + session_.username + "!</h3>"
+        "<h3>Welcome, " + username + "!</h3>"
         "<p>You are now logged in to ORE Studio.</p>");
     menu->addItem("Home", std::move(home_text));
 
     auto currency_widget = std::make_unique<currency_list_widget>();
     currency_list_widget_ = currency_widget.get();
     setup_currency_handlers();
-    load_sample_currencies();
+    load_currencies();
     menu->addItem("Currencies", std::move(currency_widget));
 
     auto account_widget = std::make_unique<account_list_widget>();
     account_list_widget_ = account_widget.get();
     setup_account_handlers();
-    load_sample_accounts();
+    load_accounts();
     menu->addItem("Accounts", std::move(account_widget));
 
     navbar->addMenu(std::move(left_menu));
@@ -128,7 +234,9 @@ void ore_application::setup_currency_handlers() {
     });
 }
 
-void ore_application::load_sample_currencies() {
+void ore_application::load_currencies() {
+    // TODO: Integrate with currency service when available.
+    // For now, using sample data.
     std::vector<currency_row> currencies = {
         {"USD", "United States Dollar", "$", "840", "Fiat", 1},
         {"EUR", "Euro", "€", "978", "Fiat", 1},
@@ -223,15 +331,46 @@ void ore_application::setup_account_handlers() {
         });
 }
 
-void ore_application::load_sample_accounts() {
-    boost::uuids::random_generator gen;
-    std::vector<account_row> accounts = {
-        {gen(), "admin", "admin@example.com", false, true, 0, 1},
-        {gen(), "john.doe", "john.doe@example.com", false, false, 0, 1},
-        {gen(), "jane.smith", "jane.smith@example.com", false, true, 0, 2},
-        {gen(), "locked_user", "locked@example.com", true, false, 5, 1},
-    };
-    account_list_widget_->set_accounts(accounts);
+void ore_application::load_accounts() {
+    auto& ctx = service::application_context::instance();
+    if (!ctx.is_initialized()) {
+        return;
+    }
+
+    try {
+        auto accounts = ctx.account_service().list_accounts();
+        auto login_infos = ctx.account_service().list_login_info();
+
+        std::unordered_map<boost::uuids::uuid, iam::domain::login_info,
+                          boost::hash<boost::uuids::uuid>> login_map;
+        for (const auto& li : login_infos) {
+            login_map[li.account_id] = li;
+        }
+
+        std::vector<account_row> rows;
+        rows.reserve(accounts.size());
+
+        for (const auto& acc : accounts) {
+            account_row row;
+            row.id = acc.id;
+            row.username = acc.username;
+            row.email = acc.email;
+            row.version = acc.version;
+
+            auto it = login_map.find(acc.id);
+            if (it != login_map.end()) {
+                row.locked = it->second.locked;
+                row.online = it->second.online;
+                row.failed_logins = it->second.failed_logins;
+            }
+
+            rows.push_back(std::move(row));
+        }
+
+        account_list_widget_->set_accounts(rows);
+    } catch (const std::exception&) {
+        // Log error but don't crash
+    }
 }
 
 void ore_application::show_add_account_dialog() {
@@ -323,17 +462,44 @@ void ore_application::confirm_unlock_account(const boost::uuids::uuid& id) {
     msg_box->show();
 }
 
-void ore_application::on_login_success(const login_result& result) {
-    session_.account_id = result.account_id;
-    session_.username = result.username;
-    session_.email = result.email;
-    session_.is_logged_in = true;
+void ore_application::on_login_attempt(const std::string& username,
+                                       const std::string& password) {
+    std::string client_ip = "127.0.0.1";
+    if (environment().clientAddress()) {
+        client_ip = *environment().clientAddress();
+    }
 
-    show_main_view();
+    auto result = session_manager_.login(username, password, client_ip);
+
+    if (result.success) {
+        if (result.password_reset_required) {
+            login_widget_->set_status(
+                "Password reset required. Please contact administrator.", true);
+            login_widget_->enable_form(true);
+        } else {
+            show_main_view();
+        }
+    } else {
+        login_widget_->set_status(result.error_message, true);
+        login_widget_->enable_form(true);
+    }
+}
+
+void ore_application::on_bootstrap_create(const std::string& username,
+                                          const std::string& email,
+                                          const std::string& password) {
+    auto result = session_manager_.create_bootstrap_admin(username, email, password);
+
+    if (result.success) {
+        show_main_view();
+    } else {
+        bootstrap_status_->setText(result.error_message);
+        bootstrap_status_->setStyleClass("text-danger mt-2");
+    }
 }
 
 void ore_application::on_logout() {
-    session_ = session_info{};
+    session_manager_.logout();
     show_login();
 }
 

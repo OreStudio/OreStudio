@@ -44,20 +44,9 @@ login_widget::login_widget() {
     addWidget(std::make_unique<Wt::WBreak>());
     addWidget(std::make_unique<Wt::WBreak>());
 
-    auto button_container = addWidget(std::make_unique<Wt::WContainerWidget>());
-    button_container->setStyleClass("login-buttons");
-
-    login_button_ = button_container->addWidget(
-        std::make_unique<Wt::WPushButton>("Login"));
+    login_button_ = addWidget(std::make_unique<Wt::WPushButton>("Login"));
     login_button_->setStyleClass("btn btn-primary");
     login_button_->clicked().connect(this, &login_widget::on_login_clicked);
-
-    signup_button_ = button_container->addWidget(
-        std::make_unique<Wt::WPushButton>("Sign Up"));
-    signup_button_->setStyleClass("btn btn-secondary");
-    signup_button_->clicked().connect([this] {
-        signup_requested_.emit();
-    });
 
     addWidget(std::make_unique<Wt::WBreak>());
 
@@ -89,10 +78,7 @@ void login_widget::on_login_clicked() {
     set_status("Authenticating...", false);
     enable_form(false);
 
-    login_result result;
-    result.success = true;
-    result.username = username;
-    login_succeeded_.emit(result);
+    login_attempted_.emit(username, password);
 }
 
 void login_widget::set_status(const std::string& message, bool is_error) {
@@ -108,7 +94,6 @@ void login_widget::enable_form(bool enabled) {
     username_edit_->setEnabled(enabled);
     password_edit_->setEnabled(enabled);
     login_button_->setEnabled(enabled);
-    signup_button_->setEnabled(enabled);
 }
 
 }

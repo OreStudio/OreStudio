@@ -17,40 +17,32 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WT_APP_LOGIN_WIDGET_HPP
-#define ORES_WT_APP_LOGIN_WIDGET_HPP
+#ifndef ORES_WT_CONFIG_PARSER_HPP
+#define ORES_WT_CONFIG_PARSER_HPP
 
-#include <Wt/WContainerWidget.h>
-#include <Wt/WLineEdit.h>
-#include <Wt/WPushButton.h>
-#include <Wt/WText.h>
-#include <Wt/WSignal.h>
+#include <iosfwd>
+#include <vector>
+#include <string>
+#include <optional>
+#include "ores.wt/config/options.hpp"
 
-namespace ores::wt::app {
+namespace ores::wt::config {
 
 /**
- * @brief Login form widget for user authentication.
+ * @brief Command-line parser for ores.wt using boost program options.
+ *
+ * Parses database and logging options. Wt-specific options (--docroot,
+ * --http-address, etc.) are passed through to the Wt framework.
  */
-class login_widget : public Wt::WContainerWidget {
+class parser final {
 public:
-    login_widget();
+    struct parse_result {
+        std::optional<options> opts;
+        std::vector<std::string> wt_args;
+    };
 
-    Wt::Signal<std::string, std::string>& login_attempted() {
-        return login_attempted_;
-    }
-
-    void set_status(const std::string& message, bool is_error);
-    void enable_form(bool enabled);
-
-private:
-    void on_login_clicked();
-
-    Wt::WLineEdit* username_edit_;
-    Wt::WLineEdit* password_edit_;
-    Wt::WPushButton* login_button_;
-    Wt::WText* status_text_;
-
-    Wt::Signal<std::string, std::string> login_attempted_;
+    parse_result parse(const std::vector<std::string>& arguments,
+        std::ostream& info, std::ostream& error) const;
 };
 
 }

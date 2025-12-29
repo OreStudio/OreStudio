@@ -40,16 +40,17 @@ find_package(wt CONFIG REQUIRED)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.risk.lib
+        ores.database.lib
         ores.iam.lib
-        ores.assets.lib
-        ores.eventing.lib
+        ores.risk.lib
+        ores.variability.lib
         ores.telemetry.lib
         ores.utility.lib
     PRIVATE
         Wt::Wt
         Wt::HTTP
-        Boost::boost)
+        Boost::boost
+        Boost::program_options)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

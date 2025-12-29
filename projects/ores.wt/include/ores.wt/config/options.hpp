@@ -17,41 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WT_APP_LOGIN_WIDGET_HPP
-#define ORES_WT_APP_LOGIN_WIDGET_HPP
+#ifndef ORES_WT_CONFIG_OPTIONS_HPP
+#define ORES_WT_CONFIG_OPTIONS_HPP
 
-#include <Wt/WContainerWidget.h>
-#include <Wt/WLineEdit.h>
-#include <Wt/WPushButton.h>
-#include <Wt/WText.h>
-#include <Wt/WSignal.h>
+#include <iosfwd>
+#include <optional>
+#include "ores.telemetry/log/logging_options.hpp"
+#include "ores.database/domain/database_options.hpp"
 
-namespace ores::wt::app {
+namespace ores::wt::config {
 
 /**
- * @brief Login form widget for user authentication.
+ * @brief All configuration options required by ores.wt web application.
  */
-class login_widget : public Wt::WContainerWidget {
-public:
-    login_widget();
-
-    Wt::Signal<std::string, std::string>& login_attempted() {
-        return login_attempted_;
-    }
-
-    void set_status(const std::string& message, bool is_error);
-    void enable_form(bool enabled);
-
-private:
-    void on_login_clicked();
-
-    Wt::WLineEdit* username_edit_;
-    Wt::WLineEdit* password_edit_;
-    Wt::WPushButton* login_button_;
-    Wt::WText* status_text_;
-
-    Wt::Signal<std::string, std::string> login_attempted_;
+struct options final {
+    /**
+     * @brief Configuration options related to logging, if any.
+     */
+    std::optional<ores::telemetry::log::logging_options> logging;
+    /**
+     * @brief Configuration related to database operations.
+     */
+    ores::database::database_options database;
 };
+
+std::ostream& operator<<(std::ostream& s, const options& v);
 
 }
 

@@ -23,6 +23,8 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/beast/http/read.hpp>
 #include <boost/beast/http/write.hpp>
+#include <boost/url/parse.hpp>
+#include <boost/url/url_view.hpp>
 
 namespace ores::http::net {
 
@@ -272,35 +274,16 @@ domain::http_method http_session::convert_method(http::verb verb) {
 void http_session::parse_query_params(const std::string& target,
     domain::http_request& req) {
 
-    auto query_pos = target.find('?');
-    if (query_pos == std::string::npos) {
+    auto result = boost::urls::parse_uri_reference(target);
+    if (!result) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to parse URI: " << target;
         return;
     }
 
-    std::string query = target.substr(query_pos + 1);
-    std::size_t pos = 0;
-
-    while (pos < query.size()) {
-        auto eq_pos = query.find('=', pos);
-        auto amp_pos = query.find('&', pos);
-
-        if (eq_pos == std::string::npos || (amp_pos != std::string::npos && eq_pos > amp_pos)) {
-            pos = (amp_pos == std::string::npos) ? query.size() : amp_pos + 1;
-            continue;
-        }
-
-        std::string key = query.substr(pos, eq_pos - pos);
-        std::string value;
-
-        if (amp_pos != std::string::npos) {
-            value = query.substr(eq_pos + 1, amp_pos - eq_pos - 1);
-            pos = amp_pos + 1;
-        } else {
-            value = query.substr(eq_pos + 1);
-            pos = query.size();
-        }
-
-        req.query_params[key] = value;
+    for (const auto& param : result->params()) {
+        req.query_params.emplace(
+            std::string(param.key),
+            std::string(param.value));
     }
 }
 

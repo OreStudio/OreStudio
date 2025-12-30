@@ -19,12 +19,86 @@
  */
 #include "ores.http/openapi/endpoint_registry.hpp"
 
+#include <map>
 #include <sstream>
 #include <algorithm>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
 namespace ores::http::openapi {
 
 using namespace ores::telemetry::log;
+
+namespace {
+
+// OpenAPI spec structures for JSON serialization
+
+struct openapi_contact final {
+    std::optional<std::string> name;
+    std::optional<std::string> email;
+};
+
+struct openapi_license final {
+    std::string name;
+    std::optional<std::string> url;
+};
+
+struct openapi_info final {
+    std::string title;
+    std::string description;
+    std::string version;
+    std::optional<openapi_contact> contact;
+    std::optional<openapi_license> license;
+};
+
+struct openapi_server final {
+    std::string url;
+    std::string description;
+};
+
+struct openapi_security_scheme final {
+    std::string type;
+    std::string scheme;
+    rfl::Rename<"bearerFormat", std::string> bearer_format;
+};
+
+struct openapi_security_schemes final {
+    rfl::Rename<"bearerAuth", openapi_security_scheme> bearer_auth;
+};
+
+struct openapi_components final {
+    rfl::Rename<"securitySchemes", openapi_security_schemes> security_schemes;
+};
+
+struct openapi_parameter final {
+    std::string name;
+    std::string in;
+    bool required;
+    rfl::Object<std::string> schema;
+};
+
+struct openapi_response final {
+    std::string description;
+};
+
+struct openapi_operation final {
+    std::optional<std::vector<std::string>> tags;
+    std::optional<std::string> summary;
+    std::optional<std::string> description;
+    std::optional<std::vector<openapi_parameter>> parameters;
+    std::optional<std::vector<rfl::Object<std::vector<std::string>>>> security;
+    std::map<std::string, openapi_response> responses;
+};
+
+struct openapi_spec final {
+    std::string openapi;
+    openapi_info info;
+    std::vector<openapi_server> servers;
+    openapi_components components;
+    std::map<std::string, std::map<std::string, openapi_operation>> paths;
+};
+
+}
 
 endpoint_registry::endpoint_registry() {
     BOOST_LOG_SEV(lg(), debug) << "Endpoint registry created";
@@ -63,142 +137,97 @@ std::string endpoint_registry::generate_openapi_json() const {
     BOOST_LOG_SEV(lg(), debug) << "Generating OpenAPI JSON spec with "
         << routes_.size() << " routes";
 
-    std::ostringstream oss;
-    oss << "{\n";
-    oss << R"(  "openapi": "3.0.3",)" << "\n";
+    openapi_spec spec;
+    spec.openapi = "3.0.3";
 
-    // Info section
-    oss << R"(  "info": {)" << "\n";
-    oss << R"(    "title": ")" << info_.title << R"(",)" << "\n";
-    oss << R"(    "description": ")" << info_.description << R"(",)" << "\n";
-    oss << R"(    "version": ")" << info_.version << R"(")" << "\n";
+    // Build info section
+    spec.info.title = info_.title;
+    spec.info.description = info_.description;
+    spec.info.version = info_.version;
+
     if (!info_.contact_name.empty() || !info_.contact_email.empty()) {
-        oss << R"(    ,"contact": {)" << "\n";
+        openapi_contact contact;
         if (!info_.contact_name.empty()) {
-            oss << R"(      "name": ")" << info_.contact_name << R"(")" << "\n";
+            contact.name = info_.contact_name;
         }
         if (!info_.contact_email.empty()) {
-            oss << R"(      ,"email": ")" << info_.contact_email << R"(")" << "\n";
+            contact.email = info_.contact_email;
         }
-        oss << R"(    })" << "\n";
+        spec.info.contact = contact;
     }
+
     if (!info_.license_name.empty()) {
-        oss << R"(    ,"license": {)" << "\n";
-        oss << R"(      "name": ")" << info_.license_name << R"(")" << "\n";
+        openapi_license license;
+        license.name = info_.license_name;
         if (!info_.license_url.empty()) {
-            oss << R"(      ,"url": ")" << info_.license_url << R"(")" << "\n";
+            license.url = info_.license_url;
         }
-        oss << R"(    })" << "\n";
+        spec.info.license = license;
     }
-    oss << R"(  },)" << "\n";
 
-    // Servers section
-    oss << R"(  "servers": [)" << "\n";
+    // Build servers section
     if (servers_.empty()) {
-        oss << R"(    {"url": "/", "description": "Default server"})" << "\n";
+        spec.servers.push_back(openapi_server{"/", "Default server"});
     } else {
-        for (std::size_t i = 0; i < servers_.size(); ++i) {
-            if (i > 0) oss << ",\n";
-            oss << R"(    {"url": ")" << servers_[i].url << R"(", "description": ")"
-                << servers_[i].description << R"("})";
+        for (const auto& server : servers_) {
+            spec.servers.push_back(openapi_server{server.url, server.description});
         }
-        oss << "\n";
     }
-    oss << R"(  ],)" << "\n";
 
-    // Security schemes
-    oss << R"(  "components": {)" << "\n";
-    oss << R"(    "securitySchemes": {)" << "\n";
-    oss << R"(      "bearerAuth": {)" << "\n";
-    oss << R"(        "type": "http",)" << "\n";
-    oss << R"(        "scheme": "bearer",)" << "\n";
-    oss << R"(        "bearerFormat": "JWT")" << "\n";
-    oss << R"(      })" << "\n";
-    oss << R"(    })" << "\n";
-    oss << R"(  },)" << "\n";
+    // Build components section
+    spec.components.security_schemes.get() = openapi_security_schemes{
+        openapi_security_scheme{"http", "bearer", "JWT"}
+    };
 
-    // Paths section
-    oss << R"(  "paths": {)" << "\n";
-
-    // Group routes by path
-    std::map<std::string, std::vector<const domain::route*>> paths_map;
+    // Build paths section
     for (const auto& route : routes_) {
-        paths_map[route.pattern].push_back(&route);
-    }
+        std::string method = method_to_string(route.method);
 
-    bool first_path = true;
-    for (const auto& [path, path_routes] : paths_map) {
-        if (!first_path) oss << ",\n";
-        first_path = false;
+        openapi_operation operation;
 
-        // Convert path pattern to OpenAPI format: {id} stays as {id}
-        oss << R"(    ")" << path << R"(": {)" << "\n";
-
-        bool first_method = true;
-        for (const auto* route : path_routes) {
-            if (!first_method) oss << ",\n";
-            first_method = false;
-
-            std::string method = method_to_string(route->method);
-            oss << R"(      ")" << method << R"(": {)" << "\n";
-
-            // Tags
-            if (!route->tags.empty()) {
-                oss << R"(        "tags": [)";
-                for (std::size_t i = 0; i < route->tags.size(); ++i) {
-                    if (i > 0) oss << ", ";
-                    oss << R"(")" << route->tags[i] << R"(")";
-                }
-                oss << R"(],)" << "\n";
-            }
-
-            // Summary and description
-            if (!route->summary.empty()) {
-                oss << R"(        "summary": ")" << route->summary << R"(",)" << "\n";
-            }
-            if (!route->description.empty()) {
-                oss << R"(        "description": ")" << route->description << R"(",)" << "\n";
-            }
-
-            // Path parameters
-            if (!route->param_names.empty()) {
-                oss << R"(        "parameters": [)" << "\n";
-                for (std::size_t i = 0; i < route->param_names.size(); ++i) {
-                    if (i > 0) oss << ",\n";
-                    oss << R"(          {)";
-                    oss << R"("name": ")" << route->param_names[i] << R"(", )";
-                    oss << R"("in": "path", )";
-                    oss << R"("required": true, )";
-                    oss << R"("schema": {"type": "string"}})";
-                }
-                oss << "\n" << R"(        ],)" << "\n";
-            }
-
-            // Security
-            if (route->requires_auth) {
-                oss << R"(        "security": [{"bearerAuth": []}],)" << "\n";
-            }
-
-            // Responses
-            oss << R"(        "responses": {)" << "\n";
-            oss << R"(          "200": {"description": "Successful response"},)" << "\n";
-            if (route->requires_auth) {
-                oss << R"(          "401": {"description": "Unauthorized"},)" << "\n";
-                oss << R"(          "403": {"description": "Forbidden"},)" << "\n";
-            }
-            oss << R"(          "500": {"description": "Internal server error"})" << "\n";
-            oss << R"(        })" << "\n";
-
-            oss << R"(      })";
+        if (!route.tags.empty()) {
+            operation.tags = route.tags;
         }
-        oss << "\n" << R"(    })";
-    }
 
-    oss << "\n" << R"(  })" << "\n";
-    oss << "}\n";
+        if (!route.summary.empty()) {
+            operation.summary = route.summary;
+        }
+
+        if (!route.description.empty()) {
+            operation.description = route.description;
+        }
+
+        // Path parameters
+        if (!route.param_names.empty()) {
+            std::vector<openapi_parameter> params;
+            for (const auto& param_name : route.param_names) {
+                rfl::Object<std::string> schema;
+                schema["type"] = "string";
+                params.push_back(openapi_parameter{param_name, "path", true, schema});
+            }
+            operation.parameters = params;
+        }
+
+        // Security
+        if (route.requires_auth) {
+            rfl::Object<std::vector<std::string>> bearer_auth;
+            bearer_auth["bearerAuth"] = std::vector<std::string>{};
+            operation.security = std::vector<rfl::Object<std::vector<std::string>>>{bearer_auth};
+        }
+
+        // Responses
+        operation.responses["200"] = openapi_response{"Successful response"};
+        if (route.requires_auth) {
+            operation.responses["401"] = openapi_response{"Unauthorized"};
+            operation.responses["403"] = openapi_response{"Forbidden"};
+        }
+        operation.responses["500"] = openapi_response{"Internal server error"};
+
+        spec.paths[route.pattern][method] = operation;
+    }
 
     BOOST_LOG_SEV(lg(), debug) << "OpenAPI JSON spec generated";
-    return oss.str();
+    return rfl::json::write(spec);
 }
 
 std::string endpoint_registry::generate_swagger_ui_html(const std::string& spec_url) const {

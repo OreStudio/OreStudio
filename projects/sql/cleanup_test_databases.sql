@@ -19,16 +19,39 @@
  */
 
 /**
- * Test Database Cleanup Functions
+ * Database Cleanup Functions
  *
- * Helper functions for cleaning up leftover test databases.
- * Test databases are created with patterns like 'ores_test_<pid>_<random>'
- * or 'oresdb_test_<pid>_<random>' and may be left behind if tests crash
- * or are interrupted.
+ * Helper functions for cleaning up ORES databases.
+ *
+ * IMPORTANT: DROP DATABASE cannot run inside a transaction block, so the
+ * cleanup functions that attempt to drop directly will fail. Instead, use
+ * psql's \gexec feature to execute the generated DROP statements:
+ *
+ * To clean up TEST databases (ores_test_*, oresdb_test_*):
+ *
+ *   \c postgres
+ *   SELECT format('DROP DATABASE IF EXISTS %I;', database_name)
+ *   FROM test_databases \gexec
+ *
+ * To clean up ALL ORES databases (ores_*, oresdb_*):
+ *
+ *   \c postgres
+ *   SELECT format('DROP DATABASE IF EXISTS %I;', database_name)
+ *   FROM ores_databases \gexec
+ *
+ * To preview what will be deleted:
+ *
+ *   SELECT * FROM test_databases;
+ *   SELECT * FROM ores_databases;
  */
 
+--------------------------------------------------------------------------------
+-- Views for identifying databases
+--------------------------------------------------------------------------------
+
 -- View that identifies all test databases on the server.
--- Centralizes the test database detection logic for use by all cleanup functions.
+-- Test databases are created with patterns like 'ores_test_<pid>_<random>'
+-- or 'oresdb_test_<pid>_<random>' and may be left behind if tests crash.
 CREATE OR REPLACE VIEW test_databases AS
 SELECT d.datname::TEXT AS database_name
 FROM pg_database d
@@ -36,27 +59,68 @@ WHERE d.datname LIKE 'ores_test_%'
    OR d.datname LIKE 'oresdb_test_%'
 ORDER BY d.datname;
 
+-- View that identifies all ORES databases on the server.
+-- This includes instance databases (ores_*), templates, and test databases.
+-- Excludes the base 'ores' database.
+CREATE OR REPLACE VIEW ores_databases AS
+SELECT d.datname::TEXT AS database_name
+FROM pg_database d
+WHERE (d.datname LIKE 'ores_%' OR d.datname LIKE 'oresdb_%')
+  AND d.datname <> 'ores'
+ORDER BY d.datname;
+
+-- View that identifies ORES instance databases (excludes test and template).
+CREATE OR REPLACE VIEW ores_instance_databases AS
+SELECT d.datname::TEXT AS database_name
+FROM pg_database d
+WHERE d.datname LIKE 'ores_%'
+  AND d.datname NOT LIKE 'ores_test_%'
+  AND d.datname NOT LIKE '%_template'
+  AND d.datname <> 'ores'
+ORDER BY d.datname;
+
+--------------------------------------------------------------------------------
+-- List functions
+--------------------------------------------------------------------------------
+
 -- Lists all test databases on the server.
--- Returns database name only (no superuser privileges required).
 CREATE OR REPLACE FUNCTION list_test_databases()
 RETURNS TABLE(database_name TEXT) AS $$
 BEGIN
-    RETURN QUERY
-    SELECT td.database_name FROM test_databases td;
+    RETURN QUERY SELECT td.database_name FROM test_databases td;
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
+-- Lists all ORES databases on the server.
+CREATE OR REPLACE FUNCTION list_ores_databases()
+RETURNS TABLE(database_name TEXT) AS $$
+BEGIN
+    RETURN QUERY SELECT od.database_name FROM ores_databases od;
+END;
+$$ LANGUAGE plpgsql VOLATILE;
+
+-- Lists all ORES instance databases (excludes test and template).
+CREATE OR REPLACE FUNCTION list_ores_instance_databases()
+RETURNS TABLE(database_name TEXT) AS $$
+BEGIN
+    RETURN QUERY SELECT oid.database_name FROM ores_instance_databases oid;
+END;
+$$ LANGUAGE plpgsql VOLATILE;
+
+--------------------------------------------------------------------------------
+-- SQL generation functions (for use with \gexec or manual execution)
+--------------------------------------------------------------------------------
+
 -- Generates SQL commands to drop all test databases.
--- The returned commands must be executed outside of any transaction.
 CREATE OR REPLACE FUNCTION generate_cleanup_test_databases_sql()
 RETURNS TEXT AS $$
 DECLARE
     sql_commands TEXT;
     db_count INT;
 BEGIN
-    SELECT
-        count(*),
-        string_agg(format('DROP DATABASE IF EXISTS %I;', database_name), E'\n' ORDER BY database_name)
+    SELECT count(*),
+           string_agg(format('DROP DATABASE IF EXISTS %I;', database_name),
+                      E'\n' ORDER BY database_name)
     INTO db_count, sql_commands
     FROM test_databases;
 
@@ -69,47 +133,46 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Convenience function that outputs the cleanup commands.
--- Usage: SELECT cleanup_test_databases_command();
-CREATE OR REPLACE FUNCTION cleanup_test_databases_command()
-RETURNS VOID AS $$
+-- Generates SQL commands to drop all ORES databases.
+CREATE OR REPLACE FUNCTION generate_cleanup_ores_databases_sql()
+RETURNS TEXT AS $$
+DECLARE
+    sql_commands TEXT;
+    db_count INT;
 BEGIN
-    RAISE NOTICE E'\n%', generate_cleanup_test_databases_sql();
-    RAISE NOTICE E'\nCopy and paste the above commands to clean up test databases.\n';
+    SELECT count(*),
+           string_agg(format('DROP DATABASE IF EXISTS %I;', database_name),
+                      E'\n' ORDER BY database_name)
+    INTO db_count, sql_commands
+    FROM ores_databases;
+
+    IF db_count = 0 THEN
+        RETURN '-- No ORES databases found to clean up.';
+    END IF;
+
+    RETURN format(E'-- Found %s ORES database(s) to clean up:\n', db_count) ||
+           sql_commands || E'\n';
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Drops all test databases directly.
--- WARNING: This will immediately drop all test databases without confirmation.
--- Use list_test_databases() first to review what will be deleted.
-CREATE OR REPLACE FUNCTION cleanup_test_databases()
-RETURNS TABLE(database_name TEXT, status TEXT) AS $$
+-- Generates SQL commands to drop all ORES instance databases.
+CREATE OR REPLACE FUNCTION generate_cleanup_ores_instance_databases_sql()
+RETURNS TEXT AS $$
 DECLARE
-    db_record RECORD;
-    drop_sql TEXT;
+    sql_commands TEXT;
+    db_count INT;
 BEGIN
-    FOR db_record IN
-        SELECT td.database_name AS name FROM test_databases td
-    LOOP
-        BEGIN
-            -- First terminate any active connections
-            PERFORM pg_terminate_backend(pid)
-            FROM pg_stat_activity
-            WHERE datname = db_record.name
-              AND pid <> pg_backend_pid();
+    SELECT count(*),
+           string_agg(format('DROP DATABASE IF EXISTS %I;', database_name),
+                      E'\n' ORDER BY database_name)
+    INTO db_count, sql_commands
+    FROM ores_instance_databases;
 
-            -- Drop the database
-            drop_sql := format('DROP DATABASE IF EXISTS %I', db_record.name);
-            EXECUTE drop_sql;
+    IF db_count = 0 THEN
+        RETURN '-- No ORES instance databases found to clean up.';
+    END IF;
 
-            database_name := db_record.name;
-            status := 'dropped';
-            RETURN NEXT;
-        EXCEPTION WHEN OTHERS THEN
-            database_name := db_record.name;
-            status := 'error: ' || SQLERRM;
-            RETURN NEXT;
-        END;
-    END LOOP;
+    RETURN format(E'-- Found %s ORES instance database(s) to clean up:\n', db_count) ||
+           sql_commands || E'\n';
 END;
 $$ LANGUAGE plpgsql VOLATILE;

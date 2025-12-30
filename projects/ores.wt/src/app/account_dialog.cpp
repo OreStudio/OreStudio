@@ -39,7 +39,7 @@ void account_dialog::setup_form() {
     auto content = contents();
     content->setStyleClass("p-3");
 
-    auto add_field = [&](const std::string& label, auto& widget,
+    auto add_field = [&](const std::string& label, auto widget,
                          bool is_password = false) {
         auto row = content->addWidget(std::make_unique<Wt::WContainerWidget>());
         row->setStyleClass("mb-3");
@@ -47,37 +47,34 @@ void account_dialog::setup_form() {
         auto lbl = row->addWidget(std::make_unique<Wt::WLabel>(label));
         lbl->setStyleClass("form-label");
 
-        widget = row->addWidget(std::move(widget));
-        widget->setStyleClass("form-control");
+        auto* ptr = row->addWidget(std::move(widget));
+        ptr->setStyleClass("form-control");
         if (is_password) {
-            widget->setEchoMode(Wt::EchoMode::Password);
+            ptr->setEchoMode(Wt::EchoMode::Password);
         }
-        lbl->setBuddy(widget);
+        lbl->setBuddy(ptr);
+        return ptr;
     };
 
-    auto username_edit = std::make_unique<Wt::WLineEdit>();
-    username_edit->setPlaceholderText("Enter username");
-    add_field("Username", username_edit);
-    username_edit_ = username_edit.get();
+    username_edit_ = add_field("Username",
+        std::make_unique<Wt::WLineEdit>());
+    username_edit_->setPlaceholderText("Enter username");
     if (mode_ == mode::edit) {
         username_edit_->setReadOnly(true);
     }
 
-    auto email_edit = std::make_unique<Wt::WLineEdit>();
-    email_edit->setPlaceholderText("user@example.com");
-    add_field("Email", email_edit);
-    email_edit_ = email_edit.get();
+    email_edit_ = add_field("Email",
+        std::make_unique<Wt::WLineEdit>());
+    email_edit_->setPlaceholderText("user@example.com");
 
-    auto password_edit = std::make_unique<Wt::WLineEdit>();
-    password_edit->setPlaceholderText(
+    password_edit_ = add_field("Password",
+        std::make_unique<Wt::WLineEdit>(), true);
+    password_edit_->setPlaceholderText(
         mode_ == mode::add ? "Enter password" : "Leave blank to keep current");
-    add_field("Password", password_edit, true);
-    password_edit_ = password_edit.get();
 
-    auto confirm_edit = std::make_unique<Wt::WLineEdit>();
-    confirm_edit->setPlaceholderText("Confirm password");
-    add_field("Confirm Password", confirm_edit, true);
-    confirm_password_edit_ = confirm_edit.get();
+    confirm_password_edit_ = add_field("Confirm Password",
+        std::make_unique<Wt::WLineEdit>(), true);
+    confirm_password_edit_->setPlaceholderText("Confirm password");
 
     status_text_ = content->addWidget(std::make_unique<Wt::WText>());
     status_text_->setStyleClass("text-danger");

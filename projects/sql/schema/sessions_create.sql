@@ -66,12 +66,8 @@ create table if not exists "ores"."sessions" (
     "bytes_received" bigint not null default 0,
 
     -- Geolocation data (optional, based on IP lookup)
+    -- Only country code is available from ip2country data source
     "country_code" text not null default '',
-    "city" text not null default '',
-    -- Using text instead of double precision for sqlgen compatibility
-    -- Empty string represents NULL value
-    "latitude" text not null default '',
-    "longitude" text not null default '',
 
     -- Composite primary key: id + start_time required for TimescaleDB
     primary key (id, start_time)

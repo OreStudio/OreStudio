@@ -42,9 +42,6 @@ TEST_CASE("geolocation_result_default_construction", tags) {
     BOOST_LOG_SEV(lg, info) << "Default geolocation_result created";
 
     CHECK(result.country_code.empty());
-    CHECK(result.city.empty());
-    CHECK(!result.latitude.has_value());
-    CHECK(!result.longitude.has_value());
 }
 
 TEST_CASE("geolocation_result_with_values", tags) {
@@ -52,19 +49,10 @@ TEST_CASE("geolocation_result_with_values", tags) {
 
     geolocation_result result;
     result.country_code = "US";
-    result.city = "Mountain View";
-    result.latitude = 37.3861;
-    result.longitude = -122.0839;
 
-    BOOST_LOG_SEV(lg, info) << "Geolocation result: country=" << result.country_code
-                            << " city=" << result.city;
+    BOOST_LOG_SEV(lg, info) << "Geolocation result: country=" << result.country_code;
 
     CHECK(result.country_code == "US");
-    CHECK(result.city == "Mountain View");
-    CHECK(result.latitude.has_value());
-    CHECK(result.latitude.value() > 37.0);
-    CHECK(result.longitude.has_value());
-    CHECK(result.longitude.value() < -120.0);
 }
 
 TEST_CASE("lookup_returns_not_found_for_private_ip", tags) {

@@ -99,7 +99,7 @@ options_description make_options_description() {
 void print_help(const options_description& od, std::ostream& info) {
     info << "ORE Studio Shell is an interactive REPL for ORE Studio."
          << std::endl
-         << "It provides a command-line interface for connecting to and interacting with ores.service."
+         << "It provides a command-line interface for connecting to and interacting with ores.comms.service."
          << std::endl << std::endl
          << "Usage: ores.shell [options]"
          << std::endl << std::endl

@@ -93,41 +93,6 @@ read_optional_timestamp(std::span<const std::byte>& data) {
 }
 
 /**
- * @brief Write an optional double as string.
- */
-void write_optional_double(std::vector<std::byte>& buffer,
-    const std::optional<double>& v) {
-    if (v) {
-        writer::write_bool(buffer, true);
-        writer::write_string(buffer, std::to_string(*v));
-    } else {
-        writer::write_bool(buffer, false);
-    }
-}
-
-/**
- * @brief Read an optional double from string.
- */
-std::expected<std::optional<double>, error_code>
-read_optional_double(std::span<const std::byte>& data) {
-    auto has_value = reader::read_bool(data);
-    if (!has_value) return std::unexpected(has_value.error());
-
-    if (*has_value) {
-        auto str = reader::read_string(data);
-        if (!str) return std::unexpected(str.error());
-        try {
-            return std::stod(*str);
-        } catch (const std::invalid_argument&) {
-            return std::nullopt;
-        } catch (const std::out_of_range&) {
-            return std::nullopt;
-        }
-    }
-    return std::nullopt;
-}
-
-/**
  * @brief Serialize a session to the buffer.
  */
 void write_session(std::vector<std::byte>& buffer, const domain::session& s) {
@@ -142,9 +107,6 @@ void write_session(std::vector<std::byte>& buffer, const domain::session& s) {
     writer::write_uint64(buffer, s.bytes_sent);
     writer::write_uint64(buffer, s.bytes_received);
     writer::write_string(buffer, s.country_code);
-    writer::write_string(buffer, s.city);
-    write_optional_double(buffer, s.latitude);
-    write_optional_double(buffer, s.longitude);
 }
 
 /**
@@ -202,18 +164,6 @@ read_session(std::span<const std::byte>& data) {
     if (!country_code) return std::unexpected(country_code.error());
     s.country_code = *country_code;
 
-    auto city = reader::read_string(data);
-    if (!city) return std::unexpected(city.error());
-    s.city = *city;
-
-    auto latitude = read_optional_double(data);
-    if (!latitude) return std::unexpected(latitude.error());
-    s.latitude = *latitude;
-
-    auto longitude = read_optional_double(data);
-    if (!longitude) return std::unexpected(longitude.error());
-    s.longitude = *longitude;
-
     return s;
 }
 
@@ -232,7 +182,6 @@ void write_session_statistics(std::vector<std::byte>& buffer,
     writer::write_string(buffer, std::to_string(s.avg_bytes_sent));
     writer::write_string(buffer, std::to_string(s.avg_bytes_received));
     writer::write_uint32(buffer, s.unique_countries);
-    writer::write_uint32(buffer, s.unique_cities);
 }
 
 /**
@@ -281,10 +230,6 @@ read_session_statistics(std::span<const std::byte>& data) {
     auto unique_countries = reader::read_uint32(data);
     if (!unique_countries) return std::unexpected(unique_countries.error());
     s.unique_countries = *unique_countries;
-
-    auto unique_cities = reader::read_uint32(data);
-    if (!unique_cities) return std::unexpected(unique_cities.error());
-    s.unique_cities = *unique_cities;
 
     return s;
 }

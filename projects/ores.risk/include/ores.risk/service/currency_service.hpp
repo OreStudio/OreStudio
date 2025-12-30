@@ -77,9 +77,9 @@ public:
      * @brief Saves a currency (creates or updates).
      *
      * @param currency The currency to save.
-     * @return true if the operation was successful.
+     * @throws std::exception on failure.
      */
-    bool save_currency(const domain::currency& currency);
+    void save_currency(const domain::currency& currency);
 
     /**
      * @brief Deletes a currency by its ISO code.

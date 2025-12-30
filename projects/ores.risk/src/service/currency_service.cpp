@@ -24,7 +24,8 @@ namespace ores::risk::service {
 using namespace ores::telemetry::log;
 
 currency_service::currency_service(context ctx)
-    : ctx_(std::move(ctx)) {
+    : ctx_(std::move(ctx))
+    , repo_{} {
 }
 
 std::vector<domain::currency> currency_service::list_currencies(
@@ -39,15 +40,9 @@ std::uint32_t currency_service::count_currencies() {
     return repo_.get_total_currency_count(ctx_);
 }
 
-bool currency_service::save_currency(const domain::currency& currency) {
+void currency_service::save_currency(const domain::currency& currency) {
     BOOST_LOG_SEV(lg(), debug) << "Saving currency: " << currency.iso_code;
-    try {
-        repo_.write(ctx_, currency);
-        return true;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save currency: " << e.what();
-        return false;
-    }
+    repo_.write(ctx_, currency);
 }
 
 bool currency_service::delete_currency(const std::string& iso_code) {

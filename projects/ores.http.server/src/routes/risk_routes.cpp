@@ -123,10 +123,10 @@ asio::awaitable<http_response> risk_routes::handle_save_currency(const http_requ
         }
 
         risk::service::currency_service service(ctx_);
-        bool success = service.save_currency(save_req->currency);
+        service.save_currency(save_req->currency);
 
         risk::messaging::save_currency_response resp;
-        resp.success = success;
+        resp.success = true;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {

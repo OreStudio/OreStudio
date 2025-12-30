@@ -567,7 +567,7 @@ asio::awaitable<http_response> iam_routes::handle_get_account_history(const http
             ver.version_number = version_num--;
             ver.recorded_at = acc.recorded_at;
             ver.recorded_by = acc.recorded_by;
-            ver.change_summary = version_num == 0 ? "Created account" : "Updated account";
+            ver.change_summary = (ver.version_number == 1) ? "Created account" : "Updated account";
             resp.history.versions.push_back(ver);
         }
 

@@ -22,6 +22,7 @@
 
 #include <Wt/WDialog.h>
 #include <Wt/WLineEdit.h>
+#include <Wt/WPasswordEdit.h>
 #include <Wt/WPushButton.h>
 #include <Wt/WText.h>
 #include <Wt/WSignal.h>
@@ -63,8 +64,8 @@ private:
     mode mode_;
     Wt::WLineEdit* username_edit_;
     Wt::WLineEdit* email_edit_;
-    Wt::WLineEdit* password_edit_;
-    Wt::WLineEdit* confirm_password_edit_;
+    Wt::WPasswordEdit* password_edit_;
+    Wt::WPasswordEdit* confirm_password_edit_;
     Wt::WText* status_text_;
 
     boost::uuids::uuid account_id_;

@@ -39,8 +39,7 @@ void account_dialog::setup_form() {
     auto content = contents();
     content->setStyleClass("p-3");
 
-    auto add_field = [&](const std::string& label, auto widget,
-                         bool is_password = false) {
+    auto add_field = [&](const std::string& label, auto widget) {
         auto row = content->addWidget(std::make_unique<Wt::WContainerWidget>());
         row->setStyleClass("mb-3");
 
@@ -49,9 +48,6 @@ void account_dialog::setup_form() {
 
         auto* ptr = row->addWidget(std::move(widget));
         ptr->setStyleClass("form-control");
-        if (is_password) {
-            ptr->setEchoMode(Wt::EchoMode::Password);
-        }
         lbl->setBuddy(ptr);
         return ptr;
     };
@@ -68,12 +64,12 @@ void account_dialog::setup_form() {
     email_edit_->setPlaceholderText("user@example.com");
 
     password_edit_ = add_field("Password",
-        std::make_unique<Wt::WLineEdit>(), true);
+        std::make_unique<Wt::WPasswordEdit>());
     password_edit_->setPlaceholderText(
         mode_ == mode::add ? "Enter password" : "Leave blank to keep current");
 
     confirm_password_edit_ = add_field("Confirm Password",
-        std::make_unique<Wt::WLineEdit>(), true);
+        std::make_unique<Wt::WPasswordEdit>());
     confirm_password_edit_->setPlaceholderText("Confirm password");
 
     status_text_ = content->addWidget(std::make_unique<Wt::WText>());

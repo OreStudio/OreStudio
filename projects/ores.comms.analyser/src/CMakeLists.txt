@@ -42,8 +42,8 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
     PRIVATE
         magic_enum::magic_enum
-        Boost::program_options
         Boost::boost)
+# Note: Boost::program_options comes transitively through ores.comms → ores.eventing → ores.telemetry
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

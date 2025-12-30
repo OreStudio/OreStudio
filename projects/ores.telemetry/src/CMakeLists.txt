@@ -43,6 +43,8 @@ target_link_libraries(${lib_target_name}
         Boost::log
         Boost::program_options
         Boost::exception
+    INTERFACE
+        # reflectcpp is provided by ores.platform.lib at build time; expose to consumers here
         reflectcpp::reflectcpp
     PRIVATE
         ores.platform.lib

@@ -44,8 +44,8 @@ target_link_libraries(${lib_target_name}
         ores.platform.lib
         OpenSSL::SSL
         Boost::exception
-        reflectcpp::reflectcpp
     PRIVATE
         faker-cxx::faker-cxx)
+# Note: reflectcpp comes transitively through ores.platform.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -64,7 +64,7 @@ asio::awaitable<void> http_session::run() {
             co_await handle_request(std::move(req));
 
             // Check for connection close
-            if (req[http::field::connection] == "close") {
+            if (!req.keep_alive()) {
                 BOOST_LOG_SEV(lg(), debug) << "Client requested connection close";
                 break;
             }

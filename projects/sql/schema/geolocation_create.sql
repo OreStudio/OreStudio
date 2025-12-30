@@ -53,10 +53,16 @@ on "ores"."ip2country" using gist (ip_range);
 --
 -- Helper function to convert IPv4 address to bigint
 -- IPv4 addresses are 32-bit unsigned integers (0 to 4294967295)
+-- Returns NULL for IPv6 addresses (not supported by ip2country data)
 --
 create or replace function ores.inet_to_bigint(ip_address inet)
 returns bigint as $$
 begin
+    -- Only IPv4 is supported; return NULL for IPv6
+    if family(ip_address) <> 4 then
+        return null;
+    end if;
+
     -- Extract the 32-bit integer representation of the IPv4 address
     -- PostgreSQL's inet stores IPv4 as network byte order
     return (
@@ -69,11 +75,12 @@ end;
 $$ language plpgsql immutable strict;
 
 comment on function ores.inet_to_bigint(inet) is
-'Converts an IPv4 address to its 32-bit unsigned integer representation as bigint.';
+'Converts an IPv4 address to its 32-bit unsigned integer representation as bigint. Returns NULL for IPv6.';
 
 --
 -- Function to lookup country code for an IP address
--- Returns the country code or NULL if not found
+-- Returns the country code or empty result if not found
+-- Note: IPv6 addresses always return empty result (not supported by ip2country)
 --
 create or replace function ores.geoip_lookup(ip_address inet)
 returns table (
@@ -82,8 +89,13 @@ returns table (
 declare
     ip_as_bigint bigint;
 begin
-    -- Convert IP to bigint for range lookup
+    -- Convert IP to bigint for range lookup (returns NULL for IPv6)
     ip_as_bigint := ores.inet_to_bigint(ip_address);
+
+    -- If NULL (IPv6 or invalid), return empty result
+    if ip_as_bigint is null then
+        return;
+    end if;
 
     -- Find the range containing this IP
     return query
@@ -95,4 +107,4 @@ end;
 $$ language plpgsql stable;
 
 comment on function ores.geoip_lookup(inet) is
-'Looks up the country code for an IPv4 address. Returns NULL if not found.';
+'Looks up the country code for an IPv4 address. Returns empty result for IPv6 or if not found.';

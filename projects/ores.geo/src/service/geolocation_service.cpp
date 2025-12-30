@@ -18,6 +18,8 @@
  *
  */
 #include "ores.geo/service/geolocation_service.hpp"
+
+#include <boost/system/error_code.hpp>
 #include "ores.database/repository/bitemporal_operations.hpp"
 
 namespace ores::geo::service {
@@ -27,17 +29,14 @@ geolocation_service::geolocation_service(database::context ctx)
 
 std::expected<geolocation_result, geolocation_error>
 geolocation_service::lookup(const boost::asio::ip::address& ip) const {
-    return lookup(ip.to_string());
-}
-
-std::expected<geolocation_result, geolocation_error>
-geolocation_service::lookup(const std::string& ip_string) const {
     try {
+        // Use the validated IP address's string representation to prevent injection
+        const auto ip_str = ip.to_string();
         const std::string sql =
-            "SELECT country_code FROM ores.geoip_lookup('" + ip_string + "'::inet)";
+            "SELECT country_code FROM ores.geoip_lookup('" + ip_str + "'::inet)";
 
         auto rows = database::repository::execute_raw_multi_column_query(
-            ctx_, sql, lg(), "Geolocation lookup for " + ip_string);
+            ctx_, sql, lg(), "Geolocation lookup for " + ip_str);
 
         if (rows.empty()) {
             return std::unexpected(geolocation_error::address_not_found);
@@ -60,6 +59,17 @@ geolocation_service::lookup(const std::string& ip_string) const {
     } catch (const std::runtime_error&) {
         return std::unexpected(geolocation_error::lookup_failed);
     }
+}
+
+std::expected<geolocation_result, geolocation_error>
+geolocation_service::lookup(const std::string& ip_string) const {
+    // Validate and parse the IP address to prevent SQL injection
+    boost::system::error_code ec;
+    auto ip = boost::asio::ip::make_address(ip_string, ec);
+    if (ec) {
+        return std::unexpected(geolocation_error::invalid_address);
+    }
+    return lookup(ip);
 }
 
 }

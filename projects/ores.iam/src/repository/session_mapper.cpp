@@ -59,20 +59,6 @@ std::string format_timestamp(const std::chrono::system_clock::time_point& tp) {
     return ores::platform::time::datetime::format_time_point(tp);
 }
 
-/**
- * @brief Parses an optional double from a string.
- */
-std::optional<double> parse_optional_double(const std::string& str) {
-    if (str.empty()) {
-        return std::nullopt;
-    }
-    try {
-        return std::stod(str);
-    } catch (...) {
-        return std::nullopt;
-    }
-}
-
 }
 
 domain::session session_mapper::map(const session_entity& v) {
@@ -93,9 +79,6 @@ domain::session session_mapper::map(const session_entity& v) {
     r.bytes_sent = static_cast<std::uint64_t>(v.bytes_sent);
     r.bytes_received = static_cast<std::uint64_t>(v.bytes_received);
     r.country_code = v.country_code;
-    r.city = v.city;
-    r.latitude = parse_optional_double(v.latitude);
-    r.longitude = parse_optional_double(v.longitude);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -116,9 +99,6 @@ session_entity session_mapper::map(const domain::session& v) {
     r.bytes_sent = static_cast<std::int64_t>(v.bytes_sent);
     r.bytes_received = static_cast<std::int64_t>(v.bytes_received);
     r.country_code = v.country_code;
-    r.city = v.city;
-    r.latitude = v.latitude ? std::to_string(*v.latitude) : "";
-    r.longitude = v.longitude ? std::to_string(*v.longitude) : "";
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

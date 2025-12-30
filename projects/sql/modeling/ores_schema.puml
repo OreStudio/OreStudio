@@ -83,13 +83,10 @@ package "IAM (Identity & Access Management)" #E8F4FD {
         * bytes_sent : bigint
         * bytes_received : bigint
         * country_code : text
-        * city : text
-        * latitude : text
-        * longitude : text
     }
 
     note right of sessions
-    User session tracking with geolocation.
+    User session tracking with country-level geolocation.
     Designed for TimescaleDB hypertable.
     Partitioned by start_time.
     end note

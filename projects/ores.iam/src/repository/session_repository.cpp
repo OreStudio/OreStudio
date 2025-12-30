@@ -65,10 +65,7 @@ void session_repository::update(const domain::session& session) {
         "end_time"_c.set(entity.end_time),
         "bytes_sent"_c.set(entity.bytes_sent),
         "bytes_received"_c.set(entity.bytes_received),
-        "country_code"_c.set(entity.country_code),
-        "city"_c.set(entity.city),
-        "latitude"_c.set(entity.latitude),
-        "longitude"_c.set(entity.longitude)
+        "country_code"_c.set(entity.country_code)
     ) | where("id"_c == entity.id.value() &&
               "start_time"_c == entity.start_time.value());
 

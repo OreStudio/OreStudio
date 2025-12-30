@@ -84,8 +84,6 @@ QVariant SessionHistoryModel::data(const QModelIndex& index, int role) const {
             return QString::fromStdString(session.client_ip.to_string());
         case Country:
             return QString::fromStdString(session.country_code);
-        case City:
-            return QString::fromStdString(session.city);
         case BytesSent:
             if (session.bytes_sent >= 1024 * 1024) {
                 return QString("%1 MB").arg(session.bytes_sent / (1024.0 * 1024.0), 0, 'f', 2);
@@ -142,7 +140,6 @@ QVariant SessionHistoryModel::headerData(int section, Qt::Orientation orientatio
     case Duration:      return tr("Duration");
     case ClientIP:      return tr("IP Address");
     case Country:       return tr("Country");
-    case City:          return tr("City");
     case BytesSent:     return tr("Sent");
     case BytesReceived: return tr("Received");
     case ClientVersion: return tr("Version");

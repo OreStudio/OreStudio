@@ -40,8 +40,7 @@ select
     sum(bytes_received) as total_bytes_received,
     avg(bytes_sent) as avg_bytes_sent,
     avg(bytes_received) as avg_bytes_received,
-    count(distinct country_code) filter (where country_code != '') as unique_countries,
-    count(distinct city) filter (where city != '') as unique_cities
+    count(distinct country_code) filter (where country_code != '') as unique_countries
 from "ores"."sessions"
 where end_time != ''
 group by day, account_id
@@ -99,7 +98,6 @@ select
     avg(bytes_sent) as avg_bytes_sent,
     avg(bytes_received) as avg_bytes_received,
     count(distinct country_code) filter (where country_code != '') as unique_countries,
-    count(distinct city) filter (where city != '') as unique_cities,
     -- Peak concurrent sessions approximation (sessions starting in this bucket)
     count(*) as sessions_started
 from "ores"."sessions"

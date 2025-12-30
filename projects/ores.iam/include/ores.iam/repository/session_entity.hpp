@@ -98,21 +98,6 @@ struct session_entity {
      * @brief ISO 3166-1 alpha-2 country code.
      */
     std::string country_code;
-
-    /**
-     * @brief City name from geolocation.
-     */
-    std::string city;
-
-    /**
-     * @brief Latitude from geolocation. Empty string if not available.
-     */
-    std::string latitude;
-
-    /**
-     * @brief Longitude from geolocation. Empty string if not available.
-     */
-    std::string longitude;
 };
 
 std::ostream& operator<<(std::ostream& s, const session_entity& v);

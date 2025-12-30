@@ -34,8 +34,7 @@ std::expected<geolocation_result, geolocation_error>
 geolocation_service::lookup(const std::string& ip_string) const {
     try {
         const std::string sql =
-            "SELECT country_code, city_name, latitude, longitude "
-            "FROM ores.geoip_lookup('" + ip_string + "'::inet)";
+            "SELECT country_code FROM ores.geoip_lookup('" + ip_string + "'::inet)";
 
         auto rows = database::repository::execute_raw_multi_column_query(
             ctx_, sql, lg(), "Geolocation lookup for " + ip_string);
@@ -50,14 +49,10 @@ geolocation_service::lookup(const std::string& ip_string) const {
         if (row.size() >= 1 && row[0].has_value()) {
             geo_result.country_code = row[0].value();
         }
-        if (row.size() >= 2 && row[1].has_value()) {
-            geo_result.city = row[1].value();
-        }
-        if (row.size() >= 3 && row[2].has_value()) {
-            geo_result.latitude = std::stod(row[2].value());
-        }
-        if (row.size() >= 4 && row[3].has_value()) {
-            geo_result.longitude = std::stod(row[3].value());
+
+        // Filter out "None" which indicates unrouted IP ranges
+        if (geo_result.country_code == "None" || geo_result.country_code.empty()) {
+            return std::unexpected(geolocation_error::address_not_found);
         }
 
         return geo_result;

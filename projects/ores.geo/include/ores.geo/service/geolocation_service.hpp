@@ -31,12 +31,12 @@ namespace ores::geo::service {
 
 /**
  * @brief Result of a geolocation lookup.
+ *
+ * Contains country-level information only. City and coordinate data
+ * are not available with the ip2country data source.
  */
 struct geolocation_result {
     std::string country_code;
-    std::string city;
-    std::optional<double> latitude;
-    std::optional<double> longitude;
 };
 
 /**
@@ -52,8 +52,8 @@ enum class geolocation_error {
 /**
  * @brief Service for looking up geographic location from IP addresses.
  *
- * Uses PostgreSQL geoip tables for lookups. The tables must be populated
- * with MaxMind GeoLite2-City CSV data using the geolocation_import.sql script.
+ * Uses PostgreSQL ip2country table for lookups. The table must be populated
+ * with ip2country data from iptoasn.com using the geolocation_import.sql script.
  *
  * Thread-safety: All public methods are thread-safe.
  */

@@ -19,171 +19,75 @@
  */
 
 /**
- * MaxMind GeoLite2-City Data Import Script
+ * ip2country Data Import Script
+ *
+ * Imports IP-to-country mapping data from iptoasn.com.
+ * Supports periodic updates by truncating and reloading the table.
  *
  * Prerequisites:
- * 1. Download GeoLite2-City-CSV.zip from MaxMind
- *    https://dev.maxmind.com/geoip/geolite2-free-geolocation-data
- * 2. Extract to a directory accessible by PostgreSQL
- * 3. Set the :data_dir variable to the extraction path
+ * 1. Download ip2country-v4-u32.tsv from https://iptoasn.com/
+ * 2. Extract to a directory accessible by the psql client
+ * 3. Set the :data_file variable to the full path of the TSV file
  *
  * Usage:
- *   psql -d your_database -v data_dir='/path/to/GeoLite2-City-CSV' -f geolocation_import.sql
+ *   psql -d your_database \
+ *        -v data_file='/path/to/ip2country-v4-u32.tsv' \
+ *        -f geolocation_import.sql
  *
- * Note: This script uses the \copy meta-command, which requires psql to
- * be used for execution. It reads files from the client-side.
+ * For periodic updates, simply run this script again with the new data file.
+ * The script will truncate and reload all data atomically within a transaction.
  */
 
--- Clear existing data
-truncate table ores.geoip_locations cascade;
-truncate table ores.geoip_blocks_ipv4;
-truncate table ores.geoip_blocks_ipv6;
+\echo 'Starting ip2country import...'
+\echo 'Data file: ' :data_file
 
--- Create temporary staging tables for CSV import
--- (CSV has different column names and some columns we don't need)
+begin;
 
-create temp table staging_locations (
-    geoname_id integer,
-    locale_code text,
-    continent_code text,
-    continent_name text,
-    country_iso_code text,
-    country_name text,
-    subdivision_1_iso_code text,
-    subdivision_1_name text,
-    subdivision_2_iso_code text,
-    subdivision_2_name text,
-    city_name text,
-    metro_code text,
-    time_zone text,
-    is_in_european_union integer
-);
+-- Clear existing data for fresh import
+\echo 'Clearing existing data...'
+truncate table ores.ip2country;
 
-create temp table staging_blocks_ipv4 (
-    network text,
-    geoname_id integer,
-    registered_country_geoname_id integer,
-    represented_country_geoname_id integer,
-    is_anonymous_proxy integer,
-    is_satellite_provider integer,
-    postal_code text,
-    latitude double precision,
-    longitude double precision,
-    accuracy_radius integer
-);
+-- Create temporary staging table for TSV import
+-- Columns: range_start (bigint), range_end (bigint), country_code (text)
+create temp table staging_ip2country (
+    range_start bigint,
+    range_end bigint,
+    country_code text
+) on commit drop;
 
-create temp table staging_blocks_ipv6 (
-    network text,
-    geoname_id integer,
-    registered_country_geoname_id integer,
-    represented_country_geoname_id integer,
-    is_anonymous_proxy integer,
-    is_satellite_provider integer,
-    postal_code text,
-    latitude double precision,
-    longitude double precision,
-    accuracy_radius integer
-);
+-- Import TSV file (tab-separated, no header)
+\echo 'Importing TSV data...'
+\copy staging_ip2country from :'data_file' with (format text, delimiter E'\t')
 
--- Import locations (English)
-\echo 'Importing locations...'
-\copy staging_locations from :'data_dir'/GeoLite2-City-Locations-en.csv with (format csv, header true, null '')
-
--- Import IPv4 blocks
-\echo 'Importing IPv4 blocks...'
-\copy staging_blocks_ipv4 from :'data_dir'/GeoLite2-City-Blocks-IPv4.csv with (format csv, header true, null '')
-
--- Import IPv6 blocks
-\echo 'Importing IPv6 blocks...'
-\copy staging_blocks_ipv6 from :'data_dir'/GeoLite2-City-Blocks-IPv6.csv with (format csv, header true, null '')
-
--- Insert into final tables with proper type conversions
-\echo 'Inserting locations...'
-insert into ores.geoip_locations (
-    geoname_id, continent_code, continent_name,
-    country_iso_code, country_name,
-    subdivision_1_iso_code, subdivision_1_name,
-    subdivision_2_iso_code, subdivision_2_name,
-    city_name, metro_code, time_zone, is_in_european_union
-)
+-- Insert into final table, converting start/end to int8range
+-- Use '[)' bounds: inclusive start, exclusive end+1 for proper range semantics
+\echo 'Converting to int8range and inserting...'
+insert into ores.ip2country (ip_range, country_code)
 select
-    geoname_id,
-    coalesce(continent_code, ''),
-    coalesce(continent_name, ''),
-    coalesce(country_iso_code, ''),
-    coalesce(country_name, ''),
-    coalesce(subdivision_1_iso_code, ''),
-    coalesce(subdivision_1_name, ''),
-    coalesce(subdivision_2_iso_code, ''),
-    coalesce(subdivision_2_name, ''),
-    coalesce(city_name, ''),
-    coalesce(metro_code, ''),
-    coalesce(time_zone, ''),
-    coalesce(is_in_european_union = 1, false)
-from staging_locations
-where geoname_id is not null;
+    int8range(range_start, range_end + 1, '[)'),
+    country_code
+from staging_ip2country;
 
-\echo 'Inserting IPv4 blocks...'
-insert into ores.geoip_blocks_ipv4 (
-    network, geoname_id, registered_country_geoname_id,
-    represented_country_geoname_id, is_anonymous_proxy,
-    is_satellite_provider, postal_code, latitude, longitude,
-    accuracy_radius
-)
-select
-    network::inet,
-    geoname_id,
-    registered_country_geoname_id,
-    represented_country_geoname_id,
-    coalesce(is_anonymous_proxy = 1, false),
-    coalesce(is_satellite_provider = 1, false),
-    coalesce(postal_code, ''),
-    latitude,
-    longitude,
-    accuracy_radius
-from staging_blocks_ipv4
-where network is not null;
+-- Staging table is automatically dropped on commit
 
-\echo 'Inserting IPv6 blocks...'
-insert into ores.geoip_blocks_ipv6 (
-    network, geoname_id, registered_country_geoname_id,
-    represented_country_geoname_id, is_anonymous_proxy,
-    is_satellite_provider, postal_code, latitude, longitude,
-    accuracy_radius
-)
-select
-    network::inet,
-    geoname_id,
-    registered_country_geoname_id,
-    represented_country_geoname_id,
-    coalesce(is_anonymous_proxy = 1, false),
-    coalesce(is_satellite_provider = 1, false),
-    coalesce(postal_code, ''),
-    latitude,
-    longitude,
-    accuracy_radius
-from staging_blocks_ipv6
-where network is not null;
+commit;
 
--- Cleanup staging tables
-drop table staging_locations;
-drop table staging_blocks_ipv4;
-drop table staging_blocks_ipv6;
-
--- Analyze tables for query optimization
-\echo 'Analyzing tables...'
-analyze ores.geoip_locations;
-analyze ores.geoip_blocks_ipv4;
-analyze ores.geoip_blocks_ipv6;
+-- Analyze table for query optimization
+\echo 'Analyzing table...'
+analyze ores.ip2country;
 
 -- Show statistics
 \echo 'Import complete. Statistics:'
-select 'Locations' as table_name, count(*) as row_count from ores.geoip_locations
-union all
-select 'IPv4 Blocks', count(*) from ores.geoip_blocks_ipv4
-union all
-select 'IPv6 Blocks', count(*) from ores.geoip_blocks_ipv6;
+select
+    count(*) as total_ranges,
+    count(distinct country_code) as unique_countries,
+    count(*) filter (where country_code = 'None') as unrouted_ranges
+from ores.ip2country;
 
--- Test lookup
-\echo 'Testing lookup for 8.8.8.8 (Google DNS):'
+-- Test lookup for well-known IPs
+\echo 'Testing lookups:'
+\echo '  8.8.8.8 (Google DNS, expected: US):'
 select * from ores.geoip_lookup('8.8.8.8'::inet);
+
+\echo '  1.1.1.1 (Cloudflare, expected: US):'
+select * from ores.geoip_lookup('1.1.1.1'::inet);

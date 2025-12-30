@@ -53,7 +53,8 @@ std::pair<std::regex, std::vector<std::string>> compile_pattern(
         char c = pattern[pos];
         if (c == '.' || c == '+' || c == '*' || c == '?' ||
             c == '(' || c == ')' || c == '[' || c == ']' ||
-            c == '$' || c == '^' || c == '|' || c == '\\') {
+            c == '{' || c == '}' || c == '$' || c == '^' ||
+            c == '|' || c == '\\') {
             regex_str << '\\';
         }
         regex_str << c;

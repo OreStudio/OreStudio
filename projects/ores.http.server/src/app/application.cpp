@@ -84,7 +84,6 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
                 R"({"name":"OreStudio API","version":"1.0.0","status":"running"})");
         });
     router->add_route(api_info_builder.build());
-    registry->register_route(api_info_builder.build());
 
     // Register IAM routes (accounts, auth, roles, sessions)
     routes::iam_routes iam(ctx, system_flags, sessions, auth_service);

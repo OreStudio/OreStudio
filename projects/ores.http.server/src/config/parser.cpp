@@ -31,7 +31,7 @@
 
 namespace {
 
-const std::string more_information("Try --help' for more information.");
+const std::string more_information("Try '--help' for more information.");
 const std::string product_version("OreStudio HTTP Server v" ORES_VERSION);
 const std::string build_info(ORES_BUILD_INFO);
 const std::string usage_error_msg("Usage error: ");
@@ -45,7 +45,7 @@ const std::string server_max_connections_arg("max-connections");
 const std::string server_jwt_secret_arg("jwt-secret");
 const std::string server_jwt_issuer_arg("jwt-issuer");
 const std::string server_jwt_audience_arg("jwt-audience");
-const std::string server_enable_cors_arg("enable-cors");
+const std::string server_disable_cors_arg("disable-cors");
 const std::string server_cors_origins_arg("cors-origins");
 const std::string server_identifier_arg("identifier");
 
@@ -87,8 +87,8 @@ options_description make_options_description() {
             "JWT issuer for token validation.")
         ("jwt-audience", value<std::string>()->default_value("ores-api"),
             "JWT audience for token validation.")
-        ("enable-cors", value<bool>()->default_value(true),
-            "Enable CORS support. Defaults to true.")
+        ("disable-cors",
+            "Disable CORS support. Enabled by default.")
         ("cors-origins", value<std::string>()->default_value("*"),
             "Allowed CORS origins. Defaults to '*'.")
         ("identifier,i", value<std::string>()->default_value("ores-http-server-v1"),
@@ -145,7 +145,7 @@ http_server_options read_server_configuration(const variables_map& vm) {
     r.jwt_secret = vm[server_jwt_secret_arg].as<std::string>();
     r.jwt_issuer = vm[server_jwt_issuer_arg].as<std::string>();
     r.jwt_audience = vm[server_jwt_audience_arg].as<std::string>();
-    r.enable_cors = vm[server_enable_cors_arg].as<bool>();
+    r.enable_cors = (vm.count(server_disable_cors_arg) == 0);
     r.cors_allowed_origins = vm[server_cors_origins_arg].as<std::string>();
     r.server_identifier = vm[server_identifier_arg].as<std::string>();
 

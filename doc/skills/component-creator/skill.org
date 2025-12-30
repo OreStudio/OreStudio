@@ -272,10 +272,11 @@ target_link_libraries(${lib_target_name}
         ores.comms.lib
         ores.utility.lib
         sqlgen::sqlgen
-        reflectcpp::reflectcpp
         faker-cxx::faker-cxx
         libfort::fort
         Boost::boost)
+# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
+# Do not add it explicitly to avoid duplicate library warnings on macOS.
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 #+end_src
@@ -329,9 +330,10 @@ target_link_libraries(${lib_target_name}
         Boost::boost
     PRIVATE
         magic_enum::magic_enum
-        sqlgen::sqlgen
-        reflectcpp::reflectcpp
-        Boost::program_options)
+        sqlgen::sqlgen)
+# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
+# Boost::program_options comes transitively if linking ores.telemetry.lib
+# Do not add these explicitly to avoid duplicate library warnings on macOS.
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 
@@ -358,6 +360,38 @@ install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)
 
 Note that the list of dependencies is fixed for now, but some may not make sense
 for some components.
+
+**** Dependency visibility guidelines
+
+When adding dependencies with =target_link_libraries=, use the correct visibility:
+
+- *PUBLIC*: Use when the dependency's headers are exposed in your component's
+  public headers. Consumers of your component will also link this dependency.
+- *PRIVATE*: Use when the dependency is only used in implementation files (.cpp).
+  Consumers of your component will not see or link this dependency.
+- *INTERFACE*: Use when you need to expose a dependency to consumers but it's
+  already provided at build time by another PRIVATE dependency. This avoids
+  duplicate library warnings on macOS.
+
+Example using INTERFACE to avoid duplicates:
+
+#+begin_src cmake
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        Boost::log
+        Boost::exception
+    INTERFACE
+        # reflectcpp is provided by ores.platform.lib at build time; expose to consumers here
+        reflectcpp::reflectcpp
+    PRIVATE
+        ores.platform.lib
+        Boost::boost)
+#+end_src
+
+*Important*: Before adding a dependency explicitly, check if it already comes
+transitively from another linked library. Common transitive dependencies:
+- =reflectcpp= comes from =ores.platform.lib= (PUBLIC)
+- =Boost::program_options= comes from =ores.telemetry.lib= (PUBLIC)
 
 *** Step 7.5: Create component's tests =CMakeLists.txt=
 

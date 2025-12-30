@@ -36,6 +36,8 @@ set_target_properties(${lib_target_name}
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
+# Find libharu before wt, as wt's PDF support depends on it
+find_package(unofficial-libharu CONFIG REQUIRED)
 find_package(wt CONFIG REQUIRED)
 
 target_link_libraries(${lib_target_name}

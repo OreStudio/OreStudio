@@ -378,7 +378,7 @@ void ore_application::show_add_account_dialog() {
         std::make_unique<account_dialog>(account_dialog::mode::add));
 
     dialog->saved().connect([this, dialog](const account_data&) {
-        load_sample_accounts();
+        load_accounts();
         removeChild(dialog);
     });
 
@@ -400,7 +400,7 @@ void ore_application::show_edit_account_dialog(const boost::uuids::uuid& id) {
     dialog->set_account(data);
 
     dialog->saved().connect([this, dialog](const account_data&) {
-        load_sample_accounts();
+        load_accounts();
         removeChild(dialog);
     });
 
@@ -420,7 +420,7 @@ void ore_application::confirm_delete_account(const boost::uuids::uuid& id) {
 
     msg_box->buttonClicked().connect([this, msg_box, id](Wt::StandardButton btn) {
         if (btn == Wt::StandardButton::Yes) {
-            load_sample_accounts();
+            load_accounts();
         }
         removeChild(msg_box);
     });
@@ -437,7 +437,7 @@ void ore_application::confirm_lock_account(const boost::uuids::uuid& id) {
 
     msg_box->buttonClicked().connect([this, msg_box, id](Wt::StandardButton btn) {
         if (btn == Wt::StandardButton::Yes) {
-            load_sample_accounts();
+            load_accounts();
         }
         removeChild(msg_box);
     });
@@ -454,7 +454,7 @@ void ore_application::confirm_unlock_account(const boost::uuids::uuid& id) {
 
     msg_box->buttonClicked().connect([this, msg_box, id](Wt::StandardButton btn) {
         if (btn == Wt::StandardButton::Yes) {
-            load_sample_accounts();
+            load_accounts();
         }
         removeChild(msg_box);
     });

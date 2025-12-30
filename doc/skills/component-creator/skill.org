@@ -434,7 +434,7 @@ To make sure the project compiles, we need to add some basic infrastructure.
 *** Step 8.1: Add domain stubs
 
 - 1. Create a domain type stub in include under
-  =projects/ores.COMPONENT/include/ores.accounts/domain/stub.hpp= with the
+  =projects/ores.COMPONENT/include/ores.COMPONENT/domain/stub.hpp= with the
   following contents:
 
 #+begin_src c++

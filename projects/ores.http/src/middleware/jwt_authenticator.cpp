@@ -18,9 +18,9 @@
  *
  */
 #include "ores.http/middleware/jwt_authenticator.hpp"
+#include "ores.http/middleware/boost_json_traits.hpp"
 
 #include <jwt-cpp/jwt.h>
-#include <jwt-cpp/traits/boost-json/traits.hpp>
 #include <boost/json.hpp>
 
 namespace ores::http::middleware {

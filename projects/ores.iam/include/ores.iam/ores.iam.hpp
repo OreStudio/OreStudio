@@ -16,11 +16,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_ACCOUNTS_HPP
-#define ORES_IAM_ACCOUNTS_HPP
+#ifndef ORES_IAM_HPP
+#define ORES_IAM_HPP
 
 /**
- * @brief Account management module for ORE Studio.
+ * @brief Identity and Access Management (IAM) module for ORE Studio.
  *
  * This module provides comprehensive user account management with secure
  * authentication and authorization. Key features include:

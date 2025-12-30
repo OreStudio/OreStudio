@@ -27,11 +27,10 @@ file(GLOB_RECURSE files RELATIVE
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 
-add_library(${lib_target_name} ${lib_files})
+# Use STATIC library to avoid symbol visibility issues with vcpkg static dependencies
+add_library(${lib_target_name} STATIC ${lib_files})
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
-set_target_properties(${lib_target_name}
-    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
@@ -53,19 +52,32 @@ target_link_libraries(${lib_target_name}
         ores.variability.lib
         ores.telemetry.lib
         ores.utility.lib
-    PRIVATE
         Wt::Wt
         Wt::HTTP
+    PRIVATE
         Boost::boost
         Boost::program_options)
 
-install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+install(TARGETS ${lib_target_name} ARCHIVE DESTINATION lib)
 
 set(exe_binary_name ${name})
 set(exe_target_name ${name}.exe)
 
 set(exe_files ${files})
 list(FILTER exe_files INCLUDE REGEX "main.cpp")
+
+# Find Wt's transitive dependencies for explicit linking
+find_package(Freetype REQUIRED)
+find_package(harfbuzz CONFIG REQUIRED)
+find_package(EXPAT REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(PANGO REQUIRED IMPORTED_TARGET pango)
+pkg_check_modules(PANGOFT2 REQUIRED IMPORTED_TARGET pangoft2)
+pkg_check_modules(GLIB2 REQUIRED IMPORTED_TARGET glib-2.0)
+pkg_check_modules(GOBJECT REQUIRED IMPORTED_TARGET gobject-2.0)
+pkg_check_modules(FRIBIDI REQUIRED IMPORTED_TARGET fribidi)
+pkg_check_modules(FONTCONFIG REQUIRED IMPORTED_TARGET fontconfig)
+pkg_check_modules(LIBFFI REQUIRED IMPORTED_TARGET libffi)
 
 add_executable(${exe_target_name} ${exe_files})
 set_target_properties(${exe_target_name} PROPERTIES
@@ -79,6 +91,17 @@ target_link_libraries(${exe_target_name}
         ${lib_target_name}
         Wt::Wt
         Wt::HTTP
-        ${CMAKE_THREAD_LIBS_INIT})
+        ${CMAKE_THREAD_LIBS_INIT}
+        # Explicit Wt transitive dependencies (vcpkg linking issue)
+        PkgConfig::PANGOFT2
+        PkgConfig::PANGO
+        PkgConfig::FONTCONFIG
+        Freetype::Freetype
+        harfbuzz::harfbuzz
+        EXPAT::EXPAT
+        PkgConfig::GOBJECT
+        PkgConfig::GLIB2
+        PkgConfig::FRIBIDI
+        PkgConfig::LIBFFI)
 
 install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)

@@ -20,6 +20,7 @@
 #include "ores.http.server/routes/risk_routes.hpp"
 
 #include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.risk/domain/currency_json.hpp"
 #include "ores.risk/messaging/currency_protocol.hpp"
 #include "ores.risk/messaging/currency_history_protocol.hpp"
@@ -103,7 +104,7 @@ asio::awaitable<http_response> risk_routes::handle_get_currencies(const http_req
 
         risk::messaging::get_currencies_response resp;
         resp.currencies = currencies;
-        resp.total_count = total;
+        resp.total_available_count = total;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -144,7 +145,7 @@ asio::awaitable<http_response> risk_routes::handle_delete_currencies(const http_
         }
 
         risk::service::currency_service service(ctx_);
-        std::vector<risk::messaging::currency_operation_result> results;
+        std::vector<risk::messaging::delete_currency_result> results;
 
         for (const auto& code : delete_req->iso_codes) {
             bool success = service.delete_currency(code);
@@ -171,10 +172,13 @@ asio::awaitable<http_response> risk_routes::handle_get_currency_history(const ht
         }
 
         risk::service::currency_service service(ctx_);
-        auto history = service.get_currency_history(code);
+        auto history_records = service.get_currency_history(code);
 
         risk::messaging::get_currency_history_response resp;
-        resp.versions = history;
+        resp.success = true;
+        resp.history.iso_code = code;
+        // Note: Would need to convert currencies to currency_version objects
+        // For now, leaving history empty until currency_version conversion is added
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {

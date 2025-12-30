@@ -46,8 +46,13 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     // Initialize database context
     BOOST_LOG_SEV(lg(), info) << "Initializing database connection...";
-    database::context_factory factory;
-    auto ctx = factory.create(cfg.database);
+    database::context_factory::configuration db_cfg {
+        .database_options = cfg.database,
+        .pool_size = 4,
+        .num_attempts = 10,
+        .wait_time_in_seconds = 1
+    };
+    auto ctx = database::context_factory::make_context(db_cfg);
 
     // Initialize shared services
     BOOST_LOG_SEV(lg(), info) << "Initializing shared services...";
@@ -94,7 +99,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     risk.register_routes(router, registry);
 
     // Register Variability routes (feature flags)
-    routes::variability_routes variability(system_flags, sessions);
+    routes::variability_routes variability(ctx, system_flags, sessions);
     variability.register_routes(router, registry);
 
     // Register Assets routes (images)

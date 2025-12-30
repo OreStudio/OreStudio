@@ -25,6 +25,7 @@
         "boost-process",
         "boost-iostreams",
         "boost-beast",
+        "boost-json",
         "boost-url",
         "jwt-cpp",
         "cli",

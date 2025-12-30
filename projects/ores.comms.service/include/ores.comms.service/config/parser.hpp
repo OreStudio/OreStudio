@@ -17,29 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
-#define ORES_SERVICE_CONFIG_PARSER_EXCEPTION_HPP
+#ifndef ORES_COMMS_SERVICE_CONFIG_PARSER_HPP
+#define ORES_COMMS_SERVICE_CONFIG_PARSER_HPP
 
+#include <iosfwd>
+#include <vector>
 #include <string>
-#include <boost/exception/info.hpp>
+#include <optional>
+#include "ores.comms.service/config/options.hpp"
 
-namespace ores::service::config {
+namespace ores::comms::service::config {
 
 /**
- * @brief A fatal error has occurred during option parsing.
+ * @brief Command-line parser implementation using boost program options.
+ *
+ * Note on logging: we are NOT logging any of the exceptions to the log in this
+ * class. This is by design. The logger is only initialised after the options
+ * have been parsed; were we to log prior to this, we would dump all the
+ * messages into the console. The output is very confusing for users that are
+ * accustomed to normal command line applications.
  */
-class parser_exception : public virtual std::exception,
-                         public virtual boost::exception {
+class parser final {
 public:
-    explicit parser_exception(std::string_view message = "")
-        : message_(message) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
-    }
-
-private:
-    std::string message_;
+    std::optional<options>
+    parse(const std::vector<std::string>& arguments, std::ostream& info,
+        std::ostream& error) const;
 };
 
 }

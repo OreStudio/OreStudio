@@ -71,7 +71,7 @@ The system is organised into four architectural layers:
 
 ** Application Layer
 
-- Components: [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.client]], [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]], [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]], [[id:7141E32C-80E2-6B74-F273-C80DAA42D727][ores.service]], [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]].
+- Components: [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.client]], [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]], [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]], [[id:7141E32C-80E2-6B74-F273-C80DAA42D727][ores.comms.service]], [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]].
 - Client: REPL client.
 - CLI: Command-line import/export of currencies in multiple formats
 - Qt: Desktop GUI with MDI interface for visual data management

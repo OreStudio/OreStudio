@@ -75,7 +75,7 @@
   :name "ORE Studio Service - Debug"
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
   :cwd (concat (ores/path-to-publish) "/bin")
-  :command (concat (ores/path-to-publish) "/bin/ores.service")
+  :command (concat (ores/path-to-publish) "/bin/ores.comms.service")
   :tags '(ores debug dev-service)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
@@ -84,7 +84,7 @@
   :name "ORE Studio Service - Release"
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
   :cwd (concat (ores/path-to-publish) "/bin")
-  :command (concat (ores/path-to-publish) "/bin/ores.service")
+  :command (concat (ores/path-to-publish) "/bin/ores.comms.service")
   :tags '(ores release dev-service)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)

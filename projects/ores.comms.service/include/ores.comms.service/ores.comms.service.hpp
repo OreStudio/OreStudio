@@ -16,8 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SERVICE_SERVICE_HPP
-#define ORES_SERVICE_SERVICE_HPP
+#ifndef ORES_COMMS_SERVICE_SERVICE_HPP
+#define ORES_COMMS_SERVICE_SERVICE_HPP
 
 /**
  * @brief Main server application for ORE Studio.
@@ -37,6 +37,6 @@
  * The component is organized into namespaces: config (option parsing and
  * configuration), and app (application hosting and execution).
  */
-namespace ores::service {}
+namespace ores::comms::service {}
 
 #endif

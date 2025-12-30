@@ -18,7 +18,7 @@
  * MA 02110-1301, USA.
  *
  */
-#include "ores.service/app/application.hpp"
+#include "ores.comms.service/app/application.hpp"
 
 #include <boost/throw_exception.hpp>
 #include <boost/asio/co_spawn.hpp>
@@ -48,9 +48,9 @@
 #include "ores.comms/service/subscription_manager.hpp"
 #include "ores.comms/service/subscription_handler.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
-#include "ores.service/app/application_exception.hpp"
+#include "ores.comms.service/app/application_exception.hpp"
 
-namespace ores::service::app {
+namespace ores::comms::service::app {
 using namespace ores::telemetry::log;
 
 database::context application::make_context(

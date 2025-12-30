@@ -17,37 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SERVICE_APP_HOST_HPP
-#define ORES_SERVICE_APP_HOST_HPP
+#ifndef ORES_COMMS_SERVICE_APP_APPLICATION_EXCEPTION_HPP
+#define ORES_COMMS_SERVICE_APP_APPLICATION_EXCEPTION_HPP
 
-#include <vector>
 #include <string>
-#include <ostream>
-#include <boost/asio/awaitable.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include <boost/exception/info.hpp>
 
-namespace ores::service::app {
+namespace ores::comms::service::app {
 
 /**
- * @brief Provides hosting services to the application.
+ * @brief A fatal error has occurred whilst the application was running.
  */
-class host {
-private:
-    inline static std::string_view logger_name = "ores.service.app.host";
+class application_exception : public virtual std::exception,
+                              public virtual boost::exception {
+public:
+    explicit application_exception(std::string_view message = "")
+        : message_(message) {}
 
-    static auto& lg() {
-        using namespace ores::telemetry::log;
-        static auto instance = make_logger(logger_name);
-        return instance;
+    [[nodiscard]] const char* what() const noexcept override {
+        return message_.c_str();
     }
 
-public:
-    /**
-     * @brief Executes the console workflow.
-     */
-    static boost::asio::awaitable<int> execute(const std::vector<std::string>& args,
-        std::ostream& std_output, std::ostream& error_output,
-        boost::asio::io_context& io_ctx);
+private:
+    std::string message_;
 };
 
 }

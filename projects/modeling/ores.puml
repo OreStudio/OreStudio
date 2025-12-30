@@ -237,7 +237,7 @@ package "Application Layer" #F2F2F2 {
     their own MDI windows, dialogs, and data models.
     end note
 
-    component [ores.service] as service #F7E5FF
+    component [ores.comms.service] as service #F7E5FF
 
     note right of service
     Main server application hosting all ORE Studio backend services:

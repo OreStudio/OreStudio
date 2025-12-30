@@ -14,7 +14,7 @@ Diagram:
 
 #+attr_html: :width 100% :alt Description
 #+caption: ORE Studio Service Component Diagram
-[[file:ores.service.png][file:ores.service.png]]
+[[file:ores.comms.service.png][file:ores.comms.service.png]]
 
 Multi-client server application hosting the ORE Studio backend services. Key
 features:

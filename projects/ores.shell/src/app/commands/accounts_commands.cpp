@@ -498,10 +498,8 @@ process_list_sessions(std::ostream& out, client_session& session,
         }
         out << std::endl;
         out << "    IP: " << s.client_ip.to_string();
-        if (!s.country_code.empty() || !s.city.empty()) {
-            out << " (" << s.country_code;
-            if (!s.city.empty()) out << ", " << s.city;
-            out << ")";
+        if (!s.country_code.empty()) {
+            out << " (" << s.country_code << ")";
         }
         out << std::endl;
         if (!s.client_identifier.empty()) {
@@ -551,10 +549,8 @@ process_active_sessions(std::ostream& out, client_session& session) {
         }
         out << std::endl;
         out << "    IP: " << s.client_ip.to_string();
-        if (!s.country_code.empty() || !s.city.empty()) {
-            out << " (" << s.country_code;
-            if (!s.city.empty()) out << ", " << s.city;
-            out << ")";
+        if (!s.country_code.empty()) {
+            out << " (" << s.country_code << ")";
         }
         out << std::endl;
         if (!s.client_identifier.empty()) {

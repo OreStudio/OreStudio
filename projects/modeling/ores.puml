@@ -92,12 +92,12 @@ package "Foundation Layer" #F2F2F2 {
     component [ores.geo] as geo #F7E5FF
 
     note right of geo
-    Geolocation services for IP-to-location lookups:
-    - PostgreSQL Storage: Stores MaxMind GeoLite2-City data in geoip tables
-    - IP to Location: Maps IP addresses to country, city, and coordinates
+    Geolocation services for IP-to-country lookups:
+    - PostgreSQL Storage: Stores ip2country data in ip2country table
+    - IP to Country: Maps IP addresses to country codes
     - Thread Safe: All lookup operations are thread-safe for concurrent access
-    - GiST Indexes: Uses PostgreSQL native inet type for efficient lookups
-    Used primarily for session tracking to record login locations.
+    - GiST Indexes: Uses PostgreSQL int8range for efficient range lookups
+    Used primarily for session tracking to record login countries.
     Organized into: service (geolocation_service) namespace.
     end note
 }

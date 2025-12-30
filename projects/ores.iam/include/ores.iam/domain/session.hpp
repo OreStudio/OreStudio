@@ -102,27 +102,6 @@ struct session final {
     std::string country_code;
 
     /**
-     * @brief City name from geolocation.
-     *
-     * Empty if geolocation is not available or IP is private/localhost.
-     */
-    std::string city;
-
-    /**
-     * @brief Latitude from geolocation.
-     *
-     * Empty if geolocation is not available or IP is private/localhost.
-     */
-    std::optional<double> latitude;
-
-    /**
-     * @brief Longitude from geolocation.
-     *
-     * Empty if geolocation is not available or IP is private/localhost.
-     */
-    std::optional<double> longitude;
-
-    /**
      * @brief Calculates the session duration.
      *
      * @return Duration if session has ended, nullopt if still active.
@@ -196,11 +175,6 @@ struct session_statistics final {
      * @brief Number of unique countries from which sessions originated.
      */
     std::uint32_t unique_countries = 0;
-
-    /**
-     * @brief Number of unique cities from which sessions originated.
-     */
-    std::uint32_t unique_cities = 0;
 };
 
 }

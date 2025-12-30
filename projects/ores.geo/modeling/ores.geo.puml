@@ -29,9 +29,6 @@ namespace ores #F2F2F2 {
 
             class geolocation_result <<struct>> {
                 +country_code : string
-                +city : string
-                +latitude : optional<double>
-                +longitude : optional<double>
             }
 
             enum geolocation_error {

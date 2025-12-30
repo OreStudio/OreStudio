@@ -58,7 +58,6 @@ private:
         Duration,
         ClientIP,
         Country,
-        City,
         BytesSent,
         BytesReceived,
         ClientVersion,

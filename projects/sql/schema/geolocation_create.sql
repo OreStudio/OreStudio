@@ -19,170 +19,92 @@
  */
 
 /**
- * Geolocation Schema for IP-to-Location Lookups
+ * Geolocation Schema for IP-to-Country Lookups
  *
- * Stores MaxMind GeoLite2-City data in PostgreSQL for efficient IP lookups.
- * Uses PostgreSQL's native inet type with GiST indexes for range queries.
+ * Stores ip2country data in PostgreSQL for efficient IP lookups.
+ * Uses PostgreSQL's int8range type with GiST indexes for fast range queries.
  *
- * Data source: MaxMind GeoLite2-City (CSV format)
- * Download from: https://dev.maxmind.com/geoip/geolite2-free-geolocation-data
+ * Data source: ip2country (https://iptoasn.com/)
+ * Format: TSV with 32-bit unsigned integer IP ranges
  *
  * Tables:
- * - geoip_locations: Location data (countries, cities, coordinates)
- * - geoip_blocks_ipv4: IPv4 CIDR blocks mapped to locations
- * - geoip_blocks_ipv6: IPv6 CIDR blocks mapped to locations
+ * - ip2country: IPv4 ranges mapped to country codes
  */
 
 set schema 'ores';
 
 --
--- Location data from GeoLite2-City-Locations-en.csv
--- Contains country/city names and coordinates
+-- IP to country mapping from ip2country-v4-u32.tsv
+-- Uses int8range for efficient range containment queries
 --
-create table if not exists "ores"."geoip_locations" (
-    -- MaxMind geoname_id (primary key)
-    "geoname_id" integer primary key,
+create table if not exists "ores"."ip2country" (
+    -- IP range as int8range (start and end as 32-bit unsigned integers)
+    "ip_range" int8range not null,
 
-    -- Continent
-    "continent_code" text not null default '',
-    "continent_name" text not null default '',
-
-    -- Country
-    "country_iso_code" text not null default '',
-    "country_name" text not null default '',
-
-    -- Subdivision (state/province)
-    "subdivision_1_iso_code" text not null default '',
-    "subdivision_1_name" text not null default '',
-    "subdivision_2_iso_code" text not null default '',
-    "subdivision_2_name" text not null default '',
-
-    -- City
-    "city_name" text not null default '',
-
-    -- Metro code (US only)
-    "metro_code" text not null default '',
-
-    -- Timezone
-    "time_zone" text not null default '',
-
-    -- Is in European Union
-    "is_in_european_union" boolean not null default false
+    -- ISO 3166-1 alpha-2 country code (or 'None' for unrouted)
+    "country_code" text not null
 );
 
--- Index on country code for filtering
-create index if not exists geoip_locations_country_idx
-on "ores"."geoip_locations" (country_iso_code);
+-- GiST index for efficient IP range containment queries
+-- This enables fast lookups using the @> operator
+create index if not exists ip2country_range_idx
+on "ores"."ip2country" using gist (ip_range);
 
 --
--- IPv4 blocks from GeoLite2-City-Blocks-IPv4.csv
--- Maps CIDR ranges to geoname_id
+-- Helper function to convert IPv4 address to bigint
+-- IPv4 addresses are 32-bit unsigned integers (0 to 4294967295)
+-- Returns NULL for IPv6 addresses (not supported by ip2country data)
 --
-create table if not exists "ores"."geoip_blocks_ipv4" (
-    -- IP network in CIDR notation (e.g., 192.168.1.0/24)
-    "network" inet not null,
+create or replace function ores.inet_to_bigint(ip_address inet)
+returns bigint as $$
+begin
+    -- Only IPv4 is supported; return NULL for IPv6
+    if family(ip_address) <> 4 then
+        return null;
+    end if;
 
-    -- Foreign key to geoip_locations
-    "geoname_id" integer,
+    -- Extract the 32-bit integer representation of the IPv4 address
+    -- PostgreSQL's inet stores IPv4 as network byte order
+    return (
+        (get_byte(inet_send(ip_address), 0)::bigint << 24) +
+        (get_byte(inet_send(ip_address), 1)::bigint << 16) +
+        (get_byte(inet_send(ip_address), 2)::bigint << 8) +
+        (get_byte(inet_send(ip_address), 3)::bigint)
+    );
+end;
+$$ language plpgsql immutable strict;
 
-    -- Registered country (may differ from actual location)
-    "registered_country_geoname_id" integer,
-
-    -- Represented country (for proxies/VPNs)
-    "represented_country_geoname_id" integer,
-
-    -- Anonymous proxy flag
-    "is_anonymous_proxy" boolean not null default false,
-
-    -- Satellite provider flag
-    "is_satellite_provider" boolean not null default false,
-
-    -- Postal code
-    "postal_code" text not null default '',
-
-    -- Coordinates (more precise than city-level)
-    "latitude" double precision,
-    "longitude" double precision,
-
-    -- Accuracy radius in km
-    "accuracy_radius" integer
-);
-
--- GiST index for efficient IP range lookups
--- This is the key to fast IP lookups
-create index if not exists geoip_blocks_ipv4_network_idx
-on "ores"."geoip_blocks_ipv4" using gist (network inet_ops);
+comment on function ores.inet_to_bigint(inet) is
+'Converts an IPv4 address to its 32-bit unsigned integer representation as bigint. Returns NULL for IPv6.';
 
 --
--- IPv6 blocks from GeoLite2-City-Blocks-IPv6.csv
--- Same structure as IPv4
---
-create table if not exists "ores"."geoip_blocks_ipv6" (
-    "network" inet not null,
-    "geoname_id" integer,
-    "registered_country_geoname_id" integer,
-    "represented_country_geoname_id" integer,
-    "is_anonymous_proxy" boolean not null default false,
-    "is_satellite_provider" boolean not null default false,
-    "postal_code" text not null default '',
-    "latitude" double precision,
-    "longitude" double precision,
-    "accuracy_radius" integer
-);
-
-create index if not exists geoip_blocks_ipv6_network_idx
-on "ores"."geoip_blocks_ipv6" using gist (network inet_ops);
-
---
--- Function to lookup IP address and return location data
--- Works with both IPv4 and IPv6 addresses
+-- Function to lookup country code for an IP address
+-- Returns the country code or empty result if not found
+-- Note: IPv6 addresses always return empty result (not supported by ip2country)
 --
 create or replace function ores.geoip_lookup(ip_address inet)
 returns table (
-    country_code text,
-    country_name text,
-    city_name text,
-    latitude double precision,
-    longitude double precision,
-    accuracy_radius integer
+    country_code text
 ) as $$
+declare
+    ip_as_bigint bigint;
 begin
-    -- Try IPv4 first (more common)
-    return query
-    select
-        l.country_iso_code as country_code,
-        l.country_name,
-        l.city_name,
-        coalesce(b.latitude, 0.0) as latitude,
-        coalesce(b.longitude, 0.0) as longitude,
-        coalesce(b.accuracy_radius, 0) as accuracy_radius
-    from ores.geoip_blocks_ipv4 b
-    left join ores.geoip_locations l on l.geoname_id = b.geoname_id
-    where b.network >> ip_address
-    order by masklen(b.network) desc
-    limit 1;
+    -- Convert IP to bigint for range lookup (returns NULL for IPv6)
+    ip_as_bigint := ores.inet_to_bigint(ip_address);
 
-    if found then
+    -- If NULL (IPv6 or invalid), return empty result
+    if ip_as_bigint is null then
         return;
     end if;
 
-    -- Try IPv6
+    -- Find the range containing this IP
     return query
-    select
-        l.country_iso_code as country_code,
-        l.country_name,
-        l.city_name,
-        coalesce(b.latitude, 0.0) as latitude,
-        coalesce(b.longitude, 0.0) as longitude,
-        coalesce(b.accuracy_radius, 0) as accuracy_radius
-    from ores.geoip_blocks_ipv6 b
-    left join ores.geoip_locations l on l.geoname_id = b.geoname_id
-    where b.network >> ip_address
-    order by masklen(b.network) desc
+    select c.country_code
+    from ores.ip2country c
+    where c.ip_range @> ip_as_bigint
     limit 1;
 end;
 $$ language plpgsql stable;
 
--- Comment on the lookup function
 comment on function ores.geoip_lookup(inet) is
-'Looks up geolocation data for an IP address. Returns country, city, and coordinates.';
+'Looks up the country code for an IPv4 address. Returns empty result for IPv6 or if not found.';

@@ -301,12 +301,8 @@ handle_login_request(std::span<const std::byte> payload,
             auto geo_result = geo_service_->lookup(ip_address);
             if (geo_result) {
                 sess->country_code = geo_result->country_code;
-                sess->city = geo_result->city;
-                sess->latitude = geo_result->latitude;
-                sess->longitude = geo_result->longitude;
                 BOOST_LOG_SEV(lg(), debug) << "Geolocation for " << ip_address
-                                           << ": " << sess->country_code
-                                           << ", " << sess->city;
+                                           << ": " << sess->country_code;
             } else {
                 BOOST_LOG_SEV(lg(), debug) << "Geolocation lookup failed for "
                                            << ip_address << ": "

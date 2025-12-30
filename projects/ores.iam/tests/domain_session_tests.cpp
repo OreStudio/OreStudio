@@ -51,9 +51,6 @@ TEST_CASE("create_session_with_valid_fields", tags) {
     sut.bytes_sent = 1024;
     sut.bytes_received = 2048;
     sut.country_code = "US";
-    sut.city = "New York";
-    sut.latitude = 40.7128;
-    sut.longitude = -74.0060;
 
     BOOST_LOG_SEV(lg, info) << "Session: " << sut;
 
@@ -63,9 +60,6 @@ TEST_CASE("create_session_with_valid_fields", tags) {
     CHECK(sut.bytes_sent == 1024);
     CHECK(sut.bytes_received == 2048);
     CHECK(sut.country_code == "US");
-    CHECK(sut.city == "New York");
-    CHECK(sut.latitude.has_value());
-    CHECK(sut.longitude.has_value());
 }
 
 TEST_CASE("session_is_active_when_no_end_time", tags) {
@@ -163,7 +157,6 @@ TEST_CASE("session_serialization_to_json", tags) {
     sut.client_version_major = 2;
     sut.client_version_minor = 5;
     sut.country_code = "GB";
-    sut.city = "London";
 
     BOOST_LOG_SEV(lg, info) << "Session: " << sut;
 
@@ -176,7 +169,6 @@ TEST_CASE("session_serialization_to_json", tags) {
     CHECK(json_output.find("987fcdeb-51a2-12d3-a456-426614174999") != std::string::npos);
     CHECK(json_output.find("Desktop App") != std::string::npos);
     CHECK(json_output.find("GB") != std::string::npos);
-    CHECK(json_output.find("London") != std::string::npos);
 }
 
 TEST_CASE("session_without_geolocation", tags) {
@@ -188,14 +180,11 @@ TEST_CASE("session_without_geolocation", tags) {
     sut.start_time = std::chrono::system_clock::now();
     sut.client_ip = boost::asio::ip::make_address("127.0.0.1");
     sut.client_identifier = "Local Client";
-    // country_code, city, latitude, longitude remain empty/nullopt
+    // country_code remains empty for localhost/private IPs
 
     BOOST_LOG_SEV(lg, info) << "Session without geo: " << sut;
 
     CHECK(sut.country_code.empty());
-    CHECK(sut.city.empty());
-    CHECK(!sut.latitude.has_value());
-    CHECK(!sut.longitude.has_value());
 }
 
 TEST_CASE("create_session_with_faker", tags) {
@@ -212,16 +201,12 @@ TEST_CASE("create_session_with_faker", tags) {
     sut.bytes_sent = faker::number::integer<uint64_t>(0, 1000000);
     sut.bytes_received = faker::number::integer<uint64_t>(0, 1000000);
     sut.country_code = faker::location::countryCode();
-    sut.city = faker::location::city();
-    sut.latitude = faker::number::decimal(-90.0, 90.0);
-    sut.longitude = faker::number::decimal(-180.0, 180.0);
 
     BOOST_LOG_SEV(lg, info) << "Faker session: " << sut;
 
     CHECK(!sut.client_identifier.empty());
     CHECK(sut.client_version_major >= 1);
     CHECK(!sut.country_code.empty());
-    CHECK(!sut.city.empty());
 }
 
 TEST_CASE("create_multiple_random_sessions", tags) {
@@ -273,7 +258,6 @@ TEST_CASE("create_session_statistics_with_valid_fields", tags) {
     sut.avg_bytes_sent = 104857.6;
     sut.avg_bytes_received = 209715.2;
     sut.unique_countries = 3;
-    sut.unique_cities = 5;
 
     BOOST_LOG_SEV(lg, info) << "Session statistics: " << sut;
 
@@ -282,7 +266,6 @@ TEST_CASE("create_session_statistics_with_valid_fields", tags) {
     CHECK(sut.total_bytes_sent == 1048576);
     CHECK(sut.total_bytes_received == 2097152);
     CHECK(sut.unique_countries == 3);
-    CHECK(sut.unique_cities == 5);
 }
 
 TEST_CASE("session_statistics_serialization_to_json", tags) {
@@ -298,7 +281,6 @@ TEST_CASE("session_statistics_serialization_to_json", tags) {
     sut.avg_bytes_sent = 100000.0;
     sut.avg_bytes_received = 200000.0;
     sut.unique_countries = 10;
-    sut.unique_cities = 25;
 
     BOOST_LOG_SEV(lg, info) << "Session statistics: " << sut;
 
@@ -328,12 +310,10 @@ TEST_CASE("create_session_statistics_with_faker", tags) {
     sut.avg_bytes_received = static_cast<double>(sut.total_bytes_received) /
         static_cast<double>(sut.session_count);
     sut.unique_countries = faker::number::integer<uint32_t>(1, 50);
-    sut.unique_cities = faker::number::integer<uint32_t>(1, 200);
 
     BOOST_LOG_SEV(lg, info) << "Faker session statistics: " << sut;
 
     CHECK(sut.session_count >= 1);
     CHECK(sut.avg_duration_seconds >= 60.0);
     CHECK(sut.unique_countries >= 1);
-    CHECK(sut.unique_cities >= 1);
 }

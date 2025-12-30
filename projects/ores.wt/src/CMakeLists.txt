@@ -36,8 +36,13 @@ set_target_properties(${lib_target_name}
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
-# Find libharu before wt, as wt's PDF support depends on it
+# Find libharu before wt, as wt's PDF support depends on it.
+# vcpkg's libharu provides unofficial::libharu::haru but wt expects HPDF::HPDF,
+# so we create an alias to bridge the gap.
 find_package(unofficial-libharu CONFIG REQUIRED)
+if(NOT TARGET HPDF::HPDF)
+    add_library(HPDF::HPDF ALIAS unofficial::libharu::haru)
+endif()
 find_package(wt CONFIG REQUIRED)
 
 target_link_libraries(${lib_target_name}

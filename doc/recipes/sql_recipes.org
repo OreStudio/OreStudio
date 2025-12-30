@@ -8,23 +8,40 @@
 
 SQL recipes for directly querying and managing the [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORES Database Schema]].
 
-* Recipes
+* Initial Setup (Run Once)
   :PROPERTIES:
   :header-args: :exports both
   :header-args+: :results raw
   :header-args+: :engine postgresql
   :header-args+: :dbhost localhost
-  :header-args+: :dbuser ores
-  :header-args+: :dbpassword (auth-source-pick-first-password :host "localhost" :user "ores")
+  :header-args+: :dbuser postgres
+  :header-args+: :dbpassword (auth-source-pick-first-password :host "localhost" :user "postgres")
   :header-args+: :var project_sql_dir=(concat (project-root (project-current)) "projects/sql")
   :END:
 
-** Database Setup
+These recipes must be run *in order* using the =postgres= superuser to bootstrap
+the ORES database infrastructure. Run each step once when setting up a new
+PostgreSQL server.
 
-*** Create Template Database
+** Step 1: Create ORES User
 
-One-time setup to create the =ores_template= database with all schema and
-reference data:
+Creates the =ores= application user with appropriate permissions:
+
+#+begin_src sql :database template1 :wrap example
+\ir '$project_sql_dir'/setup.sql
+#+end_src
+
+** Step 2: Create Admin Database
+
+Creates =ores_admin= with cluster-level utilities (name generation, cleanup):
+
+#+begin_src sql :database template1 :wrap example
+\ir '$project_sql_dir'/admin/setup_admin.sql
+#+end_src
+
+** Step 3: Create Template Database
+
+Creates =ores_template= with the complete application schema and reference data:
 
 #+begin_src sql :database template1 :wrap example
 \ir '$project_sql_dir'/setup_template.sql
@@ -709,55 +726,40 @@ SET
 INSERT 0 158
 #+end_example
 
-*** Create Instance with Whimsical Name
+** Step 4: Create Database Instance
 
-Create a new database instance with an auto-generated whimsical name:
+Creates a new database instance from the template. Run this each time you need a
+new database (development, testing, production, etc.).
+
+*** With Auto-Generated Whimsical Name
 
 #+begin_src sql :database template1 :results output :wrap example
 \ir '$project_sql_dir'/create_instance.sql
 #+end_src
 
-#+RESULTS:
-#+begin_example
-CREATE DATABASE
-GRANT
-SET
-DO
-SET
-DO
-name	enabled	description	modified_by
-system.disable_password_validation	0	When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.	system
-#+end_example
-
-*** Create Instance with Specific Name
-
-Create a database with your own name:
+*** With Specific Name
 
 #+begin_src sh :wrap example
 psql -U postgres -v db_name='my_ores_db' -f projects/sql/create_instance.sql
 #+end_src
 
-** Admin Database Setup
+* Recipes
+  :PROPERTIES:
+  :header-args: :exports both
+  :header-args+: :results raw
+  :header-args+: :engine postgresql
+  :header-args+: :dbhost localhost
+  :header-args+: :dbuser ores
+  :header-args+: :dbpassword (auth-source-pick-first-password :host "localhost" :user "ores")
+  :header-args+: :var project_sql_dir=(concat (project-root (project-current)) "projects/sql")
+  :END:
 
-The =ores_admin= database contains cluster-level utilities for database
-management. These must be set up before using the list/delete recipes below.
-
-*** Setup Admin Database
-
-One-time setup to create the =ores_admin= database with management utilities:
-
-#+begin_src sql :database template1 :wrap example
-\ir '$project_sql_dir'/admin/setup_admin.sql
-#+end_src
-
-This creates:
-- Whimsical name generation functions
-- Database listing and creation helpers
-- Cleanup views and functions
+Day-to-day recipes for querying and managing ORES databases. These use the
+=ores= application user.
 
 ** Database Management
 
-All database management recipes require =ores_admin= to be set up first.
+These recipes require the initial setup (Steps 1-3) to be completed first.
 
 *** List All ORES Databases
 

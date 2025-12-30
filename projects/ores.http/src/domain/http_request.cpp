@@ -24,23 +24,13 @@
 namespace ores::http::domain {
 
 std::string http_request::get_header(const std::string& name) const {
-    auto it = headers.find(name);
-    if (it != headers.end()) {
-        return it->second;
-    }
-
-    // Try case-insensitive search
+    // Headers are stored with lowercase keys (normalized on insertion)
     std::string lower_name = name;
     std::transform(lower_name.begin(), lower_name.end(), lower_name.begin(),
         [](unsigned char c) { return std::tolower(c); });
-
-    for (const auto& [key, value] : headers) {
-        std::string lower_key = key;
-        std::transform(lower_key.begin(), lower_key.end(), lower_key.begin(),
-            [](unsigned char c) { return std::tolower(c); });
-        if (lower_key == lower_name) {
-            return value;
-        }
+    auto it = headers.find(lower_name);
+    if (it != headers.end()) {
+        return it->second;
     }
     return "";
 }

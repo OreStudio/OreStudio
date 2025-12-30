@@ -19,6 +19,7 @@
  */
 #include "ores.http/net/http_session.hpp"
 
+#include <algorithm>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/beast/http/read.hpp>
 #include <boost/beast/http/write.hpp>
@@ -222,9 +223,12 @@ domain::http_request http_session::convert_request(
     result.body = req.body();
     result.remote_address = remote_address_;
 
-    // Copy headers
+    // Copy headers (normalize keys to lowercase for case-insensitive lookup per RFC 7230)
     for (const auto& field : req) {
-        result.headers[std::string(field.name_string())] = std::string(field.value());
+        std::string key = std::string(field.name_string());
+        std::transform(key.begin(), key.end(), key.begin(),
+            [](unsigned char c) { return std::tolower(c); });
+        result.headers[key] = std::string(field.value());
     }
 
     // Parse query parameters

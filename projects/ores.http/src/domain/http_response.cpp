@@ -19,9 +19,18 @@
  */
 #include "ores.http/domain/http_response.hpp"
 
-#include <sstream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
 
 namespace ores::http::domain {
+
+namespace {
+
+struct error_message final {
+    std::string error;
+};
+
+}
 
 http_response http_response::json(const std::string& body, http_status status) {
     http_response r;
@@ -32,9 +41,7 @@ http_response http_response::json(const std::string& body, http_status status) {
 }
 
 http_response http_response::error(http_status status, const std::string& message) {
-    std::ostringstream oss;
-    oss << R"({"error":")" << message << R"("})";
-    return json(oss.str(), status);
+    return json(rfl::json::write(error_message{message}), status);
 }
 
 http_response http_response::not_found(const std::string& message) {

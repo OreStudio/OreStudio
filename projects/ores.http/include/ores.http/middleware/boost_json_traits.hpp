@@ -47,12 +47,17 @@ struct boost_json {
         if (val.is_double()) return type::number;
         if (val.is_string()) return type::string;
         if (val.is_array()) return type::array;
-        if (val.is_object()) return type::object;
-        return type::null;
+        // Default to object for null and other types
+        return type::object;
     }
 
-    static value_type parse(const std::string& str) {
-        return boost::json::parse(str);
+    static bool parse(value_type& val, const string_type& str) {
+        try {
+            val = boost::json::parse(str);
+            return true;
+        } catch (...) {
+            return false;
+        }
     }
 
     static std::string serialize(const value_type& val) {

@@ -46,7 +46,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     // Initialize database context
     BOOST_LOG_SEV(lg(), info) << "Initializing database connection...";
-    database::service::context_factory factory;
+    database::context_factory factory;
     auto ctx = factory.create(cfg.database);
 
     // Initialize shared services

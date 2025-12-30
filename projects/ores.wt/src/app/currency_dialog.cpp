@@ -40,53 +40,48 @@ void currency_dialog::setup_form() {
     auto content = contents();
     content->setStyleClass("p-3");
 
-    auto add_field = [&](const std::string& label, auto& widget) {
+    auto add_field = [&](const std::string& label, auto widget) {
         auto row = content->addWidget(std::make_unique<Wt::WContainerWidget>());
         row->setStyleClass("mb-3");
 
         auto lbl = row->addWidget(std::make_unique<Wt::WLabel>(label));
         lbl->setStyleClass("form-label");
 
-        widget = row->addWidget(std::move(widget));
-        widget->setStyleClass("form-control");
-        lbl->setBuddy(widget);
+        auto* ptr = row->addWidget(std::move(widget));
+        ptr->setStyleClass("form-control");
+        lbl->setBuddy(ptr);
+        return ptr;
     };
 
-    auto iso_edit = std::make_unique<Wt::WLineEdit>();
-    iso_edit->setPlaceholderText("e.g., USD");
-    iso_edit->setMaxLength(3);
-    add_field("ISO Code", iso_edit);
-    iso_code_edit_ = iso_edit.get();
+    iso_code_edit_ = add_field("ISO Code",
+        std::make_unique<Wt::WLineEdit>());
+    iso_code_edit_->setPlaceholderText("e.g., USD");
+    iso_code_edit_->setMaxLength(3);
     if (mode_ == mode::edit) {
         iso_code_edit_->setReadOnly(true);
     }
 
-    auto name_edit = std::make_unique<Wt::WLineEdit>();
-    name_edit->setPlaceholderText("e.g., United States Dollar");
-    add_field("Name", name_edit);
-    name_edit_ = name_edit.get();
+    name_edit_ = add_field("Name",
+        std::make_unique<Wt::WLineEdit>());
+    name_edit_->setPlaceholderText("e.g., United States Dollar");
 
-    auto numeric_edit = std::make_unique<Wt::WLineEdit>();
-    numeric_edit->setPlaceholderText("e.g., 840");
-    numeric_edit->setMaxLength(3);
-    add_field("Numeric Code", numeric_edit);
-    numeric_code_edit_ = numeric_edit.get();
+    numeric_code_edit_ = add_field("Numeric Code",
+        std::make_unique<Wt::WLineEdit>());
+    numeric_code_edit_->setPlaceholderText("e.g., 840");
+    numeric_code_edit_->setMaxLength(3);
 
-    auto symbol_edit = std::make_unique<Wt::WLineEdit>();
-    symbol_edit->setPlaceholderText("e.g., $");
-    add_field("Symbol", symbol_edit);
-    symbol_edit_ = symbol_edit.get();
+    symbol_edit_ = add_field("Symbol",
+        std::make_unique<Wt::WLineEdit>());
+    symbol_edit_->setPlaceholderText("e.g., $");
 
-    auto fraction_edit = std::make_unique<Wt::WLineEdit>();
-    fraction_edit->setPlaceholderText("e.g., ¢");
-    add_field("Fraction Symbol", fraction_edit);
-    fraction_symbol_edit_ = fraction_edit.get();
+    fraction_symbol_edit_ = add_field("Fraction Symbol",
+        std::make_unique<Wt::WLineEdit>());
+    fraction_symbol_edit_->setPlaceholderText("e.g., ¢");
 
-    auto fractions_spin = std::make_unique<Wt::WSpinBox>();
-    fractions_spin->setRange(1, 10000);
-    fractions_spin->setValue(100);
-    add_field("Fractions Per Unit", fractions_spin);
-    fractions_spinbox_ = fractions_spin.get();
+    fractions_spinbox_ = add_field("Fractions Per Unit",
+        std::make_unique<Wt::WSpinBox>());
+    fractions_spinbox_->setRange(1, 10000);
+    fractions_spinbox_->setValue(100);
 
     auto rounding_row = content->addWidget(
         std::make_unique<Wt::WContainerWidget>());
@@ -104,16 +99,14 @@ void currency_dialog::setup_form() {
     rounding_type_combo_->addItem("Ceiling");
     rounding_lbl->setBuddy(rounding_type_combo_);
 
-    auto precision_spin = std::make_unique<Wt::WSpinBox>();
-    precision_spin->setRange(0, 10);
-    precision_spin->setValue(2);
-    add_field("Rounding Precision", precision_spin);
-    precision_spinbox_ = precision_spin.get();
+    precision_spinbox_ = add_field("Rounding Precision",
+        std::make_unique<Wt::WSpinBox>());
+    precision_spinbox_->setRange(0, 10);
+    precision_spinbox_->setValue(2);
 
-    auto format_edit = std::make_unique<Wt::WLineEdit>();
-    format_edit->setPlaceholderText("e.g., #,##0.00");
-    add_field("Format", format_edit);
-    format_edit_ = format_edit.get();
+    format_edit_ = add_field("Format",
+        std::make_unique<Wt::WLineEdit>());
+    format_edit_->setPlaceholderText("e.g., #,##0.00");
 
     auto type_row = content->addWidget(
         std::make_unique<Wt::WContainerWidget>());

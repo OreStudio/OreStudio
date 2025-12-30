@@ -22,6 +22,7 @@
  * Database Cleanup Functions
  *
  * Helper functions for cleaning up ORES databases.
+ * This file is part of ores_admin database utilities.
  *
  * IMPORTANT: DROP DATABASE cannot run inside a transaction block, so the
  * cleanup functions that attempt to drop directly will fail. Instead, use
@@ -29,13 +30,13 @@
  *
  * To clean up TEST databases (ores_test_*, oresdb_test_*):
  *
- *   \c postgres
+ *   \c ores_admin
  *   SELECT format('DROP DATABASE IF EXISTS %I;', database_name)
  *   FROM test_databases \gexec
  *
  * To clean up ALL ORES databases (ores_*, oresdb_*):
  *
- *   \c postgres
+ *   \c ores_admin
  *   SELECT format('DROP DATABASE IF EXISTS %I;', database_name)
  *   FROM ores_databases \gexec
  *

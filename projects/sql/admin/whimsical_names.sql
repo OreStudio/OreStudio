@@ -22,11 +22,11 @@
 -- Whimsical name generation functions for tenant database naming.
 -- Generates Heroku-style names like "silent_meadow" or "autumn_frost_42".
 --
-
-SET search_path TO ores;
+-- This file is part of ores_admin database utilities.
+--
 
 -- Word lists for whimsical name generation (nature-themed, Heroku-style)
-CREATE OR REPLACE FUNCTION ores.whimsical_adjectives()
+CREATE OR REPLACE FUNCTION whimsical_adjectives()
 RETURNS TEXT[] AS $$
     SELECT ARRAY[
         'autumn', 'hidden', 'bitter', 'misty', 'silent', 'empty', 'dry', 'dark',
@@ -41,7 +41,7 @@ RETURNS TEXT[] AS $$
     ];
 $$ LANGUAGE sql IMMUTABLE;
 
-CREATE OR REPLACE FUNCTION ores.whimsical_nouns()
+CREATE OR REPLACE FUNCTION whimsical_nouns()
 RETURNS TEXT[] AS $$
     SELECT ARRAY[
         'waterfall', 'river', 'breeze', 'moon', 'rain', 'wind', 'sea', 'morning',
@@ -58,7 +58,7 @@ $$ LANGUAGE sql IMMUTABLE;
 
 -- Generates a random whimsical name without any prefix or suffix.
 -- Returns names like: "silent_meadow", "autumn_frost"
-CREATE OR REPLACE FUNCTION ores.generate_whimsical_name()
+CREATE OR REPLACE FUNCTION generate_whimsical_name()
 RETURNS TEXT AS $$
 DECLARE
     adjectives TEXT[];
@@ -66,8 +66,8 @@ DECLARE
     adj TEXT;
     noun TEXT;
 BEGIN
-    adjectives := ores.whimsical_adjectives();
-    nouns := ores.whimsical_nouns();
+    adjectives := whimsical_adjectives();
+    nouns := whimsical_nouns();
 
     adj := adjectives[1 + floor(random() * array_length(adjectives, 1))::int];
     noun := nouns[1 + floor(random() * array_length(nouns, 1))::int];
@@ -80,13 +80,13 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- Parameters:
 --   with_suffix: If true, appends a random 4-digit number (e.g., "silent_meadow_4217")
 -- Returns names like: "silent_meadow" or "silent_meadow_4217"
-CREATE OR REPLACE FUNCTION ores.generate_whimsical_name(with_suffix BOOLEAN)
+CREATE OR REPLACE FUNCTION generate_whimsical_name(with_suffix BOOLEAN)
 RETURNS TEXT AS $$
 DECLARE
     base_name TEXT;
     suffix INT;
 BEGIN
-    base_name := ores.generate_whimsical_name();
+    base_name := generate_whimsical_name();
 
     IF with_suffix THEN
         suffix := 1000 + floor(random() * 9000)::int;  -- 1000-9999
@@ -101,10 +101,10 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- Parameters:
 --   with_suffix: If true, appends a random 4-digit number
 -- Returns names like: "ores_silent_meadow" or "ores_silent_meadow_4217"
-CREATE OR REPLACE FUNCTION ores.generate_database_name(with_suffix BOOLEAN DEFAULT FALSE)
+CREATE OR REPLACE FUNCTION generate_database_name(with_suffix BOOLEAN DEFAULT FALSE)
 RETURNS TEXT AS $$
 BEGIN
-    RETURN 'ores_' || ores.generate_whimsical_name(with_suffix);
+    RETURN 'ores_' || generate_whimsical_name(with_suffix);
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
@@ -114,7 +114,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 --   existing_names: Array of already-used database names
 --   max_attempts: Maximum number of generation attempts before adding suffix (default 10)
 -- Returns a unique name, adding numeric suffix if needed after max_attempts
-CREATE OR REPLACE FUNCTION ores.generate_unique_database_name(
+CREATE OR REPLACE FUNCTION generate_unique_database_name(
     existing_names TEXT[] DEFAULT ARRAY[]::TEXT[],
     max_attempts INT DEFAULT 10
 )
@@ -126,7 +126,7 @@ BEGIN
     -- First try without suffix
     LOOP
         attempt := attempt + 1;
-        candidate := ores.generate_database_name(false);
+        candidate := generate_database_name(false);
 
         IF NOT (candidate = ANY(existing_names)) THEN
             RETURN candidate;
@@ -137,7 +137,7 @@ BEGIN
 
     -- Fall back to suffix if all attempts collided
     LOOP
-        candidate := ores.generate_database_name(true);
+        candidate := generate_database_name(true);
 
         IF NOT (candidate = ANY(existing_names)) THEN
             RETURN candidate;
@@ -148,7 +148,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 
 -- Convenience function to check all existing databases on the server.
 -- Returns a unique database name that doesn't conflict with any existing database.
-CREATE OR REPLACE FUNCTION ores.generate_unique_database_name_from_server()
+CREATE OR REPLACE FUNCTION generate_unique_database_name_from_server()
 RETURNS TEXT AS $$
 DECLARE
     existing_dbs TEXT[];
@@ -157,6 +157,6 @@ BEGIN
     FROM pg_database
     WHERE datname LIKE 'ores_%';
 
-    RETURN ores.generate_unique_database_name(COALESCE(existing_dbs, ARRAY[]::TEXT[]));
+    RETURN generate_unique_database_name(COALESCE(existing_dbs, ARRAY[]::TEXT[]));
 END;
 $$ LANGUAGE plpgsql VOLATILE;

@@ -35,6 +35,7 @@ target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
 find_package(jwt-cpp CONFIG REQUIRED)
+find_package(Boost REQUIRED COMPONENTS json url)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
@@ -42,6 +43,7 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         Boost::boost
         Boost::json
+        Boost::url
     PRIVATE
         jwt-cpp::jwt-cpp
         OpenSSL::SSL

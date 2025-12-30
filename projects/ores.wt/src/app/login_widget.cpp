@@ -36,8 +36,7 @@ login_widget::login_widget() {
     addWidget(std::make_unique<Wt::WBreak>());
 
     auto password_label = addWidget(std::make_unique<Wt::WLabel>("Password:"));
-    password_edit_ = addWidget(std::make_unique<Wt::WLineEdit>());
-    password_edit_->setEchoMode(Wt::EchoMode::Password);
+    password_edit_ = addWidget(std::make_unique<Wt::WPasswordEdit>());
     password_edit_->setPlaceholderText("Enter password");
     password_label->setBuddy(password_edit_);
 

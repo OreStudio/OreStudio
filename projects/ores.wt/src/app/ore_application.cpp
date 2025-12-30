@@ -128,8 +128,7 @@ void ore_application::show_bootstrap() {
 
     auto password_label = card_body->addWidget(
         std::make_unique<Wt::WLabel>("Password:"));
-    bootstrap_password_ = card_body->addWidget(std::make_unique<Wt::WLineEdit>());
-    bootstrap_password_->setEchoMode(Wt::EchoMode::Password);
+    bootstrap_password_ = card_body->addWidget(std::make_unique<Wt::WPasswordEdit>());
     bootstrap_password_->setPlaceholderText("Enter password");
     password_label->setBuddy(bootstrap_password_);
 
@@ -137,8 +136,7 @@ void ore_application::show_bootstrap() {
 
     auto confirm_label = card_body->addWidget(
         std::make_unique<Wt::WLabel>("Confirm Password:"));
-    bootstrap_confirm_ = card_body->addWidget(std::make_unique<Wt::WLineEdit>());
-    bootstrap_confirm_->setEchoMode(Wt::EchoMode::Password);
+    bootstrap_confirm_ = card_body->addWidget(std::make_unique<Wt::WPasswordEdit>());
     bootstrap_confirm_->setPlaceholderText("Confirm password");
     confirm_label->setBuddy(bootstrap_confirm_);
 
@@ -253,7 +251,7 @@ void ore_application::show_add_currency_dialog() {
         std::make_unique<currency_dialog>(currency_dialog::mode::add));
 
     dialog->saved().connect([this, dialog](const currency_data&) {
-        load_sample_currencies();
+        load_currencies();
         removeChild(dialog);
     });
 
@@ -277,7 +275,7 @@ void ore_application::show_edit_currency_dialog(const std::string& iso_code) {
     dialog->set_currency(data);
 
     dialog->saved().connect([this, dialog](const currency_data&) {
-        load_sample_currencies();
+        load_currencies();
         removeChild(dialog);
     });
 
@@ -297,7 +295,7 @@ void ore_application::confirm_delete_currency(const std::string& iso_code) {
 
     msg_box->buttonClicked().connect([this, msg_box](Wt::StandardButton btn) {
         if (btn == Wt::StandardButton::Yes) {
-            load_sample_currencies();
+            load_currencies();
         }
         removeChild(msg_box);
     });
@@ -464,9 +462,9 @@ void ore_application::confirm_unlock_account(const boost::uuids::uuid& id) {
 
 void ore_application::on_login_attempt(const std::string& username,
                                        const std::string& password) {
-    std::string client_ip = "127.0.0.1";
-    if (environment().clientAddress()) {
-        client_ip = *environment().clientAddress();
+    std::string client_ip = environment().clientAddress();
+    if (client_ip.empty()) {
+        client_ip = "127.0.0.1";
     }
 
     auto result = session_manager_.login(username, password, client_ip);

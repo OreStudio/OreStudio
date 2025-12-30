@@ -22,6 +22,7 @@
 
 #include <Wt/WContainerWidget.h>
 #include <Wt/WLineEdit.h>
+#include <Wt/WPasswordEdit.h>
 #include <Wt/WPushButton.h>
 #include <Wt/WText.h>
 #include <Wt/WSignal.h>
@@ -46,7 +47,7 @@ private:
     void on_login_clicked();
 
     Wt::WLineEdit* username_edit_;
-    Wt::WLineEdit* password_edit_;
+    Wt::WPasswordEdit* password_edit_;
     Wt::WPushButton* login_button_;
     Wt::WText* status_text_;
 

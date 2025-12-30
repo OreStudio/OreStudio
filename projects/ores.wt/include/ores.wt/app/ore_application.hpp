@@ -22,6 +22,7 @@
 
 #include <Wt/WApplication.h>
 #include <Wt/WLineEdit.h>
+#include <Wt/WPasswordEdit.h>
 #include <Wt/WPushButton.h>
 #include <Wt/WText.h>
 #include <boost/uuid/uuid.hpp>
@@ -77,8 +78,8 @@ private:
     // Bootstrap form widgets
     Wt::WLineEdit* bootstrap_username_ = nullptr;
     Wt::WLineEdit* bootstrap_email_ = nullptr;
-    Wt::WLineEdit* bootstrap_password_ = nullptr;
-    Wt::WLineEdit* bootstrap_confirm_ = nullptr;
+    Wt::WPasswordEdit* bootstrap_password_ = nullptr;
+    Wt::WPasswordEdit* bootstrap_confirm_ = nullptr;
     Wt::WPushButton* bootstrap_button_ = nullptr;
     Wt::WText* bootstrap_status_ = nullptr;
 };

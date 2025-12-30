@@ -148,9 +148,9 @@ the =ores.variability= component.
 Follow the below instructions, replacing =COMPONENT= with the actual component
 name at the appropriate casing.
 
-*** Step 7.1: Update projects =CMakeListst.txt=
+*** Step 7.1: Update projects =CMakeLists.txt=
 
-Add the new component to the =projects= =CMakeListst.txt=:
+Add the new component to the =projects= =CMakeLists.txt=:
 
 #+begin_src cmake
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.testing)
@@ -159,7 +159,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.variability)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.COMPONENT)  --> new component at the end
 #+end_src
 
-*** Step 7.2: Create component's =CMakeListst.txt=
+*** Step 7.2: Create component's =CMakeLists.txt=
 
 Create the component's =CMakeLists.txt= file under
 =projects/ores.COMPONENT/CMakeLists.txt= with the following contents:
@@ -187,7 +187,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
 #+end_src
 
-*** Step 7.3: Create component's modeling =CMakeListst.txt=
+*** Step 7.3: Create component's modeling =CMakeLists.txt=
 
 Create the =modeling= =CMakeLists.txt= under
   =projects/ores.COMPONENT/modeling/CMakeLists.txt= with the following contents:
@@ -220,7 +220,7 @@ add_custom_target(${diagram_target}
 add_dependencies(make_all_diagrams ${diagram_target})
 #+end_src
 
-*** Step 7.4: Create component's src =CMakeListst.txt=
+*** Step 7.4: Create component's src =CMakeLists.txt=
 
 Create the =src= =CMakeLists.txt= under
 =projects/ores.COMPONENT/src/CMakeLists.txt=. This file varies if the component
@@ -359,9 +359,9 @@ install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)
 Note that the list of dependencies is fixed for now, but some may not make sense
 for some components.
 
-*** Step 7.5: Create component's tests =CMakeListst.txt=
+*** Step 7.5: Create component's tests =CMakeLists.txt=
 
-Create the tests =CMakeListst.txt= under
+Create the tests =CMakeLists.txt= under
 =projects/ores.COMPONENT/tests/CMakeLists.txt=. This file has the following
 content:
 

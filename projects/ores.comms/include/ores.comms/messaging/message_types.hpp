@@ -24,6 +24,12 @@
 #include <cstdint>
 
 // Configure magic_enum to support our enum value ranges
+#ifdef MAGIC_ENUM_RANGE_MIN
+#undef MAGIC_ENUM_RANGE_MIN
+#endif
+#ifdef MAGIC_ENUM_RANGE_MAX
+#undef MAGIC_ENUM_RANGE_MAX
+#endif
 #define MAGIC_ENUM_RANGE_MIN 0
 #define MAGIC_ENUM_RANGE_MAX 0x6000
 

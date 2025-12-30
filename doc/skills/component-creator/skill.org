@@ -72,7 +72,53 @@ what component we are using:
 #include "ores.accounts/domain/account_json.hpp"
 #+end_src
 
-** Step 4: Create the facet folders in =include=
+** Step 4: Create the namespace documentation header
+
+Every component and sub-namespace needs a documentation header file for Doxygen.
+These files use the naming convention =ores.COMPONENT.hpp= for the main component
+and =ores.COMPONENT.FACET.hpp= for sub-namespaces.
+
+Create the main namespace documentation file at
+=projects/ores.COMPONENT/include/ores.COMPONENT/ores.COMPONENT.hpp= with the
+following structure:
+
+#+begin_src c++
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ ,*
+ ,* Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ ,*
+ ,* This program is free software; you can redistribute it and/or modify it under
+ ,* the terms of the GNU General Public License as published by the Free Software
+ ,* Foundation; either version 3 of the License, or (at your option) any later
+ ,* version.
+ ,*
+ ,* This program is distributed in the hope that it will be useful, but WITHOUT
+ ,* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ ,* FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ ,*
+ ,* You should have received a copy of the GNU General Public License along with
+ ,* this program; if not, write to the Free Software Foundation, Inc., 51
+ ,* Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ ,*
+ ,*/
+#ifndef ORES_COMPONENT_HPP
+#define ORES_COMPONENT_HPP
+
+/**
+ ,* @brief Brief description of the component's purpose.
+ ,*
+ ,* More detailed description of the component's features and responsibilities.
+ ,* Include information about:
+ ,* - Main features and capabilities
+ ,* - Key dependencies or relationships with other components
+ ,* - Organization of sub-namespaces (domain, service, repository, etc.)
+ ,*/
+namespace ores::COMPONENT {}
+
+#endif
+#+end_src
+
+** Step 5: Create the facet folders in =include=
 
 In ORE Studio, parts are made up of facets. These are well-known folders with
 specific content type. The following are the set of well-known facets:
@@ -91,18 +137,18 @@ specific content type. The following are the set of well-known facets:
 | =orexml=     | If the component supports exporting to and from ORE (Open Source Risk Engine) the code lives here.                  |
 | =csv=        | If the component supports exporting and possibly importing from CSV, the code lives here.                           |
 
-** Step 5: Create the facet folders in =src=
+** Step 6: Create the facet folders in =src=
 
 The facet folders should be created directly under the component's =src= part.
 Example: =projects/ores.variability/src/domain= for the =domain= facet folder in
 the =ores.variability= component.
 
-** Step 6: Add CMake support
+** Step 7: Add CMake support
 
 Follow the below instructions, replacing =COMPONENT= with the actual component
 name at the appropriate casing.
 
-*** Step 6.1: Update projects =CMakeListst.txt=
+*** Step 7.1: Update projects =CMakeListst.txt=
 
 Add the new component to the =projects= =CMakeListst.txt=:
 
@@ -113,7 +159,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.variability)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.COMPONENT)  --> new component at the end
 #+end_src
 
-*** Step 6.2: Create component's =CMakeListst.txt=
+*** Step 7.2: Create component's =CMakeListst.txt=
 
 Create the component's =CMakeLists.txt= file under
 =projects/ores.COMPONENT/CMakeLists.txt= with the following contents:
@@ -141,7 +187,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
 #+end_src
 
-*** Step 6.3: Create component's modeling =CMakeListst.txt=
+*** Step 7.3: Create component's modeling =CMakeListst.txt=
 
 Create the =modeling= =CMakeLists.txt= under
   =projects/ores.COMPONENT/modeling/CMakeLists.txt= with the following contents:
@@ -174,7 +220,7 @@ add_custom_target(${diagram_target}
 add_dependencies(make_all_diagrams ${diagram_target})
 #+end_src
 
-*** Step 6.4: Create component's src =CMakeListst.txt=
+*** Step 7.4: Create component's src =CMakeListst.txt=
 
 Create the =src= =CMakeLists.txt= under
 =projects/ores.COMPONENT/src/CMakeLists.txt=. This file varies if the component
@@ -313,7 +359,7 @@ install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)
 Note that the list of dependencies is fixed for now, but some may not make sense
 for some components.
 
-*** Step 6.5: Create component's tests =CMakeListst.txt=
+*** Step 7.5: Create component's tests =CMakeListst.txt=
 
 Create the tests =CMakeListst.txt= under
 =projects/ores.COMPONENT/tests/CMakeLists.txt=. This file has the following
@@ -381,11 +427,11 @@ set_tests_properties(${tests_target_name} PROPERTIES
 set_property(TEST ${tests_target_name} PROPERTY USES_XML_OUTPUT ON)
 #+end_src
 
-** Step 7: Create C++ files
+** Step 8: Create C++ files
 
 To make sure the project compiles, we need to add some basic infrastructure.
 
-*** Step 7.1: Add domain stubs
+*** Step 8.1: Add domain stubs
 
 - 1. Create a domain type stub in include under
   =projects/ores.COMPONENT/include/ores.accounts/domain/stub.hpp= with the
@@ -445,7 +491,7 @@ std::string stub_function() {
 }
 #+end_src
 
-*** 7.2: Add testing support
+*** Step 8.2: Add testing support
 
 - 1. Create tests =main.cpp= in =tests= under =/ores.COMPONENT/tests/main.cpp=
   with the following content:
@@ -538,7 +584,7 @@ TEST_CASE("create_stub", tags) {
 
 
 
-** Step 8: Add PlantUML diagram
+** Step 9: Add PlantUML diagram
 
 In =modeling= part, under =projects/ores.COMPONENT/modeling= add a file called
 =ores.COMPONENT.puml= with the following contents:
@@ -580,7 +626,7 @@ namespace ores #F2F2F2 {
 @enduml
 #+end_src
 
-** Step 9: Compile the new component
+** Step 10: Compile the new component
 
 Using the skill [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner Skill]]:
 

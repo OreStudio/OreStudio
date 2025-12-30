@@ -17,60 +17,66 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-30 Tue 10:32], for Tuesday, December 30, 2025.
-|      | <75>                          |        |      |      |       |
-| Tags | Headline                      | Time   |      |      |     % |
-|------+-------------------------------+--------+------+------+-------|
-|      | *Total time*                  | *0:52* |      |      | 100.0 |
-|------+-------------------------------+--------+------+------+-------|
-|      | Stories                       | 0:52   |      |      | 100.0 |
-|      | Active                        |        | 0:52 |      | 100.0 |
-| code | Setup basic Wt infrastructure |        |      | 0:52 | 100.0 |
+#+CAPTION: Clock summary at [2025-12-30 Tue 20:05], for Tuesday, December 30, 2025.
+|      | <75>                                           |        |      |      |       |
+| Tags | Headline                                       | Time   |      |      |     % |
+|------+------------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                   | *5:34* |      |      | 100.0 |
+|------+------------------------------------------------+--------+------+------+-------|
+|      | Stories                                        | 5:34   |      |      | 100.0 |
+|      | Active                                         |        | 5:34 |      | 100.0 |
+| code | Replace MaxMind implementation                 |        |      | 1:08 |  20.4 |
+| code | Setup basic Wt infrastructure                  |        |      | 0:52 |  15.6 |
+| code | Document namespaces for doxygen                |        |      | 0:21 |   6.3 |
+| code | Fix compilation issues in main for Wt and HTTP |        |      | 3:13 |  57.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-30 Tue 10:32]
+#+CAPTION: Clock summary at [2025-12-30 Tue 20:05]
 |       | <75>                                              |         |       |      |       |
 | Tags  | Headline                                          | Time    |       |      |     % |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                      | *68:05* |       |      | 100.0 |
+|       | *Total time*                                      | *72:47* |       |      | 100.0 |
 |-------+---------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                           | 68:05   |       |      | 100.0 |
-|       | Active                                            |         | 68:05 |      | 100.0 |
-| agile | Sprint and product backlog refinement             |         |       | 1:07 |   1.6 |
-| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   1.3 |
-| code  | Consider compressing payload                      |         |       | 3:05 |   4.5 |
-| code  | Latest currencies should have different colour    |         |       | 1:28 |   2.2 |
-| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   2.1 |
-| code  | Add account management support to qt              |         |       | 3:43 |   5.5 |
-| code  | Add password reset functionality to accounts      |         |       | 1:49 |   2.7 |
-| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |   7.1 |
+|       | Stories                                           | 72:47   |       |      | 100.0 |
+|       | Active                                            |         | 72:47 |      | 100.0 |
+| agile | Sprint and product backlog refinement             |         |       | 1:07 |   1.5 |
+| infra | OCR scan notebooks for this sprint                |         |       | 0:53 |   1.2 |
+| code  | Consider compressing payload                      |         |       | 3:05 |   4.2 |
+| code  | Latest currencies should have different colour    |         |       | 1:28 |   2.0 |
+| code  | Do not expose temporal machinery in domain        |         |       | 1:25 |   1.9 |
+| code  | Add account management support to qt              |         |       | 3:43 |   5.1 |
+| code  | Add password reset functionality to accounts      |         |       | 1:49 |   2.5 |
+| code  | Add core infrastructure for roles and permissions |         |       | 4:52 |   6.7 |
 | code  | Add exit confirmation dialog                      |         |       | 0:03 |   0.1 |
-| code  | Improve error messages in shell                   |         |       | 0:23 |   0.6 |
-| code  | Add support for relative time formatting          |         |       | 2:01 |   3.0 |
-| code  | Setup windows laptop with WSL                     |         |       | 5:10 |   7.6 |
-| code  | Add listen/notify to shell                        |         |       | 2:45 |   4.0 |
-| code  | Define type traits for message grouping           |         |       | 0:44 |   1.1 |
-| code  | Rename =accounts= to =iam=                        |         |       | 1:30 |   2.2 |
-| code  | Create the observability component                |         |       | 1:59 |   2.9 |
+| code  | Improve error messages in shell                   |         |       | 0:23 |   0.5 |
+| code  | Add support for relative time formatting          |         |       | 2:01 |   2.8 |
+| code  | Setup windows laptop with WSL                     |         |       | 5:10 |   7.1 |
+| code  | Add listen/notify to shell                        |         |       | 2:45 |   3.8 |
+| code  | Define type traits for message grouping           |         |       | 0:44 |   1.0 |
+| code  | Rename =accounts= to =iam=                        |         |       | 1:30 |   2.1 |
+| code  | Create the observability component                |         |       | 1:59 |   2.7 |
 | code  | Consider renaming =utility= to =system=           |         |       | 0:25 |   0.6 |
-| code  | Use chrono timepoints for domain entities         |         |       | 1:44 |   2.5 |
+| code  | Use chrono timepoints for domain entities         |         |       | 1:44 |   2.4 |
 | code  | Use prebuilt qt                                   |         |       | 0:26 |   0.6 |
-| code  | Add flags for currencies                          |         |       | 4:45 |   7.0 |
-| code  | Add skills for code review                        |         |       | 0:52 |   1.3 |
-| code  | Compilation fixes to current main                 |         |       | 3:47 |   5.6 |
-| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   0.6 |
-| code  | Add sign-up workflow                              |         |       | 0:15 |   0.4 |
-| code  | Implement RBAC enforcement                        |         |       | 6:34 |   9.6 |
-| code  | Add session information to database               |         |       | 3:36 |   5.3 |
-| code  | Add UI for roles and permission management        |         |       | 0:28 |   0.7 |
-| code  | Improve unit test coverage                        |         |       | 1:00 |   1.5 |
-| code  | Incorporate new telemetry component               |         |       | 4:47 |   7.0 |
-| code  | Refactor SQL code                                 |         |       | 1:29 |   2.2 |
-| code  | Add session recording support to comms            |         |       | 1:30 |   2.2 |
-| code  | Consider exposing end points via HTTP             |         |       | 2:15 |   3.3 |
-| code  | Setup basic Wt infrastructure                     |         |       | 0:52 |   1.3 |
+| code  | Add flags for currencies                          |         |       | 4:45 |   6.5 |
+| code  | Add skills for code review                        |         |       | 0:52 |   1.2 |
+| code  | Compilation fixes to current main                 |         |       | 3:47 |   5.2 |
+| code  | Ignore warnings on windows and OSX                |         |       | 0:23 |   0.5 |
+| code  | Add sign-up workflow                              |         |       | 0:15 |   0.3 |
+| code  | Implement RBAC enforcement                        |         |       | 6:34 |   9.0 |
+| code  | Add session information to database               |         |       | 3:36 |   4.9 |
+| code  | Add UI for roles and permission management        |         |       | 0:28 |   0.6 |
+| code  | Improve unit test coverage                        |         |       | 1:00 |   1.4 |
+| code  | Incorporate new telemetry component               |         |       | 4:47 |   6.6 |
+| code  | Refactor SQL code                                 |         |       | 1:29 |   2.0 |
+| code  | Add session recording support to comms            |         |       | 1:30 |   2.1 |
+| code  | Replace MaxMind implementation                    |         |       | 1:08 |   1.6 |
+| code  | Consider exposing end points via HTTP             |         |       | 2:15 |   3.1 |
+| code  | Setup basic Wt infrastructure                     |         |       | 0:52 |   1.2 |
+| code  | Document namespaces for doxygen                   |         |       | 0:21 |   0.5 |
+| code  | Fix compilation issues in main for Wt and HTTP    |         |       | 3:13 |   4.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -1389,7 +1395,23 @@ Highlights:
 
 We need to be able to record a client session in the socket.
 
-*** STARTED Consider exposing end points via HTTP                      :code:
+*** COMPLETED Replace MaxMind implementation                           :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-30 Tue 10:33]--[2025-12-30 Tue 11:41] =>  1:08
+    :END:
+
+#+begin_quote
+This pull request effectively replaces the MaxMind GeoLite2-City database with
+ip2country data, simplifying the geolocation system to be country-level only.
+The changes are consistently applied across the C++ code, SQL schema, tests, and
+documentation. The new SQL import script and schema are well-structured for the
+new data source. The review identified a critical SQL injection vulnerability in
+the C++ code and a high-severity bug in a new PostgreSQL function that fails to
+handle IPv6 addresses, which is a regression from the previous implementation.
+Detailed comments and a code suggestion are provided to address these issues.
+#+end_quote
+
+*** COMPLETED Consider exposing end points via HTTP                    :code:
     :LOGBOOK:
     CLOCK: [2025-12-29 Mon 09:15]--[2025-12-29 Mon 11:30] =>  2:15
     :END:
@@ -1443,7 +1465,7 @@ Add a basic HTTP server using boost beast. Then we just need a couple of verbs:
 - GET: return all currencies in database.
 - POST: add one or more currencies.
 
-*** STARTED Setup basic Wt infrastructure                              :code:
+*** COMPLETED Setup basic Wt infrastructure                            :code:
     :LOGBOOK:
     CLOCK: [2025-12-30 Tue 09:40]--[2025-12-30 Tue 10:32] =>  0:52
     :END:
@@ -1476,6 +1498,81 @@ Highlights:
 - Modeling with PlantUML: Includes initial PlantUML configuration and a diagram
   to visualize the ores.wt component's role and structure.
 #+end_quote
+
+*** COMPLETED Document namespaces for doxygen                          :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-30 Tue 14:00]--[2025-12-30 Tue 14:21] =>  0:21
+    :END:
+
+#+begin_quote
+This pull request standardizes and expands the Doxygen documentation for C++
+namespaces across the project. It establishes a clear naming convention for
+documentation headers, updates the component creation guide to reflect this new
+practice, and adds a significant number of new documentation files for both main
+components and their sub-namespaces, ensuring comprehensive and consistent API
+documentation.
+
+Highlights:
+
+- Standardized Namespace Documentation: Introduced a new formalized naming
+  convention for Doxygen namespace documentation headers: "ores..hpp" for main
+  components and "ores...hpp" for sub-namespaces.
+- Updated Component Creation Guide: The component-creator skill documentation
+  has been updated to include a new "Step 4: Create the namespace documentation
+  header" with a template for these new files, and subsequent steps were
+  renumbered.
+- Naming Convention Fix: Renamed ores.iam/ores.accounts.hpp to ores.iam.hpp to
+  conform to the new standardized naming convention.
+New Main Component Documentation: Added main documentation headers for 5 previously missing components: assets, comms.analyser, geo, platform, and telemetry.
+- Extensive Sub-Namespace Documentation: Created approximately 60 new
+  sub-namespace documentation headers across various components, covering facets
+  like domain, service, repository, messaging, eventing, config, app,
+  generators, security, export, log, net, filesystem, environment, time, csv,
+  orexml, convert, faker, program_options, rfl, streaming, string, uuid, and
+  version.
+- Consistent Header Content: Each new documentation header includes a GPL
+  license, a Doxygen @brief description of the namespace's purpose, and an empty
+  namespace declaration for Doxygen association.
+#+end_quote
+
+*** COMPLETED Fix compilation issues in main for Wt and HTTP           :code:
+    :LOGBOOK:
+    CLOCK: [2025-12-30 Tue 18:07]--[2025-12-30 Tue 20:05] =>  1:58
+    CLOCK: [2025-12-30 Tue 16:50]--[2025-12-30 Tue 18:05] =>  1:15
+    :END:
+
+#+begin_quote
+This pull request primarily focuses on resolving compilation and linking errors,
+along with correcting several API mismatches and logical inconsistencies within
+the HTTP server. It introduces new service layers for asset and currency
+management, refines the reflection mechanism for OpenAPI specifications, and
+strengthens the build process for the ores.wt component by addressing transitive
+dependency linking and symbol visibility.
+
+Highlights:
+
+- New Service Layer Classes: Introduced dedicated service layer classes,
+  assets_service and currency_service, to encapsulate business logic for asset
+  and currency management, respectively.
+- HTTP Route API Mismatches Fixed: Resolved numerous API mismatches and logical
+  inconsistencies across several HTTP routes, including authentication (login,
+  signup), account management, feature flags, and currency operations.
+- RFL Reflection Issue Resolution: Fixed a reflection issue with the RFL library
+  by moving OpenAPI specification structures from an anonymous namespace to a
+  named detail namespace, ensuring proper serialization.
+- ores.wt Build and Linking Enhancements: Addressed linker errors in the ores.wt
+  component by converting it to a static library and explicitly linking all of
+  Wt's transitive dependencies (e.g., Freetype, Pango, Harfbuzz) in its
+  CMakeLists.txt.
+- Application Context Refinements: Refactored the database context
+  initialization and service seeding logic within application_context.cpp for
+  improved clarity and correctness.
+#+end_quote
+*** Refactor options and parser                                        :code:
+
+We have a lot of boost program options parsers and options. We need to do an
+inventory of all of the implementations and figure out if we can have common
+code under utility.
 
 *** Sign-up dialog should be disabled if feature is disabled           :code:
 

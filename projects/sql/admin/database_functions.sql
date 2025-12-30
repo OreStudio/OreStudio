@@ -22,25 +22,24 @@
  * Database Management Functions
  *
  * Helper functions for creating and managing ORES database instances.
+ * This file is part of ores_admin database utilities.
  *
  * NOTE: PostgreSQL does not allow CREATE DATABASE inside a function/transaction.
  * These functions generate the SQL commands that need to be executed separately.
  */
-
-SET search_path TO ores;
 
 -- Generates the SQL command to create a new database from template.
 -- The returned command must be executed outside of any transaction.
 -- Parameters:
 --   db_name: Optional database name. If NULL, generates a whimsical name.
 -- Returns: SQL command string to execute
-CREATE OR REPLACE FUNCTION ores.generate_create_database_sql(db_name TEXT DEFAULT NULL)
+CREATE OR REPLACE FUNCTION generate_create_database_sql(db_name TEXT DEFAULT NULL)
 RETURNS TEXT AS $$
 DECLARE
     final_name TEXT;
 BEGIN
     IF db_name IS NULL THEN
-        final_name := ores.generate_unique_database_name_from_server();
+        final_name := generate_unique_database_name_from_server();
     ELSE
         final_name := db_name;
     END IF;
@@ -59,12 +58,12 @@ END;
 $$ LANGUAGE plpgsql VOLATILE;
 
 -- Convenience function that outputs the command directly.
--- Usage: SELECT ores.create_database_command();
---        SELECT ores.create_database_command('my_custom_name');
-CREATE OR REPLACE FUNCTION ores.create_database_command(db_name TEXT DEFAULT NULL)
+-- Usage: SELECT create_database_command();
+--        SELECT create_database_command('my_custom_name');
+CREATE OR REPLACE FUNCTION create_database_command(db_name TEXT DEFAULT NULL)
 RETURNS VOID AS $$
 BEGIN
-    RAISE NOTICE E'\n%', ores.generate_create_database_sql(db_name);
+    RAISE NOTICE E'\n%', generate_create_database_sql(db_name);
     RAISE NOTICE E'\nCopy and paste the above commands to create the database.\n';
 END;
 $$ LANGUAGE plpgsql VOLATILE;
@@ -72,7 +71,7 @@ $$ LANGUAGE plpgsql VOLATILE;
 -- Lists all ORES databases on the server.
 -- NOTE: last_modified is the modification time of the database's directory,
 -- which approximates creation time but can be updated by maintenance operations.
-CREATE OR REPLACE FUNCTION ores.list_ores_databases()
+CREATE OR REPLACE FUNCTION list_ores_databases()
 RETURNS TABLE(database_name TEXT, last_modified TIMESTAMP WITH TIME ZONE) AS $$
 BEGIN
     RETURN QUERY

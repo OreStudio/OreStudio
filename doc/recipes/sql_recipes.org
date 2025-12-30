@@ -8,6 +8,741 @@
 
 SQL recipes for directly querying and managing the [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORES Database Schema]].
 
+* Initial Setup (Run Once)
+  :PROPERTIES:
+  :header-args: :exports both
+  :header-args+: :results raw
+  :header-args+: :engine postgresql
+  :header-args+: :dbhost localhost
+  :header-args+: :dbuser postgres
+  :header-args+: :dbpassword (auth-source-pick-first-password :host "localhost" :user "postgres")
+  :header-args+: :var project_sql_dir=(concat (project-root (project-current)) "projects/sql")
+  :END:
+
+These recipes must be run *in order* using the =postgres= superuser to bootstrap
+the ORES database infrastructure. Run each step once when setting up a new
+PostgreSQL server.
+
+** Step 1: Create ORES User
+
+Creates the =ores= application user with appropriate permissions:
+
+#+begin_src sql :database template1 :wrap example
+\ir '$project_sql_dir'/setup.sql
+#+end_src
+
+** Step 2: Create Admin Database
+
+Creates =ores_admin= with cluster-level utilities (name generation, cleanup):
+
+#+begin_src sql :database template1 :wrap example
+\ir '$project_sql_dir'/admin/setup_admin.sql
+#+end_src
+
+** Step 3: Create Template Database
+
+Creates =ores_template= with the complete application schema and reference data:
+
+#+begin_src sql :database template1 :wrap example
+\ir '$project_sql_dir'/setup_template.sql
+#+end_src
+
+#+RESULTS:
+#+begin_example
+CREATE DATABASE
+GRANT
+CREATE SCHEMA
+CREATE EXTENSION
+SET
+CREATE FUNCTION
+SET
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+SET
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE RULE
+CREATE FUNCTION
+CREATE TRIGGER
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE RULE
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE RULE
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE RULE
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE RULE
+SET
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE RULE
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE RULE
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE RULE
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE RULE
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE FUNCTION
+COMMENT
+CREATE FUNCTION
+COMMENT
+INSERT 0 1
+CREATE FUNCTION
+SET
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+load_flag
+
+SET
+INSERT 0 158
+SET
+INSERT 0 158
+#+end_example
+
+** Step 4: Create Database Instance
+
+Creates a new database instance from the template. Run this each time you need a
+new database (development, testing, production, etc.).
+
+*** With Auto-Generated Whimsical Name
+
+#+begin_src sql :database template1 :results output :wrap example
+\ir '$project_sql_dir'/create_instance.sql
+#+end_src
+
+*** With Specific Name
+
+#+begin_src sh :wrap example
+psql -U postgres -v db_name='my_ores_db' -f projects/sql/create_instance.sql
+#+end_src
+
 * Recipes
   :PROPERTIES:
   :header-args: :exports both
@@ -15,56 +750,84 @@ SQL recipes for directly querying and managing the [[id:B7E9F3A1-C8D2-4E6B-A1F5-
   :header-args+: :engine postgresql
   :header-args+: :dbhost localhost
   :header-args+: :dbuser ores
-  :header-args+: :database dancing_lemur_42
+  :header-args+: :dbpassword (auth-source-pick-first-password :host "localhost" :user "ores")
+  :header-args+: :var project_sql_dir=(concat (project-root (project-current)) "projects/sql")
   :END:
 
-** Database Setup
+Day-to-day recipes for querying and managing ORES databases. These use the
+=ores= application user.
 
-*** Create Template Database
+** Database Management
 
-One-time setup to create the =ores_template= database with all schema and
-reference data:
-
-#+begin_src sh :wrap example
-psql -U postgres -f projects/sql/setup_template.sql
-#+end_src
-
-*** Create Instance with Whimsical Name
-
-Create a new database instance with an auto-generated whimsical name:
-
-#+begin_src sh :wrap example
-psql -U postgres -f projects/sql/create_instance.sql
-#+end_src
-
-Example output:
-
-#+begin_example
-Generating whimsical database name...
-Creating database: dancing_lemur_42
-==========================================
-Database created successfully!
-==========================================
-Database name: dancing_lemur_42
-
-Connect with:
-  psql -U ores -d dancing_lemur_42
-#+end_example
-
-*** Create Instance with Specific Name
-
-Create a database with your own name:
-
-#+begin_src sh :wrap example
-psql -U postgres -v db_name='my_ores_db' -f projects/sql/create_instance.sql
-#+end_src
+These recipes require the initial setup (Steps 1-3) to be completed first.
 
 *** List All ORES Databases
 
 List all databases created from the ORES template:
 
-#+begin_src sql
-select * from ores.list_ores_databases();
+#+begin_src sql :database ores_admin
+select * from ores_databases;
+#+end_src
+
+*** List Test Databases
+
+List databases created by automated tests (=ores_test_*=, =oresdb_test_*=):
+
+#+begin_src sql :database ores_admin
+select * from test_databases;
+#+end_src
+
+*** List Instance Databases
+
+List instance databases only (excludes test and template):
+
+#+begin_src sql :database ores_admin
+select * from ores_instance_databases;
+#+end_src
+
+*** Delete All Test Databases
+
+Delete all test databases. Uses =\gexec= because =DROP DATABASE= cannot run
+inside a transaction block:
+
+#+begin_src sql :database ores_admin
+select format('DROP DATABASE IF EXISTS %I;', database_name)
+from test_databases \gexec
+#+end_src
+
+*** Delete All ORES Databases
+
+*WARNING*: This deletes ALL ORES databases (instances, templates, test). Use
+with caution!
+
+#+begin_src sql :database ores_admin
+select format('DROP DATABASE IF EXISTS %I;', database_name)
+from ores_databases \gexec
+#+end_src
+
+*** Delete All Instance Databases
+
+Delete all instance databases (preserves templates and test databases):
+
+#+begin_src sql :database ores_admin
+select format('DROP DATABASE IF EXISTS %I;', database_name)
+from ores_instance_databases \gexec
+#+end_src
+
+*** Preview Cleanup SQL
+
+Generate cleanup SQL without executing (for review):
+
+#+begin_src sql :database ores_admin
+select generate_cleanup_test_databases_sql();
+#+end_src
+
+*** Generate Whimsical Database Name
+
+Generate a unique whimsical name for a new database:
+
+#+begin_src sql :database ores_admin
+select generate_unique_database_name_from_server();
 #+end_src
 
 ** Accounts

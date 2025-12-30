@@ -21,6 +21,7 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.variability/service/system_flags_seeder.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
+#include "ores.iam/service/rbac_seeder.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
@@ -83,7 +84,8 @@ void application_context::setup_services() {
 
     authorization_service_ = std::make_shared<iam::service::authorization_service>(
         *db_context_);
-    authorization_service_->seed_rbac();
+    iam::service::rbac_seeder seeder(*authorization_service_);
+    seeder.seed();
 
     system_flags_service_ = std::make_shared<variability::service::system_flags_service>(
         *db_context_);

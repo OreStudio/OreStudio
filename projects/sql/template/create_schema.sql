@@ -42,8 +42,9 @@ create extension if not exists btree_gist;
 
 -- Utility functions
 \ir ../schema/utility_functions_create.sql
-\ir ../schema/whimsical_names_create.sql
-\ir ./database_functions.sql
+
+-- NOTE: Whimsical names and database management functions are now in ores_admin.
+-- See admin/setup_admin.sql for cluster-level utilities.
 
 -- Core tables
 \ir ../schema/currencies_create.sql

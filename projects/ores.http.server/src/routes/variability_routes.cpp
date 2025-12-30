@@ -20,6 +20,7 @@
 #include "ores.http.server/routes/variability_routes.hpp"
 
 #include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 
 namespace ores::http_server::routes {
@@ -28,10 +29,12 @@ using namespace ores::telemetry::log;
 using namespace ores::http::domain;
 namespace asio = boost::asio;
 
-variability_routes::variability_routes(
+variability_routes::variability_routes(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
     std::shared_ptr<comms::service::auth_session_service> sessions)
-    : system_flags_(std::move(system_flags))
+    : ctx_(std::move(ctx))
+    , feature_flags_service_(ctx_)
+    , system_flags_(std::move(system_flags))
     , sessions_(std::move(sessions)) {
     BOOST_LOG_SEV(lg(), debug) << "Variability routes initialized";
 }
@@ -57,10 +60,10 @@ asio::awaitable<http_response> variability_routes::handle_list_feature_flags(con
     BOOST_LOG_SEV(lg(), debug) << "Handling list feature flags request";
 
     try {
-        auto flags = system_flags_->list_all_flags();
+        auto flags = feature_flags_service_.get_all_feature_flags();
 
         variability::messaging::list_feature_flags_response resp;
-        resp.flags = flags;
+        resp.feature_flags = flags;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {

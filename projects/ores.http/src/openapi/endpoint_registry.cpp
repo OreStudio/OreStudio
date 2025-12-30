@@ -29,9 +29,10 @@ namespace ores::http::openapi {
 
 using namespace ores::telemetry::log;
 
-namespace {
-
 // OpenAPI spec structures for JSON serialization
+// Note: These need external linkage for rfl reflection to work properly
+
+namespace detail {
 
 struct openapi_contact final {
     std::optional<std::string> name;
@@ -98,7 +99,9 @@ struct openapi_spec final {
     std::map<std::string, std::map<std::string, openapi_operation>> paths;
 };
 
-}
+} // namespace detail
+
+using namespace detail;
 
 endpoint_registry::endpoint_registry() {
     BOOST_LOG_SEV(lg(), debug) << "Endpoint registry created";

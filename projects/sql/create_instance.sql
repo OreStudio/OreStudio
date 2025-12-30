@@ -32,6 +32,7 @@
  *   psql -U postgres -v db_name='my_database' -f create_instance.sql
  *
  * PREREQUISITES:
+ *   - The ores_admin database must exist (run admin/setup_admin.sql first)
  *   - The ores_template database must exist (run setup_template.sql first)
  *   - The 'ores' user must exist (run setup.sql first)
  *
@@ -52,14 +53,14 @@
     -- User provided a name, use it
     \echo 'Using provided database name...'
 \else
-    -- Generate a whimsical name from the template
+    -- Generate a whimsical name from ores_admin
     \echo 'Generating whimsical database name...'
 
-    -- Connect to template to use the whimsical name function
-    \c ores_template
+    -- Connect to admin database to use the whimsical name function
+    \c ores_admin
 
     -- Generate and store the name
-    select ores.generate_unique_database_name_from_server() as generated_name \gset
+    select generate_unique_database_name_from_server() as generated_name \gset
 
     -- Set db_name to the generated value
     \set db_name :generated_name

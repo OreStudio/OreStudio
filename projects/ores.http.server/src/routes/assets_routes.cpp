@@ -70,7 +70,7 @@ asio::awaitable<http_response> assets_routes::handle_get_currency_images(const h
         auto mappings = service.get_currency_images();
 
         assets::messaging::get_currency_images_response resp;
-        resp.mappings = mappings;
+        resp.currency_images = mappings;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {

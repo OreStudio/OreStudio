@@ -320,7 +320,7 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
         try {
             auto account = account_service_.login(
                 login_req->username, login_req->password,
-                boost::asio::ip::make_address("127.0.0.1"));  // TODO: get from request
+                boost::asio::ip::make_address(req.remote_address));
 
             auto login_info = account_service_.get_login_info(account.id);
 

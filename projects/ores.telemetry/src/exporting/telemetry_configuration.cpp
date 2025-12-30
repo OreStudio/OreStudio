@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.telemetry/export/telemetry_configuration.hpp"
+#include "ores.telemetry/exporting/telemetry_configuration.hpp"
 
-namespace ores::telemetry::exp {
+namespace ores::telemetry::exporting {
 
 namespace {
 

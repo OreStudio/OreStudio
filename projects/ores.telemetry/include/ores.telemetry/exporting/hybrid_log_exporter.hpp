@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TELEMETRY_EXPORT_HYBRID_LOG_EXPORTER_HPP
-#define ORES_TELEMETRY_EXPORT_HYBRID_LOG_EXPORTER_HPP
+#ifndef ORES_TELEMETRY_EXPORTING_HYBRID_LOG_EXPORTER_HPP
+#define ORES_TELEMETRY_EXPORTING_HYBRID_LOG_EXPORTER_HPP
 
 #include <atomic>
 #include <chrono>
@@ -31,11 +31,11 @@
 #include <mutex>
 #include <thread>
 #include <vector>
-#include "ores.telemetry/export/log_exporter.hpp"
-#include "ores.telemetry/export/telemetry_options.hpp"
-#include "ores.telemetry/export/upload_position_tracker.hpp"
+#include "ores.telemetry/exporting/log_exporter.hpp"
+#include "ores.telemetry/exporting/telemetry_options.hpp"
+#include "ores.telemetry/exporting/upload_position_tracker.hpp"
 
-namespace ores::telemetry::exp {
+namespace ores::telemetry::exporting {
 
 /**
  * @brief Callback type for sending batched records to the server.

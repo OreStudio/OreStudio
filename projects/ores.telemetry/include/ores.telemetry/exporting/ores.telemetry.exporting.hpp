@@ -9,24 +9,22 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.telemetry/export/telemetry_options.hpp"
+#ifndef ORES_TELEMETRY_EXPORTING_HPP
+#define ORES_TELEMETRY_EXPORTING_HPP
 
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+/**
+ * @brief Log export functionality for telemetry.
+ *
+ * Contains log exporters including file-based and hybrid exporters for
+ * persisting log records. Includes configuration types for export settings.
+ */
+namespace ores::telemetry::exporting {}
 
-namespace ores::telemetry::exp {
-
-std::ostream& operator<<(std::ostream& s, const telemetry_options& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-}
+#endif

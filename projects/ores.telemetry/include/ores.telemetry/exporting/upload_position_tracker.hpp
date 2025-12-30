@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TELEMETRY_EXPORT_UPLOAD_POSITION_TRACKER_HPP
-#define ORES_TELEMETRY_EXPORT_UPLOAD_POSITION_TRACKER_HPP
+#ifndef ORES_TELEMETRY_EXPORTING_UPLOAD_POSITION_TRACKER_HPP
+#define ORES_TELEMETRY_EXPORTING_UPLOAD_POSITION_TRACKER_HPP
 
 #include <cstdint>
 #include <filesystem>
 #include <mutex>
 
-namespace ores::telemetry::exp {
+namespace ores::telemetry::exporting {
 
 /**
  * @brief Tracks the upload position for telemetry log files.

@@ -1234,29 +1234,6 @@ Links:
   UNIX-like and Windows systems."
 - https://www.inspircd.org/
 
-*** Consider exposing end points via HTTP                              :code:
-
-Having a binary protocol is helpful for performance but it may make life easier
-to expose some functionality via HTTP.
-
-Links:
-
-- [[https://github.com/dfleury2/beauty][GH: beauty]]: "Beauty is a layer above Boost.Beast which provide facilities to
-  create Http server or client. Beauty allows the creation of synchronous or
-  asynchronous server and client, and adds some signals and timer management
-  based on Boost.Asio"
-- [[https://www.boost.org/doc/libs/latest/libs/beast/doc/html/beast/examples.html#beast.examples.servers][Boost beast examples]]
-- [[https://www.boost.org/doc/libs/latest/libs/json/doc/html/index.html][Boost JSON]]
-
-Merged:
-
-*Create HTTP end point for currencies*
-
-Add a basic HTTP server using boost beast. Then we just need a couple of verbs:
-
-- GET: return all currencies in database.
-- POST: add one or more currencies.
-
 *** Consider using getML to integrate ML                               :code:
 
 Links:

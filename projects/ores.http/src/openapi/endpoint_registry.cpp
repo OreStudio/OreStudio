@@ -175,8 +175,10 @@ std::string endpoint_registry::generate_openapi_json() const {
     }
 
     // Build components section
-    spec.components.security_schemes.get() = openapi_security_schemes{
-        openapi_security_scheme{"http", "bearer", "JWT"}
+    spec.components = openapi_components{
+        openapi_security_schemes{
+            openapi_security_scheme{"http", "bearer", "JWT"}
+        }
     };
 
     // Build paths section

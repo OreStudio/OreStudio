@@ -21,6 +21,7 @@
 #define ORES_HTTP_MIDDLEWARE_BOOST_JSON_TRAITS_HPP
 
 #include <boost/json.hpp>
+#include <jwt-cpp/jwt.h>
 
 namespace jwt::traits {
 
@@ -39,40 +40,23 @@ struct boost_json {
     using integer_type = std::int64_t;
     using boolean_type = bool;
 
+    static jwt::json::type get_type(const value_type& val) {
+        using jwt::json::type;
+        if (val.is_bool()) return type::boolean;
+        if (val.is_int64() || val.is_uint64()) return type::integer;
+        if (val.is_double()) return type::number;
+        if (val.is_string()) return type::string;
+        if (val.is_array()) return type::array;
+        if (val.is_object()) return type::object;
+        return type::null;
+    }
+
     static value_type parse(const std::string& str) {
         return boost::json::parse(str);
     }
 
     static std::string serialize(const value_type& val) {
         return boost::json::serialize(val);
-    }
-
-    static bool is_object(const value_type& val) {
-        return val.is_object();
-    }
-
-    static bool is_array(const value_type& val) {
-        return val.is_array();
-    }
-
-    static bool is_string(const value_type& val) {
-        return val.is_string();
-    }
-
-    static bool is_number(const value_type& val) {
-        return val.is_double() || val.is_int64() || val.is_uint64();
-    }
-
-    static bool is_integer(const value_type& val) {
-        return val.is_int64() || val.is_uint64();
-    }
-
-    static bool is_bool(const value_type& val) {
-        return val.is_bool();
-    }
-
-    static bool is_null(const value_type& val) {
-        return val.is_null();
     }
 
     static object_type as_object(const value_type& val) {
@@ -105,21 +89,8 @@ struct boost_json {
         }
     }
 
-    static boolean_type as_bool(const value_type& val) {
+    static boolean_type as_boolean(const value_type& val) {
         return val.as_bool();
-    }
-
-    static bool parse_object_element(object_type::iterator it,
-        std::string& name, value_type& val) {
-        name = std::string(it->key());
-        val = it->value();
-        return true;
-    }
-
-    static bool parse_array_element(array_type::const_iterator it,
-        value_type& val) {
-        val = *it;
-        return true;
     }
 };
 

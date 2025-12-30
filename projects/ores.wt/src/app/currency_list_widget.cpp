@@ -84,7 +84,7 @@ void currency_list_widget::set_currencies(
 
 void currency_list_widget::populate_table() {
     while (table_->rowCount() > 1) {
-        table_->deleteRow(1);
+        table_->removeRow(1);
     }
 
     for (std::size_t i = 0; i < currencies_.size(); ++i) {

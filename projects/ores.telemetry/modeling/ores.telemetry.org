@@ -32,7 +32,7 @@ The component is organized into four namespaces:
 | =domain=     | Core types: trace_id, span_id, log_record, resource |
 | =generators= | ID generators for traces and spans                 |
 | =log=        | Boost.Log integration and lifecycle management     |
-| =exp=        | Exporters for log records                          |
+| =exporting=  | Exporters for log records                          |
 
 * Logging Infrastructure
 
@@ -96,7 +96,7 @@ To enable log export, add a telemetry sink to the lifecycle manager:
 
 #+begin_src cpp
 #include "ores.telemetry/log/lifecycle_manager.hpp"
-#include "ores.telemetry/export/file_log_exporter.hpp"
+#include "ores.telemetry/exporting/file_log_exporter.hpp"
 #include "ores.telemetry/domain/resource.hpp"
 
 int main() {
@@ -113,7 +113,7 @@ int main() {
         "ores-service", "1.0.0");
 
     // Create file exporter for JSON Lines output
-    auto exporter = std::make_shared<telemetry::exp::file_log_exporter>(
+    auto exporter = std::make_shared<telemetry::exporting::file_log_exporter>(
         "/var/log/ores/telemetry.jsonl");
 
     // Add telemetry sink - all logs now also exported
@@ -184,9 +184,9 @@ void handle_request(const telemetry::domain::telemetry_context& ctx) {
 You can implement custom exporters by implementing the =log_exporter= interface:
 
 #+begin_src cpp
-#include "ores.telemetry/export/log_exporter.hpp"
+#include "ores.telemetry/exporting/log_exporter.hpp"
 
-class my_exporter : public telemetry::exp::log_exporter {
+class my_exporter : public telemetry::exporting::log_exporter {
 public:
     void export_record(telemetry::domain::log_record record) override {
         // Send to your log aggregation system

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TELEMETRY_EXPORT_TELEMETRY_OPTIONS_HPP
-#define ORES_TELEMETRY_EXPORT_TELEMETRY_OPTIONS_HPP
+#ifndef ORES_TELEMETRY_EXPORTING_TELEMETRY_OPTIONS_HPP
+#define ORES_TELEMETRY_EXPORTING_TELEMETRY_OPTIONS_HPP
 
 #include <chrono>
 #include <cstdint>
@@ -26,7 +26,7 @@
 #include <string>
 #include <filesystem>
 
-namespace ores::telemetry::exp {
+namespace ores::telemetry::exporting {
 
 /**
  * @brief Options related to telemetry export.

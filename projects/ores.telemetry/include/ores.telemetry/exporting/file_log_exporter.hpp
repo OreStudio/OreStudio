@@ -17,15 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TELEMETRY_EXPORT_FILE_LOG_EXPORTER_HPP
-#define ORES_TELEMETRY_EXPORT_FILE_LOG_EXPORTER_HPP
+#ifndef ORES_TELEMETRY_EXPORTING_FILE_LOG_EXPORTER_HPP
+#define ORES_TELEMETRY_EXPORTING_FILE_LOG_EXPORTER_HPP
 
 #include <mutex>
 #include <fstream>
 #include <filesystem>
-#include "ores.telemetry/export/log_exporter.hpp"
+#include "ores.telemetry/exporting/log_exporter.hpp"
 
-namespace ores::telemetry::exp {
+namespace ores::telemetry::exporting {
 
 /**
  * @brief Exports log records to a JSON Lines file.

@@ -25,7 +25,7 @@
 #include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.telemetry/domain/resource.hpp"
 #include "ores.telemetry/domain/telemetry_context.hpp"
-#include "ores.telemetry/export/hybrid_log_exporter.hpp"
+#include "ores.telemetry/exporting/hybrid_log_exporter.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.shell/app/application.hpp"
 #include "ores.shell/config/parser.hpp"
@@ -63,7 +63,7 @@ int host::execute(const std::vector<std::string>& args,
     /*
      * Set up telemetry export if enabled.
      */
-    std::shared_ptr<telemetry::exp::hybrid_log_exporter> exporter;
+    std::shared_ptr<telemetry::exporting::hybrid_log_exporter> exporter;
     std::optional<telemetry::domain::telemetry_context> telemetry_ctx;
     if (cfg.telemetry) {
         const auto& tcfg(*cfg.telemetry);
@@ -97,8 +97,8 @@ int host::execute(const std::vector<std::string>& args,
          * This requires refactoring client_session to be created earlier and
          * shared between the application and the exporter.
          */
-        telemetry::exp::send_records_callback send_callback = nullptr;
-        exporter = std::make_shared<telemetry::exp::hybrid_log_exporter>(
+        telemetry::exporting::send_records_callback send_callback = nullptr;
+        exporter = std::make_shared<telemetry::exporting::hybrid_log_exporter>(
             path, tcfg, std::move(send_callback));
 
         /*

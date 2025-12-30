@@ -17,18 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.telemetry/export/upload_position_tracker.hpp"
+#include "ores.telemetry/exporting/upload_position_tracker.hpp"
 
 #include <fstream>
 #include "ores.telemetry/log/make_logger.hpp"
 
-namespace ores::telemetry::exp {
+namespace ores::telemetry::exporting {
 
 namespace {
 
 auto& lg() {
     using namespace ores::telemetry::log;
-    static auto instance = make_logger("ores.telemetry.export.upload_position_tracker");
+    static auto instance = make_logger("ores.telemetry.exporting.upload_position_tracker");
     return instance;
 }
 

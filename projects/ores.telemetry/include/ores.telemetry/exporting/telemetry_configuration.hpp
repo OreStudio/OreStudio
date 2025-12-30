@@ -17,15 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TELEMETRY_EXPORT_TELEMETRY_CONFIGURATION_HPP
-#define ORES_TELEMETRY_EXPORT_TELEMETRY_CONFIGURATION_HPP
+#ifndef ORES_TELEMETRY_EXPORTING_TELEMETRY_CONFIGURATION_HPP
+#define ORES_TELEMETRY_EXPORTING_TELEMETRY_CONFIGURATION_HPP
 
 #include <string>
 #include <optional>
 #include <boost/program_options.hpp>
-#include "ores.telemetry/export/telemetry_options.hpp"
+#include "ores.telemetry/exporting/telemetry_options.hpp"
 
-namespace ores::telemetry::exp {
+namespace ores::telemetry::exporting {
 
 /**
  * @brief Centralized manager for telemetry export configuration parsing.

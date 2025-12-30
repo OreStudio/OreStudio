@@ -133,7 +133,7 @@ specific content type. The following are the set of well-known facets:
 | =service=    | Contains standalone types with domain operations that do not fit into a domain type.                                |
 | =app=        | If the component provides an executable, it will need standard application infrastructure such as hosting, etc.     |
 | =config=     | Contains top-level configuration, if required. If it is an executable component the command-line parser lives here. |
-| =net=        | Low-level networking. Only used in =ores.comms=.                                                                    |
+| =net=        | Network-related utilities such as client/server infrastructure or network interface information.                    |
 | =orexml=     | If the component supports exporting to and from ORE (Open Source Risk Engine) the code lives here.                  |
 | =csv=        | If the component supports exporting and possibly importing from CSV, the code lives here.                           |
 

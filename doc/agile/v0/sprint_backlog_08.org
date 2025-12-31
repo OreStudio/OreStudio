@@ -17,23 +17,34 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-31 Tue 12:00], for Tuesday, December 31, 2025.
-|      | <75>         |        |     |
-| Tags | Headline     | Time   |   % |
-|------+--------------+--------+-----|
-|      | *Total time* | *0:00* | 0.0 |
+#+CAPTION: Clock summary at [2025-12-31 Wed 11:26], for Wednesday, December 31, 2025.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *1:05* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 1:05   |      |      | 100.0 |
+|       | Active                                |        | 1:05 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 1:05 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-31 Tue 12:00]
-|      | <75>         |        |     |
-| Tags | Headline     | Time   |   % |
-|------+--------------+--------+-----|
-|      | *Total time* | *0:00* | 0.0 |
+#+CAPTION: Clock summary at [2025-12-31 Wed 11:26]
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *1:05* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 1:05   |      |      | 100.0 |
+|       | Active                                |        | 1:05 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 1:05 | 100.0 |
 #+end:
 
-*** Sprint and product backlog refinement                             :agile:
+*** STARTED Sprint and product backlog refinement                     :agile:
+    :LOGBOOK:
+    CLOCK: [2025-12-31 Wed 10:21]--[2025-12-31 Wed 11:26] =>  1:05
+    :END:
 
 Updates to sprint and product backlog.
 
@@ -180,7 +191,33 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_08_tags.png]]
 
+*** OCR scan notebooks for this sprint                                :infra:
 
-*** Footer
+We need to scan all of our finance notebooks so we can use them with AI. Each
+sprint will have a story similar to this until we scan and process them all.
+
+*** Add AI generated sprint summary                                   :infra:
+
+At the end of the sprint, generate the sprint summary using the prompt.
+
+*** Sprint Demo                                                       :infra:
+
+Time spent doing the demo. This is the first one so it will be very basic.
+
+**** Presentation
+
+***** ORE Studio v0.0.4, "Fazenda Camilunga"
+
+    Marco Craveiro
+    Moimba Software Engineering
+    Released on 16th November 2025
+
+
+
+*** Rerun SQL scripts from scratch                                     :code:
+
+We need to validate the scripts.
+
+* Footer
 
 | Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

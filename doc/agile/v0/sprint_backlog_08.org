@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: A9FB22A0-E067-46D4-A217-AF10C20DFB90
+:END:
+#+title: Sprint Backlog 08
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
+#+tags: { code(c) infra(i) analysis(n) agile(a) }
+#+startup: inlineimages
+
+* Sprint Mission
+
+- implement reference data.
+
+* Stories
+
+** Active
+
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
+#+TBLNAME: today_summary
+#+CAPTION: Clock summary at [2025-12-31 Tue 12:00], for Tuesday, December 31, 2025.
+|      | <75>         |        |     |
+| Tags | Headline     | Time   |   % |
+|------+--------------+--------+-----|
+|      | *Total time* | *0:00* | 0.0 |
+#+end:
+
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
+#+TBLNAME: sprint_summary
+#+CAPTION: Clock summary at [2025-12-31 Tue 12:00]
+|      | <75>         |        |     |
+| Tags | Headline     | Time   |   % |
+|------+--------------+--------+-----|
+|      | *Total time* | *0:00* | 0.0 |
+#+end:
+
+*** Sprint and product backlog refinement                             :agile:
+
+Updates to sprint and product backlog.
+
+#+begin_src emacs-lisp :exports none
+;; agenda
+(org-agenda-file-to-front)
+#+end_src
+
+#+name: pie-stories-chart
+#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_08_stories_pie_sorted.png :width 1920 :height 1080
+library(conflicted)
+library(ggplot2)
+library(tidyverse)
+library(tibble)
+
+# Remove unnecessary rows (Total time, Stories, Active)
+clean_sprint_summary <- tail(sprint_summary, -4)
+stories <- unlist(clean_sprint_summary[2])
+percent_values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+# Create a data frame and explicitly sort the stories by defining factor levels
+df <- data.frame(
+  stories = stories,
+  percent = percent_values
+) %>%
+  # 1. Sort the data frame by percentage in descending order
+  arrange(desc(percent)) %>%
+  # 2. Convert 'stories' to a factor, setting the levels based on the sorted order.
+  # This makes the order of the slices explicit for ggplot.
+  mutate(
+    stories = factor(stories, levels = stories),
+    lab.pos = cumsum(percent) - 0.5 * percent
+  )
+
+# Manually selected colors to resemble the screenshot
+custom_palette <- c(
+  "#21518f", "#f37735", "#ffc425", "#81b214", "#d7385e",
+  "#662e91", "#00a9ae", "#5c5c5c", "#a0c6e0", "#f8b195",
+  "#ffe385", "#bde0fe", "#c5e0d4", "#e0b8a0", "#a56f8f",
+  "#7a448a", "#4a9a9b", "#9b9b9b", "#6fa8dc", "#f7a072",
+  "#ffd166", "#99d98c", "#ef5d60", "#9d529f", "#3a86ff",
+  "#c1d6e1", "#f9e0ac", "#c2d6a4", "#e69a8d", "#a07d9f"
+)
+
+# Ensure the palette has enough colors for all stories.
+if (length(custom_palette) < length(df$stories)) {
+  warning("Not enough custom colors for all stories. Colors will repeat.")
+  custom_palette <- rep(custom_palette, length.out = length(df$stories))
+}
+
+
+p <- ggplot(df, aes(x = "", y = percent, fill = stories)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start = 0) +
+  scale_fill_manual(values = custom_palette) +
+  ggtitle("Sprint 8: Resourcing per Story")  +
+  labs(x = NULL, y = NULL, fill = "Stories") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(hjust = 0.5, size = 18),
+    legend.position = "right",
+    legend.title = element_text(size = 14),
+    legend.text = element_text(size = 12)
+  )
+
+print(p)
+#+end_src
+
+#+RESULTS: pie-stories-chart
+[[file:sprint_backlog_08_stories_pie_sorted.png]]
+
+#+name: stories-chart
+#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_08_stories.png :width 1200 :height 650
+library(conflicted)
+library(grid)
+library(tidyverse)
+library(tibble)
+
+# Remove unnecessary rows.
+clean_sprint_summary <- tail(sprint_summary, -4)
+names <- unlist(clean_sprint_summary[2])
+values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+# Create a data frame.
+df <- data.frame(
+  cost = values,
+  stories = factor(names, levels = names[order(values, decreasing = FALSE)]),
+  y = seq(length(names)) * 0.9
+)
+
+# Setup the colors
+blue <- "#076fa2"
+
+p <- ggplot(df) +
+  aes(x = cost, y = stories) +
+  geom_col(fill = blue, width = 0.6) +
+  ggtitle("Sprint 8: Resourcing per Story") +
+  xlab("Resourcing (%)") + ylab("Stories") +
+  theme(text = element_text(size = 15))
+
+print(p)
+#+end_src
+
+#+RESULTS: stories-chart
+[[file:sprint_backlog_08_stories.png]]
+
+#+name: tags-chart
+#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_08_tags.png :width 600 :height 400
+library(conflicted)
+library(grid)
+library(tidyverse)
+library(tibble)
+
+# Remove unnecessary rows.
+clean_sprint_summary <- tail(sprint_summary, -4)
+names <- unlist(clean_sprint_summary[1])
+values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+# Create a data frame.
+df <- data.frame(
+  cost = values,
+  tags = names,
+  y = seq(length(names)) * 0.9
+)
+# factor(names, levels = names[order(values, decreasing = FALSE)])
+
+df2 <- setNames(aggregate(df$cost, by = list(df$tags), FUN = sum),  c("cost", "tags"))
+# Setup the colors
+blue <- "#076fa2"
+
+p <- ggplot(df2) +
+  aes(x = cost, y = tags) +
+  geom_col(fill = blue, width = 0.6) +
+  ggtitle("Sprint 8: Resourcing per Tag") +
+  xlab("Resourcing (%)") + ylab("Story types") +
+  theme(text = element_text(size = 15))
+
+print(p)
+#+end_src
+
+#+RESULTS: tags-chart
+[[file:sprint_backlog_08_tags.png]]
+
+
+*** Footer
+
+| Previous: [[id:154212FF-BB02-8D84-1E33-9338B458380A][Version Zero]] |

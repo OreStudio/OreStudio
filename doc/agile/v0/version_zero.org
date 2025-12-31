@@ -114,5 +114,6 @@ Backlogs]]. The last entry is the active sprint.
 |     05 | [[id:2A3C7481-0984-D344-575B-7BFBB8D5A98B][Sprint Backlog 05]] | Implement bootstrap mode; finish up all remaining tasks around domain entities.    |
 |     06 | [[id:DBBD0C4F-EA14-4684-7583-D78AAF7AABFF][Sprint Backlog 06]] | Finish domain entity tasks; templatise domain entity generation.                   |
 |     07 | [[id:44AD3D04-EC5A-4039-91DD-7CEA0A18CA92][Sprint Backlog 07]] | Finish reference implementation.                                                   |
+|     08 | [[id:A9FB22A0-E067-46D4-A217-AF10C20DFB90][Sprint Backlog 08]] | Implement reference data.                                                          |
 
 | Previous: [[id:57A7FABC-21FE-5124-45EB-9685D0712176][Sprint Backlog]] |

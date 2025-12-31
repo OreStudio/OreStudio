@@ -8,7 +8,7 @@
 
 SQL recipes for directly querying and managing the [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORES Database Schema]].
 
-* Initial Setup (Run Once)
+* Initial Setup
   :PROPERTIES:
   :header-args: :exports both
   :header-args+: :results raw
@@ -21,15 +21,41 @@ SQL recipes for directly querying and managing the [[id:B7E9F3A1-C8D2-4E6B-A1F5-
 
 These recipes must be run *in order* using the =postgres= superuser to bootstrap
 the ORES database infrastructure. Run each step once when setting up a new
-PostgreSQL server.
+PostgreSQL server. If you have not yet added a password to =postgres=, login as
+that user and in psql:
+
+#+begin_src sql
+alter user postgres password 'SECURE PASSWORD';
+#+end_src
+
+To generate a secure password:
+
+#+begin_src sh :wrap example
+pwgen -c 25 | head -n1
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ohzo4cohmoof1Cai2Xaxohsie
+#+end_example
+
+Then add the secure password to your =authinfo.gpg=, e.g.:
+
+#+begin_src authinfo
+machine localhost login postgres password ohzo4cohmoof1Cai2Xaxohsie
+#+end_src
 
 ** Step 1: Create ORES User
 
 Creates the =ores= application user with appropriate permissions:
 
 #+begin_src sql :database template1 :wrap example
-\ir '$project_sql_dir'/setup.sql
+\ir '$project_sql_dir'/setup_user.sql
 #+end_src
+
+#+RESULTS:
+#+begin_example
+#+end_example
 
 ** Step 2: Create Admin Database
 

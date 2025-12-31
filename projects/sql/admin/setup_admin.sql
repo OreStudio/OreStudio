@@ -31,7 +31,7 @@
  *
  * PREREQUISITES:
  *   - PostgreSQL superuser access
- *   - The 'ores' user must exist (run setup.sql first)
+ *   - The 'ores' user must exist (run setup_user.sql first)
  *
  * This database does NOT contain application code - only admin utilities.
  * Application schema is in ores_template.

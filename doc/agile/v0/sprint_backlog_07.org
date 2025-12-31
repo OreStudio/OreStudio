@@ -267,7 +267,6 @@ just need some information in the header about it. We should support both
 compressed and uncompressed payloads. Play with compression algos in boost.
 
 *** COMPLETED Add lock account request                                 :code:
->>>>>>> 37dd037 ([agile] Backlog refinement)
 
 *Rationale*: implemented last sprint.
 
@@ -359,7 +358,7 @@ used as follows:
 - version is incremented automatically on save.
 - display version in UI prominently (/e.g./ next to entity key, iso code for
   currencies) so that we can see when we reload.
-*** COMPLETED Add skill to create new project component            2   :code:
+*** COMPLETED Add skill to create new project component                :code:
 
 *Rationale*: implemented last sprint.
 

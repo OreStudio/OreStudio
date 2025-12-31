@@ -18,6 +18,6 @@
  */
 #define ORES_VERSION_MAJOR 0
 #define ORES_VERSION_MINOR 0
-#define ORES_VERSION_PATCH 7
-#define ORES_VERSION "0.0.7"
+#define ORES_VERSION_PATCH 8
+#define ORES_VERSION "0.0.8"
 #define ORES_BUILD_INFO "Build: Provider = LOCAL"

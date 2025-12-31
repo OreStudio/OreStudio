@@ -37,7 +37,7 @@
  *
  * PREREQUISITES:
  *   - PostgreSQL superuser access
- *   - The 'ores' user must exist (run setup.sql first)
+ *   - The 'ores' user must exist (run setup_user.sql first)
  *
  * OUTPUT:
  *   Creates a fully-configured database with all tables, functions,

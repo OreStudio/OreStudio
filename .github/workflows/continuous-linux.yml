@@ -132,4 +132,4 @@ jobs:
         uses: actions/upload-artifact@v6.0.0
         with:
           name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/orestudio_0.0.7_amd64.deb
+          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/orestudio_0.0.8_amd64.deb

@@ -67,6 +67,342 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Refactor options and parser                                        :code:
+
+We have a lot of boost program options parsers and options. We need to do an
+inventory of all of the implementations and figure out if we can have common
+code under utility.
+
+*** Sign-up dialog should be disabled if feature is disabled           :code:
+
+At present you can click on sign up and fill in all details but then you get a
+server error:
+
+#+begin_src logview
+2025-12-24 10:46:48.212905 [DEBUG] [ores.iam.messaging.accounts_message_handler] Request: signup_request{username=newuser4, email=newuser4@example.com}
+2025-12-24 10:46:48.213049 [INFO] [ores.iam.service.signup_service] Signup attempt for username: newuser4, email: newuser4@example.com
+2025-12-24 10:46:48.213144 [WARN] [ores.iam.service.signup_service] Signup rejected: signups are disabled
+2025-12-24 10:46:48.213186 [WARN] [ores.iam.messaging.accounts_message_handler] Signup failed for username: newuser4, reason: User registration is currently disabled
+2025-12-24 10:46:48.213898 [DEBUG] [ores.comms.messaging.compression] Compressed 68 bytes to 60 bytes using zlib (0x)
+#+end_src
+
+Makes more sense for sign-up button to also be disabled in client. Trouble is,
+we do not know as we are not connected. This means the handshake has to provide
+some kind of flag saying sign-up is enabled or disabled.
+
+*** Add sign-up approval workflow                                      :code:
+
+Should also handle invite codes, etc.
+
+*** Tests are logging to stdout in github                              :code:
+
+There is a lot of stdout output in CDash. We need to understand why that is.
+
+#+begin_src
+Test output
+[2025-12-16 20:31:44.600851] [0x00000001f1d1a200] [info]    Test run starting, creating test database
+[2025-12-16 20:31:44.601397] [0x00000001f1d1a200] [info]    Generated test database name: oresdb_test_4816_1242
+[2025-12-16 20:31:44.601401] [0x00000001f1d1a200] [info]    Creating test database: oresdb_test_4816_1242
+[2025-12-16 20:31:44.601434] [0x00000001f1d1a200] [info]    Creating context. Configuration: {"database_options":{"user":"ores","host":"localhost","database":"postgres","port":5432},"pool_size":1,"num_attempts":10,"wait_time_in_seconds":1}
+[2025-12-16 20:31:44.630284] [0x00000001f1d1a200] [info]    Finished creating context.
+[2025-12-16 20:31:44.771670] [0x00000001f1d1a200] [info]    Successfully created test database: oresdb_test_4816_1242
+[2025-12-16 20:31:44.771733] [0x00000001f1d1a200] [info]    Setting ORES_TEST_DB_DATABASE environment variable to: oresdb_test_4816_1242
+[2025-12-16 20:31:44.771738] [0x00000001f1d1a200] [info]    Environment variable set successfully
+[2025-12-16 20:31:44.771740] [0x00000001f1d1a200] [info]    Test database ready: oresdb_test_4816_1242
+[2025-12-16 20:31:44.772151] [0x00000001f1d1a200] [info]    Test case starting: delete_account_response_failure
+[2025-12-16 20:31:44.772158] [0x00000001f1d1a200] [info]      Tags: messaging #messaging_protocol_tests
+#+end_src
+
+
+*** Add a dashboard for users                                          :code:
+
+Examples:
+
+[[./user_dashboard_core_ui.png]]
+
+*** User interface options                                             :code:
+
+This story keeps track of configuration points in the UI which should be added
+at some point:
+
+- display time in human readable form - e.g. last month, 3 months ago, etc.
+- auto-reload. If a dialog receives new data, reload it automatically. Defaults
+  to off.
+
+Notes:
+
+- we need a UI to manage the UI options.
+- should be stored in the server and cached locally with a sqlite db.
+
+[[./dashboard_ideas.png]]
+
+[[./dashboard_ideas_II.png]]
+
+*** New feature flags                                                  :code:
+
+- allow sign-ups. If true, users can create their own accounts.
+- auto-authorise sign-ups. If true, the account is automatically created. If
+  false, admin user has to authorise it.
+
+Notes:
+
+- we need a UI to manage the UI options.
+
+*** Assorted fixes to currency dialog                                  :code:
+
+At present the following is not working or is a snag:
+
+- can we make the details windows unmaximisable.
+- currencies history is broken, does not show changes diff. Done.
+- version is zero. Done.
+- update the modified by and modified at in currencies to use recorded
+  terminology. Done.
+- We need to either make the columns configurable, or remove some less useful
+  columns such as symbol, fraction etc.
+- save new currency does not close dialog.
+- can we refactor reload logic into common entity code.
+
+*** Assorted fixes to accounts dialog                                  :code:
+
+- remove "grant administrative privileges" from details screen.
+- old users remain online. Server should check sessions on start and update
+  table.
+- cannot tell who unlocked an account and when.
+- do not use "old" for accounts who never logged in. Maybe "unused"?
+- at present you can't tell if you asked for a password reset. We probably
+  should use Status to mean: locked, unlocked, reset. And maybe "Age" or "Last
+  Login" to mean: online, never, recent, old.
+- add right-click menu with the context options from the toolbar.
+- after reload, lock etc remember which line we were on and return to it.
+- email updated message is truncated.
+- user cannot lock it's own account.
+
+*** Implement entity history in shell                                  :code:
+
+We need to add a command in shell to show entity history.
+
+Notes:
+
+- for the history diff we could use a simple unified diff format.
+
+*** Consider adding an "entity waterfall"                              :code:
+
+It would be nice to be able to see what entities have been added, deleted,
+modified, etc. This would work as a running commentary.
+
+*** Notification of deletes                                            :code:
+
+At present it is easy to see new rows or modified rows in an entity dialog. It
+is not possible to see deleted rows. One way to do this is to preserve state
+from before reload by key. Any entities which are not present after reload can
+be shown as red. History then allows users to re-instate deleted entities.
+
+*** Add REPL to Qt                                                     :code:
+
+Users should be able to interact with the system directly via the REPL. Add a
+simple widget for this.
+
+
+*** Add entity messages should not set modified by                     :code:
+
+At present you can supply any modified by you want in the protocol messages. It
+makes more sense to say the message must have the modified by as the user logged
+in from the session.
+
+*** Add heat map of user sessions                                      :code:
+
+Things to measure:
+
+- duration of sessions (once we have session table).
+- bytes sent/received per session (possibly 3-D plot?). Also good for anomaly
+  detection.
+- mine github for ideas.
+
+*** Perform tests to check database connectivity                       :code:
+
+We added some basic database monitoring but did not perform a lot of testing.
+
+We should also generalise this so that if the database goes down after start we
+still perform some kind of retry logic.
+
+See also this point from Gemini:
+
+#+begin_quote
+The new broadcast_all method appears to be unused in this pull request. The
+database status broadcast is implemented directly in
+=ores::comms::net::server::broadcast_database_status= without using the
+subscription_manager. If this method is not intended for future use, it could be
+removed to avoid dead code.
+#+end_quote
+
+*** Add currencies update command to shell                             :code:
+
+At present we can only add new currencies. We also need to be able to update.
+Also, adding currencies requires supplying all parameters.
+
+*** Subscribe on reconnect fails                                       :code:
+
+Logs:
+
+#+begin_src logview
+2025-12-13 01:14:35.108648 [DEBUG] [ores.comms.messaging.frame] Successfully deserialized frame subscribe_request (0x10)
+2025-12-13 01:14:35.108680 [DEBUG] [ores.comms.net.connection] Successfully deserialized frame, type: subscribe_request (0x10) total size: 60
+2025-12-13 01:14:35.108708 [DEBUG] [ores.comms.net.server_session] Received message type subscribe_request (0x10)
+2025-12-13 01:14:35.108750 [DEBUG] [ores.comms.messaging.message_dispatcher] Dispatching message type subscribe_request (0x10)
+2025-12-13 01:14:35.108811 [WARN] [ores.comms.service.auth_session_service] Authorization failed for subscribe_request (0x10) from 127.0.0.1:45498: not authenticated
+2025-12-13 01:14:35.108842 [WARN] [ores.comms.messaging.message_dispatcher] Authorization denied for subscribe_request (0x10) from 127.0.0.1:45498
+2025-12-13 01:14:35.108875 [ERROR] [ores.comms.net.server_session] Message dispatch failed: 10
+#+end_src
+
+*** Unsubscribe before logout                                          :code:
+
+On logout we see the following:
+
+#+begin_src logview
+2025-12-11 22:45:54.559906 [INFO] [ores.accounts.messaging.accounts_message_handler] Successfully logged out account: 019a5e49-476c-70ce-9909-3887cae700e9
+2025-12-11 22:45:54.559940 [DEBUG] [ores.comms.messaging.message_dispatcher] Successfully dispatched message, response type logout_response (0x200e) correlation_id=763
+2025-12-11 22:45:54.559978 [DEBUG] [ores.comms.messaging.frame] Serialised frame logout_response (0x200e), size: 58
+2025-12-11 22:45:54.560005 [DEBUG] [ores.comms.net.connection] Writing frame of size 58 type: logout_response (0x200e) sequence: 767
+2025-12-11 22:45:54.560083 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
+2025-12-11 22:45:54.560113 [DEBUG] [ores.comms.net.session] Sent response for message type logout_request (0x200d)
+2025-12-11 22:45:54.560137 [INFO] [ores.comms.net.session] Logout completed, closing connection
+2025-12-11 22:45:54.560200 [ERROR] [ores.comms.net.session] Exception in notification writer: co_await: Operation canceled [system:125]
+2025-12-11 22:45:54.560233 [DEBUG] [ores.comms.net.session] Notification writer coroutine ended
+2025-12-11 22:45:54.560281 [INFO] [ores.comms.net.session] Unregistering session '127.0.0.1:38366' from subscription manager
+#+end_src
+
+We should probably unsubscribe before we logout.
+
+*** Use events in comms and accounts                                   :code:
+
+Now we have an event bus, we should create events for:
+
+- connect, disconnect, retry
+- login, logout
+
+*** Data in login info looks spurious                                  :code:
+
+We see stuff like this:
+
+#+begin_src
+oresdb=> select * from login_info;
+              account_id              |     last_ip     | last_attempt_ip | failed_logins | locked |       last_login       | online
+--------------------------------------+-----------------+-----------------+---------------+--------+------------------------+--------
+ 019a4439-be9e-798e-bf2f-927ca236f84c | 0.0.0.0         | 0.0.0.0         |             0 |      0 | 1969-12-31 23:00:00+01 |      0
+ 019a3ba6-bd11-709b-b93d-fea9403d3d39 | 127.0.0.1       | 127.0.0.1       |             0 |      0 | 2025-10-31 19:03:48+00 |      1
+ 019a4431-98f8-79ae-9fc8-f6a6e77a0490 | 192.168.1.100   | 192.168.1.100   |             0 |      0 | 2025-11-02 10:51:32+00 |      1
+ 019a4431-9a7d-7b3d-a1cb-b9e02d44c804 | 0.0.0.0         | 192.168.1.100   |             1 |      0 | 1969-12-31 23:00:00+01 |      0
+
+#+end_src
+
+Also, we need a login timestamp and a logout timestamp so we can measure session
+duration.
+
+*** Currencies displays when not connected                             :code:
+
+At present we can display currencies even before we connect. This is probably ok
+but we should at least state we are not connected. Alternatively it should be
+disabled.
+
+*** =ores.qt= is not using client session                              :code:
+
+Refactor client manager to use it.
+
+*** Add sound assets                                                   :code:
+
+We need to be able to associate sounds to certain events such as disconnect,
+connect etc. Users need to be able to choose their own sounds.
+
+*** Add a delete all button which deletes all currencies               :code:
+
+It is useful especially in test environments to be able to delete all entities
+before a re-import.
+
+Notes:
+
+- purge button.
+
+
+*** Add screen in qt to exit bootstrap mode                            :code:
+
+As per claude:
+
+The create_initial_admin_request message type serves several important purposes
+that differentiate it from the CLI and REPL approaches:
+
+Why We Need create_initial_admin_request
+
+  1. Network-accessible bootstrap flow
+  - Allows remote initial setup from localhost without requiring shell/CLI access
+  to the server
+  - Enables a web-based "first-run" setup experience (like many web applications)
+  - The Qt client can provide a proper UI for initial admin account creation
+
+  2. Localhost-only security enforcement
+  - The endpoint enforces that it can only be called from localhost (127.0.0.1 or
+  ::1) at line
+  projects/ores.accounts/src/messaging/accounts_message_handler.cpp:320
+  - Provides network-accessible bootstrap with security guarantees
+  - Prevents remote bootstrap attacks
+
+  3. Atomic mode transition
+  - The endpoint both creates the admin AND exits bootstrap mode in a single atomic
+   operation (lines 362-367 in accounts_message_handler.cpp)
+  - Guarantees consistency - can't create admin without exiting bootstrap mode
+
+  4. Service-layer validation
+  - Goes through full service layer with password validation and business logic
+  - The CLI is essentially an "administrative backdoor" that bypasses the service
+  layer and writes directly to the database
+
+  5. Protocol-compliant workflow
+  - Clients speaking the binary protocol need a proper bootstrap endpoint
+  - REPL create_account_request is blocked in bootstrap mode (by enforcement logic)
+  - create_initial_admin_request is the only endpoint that works in bootstrap mode
+
+  The Distinction
+
+  - CLI approach: Administrative backdoor, direct database access, bypasses all
+  service logic
+  - create_initial_admin_request: Proper network-accessible bootstrap flow with
+  localhost restriction and atomic mode transition
+  - REPL create_account_request: Normal account creation, blocked in bootstrap mode
+
+  The create_initial_admin_request enables a proper "first-run experience" for
+  clients connecting via the network protocol, while maintaining security through
+  localhost-only access.
+
+
+
+*** Cli clean-ups                                                      :code:
+
+- we still seem to support =--entity currencies=. This should now be invalid.
+  Done.
+- we are still exporting as JSON. We should instead allow CSV and XML exports
+  only.
+- add recipes for all commands.
+- should be able to list all admin accounts.
+- list command should support table output.
+- is admin should be a bool: =--is-admin arg (=0)=
+- add account duplicates logic. We should have a single service for this.
+- split application into entities.
+
+*** Add search to currencies                                           :code:
+
+It should be possible to filter the open currencies by a string. This should be
+any field. The user needs to know when the list has been filtered. Ideally we
+should have buttons at the top per field and filter using those. It should go
+back to database rather than just filter what is available in UI.
+
+Links:
+
+- [[https://github.com/timescale/pg_textsearch][GH pg_textsearch]]: Modern ranked text search for Postgres.
+  - Simple syntax: ORDER BY content <@> 'search terms'
+  - BM25 ranking with configurable parameters (k1, b)
+  - Works with Postgres text search configurations (english, french, german, etc.)
+  - Supports partitioned tables
+  - Goal: state-of-the-art performance and scalability
+
 *** Add support for FIX                                                :code:
 
 Links:

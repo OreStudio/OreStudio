@@ -19,8 +19,6 @@ name: Continuous Linux
 
 env:
   VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg_cache,readwrite'
-  # Disable Wt feature to save disk space on Linux CI
-  VCPKG_MANIFEST_NO_DEFAULT_FEATURES: 'ON'
 
 on:  # yamllint disable-line rule:truthy
   push:

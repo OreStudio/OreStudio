@@ -29,7 +29,7 @@
  *
  * PREREQUISITES:
  *   - PostgreSQL superuser access
- *   - The 'ores' user must exist (run setup.sql first)
+ *   - The 'ores' user must exist (run setup_user.sql first)
  *
  * After running this script, create new instances using:
  *   psql -U postgres -f create_instance.sql

@@ -8,7 +8,7 @@
 
 SQL recipes for directly querying and managing the [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORES Database Schema]].
 
-* Initial Setup (Run Once)
+* Initial Setup
   :PROPERTIES:
   :header-args: :exports both
   :header-args+: :results raw
@@ -28,8 +28,12 @@ PostgreSQL server.
 Creates the =ores= application user with appropriate permissions:
 
 #+begin_src sql :database template1 :wrap example
-\ir '$project_sql_dir'/setup.sql
+\ir '$project_sql_dir'/setup_user.sql
 #+end_src
+
+#+RESULTS:
+#+begin_example
+#+end_example
 
 ** Step 2: Create Admin Database
 

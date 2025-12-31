@@ -34,7 +34,7 @@
  * PREREQUISITES:
  *   - The ores_admin database must exist (run admin/setup_admin.sql first)
  *   - The ores_template database must exist (run setup_template.sql first)
- *   - The 'ores' user must exist (run setup.sql first)
+ *   - The 'ores' user must exist (run setup_user.sql first)
  *
  * OUTPUT:
  *   Creates a fully-configured database with all tables, functions, and

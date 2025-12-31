@@ -25,7 +25,7 @@
  * the ORES database infrastructure.
  *
  * USAGE:
- *   psql -U postgres -f setup.sql
+ *   psql -U postgres -f setup_user.sql
  *
  * NEXT STEPS:
  *   1. admin/setup_admin.sql  - Create admin database

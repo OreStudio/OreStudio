@@ -19,21 +19,42 @@
  */
 set schema 'ores';
 
-
--- Enable TimescaleDB extension if not already enabled.
--- TimescaleDB provides automatic time-based partitioning, compression,
--- continuous aggregates, and data retention policies.
---
--- NOTE: ores_template must be marked as a template database to prevent
--- TimescaleDB from starting background workers for it. This is done in
--- setup_template.sql after creating the schema.
---
-create extension if not exists timescaledb;
-
 --
 -- sessions table tracks individual user sessions with full lifecycle data.
--- This is a TimescaleDB hypertable partitioned by start_time for efficient
--- time-series queries.
+--
+-- If TimescaleDB is available:
+--   - Table becomes a hypertable partitioned by start_time
+--   - Automatic compression for chunks older than 7 days
+--   - Automatic retention policy (1 year)
+--
+-- If TimescaleDB is NOT available:
+--   - Regular PostgreSQL table with standard indexes
+--   - Manual cleanup required for old data
+--
+do $$
+declare
+    tsdb_installed boolean;
+begin
+    -- Check if TimescaleDB extension is installed
+    select exists (
+        select 1 from pg_extension where extname = 'timescaledb'
+    ) into tsdb_installed;
+
+    if tsdb_installed then
+        raise notice '=========================================';
+        raise notice 'TimescaleDB detected - creating hypertable';
+        raise notice '=========================================';
+    else
+        raise notice '================================================';
+        raise notice 'TimescaleDB NOT available - using regular table';
+        raise notice '================================================';
+    end if;
+end $$;
+
+--
+-- Create the sessions table.
+-- The composite primary key (id, start_time) works for both regular tables
+-- and TimescaleDB hypertables.
 --
 create table if not exists "ores"."sessions" (
     -- Session identifier
@@ -69,20 +90,12 @@ create table if not exists "ores"."sessions" (
     -- Only country code is available from ip2country data source
     "country_code" text not null default '',
 
-    -- Composite primary key: id + start_time required for TimescaleDB
+    -- Composite primary key: id + start_time
+    -- Required for TimescaleDB, also works for regular tables
     primary key (id, start_time)
 );
 
--- Convert to hypertable with 7-day chunks
--- This enables automatic time-based partitioning
-select create_hypertable(
-    'ores.sessions',
-    'start_time',
-    chunk_time_interval => interval '7 days',
-    if_not_exists => true
-);
-
--- Indexes for common query patterns
+-- Indexes for common query patterns (work with both table types)
 create index if not exists sessions_account_id_idx
 on "ores"."sessions" (account_id, start_time desc);
 
@@ -94,23 +107,53 @@ create index if not exists sessions_country_idx
 on "ores"."sessions" (country_code, start_time desc)
 where country_code != '';
 
--- Enable compression for chunks older than 7 days
--- Segment by account_id for efficient per-account queries
-alter table "ores"."sessions" set (
-    timescaledb.compress,
-    timescaledb.compress_segmentby = 'account_id',
-    timescaledb.compress_orderby = 'start_time desc'
-);
+--
+-- TimescaleDB-specific setup (only if extension is installed)
+--
+do $$
+declare
+    tsdb_installed boolean;
+begin
+    -- Check if TimescaleDB extension is installed
+    select exists (
+        select 1 from pg_extension where extname = 'timescaledb'
+    ) into tsdb_installed;
 
-select add_compression_policy(
-    'ores.sessions',
-    compress_after => interval '7 days',
-    if_not_exists => true
-);
+    if tsdb_installed then
+        -- Convert to hypertable with 7-day chunks
+        perform create_hypertable(
+            'ores.sessions',
+            'start_time',
+            chunk_time_interval => interval '7 days',
+            if_not_exists => true
+        );
+        raise notice 'Created hypertable with 7-day chunks';
 
--- Data retention policy: keep raw session data for 1 year
-select add_retention_policy(
-    'ores.sessions',
-    drop_after => interval '1 year',
-    if_not_exists => true
-);
+        -- Enable compression for chunks older than 7 days
+        alter table "ores"."sessions" set (
+            timescaledb.compress,
+            timescaledb.compress_segmentby = 'account_id',
+            timescaledb.compress_orderby = 'start_time desc'
+        );
+
+        perform add_compression_policy(
+            'ores.sessions',
+            compress_after => interval '7 days',
+            if_not_exists => true
+        );
+        raise notice 'Enabled compression policy (7 days)';
+
+        -- Data retention policy: keep raw session data for 1 year
+        perform add_retention_policy(
+            'ores.sessions',
+            drop_after => interval '1 year',
+            if_not_exists => true
+        );
+        raise notice 'Enabled retention policy (1 year)';
+
+        raise notice 'TimescaleDB setup complete for sessions table';
+    else
+        raise notice 'Skipping TimescaleDB setup - extension not available';
+        raise notice 'Note: Manual cleanup of old session data will be required';
+    end if;
+end $$;

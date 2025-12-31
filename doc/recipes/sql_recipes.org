@@ -47,15 +47,23 @@ machine localhost login postgres password ohzo4cohmoof1Cai2Xaxohsie
 
 ** Step 1: Create ORES User
 
-Creates the =ores= application user with appropriate permissions:
+Creates the =ores= application user. Generate a secure password first:
 
-#+begin_src sql :database template1 :wrap example
-\ir '$project_sql_dir'/setup_user.sql
+#+begin_src sh :wrap example
+pwgen -c 25 1
 #+end_src
 
-#+RESULTS:
-#+begin_example
-#+end_example
+Then run the script with the password as a variable. From the command line:
+
+#+begin_src sh
+psql -U postgres -v ores_password='YOUR_SECURE_PASSWORD' -f projects/sql/setup_user.sql
+#+end_src
+
+Add the password to your =authinfo.gpg=:
+
+#+begin_src authinfo
+machine localhost login ores password YOUR_SECURE_PASSWORD
+#+end_src
 
 ** Step 2: Create Admin Database
 

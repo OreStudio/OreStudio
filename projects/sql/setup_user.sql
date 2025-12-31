@@ -28,9 +28,9 @@
  *   psql -U postgres -v ores_password='YOUR_SECURE_PASSWORD' -f setup_user.sql
  *
  * NEXT STEPS:
- *   1. admin/setup_admin.sql  - Create admin database
- *   2. setup_template.sql     - Create template database
- *   3. create_instance.sql    - Create database instance
+ *   1. admin/setup_admin.sql - Create admin database
+ *   2. setup_template.sql    - Create template database
+ *   3. create_instance.sql   - Create database instance
  *
  * NOTE: Generate a secure password with:
  *   pwgen -c 25 1

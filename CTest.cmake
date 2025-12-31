@@ -281,6 +281,11 @@ set(cmake_args ${cmake_args} "--preset ${preset}")
 # Use dynamic libraries.
 set(cmake_args ${cmake_args} "-DBUILD_SHARED_LIBS=ON")
 
+# Disable Wt on Linux CI to save disk space.
+if(${operative_system} STREQUAL "linux")
+    set(cmake_args ${cmake_args} "-DWITH_WT=OFF")
+endif()
+
 message(STATUS "CMake args: ${cmake_args}")
 ctest_configure(OPTIONS "${cmake_args}" RETURN_VALUE configure_result)
 if(NOT configure_result EQUAL 0)

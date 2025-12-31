@@ -89,6 +89,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/build/cmake/modules)
 #
 option(WITH_PROFILING "Generate profiling information for code coverage." OFF)
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+option(WITH_WT "Build the Wt web interface (requires Wt library)" ON)
 
 #
 # c++ standard.

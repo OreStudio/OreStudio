@@ -40,6 +40,10 @@
 create schema if not exists ores;
 create extension if not exists btree_gist;
 
+-- Grant schema permissions to ores user
+grant usage on schema ores to ores;
+grant create on schema ores to ores;
+
 -- Utility functions
 \ir ../schema/utility_functions_create.sql
 
@@ -77,3 +81,11 @@ create extension if not exists btree_gist;
 \ir ../data/flags_populate.sql
 \ir ../data/currencies_populate.sql
 \ir ../data/currency_images_populate.sql
+
+-- Grant table permissions to ores user
+grant select, insert, update, delete on all tables in schema ores to ores;
+grant usage, select on all sequences in schema ores to ores;
+
+-- Set default privileges for any future tables
+alter default privileges in schema ores grant select, insert, update, delete on tables to ores;
+alter default privileges in schema ores grant usage, select on sequences to ores;

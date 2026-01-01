@@ -36,21 +36,21 @@ logic), messaging (API handlers), and generators (test data).
 
 * Domain Types
 
-| Type           | Description                                      |
-|----------------+--------------------------------------------------|
-| =image=        | Dynamically loaded image (SVG) with version tracking |
-| =tag=          | Category tag for images (e.g., 'flag', 'currency') |
-| =image_tag=    | Junction type linking images to tags (many-to-many) |
-| =currency_image= | Links a currency ISO code to its primary image   |
+| Type             | Description                                          |
+|------------------+------------------------------------------------------|
+| =image=          | Dynamically loaded image (SVG) with version tracking |
+| =tag=            | Category tag for images (e.g., 'flag', 'currency')   |
+| =image_tag=      | Junction type linking images to tags (many-to-many)  |
+| =currency_image= | Links a currency ISO code to its primary image       |
 
 * Database Tables
 
-| Table             | Type     | Description                              |
-|-------------------+----------+------------------------------------------|
-| =images=          | Temporal | SVG image storage with version tracking  |
-| =tags=            | Temporal | Image category tags                      |
-| =image_tags=      | Junction | Many-to-many image-to-tag mapping        |
-| =currency_images= | Junction | One-to-one currency to primary image     |
+| Table             | Type     | Description                             |
+|-------------------+----------+-----------------------------------------|
+| =images=          | Temporal | SVG image storage with version tracking |
+| =tags=            | Temporal | Image category tags                     |
+| =image_tags=      | Junction | Many-to-many image-to-tag mapping       |
+| =currency_images= | Junction | One-to-one currency to primary image    |
 
 All temporal tables use bitemporal fields (=valid_from=, =valid_to=) for
 historical tracking. Junction tables enable soft deletes via validity period

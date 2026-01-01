@@ -33,49 +33,52 @@ The system is organised into four architectural layers:
 
 ** Foundation Layer
 
-- Components: [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]], [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]], [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]], [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]], [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C][ores.geo]].
-- *Utility*: UUID generation, base32/base64 encoding, string conversion,
+- [[id:00E33570-F7BE-7F94-FD83-2FDC9CB04463][ores.utility]]: UUID generation, base32/base64 encoding, string conversion,
   faker utilities. No ores dependencies.
-- *Platform*: Filesystem utilities, environment variables, network info,
+- [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]]: Filesystem utilities, environment variables, network info,
   cross-platform time utilities. Depends on: utility.
-- *Telemetry*: Logging infrastructure (Boost.Log integration), distributed
-  tracing (trace_id, span_id), log record export, severity levels.
-  Depends on: platform.
-- *Database*: PostgreSQL connectivity, connection pooling, health monitoring,
+- [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]]: Logging infrastructure (Boost.Log integration), distributed
+  tracing (trace_id, span_id), log record export, severity levels. Depends on:
+  platform.
+- [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]: PostgreSQL connectivity, connection pooling, health monitoring,
   repository helpers. Depends on: telemetry, utility.
-- *Variability*: Feature flags and runtime configuration management.
-- *Geo*: IP-to-location geolocation using MaxMind GeoLite2-City database.
+- [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]]: Feature flags and runtime configuration management.
+- [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C][ores.geo]]: IP-to-location geolocation using MaxMind GeoLite2-City database.
   Provides country, city, and coordinate lookups for session tracking.
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]]: Postgres Database setup.
 - Dependency order: utility → platform → telemetry → database.
 
 ** Infrastructure Layer
 
-- Components: [[id:361A6093-D24C-9BC4-0543-6540461EDBB6][ores.comms]], [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]], [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]], ores.assets.
-- *Communications*: Binary protocol over SSL/TLS for client-server messaging.
+- Components: ores.assets.
+- [[id:361A6093-D24C-9BC4-0543-6540461EDBB6][ores.comms]]: Binary protocol over SSL/TLS for client-server messaging.
   Publishes connection lifecycle events (connected, disconnected, reconnecting,
   reconnected) to event bus.
-- *Testing*: Catch2 integration with database isolation and logging listeners.
-- *Eventing*: Event-driven architecture with in-process publish/subscribe event
-  bus, PostgreSQL LISTEN/NOTIFY integration, and entity change notifications.
-- *Assets*: Asset management for images and visual resources. Binary image
+- [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]]: Catch2 integration with database isolation and logging
+  listeners.
+- [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]]: Event-driven architecture with in-process publish/subscribe
+  event bus, PostgreSQL LISTEN/NOTIFY integration, and entity change
+  notifications.
+- [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets]]: Asset management for images and visual resources. Binary image
   storage, hierarchical tagging, currency-to-image linking, messaging handlers
   (0x4000-0x4FFF).
 - Depends on: Foundation (telemetry, database).
 
 ** Domain Layer
 
-- Components: [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.risk]], [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]].
-- *Risk*: ORE domain model with XML/CSV/JSON I/O and temporal versioning.
-- *IAM*: User authentication, authorisation, and session management.
+- [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.risk]]: ORE domain model with XML/CSV/JSON I/O and temporal versioning.
+- [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]]: User authentication, authorisation, and session management.
 - Depends on: Foundation, Infrastructure
 
 ** Application Layer
 
-- Components: [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.client]], [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]], [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]], [[id:7141E32C-80E2-6B74-F273-C80DAA42D727][ores.comms.service]], [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]].
-- Client: REPL client.
-- CLI: Command-line import/export of currencies in multiple formats
-- Qt: Desktop GUI with MDI interface for visual data management
-- Service: Multi-client server hosting all backend services
+- Components:
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]]: REPL client. Exercises the service layer via the binary comms
+  protocol.
+- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]],: Command-line import/export of entities in multiple formats,
+  exercises the database layer directly.
+- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]: Desktop GUI with MDI interface for visual data management
+- [[id:7141E32C-80E2-6B74-F273-C80DAA42D727][ores.comms.service]]: Multi-client server hosting all backend services
 - Depends on: All layers
 
 * Useful Pages

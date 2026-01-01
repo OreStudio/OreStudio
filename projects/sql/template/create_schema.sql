@@ -75,18 +75,8 @@ grant create on schema ores to ores;
 -- Geolocation tables and functions
 \ir ../schema/geolocation_create.sql
 
--- Reference data (immutable, belongs in template)
-\ir ../populate/load_flags.sql
-\ir ../populate/flags_populate.sql
-\ir ../populate/currencies_populate.sql
-\ir ../populate/currency_images_populate.sql
-
--- RBAC seed data (permissions and roles)
-\ir ../populate/permissions_populate.sql
-\ir ../populate/roles_populate.sql
-
--- System flags (bootstrap_mode, user_signups, etc.)
-\ir ../populate/system_flags_populate.sql
+-- Populate reference data, RBAC, and system flags
+\ir ../populate/populate.sql
 
 -- Grant table permissions to ores user
 grant select, insert, update, delete on all tables in schema ores to ores;

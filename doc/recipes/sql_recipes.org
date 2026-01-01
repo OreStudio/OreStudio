@@ -133,7 +133,7 @@ Add the password to your =authinfo.gpg=:
 machine localhost login ores password YOUR_SECURE_PASSWORD
 #+end_src
 
-** Step 5: Create Admin Database
+** Step 5: Create Admin Database (Optional)
 
 Creates =ores_admin= with cluster-level utilities (name generation, cleanup):
 
@@ -165,9 +165,15 @@ CREATE FUNCTION
 CREATE FUNCTION
 #+end_example
 
-** Step 4: Create Template Database
+** Step 6: Create Template Database
 
-Creates =ores_template= with the complete application schema and reference data:
+Creates =ores_template= with the complete application schema and reference data.
+
+The template creation script automatically populates:
+- *Reference data*: Currencies (158), country flags (270+), currency-flag mappings
+- *RBAC permissions*: All system permissions (accounts:*, currencies:*, feature_flags:*, etc.)
+- *RBAC roles*: =admin= (all permissions) and =user= (read-only permissions)
+- *System flags*: =bootstrap_mode=, =user_signups=, =signup_requires_authorization=, =disable_password_validation=
 
 #+begin_src sql :database template1 :wrap example
 \ir '$project_sql_dir'/setup_template.sql
@@ -871,7 +877,7 @@ DROP DATABASE
 #+end_example
 
 
-** Step 5: Create Database Instance
+** Step 7: Create Database Instance
 
 Creates a new database instance from the template. Run this each time you need a
 new database (development, testing, production, etc.).
@@ -1100,6 +1106,90 @@ join ores.accounts a on a.id = s.account_id
   and a.valid_to = '9999-12-31 23:59:59'::timestamptz
 group by a.username
 order by total_sessions desc;
+#+end_src
+
+** Population Scripts
+
+The database template is pre-populated with RBAC data and system flags via SQL
+scripts. These are idempotent and can be re-run safely.
+
+*** View Seeded Permissions
+
+List all permissions seeded by =permissions_populate.sql=:
+
+#+begin_src sql
+select code, description
+from ores.permissions
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by code;
+#+end_src
+
+*** View Seeded Roles
+
+List all roles seeded by =roles_populate.sql=:
+
+#+begin_src sql
+select name, description
+from ores.roles
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by name;
+#+end_src
+
+*** View Role-Permission Assignments
+
+List which permissions are assigned to each role:
+
+#+begin_src sql
+select r.name as role_name, p.code as permission
+from ores.role_permissions rp
+join ores.roles r on r.id = rp.role_id
+  and r.valid_to = '9999-12-31 23:59:59'::timestamptz
+join ores.permissions p on p.id = rp.permission_id
+  and p.valid_to = '9999-12-31 23:59:59'::timestamptz
+where rp.valid_to = '9999-12-31 23:59:59'::timestamptz
+order by r.name, p.code;
+#+end_src
+
+*** View Seeded System Flags
+
+List all system flags seeded by =system_flags_populate.sql=:
+
+#+begin_src sql
+select name, enabled, description
+from ores.feature_flags
+where name like 'system.%'
+  and valid_to = '9999-12-31 23:59:59'::timestamptz
+order by name;
+#+end_src
+
+*** Re-run All Population Scripts
+
+To re-seed an existing database instance (idempotent - won't duplicate data):
+
+#+begin_src sql
+\ir '$project_sql_dir'/populate/populate.sql
+#+end_src
+
+This master script runs all population scripts in order:
+1. Reference data (currencies, flags, currency-flag mappings)
+2. RBAC (permissions, roles, role-permission assignments)
+3. System flags
+
+*** Re-run Individual Population Scripts
+
+To re-run only specific population scripts:
+
+#+begin_src sql
+-- RBAC only
+\ir '$project_sql_dir'/populate/permissions_populate.sql
+\ir '$project_sql_dir'/populate/roles_populate.sql
+
+-- System flags only
+\ir '$project_sql_dir'/populate/system_flags_populate.sql
+
+-- Reference data only
+\ir '$project_sql_dir'/populate/currencies_populate.sql
+\ir '$project_sql_dir'/populate/flags_populate.sql
 #+end_src
 
 ** RBAC (Roles and Permissions)

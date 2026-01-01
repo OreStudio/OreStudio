@@ -19,7 +19,7 @@
  */
 #include "ores.comms/messaging/handshake_protocol.hpp"
 
-#include <rfl.hpp>
+#include "ores.utility/rfl/reflectors.hpp"
 #include <rfl/bson.hpp>
 #include "ores.telemetry/log/make_logger.hpp"
 

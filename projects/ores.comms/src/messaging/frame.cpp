@@ -364,7 +364,18 @@ std::expected<std::vector<std::byte>, error_code> frame::decompressed_payload() 
 }
 
 std::ostream& operator<<(std::ostream& s, const frame_header& v) {
-    rfl::json::write(v, s);
+    // Manual JSON serialization to avoid rfl enum issues with GCC 15
+    s << "{\"magic\":" << v.magic
+      << ",\"version_major\":" << v.version_major
+      << ",\"version_minor\":" << v.version_minor
+      << ",\"type\":\"" << magic_enum::enum_name(v.type) << "\""
+      << ",\"compression\":\"" << magic_enum::enum_name(v.compression) << "\""
+      << ",\"compression_flags\":" << static_cast<int>(v.compression_flags)
+      << ",\"payload_size\":" << v.payload_size
+      << ",\"sequence\":" << v.sequence
+      << ",\"crc\":" << v.crc
+      << ",\"correlation_id\":" << v.correlation_id
+      << "}";
     return s;
 }
 

@@ -23,11 +23,20 @@
 #include <string>
 #include <chrono>
 #include <sstream>
+#include <cstdint>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <rfl.hpp>
+
+// Forward declarations for enum types that need custom reflectors
+// to avoid GCC 15 std::min/max type deduction errors in rfl's
+// internal enum range detection.
+namespace ores::comms::messaging {
+    enum class compression_type : std::uint8_t;
+    enum class error_code;
+}
 
 namespace rfl {
 
@@ -113,6 +122,44 @@ struct Reflector<boost::asio::ip::address> {
 
     static ReflType from(const boost::asio::ip::address& v) {
         return v.to_string();
+    }
+};
+
+/**
+ * @brief Custom reflector for ores::comms::messaging::compression_type.
+ *
+ * Serializes as underlying integer type to avoid GCC 15 compilation errors
+ * in rfl's internal enum range detection (std::min/max type mismatch).
+ */
+template<>
+struct Reflector<ores::comms::messaging::compression_type> {
+    using ReflType = std::uint8_t;
+
+    static ores::comms::messaging::compression_type to(const ReflType& v) {
+        return static_cast<ores::comms::messaging::compression_type>(v);
+    }
+
+    static ReflType from(const ores::comms::messaging::compression_type& v) {
+        return static_cast<ReflType>(v);
+    }
+};
+
+/**
+ * @brief Custom reflector for ores::comms::messaging::error_code.
+ *
+ * Serializes as underlying integer type to avoid GCC 15 compilation errors
+ * in rfl's internal enum range detection (std::min/max type mismatch).
+ */
+template<>
+struct Reflector<ores::comms::messaging::error_code> {
+    using ReflType = std::uint16_t;
+
+    static ores::comms::messaging::error_code to(const ReflType& v) {
+        return static_cast<ores::comms::messaging::error_code>(v);
+    }
+
+    static ReflType from(const ores::comms::messaging::error_code& v) {
+        return static_cast<ReflType>(v);
     }
 };
 

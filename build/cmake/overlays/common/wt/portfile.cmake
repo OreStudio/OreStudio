@@ -88,6 +88,7 @@ vcpkg_cmake_configure(
         "-DUSERLIB_PREFIX=${CURRENT_INSTALLED_DIR}"
     MAYBE_UNUSED_VARIABLES
         USE_SYSTEM_SQLITE3
+        INSTALL_CONFIG_FILE_PATH
 )
 
 vcpkg_cmake_install()

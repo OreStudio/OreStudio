@@ -75,8 +75,10 @@ grant create on schema ores to ores;
 -- Geolocation tables and functions
 \ir ../schema/geolocation_create.sql
 
--- Populate reference data, RBAC, and system flags
-\ir ../populate/populate.sql
+-- NOTE: The template database contains schema only, no data.
+-- To seed RBAC, system flags, or reference data after creating an instance:
+--   psql -U ores -d your_database -f populate/populate.sql        # RBAC + system flags
+--   psql -U ores -d your_database -f populate/reference_data.sql  # Currencies, flags, images
 
 -- Grant table permissions to ores user
 grant select, insert, update, delete on all tables in schema ores to ores;

@@ -19,36 +19,31 @@
  */
 
 /**
- * Master Population Script
+ * System Population Script
  *
- * Runs all population scripts to seed the database with reference data,
- * RBAC configuration, and system flags. All scripts are idempotent and
- * can be safely re-run without creating duplicate data.
+ * Seeds the database with essential system data required for the
+ * application to function. All scripts are idempotent and can be
+ * safely re-run without creating duplicate data.
  *
- * Population Categories:
- * 1. Reference Data: Currencies, flags, currency-flag mappings
- * 2. RBAC: Permissions, roles, role-permission assignments
- * 3. System Flags: Bootstrap mode, user signups, etc.
+ * This script is run automatically during template creation and seeds:
+ * 1. RBAC: Permissions, roles, role-permission assignments
+ * 2. System Flags: Bootstrap mode, user signups, etc.
+ *
+ * NOTE: Reference data (currencies, flags, images) is NOT included here.
+ * Reference data should be imported via the CLI after database creation:
+ *   ores.cli import currencies <file.xml>
+ *
+ * Or use the separate reference data script:
+ *   psql -U ores -d your_database -f populate/reference_data.sql
  *
  * Usage:
  *   psql -U ores -d your_database -f populate/populate.sql
- *
- * Or from within psql:
- *   \ir populate/populate.sql
  */
 
-\echo '=== Starting Population Scripts ==='
+\echo '=== Starting System Population ==='
 \echo ''
-
--- Reference Data
-\echo '--- Reference Data ---'
-\ir load_flags.sql
-\ir flags_populate.sql
-\ir currencies_populate.sql
-\ir currency_images_populate.sql
 
 -- RBAC (Role-Based Access Control)
-\echo ''
 \echo '--- RBAC Data ---'
 \ir permissions_populate.sql
 \ir roles_populate.sql
@@ -59,16 +54,13 @@
 \ir system_flags_populate.sql
 
 \echo ''
-\echo '=== Population Complete ==='
+\echo '=== System Population Complete ==='
 
 -- Summary
 \echo ''
 \echo '--- Summary ---'
 
-select 'Currencies' as entity, count(*) as count
-from ores.currencies where valid_to = ores.infinity_timestamp()
-union all
-select 'Permissions', count(*)
+select 'Permissions' as entity, count(*) as count
 from ores.permissions where valid_to = ores.infinity_timestamp()
 union all
 select 'Roles', count(*)

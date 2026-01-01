@@ -76,11 +76,7 @@ TEST_CASE("import_currencies_from_test_file", tags) {
                              << " currencies from database";
     BOOST_LOG_SEV(lg, debug) << "Console output: " << os.str();
 
-    for (const auto& ccy : read_currencies) {
-        BOOST_LOG_SEV(lg, debug) << "Currency: " << ccy.iso_code
-                                 << " - " << ccy.name;
-    }
-
+    // Test file contains 2 currencies
     CHECK(read_currencies.size() == 2);
 
     bool found_pgk = false;
@@ -199,14 +195,13 @@ TEST_CASE("import_currencies_with_empty_database", tags) {
     ores::testing::database_helper h;
     h.truncate_table(database_table);
 
-    BOOST_LOG_SEV(lg, info) << "Verifying empty database";
-
     risk::repository::currency_repository repo;
     auto initial_currencies = repo.read_latest(h.context());
 
     BOOST_LOG_SEV(lg, debug) << "Initial currency count: "
                              << initial_currencies.size();
 
+    // Database should be empty after truncation
     CHECK(initial_currencies.empty());
 
     const std::filesystem::path test_data_file = "../test_data/currencies/currencies_01.xml";
@@ -233,6 +228,7 @@ TEST_CASE("import_currencies_with_empty_database", tags) {
                              << after_import.size();
     BOOST_LOG_SEV(lg, debug) << "Console output: " << os.str();
 
+    // Import should add 2 new currencies from the test file
     CHECK(after_import.size() == 2);
 }
 

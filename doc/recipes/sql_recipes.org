@@ -167,13 +167,11 @@ CREATE FUNCTION
 
 ** Step 6: Create Template Database
 
-Creates =ores_template= with the complete application schema and reference data.
+Creates =ores_template= with the complete application schema. The template contains
+*schema only* (tables, indexes, triggers) - no data is pre-populated.
 
-The template creation script automatically populates:
-- *Reference data*: Currencies (158), country flags (270+), currency-flag mappings
-- *RBAC permissions*: All system permissions (accounts:*, currencies:*, feature_flags:*, etc.)
-- *RBAC roles*: =admin= (all permissions) and =user= (read-only permissions)
-- *System flags*: =bootstrap_mode=, =user_signups=, =signup_requires_authorization=, =disable_password_validation=
+After creating a database instance, you can optionally seed data using the
+population scripts (see [[*Population Scripts]] section).
 
 #+begin_src sql :database template1 :wrap example
 \ir '$project_sql_dir'/setup_template.sql
@@ -1110,8 +1108,18 @@ order by total_sessions desc;
 
 ** Population Scripts
 
-The database template is pre-populated with RBAC data and system flags via SQL
-scripts. These are idempotent and can be re-run safely.
+The database template contains *schema only* - no data is pre-populated. After
+creating a database instance, run these scripts to seed essential data:
+
+#+begin_src sql
+-- RBAC and system flags (required for application to function)
+\ir '$project_sql_dir'/populate/populate.sql
+
+-- Reference data (optional - currencies, country flags, images)
+\ir '$project_sql_dir'/populate/reference_data.sql
+#+end_src
+
+All scripts are idempotent and can be safely re-run.
 
 *** View Seeded Permissions
 
@@ -1167,13 +1175,12 @@ order by name;
 To re-seed an existing database instance (idempotent - won't duplicate data):
 
 #+begin_src sql
+-- System data (RBAC + system flags)
 \ir '$project_sql_dir'/populate/populate.sql
-#+end_src
 
-This master script runs all population scripts in order:
-1. Reference data (currencies, flags, currency-flag mappings)
-2. RBAC (permissions, roles, role-permission assignments)
-3. System flags
+-- Reference data (currencies, flags, images)
+\ir '$project_sql_dir'/populate/reference_data.sql
+#+end_src
 
 *** Re-run Individual Population Scripts
 
@@ -1187,9 +1194,14 @@ To re-run only specific population scripts:
 -- System flags only
 \ir '$project_sql_dir'/populate/system_flags_populate.sql
 
--- Reference data only
+-- All reference data (currencies, flags, images)
+\ir '$project_sql_dir'/populate/reference_data.sql
+
+-- Or individual reference data scripts
 \ir '$project_sql_dir'/populate/currencies_populate.sql
+\ir '$project_sql_dir'/populate/load_flags.sql
 \ir '$project_sql_dir'/populate/flags_populate.sql
+\ir '$project_sql_dir'/populate/currency_images_populate.sql
 #+end_src
 
 ** RBAC (Roles and Permissions)

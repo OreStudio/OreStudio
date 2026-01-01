@@ -70,22 +70,17 @@ TEST_CASE("read_latest_currencies", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
-    currency_repository repo;
-
-    // Get initial count before writing
-    const auto initial_count = repo.read_latest(h.context()).size();
-    BOOST_LOG_SEV(lg, debug) << "Initial currency count: " << initial_count;
-
     auto written_currencies = generate_unique_synthetic_currencies(3);
     BOOST_LOG_SEV(lg, debug) << "Written currencies: " << written_currencies;
 
+    currency_repository repo;
     repo.write(h.context(), written_currencies);
 
     auto read_currencies = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
     CHECK(!read_currencies.empty());
-    CHECK(read_currencies.size() == initial_count + written_currencies.size());
+    CHECK(read_currencies.size() == written_currencies.size());
 }
 
 TEST_CASE("read_latest_currency_by_iso_code", tags) {

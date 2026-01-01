@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF
+:END:
+#+title: ORE Studio Assets Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Asset management component for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Assets Component Diagram
+[[file:ores.assets.png][file:ores.assets.png]]
+
+This module provides management of dynamically loaded images (typically SVG),
+tagging support for categorization, and currency-to-image associations. Key
+features include:
+
+- Image storage: SVG images stored as text with version tracking
+- Tag management: categorization of images (e.g., 'flag', 'currency', 'commodity')
+- Image-tag associations: many-to-many linking of images to tags
+- Currency-image associations: linking currencies to their primary image (flag)
+- Message-based API: asynchronous request/response handlers for client-server
+  communication (subsystem range =0x4000-0x4FFF=)
+- Temporal database support: version tracking with =valid_from= and =valid_to=
+  fields
+- Synthetic data generation: test image and tag generation for development
+
+The module is organized into namespaces: domain (core entities: image, tag,
+image_tag, currency_image), repository ([[https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping][ORM]] and persistence), service (business
+logic), messaging (API handlers), and generators (test data).
+
+* Domain Types
+
+| Type           | Description                                      |
+|----------------+--------------------------------------------------|
+| =image=        | Dynamically loaded image (SVG) with version tracking |
+| =tag=          | Category tag for images (e.g., 'flag', 'currency') |
+| =image_tag=    | Junction type linking images to tags (many-to-many) |
+| =currency_image= | Links a currency ISO code to its primary image   |
+
+* Database Tables
+
+| Table             | Type     | Description                              |
+|-------------------+----------+------------------------------------------|
+| =images=          | Temporal | SVG image storage with version tracking  |
+| =tags=            | Temporal | Image category tags                      |
+| =image_tags=      | Junction | Many-to-many image-to-tag mapping        |
+| =currency_images= | Junction | One-to-one currency to primary image     |
+
+All temporal tables use bitemporal fields (=valid_from=, =valid_to=) for
+historical tracking. Junction tables enable soft deletes via validity period
+closure.
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

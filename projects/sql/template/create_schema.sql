@@ -54,7 +54,7 @@ create extension if not exists btree_gist;
 \ir ../schema/feature_flags_create.sql
 \ir ../schema/login_info_create.sql
 \ir ../schema/sessions_create.sql
--- \ir ../schema/session_stats_create.sql -- FIXME: disabled until we sort out timescaledb
+\ir ../schema/session_stats_create.sql
 
 -- RBAC tables
 \ir ../schema/permissions_create.sql

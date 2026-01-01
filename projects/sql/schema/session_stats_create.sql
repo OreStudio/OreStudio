@@ -20,123 +20,143 @@
 set schema 'ores';
 
 --
--- Continuous aggregates for session statistics.
+-- Session statistics and helper functions.
+--
+-- If TimescaleDB is available:
+--   - Continuous aggregates for daily/hourly session metrics
+--   - Auto-refresh policies for efficient incremental updates
+--   - Retention policies for aggregated data
+--
+-- If TimescaleDB is NOT available:
+--   - Only helper functions are created
+--   - Use standard SQL queries for session statistics
+--
+
+--
+-- TimescaleDB-specific: Continuous aggregates for session statistics.
 -- These are incrementally refreshed materialized views that provide
 -- pre-computed metrics for fast dashboard queries.
 --
+do $$
+declare
+    tsdb_installed boolean;
+begin
+    -- Check if TimescaleDB extension is installed
+    select exists (
+        select 1 from pg_extension where extname = 'timescaledb'
+    ) into tsdb_installed;
 
---
--- Daily session statistics per account.
--- Provides average duration, bytes transferred, and session counts.
---
-create materialized view if not exists "ores"."session_stats_daily"
-with (timescaledb.continuous) as
-select
-    time_bucket('1 day', start_time) as day,
-    account_id,
-    count(*) as session_count,
-    avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
-    sum(bytes_sent) as total_bytes_sent,
-    sum(bytes_received) as total_bytes_received,
-    avg(bytes_sent) as avg_bytes_sent,
-    avg(bytes_received) as avg_bytes_received,
-    count(distinct country_code) filter (where country_code != '') as unique_countries
-from "ores"."sessions"
-where end_time != ''
-group by day, account_id
-with no data;
+    if tsdb_installed then
+        raise notice 'TimescaleDB detected - creating continuous aggregates';
 
--- Auto-refresh policy: refresh data up to 1 hour ago, every hour
-select add_continuous_aggregate_policy(
-    'ores.session_stats_daily',
-    start_offset => interval '3 days',
-    end_offset => interval '1 hour',
-    schedule_interval => interval '1 hour',
-    if_not_exists => true
-);
+        -- Daily session statistics per account
+        execute $sql$
+            create materialized view if not exists "ores"."session_stats_daily"
+            with (timescaledb.continuous) as
+            select
+                time_bucket('1 day', start_time) as day,
+                account_id,
+                count(*) as session_count,
+                avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
+                sum(bytes_sent) as total_bytes_sent,
+                sum(bytes_received) as total_bytes_received,
+                avg(bytes_sent) as avg_bytes_sent,
+                avg(bytes_received) as avg_bytes_received,
+                count(distinct country_code) filter (where country_code != '') as unique_countries
+            from "ores"."sessions"
+            where end_time != ''
+            group by day, account_id
+            with no data
+        $sql$;
 
---
--- Hourly session statistics per account.
--- More granular view for recent activity analysis.
---
-create materialized view if not exists "ores"."session_stats_hourly"
-with (timescaledb.continuous) as
-select
-    time_bucket('1 hour', start_time) as hour,
-    account_id,
-    count(*) as session_count,
-    avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
-    sum(bytes_sent) as total_bytes_sent,
-    sum(bytes_received) as total_bytes_received
-from "ores"."sessions"
-where end_time != ''
-group by hour, account_id
-with no data;
+        perform add_continuous_aggregate_policy(
+            'ores.session_stats_daily',
+            start_offset => interval '3 days',
+            end_offset => interval '1 hour',
+            schedule_interval => interval '1 hour',
+            if_not_exists => true
+        );
+        raise notice 'Created session_stats_daily continuous aggregate';
 
--- Refresh hourly stats every 15 minutes
-select add_continuous_aggregate_policy(
-    'ores.session_stats_hourly',
-    start_offset => interval '1 day',
-    end_offset => interval '15 minutes',
-    schedule_interval => interval '15 minutes',
-    if_not_exists => true
-);
+        -- Hourly session statistics per account
+        execute $sql$
+            create materialized view if not exists "ores"."session_stats_hourly"
+            with (timescaledb.continuous) as
+            select
+                time_bucket('1 hour', start_time) as hour,
+                account_id,
+                count(*) as session_count,
+                avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
+                sum(bytes_sent) as total_bytes_sent,
+                sum(bytes_received) as total_bytes_received
+            from "ores"."sessions"
+            where end_time != ''
+            group by hour, account_id
+            with no data
+        $sql$;
 
---
--- Aggregate daily statistics across all accounts.
--- Provides system-wide metrics for admin dashboards.
---
-create materialized view if not exists "ores"."session_stats_aggregate_daily"
-with (timescaledb.continuous) as
-select
-    time_bucket('1 day', start_time) as day,
-    count(*) as session_count,
-    count(distinct account_id) as unique_accounts,
-    avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
-    sum(bytes_sent) as total_bytes_sent,
-    sum(bytes_received) as total_bytes_received,
-    avg(bytes_sent) as avg_bytes_sent,
-    avg(bytes_received) as avg_bytes_received,
-    count(distinct country_code) filter (where country_code != '') as unique_countries,
-    -- Peak concurrent sessions approximation (sessions starting in this bucket)
-    count(*) as sessions_started
-from "ores"."sessions"
-where end_time != ''
-group by day
-with no data;
+        perform add_continuous_aggregate_policy(
+            'ores.session_stats_hourly',
+            start_offset => interval '1 day',
+            end_offset => interval '15 minutes',
+            schedule_interval => interval '15 minutes',
+            if_not_exists => true
+        );
+        raise notice 'Created session_stats_hourly continuous aggregate';
 
--- Refresh aggregate daily stats every hour
-select add_continuous_aggregate_policy(
-    'ores.session_stats_aggregate_daily',
-    start_offset => interval '3 days',
-    end_offset => interval '1 hour',
-    schedule_interval => interval '1 hour',
-    if_not_exists => true
-);
+        -- Aggregate daily statistics across all accounts
+        execute $sql$
+            create materialized view if not exists "ores"."session_stats_aggregate_daily"
+            with (timescaledb.continuous) as
+            select
+                time_bucket('1 day', start_time) as day,
+                count(*) as session_count,
+                count(distinct account_id) as unique_accounts,
+                avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
+                sum(bytes_sent) as total_bytes_sent,
+                sum(bytes_received) as total_bytes_received,
+                avg(bytes_sent) as avg_bytes_sent,
+                avg(bytes_received) as avg_bytes_received,
+                count(distinct country_code) filter (where country_code != '') as unique_countries,
+                count(*) as sessions_started
+            from "ores"."sessions"
+            where end_time != ''
+            group by day
+            with no data
+        $sql$;
 
---
--- Retention policy for continuous aggregates.
--- Keep aggregated stats longer than raw data.
---
--- Daily stats: keep for 3 years
-select add_retention_policy(
-    'ores.session_stats_daily',
-    drop_after => interval '3 years',
-    if_not_exists => true
-);
+        perform add_continuous_aggregate_policy(
+            'ores.session_stats_aggregate_daily',
+            start_offset => interval '3 days',
+            end_offset => interval '1 hour',
+            schedule_interval => interval '1 hour',
+            if_not_exists => true
+        );
+        raise notice 'Created session_stats_aggregate_daily continuous aggregate';
 
--- Hourly stats: keep for 90 days (more granular = shorter retention)
-select add_retention_policy(
-    'ores.session_stats_hourly',
-    drop_after => interval '90 days',
-    if_not_exists => true
-);
+        -- Retention policies for continuous aggregates
+        perform add_retention_policy(
+            'ores.session_stats_daily',
+            drop_after => interval '3 years',
+            if_not_exists => true
+        );
 
--- Aggregate daily stats: keep indefinitely (no retention policy)
--- These are small and provide historical system-wide trends
+        perform add_retention_policy(
+            'ores.session_stats_hourly',
+            drop_after => interval '90 days',
+            if_not_exists => true
+        );
+        raise notice 'Configured retention policies for continuous aggregates';
+
+    else
+        raise notice 'TimescaleDB NOT available - skipping continuous aggregates';
+        raise notice 'Session statistics will require manual SQL queries';
+    end if;
+end $$;
 
 --
 -- Helper function to get current active session count.
+-- Works with or without TimescaleDB.
 --
 create or replace function ores.active_session_count()
 returns bigint
@@ -148,6 +168,7 @@ $$;
 
 --
 -- Helper function to get active session count for an account.
+-- Works with or without TimescaleDB.
 --
 create or replace function ores.active_session_count_for_account(p_account_id uuid)
 returns bigint

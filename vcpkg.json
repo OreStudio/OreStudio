@@ -31,8 +31,13 @@
         "cli",
         "faker-cxx",
         "catch2",
-        "libfort",
-        "libharu",
-        "wt"
-    ]
+        "libfort"
+    ],
+    "default-features": [ "wt" ],
+    "features": {
+        "wt": {
+            "description": "Build the Wt web interface",
+            "dependencies": [ "wt" ]
+        }
+    }
 }

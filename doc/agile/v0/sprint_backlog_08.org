@@ -60,8 +60,8 @@ library(ggplot2)
 library(tidyverse)
 library(tibble)
 
-# Remove unnecessary rows (Total time, Stories, Active)
-clean_sprint_summary <- tail(sprint_summary, -4)
+# Filter to only rows with actual story data (non-empty Tags column)
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(Tags != "")
 stories <- unlist(clean_sprint_summary[2])
 percent_values <- as.numeric(unlist(clean_sprint_summary[6]))
 
@@ -126,8 +126,8 @@ library(grid)
 library(tidyverse)
 library(tibble)
 
-# Remove unnecessary rows.
-clean_sprint_summary <- tail(sprint_summary, -4)
+# Filter to only rows with actual story data (non-empty Tags column)
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(Tags != "")
 names <- unlist(clean_sprint_summary[2])
 values <- as.numeric(unlist(clean_sprint_summary[6]))
 
@@ -161,8 +161,8 @@ library(grid)
 library(tidyverse)
 library(tibble)
 
-# Remove unnecessary rows.
-clean_sprint_summary <- tail(sprint_summary, -4)
+# Filter to only rows with actual story data (non-empty Tags column)
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(Tags != "")
 names <- unlist(clean_sprint_summary[1])
 values <- as.numeric(unlist(clean_sprint_summary[6]))
 

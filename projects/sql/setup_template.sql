@@ -58,6 +58,12 @@ grant all privileges on database ores_template to ores;
 -- NOTE: Instance-specific initialization (feature flags) is NOT included here.
 -- Each instance created from this template should run instance/init_instance.sql
 
+-- Mark as template database
+-- This prevents TimescaleDB from starting background workers for the template,
+-- which was causing issues with database creation.
+\c postgres
+update pg_database set datistemplate = true where datname = 'ores_template';
+
 \echo ''
 \echo '=========================================='
 \echo 'Template database created successfully!'

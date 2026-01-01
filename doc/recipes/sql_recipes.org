@@ -45,19 +45,44 @@ Then add the secure password to your =authinfo.gpg=, e.g.:
 machine localhost login postgres password ohzo4cohmoof1Cai2Xaxohsie
 #+end_src
 
-** Step 1: Create ORES User
+** Step 1: Install Extensions
 
-Creates the =ores= application user with appropriate permissions:
+Installs required PostgreSQL extensions (btree_gist, TimescaleDB).
 
-#+begin_src sql :database template1 :wrap example
-\ir '$project_sql_dir'/setup_user.sql
+*Prerequisites:* TimescaleDB must be installed on your system and added to
+=shared_preload_libraries= in =postgresql.conf=:
+
+#+begin_src conf
+shared_preload_libraries = 'timescaledb'
 #+end_src
 
-#+RESULTS:
-#+begin_example
-#+end_example
+Restart PostgreSQL after modifying the config, then run:
 
-** Step 2: Create Admin Database
+#+begin_src sh
+psql -U postgres -f projects/sql/setup_extensions.sql
+#+end_src
+
+** Step 2: Create ORES User
+
+Creates the =ores= application user. Generate a secure password first:
+
+#+begin_src sh :wrap example
+pwgen -c 25 1
+#+end_src
+
+Then run the script with the password as a variable. From the command line:
+
+#+begin_src sh
+psql -U postgres -v ores_password='YOUR_SECURE_PASSWORD' -f projects/sql/setup_user.sql
+#+end_src
+
+Add the password to your =authinfo.gpg=:
+
+#+begin_src authinfo
+machine localhost login ores password YOUR_SECURE_PASSWORD
+#+end_src
+
+** Step 3: Create Admin Database
 
 Creates =ores_admin= with cluster-level utilities (name generation, cleanup):
 
@@ -65,7 +90,7 @@ Creates =ores_admin= with cluster-level utilities (name generation, cleanup):
 \ir '$project_sql_dir'/admin/setup_admin.sql
 #+end_src
 
-** Step 3: Create Template Database
+** Step 4: Create Template Database
 
 Creates =ores_template= with the complete application schema and reference data:
 
@@ -752,7 +777,7 @@ SET
 INSERT 0 158
 #+end_example
 
-** Step 4: Create Database Instance
+** Step 5: Create Database Instance
 
 Creates a new database instance from the template. Run this each time you need a
 new database (development, testing, production, etc.).

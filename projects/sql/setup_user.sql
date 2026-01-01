@@ -25,22 +25,29 @@
  * the ORES database infrastructure.
  *
  * USAGE:
- *   psql -U postgres -f setup_user.sql
+ *   psql -U postgres -v ores_password='YOUR_SECURE_PASSWORD' -f setup_user.sql
  *
  * NEXT STEPS:
- *   1. admin/setup_admin.sql  - Create admin database
- *   2. setup_template.sql     - Create template database
- *   3. create_instance.sql    - Create database instance
+ *   1. admin/setup_admin.sql - Create admin database
+ *   2. setup_template.sql    - Create template database
+ *   3. create_instance.sql   - Create database instance
  *
- * NOTE: For production, generate a secure password:
+ * NOTE: Generate a secure password with:
  *   pwgen -c 25 1
  */
 
 \set ON_ERROR_STOP on
 
--- Create the application user
--- For production, change 'ores' to a secure password
-CREATE USER ores WITH PASSWORD 'ores';
+-- Validate that password was provided
+\if :{?ores_password}
+\else
+    \echo 'ERROR: ores_password variable is required.'
+    \echo 'Usage: psql -U postgres -v ores_password=''YOUR_PASSWORD'' -f setup_user.sql'
+    \quit
+\endif
+
+-- Create the application user with the provided password
+CREATE USER ores WITH PASSWORD :'ores_password';
 
 \echo ''
 \echo '=========================================='

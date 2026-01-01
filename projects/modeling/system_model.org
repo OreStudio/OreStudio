@@ -45,7 +45,7 @@ The system is organised into four architectural layers:
 - [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]]: Feature flags and runtime configuration management.
 - [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C][ores.geo]]: IP-to-location geolocation using MaxMind GeoLite2-City database.
   Provides country, city, and coordinate lookups for session tracking.
-- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]]: Postgres Database setup.
+- [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]]: Postgres Database setup.
 - Dependency order: utility → platform → telemetry → database.
 
 ** Infrastructure Layer

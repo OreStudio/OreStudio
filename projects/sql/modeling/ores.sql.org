@@ -54,16 +54,107 @@ bitemporal data management. Key patterns include:
 - Version fields provide optimistic locking (version 0 is "force overwrite" sentinel)
 - Triggers manage version auto-increment and temporal validity period transitions
 
+* PostgreSQL Extensions
+
+ORES uses the following PostgreSQL extensions:
+
+** btree_gist (Required)
+
+Provides GiST index support for B-tree data types. Required for temporal
+exclusion constraints that prevent overlapping validity periods.
+
+#+begin_src sql
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+#+end_src
+
+** TimescaleDB (Optional)
+
+Time-series database extension for efficient session analytics. If installed,
+the =sessions= table becomes a hypertable with automatic time-based partitioning.
+
+*** Installation
+
+TimescaleDB must be installed at the system level:
+
+#+begin_src sh
+# Debian/Ubuntu (official TimescaleDB repo recommended for full features)
+sudo apt install timescaledb-2-postgresql-16
+
+# macOS
+brew install timescaledb
+#+end_src
+
+Add to =postgresql.conf=:
+
+#+begin_src conf
+shared_preload_libraries = 'timescaledb'
+#+end_src
+
+Restart PostgreSQL after configuration changes.
+
+*** License Editions
+
+TimescaleDB has two license editions:
+
+| Edition   | License   | Features                                          |
+|-----------+-----------+---------------------------------------------------|
+| Apache    | Apache 2.0 | Hypertables, time-based partitioning, chunk pruning |
+| Community | Timescale | Above + compression, retention policies, continuous aggregates |
+
+Debian/Ubuntu packages (=+dfsg= versions) are Apache-only. For full features,
+use the official TimescaleDB repository or build from source.
+
+To check and enable the community license:
+
+#+begin_src sql
+-- Check current license
+SHOW timescaledb.license;
+
+-- Enable community features (if installed)
+ALTER SYSTEM SET timescaledb.license = 'timescale';
+SELECT pg_reload_conf();
+#+end_src
+
+*** Feature Detection
+
+The ORES schema scripts automatically detect TimescaleDB availability and
+license at runtime:
+
+| Condition              | Sessions Table Behaviour                          |
+|------------------------+---------------------------------------------------|
+| No TimescaleDB         | Regular PostgreSQL table with standard indexes    |
+| Apache license         | Hypertable with 7-day chunks (no compression)     |
+| Timescale license      | Hypertable + compression + retention policies     |
+
+Continuous aggregates (=session_stats_daily=, =session_stats_hourly=) are only
+created with the Timescale license.
+
+*** Hypertable Benefits
+
+Even with Apache-only, hypertables provide:
+
+- Automatic time-based partitioning (7-day chunks)
+- Efficient time-range query pruning
+- Parallel chunk processing
+- Simplified data lifecycle management
+
 * Database Creation
 
 The database uses a template-based approach for fast instance creation.
 
 ** Prerequisites
 
-Run initial setup as postgres superuser:
+Run initial setup scripts as postgres superuser in order:
 
 #+begin_src sh
-psql -U postgres -f setup.sql
+# 1. Install extensions (btree_gist required, timescaledb optional)
+psql -U postgres -f setup_extensions.sql
+
+# 2. Create application user
+psql -U postgres -v ores_password='YOUR_SECRET' -f setup_user.sql
+
+# 3. Create admin database (whimsical name generation)
+psql -U postgres -f admin/setup_admin.sql
 #+end_src
 
 ** Create Template Database (One-Time)
@@ -170,7 +261,8 @@ Architecture documentation and diagrams:
 
 | Script                            | Purpose                                    |
 |-----------------------------------+--------------------------------------------|
-| =setup.sql=                       | Initial one-time setup                     |
+| =setup_extensions.sql=            | Install PostgreSQL extensions              |
+| =setup_user.sql=                  | Create application user                    |
 | =setup_template.sql=              | Create template database                   |
 | =create_instance.sql=             | Create instance from template (fast)       |
 | =create_database_direct.sql=      | Create standalone database (no template)   |

@@ -73,6 +73,13 @@
 ;; Generate the site output
 (org-publish-all t)
 
+;; Claude Code requires SKILL.md (uppercase) for skill discovery.
+;; Rename all skill.md files to SKILL.md after publishing.
+(dolist (file (directory-files-recursively "./.claude/skills/" "^skill\\.md$"))
+  (let ((new-name (concat (file-name-directory file) "SKILL.md")))
+    (rename-file file new-name t)
+    (message "Renamed %s to %s" file new-name)))
+
 (message "Build complete!")
 
 (provide '.build-skills)

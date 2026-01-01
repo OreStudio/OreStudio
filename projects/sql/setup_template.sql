@@ -52,6 +52,10 @@ grant all privileges on database ores_template to ores;
 -- Connect to template database to create schema
 \c ores_template
 
+-- Install required extensions in the template database
+-- (Extensions are per-database, so we need them here even if installed in postgres)
+\ir ./setup_extensions.sql
+
 -- Create the complete schema (tables, functions, reference data)
 \ir ./template/create_schema.sql
 

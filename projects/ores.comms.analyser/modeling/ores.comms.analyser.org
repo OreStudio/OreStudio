@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 6E2967C7-D79E-41DE-8A68-B3F755541C0D
+:END:
+#+title: ORE Studio Comms Analyser Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Session recording analyser for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Comms Analyser Component Diagram
+[[file:ores.comms.analyser.png][file:ores.comms.analyser.png]]
+
+This module provides a command-line tool for analysing ORES session recording
+files (=.ores=). These files are created by the session recorder in
+=ores.comms= and capture client-server communication for debugging and
+analysis. Key features include:
+
+- Session file parsing: reads =.ores= binary recording files
+- Metadata extraction: session ID, start time, server address, protocol version
+- Frame extraction: recorded frames with timestamps and direction (sent/received)
+- Quick inspection: read metadata only without loading all frames
+- Compression support: handles compressed session recordings
+
+The module is organized into namespaces: app (application entry point), config
+(command-line options and parsing), and domain (session reading logic).
+
+* Domain Types
+
+| Type               | Description                                      |
+|--------------------+--------------------------------------------------|
+| =session_metadata= | Metadata about a recorded session (ID, time, server, protocol) |
+| =recorded_frame=   | Single frame with timestamp offset and direction |
+| =session_data=     | Complete session including metadata and all frames |
+| =session_reader=   | Parser for =.ores= session recording files       |
+
+* Usage
+
+#+begin_src sh
+# Analyse a session recording file
+ores.comms.analyser --input /path/to/session.ores
+
+# Show help
+ores.comms.analyser --help
+#+end_src
+
+* Related Components
+
+- [[id:361A6093-D24C-9BC4-0543-6540461EDBB6][ores.comms]]: Contains =session_recorder= that creates =.ores= files
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][ores.comms.service]]: Server that can be recorded
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

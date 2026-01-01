@@ -85,6 +85,9 @@ grant all privileges on database :db_name to ores;
 -- Initialize instance-specific feature flags
 \ir ./instance/init_instance.sql
 
+-- Output the database name (visible in org-babel results)
+select :'db_name' as database_created;
+
 \echo ''
 \echo '=========================================='
 \echo 'Database created successfully!'

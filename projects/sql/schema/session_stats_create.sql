@@ -47,6 +47,19 @@ begin
     ) into tsdb_installed;
 
     if tsdb_installed then
+        -- Continuous aggregates require Timescale License (not Apache)
+        declare
+            current_license text;
+        begin
+            select current_setting('timescaledb.license', true) into current_license;
+
+            if current_license != 'timescale' then
+                raise notice 'TimescaleDB Apache license - continuous aggregates not available';
+                raise notice 'Set timescaledb.license = ''timescale'' for full features';
+                return;
+            end if;
+        end;
+
         raise notice 'TimescaleDB detected - creating continuous aggregates';
 
         -- Daily session statistics per account
@@ -54,7 +67,7 @@ begin
             create materialized view if not exists "ores"."session_stats_daily"
             with (timescaledb.continuous) as
             select
-                time_bucket('1 day', start_time) as day,
+                public.time_bucket('1 day', start_time) as day,
                 account_id,
                 count(*) as session_count,
                 avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
@@ -69,7 +82,8 @@ begin
             with no data
         $sql$;
 
-        perform add_continuous_aggregate_policy(
+        -- Use public schema prefix as search_path is set to 'ores'
+        perform public.add_continuous_aggregate_policy(
             'ores.session_stats_daily',
             start_offset => interval '3 days',
             end_offset => interval '1 hour',
@@ -83,7 +97,7 @@ begin
             create materialized view if not exists "ores"."session_stats_hourly"
             with (timescaledb.continuous) as
             select
-                time_bucket('1 hour', start_time) as hour,
+                public.time_bucket('1 hour', start_time) as hour,
                 account_id,
                 count(*) as session_count,
                 avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
@@ -95,7 +109,7 @@ begin
             with no data
         $sql$;
 
-        perform add_continuous_aggregate_policy(
+        perform public.add_continuous_aggregate_policy(
             'ores.session_stats_hourly',
             start_offset => interval '1 day',
             end_offset => interval '15 minutes',
@@ -109,7 +123,7 @@ begin
             create materialized view if not exists "ores"."session_stats_aggregate_daily"
             with (timescaledb.continuous) as
             select
-                time_bucket('1 day', start_time) as day,
+                public.time_bucket('1 day', start_time) as day,
                 count(*) as session_count,
                 count(distinct account_id) as unique_accounts,
                 avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
@@ -125,7 +139,7 @@ begin
             with no data
         $sql$;
 
-        perform add_continuous_aggregate_policy(
+        perform public.add_continuous_aggregate_policy(
             'ores.session_stats_aggregate_daily',
             start_offset => interval '3 days',
             end_offset => interval '1 hour',
@@ -135,13 +149,13 @@ begin
         raise notice 'Created session_stats_aggregate_daily continuous aggregate';
 
         -- Retention policies for continuous aggregates
-        perform add_retention_policy(
+        perform public.add_retention_policy(
             'ores.session_stats_daily',
             drop_after => interval '3 years',
             if_not_exists => true
         );
 
-        perform add_retention_policy(
+        perform public.add_retention_policy(
             'ores.session_stats_hourly',
             drop_after => interval '90 days',
             if_not_exists => true

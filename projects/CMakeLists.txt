@@ -46,7 +46,7 @@ set(ORES_CATCH2_ARGS --durations yes --filenames-as-tags -r compact)
 set(ORES_PLANTUML_JAR "/usr/share/plantuml/plantuml.jar")
 set(ORES_JAVA_ARGS "-Djava.awt.headless=true")
 list(APPEND ORES_JAVA_ARGS "-DPLANTUML_SECURITY_PROFILE=UNSECURE")
-list(APPEND ORES_JAVA_ARGS "-DPLANTUML_LIMIT_SIZE=65535")
+list(APPEND ORES_JAVA_ARGS "-DPLANTUML_LIMIT_SIZE=131070")
 
 #
 # Projects

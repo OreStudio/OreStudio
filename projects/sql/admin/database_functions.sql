@@ -68,19 +68,3 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql VOLATILE;
 
--- Lists all ORES databases on the server.
--- NOTE: last_modified is the modification time of the database's directory,
--- which approximates creation time but can be updated by maintenance operations.
-CREATE OR REPLACE FUNCTION list_ores_databases()
-RETURNS TABLE(database_name TEXT, last_modified TIMESTAMP WITH TIME ZONE) AS $$
-BEGIN
-    RETURN QUERY
-    SELECT
-        d.datname::TEXT,
-        (pg_stat_file('base/' || d.oid)).modification AS last_modified
-    FROM pg_database d
-    WHERE d.datname LIKE 'ores_%'
-      AND d.datname != 'ores_template'
-    ORDER BY last_modified DESC;
-END;
-$$ LANGUAGE plpgsql VOLATILE;

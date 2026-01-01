@@ -32,6 +32,7 @@
 #include "ores.iam/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam/generators/account_generator.hpp"
 #include "ores.iam/messaging/protocol.hpp"
+#include "ores.iam/service/account_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/domain/role.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
@@ -239,23 +240,11 @@ TEST_CASE("handle_list_accounts_request_with_accounts", tags) {
     setup_admin_session(sessions, auth_service, test_endpoint);
 
     // Get initial count before adding new accounts
-    std::size_t initial_count = 0;
-    boost::asio::io_context io_ctx;
-    {
-        list_accounts_request init_rq;
-        const auto init_payload = init_rq.serialize();
-        run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
-            auto r = co_await sut.handle_message(
-                message_type::list_accounts_request,
-                init_payload, test_endpoint);
-            REQUIRE(r.has_value());
-            const auto response_result =
-                list_accounts_response::deserialize(r.value());
-            REQUIRE(response_result.has_value());
-            initial_count = response_result.value().accounts.size();
-        });
-    }
+    service::account_service account_svc(h.context());
+    const auto initial_count = account_svc.list_accounts().size();
     BOOST_LOG_SEV(lg, info) << "Initial account count: " << initial_count;
+
+    boost::asio::io_context io_ctx;
 
     const int new_accounts = 5;
     auto accounts = generate_synthetic_accounts(new_accounts);

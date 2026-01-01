@@ -61,6 +61,9 @@ To make sure you do not have any remnants of a previous install, do:
 #+begin_example
 UPDATE 1
 DROP DATABASE
+DROP DATABASE
+DROP DATABASE
+DROP DATABASE
 DROP ROLE
 #+end_example
 
@@ -181,6 +184,8 @@ btree_gist	1.8
 timescaledb	2.24.0
 CREATE SCHEMA
 CREATE EXTENSION
+GRANT
+GRANT
 SET
 CREATE FUNCTION
 SET
@@ -845,6 +850,10 @@ SET
 INSERT 0 158
 SET
 INSERT 0 158
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
 UPDATE 1
 #+end_example
 
@@ -883,6 +892,8 @@ SET
 DO
 name	enabled	description	modified_by
 system.disable_password_validation	0	When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.	system
+database_created
+ores_bold_mountain
 #+end_example
 
 *** With Specific Name

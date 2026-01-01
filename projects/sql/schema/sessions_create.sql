@@ -31,25 +31,6 @@ set schema 'ores';
 --   - Regular PostgreSQL table with standard indexes
 --   - Manual cleanup required for old data
 --
-do $$
-declare
-    tsdb_installed boolean;
-begin
-    -- Check if TimescaleDB extension is installed
-    select exists (
-        select 1 from pg_extension where extname = 'timescaledb'
-    ) into tsdb_installed;
-
-    if tsdb_installed then
-        raise notice '=========================================';
-        raise notice 'TimescaleDB detected - creating hypertable';
-        raise notice '=========================================';
-    else
-        raise notice '================================================';
-        raise notice 'TimescaleDB NOT available - using regular table';
-        raise notice '================================================';
-    end if;
-end $$;
 
 --
 -- Create the sessions table.
@@ -120,6 +101,10 @@ begin
     ) into tsdb_installed;
 
     if tsdb_installed then
+        raise notice '=========================================';
+        raise notice 'TimescaleDB detected - creating hypertable';
+        raise notice '=========================================';
+
         -- Convert to hypertable with 7-day chunks
         perform create_hypertable(
             'ores.sessions',
@@ -153,7 +138,9 @@ begin
 
         raise notice 'TimescaleDB setup complete for sessions table';
     else
-        raise notice 'Skipping TimescaleDB setup - extension not available';
+        raise notice '================================================';
+        raise notice 'TimescaleDB NOT available - using regular table';
+        raise notice '================================================';
         raise notice 'Note: Manual cleanup of old session data will be required';
     end if;
 end $$;

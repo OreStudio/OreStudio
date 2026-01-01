@@ -21,7 +21,11 @@ SQL recipes for directly querying and managing the [[id:B7E9F3A1-C8D2-4E6B-A1F5-
 
 These recipes must be run *in order* using the =postgres= superuser to bootstrap
 the ORES database infrastructure. Run each step once when setting up a new
-PostgreSQL server. If you have not yet added a password to =postgres=, login as
+PostgreSQL server.
+
+** Step 1: Setup password for user =postgres=
+
+If you have not yet added a password to =postgres=, login as
 that user and in psql:
 
 #+begin_src sql
@@ -45,12 +49,34 @@ Then add the secure password to your =authinfo.gpg=, e.g.:
 machine localhost login postgres password ohzo4cohmoof1Cai2Xaxohsie
 #+end_src
 
-** Step 1: Install Extensions
+** Step 2: Clean Slate
 
-Installs required PostgreSQL extensions (btree_gist, TimescaleDB).
+To make sure you do not have any remnants of a previous install, do:
 
-*Prerequisites:* TimescaleDB must be installed on your system and added to
-=shared_preload_libraries= in =postgresql.conf=:
+#+begin_src sql :database template1 :wrap example
+\ir '$project_sql_dir'/clean_slate.sql
+#+end_src
+
+#+RESULTS:
+#+begin_example
+UPDATE 1
+DROP DATABASE
+DROP ROLE
+#+end_example
+
+This will drop *all* databases related to ores.
+
+** Step 3: Install Extensions
+
+Installs required PostgreSQL extensions (btree_gist, TimescaleDB). TimescaleDB
+must be installed on your system. For Debian, as root:
+
+#+begin_src sh
+curl -s https://packagecloud.io/install/repositories/timescale/timescaledb/script.deb.sh | sudo bash
+apt-get install postgresql-18-timescaledb
+#+end_src
+
+It then must be added to =shared_preload_libraries= in =postgresql.conf=:
 
 #+begin_src conf
 shared_preload_libraries = 'timescaledb'
@@ -58,11 +84,33 @@ shared_preload_libraries = 'timescaledb'
 
 Restart PostgreSQL after modifying the config, then run:
 
-#+begin_src sh
-psql -U postgres -f projects/sql/setup_extensions.sql
+#+begin_src sql :database template1 :wrap example
+\ir '$project_sql_dir'/setup_extensions.sql
 #+end_src
 
-** Step 2: Create ORES User
+#+RESULTS:
+#+begin_example
+CREATE EXTENSION
+DO
+extname	extversion
+btree_gist	1.8
+timescaledb	2.24.0
+#+end_example
+
+You may need to enable community edition if available. At present it's not
+available for Postgres 18 on Debian.
+
+#+begin_src sql :database template1 :wrap example
+alter system set timescaledb.license = 'timescale';
+select pg_reload_conf();
+show timescaledb.license;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+#+end_example
+
+** Step 4: Create ORES User
 
 Creates the =ores= application user. Generate a secure password first:
 
@@ -82,13 +130,37 @@ Add the password to your =authinfo.gpg=:
 machine localhost login ores password YOUR_SECURE_PASSWORD
 #+end_src
 
-** Step 3: Create Admin Database
+** Step 5: Create Admin Database
 
 Creates =ores_admin= with cluster-level utilities (name generation, cleanup):
 
 #+begin_src sql :database template1 :wrap example
 \ir '$project_sql_dir'/admin/setup_admin.sql
 #+end_src
+
+#+RESULTS:
+#+begin_example
+CREATE DATABASE
+GRANT
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE VIEW
+CREATE VIEW
+CREATE VIEW
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+#+end_example
 
 ** Step 4: Create Template Database
 
@@ -102,21 +174,14 @@ Creates =ores_template= with the complete application schema and reference data:
 #+begin_example
 CREATE DATABASE
 GRANT
+CREATE EXTENSION
+DO
+extname	extversion
+btree_gist	1.8
+timescaledb	2.24.0
 CREATE SCHEMA
 CREATE EXTENSION
 SET
-CREATE FUNCTION
-SET
-CREATE FUNCTION
-CREATE FUNCTION
-CREATE FUNCTION
-CREATE FUNCTION
-CREATE FUNCTION
-CREATE FUNCTION
-CREATE FUNCTION
-SET
-CREATE FUNCTION
-CREATE FUNCTION
 CREATE FUNCTION
 SET
 CREATE TABLE
@@ -149,6 +214,11 @@ CREATE TABLE
 CREATE INDEX
 CREATE INDEX
 CREATE INDEX
+DO
+SET
+DO
+CREATE FUNCTION
+CREATE FUNCTION
 SET
 CREATE TABLE
 CREATE INDEX
@@ -775,7 +845,22 @@ SET
 INSERT 0 158
 SET
 INSERT 0 158
+UPDATE 1
 #+end_example
+
+If you need to drop to recreate:
+
+#+begin_src sql :database template1 :wrap example
+update pg_database set datistemplate = false where datname = 'ores_template';
+drop database if exists ores_template;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+UPDATE 1
+DROP DATABASE
+#+end_example
+
 
 ** Step 5: Create Database Instance
 
@@ -787,6 +872,18 @@ new database (development, testing, production, etc.).
 #+begin_src sql :database template1 :results output :wrap example
 \ir '$project_sql_dir'/create_instance.sql
 #+end_src
+
+#+RESULTS:
+#+begin_example
+CREATE DATABASE
+GRANT
+SET
+DO
+SET
+DO
+name	enabled	description	modified_by
+system.disable_password_validation	0	When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.	system
+#+end_example
 
 *** With Specific Name
 

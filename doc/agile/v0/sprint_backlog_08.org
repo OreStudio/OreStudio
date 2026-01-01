@@ -17,28 +17,29 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2025-12-31 Wed 11:26], for Wednesday, December 31, 2025.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:05* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:05   |      |      | 100.0 |
-|       | Active                                |        | 1:05 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:05 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-01 Thu 19:08], for Thursday, January 01, 2026.
+|      | <75>                           |        |      |      |       |
+| Tags | Headline                       | Time   |      |      |     % |
+|------+--------------------------------+--------+------+------+-------|
+|      | *Total time*                   | *2:34* |      |      | 100.0 |
+|------+--------------------------------+--------+------+------+-------|
+|      | Stories                        | 2:34   |      |      | 100.0 |
+|      | Active                         |        | 2:34 |      | 100.0 |
+| code | Rerun SQL scripts from scratch |        |      | 2:34 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2025-12-31 Wed 11:26]
+#+CAPTION: Clock summary at [2026-01-01 Thu 19:08]
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:05* |      |      | 100.0 |
+|       | *Total time*                          | *6:06* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:05   |      |      | 100.0 |
-|       | Active                                |        | 1:05 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:05 | 100.0 |
+|       | Stories                               | 6:06   |      |      | 100.0 |
+|       | Active                                |        | 6:06 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 1:05 |  17.8 |
+| code  | Rerun SQL scripts from scratch        |        |      | 5:01 |  82.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -214,9 +215,72 @@ Time spent doing the demo. This is the first one so it will be very basic.
 
 
 
-*** Rerun SQL scripts from scratch                                     :code:
+*** COMPLETED Rerun SQL scripts from scratch                           :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-01 Thu 17:29]--[2026-01-01 Thu 19:05] =>  1:36
+    CLOCK: [2026-01-01 Thu 16:30]--[2026-01-01 Thu 17:28] =>  0:58
+    CLOCK: [2025-12-31 Wed 11:27]--[2025-12-31 Wed 13:54] =>  2:27
+    :END:
 
-We need to validate the scripts.
+We need to validate the scripts and fix all issues we find.
+
+#+begin_quote
+This pull request significantly refines the integration of TimescaleDB within
+the ORES SQL schema, making it more adaptable to different TimescaleDB license
+tiers and ensuring robust functionality. It introduces runtime license detection
+to intelligently enable or disable advanced TimescaleDB features, alongside
+implementing per-database extension installation for PostgreSQL. Furthermore,
+this PR substantially expands the project's documentation by adding detailed
+architectural overviews for the ores.assets and ores.comms.analyser components,
+and a comprehensive guide to the overall SQL schema, enhancing clarity and
+maintainability for developers and users alike.
+
+Highlights:
+
+- Enhanced TimescaleDB Integration: The system now correctly integrates with
+  both Apache and Timescale license editions of TimescaleDB, dynamically
+  adjusting features based on the detected license.
+- Per-Database Extension Installation: PostgreSQL extensions are now installed
+  on a per-database basis, ensuring proper functionality within each ORES
+  database instance, including the template.
+- Runtime License Detection: SQL scripts now include runtime checks for the
+  TimescaleDB license, gracefully skipping advanced features like compression,
+  retention policies, and continuous aggregates if only the Apache license is
+  present.
+- New Component Documentation: Detailed Org-mode documentation has been added
+  for the ores.assets and ores.comms.analyser components, outlining their
+  architecture, domain types, and usage.
+- Comprehensive SQL Schema Documentation: The ores.sql.org file has been added,
+  providing extensive documentation on the ORES SQL schema, including
+  architecture, design patterns, PostgreSQL extensions (especially TimescaleDB),
+  and database creation processes. Schema Prefix for TimescaleDB Functions:
+  TimescaleDB function calls in sessions_create.sql and session_stats_create.sql
+  now explicitly use the public. schema prefix to avoid issues when search_path
+  is set to 'ores'.
+#+end_quote
+
+*** STARTED Run qt client and validate all new features                :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-01 Thu 20:15]
+    CLOCK: [2026-01-01 Thu 19:08]--[2026-01-01 Thu 19:35] =>  0:27
+    :END:
+
+We added quite a few new features during the holidays but due to the laptop
+constraints we could not validate them properly. Check they all work correctly
+and fix what needs fixing. Features:
+
+- session monitoring
+- flags display
+-
+
+*** Remove seeders in code                                             :code:
+
+Since we have to seed from SQL scripts, having code seeding as well is just
+confusing.
+
+*** Rename =ores.shell= to =ores.comms.shell=                          :code:
+
+The shell is specific to the binary protocol.
 
 * Footer
 

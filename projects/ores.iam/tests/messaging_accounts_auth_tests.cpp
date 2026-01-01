@@ -33,7 +33,6 @@
 #include "ores.iam/generators/account_generator.hpp"
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/service/authorization_service.hpp"
-#include "ores.iam/service/rbac_seeder.hpp"
 #include "ores.iam/domain/role.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
@@ -68,10 +67,8 @@ make_system_flags(ores::database::context& ctx) {
 
 std::shared_ptr<service::authorization_service>
 make_auth_service(ores::database::context& ctx) {
-    auto auth = std::make_shared<service::authorization_service>(ctx);
-    service::rbac_seeder seeder(*auth);
-    seeder.seed("test");
-    return auth;
+    // RBAC permissions and roles are seeded via SQL scripts in the database template
+    return std::make_shared<service::authorization_service>(ctx);
 }
 
 void assign_admin_role(std::shared_ptr<service::authorization_service> auth,

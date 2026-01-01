@@ -27,13 +27,12 @@
  * - All tables with temporal/bitemporal support
  * - Triggers and notification functions
  * - Reference data (currencies, flags)
+ * - RBAC seed data (permissions, roles)
+ * - System flags (bootstrap_mode, user_signups, etc.)
  *
  * This script is used by both:
  * - setup_template.sql (to create the template database)
  * - create_database_direct.sql (to create a standalone database)
- *
- * NOTE: This does NOT include instance-specific initialization like
- * feature flags. Those are in instance/init_instance.sql
  */
 
 -- Create schema and extensions
@@ -77,10 +76,17 @@ grant create on schema ores to ores;
 \ir ../schema/geolocation_create.sql
 
 -- Reference data (immutable, belongs in template)
-\ir ../data/load_flags.sql
-\ir ../data/flags_populate.sql
-\ir ../data/currencies_populate.sql
-\ir ../data/currency_images_populate.sql
+\ir ../populate/load_flags.sql
+\ir ../populate/flags_populate.sql
+\ir ../populate/currencies_populate.sql
+\ir ../populate/currency_images_populate.sql
+
+-- RBAC seed data (permissions and roles)
+\ir ../populate/permissions_populate.sql
+\ir ../populate/roles_populate.sql
+
+-- System flags (bootstrap_mode, user_signups, etc.)
+\ir ../populate/system_flags_populate.sql
 
 -- Grant table permissions to ores user
 grant select, insert, update, delete on all tables in schema ores to ores;

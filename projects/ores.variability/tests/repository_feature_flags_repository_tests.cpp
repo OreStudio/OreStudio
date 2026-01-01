@@ -90,10 +90,13 @@ TEST_CASE("write_multiple_feature_flags", tags) {
     auto flags = generate_feature_flags(5);
     BOOST_LOG_SEV(lg, debug) << "Generated " << flags.size() << " feature flags";
 
+    const auto initial_count = repo.read_latest().size();
+    BOOST_LOG_SEV(lg, debug) << "Initial feature flags count: " << initial_count;
+
     CHECK_NOTHROW(repo.write(flags));
 
     auto read_flags = repo.read_latest();
-    CHECK(read_flags.size() == flags.size());
+    CHECK(read_flags.size() == initial_count + flags.size());
 }
 
 TEST_CASE("read_latest_feature_flags", tags) {
@@ -103,8 +106,11 @@ TEST_CASE("read_latest_feature_flags", tags) {
     h.truncate_table(database_table);
 
     feature_flags_repository repo(h.context());
+    const auto initial_count = repo.read_latest().size();
+    BOOST_LOG_SEV(lg, debug) << "Initial feature flags count: " << initial_count;
+
     auto written_flags = generate_feature_flags(3);
-    BOOST_LOG_SEV(lg, debug) << "Written " << written_flags.size() << " feature flags";
+    BOOST_LOG_SEV(lg, debug) << "Writing " << written_flags.size() << " feature flags";
 
     repo.write(written_flags);
 
@@ -112,7 +118,7 @@ TEST_CASE("read_latest_feature_flags", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read " << read_flags.size() << " feature flags";
 
     CHECK(!read_flags.empty());
-    CHECK(read_flags.size() == written_flags.size());
+    CHECK(read_flags.size() == initial_count + written_flags.size());
 }
 
 TEST_CASE("read_latest_feature_flag_by_name", tags) {
@@ -146,8 +152,11 @@ TEST_CASE("read_all_feature_flags", tags) {
     h.truncate_table(database_table);
 
     feature_flags_repository repo(h.context());
+    const auto initial_count = repo.read_all().size();
+    BOOST_LOG_SEV(lg, debug) << "Initial feature flags count (all versions): " << initial_count;
+
     auto written_flags = generate_feature_flags(5);
-    BOOST_LOG_SEV(lg, debug) << "Generated " << written_flags.size() << " feature flags";
+    BOOST_LOG_SEV(lg, debug) << "Writing " << written_flags.size() << " feature flags";
 
     repo.write(written_flags);
 
@@ -155,7 +164,7 @@ TEST_CASE("read_all_feature_flags", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read " << read_flags.size() << " feature flags";
 
     CHECK(!read_flags.empty());
-    CHECK(read_flags.size() == written_flags.size());
+    CHECK(read_flags.size() == initial_count + written_flags.size());
 }
 
 TEST_CASE("read_all_feature_flags_by_name", tags) {

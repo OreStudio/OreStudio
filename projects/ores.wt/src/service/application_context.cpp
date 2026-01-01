@@ -19,9 +19,9 @@
  */
 #include "ores.wt/service/application_context.hpp"
 #include "ores.database/service/context_factory.hpp"
-#include "ores.variability/service/system_flags_seeder.hpp"
+#include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
-#include "ores.iam/service/rbac_seeder.hpp"
+#include "ores.variability/service/system_flags_service.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
@@ -79,14 +79,13 @@ void application_context::setup_services() {
 
     BOOST_LOG_SEV(lg(), info) << "Setting up services";
 
-    variability::service::system_flags_seeder flags_seeder(*db_context_);
-    flags_seeder.seed();
-
+    // Create authorization service for RBAC operations
+    // (Permissions and roles are seeded via SQL scripts in the database template)
     authorization_service_ = std::make_shared<iam::service::authorization_service>(
         *db_context_);
-    iam::service::rbac_seeder seeder(*authorization_service_);
-    seeder.seed();
 
+    // Create system flags service and refresh cache from database
+    // (System flags are seeded via SQL scripts in the database template)
     system_flags_service_ = std::make_shared<variability::service::system_flags_service>(
         *db_context_);
     system_flags_service_->refresh();

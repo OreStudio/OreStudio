@@ -105,7 +105,7 @@ $$ LANGUAGE plpgsql;
 --
 -- To generate INSERT statements from the flag files, you can use:
 --
--- for f in projects/sql/data/flags/*.svg; do
+-- for f in projects/sql/populate/data/flags/*.svg; do
 --     key=$(basename "$f" .svg)
 --     desc="Flag for country code ${key^^}"
 --     svg=$(cat "$f" | sed "s/'/''/g")

@@ -1,0 +1,288 @@
+:PROPERTIES:
+:ID: B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F
+:END:
+#+title: ORE Studio SQL Schema
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Database schema and management for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Schema Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt ORES Database Schema
+#+caption: ORE Studio Database Entity-Relationship Diagram
+[[file:ores_schema.png][file:ores_schema.png]]
+
+The ORES database is organised into four domains:
+
+** IAM (Identity & Access Management)
+
+- =accounts= (temporal): user accounts with authentication credentials
+- =login_info=: security tracking for login attempts and lock status
+- =sessions= (temporal): user session tracking with geolocation
+
+** RBAC (Role-Based Access Control)
+
+- =roles= (temporal): named roles for grouping permissions
+- =permissions= (temporal): fine-grained permission codes
+- =account_roles= (junction): many-to-many mapping of accounts to roles
+- =role_permissions= (junction): many-to-many mapping of roles to permissions
+
+** Assets (Images & Currencies)
+
+- =images= (temporal): SVG image storage with version tracking
+- =tags= (temporal): image categories (flag, currency, commodity)
+- =image_tags= (junction): many-to-many image-to-tag mapping
+- =currencies= (temporal): ISO 4217 currency definitions with formatting
+- =currency_images= (junction): one-to-one currency to primary image (flag)
+
+** Variability (Feature Flags)
+
+- =feature_flags= (temporal): feature toggles for runtime configuration
+
+* Schema Design Patterns
+
+All temporal tables use =valid_from= and =valid_to= timestamptz fields for
+bitemporal data management. Key patterns include:
+
+- Junction tables enable soft deletes via validity period closure
+- EXCLUDE constraints prevent overlapping validity periods using =gist= indexes
+- Unique indexes filter on current records where =valid_to = '9999-12-31 23:59:59'::timestamptz=
+- Version fields provide optimistic locking (version 0 is "force overwrite" sentinel)
+- Triggers manage version auto-increment and temporal validity period transitions
+
+* PostgreSQL Extensions
+
+ORES uses the following PostgreSQL extensions:
+
+** btree_gist (Required)
+
+Provides GiST index support for B-tree data types. Required for temporal
+exclusion constraints that prevent overlapping validity periods.
+
+#+begin_src sql
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+#+end_src
+
+** TimescaleDB (Optional)
+
+Time-series database extension for efficient session analytics. If installed,
+the =sessions= table becomes a hypertable with automatic time-based partitioning.
+
+*** Installation
+
+TimescaleDB must be installed at the system level:
+
+#+begin_src sh
+# Debian/Ubuntu (official TimescaleDB repo recommended for full features)
+sudo apt install timescaledb-2-postgresql-16
+
+# macOS
+brew install timescaledb
+#+end_src
+
+Add to =postgresql.conf=:
+
+#+begin_src conf
+shared_preload_libraries = 'timescaledb'
+#+end_src
+
+Restart PostgreSQL after configuration changes.
+
+*** License Editions
+
+TimescaleDB has two license editions:
+
+| Edition   | License   | Features                                          |
+|-----------+-----------+---------------------------------------------------|
+| Apache    | Apache 2.0 | Hypertables, time-based partitioning, chunk pruning |
+| Community | Timescale | Above + compression, retention policies, continuous aggregates |
+
+Debian/Ubuntu packages (=+dfsg= versions) are Apache-only. For full features,
+use the official TimescaleDB repository or build from source.
+
+To check and enable the community license:
+
+#+begin_src sql
+-- Check current license
+SHOW timescaledb.license;
+
+-- Enable community features (if installed)
+ALTER SYSTEM SET timescaledb.license = 'timescale';
+SELECT pg_reload_conf();
+#+end_src
+
+*** Feature Detection
+
+The ORES schema scripts automatically detect TimescaleDB availability and
+license at runtime:
+
+| Condition              | Sessions Table Behaviour                          |
+|------------------------+---------------------------------------------------|
+| No TimescaleDB         | Regular PostgreSQL table with standard indexes    |
+| Apache license         | Hypertable with 7-day chunks (no compression)     |
+| Timescale license      | Hypertable + compression + retention policies     |
+
+Continuous aggregates (=session_stats_daily=, =session_stats_hourly=) are only
+created with the Timescale license.
+
+*** Hypertable Benefits
+
+Even with Apache-only, hypertables provide:
+
+- Automatic time-based partitioning (7-day chunks)
+- Efficient time-range query pruning
+- Parallel chunk processing
+- Simplified data lifecycle management
+
+* Database Creation
+
+The database uses a template-based approach for fast instance creation.
+
+** Prerequisites
+
+Run initial setup scripts as postgres superuser in order:
+
+#+begin_src sh
+# 1. Install extensions (btree_gist required, timescaledb optional)
+psql -U postgres -f setup_extensions.sql
+
+# 2. Create application user
+psql -U postgres -v ores_password='YOUR_SECRET' -f setup_user.sql
+
+# 3. Create admin database (whimsical name generation)
+psql -U postgres -f admin/setup_admin.sql
+#+end_src
+
+** Create Template Database (One-Time)
+
+Create the =ores_template= database containing all schema and reference data:
+
+#+begin_src sh
+psql -U postgres -f setup_template.sql
+#+end_src
+
+** Create Instance with Whimsical Name
+
+Create a new database instance from the template with an auto-generated
+whimsical name (fast, uses PostgreSQL filesystem copy):
+
+#+begin_src sh
+psql -U postgres -f create_instance.sql
+#+end_src
+
+Example output:
+#+begin_example
+Generating whimsical database name...
+Creating database: dancing_lemur_42
+==========================================
+Database created successfully!
+==========================================
+Database name: dancing_lemur_42
+
+Connect with:
+  psql -U ores -d dancing_lemur_42
+#+end_example
+
+** Create Instance with Specific Name
+
+To create an instance with a specific name:
+
+#+begin_src sh
+psql -U postgres -v db_name='my_database' -f create_instance.sql
+#+end_src
+
+** Direct Creation (Without Template)
+
+For environments without template support, create a standalone database:
+
+#+begin_src sh
+psql -U postgres -v db_name='my_database' -f create_database_direct.sql
+#+end_src
+
+* Directory Structure
+
+The SQL project is organised into the following directories:
+
+** =schema/= - Table and Function Definitions
+
+Contains DDL scripts for all database objects:
+
+- =accounts_create.sql= - Account table with temporal support
+- =currencies_create.sql= - ISO 4217 currency definitions
+- =feature_flags_create.sql= - Feature toggle table
+- =images_create.sql=, =tags_create.sql=, =image_tags_create.sql= - Image assets
+- =sessions_create.sql=, =login_info_create.sql= - Session and security tracking
+- =permissions_create.sql=, =roles_create.sql= - RBAC tables
+- =role_permissions_create.sql=, =account_roles_create.sql= - RBAC junction tables
+- =rbac_functions_create.sql= - RBAC helper functions
+- =utility_functions_create.sql= - General utility functions
+- =whimsical_names_create.sql= - Database name generation function
+
+** =template/= - Template Database Creation
+
+Scripts for creating the template database:
+
+- =create_schema.sql= - Main schema orchestrator that includes all tables and
+  reference data
+- =database_functions.sql= - Database management functions
+  (=generate_create_database_sql=, =list_ores_databases=)
+
+** =instance/= - Instance-Specific Initialization
+
+Scripts run after creating an instance from template:
+
+- =init_instance.sql= - Initialises instance-specific feature flags and settings
+
+** =data/= - Reference Data
+
+Large reference data files loaded into the template:
+
+- =currencies_populate.sql= - ISO 4217 currency data (100+ currencies)
+- =currency_images_populate.sql= - Currency-to-flag image mappings
+- =flags_populate.sql= - Country flag SVG inline data
+- =flags/= - Source SVG files for country flags
+
+** =drop/= - Drop Scripts
+
+DDL scripts to drop all database objects (mirrors =schema/= structure).
+
+** =modeling/= - Schema Documentation
+
+Architecture documentation and diagrams:
+
+- =ores_schema.puml= - PlantUML Entity-Relationship diagram
+- =sql.org= - This documentation file
+
+* Top-Level Scripts
+
+| Script                            | Purpose                                    |
+|-----------------------------------+--------------------------------------------|
+| =setup_extensions.sql=            | Install PostgreSQL extensions              |
+| =setup_user.sql=                  | Create application user                    |
+| =setup_template.sql=              | Create template database                   |
+| =create_instance.sql=             | Create instance from template (fast)       |
+| =create_database_direct.sql=      | Create standalone database (no template)   |
+| =drop_database.sql=               | Drop a database                            |
+| =drop_all.sql=                    | Drop all database objects                  |
+| =bootstrap_mode_setup.sql=        | Bootstrap mode feature flag setup          |
+| =toggle_password_validation.sql=  | Toggle password validation setting         |
+| =cheat_sheet.sql=                 | Quick reference commands                   |
+| =psqlrc.sql=                      | PostgreSQL client configuration            |
+
+* SQL Recipes
+
+For executable SQL query examples, see the [[id:C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F][SQL Recipes]] notebook. It contains
+ready-to-run queries for:
+
+- Account management and temporal history
+- RBAC queries (roles, permissions, account assignments)
+- Currency and image lookups
+- Feature flag inspection
+- Session and login tracking
+- Administrative queries (database size, table sizes)
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] | Recipes: [[id:C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F][SQL Recipes]] |

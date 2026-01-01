@@ -69,8 +69,7 @@ target_include_directories(${exe_target_name}
 target_link_libraries(${exe_target_name}
     PRIVATE
         ${lib_target_name}
-        Wt::Wt
-        Wt::HTTP
         ${CMAKE_THREAD_LIBS_INIT})
+# Note: Wt::Wt and Wt::HTTP come transitively through ${lib_target_name} (PUBLIC)
 
 install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)

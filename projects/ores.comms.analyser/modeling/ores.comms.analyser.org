@@ -51,7 +51,7 @@ ores.comms.analyser --help
 
 * Related Components
 
-- [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][ores.comms]]: Contains =session_recorder= that creates =.ores= files
+- [[id:361A6093-D24C-9BC4-0543-6540461EDBB6][ores.comms]]: Contains =session_recorder= that creates =.ores= files
 - [[id:D773166D-0C91-8CB4-3323-42166BC07687][ores.comms.service]]: Server that can be recorded
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

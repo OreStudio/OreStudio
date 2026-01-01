@@ -24,6 +24,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <cstring>
+#include <cstdlib>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/kdf.h>
@@ -35,6 +36,14 @@ namespace ores::iam::security {
 
 using namespace ores::telemetry::log;
 using ores::utility::converter::base64_converter;
+
+std::uint64_t password_manager::get_n_parameter() {
+    static const bool use_fast = std::getenv("ORES_TEST_PASSWORD_FAST") != nullptr;
+    if (use_fast) {
+        return TEST_N;
+    }
+    return PRODUCTION_N;
+}
 
 std::string password_manager::create_password_hash(const std::string& password) {
     if (password.empty()) {
@@ -48,15 +57,16 @@ std::string password_manager::create_password_hash(const std::string& password) 
         throw std::runtime_error("Failed to generate random salt");
     }
 
+    const auto N = get_n_parameter();
     std::vector<unsigned char> hash(HASH_LEN);
     if (EVP_PBE_scrypt(password.c_str(), password.length(), salt.data(), SALT_LEN,
-                       DEFAULT_N, DEFAULT_r, DEFAULT_p, 0, hash.data(), HASH_LEN) != 1) {
+                       N, DEFAULT_r, DEFAULT_p, 0, hash.data(), HASH_LEN) != 1) {
         BOOST_LOG_SEV(lg(), error) << "scrypt hashing failed";
         throw std::runtime_error("scrypt hashing failed");
     }
 
     std::stringstream ss;
-    ss << "$scrypt$ln=" << std::log2(DEFAULT_N) << ",r=" << DEFAULT_r
+    ss << "$scrypt$ln=" << std::log2(N) << ",r=" << DEFAULT_r
        << ",p=" << DEFAULT_p << "$"
        << base64_converter::convert(salt)
        << "$" << base64_converter::convert(hash);

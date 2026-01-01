@@ -41,6 +41,12 @@ add_compile_options(
 set(ORES_CATCH2_ARGS --durations yes --filenames-as-tags -r compact)
 
 #
+# Test environment variables: applied to all test targets.
+# ORES_TEST_PASSWORD_FAST: Use fast scrypt parameters (16x faster) for tests.
+#
+set(ORES_TEST_ENV "ORES_TEST_PASSWORD_FAST=1")
+
+#
 # Java args for PlantUML
 #
 set(ORES_PLANTUML_JAR "/usr/share/plantuml/plantuml.jar")

@@ -54,12 +54,23 @@ private:
      */
     static std::vector<unsigned char> base64_decode(const std::string& encoded);
 
-    // scrypt parameters - OWASP recommendations
-    static constexpr std::uint64_t DEFAULT_N = 1 << 14; /// CPU/memory cost
-    static constexpr std::uint32_t DEFAULT_r = 8;       /// Block size
-    static constexpr std::uint32_t DEFAULT_p = 1;       /// Parallelization
+    // scrypt parameters - OWASP recommendations for production
+    static constexpr std::uint64_t PRODUCTION_N = 1 << 14; /// CPU/memory cost
+    static constexpr std::uint32_t DEFAULT_r = 8;          /// Block size
+    static constexpr std::uint32_t DEFAULT_p = 1;          /// Parallelization
     static constexpr std::size_t SALT_LEN = 16;
     static constexpr std::size_t HASH_LEN = 64;
+
+    // Fast scrypt parameters for testing (16x faster)
+    static constexpr std::uint64_t TEST_N = 1 << 10;
+
+    /**
+     * @brief Gets the N parameter, checking for test mode.
+     *
+     * If ORES_TEST_PASSWORD_FAST environment variable is set, returns
+     * TEST_N for faster test execution. Otherwise returns PRODUCTION_N.
+     */
+    static std::uint64_t get_n_parameter();
 
 public:
     /**

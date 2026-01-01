@@ -31,8 +31,7 @@
         "cli",
         "faker-cxx",
         "catch2",
-        "libfort",
-        "libharu"
+        "libfort"
     ],
     "default-features": [ "wt" ],
     "features": {

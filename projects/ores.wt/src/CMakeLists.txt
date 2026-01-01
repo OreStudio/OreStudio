@@ -35,13 +35,6 @@ set_target_properties(${lib_target_name} PROPERTIES
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
-# Find libharu before wt, as wt's PDF support depends on it.
-# vcpkg's libharu provides unofficial::libharu::haru but wt expects HPDF::HPDF,
-# so we create an alias to bridge the gap.
-find_package(unofficial-libharu CONFIG REQUIRED)
-if(NOT TARGET HPDF::HPDF)
-    add_library(HPDF::HPDF ALIAS unofficial::libharu::haru)
-endif()
 find_package(wt CONFIG REQUIRED)
 
 target_link_libraries(${lib_target_name}
@@ -79,34 +72,5 @@ target_link_libraries(${exe_target_name}
         Wt::Wt
         Wt::HTTP
         ${CMAKE_THREAD_LIBS_INIT})
-
-# On Unix, we need to explicitly link Wt's transitive dependencies due to
-# vcpkg static library linking issues. Windows/MSVC handles this automatically.
-if(UNIX)
-    find_package(Freetype REQUIRED)
-    find_package(harfbuzz CONFIG REQUIRED)
-    find_package(EXPAT REQUIRED)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(PANGO REQUIRED IMPORTED_TARGET pango)
-    pkg_check_modules(PANGOFT2 REQUIRED IMPORTED_TARGET pangoft2)
-    pkg_check_modules(GLIB2 REQUIRED IMPORTED_TARGET glib-2.0)
-    pkg_check_modules(GOBJECT REQUIRED IMPORTED_TARGET gobject-2.0)
-    pkg_check_modules(FRIBIDI REQUIRED IMPORTED_TARGET fribidi)
-    pkg_check_modules(FONTCONFIG REQUIRED IMPORTED_TARGET fontconfig)
-    pkg_check_modules(LIBFFI REQUIRED IMPORTED_TARGET libffi)
-
-    target_link_libraries(${exe_target_name}
-        PRIVATE
-            PkgConfig::PANGOFT2
-            PkgConfig::PANGO
-            PkgConfig::FONTCONFIG
-            Freetype::Freetype
-            harfbuzz::harfbuzz
-            EXPAT::EXPAT
-            PkgConfig::GOBJECT
-            PkgConfig::GLIB2
-            PkgConfig::FRIBIDI
-            PkgConfig::LIBFFI)
-endif()
 
 install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)

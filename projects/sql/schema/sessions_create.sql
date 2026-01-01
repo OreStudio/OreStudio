@@ -106,7 +106,8 @@ begin
         raise notice '=========================================';
 
         -- Convert to hypertable with 7-day chunks
-        perform create_hypertable(
+        -- Use public schema prefix as search_path is set to 'ores'
+        perform public.create_hypertable(
             'ores.sessions',
             'start_time',
             chunk_time_interval => interval '7 days',
@@ -114,27 +115,40 @@ begin
         );
         raise notice 'Created hypertable with 7-day chunks';
 
-        -- Enable compression for chunks older than 7 days
-        alter table "ores"."sessions" set (
-            timescaledb.compress,
-            timescaledb.compress_segmentby = 'account_id',
-            timescaledb.compress_orderby = 'start_time desc'
-        );
+        -- Compression and retention policies require Timescale License (not Apache)
+        -- Check if we have the community license before enabling these features
+        declare
+            current_license text;
+        begin
+            select current_setting('timescaledb.license', true) into current_license;
 
-        perform add_compression_policy(
-            'ores.sessions',
-            compress_after => interval '7 days',
-            if_not_exists => true
-        );
-        raise notice 'Enabled compression policy (7 days)';
+            if current_license = 'timescale' then
+                -- Enable compression for chunks older than 7 days
+                alter table "ores"."sessions" set (
+                    timescaledb.compress,
+                    timescaledb.compress_segmentby = 'account_id',
+                    timescaledb.compress_orderby = 'start_time desc'
+                );
 
-        -- Data retention policy: keep raw session data for 1 year
-        perform add_retention_policy(
-            'ores.sessions',
-            drop_after => interval '1 year',
-            if_not_exists => true
-        );
-        raise notice 'Enabled retention policy (1 year)';
+                perform public.add_compression_policy(
+                    'ores.sessions',
+                    compress_after => interval '7 days',
+                    if_not_exists => true
+                );
+                raise notice 'Enabled compression policy (7 days)';
+
+                -- Data retention policy: keep raw session data for 1 year
+                perform public.add_retention_policy(
+                    'ores.sessions',
+                    drop_after => interval '1 year',
+                    if_not_exists => true
+                );
+                raise notice 'Enabled retention policy (1 year)';
+            else
+                raise notice 'TimescaleDB Apache license - compression/retention policies skipped';
+                raise notice 'Set timescaledb.license = ''timescale'' for full features';
+            end if;
+        end;
 
         raise notice 'TimescaleDB setup complete for sessions table';
     else

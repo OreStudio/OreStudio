@@ -21,8 +21,13 @@
 /**
  * PostgreSQL Extensions Setup
  *
- * Installs required PostgreSQL extensions for ORES. This script should be
- * run once per PostgreSQL cluster before creating the template database.
+ * Installs required PostgreSQL extensions for ORES. This script is used in
+ * two contexts:
+ *   1. Run manually against postgres database to verify extensions are available
+ *   2. Included by setup_template.sql to install extensions in ores_template
+ *
+ * Extensions are per-database in PostgreSQL, so they must be installed in
+ * each database that needs them.
  *
  * REQUIRED EXTENSIONS:
  *   - btree_gist: GiST index support for temporal exclusion constraints
@@ -38,6 +43,13 @@
  *   - TimescaleDB must be added to shared_preload_libraries in postgresql.conf:
  *       shared_preload_libraries = 'timescaledb'
  *   - PostgreSQL must be restarted after modifying shared_preload_libraries
+ *
+ * TIMESCALEDB LICENSE:
+ *   Some features (compression, retention policies, continuous aggregates)
+ *   require the "Timescale License" (community edition), not Apache-only.
+ *   To enable: ALTER SYSTEM SET timescaledb.license = 'timescale';
+ *              SELECT pg_reload_conf();
+ *   The scripts will detect the license and skip unsupported features.
  *
  * USAGE:
  *   psql -U postgres -f setup_extensions.sql

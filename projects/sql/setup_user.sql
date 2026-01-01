@@ -47,7 +47,8 @@
 \endif
 
 -- Create the application user with the provided password
-CREATE USER ores WITH PASSWORD :'ores_password';
+-- CREATEDB is needed for tests to create temporary databases from templates
+CREATE USER ores WITH PASSWORD :'ores_password' CREATEDB;
 
 \echo ''
 \echo '=========================================='

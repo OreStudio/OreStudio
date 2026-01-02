@@ -30,9 +30,26 @@ namespace ores::testing {
  */
 class scoped_database_helper {
 public:
-    explicit scoped_database_helper(const std::string& table_name) {
+    /**
+     * @brief Constructs a scoped database helper.
+     *
+     * @param table_name Fully qualified table name to truncate (e.g., "ores.accounts")
+     * @param seed_rbac If true, seeds minimal RBAC data (Admin role with wildcard permission)
+     */
+    explicit scoped_database_helper(const std::string& table_name,
+                                    bool seed_rbac = false) {
         helper_.truncate_table(table_name);
+        if (seed_rbac) {
+            helper_.seed_rbac();
+        }
     }
+
+    /**
+     * @brief Seeds minimal RBAC data for tests.
+     *
+     * Call this if you need RBAC data but didn't pass seed_rbac=true to constructor.
+     */
+    void seed_rbac() { helper_.seed_rbac(); }
 
     /**
      * @brief Gets the database context.

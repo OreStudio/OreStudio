@@ -19,6 +19,9 @@
  */
 #include "ores.testing/database_helper.hpp"
 
+#include <stdexcept>
+#include <string>
+#include <vector>
 #include "ores.testing/test_database_manager.hpp"
 
 namespace ores::testing {
@@ -41,13 +44,80 @@ void database_helper::truncate_table(const std::string& table_name) {
         .and_then(execute_truncate);
 
     if (!r) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Failed to truncate table " << table_name
-            << ": " << r.error().what();
-    } else {
-        BOOST_LOG_SEV(lg(), info)
-            << "Successfully truncated table: " << table_name;
+        const auto error_msg = "Failed to truncate table " + table_name +
+            ": " + r.error().what();
+        BOOST_LOG_SEV(lg(), error) << error_msg;
+        throw std::runtime_error(error_msg);
     }
+    BOOST_LOG_SEV(lg(), info)
+        << "Successfully truncated table: " << table_name;
+}
+
+void database_helper::seed_rbac() {
+    BOOST_LOG_SEV(lg(), info) << "Seeding minimal RBAC data for tests";
+
+    // Execute each statement separately (libpq doesn't handle multiple statements well)
+    const std::vector<std::string> statements = {
+        // Create wildcard permission if not exists
+        R"SQL(
+        INSERT INTO ores.permissions (id, code, description, valid_from, valid_to)
+        SELECT gen_random_uuid(), '*', 'Wildcard permission - grants all access',
+               current_timestamp, '9999-12-31 23:59:59'::timestamptz
+        WHERE NOT EXISTS (
+            SELECT 1 FROM ores.permissions
+            WHERE code = '*' AND valid_to = '9999-12-31 23:59:59'::timestamptz
+        ))SQL",
+
+        // Create Admin role if not exists
+        R"SQL(
+        INSERT INTO ores.roles (id, version, name, description, modified_by, valid_from, valid_to)
+        SELECT gen_random_uuid(), 1, 'Admin', 'Full administrative access', 'test',
+               current_timestamp, '9999-12-31 23:59:59'::timestamptz
+        WHERE NOT EXISTS (
+            SELECT 1 FROM ores.roles
+            WHERE name = 'Admin' AND valid_to = '9999-12-31 23:59:59'::timestamptz
+        ))SQL",
+
+        // Create Viewer role if not exists (default role for new accounts)
+        R"SQL(
+        INSERT INTO ores.roles (id, version, name, description, modified_by, valid_from, valid_to)
+        SELECT gen_random_uuid(), 1, 'Viewer', 'Default role for new accounts', 'test',
+               current_timestamp, '9999-12-31 23:59:59'::timestamptz
+        WHERE NOT EXISTS (
+            SELECT 1 FROM ores.roles
+            WHERE name = 'Viewer' AND valid_to = '9999-12-31 23:59:59'::timestamptz
+        ))SQL",
+
+        // Assign wildcard permission to Admin role if not exists
+        R"SQL(
+        INSERT INTO ores.role_permissions (role_id, permission_id, valid_from, valid_to)
+        SELECT r.id, p.id, current_timestamp, '9999-12-31 23:59:59'::timestamptz
+        FROM ores.roles r, ores.permissions p
+        WHERE r.name = 'Admin' AND r.valid_to = '9999-12-31 23:59:59'::timestamptz
+          AND p.code = '*' AND p.valid_to = '9999-12-31 23:59:59'::timestamptz
+          AND NOT EXISTS (
+              SELECT 1 FROM ores.role_permissions rp
+              WHERE rp.role_id = r.id AND rp.permission_id = p.id
+                AND rp.valid_to = '9999-12-31 23:59:59'::timestamptz
+          ))SQL"
+    };
+
+    for (const auto& sql : statements) {
+        const auto execute_stmt = [&](auto&& session) {
+            return session->execute(sql);
+        };
+
+        const auto r = sqlgen::session(context_.connection_pool())
+            .and_then(execute_stmt);
+
+        if (!r) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to seed RBAC data: " << r.error().what();
+            return;
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully seeded RBAC data";
 }
 
 }

@@ -20,6 +20,8 @@
 #ifndef ORES_TESTING_DATABASE_RUN_COROUTINE_TEST_HPP
 #define ORES_TESTING_DATABASE_RUN_COROUTINE_TEST_HPP
 
+#include <exception>
+#include <string>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
@@ -30,11 +32,28 @@ namespace ores::testing {
 template <typename Awaitable>
 void run_coroutine_test(boost::asio::io_context& io_context, Awaitable&& awaitable) {
     bool completed = false;
+    std::exception_ptr eptr = nullptr;
+
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
-            co_await std::forward<Awaitable>(awaitable)();
-            completed = true;
+            try {
+                co_await std::forward<Awaitable>(awaitable)();
+                completed = true;
+            } catch (...) {
+                eptr = std::current_exception();
+            }
         }, boost::asio::detached);
     io_context.run();
+
+    if (eptr) {
+        try {
+            std::rethrow_exception(eptr);
+        } catch (const std::exception& e) {
+            FAIL("Coroutine threw exception: " << e.what());
+        } catch (...) {
+            FAIL("Coroutine threw unknown exception");
+        }
+    }
+
     REQUIRE(completed);
     io_context.restart(); // Prepare for next use if in a loop
 }

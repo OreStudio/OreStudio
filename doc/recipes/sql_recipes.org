@@ -276,6 +276,8 @@ CREATE FUNCTION
 CREATE FUNCTION
 CREATE FUNCTION
 CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
 SET
 CREATE TABLE
 CREATE INDEX
@@ -1505,14 +1507,15 @@ join ores.roles r on r.id = rp.role_id
 join ores.permissions p on p.id = rp.permission_id
   and p.valid_to = '9999-12-31 23:59:59'::timestamptz
 where rp.valid_to = '9999-12-31 23:59:59'::timestamptz
-  and r.name = 'admin'
+  and r.name = 'Admin'
 order by p.code;
 #+end_src
 
 #+RESULTS:
 #+begin_example
-| role_name | permission_code | description |
-|-----------+-----------------+-------------|
+| role_name | permission_code | description                   |
+|-----------+-----------------+-------------------------------|
+| Admin     | *               | Full access to all operations |
 #+end_example
 
 *** Get Roles for an Account

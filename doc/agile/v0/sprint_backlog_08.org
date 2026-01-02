@@ -17,31 +17,35 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-02 Fri 01:32], for Friday, January 02, 2026.
+#+CAPTION: Clock summary at [2026-01-02 Fri 02:15], for Friday, January 02, 2026.
 |       | <75>                                        |        |      |      |       |
 | Tags  | Headline                                    | Time   |      |      |     % |
 |-------+---------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                | *1:31* |      |      | 100.0 |
+|       | *Total time*                                | *2:12* |      |      | 100.0 |
 |-------+---------------------------------------------+--------+------+------+-------|
-|       | Stories                                     | 1:31   |      |      | 100.0 |
-|       | Active                                      |        | 1:31 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |        |      | 0:12 |  13.2 |
-| code  | Run qt client and validate all new features |        |      | 1:19 |  86.8 |
+|       | Stories                                     | 2:12   |      |      | 100.0 |
+|       | Active                                      |        | 2:12 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |        |      | 0:12 |   9.1 |
+| code  | Run qt client and validate all new features |        |      | 1:19 |  59.8 |
+| code  | Refactor options and parser                 |        |      | 0:27 |  20.5 |
+| code  | Check functionality in =ores.wt=            |        |      | 0:14 |  10.6 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-02 Fri 01:32]
+#+CAPTION: Clock summary at [2026-01-02 Fri 02:15]
 |       | <75>                                        |         |       |      |       |
 | Tags  | Headline                                    | Time    |       |      |     % |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                | *10:28* |       |      | 100.0 |
+|       | *Total time*                                | *11:09* |       |      | 100.0 |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | Stories                                     | 10:28   |       |      | 100.0 |
-|       | Active                                      |         | 10:28 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       | 1:17 |  12.3 |
-| code  | Rerun SQL scripts from scratch              |         |       | 7:52 |  75.2 |
-| code  | Run qt client and validate all new features |         |       | 1:19 |  12.6 |
+|       | Stories                                     | 11:09   |       |      | 100.0 |
+|       | Active                                      |         | 11:09 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       | 1:17 |  11.5 |
+| code  | Rerun SQL scripts from scratch              |         |       | 7:52 |  70.6 |
+| code  | Run qt client and validate all new features |         |       | 1:19 |  11.8 |
+| code  | Refactor options and parser                 |         |       | 0:27 |   4.0 |
+| code  | Check functionality in =ores.wt=            |         |       | 0:14 |   2.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -322,10 +326,20 @@ and fix what needs fixing. Features:
 - Roles and permissions: cannot edit, display should use a table.
 
 *** STARTED Refactor options and parser                                :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-02 Fri 01:33]--[2026-01-02 Fri 02:00] =>  0:27
+    :END:
 
 We have a lot of boost program options parsers and options. We need to do an
 inventory of all of the implementations and figure out if we can have common
 code under utility.
+
+*** STARTED Check functionality in =ores.wt=                           :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-02 Fri 02:01]--[2026-01-02 Fri 02:15] =>  0:14
+    :END:
+
+We created the application but did not validate it.
 
 *** Rename =ores.shell= to =ores.comms.shell=                          :code:
 

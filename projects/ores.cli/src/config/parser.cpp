@@ -25,6 +25,7 @@
 #include <boost/throw_exception.hpp>
 #include <magic_enum/magic_enum.hpp>
 #include "ores.utility/version/version.hpp"
+#include "ores.utility/program_options/common_configuration.hpp"
 #include "ores.telemetry/log/logging_configuration.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity_parsers/currencies_parser.hpp"
@@ -76,17 +77,13 @@ namespace entity_parsers = ores::cli::config::entity_parsers;
  */
 options_description make_top_level_visible_options_description() {
     using ores::telemetry::log::logging_configuration;
+    using ores::utility::program_options::common_configuration;
 
-    options_description god("General");
-    god.add_options()
-        ("help,h", "Display usage and exit.")
-        ("version,v", "Output version information and exit.");
+    const auto god(common_configuration::make_options_description());
+    const auto lod(logging_configuration::make_options_description("ores.cli.log"));
 
     options_description r;
-    r.add(god);
-
-    const auto lod(logging_configuration::make_options_description("ores.cli.log"));
-    r.add(lod);
+    r.add(god).add(lod);
     return r;
 }
 

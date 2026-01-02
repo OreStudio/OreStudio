@@ -16,18 +16,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_PROGRAM_OPTIONS_HPP
-#define ORES_UTILITY_PROGRAM_OPTIONS_HPP
+#ifndef ORES_COMMS_CONFIG_HPP
+#define ORES_COMMS_CONFIG_HPP
 
 /**
- * @brief Command-line option parsing utilities.
+ * @brief Command-line configuration utilities for ores.comms.
  *
- * Contains helpers and extensions for Boost.Program_options for
- * consistent command-line argument handling across components.
+ * Provides composable configuration classes for parsing server, client,
+ * and compression options from command-line arguments.
  */
-namespace ores::utility::program_options {}
+namespace ores::comms::config {}
 
-#include "ores.utility/program_options/common_configuration.hpp"
-#include "ores.utility/program_options/environment_mapper_factory.hpp"
+#include "ores.comms/config/server_configuration.hpp"
+#include "ores.comms/config/client_configuration.hpp"
+#include "ores.comms/config/compression_configuration.hpp"
 
 #endif

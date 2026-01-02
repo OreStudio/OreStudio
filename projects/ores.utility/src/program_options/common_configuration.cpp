@@ -9,25 +9,44 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_UTILITY_PROGRAM_OPTIONS_HPP
-#define ORES_UTILITY_PROGRAM_OPTIONS_HPP
-
-/**
- * @brief Command-line option parsing utilities.
- *
- * Contains helpers and extensions for Boost.Program_options for
- * consistent command-line argument handling across components.
- */
-namespace ores::utility::program_options {}
-
 #include "ores.utility/program_options/common_configuration.hpp"
-#include "ores.utility/program_options/environment_mapper_factory.hpp"
 
-#endif
+namespace ores::utility::program_options {
+
+namespace {
+
+const std::string help_arg("help");
+const std::string version_arg("version");
+const std::string verbose_arg("verbose");
+
+}
+
+boost::program_options::options_description
+common_configuration::make_options_description() {
+    using boost::program_options::options_description;
+
+    options_description r("General");
+    r.add_options()
+        ("help,h", "Display usage and exit.")
+        ("version,v", "Output version information and exit.")
+        ("verbose", "Enable verbose output.");
+
+    return r;
+}
+
+common_options common_configuration::
+read_options(const boost::program_options::variables_map& vm) {
+    common_options r;
+    r.verbose = vm.count(verbose_arg) != 0;
+    return r;
+}
+
+}

@@ -24,8 +24,10 @@
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include "ores.comms/net/server_options.hpp"
+#include "ores.comms/config/ores.comms.config.hpp"
 #include "ores.comms.service/config/parser_exception.hpp"
 #include "ores.utility/version/version.hpp"
+#include "ores.utility/program_options/common_configuration.hpp"
 #include "ores.telemetry/log/logging_configuration.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
@@ -38,12 +40,6 @@ const std::string usage_error_msg("Usage error: ");
 
 const std::string help_arg("help");
 const std::string version_arg("version");
-
-const std::string server_port_arg("port");
-const std::string server_max_connections_arg("max-connections");
-const std::string server_certificate_arg("certificate");
-const std::string server_private_key_arg("private-key");
-const std::string server_identifier_arg("identifier");
 
 using boost::program_options::value;
 using boost::program_options::variables_map;
@@ -60,28 +56,14 @@ using ores::comms::service::config::parser_exception;
 options_description make_options_description() {
     using ores::database::database_configuration;
     using ores::telemetry::log::logging_configuration;
+    using ores::utility::program_options::common_configuration;
+    using ores::comms::config::server_configuration;
 
-    options_description god("General");
-    god.add_options()
-        ("help,h", "Display usage and exit.")
-        ("version,v", "Output version information and exit.");
-
+    const auto god(common_configuration::make_options_description());
     const auto lod(logging_configuration::make_options_description(
             "ores.comms.service.log"));
-
-    options_description sod("Server");
-    sod.add_options()
-        ("port,p", value<std::uint16_t>()->default_value(55555),
-            "Port to listen on.")
-        ("max-connections,m", value<std::uint32_t>()->default_value(10),
-            "Maximum number of concurrent connections. Defaults to 10.")
-        ("certificate,c", value<std::string>()->default_value("server.crt"),
-            "Path to SSL certificate file.")
-        ("private-key,k", value<std::string>()->default_value("server.key"),
-            "Path to SSL private key file. Defaults to 'server.key'.")
-        ("identifier,i", value<std::string>()->default_value("ores-service-v1"),
-            "Server identifier for handshake.");
-
+    const auto sod(server_configuration::make_options_description(
+            55555, 10, "ores-service-v1", true));
     const auto dod(database_configuration::make_options_description());
 
     options_description r;
@@ -122,28 +104,14 @@ void version(std::ostream& info) {
 }
 
 /**
- * @brief Reads the server configuration from the variables map.
- */
-server_options read_server_configuration(const variables_map& vm) {
-    server_options r;
-
-    r.port = vm[server_port_arg].as<std::uint16_t>();
-    r.max_connections = vm[server_max_connections_arg].as<std::uint32_t>();
-    r.certificate_file = vm[server_certificate_arg].as<std::string>();
-    r.private_key_file = vm[server_private_key_arg].as<std::string>();
-    r.server_identifier = vm[server_identifier_arg].as<std::string>();
-
-    return r;
-}
-
-
-/**
  * @brief Parses the arguments supplied in the command line and converts them
  * into a configuration object.
  */
 std::optional<options>
 parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     using ores::database::database_configuration;
+    using ores::telemetry::log::logging_configuration;
+    using ores::comms::config::server_configuration;
 
     const auto od(make_options_description());
     using ores::utility::program_options::environment_mapper_factory;
@@ -171,11 +139,9 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     }
 
     // Parse configuration
-    using ores::telemetry::log::logging_configuration;
-
     options r;
     r.logging = logging_configuration::read_options(vm);
-    r.server = read_server_configuration(vm);
+    r.server = server_configuration::read_options(vm);
     r.database = database_configuration::read_options(vm);
 
     return r;

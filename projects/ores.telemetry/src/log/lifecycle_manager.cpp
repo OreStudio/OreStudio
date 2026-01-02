@@ -23,6 +23,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/core/null_deleter.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/process/v2/pid.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/sinks.hpp>
 #include <boost/log/common.hpp>
@@ -35,6 +36,26 @@
 namespace ores::telemetry::log {
 
 using namespace boost::log;
+
+namespace {
+
+/**
+ * @brief Builds the log filename, optionally including the PID.
+ */
+std::string build_filename(const std::string& filename, bool include_pid) {
+    if (!include_pid) {
+        return filename;
+    }
+
+    const auto pid = std::to_string(boost::process::v2::current_pid());
+    const auto dot_pos = filename.rfind('.');
+    if (dot_pos != std::string::npos) {
+        return filename.substr(0, dot_pos) + "." + pid + filename.substr(dot_pos);
+    }
+    return filename + "." + pid;
+}
+
+}
 
 boost::shared_ptr<lifecycle_manager::file_sink_type>
 lifecycle_manager::make_file_sink(std::filesystem::path path,
@@ -143,7 +164,8 @@ lifecycle_manager::lifecycle_manager(std::optional<logging_options> ocfg) {
     }
 
     if (!cfg.filename.empty()) {
-        const auto path(cfg.output_directory / cfg.filename);
+        const auto filename = build_filename(cfg.filename, cfg.include_pid);
+        const auto path(cfg.output_directory / filename);
         file_sink_ = make_file_sink(path, sl, cfg.tag);
         boost::log::core::get()->add_sink(file_sink_);
     }

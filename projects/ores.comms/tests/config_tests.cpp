@@ -155,7 +155,7 @@ TEST_CASE("client_make_options_description_with_auth", tags) {
     REQUIRE(desc.find_nothrow("login-password", false) != nullptr);
 }
 
-TEST_CASE("client_read_options_returns_nullopt_when_no_options", tags) {
+TEST_CASE("client_read_options_uses_defaults", tags) {
     auto desc = client_configuration::make_options_description(
         55555, "test-client", false);
     std::vector<const char*> args = {"test"};
@@ -163,8 +163,9 @@ TEST_CASE("client_read_options_returns_nullopt_when_no_options", tags) {
 
     auto opts = client_configuration::read_options(vm);
 
-    // With defaults, options are always present
-    REQUIRE(opts.has_value());
+    REQUIRE(opts.host == "localhost");
+    REQUIRE(opts.port == 55555);
+    REQUIRE(opts.client_identifier == "test-client");
 }
 
 TEST_CASE("client_read_options_parses_host", tags) {
@@ -175,8 +176,7 @@ TEST_CASE("client_read_options_parses_host", tags) {
 
     auto opts = client_configuration::read_options(vm);
 
-    REQUIRE(opts.has_value());
-    REQUIRE(opts->host == "192.168.1.1");
+    REQUIRE(opts.host == "192.168.1.1");
 }
 
 TEST_CASE("client_read_options_parses_port", tags) {
@@ -187,8 +187,7 @@ TEST_CASE("client_read_options_parses_port", tags) {
 
     auto opts = client_configuration::read_options(vm);
 
-    REQUIRE(opts.has_value());
-    REQUIRE(opts->port == 12345);
+    REQUIRE(opts.port == 12345);
 }
 
 TEST_CASE("client_read_options_parses_identifier", tags) {
@@ -199,8 +198,7 @@ TEST_CASE("client_read_options_parses_identifier", tags) {
 
     auto opts = client_configuration::read_options(vm);
 
-    REQUIRE(opts.has_value());
-    REQUIRE(opts->client_identifier == "my-client");
+    REQUIRE(opts.client_identifier == "my-client");
 }
 
 TEST_CASE("client_read_login_options_returns_nullopt_when_no_options", tags) {

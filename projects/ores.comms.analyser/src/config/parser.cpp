@@ -22,20 +22,19 @@
 #include <iostream>
 #include <boost/program_options.hpp>
 #include "ores.utility/version/version.hpp"
+#include "ores.utility/program_options/common_configuration.hpp"
 
 namespace ores::comms::analyser::config {
 
 namespace po = boost::program_options;
 
 std::optional<options> parser::parse(int argc, const char* argv[]) {
+    using ores::utility::program_options::common_configuration;
+
     options opts;
     std::string cmd_str;
 
-    po::options_description visible("General");
-    visible.add_options()
-        ("help,h", "Display usage and exit.")
-        ("version,v", "Output version information and exit.")
-        ("verbose", "Enable verbose output.");
+    const auto visible = common_configuration::make_options_description();
 
     po::options_description hidden("Hidden options");
     hidden.add_options()
@@ -99,7 +98,7 @@ std::optional<options> parser::parse(int argc, const char* argv[]) {
             "Use --help for usage information.");
     }
 
-    opts.verbose = vm.count("verbose") > 0;
+    opts.verbose = common_configuration::read_options(vm).verbose;
 
     return opts;
 }

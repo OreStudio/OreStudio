@@ -69,12 +69,13 @@ public:
     /**
      * @brief Reads client options from parsed variables map.
      *
-     * Returns std::nullopt if no connection options are provided.
+     * Always returns a client_options object, populated with either
+     * user-provided values or the defaults.
      *
      * @param vm Parsed command-line options.
-     * @return client_options if any connection options were provided.
+     * @return client_options populated from the variables map.
      */
-    static std::optional<net::client_options>
+    static net::client_options
     read_options(const boost::program_options::variables_map& vm);
 
     /**

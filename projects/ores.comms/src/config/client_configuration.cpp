@@ -64,30 +64,12 @@ client_configuration::make_options_description(
     return r;
 }
 
-std::optional<net::client_options> client_configuration::
+net::client_options client_configuration::
 read_options(const boost::program_options::variables_map& vm) {
-    const bool has_host = vm.count(connect_host_arg) != 0;
-    const bool has_port = vm.count(connect_port_arg) != 0;
-    const bool has_identifier = vm.count(connect_identifier_arg) != 0;
-
-    if (!has_host && !has_port && !has_identifier) {
-        return {};
-    }
-
     net::client_options r;
-
-    if (has_host) {
-        r.host = vm[connect_host_arg].as<std::string>();
-    }
-
-    if (has_port) {
-        r.port = vm[connect_port_arg].as<std::uint16_t>();
-    }
-
-    if (has_identifier) {
-        r.client_identifier = vm[connect_identifier_arg].as<std::string>();
-    }
-
+    r.host = vm[connect_host_arg].as<std::string>();
+    r.port = vm[connect_port_arg].as<std::uint16_t>();
+    r.client_identifier = vm[connect_identifier_arg].as<std::string>();
     return r;
 }
 

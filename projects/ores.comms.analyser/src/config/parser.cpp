@@ -31,11 +31,11 @@ std::optional<options> parser::parse(int argc, const char* argv[]) {
     options opts;
     std::string cmd_str;
 
-    po::options_description visible("Options");
+    po::options_description visible("General");
     visible.add_options()
-        ("help,h", "Display this help message")
-        ("version,V", "Display version information")
-        ("verbose,v", "Enable verbose output");
+        ("help,h", "Display usage and exit.")
+        ("version,v", "Output version information and exit.")
+        ("verbose", "Enable verbose output.");
 
     po::options_description hidden("Hidden options");
     hidden.add_options()
@@ -67,7 +67,7 @@ std::optional<options> parser::parse(int argc, const char* argv[]) {
                   << "Examples:\n"
                   << "  ores.comms.analyser read session-20250115-143205-abc123.ores\n"
                   << "  ores.comms.analyser info session.ores\n"
-                  << "  ores.comms.analyser session.ores -v\n";
+                  << "  ores.comms.analyser session.ores --verbose\n";
         return std::nullopt;
     }
 

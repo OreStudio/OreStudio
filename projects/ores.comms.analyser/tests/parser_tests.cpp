@@ -64,9 +64,9 @@ TEST_CASE("parser_version_returns_nullopt", tags) {
 
 TEST_CASE("parser_short_version_returns_nullopt", tags) {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing -V returns nullopt";
+    BOOST_LOG_SEV(lg, info) << "Testing -v returns nullopt";
 
-    const char* argv[] = {"ores.comms.analyser", "-V"};
+    const char* argv[] = {"ores.comms.analyser", "-v"};
     auto result = parser::parse(2, argv);
 
     REQUIRE_FALSE(result.has_value());
@@ -120,22 +120,11 @@ TEST_CASE("parser_verbose_flag", tags) {
     REQUIRE(result->verbose);
 }
 
-TEST_CASE("parser_short_verbose_flag", tags) {
-    auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing -v flag";
-
-    const char* argv[] = {"ores.comms.analyser", "read", "session.ores", "-v"};
-    auto result = parser::parse(4, argv);
-
-    REQUIRE(result.has_value());
-    REQUIRE(result->verbose);
-}
-
 TEST_CASE("parser_verbose_before_file", tags) {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing -v flag before file";
+    BOOST_LOG_SEV(lg, info) << "Testing --verbose flag before file";
 
-    const char* argv[] = {"ores.comms.analyser", "-v", "session.ores"};
+    const char* argv[] = {"ores.comms.analyser", "--verbose", "session.ores"};
     auto result = parser::parse(3, argv);
 
     REQUIRE(result.has_value());
@@ -210,7 +199,7 @@ TEST_CASE("parser_info_with_verbose", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing info command with verbose";
 
-    const char* argv[] = {"ores.comms.analyser", "info", "session.ores", "-v"};
+    const char* argv[] = {"ores.comms.analyser", "info", "session.ores", "--verbose"};
     auto result = parser::parse(4, argv);
 
     REQUIRE(result.has_value());

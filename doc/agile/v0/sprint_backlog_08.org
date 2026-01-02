@@ -17,33 +17,36 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-01 Thu 19:08], for Thursday, January 01, 2026.
-|      | <75>                           |        |      |      |       |
-| Tags | Headline                       | Time   |      |      |     % |
-|------+--------------------------------+--------+------+------+-------|
-|      | *Total time*                   | *2:34* |      |      | 100.0 |
-|------+--------------------------------+--------+------+------+-------|
-|      | Stories                        | 2:34   |      |      | 100.0 |
-|      | Active                         |        | 2:34 |      | 100.0 |
-| code | Rerun SQL scripts from scratch |        |      | 2:34 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-02 Fri 01:32], for Friday, January 02, 2026.
+|       | <75>                                        |        |      |      |       |
+| Tags  | Headline                                    | Time   |      |      |     % |
+|-------+---------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                | *1:31* |      |      | 100.0 |
+|-------+---------------------------------------------+--------+------+------+-------|
+|       | Stories                                     | 1:31   |      |      | 100.0 |
+|       | Active                                      |        | 1:31 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |        |      | 0:12 |  13.2 |
+| code  | Run qt client and validate all new features |        |      | 1:19 |  86.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-01 Thu 19:08]
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *6:06* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 6:06   |      |      | 100.0 |
-|       | Active                                |        | 6:06 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:05 |  17.8 |
-| code  | Rerun SQL scripts from scratch        |        |      | 5:01 |  82.2 |
+#+CAPTION: Clock summary at [2026-01-02 Fri 01:32]
+|       | <75>                                        |         |       |      |       |
+| Tags  | Headline                                    | Time    |       |      |     % |
+|-------+---------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                | *10:28* |       |      | 100.0 |
+|-------+---------------------------------------------+---------+-------+------+-------|
+|       | Stories                                     | 10:28   |       |      | 100.0 |
+|       | Active                                      |         | 10:28 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       | 1:17 |  12.3 |
+| code  | Rerun SQL scripts from scratch              |         |       | 7:52 |  75.2 |
+| code  | Run qt client and validate all new features |         |       | 1:19 |  12.6 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2026-01-02 Fri 01:20]--[2026-01-02 Fri 01:32] =>  0:12
     CLOCK: [2025-12-31 Wed 10:21]--[2025-12-31 Wed 11:26] =>  1:05
     :END:
 
@@ -262,24 +265,264 @@ Highlights:
   is set to 'ores'.
 #+end_quote
 
-*** STARTED Run qt client and validate all new features                :code:
+*** COMPLETED =ores.qt= is not using client session                    :code:
+
+*Rationale*: implemented in previous sprint.
+
+Refactor client manager to use it.
+
+*** COMPLETED Remove seeders in code                                   :code:
+
+Since we have to seed from SQL scripts, having code seeding as well is just
+confusing.
+
+*** COMPLETED Run qt client and validate all new features              :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-02 Fri 00:44]--[2026-01-02 Fri 01:20] =>  0:36
+    CLOCK: [2026-01-02 Fri 00:00]--[2026-01-02 Fri 00:43] =>  0:43
+    :END:
 
 We added quite a few new features during the holidays but due to the laptop
 constraints we could not validate them properly. Check they all work correctly
 and fix what needs fixing. Features:
 
-- session monitoring
-- flags display
--
-
-*** Remove seeders in code                                             :code:
-
-Since we have to seed from SQL scripts, having code seeding as well is just
-confusing.
+- session monitoring. Looks good for tracking, cannot view in app.
+- flags display. Looks good.
+- Roles and permissions: cannot edit, display should use a table.
 
 *** Rename =ores.shell= to =ores.comms.shell=                          :code:
 
 The shell is specific to the binary protocol.
+
+*** Allow editing of permissions in ores.qt                            :code:
+
+We can see but not edit. Also, test permissions to make sure they are being
+enforced.
+
+*** Add a dashboard for users                                          :code:
+
+As per screenshots:
+
+[[./user_dashboard_core_ui.png]]
+
+[[./dashboard_ideas.png]]
+
+[[./dashboard_ideas_II.png]]
+
+Notes:
+
+- add command to shell to list sessions.
+
+*** Refactor options and parser                                        :code:
+
+We have a lot of boost program options parsers and options. We need to do an
+inventory of all of the implementations and figure out if we can have common
+code under utility.
+
+*** Add sign-up approval workflow                                      :code:
+
+Should also handle invite codes, etc.
+
+We did most of the work except invite codes.
+
+*** Assorted fixes to currency dialog                                  :code:
+
+At present the following is not working or is a snag:
+
+- can we make the details windows unmaximisable.
+- currencies history is broken, does not show changes diff. Done.
+- version is zero. Done.
+- update the modified by and modified at in currencies to use recorded
+  terminology. Done.
+- We need to either make the columns configurable, or remove some less useful
+  columns such as symbol, fraction etc.
+- save new currency does not close dialog.
+- can we refactor reload logic into common entity code.
+
+*** Assorted fixes to accounts dialog                                  :code:
+
+- remove "grant administrative privileges" from details screen.
+- old users remain online. Server should check sessions on start and update
+  table.
+- cannot tell who unlocked an account and when.
+- do not use "old" for accounts who never logged in. Maybe "unused"?
+- at present you can't tell if you asked for a password reset. We probably
+  should use Status to mean: locked, unlocked, reset. And maybe "Age" or "Last
+  Login" to mean: online, never, recent, old.
+- add right-click menu with the context options from the toolbar.
+- after reload, lock etc remember which line we were on and return to it.
+- email updated message is truncated.
+- user cannot lock it's own account.
+
+
+
+*** Implement entity history in shell                                  :code:
+
+We need to add a command in shell to show entity history.
+
+Notes:
+
+- for the history diff we could use a simple unified diff format.
+
+*** Consider adding an "entity waterfall"                              :code:
+
+It would be nice to be able to see what entities have been added, deleted,
+modified, etc. This would work as a running commentary.
+
+*** Notification of deletes                                            :code:
+
+At present it is easy to see new rows or modified rows in an entity dialog. It
+is not possible to see deleted rows. One way to do this is to preserve state
+from before reload by key. Any entities which are not present after reload can
+be shown as red. History then allows users to re-instate deleted entities.
+
+*** Add REPL to Qt                                                     :code:
+
+Users should be able to interact with the system directly via the REPL. Add a
+simple widget for this.
+
+*** Add entity messages should not set modified by                     :code:
+
+At present you can supply any modified by you want in the protocol messages. It
+makes more sense to say the message must have the modified by as the user logged
+in from the session.
+
+*** Add heat map of user sessions                                      :code:
+
+Things to measure:
+
+- duration of sessions (once we have session table).
+- bytes sent/received per session (possibly 3-D plot?). Also good for anomaly
+  detection.
+- mine github for ideas.
+
+*** Add currencies update command to shell                             :code:
+
+At present we can only add new currencies. We also need to be able to update.
+Also, adding currencies requires supplying all parameters.
+
+*** Subscribe on reconnect fails                                       :code:
+
+Logs:
+
+#+begin_src logview
+2025-12-13 01:14:35.108648 [DEBUG] [ores.comms.messaging.frame] Successfully deserialized frame subscribe_request (0x10)
+2025-12-13 01:14:35.108680 [DEBUG] [ores.comms.net.connection] Successfully deserialized frame, type: subscribe_request (0x10) total size: 60
+2025-12-13 01:14:35.108708 [DEBUG] [ores.comms.net.server_session] Received message type subscribe_request (0x10)
+2025-12-13 01:14:35.108750 [DEBUG] [ores.comms.messaging.message_dispatcher] Dispatching message type subscribe_request (0x10)
+2025-12-13 01:14:35.108811 [WARN] [ores.comms.service.auth_session_service] Authorization failed for subscribe_request (0x10) from 127.0.0.1:45498: not authenticated
+2025-12-13 01:14:35.108842 [WARN] [ores.comms.messaging.message_dispatcher] Authorization denied for subscribe_request (0x10) from 127.0.0.1:45498
+2025-12-13 01:14:35.108875 [ERROR] [ores.comms.net.server_session] Message dispatch failed: 10
+#+end_src
+
+*** Unsubscribe before logout                                          :code:
+
+On logout we see the following:
+
+#+begin_src logview
+2025-12-11 22:45:54.559906 [INFO] [ores.accounts.messaging.accounts_message_handler] Successfully logged out account: 019a5e49-476c-70ce-9909-3887cae700e9
+2025-12-11 22:45:54.559940 [DEBUG] [ores.comms.messaging.message_dispatcher] Successfully dispatched message, response type logout_response (0x200e) correlation_id=763
+2025-12-11 22:45:54.559978 [DEBUG] [ores.comms.messaging.frame] Serialised frame logout_response (0x200e), size: 58
+2025-12-11 22:45:54.560005 [DEBUG] [ores.comms.net.connection] Writing frame of size 58 type: logout_response (0x200e) sequence: 767
+2025-12-11 22:45:54.560083 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
+2025-12-11 22:45:54.560113 [DEBUG] [ores.comms.net.session] Sent response for message type logout_request (0x200d)
+2025-12-11 22:45:54.560137 [INFO] [ores.comms.net.session] Logout completed, closing connection
+2025-12-11 22:45:54.560200 [ERROR] [ores.comms.net.session] Exception in notification writer: co_await: Operation canceled [system:125]
+2025-12-11 22:45:54.560233 [DEBUG] [ores.comms.net.session] Notification writer coroutine ended
+2025-12-11 22:45:54.560281 [INFO] [ores.comms.net.session] Unregistering session '127.0.0.1:38366' from subscription manager
+#+end_src
+
+We should probably unsubscribe before we logout.
+
+*** Use events in comms and accounts                                   :code:
+
+Now we have an event bus, we should create events for:
+
+- connect, disconnect, retry
+- login, logout
+
+*** Data in login info looks spurious                                  :code:
+
+We see stuff like this:
+
+#+begin_src
+oresdb=> select * from login_info;
+              account_id              |     last_ip     | last_attempt_ip | failed_logins | locked |       last_login       | online
+--------------------------------------+-----------------+-----------------+---------------+--------+------------------------+--------
+ 019a4439-be9e-798e-bf2f-927ca236f84c | 0.0.0.0         | 0.0.0.0         |             0 |      0 | 1969-12-31 23:00:00+01 |      0
+ 019a3ba6-bd11-709b-b93d-fea9403d3d39 | 127.0.0.1       | 127.0.0.1       |             0 |      0 | 2025-10-31 19:03:48+00 |      1
+ 019a4431-98f8-79ae-9fc8-f6a6e77a0490 | 192.168.1.100   | 192.168.1.100   |             0 |      0 | 2025-11-02 10:51:32+00 |      1
+ 019a4431-9a7d-7b3d-a1cb-b9e02d44c804 | 0.0.0.0         | 192.168.1.100   |             1 |      0 | 1969-12-31 23:00:00+01 |      0
+
+#+end_src
+
+Also, we need a login timestamp and a logout timestamp so we can measure session
+duration.
+
+*** Currencies displays when not connected                             :code:
+
+At present we can display currencies even before we connect. This is probably ok
+but we should at least state we are not connected. Alternatively it should be
+disabled.
+
+*** Add a delete all button which deletes all currencies               :code:
+
+It is useful especially in test environments to be able to delete all entities
+before a re-import.
+
+Notes:
+
+- purge button.
+
+
+*** Add screen in qt to exit bootstrap mode                            :code:
+
+As per claude:
+
+The create_initial_admin_request message type serves several important purposes
+that differentiate it from the CLI and REPL approaches:
+
+Why We Need create_initial_admin_request
+
+  1. Network-accessible bootstrap flow
+  - Allows remote initial setup from localhost without requiring shell/CLI access
+  to the server
+  - Enables a web-based "first-run" setup experience (like many web applications)
+  - The Qt client can provide a proper UI for initial admin account creation
+
+  2. Localhost-only security enforcement
+  - The endpoint enforces that it can only be called from localhost (127.0.0.1 or
+  ::1) at line
+  projects/ores.accounts/src/messaging/accounts_message_handler.cpp:320
+  - Provides network-accessible bootstrap with security guarantees
+  - Prevents remote bootstrap attacks
+
+  3. Atomic mode transition
+  - The endpoint both creates the admin AND exits bootstrap mode in a single atomic
+   operation (lines 362-367 in accounts_message_handler.cpp)
+  - Guarantees consistency - can't create admin without exiting bootstrap mode
+
+  4. Service-layer validation
+  - Goes through full service layer with password validation and business logic
+  - The CLI is essentially an "administrative backdoor" that bypasses the service
+  layer and writes directly to the database
+
+  5. Protocol-compliant workflow
+  - Clients speaking the binary protocol need a proper bootstrap endpoint
+  - REPL create_account_request is blocked in bootstrap mode (by enforcement logic)
+  - create_initial_admin_request is the only endpoint that works in bootstrap mode
+
+  The Distinction
+
+  - CLI approach: Administrative backdoor, direct database access, bypasses all
+  service logic
+  - create_initial_admin_request: Proper network-accessible bootstrap flow with
+  localhost restriction and atomic mode transition
+  - REPL create_account_request: Normal account creation, blocked in bootstrap mode
+
+  The create_initial_admin_request enables a proper "first-run experience" for
+  clients connecting via the network protocol, while maintaining security through
+  localhost-only access.
 
 * Footer
 

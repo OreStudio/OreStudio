@@ -4,8 +4,9 @@
 #+TITLE:      ORE Studio
 #+AUTHOR:     Marco Craveiro et al.
 #+EMAIL:      marco.craveiro@gmail.com
-#+LANGUAGE:   en
-#+OPTIONS: html-postamble:nil toc:nil num:nil ^:nil title:nil
+#+language:   en
+#+startup: inlineimages
+#+options: html-postamble:nil toc:nil num:nil ^:nil title:nil
 #+HTML_DOCTYPE: html5
 
 #+HTML: <header>
@@ -36,7 +37,7 @@ point-and-click reporting, trade modelling and market-data management.
 
 #+ATTR_HTML: :alt ORE Studio Qt User Interface :title ORE Studio Qt User Interface :align center
 #+ATTR_HTML: :width 100% :height 100%
-[[./assets/images/MainApplicationNew.png]]
+[[./assets/images/MainWindow-v0.0.8.png]]
 
 #+HTML: <div class="grid">
 #+HTML: <div class="card">

@@ -61,23 +61,23 @@ WHERE d.datname LIKE 'ores_test_%'
 ORDER BY d.datname;
 
 -- View that identifies all ORES databases on the server.
--- This includes instance databases (ores_*), templates, and test databases.
--- Excludes the base 'ores' database.
+-- This includes instance databases (ores_*, oresdb_*) and test databases.
+-- Excludes infrastructure databases (ores, ores_admin, ores_template).
 CREATE OR REPLACE VIEW ores_databases AS
 SELECT d.datname::TEXT AS database_name
 FROM pg_database d
 WHERE (d.datname LIKE 'ores_%' OR d.datname LIKE 'oresdb_%')
-  AND d.datname <> 'ores'
+  AND d.datname NOT IN ('ores', 'ores_admin', 'ores_template')
 ORDER BY d.datname;
 
--- View that identifies ORES instance databases (excludes test and template).
+-- View that identifies ORES instance databases (excludes test, template, admin).
 CREATE OR REPLACE VIEW ores_instance_databases AS
 SELECT d.datname::TEXT AS database_name
 FROM pg_database d
 WHERE d.datname LIKE 'ores_%'
   AND d.datname NOT LIKE 'ores_test_%'
   AND d.datname NOT LIKE '%_template'
-  AND d.datname <> 'ores'
+  AND d.datname NOT IN ('ores', 'ores_admin')
 ORDER BY d.datname;
 
 --------------------------------------------------------------------------------

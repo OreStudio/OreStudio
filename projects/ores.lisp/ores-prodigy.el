@@ -39,6 +39,18 @@ BUILD-TYPE should be either 'debug or 'release."
          (path (concat root "build/output/" build-dir "/publish")))
     path))
 
+(defun ores/path-to-wt-resources (build-type)
+  "Return the path to the Wt resources directory for BUILD-TYPE.
+BUILD-TYPE should be either 'debug or 'release."
+  (let* ((pr (project-current t))
+         (root (expand-file-name (project-root pr)))
+         (build-dir (if (eq build-type 'release)
+                        "linux-clang-release"
+                      "linux-clang-debug"))
+         (path (concat root "build/output/" build-dir
+                       "/vcpkg_installed/x64-linux/share/Wt/resources")))
+    path))
+
 (defcustom ores/database-name "ores_delicate_violet"
   "Database name for ORES services.
 This should be set to an instance database name like 'ores_autumn_sound'."
@@ -138,6 +150,8 @@ configured database name and user."
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.wt")
   :tags '(ores debug wt-server)
+  :env `(("WT_RESOURCES_DIR" ,(ores/path-to-wt-resources 'debug))
+         ,@(ores/setup-environment "WT"))
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
@@ -147,6 +161,8 @@ configured database name and user."
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
   :command (concat (ores/path-to-publish 'release) "/bin/ores.wt")
   :tags '(ores release wt-server)
+  :env `(("WT_RESOURCES_DIR" ,(ores/path-to-wt-resources 'release))
+         ,@(ores/setup-environment "WT"))
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 

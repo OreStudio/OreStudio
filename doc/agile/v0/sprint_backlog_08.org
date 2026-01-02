@@ -336,10 +336,20 @@ code under utility.
 
 *** STARTED Check functionality in =ores.wt=                           :code:
     :LOGBOOK:
+    CLOCK: [2026-01-02 Fri 11:00]--[2026-01-02 Fri 12:49] =>  1:49
     CLOCK: [2026-01-02 Fri 02:01]--[2026-01-02 Fri 02:15] =>  0:14
     :END:
 
 We created the application but did not validate it.
+
+Notes:
+
+- need support for dark and light themes.
+- currencies are hard-coded.
+- password written to log file.
+- can't see details in accounts dialog.
+- edit currency dialog is too tall.
+- use images for site logo, etc.
 
 *** Rename =ores.shell= to =ores.comms.shell=                          :code:
 

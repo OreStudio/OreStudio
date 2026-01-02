@@ -23,7 +23,7 @@
 #include <ostream>
 #include <cstring>
 #include <boost/crc.hpp>
-#include <rfl.hpp>
+#include "ores.utility/rfl/reflectors.hpp"
 #include <rfl/json.hpp>
 #include "ores.comms/messaging/compression.hpp"
 
@@ -364,8 +364,7 @@ std::expected<std::vector<std::byte>, error_code> frame::decompressed_payload() 
 }
 
 std::ostream& operator<<(std::ostream& s, const frame_header& v) {
-    rfl::json::write(v, s);
-    return s;
+    return s << rfl::json::write(v);
 }
 
 }

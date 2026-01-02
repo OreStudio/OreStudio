@@ -47,7 +47,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         jwt-cpp::jwt-cpp
         OpenSSL::SSL
-        OpenSSL::Crypto
-        reflectcpp::reflectcpp)
+        OpenSSL::Crypto)
+# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

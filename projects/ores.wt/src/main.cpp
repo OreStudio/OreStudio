@@ -43,11 +43,22 @@ create_application(const Wt::WEnvironment& env) {
 }
 
 std::optional<std::string> get_env(const char* name) {
+#ifdef _WIN32
+    char* value = nullptr;
+    size_t len = 0;
+    if (_dupenv_s(&value, &len, name) == 0 && value != nullptr) {
+        std::string result(value);
+        free(value);
+        return result;
+    }
+    return std::nullopt;
+#else
     const char* value = std::getenv(name);
     if (value != nullptr && value[0] != '\0') {
         return std::string(value);
     }
     return std::nullopt;
+#endif
 }
 
 int run(int argc, char* argv[]) {

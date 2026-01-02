@@ -38,7 +38,15 @@ using namespace ores::telemetry::log;
 using ores::utility::converter::base64_converter;
 
 std::uint64_t password_manager::get_n_parameter() {
+#ifdef _WIN32
+    char* env_value = nullptr;
+    size_t len = 0;
+    static const bool use_fast = (_dupenv_s(&env_value, &len, "ORES_TEST_PASSWORD_FAST") == 0
+                                  && env_value != nullptr);
+    free(env_value);
+#else
     static const bool use_fast = std::getenv("ORES_TEST_PASSWORD_FAST") != nullptr;
+#endif
     if (use_fast) {
         return TEST_N;
     }

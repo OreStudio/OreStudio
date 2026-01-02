@@ -28,28 +28,27 @@
 (autoload 'prodigy-define-service "prodigy")
 (defvar prodigy-services)
 
-(defun ores/path-to-publish (build-type)
-  "Return the path to the publish directory for BUILD-TYPE.
-BUILD-TYPE should be either 'debug or 'release."
-  (let* ((pr (project-current t))
-         (root (project-root pr))
-         (build-dir (if (eq build-type 'release)
-                        "linux-clang-release"
-                      "linux-clang-debug"))
-         (path (concat root "build/output/" build-dir "/publish")))
-    path))
-
-(defun ores/path-to-wt-resources (build-type)
-  "Return the path to the Wt resources directory for BUILD-TYPE.
-BUILD-TYPE should be either 'debug or 'release."
+(defun ores--get-build-output-path (build-type)
+  "Return the path to the build output directory for BUILD-TYPE.
+BUILD-TYPE should be either 'debug or 'release.
+This is an internal helper function."
   (let* ((pr (project-current t))
          (root (expand-file-name (project-root pr)))
          (build-dir (if (eq build-type 'release)
                         "linux-clang-release"
-                      "linux-clang-debug"))
-         (path (concat root "build/output/" build-dir
-                       "/vcpkg_installed/x64-linux/share/Wt/resources")))
-    path))
+                      "linux-clang-debug")))
+    (concat root "build/output/" build-dir)))
+
+(defun ores/path-to-publish (build-type)
+  "Return the path to the publish directory for BUILD-TYPE.
+BUILD-TYPE should be either 'debug or 'release."
+  (concat (ores--get-build-output-path build-type) "/publish"))
+
+(defun ores/path-to-wt-resources (build-type)
+  "Return the path to the Wt resources directory for BUILD-TYPE.
+BUILD-TYPE should be either 'debug or 'release."
+  (concat (ores--get-build-output-path build-type)
+          "/vcpkg_installed/x64-linux/share/Wt/resources"))
 
 (defcustom ores/database-name "ores_delicate_violet"
   "Database name for ORES services.

@@ -2771,9 +2771,9 @@ Feature flags now in =ores.variability=:
 
 ****** DONE Phase 5: Update SQL Setup Scripts
 
-- Review SQL scripts in =projects/sql/= related to feature flags
+- Review SQL scripts in =projects/ores.sql/= related to feature flags
 - Update comments/script names to reflect variability ownership
-- Consider creating =projects/sql/variability/= subdirectory
+- Consider creating =projects/ores.sql/variability/= subdirectory
 - Update database schema documentation
 
 ****** DONE Phase 6: Update ores.accounts Dependencies

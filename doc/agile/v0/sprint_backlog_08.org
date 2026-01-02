@@ -276,6 +276,37 @@ Refactor client manager to use it.
 Since we have to seed from SQL scripts, having code seeding as well is just
 confusing.
 
+#+begin_quote
+This pull request fundamentally shifts the database seeding mechanism from C++
+application code to SQL population scripts. This change centralizes the initial
+setup of permissions, roles, and system flags directly within the database
+template, simplifying application startup logic and ensuring consistent data
+across new instances. Consequently, the test suites have been refactored to
+accommodate this pre-seeded state, improving test reliability and reflecting the
+new database initialization flow.
+
+Highlights:
+
+- Migration to SQL for Database Seeding: The C++ rbac_seeder and
+  system_flags_seeder have been replaced with dedicated SQL population scripts
+  for permissions, roles, and system flags, centralizing initial data setup
+  within the database template.
+- Directory Renaming for Clarity: The sql/data/ directory, containing various
+  population scripts and assets, has been renamed to sql/populate/ to better
+  reflect its purpose.
+- Test Suite Adaptation: Numerous test cases across ores.iam, ores.risk, and
+  ores.variability have been updated to correctly handle pre-seeded database
+  data, moving away from assumptions of empty databases and instead accounting
+  for existing entries.
+- Streamlined Instance Initialization: The init_instance.sql script has been
+  simplified, removing direct seeding calls as the population is now handled
+  during the database template creation process.
+- Documentation Refinements: A modeling link in
+  projects/modeling/system_model.org was corrected, and
+  doc/recipes/sql_recipes.org was updated with new SQL commands and output
+  examples.
+#+end_quote
+
 *** COMPLETED Run qt client and validate all new features              :code:
     :LOGBOOK:
     CLOCK: [2026-01-02 Fri 00:44]--[2026-01-02 Fri 01:20] =>  0:36
@@ -289,6 +320,12 @@ and fix what needs fixing. Features:
 - session monitoring. Looks good for tracking, cannot view in app.
 - flags display. Looks good.
 - Roles and permissions: cannot edit, display should use a table.
+
+*** STARTED Refactor options and parser                                :code:
+
+We have a lot of boost program options parsers and options. We need to do an
+inventory of all of the implementations and figure out if we can have common
+code under utility.
 
 *** Rename =ores.shell= to =ores.comms.shell=                          :code:
 
@@ -313,34 +350,34 @@ Notes:
 
 - add command to shell to list sessions.
 
-*** Refactor options and parser                                        :code:
-
-We have a lot of boost program options parsers and options. We need to do an
-inventory of all of the implementations and figure out if we can have common
-code under utility.
-
 *** Add sign-up approval workflow                                      :code:
 
 Should also handle invite codes, etc.
 
 We did most of the work except invite codes.
 
+*** Listen for events in details dialog                                :code:
+
+At present we are only listening for details in the main dialogs (accounts,
+currencies). It would be nice to be able to listen to events in the details
+dialogs. however, it needs to listen to events only for that specific entity
+(e.g. currency pair, account etc). Not sure we are setup for this.
+
 *** Assorted fixes to currency dialog                                  :code:
 
 At present the following is not working or is a snag:
 
 - can we make the details windows unmaximisable.
-- currencies history is broken, does not show changes diff. Done.
-- version is zero. Done.
-- update the modified by and modified at in currencies to use recorded
-  terminology. Done.
 - We need to either make the columns configurable, or remove some less useful
-  columns such as symbol, fraction etc.
-- save new currency does not close dialog.
-- can we refactor reload logic into common entity code.
+  columns such as symbol, fraction etc. These are still visible in details.
+- can we refactor reload logic into common entity code?
+- wrong icon in revert for currency history. no option to reload history
+- when creating a new currency we cannot attach a flag to it.
 
 *** Assorted fixes to accounts dialog                                  :code:
 
+- last login field does not fit the screen.
+- cannot reload account in account details. Need reload button.
 - remove "grant administrative privileges" from details screen.
 - old users remain online. Server should check sessions on start and update
   table.
@@ -353,8 +390,6 @@ At present the following is not working or is a snag:
 - after reload, lock etc remember which line we were on and return to it.
 - email updated message is truncated.
 - user cannot lock it's own account.
-
-
 
 *** Implement entity history in shell                                  :code:
 

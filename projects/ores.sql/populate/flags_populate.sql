@@ -17,7 +17,7 @@
 --
 -- Script to populate SVG flag images into the database
 --
--- This file was auto-generated from the SVG files in projects/sql/data/flags/
+-- This file was auto-generated from the SVG files in projects/ores.sql/data/flags/
 -- To regenerate, run: python3 generate_flags_sql.py
 --
 -- Prerequisites:
@@ -25,7 +25,7 @@
 --   - The load_flags.sql script must have been run to create the load_flag function
 --
 -- Usage:
---   psql -h localhost -U oresadmin -d ores -f projects/sql/flags_populate.sql
+--   psql -h localhost -U oresadmin -d ores -f projects/ores.sql/flags_populate.sql
 --
 
 -- Set schema

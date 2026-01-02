@@ -20,7 +20,6 @@
 #include "ores.qt/CommandLineParser.hpp"
 
 #include <optional>
-#include <boost/process/v2/pid.hpp>
 #include "ores.comms/messaging/handshake_protocol.hpp"
 
 namespace ores::qt {
@@ -101,25 +100,11 @@ std::optional<telemetry::log::logging_options> CommandLineParser::loggingOptions
     }
 
     telemetry::log::logging_options r;
-
-    // Build the filename
-    std::string filename = parser_.value("log-filename").toStdString();
-    if (parser_.isSet("log-include-pid")) {
-        // Insert PID before the extension
-        auto dot_pos = filename.rfind('.');
-        if (dot_pos != std::string::npos) {
-            filename = filename.substr(0, dot_pos) + "." +
-                std::to_string(boost::process::v2::current_pid()) +
-                filename.substr(dot_pos);
-        } else {
-            filename += "." + std::to_string(boost::process::v2::current_pid());
-        }
-    }
-
-    r.filename = filename;
+    r.filename = parser_.value("log-filename").toStdString();
     r.output_to_console = parser_.isSet("log-to-console");
     r.output_directory = parser_.value("log-directory").toStdString();
     r.severity = parser_.value("log-level").toStdString();
+    r.include_pid = parser_.isSet("log-include-pid");
 
     return r;
 }

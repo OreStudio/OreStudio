@@ -33,6 +33,7 @@ const std::string logging_log_to_console_arg("log-to-console");
 const std::string logging_log_level_arg("log-level");
 const std::string logging_log_dir_arg("log-directory");
 const std::string logging_log_filename_arg("log-filename");
+const std::string logging_log_include_pid_arg("log-include-pid");
 const std::string logging_log_level_info("info");
 
 }
@@ -53,7 +54,9 @@ logging_configuration::make_options_description(const std::string& log_file) {
         ("log-directory", value<std::string>()->default_value("log"),
             "Where to place the log files.")
         ("log-filename", value<std::string>()->default_value(log_file),
-                "Name of the log file.");
+            "Name of the log file.")
+        ("log-include-pid",
+            "Include process ID in log filename (e.g., app.12345.log).");
 
     return r;
 }
@@ -69,6 +72,7 @@ read_options(const boost::program_options::variables_map& vm) {
     r.filename = vm[logging_log_filename_arg].as<std::string>();
     r.output_to_console = vm.count(logging_log_to_console_arg) != 0;
     r.output_directory = vm[logging_log_dir_arg].as<std::string>();
+    r.include_pid = vm.count(logging_log_include_pid_arg) != 0;
     const auto s(vm[logging_log_level_arg].as<std::string>());
     try {
         to_boost_severity(s);

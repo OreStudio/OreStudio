@@ -47,6 +47,13 @@ struct logging_options final {
      */
     std::filesystem::path output_directory;
     /**
+     * @brief If true, includes the process ID in the log filename.
+     *
+     * When enabled, the filename is modified to include the PID before the
+     * extension. For example: "app.log" becomes "app.12345.log".
+     */
+    bool include_pid = false;
+    /**
      * @brief Tag to filter the logging. If supplied, only messages with this
      * tag will be logged.
      */

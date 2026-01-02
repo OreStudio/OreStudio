@@ -18,7 +18,6 @@
  *
  */
 #include <iostream>
-#include <cstdlib>
 #include <openssl/crypto.h>
 #include <boost/scope_exit.hpp>
 #include <Wt/WServer.h>
@@ -29,10 +28,12 @@
 #include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.utility/version/version.hpp"
+#include "ores.platform/environment/environment.hpp"
 
 namespace {
 
 using namespace ores::telemetry::log;
+using ores::platform::environment::environment;
 
 const std::string default_address = "0.0.0.0";
 const std::string default_port = "8080";
@@ -40,25 +41,6 @@ const std::string default_port = "8080";
 std::unique_ptr<Wt::WApplication>
 create_application(const Wt::WEnvironment& env) {
     return std::make_unique<ores::wt::app::ore_application>(env);
-}
-
-std::optional<std::string> get_env(const char* name) {
-#ifdef _WIN32
-    char* value = nullptr;
-    size_t len = 0;
-    if (_dupenv_s(&value, &len, name) == 0 && value != nullptr) {
-        std::string result(value);
-        free(value);
-        return result;
-    }
-    return std::nullopt;
-#else
-    const char* value = std::getenv(name);
-    if (value != nullptr && value[0] != '\0') {
-        return std::string(value);
-    }
-    return std::nullopt;
-#endif
 }
 
 int run(int argc, char* argv[]) {
@@ -118,7 +100,7 @@ int run(int argc, char* argv[]) {
     // Add resources directory if set via environment variable.
     // Note: Uses WT_RESOURCES_DIR (not ORES_WT_) to avoid conflict with
     // the ORES_WT_ prefix used by the option parser's environment mapper.
-    auto resources_dir = get_env("WT_RESOURCES_DIR");
+    auto resources_dir = environment::get_value("WT_RESOURCES_DIR");
     if (resources_dir.has_value()) {
         wt_argv_strings.push_back("--resources-dir");
         wt_argv_strings.push_back(resources_dir.value());

@@ -24,29 +24,23 @@
 #include <sstream>
 #include <stdexcept>
 #include <cstring>
-#include <cstdlib>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/kdf.h>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
 #include "ores.utility/convert/base64_converter.hpp"
+#include "ores.platform/environment/environment.hpp"
 
 namespace ores::iam::security {
 
 using namespace ores::telemetry::log;
 using ores::utility::converter::base64_converter;
+using ores::platform::environment::environment;
 
 std::uint64_t password_manager::get_n_parameter() {
-#ifdef _WIN32
-    char* env_value = nullptr;
-    size_t len = 0;
-    static const bool use_fast = (_dupenv_s(&env_value, &len, "ORES_TEST_PASSWORD_FAST") == 0
-                                  && env_value != nullptr);
-    free(env_value);
-#else
-    static const bool use_fast = std::getenv("ORES_TEST_PASSWORD_FAST") != nullptr;
-#endif
+    static const bool use_fast =
+        environment::get_value("ORES_TEST_PASSWORD_FAST").has_value();
     if (use_fast) {
         return TEST_N;
     }

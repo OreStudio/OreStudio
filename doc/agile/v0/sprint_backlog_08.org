@@ -217,6 +217,9 @@ Time spent doing the demo. This is the first one so it will be very basic.
 
 *** COMPLETED Rerun SQL scripts from scratch                           :code:
     :LOGBOOK:
+    CLOCK: [2026-01-01 Thu 22:30]--[2026-01-01 Thu 23:59] =>  1:29
+    CLOCK: [2026-01-01 Thu 20:15]--[2026-01-01 Thu 21:10] =>  0:55
+    CLOCK: [2026-01-01 Thu 19:08]--[2026-01-01 Thu 19:35] =>  0:27
     CLOCK: [2026-01-01 Thu 17:29]--[2026-01-01 Thu 19:05] =>  1:36
     CLOCK: [2026-01-01 Thu 16:30]--[2026-01-01 Thu 17:28] =>  0:58
     CLOCK: [2025-12-31 Wed 11:27]--[2025-12-31 Wed 13:54] =>  2:27
@@ -260,10 +263,6 @@ Highlights:
 #+end_quote
 
 *** STARTED Run qt client and validate all new features                :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-01 Thu 20:15]
-    CLOCK: [2026-01-01 Thu 19:08]--[2026-01-01 Thu 19:35] =>  0:27
-    :END:
 
 We added quite a few new features during the holidays but due to the laptop
 constraints we could not validate them properly. Check they all work correctly

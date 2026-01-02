@@ -39,7 +39,7 @@ BUILD-TYPE should be either 'debug or 'release."
          (path (concat root "build/output/" build-dir "/publish")))
     path))
 
-(defcustom ores/database-name "ores"
+(defcustom ores/database-name "ores_delicate_violet"
   "Database name for ORES services.
 This should be set to an instance database name like 'ores_autumn_sound'."
   :type 'string

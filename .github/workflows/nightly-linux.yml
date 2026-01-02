@@ -66,6 +66,19 @@ jobs:
             family: linux
             compiler: clang
     steps:
+      - name: Free disk space
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h
+          # Remove large unused tools to free up disk space
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force || true
+          echo "=== Disk space after cleanup ==="
+          df -h
+
       - uses: actions/checkout@v6.0.1
         with:
           ref: main
@@ -109,11 +122,11 @@ jobs:
 
       - name: Setup Template Database
         run: |
-          psql ${{ steps.postgres.outputs.connection-uri }} -f ./projects/sql/setup_template.sql
+          psql ${{ steps.postgres.outputs.connection-uri }} -f ./projects/ores.sql/setup_template.sql
 
       - name: Setup Main Database
         run: |
-          psql ${{ steps.postgres.outputs.connection-uri }} -f ./projects/sql/create_database.sql
+          psql ${{ steps.postgres.outputs.connection-uri }} -f ./projects/ores.sql/create_database.sql
 
       - name: Get latest CMake
         uses: lukka/get-cmake@v4.2.1

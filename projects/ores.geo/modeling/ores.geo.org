@@ -52,7 +52,7 @@ Geolocation data is stored in PostgreSQL with the following tables:
 
 1. Create the schema:
    #+begin_src sql
-   psql -d ores -f projects/sql/schema/geolocation_create.sql
+   psql -d ores -f projects/ores.sql/schema/geolocation_create.sql
    #+end_src
 
 2. Download and extract GeoLite2-City-CSV.zip from MaxMind
@@ -60,7 +60,7 @@ Geolocation data is stored in PostgreSQL with the following tables:
 3. Import the data:
    #+begin_src sql
    psql -d ores -v data_dir='/path/to/GeoLite2-City-CSV' \
-        -f projects/sql/data/geolocation_import.sql
+        -f projects/ores.sql/data/geolocation_import.sql
    #+end_src
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

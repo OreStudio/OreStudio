@@ -32,7 +32,7 @@ handling the database schema aspects of domain types.
 
 ** SQL file organization
 
-All SQL files are located under =projects/sql/= with the following structure:
+All SQL files are located under =projects/ores.sql/= with the following structure:
 
 - =schema/=: Table creation scripts (=*_create.sql=), trigger scripts (=*_trigger.sql=), and function scripts
 - =drop/=: Drop scripts (=*_drop.sql=) for cleanup and rollback
@@ -43,7 +43,7 @@ All SQL files are located under =projects/sql/= with the following structure:
 
 ** Step 1: Create the table definition
 
-Create a file =projects/sql/schema/TABLE_NAME_create.sql=.
+Create a file =projects/ores.sql/schema/TABLE_NAME_create.sql=.
 
 The file must include:
 
@@ -72,11 +72,11 @@ create table if not exists "ores"."TABLE_NAME" (
 5. *Version trigger function* for temporal versioning
 6. *Insert/update triggers*
 
-Follow the pattern in =projects/sql/schema/accounts_create.sql=.
+Follow the pattern in =projects/ores.sql/schema/accounts_create.sql=.
 
 ** Step 2: Create notification trigger (if needed)
 
-If the table needs real-time notifications, create =projects/sql/schema/TABLE_NAME_notify_trigger.sql=:
+If the table needs real-time notifications, create =projects/ores.sql/schema/TABLE_NAME_notify_trigger.sql=:
 
 #+begin_src sql
 set schema 'ores';
@@ -95,11 +95,11 @@ for each row
 execute function notify_TABLE_NAME_changes();
 #+end_src
 
-Follow the pattern in =projects/sql/schema/accounts_notify_trigger.sql=.
+Follow the pattern in =projects/ores.sql/schema/accounts_notify_trigger.sql=.
 
 ** Step 3: Create drop script
 
-Create =projects/sql/drop/TABLE_NAME_drop.sql=:
+Create =projects/ores.sql/drop/TABLE_NAME_drop.sql=:
 
 #+begin_src sql
 set schema 'ores';
@@ -110,11 +110,11 @@ drop function if exists update_TABLE_NAME();
 drop table if exists "ores"."TABLE_NAME";
 #+end_src
 
-If you created a notify trigger, also create =projects/sql/drop/TABLE_NAME_notify_trigger_drop.sql=.
+If you created a notify trigger, also create =projects/ores.sql/drop/TABLE_NAME_notify_trigger_drop.sql=.
 
 ** Step 4: Create population script (if needed)
 
-For reference data, create =projects/sql/data/TABLE_NAME_populate.sql=:
+For reference data, create =projects/ores.sql/data/TABLE_NAME_populate.sql=:
 
 #+begin_src sql
 set schema 'ores';
@@ -126,11 +126,11 @@ values
 on conflict do nothing;
 #+end_src
 
-Follow the pattern in =projects/sql/data/currencies_populate.sql=.
+Follow the pattern in =projects/ores.sql/data/currencies_populate.sql=.
 
 ** Step 5: Update orchestration scripts
 
-1. Add the new creation script to =projects/sql/template/create_schema.sql=:
+1. Add the new creation script to =projects/ores.sql/template/create_schema.sql=:
 
 #+begin_src sql
 -- In appropriate section (Core tables, RBAC tables, etc.)
@@ -138,7 +138,7 @@ Follow the pattern in =projects/sql/data/currencies_populate.sql=.
 \ir ../schema/TABLE_NAME_notify_trigger.sql  -- if applicable
 #+end_src
 
-2. Add the drop script to =projects/sql/drop_all.sql= (in reverse dependency order):
+2. Add the drop script to =projects/ores.sql/drop_all.sql= (in reverse dependency order):
 
 #+begin_src sql
 \ir ./drop/TABLE_NAME_drop.sql
@@ -157,13 +157,13 @@ Follow the pattern in =projects/sql/data/currencies_populate.sql=.
 
 #+begin_src sh
 psql -U postgres -c "DROP DATABASE IF EXISTS ores_template"
-psql -U postgres -f projects/sql/setup_template.sql
+psql -U postgres -f projects/ores.sql/setup_template.sql
 #+end_src
 
 2. Create a test instance:
 
 #+begin_src sh
-psql -U postgres -f projects/sql/create_instance.sql
+psql -U postgres -f projects/ores.sql/create_instance.sql
 #+end_src
 
 3. Verify the table exists (use the database name printed by =create_instance.sql=):

@@ -73,7 +73,7 @@ geoip tables populated with MaxMind GeoLite2-City CSV data.
 
 1. Create the geoip tables:
    #+begin_src shell
-   psql -d ores -f projects/sql/schema/geolocation_create.sql
+   psql -d ores -f projects/ores.sql/schema/geolocation_create.sql
    #+end_src
 
 2. Download GeoLite2-City-CSV.zip from MaxMind (requires free account):
@@ -82,7 +82,7 @@ geoip tables populated with MaxMind GeoLite2-City CSV data.
 3. Extract and import the data:
    #+begin_src shell
    psql -d ores -v data_dir='/path/to/GeoLite2-City-CSV' \
-        -f projects/sql/data/geolocation_import.sql
+        -f projects/ores.sql/data/geolocation_import.sql
    #+end_src
 
 The import creates indexed tables for efficient IP range lookups using

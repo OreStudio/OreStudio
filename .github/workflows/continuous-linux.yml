@@ -111,11 +111,11 @@ jobs:
 
       - name: Setup Template Database
         run: |
-          psql ${{ steps.postgres.outputs.connection-uri }} -f ./projects/sql/setup_template.sql
+          psql ${{ steps.postgres.outputs.connection-uri }} -f ./projects/ores.sql/setup_template.sql
 
       - name: Setup Main Database
         run: |
-          psql ${{ steps.postgres.outputs.connection-uri }} -f ./projects/sql/create_database.sql
+          psql ${{ steps.postgres.outputs.connection-uri }} -f ./projects/ores.sql/create_database.sql
 
       - name: get-cmake
         uses: lukka/get-cmake@v4.2.1

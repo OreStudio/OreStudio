@@ -26,11 +26,11 @@
  * Usage:
  *   -- To DISABLE password validation (allow weak passwords for testing):
  *   \set new_value 1
- *   \i projects/sql/toggle_password_validation.sql
+ *   \i projects/ores.sql/toggle_password_validation.sql
  *
  *   -- To ENABLE password validation (enforce strong passwords):
  *   \set new_value 0
- *   \i projects/sql/toggle_password_validation.sql
+ *   \i projects/ores.sql/toggle_password_validation.sql
  */
 
 set schema 'ores';

@@ -22,7 +22,7 @@
 --   - This script must be run from the project root directory
 --
 -- Usage:
---   psql -h localhost -U oresadmin -d ores -f projects/sql/load_flags.sql
+--   psql -h localhost -U oresadmin -d ores -f projects/ores.sql/load_flags.sql
 --
 
 -- Create the 'flag' tag if it doesn't exist
@@ -105,12 +105,12 @@ $$ LANGUAGE plpgsql;
 --
 -- To generate INSERT statements from the flag files, you can use:
 --
--- for f in projects/sql/populate/data/flags/*.svg; do
+-- for f in projects/ores.sql/populate/data/flags/*.svg; do
 --     key=$(basename "$f" .svg)
 --     desc="Flag for country code ${key^^}"
 --     svg=$(cat "$f" | sed "s/'/''/g")
 --     echo "SELECT ores.load_flag('$key', '$desc', '$svg');"
--- done > projects/sql/load_flags_data.sql
--- echo "SELECT 'Loaded ' || COUNT(*) || ' flags' AS summary FROM ores.image_tags it JOIN ores.tags t ON it.tag_id = t.tag_id WHERE t.name = 'flag' AND t.valid_to = ores.infinity_timestamp() AND it.valid_to = ores.infinity_timestamp();" >> projects/sql/load_flags_data.sql
+-- done > projects/ores.sql/load_flags_data.sql
+-- echo "SELECT 'Loaded ' || COUNT(*) || ' flags' AS summary FROM ores.image_tags it JOIN ores.tags t ON it.tag_id = t.tag_id WHERE t.name = 'flag' AND t.valid_to = ores.infinity_timestamp() AND it.valid_to = ores.infinity_timestamp();" >> projects/ores.sql/load_flags_data.sql
 --
--- Then run: psql -h localhost -U oresadmin -d ores -f projects/sql/load_flags_data.sql
+-- Then run: psql -h localhost -U oresadmin -d ores -f projects/ores.sql/load_flags_data.sql

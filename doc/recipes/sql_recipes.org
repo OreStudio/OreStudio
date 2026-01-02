@@ -16,7 +16,7 @@ SQL recipes for directly querying and managing the [[id:B7E9F3A1-C8D2-4E6B-A1F5-
   :header-args+: :dbhost localhost
   :header-args+: :dbuser postgres
   :header-args+: :dbpassword (auth-source-pick-first-password :host "localhost" :user "postgres")
-  :header-args+: :var project_sql_dir=(concat (or (ignore-errors (project-root (project-current))) "./") "projects/sql")
+  :header-args+: :var project_sql_dir=(concat (or (ignore-errors (project-root (project-current))) "./") "projects/ores.sql")
   :END:
 
 These recipes must be run *in order* using the =postgres= superuser to bootstrap
@@ -123,7 +123,7 @@ pwgen -c 25 1
 Then run the script with the password as a variable. From the command line:
 
 #+begin_src sh
-psql -U postgres -v ores_password='YOUR_SECURE_PASSWORD' -f projects/sql/setup_user.sql
+psql -U postgres -v ores_password='YOUR_SECURE_PASSWORD' -f projects/ores.sql/setup_user.sql
 #+end_src
 
 Add the password to your =authinfo.gpg=:
@@ -189,7 +189,6 @@ After creating a database instance, you can optionally seed data using the
 population scripts (see [[*Population Scripts]] section).
 
 #+begin_src sql :database template1 :wrap example
-\ir '$project_sql_dir'/setup_template.sql
 #+end_src
 
 #+RESULTS:
@@ -355,7 +354,7 @@ ores_delicate_violet
 *** With Specific Name
 
 #+begin_src sh :wrap example
-psql -U postgres -v db_name='my_ores_db' -f projects/sql/create_instance.sql
+psql -U postgres -v db_name='my_ores_db' -f projects/ores.sql/create_instance.sql
 #+end_src
 
 * Recipes
@@ -367,7 +366,7 @@ psql -U postgres -v db_name='my_ores_db' -f projects/sql/create_instance.sql
   :header-args+: :dbhost localhost
   :header-args+: :dbuser ores
   :header-args+: :dbpassword (auth-source-pick-first-password :host "localhost" :user "ores")
-  :header-args+: :var project_sql_dir=(concat (or (ignore-errors (project-root (project-current))) "./") "projects/sql")
+  :header-args+: :var project_sql_dir=(concat (or (ignore-errors (project-root (project-current))) "./") "projects/ores.sql")
   :END:
 
 Day-to-day recipes for querying and managing ORES databases. These use the

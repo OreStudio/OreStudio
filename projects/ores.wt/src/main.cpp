@@ -18,7 +18,6 @@
  *
  */
 #include <iostream>
-#include <cstdlib>
 #include <openssl/crypto.h>
 #include <boost/scope_exit.hpp>
 #include <Wt/WServer.h>
@@ -27,8 +26,17 @@
 #include "ores.wt/service/application_context.hpp"
 #include "ores.wt/app/ore_application.hpp"
 #include "ores.telemetry/log/lifecycle_manager.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.utility/version/version.hpp"
+#include "ores.platform/environment/environment.hpp"
 
 namespace {
+
+using namespace ores::telemetry::log;
+using ores::platform::environment::environment;
+
+const std::string default_address = "0.0.0.0";
+const std::string default_port = "8080";
 
 std::unique_ptr<Wt::WApplication>
 create_application(const Wt::WEnvironment& env) {
@@ -56,6 +64,9 @@ int run(int argc, char* argv[]) {
             opts.logging.value());
     }
 
+    auto lg(make_logger("ores.wt"));
+    BOOST_LOG_SEV(lg, info) << "Starting ORE Studio Web v" << ORES_VERSION;
+
     auto& app_ctx = ores::wt::service::application_context::instance();
     app_ctx.initialize(opts.database);
 
@@ -65,14 +76,39 @@ int run(int argc, char* argv[]) {
         wt_argv_strings.push_back(arg);
     }
 
+    std::string http_address = default_address;
+    std::string http_port = default_port;
+
     if (result.wt_args.empty()) {
         wt_argv_strings.push_back("--docroot");
         wt_argv_strings.push_back(".");
         wt_argv_strings.push_back("--http-address");
-        wt_argv_strings.push_back("0.0.0.0");
+        wt_argv_strings.push_back(default_address);
         wt_argv_strings.push_back("--http-port");
-        wt_argv_strings.push_back("8080");
+        wt_argv_strings.push_back(default_port);
+    } else {
+        // Extract address and port from user-provided args for logging
+        for (size_t i = 0; i < result.wt_args.size(); ++i) {
+            if (result.wt_args[i] == "--http-address" && i + 1 < result.wt_args.size()) {
+                http_address = result.wt_args[i + 1];
+            } else if (result.wt_args[i] == "--http-port" && i + 1 < result.wt_args.size()) {
+                http_port = result.wt_args[i + 1];
+            }
+        }
     }
+
+    // Add resources directory if set via environment variable.
+    // Note: Uses WT_RESOURCES_DIR (not ORES_WT_) to avoid conflict with
+    // the ORES_WT_ prefix used by the option parser's environment mapper.
+    auto resources_dir = environment::get_value("WT_RESOURCES_DIR");
+    if (resources_dir.has_value()) {
+        wt_argv_strings.push_back("--resources-dir");
+        wt_argv_strings.push_back(resources_dir.value());
+        BOOST_LOG_SEV(lg, info) << "Using Wt resources from: " << resources_dir.value();
+    }
+
+    BOOST_LOG_SEV(lg, info) << "HTTP server listening on http://" << http_address
+                           << ":" << http_port;
 
     std::vector<char*> wt_argv;
     for (auto& s : wt_argv_strings) {

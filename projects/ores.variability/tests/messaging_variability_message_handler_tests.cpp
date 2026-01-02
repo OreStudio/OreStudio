@@ -70,14 +70,14 @@ using ores::comms::messaging::error_code;
 using ores::testing::scoped_database_helper;
 using ores::variability::repository::feature_flags_repository;
 
-TEST_CASE("handle_list_feature_flags_request_returns_seeded_flags", tags) {
+TEST_CASE("handle_list_feature_flags_request_empty_database", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
     variability_message_handler sut(h.context());
 
-    // The database template is pre-populated with flags from SQL scripts
-    // Just verify we can successfully list them
+    // Database template contains schema only, no seeded data
+    // Verify handler works correctly with an empty database
     list_feature_flags_request rq;
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
@@ -96,8 +96,8 @@ TEST_CASE("handle_list_feature_flags_request_returns_seeded_flags", tags) {
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-        // Database has pre-seeded flags from template
-        CHECK_FALSE(rp.feature_flags.empty());
+        // Empty database returns empty list
+        CHECK(rp.feature_flags.empty());
     });
 }
 

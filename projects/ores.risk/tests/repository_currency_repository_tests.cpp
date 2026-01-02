@@ -133,6 +133,10 @@ TEST_CASE("read_all_currencies_multiple_versions", tags) {
     const auto test_iso_code = ccy1.iso_code;
     const auto test_name = ccy1.name;
 
+    // Get initial version count for this ISO code
+    const auto initial_count = repo.read_all(h.context(), test_iso_code).size();
+    BOOST_LOG_SEV(lg, debug) << "Initial version count for " << test_iso_code << ": " << initial_count;
+
     ccy1.name = test_name + " v1";
     BOOST_LOG_SEV(lg, debug) << "Currency 1: " << ccy1;
 
@@ -148,9 +152,10 @@ TEST_CASE("read_all_currencies_multiple_versions", tags) {
     auto read_currencies = repo.read_all(h.context(), test_iso_code);
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
-    CHECK(read_currencies.size() == 2);
+    // We added 2 new versions
+    CHECK(read_currencies.size() == initial_count + 2);
 
-    // Verify different versions exist
+    // Verify our specific versions exist
     bool found_v1 = false, found_v2 = false;
     for (const auto& ccy : read_currencies) {
         if (ccy.iso_code == test_iso_code && ccy.name == test_name + " v1")
@@ -198,11 +203,11 @@ TEST_CASE("write_and_read_currency_with_unicode_symbols", tags) {
     };
     BOOST_LOG_SEV(lg, debug) << "Currency data: " << currency_data;
 
-    // Read back and verify symbols
+    // Read back and verify symbols - database may have currencies from previous runs
     auto read_currencies = repo.read_latest(h.context());
     BOOST_LOG_SEV(lg, debug) << "Read currencies: " << read_currencies;
 
-    CHECK(read_currencies.size() == currencies.size());
+    CHECK(read_currencies.size() >= currencies.size());
 
     for (const auto& [iso, expected_symbol] : currency_data) {
         BOOST_LOG_SEV(lg, debug) << "Checking: " << iso

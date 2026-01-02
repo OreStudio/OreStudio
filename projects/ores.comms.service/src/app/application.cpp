@@ -30,11 +30,9 @@
 #include "ores.risk/eventing/currency_changed_event.hpp"
 #include "ores.iam/messaging/registrar.hpp"
 #include "ores.iam/eventing/account_changed_event.hpp"
-#include "ores.iam/service/rbac_seeder.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.variability/messaging/registrar.hpp"
 #include "ores.assets/messaging/registrar.hpp"
-#include "ores.variability/service/system_flags_seeder.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
@@ -108,16 +106,12 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     auto ctx = make_context(cfg.database);
 
-    // Ensure all system flags exist in the database before any component queries them
-    variability::service::system_flags_seeder flags_seeder(ctx);
-    flags_seeder.seed();
-
-    // Create shared authorization service and seed RBAC permissions and roles
+    // Create shared authorization service for RBAC checks
+    // (Permissions and roles are seeded via SQL scripts in the database template)
     auto auth_service = std::make_shared<iam::service::authorization_service>(ctx);
-    iam::service::rbac_seeder rbac_seeder(*auth_service);
-    rbac_seeder.seed("system");
 
     // Create shared system flags service and refresh cache from database
+    // (System flags are seeded via SQL scripts in the database template)
     auto system_flags = std::make_shared<variability::service::system_flags_service>(ctx);
     system_flags->refresh();
 

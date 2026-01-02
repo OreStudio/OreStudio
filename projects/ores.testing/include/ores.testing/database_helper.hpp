@@ -51,6 +51,17 @@ public:
     void truncate_table(const std::string& table_name);
 
     /**
+     * @brief Seeds minimal RBAC data for tests.
+     *
+     * Creates the essential permissions and roles needed for IAM tests:
+     * - Wildcard permission (*)
+     * - Admin role with wildcard permission
+     *
+     * This is idempotent - safe to call multiple times.
+     */
+    void seed_rbac();
+
+    /**
      * @brief Gets the database context.
      */
     database::context& context() { return context_; }

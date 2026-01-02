@@ -41,8 +41,8 @@ TEST_CASE("feature_flags_service_get_returns_nullopt_for_non_existent_flag", tag
     ores::testing::scoped_database_helper db_helper(table_name);
     feature_flags_service sut(db_helper.context());
     INFO("Initial feature flags count: " << sut.get_all_feature_flags().size());
-    CHECK(sut.get_all_feature_flags().empty());
-    auto result = sut.get_feature_flag("non_existent_flag");
+    // Database has pre-seeded flags from template
+    auto result = sut.get_feature_flag("non_existent_flag_xyz123");
     CHECK(!result.has_value());
 }
 
@@ -51,7 +51,7 @@ TEST_CASE("feature_flags_service_save_and_get_feature_flag", tags) {
     ores::testing::scoped_database_helper db_helper(table_name);
     feature_flags_service sut(db_helper.context());
     INFO("Initial feature flags count: " << sut.get_all_feature_flags().size());
-    CHECK(sut.get_all_feature_flags().empty());
+    // Database has pre-seeded flags from template
 
     feature_flags flag;
     flag.name = "test_flag";
@@ -75,7 +75,7 @@ TEST_CASE("feature_flags_service_update_feature_flag", tags) {
     ores::testing::scoped_database_helper db_helper(table_name);
     feature_flags_service sut(db_helper.context());
     INFO("Initial feature flags count: " << sut.get_all_feature_flags().size());
-    CHECK(sut.get_all_feature_flags().empty());
+    // Database has pre-seeded flags from template
 
     // Initial save
     feature_flags flag;
@@ -105,47 +105,48 @@ TEST_CASE("feature_flags_service_delete_feature_flag", tags) {
     ores::testing::scoped_database_helper db_helper(table_name);
     feature_flags_service sut(db_helper.context());
     INFO("Initial feature flags count: " << sut.get_all_feature_flags().size());
-    CHECK(sut.get_all_feature_flags().empty());
+    // Database has pre-seeded flags from template
 
     feature_flags flag;
-    flag.name = "delete_flag";
+    flag.name = "delete_flag_unique_test";
     flag.enabled = true;
     flag.recorded_by = "deleter";
     sut.save_feature_flag(flag);
 
-    REQUIRE(sut.get_feature_flag("delete_flag").has_value());
+    REQUIRE(sut.get_feature_flag("delete_flag_unique_test").has_value());
 
-    sut.delete_feature_flag("delete_flag");
+    sut.delete_feature_flag("delete_flag_unique_test");
 
-    CHECK(!sut.get_feature_flag("delete_flag").has_value());
+    CHECK(!sut.get_feature_flag("delete_flag_unique_test").has_value());
 }
 
 TEST_CASE("feature_flags_service_get_all_feature_flags", tags) {
     auto lg(make_logger(test_suite));
     ores::testing::scoped_database_helper db_helper(table_name);
     feature_flags_service sut(db_helper.context());
-    INFO("Initial feature flags count: " << sut.get_all_feature_flags().size());
-    CHECK(sut.get_all_feature_flags().empty());
+    const auto initial_count = sut.get_all_feature_flags().size();
+    INFO("Initial feature flags count: " << initial_count);
+    // Database has pre-seeded flags from template
 
     feature_flags flag1;
-    flag1.name = "flag1";
+    flag1.name = "unique_flag1_xyz";
     flag1.enabled = true;
     flag1.recorded_by = "tester";
     sut.save_feature_flag(flag1);
 
     feature_flags flag2;
-    flag2.name = "flag2";
+    flag2.name = "unique_flag2_xyz";
     flag2.enabled = false;
     flag2.recorded_by = "tester";
     sut.save_feature_flag(flag2);
 
     auto results = sut.get_all_feature_flags();
     INFO("Actual number of flags: " << results.size());
-    CHECK(results.size() == 2);
+    CHECK(results.size() == initial_count + 2);
 
     // Basic check to ensure both are present using std::any_of
     CHECK(std::ranges::any_of(results, [](const auto& f) {
-        return f.name == "flag1"; }));
+        return f.name == "unique_flag1_xyz"; }));
     CHECK(std::ranges::any_of(results, [](const auto& f) {
-        return f.name == "flag2"; }));
+        return f.name == "unique_flag2_xyz"; }));
 }

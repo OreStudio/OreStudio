@@ -33,7 +33,6 @@
 #include "ores.iam/generators/account_generator.hpp"
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/service/authorization_service.hpp"
-#include "ores.iam/service/rbac_seeder.hpp"
 #include "ores.iam/domain/role.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
@@ -68,10 +67,8 @@ make_system_flags(ores::database::context& ctx) {
 
 std::shared_ptr<service::authorization_service>
 make_auth_service(ores::database::context& ctx) {
-    auto auth = std::make_shared<service::authorization_service>(ctx);
-    service::rbac_seeder seeder(*auth);
-    seeder.seed("test");
-    return auth;
+    // RBAC permissions and roles are seeded via SQL scripts in the database template
+    return std::make_shared<service::authorization_service>(ctx);
 }
 
 void assign_admin_role(std::shared_ptr<service::authorization_service> auth,
@@ -124,7 +121,7 @@ using ores::testing::scoped_database_helper;
 TEST_CASE("handle_login_request_with_valid_password", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h(database_table, true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -179,7 +176,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
     using namespace ores::telemetry::log;
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h(database_table, true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -232,7 +229,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
 TEST_CASE("handle_login_request_non_existent_user", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h(database_table, true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -268,7 +265,7 @@ TEST_CASE("handle_login_request_non_existent_user", tags) {
 TEST_CASE("handle_login_request_locked_account", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h(database_table, true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -382,7 +379,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
 TEST_CASE("handle_change_password_request_success", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h(database_table, true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -466,7 +463,7 @@ TEST_CASE("handle_change_password_request_success", tags) {
 TEST_CASE("handle_change_password_request_unauthenticated", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h(database_table, true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());
@@ -498,7 +495,7 @@ TEST_CASE("handle_change_password_request_unauthenticated", tags) {
 TEST_CASE("handle_change_password_request_weak_password", tags) {
     auto lg(make_logger(test_suite));
 
-    scoped_database_helper h(database_table);
+    scoped_database_helper h(database_table, true);
     auto system_flags = make_system_flags(h.context());
     auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
     auto auth_service = make_auth_service(h.context());

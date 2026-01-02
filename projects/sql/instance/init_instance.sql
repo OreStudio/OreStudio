@@ -21,16 +21,18 @@
 /**
  * Instance Initialization Script
  *
- * This script initializes instance-specific data that should NOT be
- * part of the template. Each new database instance needs to run this
- * after creation.
+ * This script handles any instance-specific initialization that should NOT
+ * be part of the template.
  *
- * Includes:
- * - Bootstrap mode feature flag (instance-specific state)
- * - Password validation flag (development/production config)
+ * Currently, all seed data (permissions, roles, system flags) is included
+ * in the template via create_schema.sql, so this script only outputs a
+ * confirmation message.
  *
  * This script is idempotent and can be safely run multiple times.
  */
 
-\ir ../bootstrap_mode_setup.sql
-\ir ../disable_password_validation_setup.sql
+-- Display system flags for verification
+select name, enabled, description
+from ores.feature_flags
+where name like 'system.%' and valid_to = ores.infinity_timestamp()
+order by name;

@@ -73,11 +73,8 @@
 \echo 'Creating database:' :db_name
 \echo ''
 
--- Create the database from template
-create database :db_name with template = ores_template;
-
--- Grant permissions to ores user
-grant all privileges on database :db_name to ores;
+-- Create the database from template, owned by ores
+create database :db_name with template = ores_template owner = ores;
 
 -- Connect to new database and initialize instance-specific data
 \c :db_name

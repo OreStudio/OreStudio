@@ -70,12 +70,14 @@ using ores::comms::messaging::error_code;
 using ores::testing::scoped_database_helper;
 using ores::variability::repository::feature_flags_repository;
 
-TEST_CASE("handle_list_feature_flags_request_empty", tags) {
+TEST_CASE("handle_list_feature_flags_request_returns_seeded_flags", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
     variability_message_handler sut(h.context());
 
+    // The database template is pre-populated with flags from SQL scripts
+    // Just verify we can successfully list them
     list_feature_flags_request rq;
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
@@ -94,20 +96,26 @@ TEST_CASE("handle_list_feature_flags_request_empty", tags) {
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-        CHECK(rp.feature_flags.empty());
+        // Database has pre-seeded flags from template
+        CHECK_FALSE(rp.feature_flags.empty());
     });
 }
 
-TEST_CASE("handle_list_feature_flags_request_with_flags", tags) {
+TEST_CASE("handle_list_feature_flags_request_with_additional_flags", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
 
-    // First populate the database with some flags
+    // Get initial count of pre-seeded flags from template
     feature_flags_repository repo(h.context());
-    const int flag_count = 5;
-    auto flags = generate_feature_flags(flag_count);
-    BOOST_LOG_SEV(lg, info) << "Writing " << flags.size() << " feature flags";
+    const auto initial_flags = repo.read_latest();
+    const auto initial_count = initial_flags.size();
+    BOOST_LOG_SEV(lg, info) << "Initial feature flags count: " << initial_count;
+
+    // Add more flags to the database
+    const int additional_count = 5;
+    auto flags = generate_feature_flags(additional_count);
+    BOOST_LOG_SEV(lg, info) << "Writing " << flags.size() << " additional feature flags";
     repo.write(flags);
 
     variability_message_handler sut(h.context());
@@ -130,7 +138,7 @@ TEST_CASE("handle_list_feature_flags_request_with_flags", tags) {
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-        CHECK(rp.feature_flags.size() == flag_count);
+        CHECK(rp.feature_flags.size() == initial_count + additional_count);
     });
 }
 
@@ -139,10 +147,16 @@ TEST_CASE("handle_list_feature_flags_request_multiple_times", tags) {
 
     scoped_database_helper h(database_table);
 
-    // Populate the database with some flags
+    // Get initial count of pre-seeded flags and add more
     feature_flags_repository repo(h.context());
-    auto flags = generate_feature_flags(3);
+    const auto initial_flags = repo.read_latest();
+    const auto initial_count = initial_flags.size();
+    BOOST_LOG_SEV(lg, info) << "Initial feature flags count: " << initial_count;
+
+    const int additional_count = 3;
+    auto flags = generate_feature_flags(additional_count);
     repo.write(flags);
+    const auto expected_count = initial_count + additional_count;
 
     variability_message_handler sut(h.context());
 
@@ -166,7 +180,7 @@ TEST_CASE("handle_list_feature_flags_request_multiple_times", tags) {
             BOOST_LOG_SEV(lg, info) << "Response " << i << ": "
                 << rp.feature_flags.size() << " flags";
 
-            CHECK(rp.feature_flags.size() == 3);
+            CHECK(rp.feature_flags.size() == expected_count);
         });
     }
 }
@@ -230,9 +244,10 @@ TEST_CASE("handle_list_feature_flags_request_verifies_content", tags) {
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
-        REQUIRE(rp.feature_flags.size() == 2);
+        // Database has pre-seeded flags plus our 2 test flags
+        REQUIRE(rp.feature_flags.size() >= 2);
 
-        // Find and verify specific flags
+        // Find and verify specific flags we added
         bool found_alpha = false, found_beta = false;
         for (const auto& ff : rp.feature_flags) {
             if (ff.name == "test_feature_alpha") {
@@ -257,10 +272,15 @@ TEST_CASE("handle_list_feature_flags_request_with_many_flags", tags) {
 
     scoped_database_helper h(database_table);
 
-    // Create a larger number of flags
+    // Get initial count of pre-seeded flags
     feature_flags_repository repo(h.context());
-    const int flag_count = 20;
-    auto flags = generate_feature_flags(flag_count);
+    const auto initial_flags = repo.read_latest();
+    const auto initial_count = initial_flags.size();
+    BOOST_LOG_SEV(lg, info) << "Initial feature flags count: " << initial_count;
+
+    // Create a larger number of flags
+    const int additional_count = 20;
+    auto flags = generate_feature_flags(additional_count);
     BOOST_LOG_SEV(lg, info) << "Writing " << flags.size() << " feature flags";
     repo.write(flags);
 
@@ -283,7 +303,7 @@ TEST_CASE("handle_list_feature_flags_request_with_many_flags", tags) {
         BOOST_LOG_SEV(lg, info) << "Response with " << rp.feature_flags.size()
             << " flags";
 
-        CHECK(rp.feature_flags.size() == flag_count);
+        CHECK(rp.feature_flags.size() == initial_count + additional_count);
     });
 }
 
@@ -292,9 +312,16 @@ TEST_CASE("handle_list_feature_flags_request_from_different_endpoints", tags) {
 
     scoped_database_helper h(database_table);
 
+    // Get initial count and add flags
     feature_flags_repository repo(h.context());
-    auto flags = generate_feature_flags(3);
+    const auto initial_flags = repo.read_latest();
+    const auto initial_count = initial_flags.size();
+    BOOST_LOG_SEV(lg, info) << "Initial feature flags count: " << initial_count;
+
+    const int additional_count = 3;
+    auto flags = generate_feature_flags(additional_count);
     repo.write(flags);
+    const auto expected_count = initial_count + additional_count;
 
     variability_message_handler sut(h.context());
 
@@ -324,7 +351,7 @@ TEST_CASE("handle_list_feature_flags_request_from_different_endpoints", tags) {
             BOOST_LOG_SEV(lg, info) << "Response from " << endpoint << ": "
                 << rp.feature_flags.size() << " flags";
 
-            CHECK(rp.feature_flags.size() == 3);
+            CHECK(rp.feature_flags.size() == expected_count);
         });
     }
 }

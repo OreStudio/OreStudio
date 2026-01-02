@@ -57,7 +57,7 @@ add_test(NAME ${tests_target_name}
 
 set_tests_properties(${tests_target_name} PROPERTIES
     PROCESSORS 1
-    ENVIRONMENT ""
+    ENVIRONMENT "${ORES_TEST_ENV}"
     ATTACHED_FILES_ON_FAIL "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml"
 )
 

@@ -44,7 +44,6 @@
 #include "ores.risk/repository/currency_repository.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
-#include "ores.iam/service/rbac_seeder.hpp"
 #include "ores.iam/domain/role.hpp"
 #include "ores.iam/domain/account_json.hpp"
 #include "ores.iam/domain/account_table.hpp"
@@ -477,10 +476,9 @@ add_account(const config::add_account_options& cfg) const {
     const auto password_hash =
         password_manager::create_password_hash(cfg.password);
 
-    // Create authorization service and seed RBAC if needed
+    // Create authorization service for RBAC operations
+    // (Permissions and roles are seeded via SQL scripts in the database template)
     auto auth_service = std::make_shared<iam::service::authorization_service>(context_);
-    iam::service::rbac_seeder rbac_seeder(*auth_service);
-    rbac_seeder.seed(cfg.modified_by);
 
     // Construct account from command-line arguments
     iam::domain::account account;

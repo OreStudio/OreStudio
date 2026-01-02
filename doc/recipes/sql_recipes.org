@@ -16,7 +16,7 @@ SQL recipes for directly querying and managing the [[id:B7E9F3A1-C8D2-4E6B-A1F5-
   :header-args+: :dbhost localhost
   :header-args+: :dbuser postgres
   :header-args+: :dbpassword (auth-source-pick-first-password :host "localhost" :user "postgres")
-  :header-args+: :var project_sql_dir=(concat (project-root (project-current)) "projects/sql")
+  :header-args+: :var project_sql_dir=(concat (or (ignore-errors (project-root (project-current))) "./") "projects/sql")
   :END:
 
 These recipes must be run *in order* using the =postgres= superuser to bootstrap
@@ -60,6 +60,8 @@ To make sure you do not have any remnants of a previous install, do:
 #+RESULTS:
 #+begin_example
 UPDATE 1
+DROP DATABASE
+DROP DATABASE
 DROP DATABASE
 DROP ROLE
 #+end_example
@@ -160,11 +162,31 @@ CREATE FUNCTION
 CREATE FUNCTION
 CREATE FUNCTION
 CREATE FUNCTION
+GRANT
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
 #+end_example
 
-** Step 4: Create Template Database
+If you need to drop to recreate:
 
-Creates =ores_template= with the complete application schema and reference data:
+#+begin_src sql :database template1 :wrap example
+drop database if exists ores_admin;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+DROP DATABASE
+#+end_example
+
+** Step 6: Create Template Database
+
+Creates =ores_template= with the complete application schema. The template contains
+*schema only* (tables, indexes, triggers) - no data is pre-populated.
+
+After creating a database instance, you can optionally seed data using the
+population scripts (see [[*Population Scripts]] section).
 
 #+begin_src sql :database template1 :wrap example
 \ir '$project_sql_dir'/setup_template.sql
@@ -181,6 +203,8 @@ btree_gist	1.8
 timescaledb	2.24.0
 CREATE SCHEMA
 CREATE EXTENSION
+GRANT
+GRANT
 SET
 CREATE FUNCTION
 SET
@@ -252,6 +276,8 @@ CREATE FUNCTION
 CREATE FUNCTION
 CREATE FUNCTION
 CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
 SET
 CREATE TABLE
 CREATE INDEX
@@ -286,6 +312,475 @@ CREATE FUNCTION
 COMMENT
 CREATE FUNCTION
 COMMENT
+GRANT
+GRANT
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+UPDATE 1
+#+end_example
+
+If you need to drop to recreate:
+
+#+begin_src sql :database template1 :wrap example
+update pg_database set datistemplate = false where datname = 'ores_template';
+drop database if exists ores_template;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+UPDATE 1
+DROP DATABASE
+#+end_example
+
+
+** Step 7: Create Database Instance
+
+Creates a new database instance from the template. Run this each time you need a
+new database (development, testing, production, etc.).
+
+*** With Auto-Generated Whimsical Name
+
+#+begin_src sql :database template1 :results output :wrap example
+\ir '$project_sql_dir'/create_instance.sql
+#+end_src
+
+#+RESULTS:
+#+begin_example
+CREATE DATABASE
+name	enabled	description
+database_created
+ores_delicate_violet
+#+end_example
+
+*** With Specific Name
+
+#+begin_src sh :wrap example
+psql -U postgres -v db_name='my_ores_db' -f projects/sql/create_instance.sql
+#+end_src
+
+* Recipes
+  :PROPERTIES:
+  :header-args: :wrap example
+  :header-args+: :exports both
+  :header-args+: :results raw
+  :header-args+: :engine postgresql
+  :header-args+: :dbhost localhost
+  :header-args+: :dbuser ores
+  :header-args+: :dbpassword (auth-source-pick-first-password :host "localhost" :user "ores")
+  :header-args+: :var project_sql_dir=(concat (or (ignore-errors (project-root (project-current))) "./") "projects/sql")
+  :END:
+
+Day-to-day recipes for querying and managing ORES databases. These use the
+=ores= application user.
+
+** Database Management
+   :PROPERTIES:
+   :header-args+: :database ores_admin
+   :END:
+
+These recipes require the initial setup (Steps 1-3) to be completed first.
+
+*** List All ORES Databases
+
+List all databases created from the ORES template:
+
+#+begin_src sql
+select * from ores_databases;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+database_name
+ores_delicate_violet
+#+end_example
+
+*** List Test Databases
+
+List databases created by automated tests (=ores_test_*=, =oresdb_test_*=):
+
+#+begin_src sql :database ores_admin
+select * from test_databases;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+database_name
+#+end_example
+
+*** List Instance Databases
+
+List instance databases only (excludes test and template):
+
+#+begin_src sql :database ores_admin
+select * from ores_instance_databases;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+database_name
+ores_dark_wildflower
+#+end_example
+
+
+*** Delete All Test Databases
+
+Delete all test databases. Uses =\gexec= because =DROP DATABASE= cannot run
+inside a transaction block:
+
+#+begin_src sql :database ores_admin
+select format('DROP DATABASE IF EXISTS %I;', database_name)
+from test_databases \gexec
+#+end_src
+
+#+RESULTS:
+
+*** Delete All ORES Databases
+
+*WARNING*: This deletes ALL ORES databases (instances, templates, test). Use
+with caution!
+
+#+begin_src sql :database ores_admin
+select format('DROP DATABASE IF EXISTS %I;', database_name)
+from ores_databases \gexec
+#+end_src
+
+#+RESULTS:
+#+begin_example
+DROP DATABASE
+#+end_example
+
+*** Delete All Instance Databases
+
+Delete all instance databases (preserves templates and test databases):
+
+#+begin_src sql :database ores_admin
+select format('DROP DATABASE IF EXISTS %I;', database_name)
+from ores_instance_databases \gexec
+#+end_src
+
+#+RESULTS:
+#+begin_example
+DROP DATABASE
+#+end_example
+
+*** Preview Cleanup SQL
+
+Generate cleanup SQL without executing (for review):
+
+#+begin_src sql :database ores_admin
+select generate_cleanup_test_databases_sql();
+#+end_src
+
+#+RESULTS:
+#+begin_example
+generate_cleanup_test_databases_sql
+-- No test databases found to clean up.
+#+end_example
+
+*** Generate Whimsical Database Name
+
+Generate a unique whimsical name for a new database:
+
+#+begin_src sql :database ores_admin
+select generate_unique_database_name_from_server();
+#+end_src
+
+#+RESULTS:
+#+begin_example
+generate_unique_database_name_from_server
+ores_little_morning
+#+end_example
+
+** Accounts
+    :PROPERTIES:
+    :header-args+: :database ores_delicate_violet
+    :END:
+
+*** List All Current Accounts
+
+Get all currently active accounts (where =valid_to= is infinity):
+
+#+begin_src sql
+select id, username, email, version, valid_from
+from ores.accounts
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by username;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+id	username	email	version	valid_from
+#+end_example
+
+*** List All Account Versions
+
+View the complete temporal history of an account:
+
+#+begin_src sql
+select id, username, email, version, valid_from, valid_to
+from ores.accounts
+where username = 'admin'
+order by valid_from;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+id	username	email	version	valid_from	valid_to
+#+end_example
+
+*** Get Account by Username
+
+#+begin_src sql
+select id, username, email, version, valid_from
+from ores.accounts
+where username = 'admin'
+  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+#+end_src
+
+#+RESULTS:
+#+begin_example
+id	username	email	version	valid_from
+#+end_example
+
+*** Get Account by UUID
+
+#+begin_src sql
+select id, username, email, version, valid_from
+from ores.accounts
+where id = 'your-uuid-here'
+  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+#+end_src
+
+*** Count Active Accounts
+
+#+begin_src sql
+select count(*) as active_accounts
+from ores.accounts
+where valid_to = '9999-12-31 23:59:59'::timestamptz;
+#+end_src
+
+** Login Info
+    :PROPERTIES:
+    :header-args+: :database ores_delicate_violet
+    :END:
+
+*** List All Login Info
+
+View login tracking for all accounts:
+
+#+begin_src sql
+select li.account_id, a.username, li.last_login, li.failed_logins,
+       li.locked, li.online, li.last_ip
+from ores.login_info li
+join ores.accounts a on a.id = li.account_id
+  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
+order by li.last_login desc nulls last;
+#+end_src
+
+*** Find Locked Accounts
+
+#+begin_src sql
+select li.account_id, a.username, li.failed_logins, li.last_attempt_ip
+from ores.login_info li
+join ores.accounts a on a.id = li.account_id
+  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
+where li.locked = 1;
+#+end_src
+
+*** Find Online Users
+
+#+begin_src sql
+select a.username, li.last_login, li.last_ip
+from ores.login_info li
+join ores.accounts a on a.id = li.account_id
+  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
+where li.online = 1;
+#+end_src
+
+** Sessions
+   :PROPERTIES:
+   :header-args+: :database ores_delicate_violet
+   :END:
+
+*** List Recent Sessions
+
+#+begin_src sql
+select s.id, a.username, s.start_time, s.end_time,
+       s.client_ip, s.country_code, s.city
+from ores.sessions s
+join ores.accounts a on a.id = s.account_id
+  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
+order by s.start_time desc
+limit 20;
+#+end_src
+
+*** Session Statistics by User
+
+#+begin_src sql
+select a.username,
+       count(*) as total_sessions,
+       sum(s.bytes_sent) as total_bytes_sent,
+       sum(s.bytes_received) as total_bytes_received
+from ores.sessions s
+join ores.accounts a on a.id = s.account_id
+  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
+group by a.username
+order by total_sessions desc;
+#+end_src
+
+** Population Scripts
+   :PROPERTIES:
+   :header-args+: :database ores_delicate_violet
+   :END:
+
+The database template contains *schema only* - no data is pre-populated. After
+creating a database instance, run these scripts to seed essential data:
+
+#+begin_src sql
+-- RBAC and system flags (required for application to function)
+\ir '$project_sql_dir'/populate/populate.sql
+
+-- Reference data (optional - currencies, country flags, images)
+\ir '$project_sql_dir'/populate/reference_data.sql
+#+end_src
+
+#+RESULTS:
+#+begin_example
+SET
+CREATE FUNCTION
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+upsert_permission
+
+DROP FUNCTION
+total_permissions
+24
+SET
+CREATE FUNCTION
+CREATE FUNCTION
+upsert_role
+dd2ecaec-138b-453c-a110-77441a60583e
+upsert_role
+a74f8a4e-f331-4179-aecb-cda61e472805
+upsert_role
+d48b608d-c894-4346-887d-228e342d36c6
+upsert_role
+b898350f-f704-4e97-b8ec-36c3481af052
+upsert_role
+d533c93f-bf3c-4d1f-bba8-4e949b976a8a
+upsert_role
+6e4ee358-1970-400f-a3cb-fbcfe8296f52
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+assign_permission_to_role
+
+DROP FUNCTION
+DROP FUNCTION
+summary	count
+Roles:	6
+Role-Permission assignments:	21
+SET
+CREATE FUNCTION
+upsert_system_flag
+
+upsert_system_flag
+
+upsert_system_flag
+
+upsert_system_flag
+
+DROP FUNCTION
+name	enabled	description
+system.bootstrap_mode	1	Indicates whether the system is in bootstrap mode (waiting for initial admin account).
+system.disable_password_validation	0	When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.
+system.signup_requires_authorization	0	Controls whether new signups require admin authorization. NOT YET IMPLEMENTED - enabling will cause signup to fail.
+system.user_signups	0	Controls whether user self-registration is allowed.
+entity	count
+Permissions	24
+Roles	6
+System Flags	4
 INSERT 0 1
 CREATE FUNCTION
 SET
@@ -845,253 +1340,102 @@ SET
 INSERT 0 158
 SET
 INSERT 0 158
-UPDATE 1
+entity	count
+Currencies	158
+Images	276
+Tags	1
 #+end_example
 
-If you need to drop to recreate:
+All scripts are idempotent and can be safely re-run.
 
-#+begin_src sql :database template1 :wrap example
-update pg_database set datistemplate = false where datname = 'ores_template';
-drop database if exists ores_template;
-#+end_src
+*** View Seeded Permissions
 
-#+RESULTS:
-#+begin_example
-UPDATE 1
-DROP DATABASE
-#+end_example
-
-
-** Step 5: Create Database Instance
-
-Creates a new database instance from the template. Run this each time you need a
-new database (development, testing, production, etc.).
-
-*** With Auto-Generated Whimsical Name
-
-#+begin_src sql :database template1 :results output :wrap example
-\ir '$project_sql_dir'/create_instance.sql
-#+end_src
-
-#+RESULTS:
-#+begin_example
-CREATE DATABASE
-GRANT
-SET
-DO
-SET
-DO
-name	enabled	description	modified_by
-system.disable_password_validation	0	When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.	system
-#+end_example
-
-*** With Specific Name
-
-#+begin_src sh :wrap example
-psql -U postgres -v db_name='my_ores_db' -f projects/sql/create_instance.sql
-#+end_src
-
-* Recipes
-  :PROPERTIES:
-  :header-args: :exports both
-  :header-args+: :results raw
-  :header-args+: :engine postgresql
-  :header-args+: :dbhost localhost
-  :header-args+: :dbuser ores
-  :header-args+: :dbpassword (auth-source-pick-first-password :host "localhost" :user "ores")
-  :header-args+: :var project_sql_dir=(concat (project-root (project-current)) "projects/sql")
-  :END:
-
-Day-to-day recipes for querying and managing ORES databases. These use the
-=ores= application user.
-
-** Database Management
-
-These recipes require the initial setup (Steps 1-3) to be completed first.
-
-*** List All ORES Databases
-
-List all databases created from the ORES template:
-
-#+begin_src sql :database ores_admin
-select * from ores_databases;
-#+end_src
-
-*** List Test Databases
-
-List databases created by automated tests (=ores_test_*=, =oresdb_test_*=):
-
-#+begin_src sql :database ores_admin
-select * from test_databases;
-#+end_src
-
-*** List Instance Databases
-
-List instance databases only (excludes test and template):
-
-#+begin_src sql :database ores_admin
-select * from ores_instance_databases;
-#+end_src
-
-*** Delete All Test Databases
-
-Delete all test databases. Uses =\gexec= because =DROP DATABASE= cannot run
-inside a transaction block:
-
-#+begin_src sql :database ores_admin
-select format('DROP DATABASE IF EXISTS %I;', database_name)
-from test_databases \gexec
-#+end_src
-
-*** Delete All ORES Databases
-
-*WARNING*: This deletes ALL ORES databases (instances, templates, test). Use
-with caution!
-
-#+begin_src sql :database ores_admin
-select format('DROP DATABASE IF EXISTS %I;', database_name)
-from ores_databases \gexec
-#+end_src
-
-*** Delete All Instance Databases
-
-Delete all instance databases (preserves templates and test databases):
-
-#+begin_src sql :database ores_admin
-select format('DROP DATABASE IF EXISTS %I;', database_name)
-from ores_instance_databases \gexec
-#+end_src
-
-*** Preview Cleanup SQL
-
-Generate cleanup SQL without executing (for review):
-
-#+begin_src sql :database ores_admin
-select generate_cleanup_test_databases_sql();
-#+end_src
-
-*** Generate Whimsical Database Name
-
-Generate a unique whimsical name for a new database:
-
-#+begin_src sql :database ores_admin
-select generate_unique_database_name_from_server();
-#+end_src
-
-** Accounts
-
-*** List All Current Accounts
-
-Get all currently active accounts (where =valid_to= is infinity):
+List all permissions seeded by =permissions_populate.sql=:
 
 #+begin_src sql
-select id, username, email, version, valid_from
-from ores.accounts
+select code, description
+from ores.permissions
 where valid_to = '9999-12-31 23:59:59'::timestamptz
-order by username;
+order by code;
 #+end_src
 
-*** List All Account Versions
+*** View Seeded Roles
 
-View the complete temporal history of an account:
+List all roles seeded by =roles_populate.sql=:
 
 #+begin_src sql
-select id, username, email, version, valid_from, valid_to
-from ores.accounts
-where username = 'admin'
-order by valid_from;
+select name, description
+from ores.roles
+where valid_to = '9999-12-31 23:59:59'::timestamptz
+order by name;
 #+end_src
 
-*** Get Account by Username
+*** View Role-Permission Assignments
+
+List which permissions are assigned to each role:
 
 #+begin_src sql
-select id, username, email, version, valid_from
-from ores.accounts
-where username = 'admin'
-  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+select r.name as role_name, p.code as permission
+from ores.role_permissions rp
+join ores.roles r on r.id = rp.role_id
+  and r.valid_to = '9999-12-31 23:59:59'::timestamptz
+join ores.permissions p on p.id = rp.permission_id
+  and p.valid_to = '9999-12-31 23:59:59'::timestamptz
+where rp.valid_to = '9999-12-31 23:59:59'::timestamptz
+order by r.name, p.code;
 #+end_src
 
-*** Get Account by UUID
+*** View Seeded System Flags
+
+List all system flags seeded by =system_flags_populate.sql=:
 
 #+begin_src sql
-select id, username, email, version, valid_from
-from ores.accounts
-where id = 'your-uuid-here'
-  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+select name, enabled, description
+from ores.feature_flags
+where name like 'system.%'
+  and valid_to = '9999-12-31 23:59:59'::timestamptz
+order by name;
 #+end_src
 
-*** Count Active Accounts
+*** Re-run All Population Scripts
+
+To re-seed an existing database instance (idempotent - won't duplicate data):
 
 #+begin_src sql
-select count(*) as active_accounts
-from ores.accounts
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+-- System data (RBAC + system flags)
+\ir '$project_sql_dir'/populate/populate.sql
+
+-- Reference data (currencies, flags, images)
+\ir '$project_sql_dir'/populate/reference_data.sql
 #+end_src
 
-** Login Info
+*** Re-run Individual Population Scripts
 
-*** List All Login Info
-
-View login tracking for all accounts:
+To re-run only specific population scripts:
 
 #+begin_src sql
-select li.account_id, a.username, li.last_login, li.failed_logins,
-       li.locked, li.online, li.last_ip
-from ores.login_info li
-join ores.accounts a on a.id = li.account_id
-  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
-order by li.last_login desc nulls last;
-#+end_src
+-- RBAC only
+\ir '$project_sql_dir'/populate/permissions_populate.sql
+\ir '$project_sql_dir'/populate/roles_populate.sql
 
-*** Find Locked Accounts
+-- System flags only
+\ir '$project_sql_dir'/populate/system_flags_populate.sql
 
-#+begin_src sql
-select li.account_id, a.username, li.failed_logins, li.last_attempt_ip
-from ores.login_info li
-join ores.accounts a on a.id = li.account_id
-  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
-where li.locked = 1;
-#+end_src
+-- All reference data (currencies, flags, images)
+\ir '$project_sql_dir'/populate/reference_data.sql
 
-*** Find Online Users
-
-#+begin_src sql
-select a.username, li.last_login, li.last_ip
-from ores.login_info li
-join ores.accounts a on a.id = li.account_id
-  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
-where li.online = 1;
-#+end_src
-
-** Sessions
-
-*** List Recent Sessions
-
-#+begin_src sql
-select s.id, a.username, s.start_time, s.end_time,
-       s.client_ip, s.country_code, s.city
-from ores.sessions s
-join ores.accounts a on a.id = s.account_id
-  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
-order by s.start_time desc
-limit 20;
-#+end_src
-
-*** Session Statistics by User
-
-#+begin_src sql
-select a.username,
-       count(*) as total_sessions,
-       sum(s.bytes_sent) as total_bytes_sent,
-       sum(s.bytes_received) as total_bytes_received
-from ores.sessions s
-join ores.accounts a on a.id = s.account_id
-  and a.valid_to = '9999-12-31 23:59:59'::timestamptz
-group by a.username
-order by total_sessions desc;
+-- Or individual reference data scripts
+\ir '$project_sql_dir'/populate/currencies_populate.sql
+\ir '$project_sql_dir'/populate/load_flags.sql
+\ir '$project_sql_dir'/populate/flags_populate.sql
+\ir '$project_sql_dir'/populate/currency_images_populate.sql
 #+end_src
 
 ** RBAC (Roles and Permissions)
+   :PROPERTIES:
+   :header-args+: :results value table
+   :header-args+: :database ores_delicate_violet
+   :END:
 
 *** List All Roles
 
@@ -1102,6 +1446,18 @@ where valid_to = '9999-12-31 23:59:59'::timestamptz
 order by name;
 #+end_src
 
+#+RESULTS:
+#+begin_example
+| id                                   | name       | description                                                   | version |
+|--------------------------------------+------------+---------------------------------------------------------------+---------|
+| dd2ecaec-138b-453c-a110-77441a60583e | Admin      | Full administrative access to all system functions            |       1 |
+| b898350f-f704-4e97-b8ec-36c3481af052 | Operations | Operations - currency management and account viewing          |       1 |
+| d48b608d-c894-4346-887d-228e342d36c6 | Sales      | Sales operations - read-only currency access                  |       1 |
+| d533c93f-bf3c-4d1f-bba8-4e949b976a8a | Support    | Support - read-only access to all resources and admin screens |       1 |
+| a74f8a4e-f331-4179-aecb-cda61e472805 | Trading    | Trading operations - currency read access                     |       1 |
+| 6e4ee358-1970-400f-a3cb-fbcfe8296f52 | Viewer     | Viewer - basic read-only access to domain data                |       1 |
+#+end_example
+
 *** List All Permissions
 
 #+begin_src sql
@@ -1110,6 +1466,36 @@ from ores.permissions
 where valid_to = '9999-12-31 23:59:59'::timestamptz
 order by code;
 #+end_src
+
+#+RESULTS:
+#+begin_example
+| id                                   | code                    | description                           |
+|--------------------------------------+-------------------------+---------------------------------------|
+| 8f827c95-2af4-4d78-9ccb-22f5d9f4df99 | *                       | Full access to all operations         |
+| 9e337a58-2ee6-4de4-8946-76015de6e928 | accounts:create         | Create new user accounts              |
+| 7151df18-e4c9-4522-bb65-c1055a3e97c1 | accounts:delete         | Delete user accounts                  |
+| c225162e-2b04-4685-b1be-0bacbe367e45 | accounts:lock           | Lock user accounts                    |
+| 4956001c-5ece-4dc8-b437-c834045c25eb | accounts:read           | View user account details             |
+| 5f5f8909-3820-411f-a9f2-d5efb5ad351a | accounts:reset_password | Force password reset on user accounts |
+| fc5587f3-72ad-4706-a1ac-ca735af5a919 | accounts:unlock         | Unlock user accounts                  |
+| cf4ac1a8-b39e-4faa-b6d3-f9ed3d1ef41a | accounts:update         | Modify user account settings          |
+| 43ce84fb-b14a-490a-92d1-4eade25eda37 | currencies:create       | Create new currencies                 |
+| 7fb3f2e6-9b0d-4996-9c02-14e39a732acd | currencies:delete       | Delete currencies                     |
+| 5472a25a-40cf-4bac-9c95-dda2589f12f7 | currencies:history      | View currency version history         |
+| 17f8d400-47fa-4648-8b47-48ab3c1ec82b | currencies:read         | View currency details                 |
+| e1bca8df-8133-4c08-9365-160baf99125e | currencies:update       | Modify currency settings              |
+| 62e6e9ea-5258-41d2-9107-0602512801e6 | flags:create            | Create new feature flags              |
+| 8e42e330-5467-48c2-9a26-5af5b5fcb10e | flags:delete            | Delete feature flags                  |
+| 3b26954f-6368-4c12-b2e2-67797d442714 | flags:read              | View feature flag status              |
+| 5f72cfef-c8a9-4926-a1a3-f51c955595f7 | flags:update            | Modify feature flag settings          |
+| 12e8300a-e76c-4cd6-a439-2098e45393a2 | login_info:read         | View login history and info           |
+| 95d69095-1223-4dbb-970e-8042d90d61de | roles:assign            | Assign roles to accounts              |
+| 2301fe57-f568-4930-b3ec-4a9fba903932 | roles:create            | Create new roles                      |
+| e12a56d4-64a8-436d-8ad8-1909b2439369 | roles:delete            | Delete roles                          |
+| eba37c8c-79e2-4193-9a54-ceb555b1cdda | roles:read              | View role details                     |
+| cd69a420-e93b-4e41-9bab-ee8d6dcd0b7a | roles:revoke            | Revoke roles from accounts            |
+| af5743da-3042-469d-8487-ed859b9de7f5 | roles:update            | Modify role permissions               |
+#+end_example
 
 *** Get Permissions for a Role
 
@@ -1121,9 +1507,16 @@ join ores.roles r on r.id = rp.role_id
 join ores.permissions p on p.id = rp.permission_id
   and p.valid_to = '9999-12-31 23:59:59'::timestamptz
 where rp.valid_to = '9999-12-31 23:59:59'::timestamptz
-  and r.name = 'admin'
+  and r.name = 'Admin'
 order by p.code;
 #+end_src
+
+#+RESULTS:
+#+begin_example
+| role_name | permission_code | description                   |
+|-----------+-----------------+-------------------------------|
+| Admin     | *               | Full access to all operations |
+#+end_example
 
 *** Get Roles for an Account
 
@@ -1138,6 +1531,12 @@ where ar.valid_to = '9999-12-31 23:59:59'::timestamptz
   and a.username = 'admin'
 order by r.name;
 #+end_src
+
+#+RESULTS:
+#+begin_example
+| username | role_name | assigned_at | assigned_by |
+|----------+-----------+-------------+-------------|
+#+end_example
 
 *** Get All Permissions for an Account (via Roles)
 
@@ -1155,6 +1554,12 @@ where a.valid_to = '9999-12-31 23:59:59'::timestamptz
 order by p.code;
 #+end_src
 
+#+RESULTS:
+#+begin_example
+| username | permission_code |
+|----------+-----------------|
+#+end_example
+
 *** Check if Account Has Permission
 
 Uses the built-in RBAC function:
@@ -1163,7 +1568,16 @@ Uses the built-in RBAC function:
 select ores.account_has_permission('admin', 'accounts:create') as has_permission;
 #+end_src
 
+#+RESULTS:
+#+begin_example
+|---|
+#+end_example
+
 ** Currencies
+   :PROPERTIES:
+   :header-args+: :results value table
+   :header-args+: :database ores_delicate_violet
+   :END:
 
 *** List All Currencies
 
@@ -1171,8 +1585,25 @@ select ores.account_has_permission('admin', 'accounts:create') as has_permission
 select iso_code, name, symbol, numeric_code, currency_type
 from ores.currencies
 where valid_to = '9999-12-31 23:59:59'::timestamptz
-order by iso_code;
+order by iso_code
+limit 10;
 #+end_src
+
+#+RESULTS:
+#+begin_example
+| iso_code | name                          | symbol | numeric_code | currency_type |
+|----------+-------------------------------+--------+--------------+---------------|
+| AED      | UAE Dirham                    | د.إ    |          784 | fiat          |
+| AFN      | Afghan Afghani                | ؋      |          971 | fiat          |
+| ALL      | Albanian Lek                  | L      |          008 | fiat          |
+| AMD      | Armenian Dram                 | ֏     |          051 | fiat          |
+| ANG      | Netherlands Antillean Guilder | ƒ      |          532 | fiat          |
+| AOA      | Angolan Kwanza                | Kz     |          973 | fiat          |
+| ARS      | Argentine Peso                | $      |          032 | fiat          |
+| AUD      | Australian Dollar             | A$     |          036 | fiat          |
+| AWG      | Aruban Florin                 | ƒ      |          533 | fiat          |
+| AZN      | Azerbaijani Manat             | ₼     |          944 | fiat          |
+#+end_example
 
 *** Get Currency Details
 
@@ -1181,8 +1612,15 @@ select iso_code, name, symbol, fraction_symbol,
        fractions_per_unit, rounding_type, rounding_precision, format
 from ores.currencies
 where iso_code = 'USD'
-  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+      and valid_to = '9999-12-31 23:59:59'::timestamptz;
 #+end_src
+
+#+RESULTS:
+#+begin_example
+| iso_code | name      | symbol | fraction_symbol | fractions_per_unit | rounding_type | rounding_precision | format    |
+|----------+-----------+--------+-----------------+--------------------+---------------+--------------------+-----------|
+| USD      | US Dollar | $      | ¢               |                100 | standard      |                  2 | $#,##0.00 |
+#+end_example
 
 *** Count Currencies by Type
 
@@ -1193,6 +1631,15 @@ where valid_to = '9999-12-31 23:59:59'::timestamptz
 group by currency_type
 order by count desc;
 #+end_src
+
+#+RESULTS:
+#+begin_example
+| currency_type | count |
+|---------------+-------|
+| fiat          |   153 |
+| commodity     |     4 |
+| supranational |     1 |
+#+end_example
 
 *** Get Currency with Flag Image
 
@@ -1207,7 +1654,18 @@ where c.valid_to = '9999-12-31 23:59:59'::timestamptz
   and c.iso_code = 'GBP';
 #+end_src
 
+#+RESULTS:
+#+begin_example
+| iso_code | name                   | symbol | flag_key |
+|----------+------------------------+--------+----------|
+| GBP      | British Pound Sterling | £      | gb       |
+#+end_example
+
 ** Feature Flags
+   :PROPERTIES:
+   :header-args+: :results value table
+   :header-args+: :database ores_delicate_violet
+   :END:
 
 *** List All Feature Flags
 
@@ -1218,14 +1676,31 @@ where valid_to = '9999-12-31 23:59:59'::timestamptz
 order by name;
 #+end_src
 
+#+RESULTS:
+#+begin_example
+| name                                 | enabled | description                                                                                                         | version |
+|--------------------------------------+---------+---------------------------------------------------------------------------------------------------------------------+---------|
+| system.bootstrap_mode                |       1 | Indicates whether the system is in bootstrap mode (waiting for initial admin account).                              |       1 |
+| system.disable_password_validation   |       0 | When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.                                    |       1 |
+| system.signup_requires_authorization |       0 | Controls whether new signups require admin authorization. NOT YET IMPLEMENTED - enabling will cause signup to fail. |       1 |
+| system.user_signups                  |       0 | Controls whether user self-registration is allowed.                                                                 |       1 |
+#+end_example
+
 *** Check Feature Flag Status
 
 #+begin_src sql
 select name, enabled
 from ores.feature_flags
-where name = 'bootstrap_mode'
+where name like '%bootstrap_mode%'
   and valid_to = '9999-12-31 23:59:59'::timestamptz;
 #+end_src
+
+#+RESULTS:
+#+begin_example
+| name                  | enabled |
+|-----------------------+---------|
+| system.bootstrap_mode |       1 |
+#+end_example
 
 *** List Enabled Features
 
@@ -1237,7 +1712,18 @@ where enabled = 1
 order by name;
 #+end_src
 
+#+RESULTS:
+#+begin_example
+| name                  | description                                                                            |
+|-----------------------+----------------------------------------------------------------------------------------|
+| system.bootstrap_mode | Indicates whether the system is in bootstrap mode (waiting for initial admin account). |
+#+end_example
+
 ** Images and Tags
+   :PROPERTIES:
+   :header-args+: :results value table
+   :header-args+: :database ores_delicate_violet
+   :END:
 
 *** List All Images
 
@@ -1249,6 +1735,32 @@ order by key
 limit 20;
 #+end_src
 
+#+RESULTS:
+#+begin_example
+| image_id                             | key   | description         | version |
+|--------------------------------------+-------+---------------------+---------|
+| a6ac20cb-f45f-4375-9082-4673bb1f453a | ad    | Flag for code AD    |       1 |
+| 31cafad9-db0c-4359-ada8-da331f08949e | ae    | Flag for code AE    |       1 |
+| 1116a6b0-7511-4fda-869f-b4f9946c15b4 | af    | Flag for code AF    |       1 |
+| c056bd53-7c7b-4313-990c-7b9d1d80828d | ag    | Flag for code AG    |       1 |
+| 31959ae1-6f64-4534-9e1a-fd3dd34ef84d | ai    | Flag for code AI    |       1 |
+| 458d56d5-e535-477c-8af5-32bc6097c24b | al    | Flag for code AL    |       1 |
+| 9e01af37-ac88-4488-a857-81843736cf21 | am    | Flag for code AM    |       1 |
+| fcdb0cd7-6184-4bfa-bad0-180cebeb2224 | ao    | Flag for code AO    |       1 |
+| 762567e8-d165-4a57-b818-63d21fbe5748 | aq    | Flag for code AQ    |       1 |
+| 85de14d6-5556-410b-83dc-c0c92098d5db | ar    | Flag for code AR    |       1 |
+| 495b0456-03da-4c9b-b1b9-110a0d8e06f8 | arab  | Flag for code ARAB  |       1 |
+| 04bf011e-5cd2-4715-9707-31ce93a9cb2a | as    | Flag for code AS    |       1 |
+| 81cf090b-2cdb-4b95-b530-9144bb3246c3 | asean | Flag for code ASEAN |       1 |
+| f3d3f779-ed01-4bf2-85fe-99ba62596647 | at    | Flag for code AT    |       1 |
+| beb9ef9e-ba7c-438d-9282-85298a083347 | au    | Flag for code AU    |       1 |
+| 9dfc69aa-fe57-4518-a988-0e089f58e390 | aw    | Flag for code AW    |       1 |
+| e866518b-5625-433d-b2dc-f107af7a222b | ax    | Flag for code AX    |       1 |
+| 5e0b55f6-83df-4fda-862a-0d1ab3d5139e | az    | Flag for code AZ    |       1 |
+| aa21e9e2-eac2-44dd-a927-7eef3c9ffa30 | ba    | Flag for code BA    |       1 |
+| 05f4a87e-b481-4953-b6cd-9e9b5d3fc7a6 | bb    | Flag for code BB    |       1 |
+#+end_example
+
 *** List All Tags
 
 #+begin_src sql
@@ -1257,6 +1769,13 @@ from ores.tags
 where valid_to = '9999-12-31 23:59:59'::timestamptz
 order by name;
 #+end_src
+
+#+RESULTS:
+#+begin_example
+| tag_id                               | name | description                    |
+|--------------------------------------+------+--------------------------------|
+| d932c1f5-37fd-48fd-b592-7e7450afded0 | flag | Country and region flag images |
+#+end_example
 
 *** Get Images by Tag
 
@@ -1273,7 +1792,37 @@ order by i.key
 limit 20;
 #+end_src
 
+#+RESULTS:
+#+begin_example
+| key   | description         |
+|-------+---------------------|
+| ad    | Flag for code AD    |
+| ae    | Flag for code AE    |
+| af    | Flag for code AF    |
+| ag    | Flag for code AG    |
+| ai    | Flag for code AI    |
+| al    | Flag for code AL    |
+| am    | Flag for code AM    |
+| ao    | Flag for code AO    |
+| aq    | Flag for code AQ    |
+| ar    | Flag for code AR    |
+| arab  | Flag for code ARAB  |
+| as    | Flag for code AS    |
+| asean | Flag for code ASEAN |
+| at    | Flag for code AT    |
+| au    | Flag for code AU    |
+| aw    | Flag for code AW    |
+| ax    | Flag for code AX    |
+| az    | Flag for code AZ    |
+| ba    | Flag for code BA    |
+| bb    | Flag for code BB    |
+#+end_example
+
 ** Temporal Queries
+   :PROPERTIES:
+   :header-args+: :results value table
+   :header-args+: :database ores_delicate_violet
+   :END:
 
 *** View Entity History
 
@@ -1287,6 +1836,12 @@ from ores.accounts
 where username = 'admin'
 order by valid_from;
 #+end_src
+
+#+RESULTS:
+#+begin_example
+| id | username | email | version | valid_from | valid_to | status |
+|----+----------+-------+---------+------------+----------+--------|
+#+end_example
 
 *** Point-in-Time Query
 
@@ -1311,12 +1866,23 @@ order by version_count desc;
 #+end_src
 
 ** Administrative
+   :PROPERTIES:
+   :header-args+: :results value table
+   :header-args+: :database ores_delicate_violet
+   :END:
 
 *** Database Size
 
 #+begin_src sql
 select pg_size_pretty(pg_database_size(current_database())) as database_size;
 #+end_src
+
+#+RESULTS:
+#+begin_example
+| database_size |
+|---------------|
+| 12 MB         |
+#+end_example
 
 *** Table Sizes
 
@@ -1328,6 +1894,26 @@ where schemaname = 'ores'
 order by pg_total_relation_size(schemaname || '.' || tablename) desc;
 #+end_src
 
+#+RESULTS:
+#+begin_example
+| schemaname | tablename        | size    |
+|------------+------------------+---------|
+| ores       | images           | 1232 kB |
+| ores       | image_tags       | 176 kB  |
+| ores       | currencies       | 96 kB   |
+| ores       | currency_images  | 88 kB   |
+| ores       | roles            | 72 kB   |
+| ores       | tags             | 72 kB   |
+| ores       | role_permissions | 64 kB   |
+| ores       | permissions      | 56 kB   |
+| ores       | feature_flags    | 56 kB   |
+| ores       | sessions         | 48 kB   |
+| ores       | accounts         | 48 kB   |
+| ores       | account_roles    | 40 kB   |
+| ores       | login_info       | 32 kB   |
+| ores       | ip2country       | 16 kB   |
+#+end_example
+
 *** Row Counts per Table
 
 Uses PostgreSQL statistics for all tables in the schema:
@@ -1338,5 +1924,27 @@ from pg_stat_user_tables
 where schemaname = 'ores'
 order by n_live_tup desc;
 #+end_src
+
+#+RESULTS:
+#+begin_example
+| table_name       | rows |
+|------------------+------|
+| images           |  276 |
+| image_tags       |  276 |
+| currency_images  |  158 |
+| currencies       |  158 |
+| permissions      |   24 |
+| role_permissions |   21 |
+| roles            |    6 |
+| feature_flags    |    4 |
+| tags             |    1 |
+| ip2country       |    0 |
+| account_roles    |    0 |
+| sessions         |    0 |
+| accounts         |    0 |
+| login_info       |    0 |
+#+end_example
+
+* Footer
 
 | Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] | Schema: [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][SQL Schema]] |

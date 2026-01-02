@@ -27,13 +27,12 @@
  * - All tables with temporal/bitemporal support
  * - Triggers and notification functions
  * - Reference data (currencies, flags)
+ * - RBAC seed data (permissions, roles)
+ * - System flags (bootstrap_mode, user_signups, etc.)
  *
  * This script is used by both:
  * - setup_template.sql (to create the template database)
  * - create_database_direct.sql (to create a standalone database)
- *
- * NOTE: This does NOT include instance-specific initialization like
- * feature flags. Those are in instance/init_instance.sql
  */
 
 -- Create schema and extensions
@@ -76,16 +75,16 @@ grant create on schema ores to ores;
 -- Geolocation tables and functions
 \ir ../schema/geolocation_create.sql
 
--- Reference data (immutable, belongs in template)
-\ir ../data/load_flags.sql
-\ir ../data/flags_populate.sql
-\ir ../data/currencies_populate.sql
-\ir ../data/currency_images_populate.sql
+-- NOTE: The template database contains schema only, no data.
+-- To seed data after creating an instance:
+--   psql -U ores -d your_database -f populate/populate.sql        # RBAC + system flags
+--   psql -U ores -d your_database -f populate/reference_data.sql  # Currencies, flags, images
 
 -- Grant table permissions to ores user
-grant select, insert, update, delete on all tables in schema ores to ores;
+-- Note: TRUNCATE is included for test database cleanup
+grant select, insert, update, delete, truncate on all tables in schema ores to ores;
 grant usage, select on all sequences in schema ores to ores;
 
 -- Set default privileges for any future tables
-alter default privileges in schema ores grant select, insert, update, delete on tables to ores;
+alter default privileges in schema ores grant select, insert, update, delete, truncate on tables to ores;
 alter default privileges in schema ores grant usage, select on sequences to ores;

@@ -61,6 +61,16 @@ GRANT ALL PRIVILEGES ON DATABASE ores_admin TO ores;
 \ir database_functions.sql
 \ir cleanup_functions.sql
 
+-- Grant schema object permissions to ores user
+-- (Database-level grants don't include schema object access)
+GRANT USAGE ON SCHEMA public TO ores;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO ores;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO ores;
+
+-- Set default privileges for future objects
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO ores;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO ores;
+
 \echo ''
 \echo '=========================================='
 \echo 'Admin database created successfully!'

@@ -126,3 +126,54 @@ begin
     order by r.name;
 end;
 $$ language plpgsql stable;
+
+-- Check if an account has a specific permission (by username).
+-- Convenience function for quick permission checks.
+create or replace function account_has_permission(p_username text, p_permission_code text)
+returns boolean as $$
+declare
+    v_account_id uuid;
+begin
+    -- Look up the account ID
+    select id into v_account_id
+    from ores.accounts
+    where username = p_username
+    and valid_to = '9999-12-31 23:59:59'::timestamptz;
+
+    if v_account_id is null then
+        return false;
+    end if;
+
+    -- Check if any of the account's roles have this permission
+    return exists (
+        select 1
+        from ores.account_roles ar
+        join ores.role_permissions rp on ar.role_id = rp.role_id
+        join ores.permissions p on rp.permission_id = p.id
+        where ar.account_id = v_account_id
+        and p.code = p_permission_code
+        and ar.valid_to = '9999-12-31 23:59:59'::timestamptz
+        and rp.valid_to = '9999-12-31 23:59:59'::timestamptz
+        and p.valid_to = '9999-12-31 23:59:59'::timestamptz
+    );
+end;
+$$ language plpgsql stable;
+
+-- Check if an account has a specific permission (by account ID).
+-- More efficient when you already have the account ID.
+create or replace function account_has_permission_by_id(p_account_id uuid, p_permission_code text)
+returns boolean as $$
+begin
+    return exists (
+        select 1
+        from ores.account_roles ar
+        join ores.role_permissions rp on ar.role_id = rp.role_id
+        join ores.permissions p on rp.permission_id = p.id
+        where ar.account_id = p_account_id
+        and p.code = p_permission_code
+        and ar.valid_to = '9999-12-31 23:59:59'::timestamptz
+        and rp.valid_to = '9999-12-31 23:59:59'::timestamptz
+        and p.valid_to = '9999-12-31 23:59:59'::timestamptz
+    );
+end;
+$$ language plpgsql stable;

@@ -23,6 +23,7 @@
 #include <memory>
 #include "ores.http/net/router.hpp"
 #include "ores.http/openapi/endpoint_registry.hpp"
+#include "ores.http/middleware/jwt_authenticator.hpp"
 #include "ores.iam/service/account_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/repository/session_repository.hpp"
@@ -79,7 +80,8 @@ public:
     iam_routes(database::context ctx,
         std::shared_ptr<variability::service::system_flags_service> system_flags,
         std::shared_ptr<comms::service::auth_session_service> sessions,
-        std::shared_ptr<iam::service::authorization_service> auth_service);
+        std::shared_ptr<iam::service::authorization_service> auth_service,
+        std::shared_ptr<http::middleware::jwt_authenticator> authenticator);
 
     /**
      * @brief Registers all IAM routes with the router.
@@ -185,6 +187,7 @@ private:
     std::shared_ptr<variability::service::system_flags_service> system_flags_;
     std::shared_ptr<comms::service::auth_session_service> sessions_;
     std::shared_ptr<iam::service::authorization_service> auth_service_;
+    std::shared_ptr<http::middleware::jwt_authenticator> authenticator_;
 };
 
 }

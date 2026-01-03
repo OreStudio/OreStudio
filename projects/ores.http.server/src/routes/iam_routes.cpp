@@ -19,7 +19,9 @@
  */
 #include "ores.http.server/routes/iam_routes.hpp"
 
+#include <sstream>
 #include <rfl/json.hpp>
+#include "ores.http/domain/jwt_claims.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/account_json.hpp"
 #include "ores.iam/domain/role_json.hpp"
@@ -45,13 +47,15 @@ namespace asio = boost::asio;
 iam_routes::iam_routes(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
     std::shared_ptr<comms::service::auth_session_service> sessions,
-    std::shared_ptr<iam::service::authorization_service> auth_service)
+    std::shared_ptr<iam::service::authorization_service> auth_service,
+    std::shared_ptr<http::middleware::jwt_authenticator> authenticator)
     : ctx_(std::move(ctx))
     , account_service_(ctx_)
     , session_repo_(ctx_)
     , system_flags_(std::move(system_flags))
     , sessions_(std::move(sessions))
-    , auth_service_(std::move(auth_service)) {
+    , auth_service_(std::move(auth_service))
+    , authenticator_(std::move(authenticator)) {
     BOOST_LOG_SEV(lg(), debug) << "IAM routes initialized";
 }
 
@@ -369,12 +373,50 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
 
             auto login_info = account_service_.get_login_info(account.id);
 
-            iam::messaging::login_response resp;
-            resp.success = true;
-            resp.account_id = account.id;
-            resp.password_reset_required = login_info.password_reset_required;
+            // Generate JWT token if authenticator is configured
+            std::string token;
+            if (authenticator_ && authenticator_->is_configured()) {
+                // Get user's roles for the token
+                auto roles = auth_service_->get_account_roles(account.id);
+                std::vector<std::string> role_names;
+                for (const auto& role : roles) {
+                    role_names.push_back(role.name);
+                }
 
-            co_return http_response::json(rfl::json::write(resp));
+                // Create JWT claims
+                http::domain::jwt_claims claims;
+                claims.subject = boost::uuids::to_string(account.id);
+                claims.username = account.username;
+                claims.email = account.email;
+                claims.roles = role_names;
+                claims.issued_at = std::chrono::system_clock::now();
+                claims.expires_at = claims.issued_at + std::chrono::hours(24);
+
+                auto token_opt = authenticator_->create_token(claims);
+                if (token_opt) {
+                    token = *token_opt;
+                    BOOST_LOG_SEV(lg(), debug) << "Generated JWT token for user: "
+                        << account.username;
+                } else {
+                    BOOST_LOG_SEV(lg(), warn) << "Failed to generate JWT token for user: "
+                        << account.username;
+                }
+            }
+
+            // Build response with token
+            std::ostringstream oss;
+            oss << R"({"success":true,"account_id":")"
+                << boost::uuids::to_string(account.id) << R"(","username":")"
+                << account.username << R"(","email":")"
+                << account.email << R"(","password_reset_required":)"
+                << (login_info.password_reset_required ? "true" : "false");
+
+            if (!token.empty()) {
+                oss << R"(,"token":")" << token << R"(")";
+            }
+            oss << "}";
+
+            co_return http_response::json(oss.str());
         } catch (const std::runtime_error&) {
             BOOST_LOG_SEV(lg(), warn) << "Login failed for user: " << login_req->username;
             co_return http_response::unauthorized("Invalid credentials");

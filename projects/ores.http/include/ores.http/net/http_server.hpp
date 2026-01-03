@@ -52,6 +52,11 @@ public:
     std::shared_ptr<openapi::endpoint_registry> get_registry() { return registry_; }
 
     /**
+     * @brief Returns the JWT authenticator for token generation/validation.
+     */
+    std::shared_ptr<middleware::jwt_authenticator> get_authenticator() { return authenticator_; }
+
+    /**
      * @brief Starts the server and accepts connections.
      */
     boost::asio::awaitable<void> run();

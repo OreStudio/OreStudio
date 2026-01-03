@@ -49,24 +49,20 @@ void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Retrieve currencies with pagination")
         .tags({"currencies"})
         .auth_required()
-        .query_param("offset", "integer", false, "Pagination offset", "0")
-        .query_param("limit", "integer", false, "Maximum number of results", "100")
+        .query_param("offset", "integer", "", false, "Pagination offset", "0")
+        .query_param("limit", "integer", "", false, "Maximum number of results", "100")
         .handler([this](const http_request& req) { return handle_get_currencies(req); });
     router->add_route(get_currencies.build());
     registry->register_route(get_currencies.build());
 
     auto save_currency = router->post("/api/v1/currencies")
         .summary("Save currency")
-        .description("Create or update a currency")
+        .description("Create or update a currency. Request body: {\"currency\": {\"iso_code\": \"USD\", \"name\": \"US Dollar\", \"numeric_code\": 840, \"symbol\": \"$\", \"fractions_per_unit\": 100}}")
         .tags({"currencies"})
         .auth_required()
         .roles({"admin"})
         .body({
-            {"iso_code", "string", "", true, "ISO 4217 currency code"},
-            {"name", "string", "", true, "Currency name"},
-            {"numeric_code", "integer", "", true, "ISO 4217 numeric code"},
-            {"symbol", "string", "", false, "Currency symbol"},
-            {"fractions_per_unit", "integer", "", false, "Decimal places (default 100)"}
+            {"currency", "object", "", true, "Currency object with iso_code (string, required), name (string, required), numeric_code (integer, required), symbol (string), fractions_per_unit (integer, default 100)"}
         })
         .handler([this](const http_request& req) { return handle_save_currency(req); });
     router->add_route(save_currency.build());
@@ -79,7 +75,7 @@ void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
         .auth_required()
         .roles({"admin"})
         .body({
-            {"iso_codes", "array", "", true, "Array of ISO currency codes to delete"}
+            {"iso_codes", "array", "", true, "Array of ISO currency codes to delete", "string"}
         })
         .handler([this](const http_request& req) { return handle_delete_currencies(req); });
     router->add_route(delete_currencies.build());

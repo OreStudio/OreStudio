@@ -34,6 +34,10 @@ namespace ores::http::domain {
 
 /**
  * @brief Describes a property for OpenAPI schema generation.
+ *
+ * Note: For nested objects, use type="object" and describe the structure
+ * in the description field. A more expressive recursive schema would require
+ * significant additional complexity.
  */
 struct schema_property final {
     std::string name;
@@ -41,6 +45,7 @@ struct schema_property final {
     std::string format;           // Optional format (e.g., email, uuid, date-time)
     bool required = false;
     std::string description;
+    std::string items_type;       // For array type: type of array items (string, integer, uuid, etc.)
 };
 
 /**
@@ -49,6 +54,7 @@ struct schema_property final {
 struct query_param final {
     std::string name;
     std::string type = "string";
+    std::string format;           // Optional format (e.g., uuid, date)
     bool required = false;
     std::string description;
     std::optional<std::string> default_value;

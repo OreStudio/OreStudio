@@ -126,8 +126,8 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Retrieve accounts with pagination")
         .tags({"accounts"})
         .auth_required()
-        .query_param("offset", "integer", false, "Pagination offset", "0")
-        .query_param("limit", "integer", false, "Maximum number of results", "100")
+        .query_param("offset", "integer", "", false, "Pagination offset", "0")
+        .query_param("limit", "integer", "", false, "Maximum number of results", "100")
         .handler([this](const http_request& req) { return handle_list_accounts(req); });
     router->add_route(list_accounts.build());
     registry->register_route(list_accounts.build());
@@ -186,7 +186,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .auth_required()
         .roles({"admin"})
         .body({
-            {"account_ids", "array", "", true, "Array of account UUIDs to lock"}
+            {"account_ids", "array", "", true, "Array of account UUIDs to lock", "uuid"}
         })
         .handler([this](const http_request& req) { return handle_lock_accounts(req); });
     router->add_route(lock_accounts.build());
@@ -199,7 +199,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .auth_required()
         .roles({"admin"})
         .body({
-            {"account_ids", "array", "", true, "Array of account UUIDs to unlock"}
+            {"account_ids", "array", "", true, "Array of account UUIDs to unlock", "uuid"}
         })
         .handler([this](const http_request& req) { return handle_unlock_accounts(req); });
     router->add_route(unlock_accounts.build());
@@ -221,7 +221,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .auth_required()
         .roles({"admin"})
         .body({
-            {"account_ids", "array", "", true, "Array of account UUIDs to reset"}
+            {"account_ids", "array", "", true, "Array of account UUIDs to reset", "uuid"}
         })
         .handler([this](const http_request& req) { return handle_reset_password(req); });
     router->add_route(reset_password.build());
@@ -327,9 +327,9 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("List session history")
         .tags({"sessions"})
         .auth_required()
-        .query_param("account_id", "string", false, "Filter by account UUID")
-        .query_param("offset", "integer", false, "Pagination offset", "0")
-        .query_param("limit", "integer", false, "Maximum number of results", "100")
+        .query_param("account_id", "string", "uuid", false, "Filter by account UUID")
+        .query_param("offset", "integer", "", false, "Pagination offset", "0")
+        .query_param("limit", "integer", "", false, "Maximum number of results", "100")
         .handler([this](const http_request& req) { return handle_list_sessions(req); });
     router->add_route(list_sessions.build());
     registry->register_route(list_sessions.build());

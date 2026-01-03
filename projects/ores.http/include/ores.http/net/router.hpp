@@ -70,6 +70,7 @@ public:
      */
     route_builder& query_param(const std::string& name,
         const std::string& type = "string",
+        const std::string& format = "",
         bool required = false,
         const std::string& desc = "",
         const std::optional<std::string>& default_value = std::nullopt);

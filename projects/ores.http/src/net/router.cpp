@@ -106,6 +106,7 @@ route_builder& route_builder::tags(std::vector<std::string> t) {
 
 route_builder& route_builder::query_param(const std::string& name,
     const std::string& type,
+    const std::string& format,
     bool required,
     const std::string& desc,
     const std::optional<std::string>& default_value) {
@@ -113,6 +114,7 @@ route_builder& route_builder::query_param(const std::string& name,
     domain::query_param param;
     param.name = name;
     param.type = type;
+    param.format = format;
     param.required = required;
     param.description = desc;
     param.default_value = default_value;

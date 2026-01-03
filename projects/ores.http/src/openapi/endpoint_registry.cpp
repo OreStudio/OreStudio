@@ -82,10 +82,16 @@ struct openapi_response final {
     std::string description;
 };
 
+struct openapi_items final {
+    std::string type;
+    std::optional<std::string> format;
+};
+
 struct openapi_schema_property final {
     std::string type;
     std::optional<std::string> format;
     std::optional<std::string> description;
+    std::optional<openapi_items> items;  // For array type
 };
 
 struct openapi_schema final {
@@ -239,6 +245,9 @@ std::string endpoint_registry::generate_openapi_json() const {
         for (const auto& qp : route.query_params) {
             rfl::Object<std::string> schema;
             schema["type"] = qp.type;
+            if (!qp.format.empty()) {
+                schema["format"] = qp.format;
+            }
             openapi_parameter param;
             param.name = qp.name;
             param.in = "query";
@@ -269,6 +278,17 @@ std::string endpoint_registry::generate_openapi_json() const {
                 }
                 if (!prop.description.empty()) {
                     sp.description = prop.description;
+                }
+                // Add items for array types
+                if (prop.type == "array" && !prop.items_type.empty()) {
+                    openapi_items items;
+                    items.type = prop.items_type;
+                    // Check if items_type contains a format hint like "uuid"
+                    if (prop.items_type == "uuid") {
+                        items.type = "string";
+                        items.format = "uuid";
+                    }
+                    sp.items = items;
                 }
                 props[prop.name] = sp;
 

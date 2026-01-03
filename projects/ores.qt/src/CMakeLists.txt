@@ -38,12 +38,12 @@ target_link_libraries(${exe_binary_name} PRIVATE
     ores.eventing.lib
     ores.telemetry.lib
     ores.utility.lib
-    Boost::process
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
     Qt6::Concurrent
     Qt6::Svg)
+# Note: Boost::process comes transitively through ores.telemetry.lib (PUBLIC)
 
 set_target_properties(${exe_binary_name} PROPERTIES
     AUTORCC_RESOURCE_DIRS "${ORES_QT_DIR}/resources;${ORES_QT_DIR}/resources/icons"

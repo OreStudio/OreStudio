@@ -73,8 +73,8 @@ The system is organised into four architectural layers:
 ** Application Layer
 
 - Components:
-- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]]: REPL client. Exercises the service layer via the binary comms
-  protocol.
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.comms.shell]]: REPL client. Exercises the service layer via the binary
+  comms protocol.
 - [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]],: Command-line import/export of entities in multiple formats,
   exercises the database layer directly.
 - [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]: Desktop GUI with MDI interface for visual data management

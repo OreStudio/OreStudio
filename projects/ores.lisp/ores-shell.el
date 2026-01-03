@@ -44,8 +44,8 @@
 
 (defvar ores-shell-prompt "ores-shell> "
   "Prompt for ores-shell.")
-;; (setq ores-shell-program "~/Development/OreStudio/OreStudio.local1/build/output/linux-clang-debug/publish/bin/ores.shell")
-(defvar ores-shell-program "./ores.shell"
+;; (setq ores-shell-program "~/Development/OreStudio/OreStudio.local1/build/output/linux-clang-debug/publish/bin/ores.comms.shell")
+(defvar ores-shell-program "./ores.comms.shell"
   "Path to the ORE Studio shell executable.")
 
 (defvar ores-shell-last-program nil

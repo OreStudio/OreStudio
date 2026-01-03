@@ -194,10 +194,11 @@ package "Domain Layer" #F2F2F2 {
 
 ' Application Layer
 package "Application Layer" #F2F2F2 {
-    component [ores.shell] as shell #F7E5FF
+    component [ores.comms.shell] as shell #F7E5FF
 
     note right of shell
-    Interactive REPL (Read-Eval-Print Loop) shell for connecting to ORE Studio server:
+    Interactive REPL (Read-Eval-Print Loop) shell for connecting to ORE Studio
+    server via the binary comms protocol:
     - Interface: Interactive command-line with command completion
     - Connection Management: Connect/disconnect to ORE Studio server
     - Currency Operations: List and retrieve currency data

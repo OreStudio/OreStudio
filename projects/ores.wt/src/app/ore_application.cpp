@@ -45,6 +45,7 @@ namespace ores::wt::app {
 namespace {
 
 const std::string logger_name = "ores.wt.app.ore_application";
+constexpr std::uint32_t max_currencies_to_load = 1000;
 
 auto& lg() {
     using namespace ores::telemetry::log;
@@ -271,6 +272,12 @@ void ore_application::show_main_view() {
     navbar->addMenu(std::move(right_menu), Wt::AlignmentFlag::Right);
 }
 
+std::string ore_application::get_current_username() const {
+    return session_manager_.session()
+        ? session_manager_.session()->username
+        : "system";
+}
+
 void ore_application::setup_currency_handlers() {
     currency_list_widget_->add_requested().connect([this] {
         show_add_currency_dialog();
@@ -293,7 +300,7 @@ void ore_application::load_currencies() {
 
     using namespace ores::telemetry::log;
     try {
-        auto currencies = ctx.currency_service().list_currencies(0, 1000);
+        auto currencies = ctx.currency_service().list_currencies(0, max_currencies_to_load);
         std::vector<currency_row> rows;
         rows.reserve(currencies.size());
         for (const auto& c : currencies) {
@@ -313,9 +320,7 @@ void ore_application::show_add_currency_dialog() {
     dialog->saved().connect([this, dialog](const currency_data& data) {
         try {
             auto& ctx = service::application_context::instance();
-            std::string username = session_manager_.session()
-                ? session_manager_.session()->username : "system";
-            auto currency = to_domain(data, username);
+            auto currency = to_domain(data, get_current_username());
             ctx.currency_service().save_currency(currency);
             load_currencies();
         } catch (const std::exception& e) {
@@ -343,6 +348,16 @@ void ore_application::show_edit_currency_dialog(const std::string& iso_code) {
     auto& ctx = service::application_context::instance();
     auto currency_opt = ctx.currency_service().get_currency(iso_code);
     if (!currency_opt) {
+        BOOST_LOG_SEV(lg(), warn) << "Currency not found: " << iso_code;
+        auto err_box = addChild(std::make_unique<Wt::WMessageBox>(
+            "Not Found", "Currency " + iso_code + " was not found. "
+            "It may have been deleted by another user.",
+            Wt::Icon::Warning, Wt::StandardButton::Ok));
+        err_box->buttonClicked().connect([this, err_box](Wt::StandardButton) {
+            removeChild(err_box);
+        });
+        err_box->show();
+        load_currencies();
         return;
     }
 
@@ -353,9 +368,7 @@ void ore_application::show_edit_currency_dialog(const std::string& iso_code) {
     dialog->saved().connect([this, dialog](const currency_data& data) {
         try {
             auto& ctx = service::application_context::instance();
-            std::string username = session_manager_.session()
-                ? session_manager_.session()->username : "system";
-            auto currency = to_domain(data, username);
+            auto currency = to_domain(data, get_current_username());
             ctx.currency_service().save_currency(currency);
             load_currencies();
         } catch (const std::exception& e) {

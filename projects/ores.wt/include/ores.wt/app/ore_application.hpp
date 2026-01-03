@@ -56,6 +56,8 @@ private:
     void on_logout();
     void setup_theme();
 
+    std::string get_current_username() const;
+
     void setup_currency_handlers();
     void load_currencies();
     void show_add_currency_dialog();

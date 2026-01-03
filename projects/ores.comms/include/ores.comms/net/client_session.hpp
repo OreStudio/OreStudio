@@ -119,7 +119,7 @@ concept Deserializable = requires(std::span<const std::byte> data) {
  * - Authentication state tracking
  * - Auth-aware request processing (checks login state before sending)
  *
- * Designed to be shared between ores.shell and ores.qt clients.
+ * Designed to be shared between ores.comms.shell and ores.qt clients.
  */
 class client_session final {
 private:
@@ -146,7 +146,7 @@ public:
      * @brief Connect to the server.
      *
      * Creates a new client internally and connects. Use this for standalone
-     * usage (e.g., in ores.shell).
+     * usage (e.g., in ores.comms.shell).
      *
      * @param options Connection options
      * @return Empty expected on success, error on failure

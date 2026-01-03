@@ -258,7 +258,7 @@ Use =ores-TOPIC-recipes= for consistency with existing skills:
 
 | Skill                | Recipes file         | Compares against                          |
 |----------------------+----------------------+-------------------------------------------|
-| =ores-shell-recipes= | =shell_recipes.org=  | =projects/ores.shell/src/app/commands/*=  |
+| =ores-shell-recipes= | =shell_recipes.org=  | =projects/ores.comms.shell/src/app/commands/*=  |
 | =ores-cli-recipes=   | =cli_recipes.org=    | =projects/ores.cli/src/config/entity_parsers/*= |
 
 ** Best practices

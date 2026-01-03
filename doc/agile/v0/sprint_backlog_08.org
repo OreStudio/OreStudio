@@ -334,6 +334,31 @@ We have a lot of boost program options parsers and options. We need to do an
 inventory of all of the implementations and figure out if we can have common
 code under utility.
 
+#+begin_quote
+This pull request significantly refactors the command-line interface (CLI)
+configuration across various applications by introducing a modular and
+composable architecture. The primary goal is to ensure consistency in how
+command-line options are defined and parsed, making it easier to manage and
+extend CLI functionality. This change centralizes common options and provides
+dedicated classes for specific configurations like server, client, and
+compression settings, while also enhancing logging capabilities with a new PID
+inclusion option.
+
+Highlights:
+
+- Composable CLI Configuration: Introduced new composable configuration classes
+  (common_configuration, server_configuration, client_configuration,
+  compression_configuration) to standardize command-line options across
+  applications.
+- Standardized CLI Flags: Standardized common CLI flags such as -h/--help,
+  -v/--version, and --verbose across all relevant applications.
+- Log PID Inclusion: Added a new --log-include-pid option to include the process
+  ID in log filenames, enhancing log management and identification.
+- Application Migration: Migrated ores.comms.service, ores.cli, ores.qt, and
+  ores.comms.analyser applications to utilize the new configuration architecture
+  and standardized flags.
+#+end_quote
+
 *** STARTED Check functionality in =ores.wt=                           :code:
     :LOGBOOK:
     CLOCK: [2026-01-02 Fri 11:00]--[2026-01-02 Fri 12:49] =>  1:49

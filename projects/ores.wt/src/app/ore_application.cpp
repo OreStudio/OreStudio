@@ -25,6 +25,7 @@
 #include "ores.wt/service/application_context.hpp"
 #include "ores.iam/domain/login_info.hpp"
 #include "ores.risk/domain/currency.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
 #include <Wt/WBootstrap5Theme.h>
 #include <Wt/WNavigationBar.h>
 #include <Wt/WMenu.h>
@@ -42,6 +43,14 @@
 namespace ores::wt::app {
 
 namespace {
+
+const std::string logger_name = "ores.wt.app.ore_application";
+
+auto& lg() {
+    using namespace ores::telemetry::log;
+    static auto instance = make_logger(logger_name);
+    return instance;
+}
 
 currency_row to_row(const risk::domain::currency& c) {
     return {c.iso_code, c.name, c.symbol, c.numeric_code, c.currency_type,
@@ -282,6 +291,7 @@ void ore_application::load_currencies() {
         return;
     }
 
+    using namespace ores::telemetry::log;
     try {
         auto currencies = ctx.currency_service().list_currencies(0, 1000);
         std::vector<currency_row> rows;
@@ -290,12 +300,13 @@ void ore_application::load_currencies() {
             rows.push_back(to_row(c));
         }
         currency_list_widget_->set_currencies(rows);
-    } catch (const std::exception&) {
-        // Log error but don't crash
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to load currencies: " << e.what();
     }
 }
 
 void ore_application::show_add_currency_dialog() {
+    using namespace ores::telemetry::log;
     auto dialog = addChild(
         std::make_unique<currency_dialog>(currency_dialog::mode::add));
 
@@ -307,8 +318,15 @@ void ore_application::show_add_currency_dialog() {
             auto currency = to_domain(data, username);
             ctx.currency_service().save_currency(currency);
             load_currencies();
-        } catch (const std::exception&) {
-            // Log error
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to add currency: " << e.what();
+            auto err_box = addChild(std::make_unique<Wt::WMessageBox>(
+                "Error", "Failed to add currency: " + std::string(e.what()),
+                Wt::Icon::Critical, Wt::StandardButton::Ok));
+            err_box->buttonClicked().connect([this, err_box](Wt::StandardButton) {
+                removeChild(err_box);
+            });
+            err_box->show();
         }
         removeChild(dialog);
     });
@@ -321,6 +339,7 @@ void ore_application::show_add_currency_dialog() {
 }
 
 void ore_application::show_edit_currency_dialog(const std::string& iso_code) {
+    using namespace ores::telemetry::log;
     auto& ctx = service::application_context::instance();
     auto currency_opt = ctx.currency_service().get_currency(iso_code);
     if (!currency_opt) {
@@ -339,8 +358,15 @@ void ore_application::show_edit_currency_dialog(const std::string& iso_code) {
             auto currency = to_domain(data, username);
             ctx.currency_service().save_currency(currency);
             load_currencies();
-        } catch (const std::exception&) {
-            // Log error
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to update currency: " << e.what();
+            auto err_box = addChild(std::make_unique<Wt::WMessageBox>(
+                "Error", "Failed to update currency: " + std::string(e.what()),
+                Wt::Icon::Critical, Wt::StandardButton::Ok));
+            err_box->buttonClicked().connect([this, err_box](Wt::StandardButton) {
+                removeChild(err_box);
+            });
+            err_box->show();
         }
         removeChild(dialog);
     });
@@ -353,6 +379,7 @@ void ore_application::show_edit_currency_dialog(const std::string& iso_code) {
 }
 
 void ore_application::confirm_delete_currency(const std::string& iso_code) {
+    using namespace ores::telemetry::log;
     auto msg_box = addChild(std::make_unique<Wt::WMessageBox>(
         "Confirm Delete",
         "Are you sure you want to delete currency " + iso_code + "?",
@@ -365,8 +392,15 @@ void ore_application::confirm_delete_currency(const std::string& iso_code) {
                 auto& ctx = service::application_context::instance();
                 ctx.currency_service().delete_currency(iso_code);
                 load_currencies();
-            } catch (const std::exception&) {
-                // Log error
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to delete currency: " << e.what();
+                auto err_box = addChild(std::make_unique<Wt::WMessageBox>(
+                    "Error", "Failed to delete currency: " + std::string(e.what()),
+                    Wt::Icon::Critical, Wt::StandardButton::Ok));
+                err_box->buttonClicked().connect([this, err_box](Wt::StandardButton) {
+                    removeChild(err_box);
+                });
+                err_box->show();
             }
         }
         removeChild(msg_box);
@@ -402,6 +436,7 @@ void ore_application::setup_account_handlers() {
 }
 
 void ore_application::load_accounts() {
+    using namespace ores::telemetry::log;
     auto& ctx = service::application_context::instance();
     if (!ctx.is_initialized()) {
         return;
@@ -438,8 +473,8 @@ void ore_application::load_accounts() {
         }
 
         account_list_widget_->set_accounts(rows);
-    } catch (const std::exception&) {
-        // Log error but don't crash
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to load accounts: " << e.what();
     }
 }
 

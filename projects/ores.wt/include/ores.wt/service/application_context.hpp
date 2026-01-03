@@ -28,6 +28,7 @@
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
+#include "ores.risk/service/currency_service.hpp"
 
 namespace ores::wt::service {
 
@@ -63,6 +64,10 @@ public:
         return *system_flags_service_;
     }
 
+    risk::service::currency_service& currency_service() {
+        return *currency_service_;
+    }
+
     bool is_bootstrap_mode() const { return is_bootstrap_mode_; }
 
 private:
@@ -81,6 +86,7 @@ private:
     std::unique_ptr<iam::service::account_setup_service> account_setup_service_;
     std::shared_ptr<iam::service::authorization_service> authorization_service_;
     std::shared_ptr<variability::service::system_flags_service> system_flags_service_;
+    std::unique_ptr<risk::service::currency_service> currency_service_;
 };
 
 }

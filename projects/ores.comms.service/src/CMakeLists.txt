@@ -66,6 +66,7 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${exe_target_name}
     PRIVATE
         ${lib_target_name}
+        ores.openssl_cleanup
         ${CMAKE_THREAD_LIBS_INIT})
 
 install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)

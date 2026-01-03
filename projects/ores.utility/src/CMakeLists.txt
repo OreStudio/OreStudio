@@ -42,10 +42,10 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.platform.lib
-        OpenSSL::SSL
         Boost::exception
         Boost::program_options
     PRIVATE
+        OpenSSL::Crypto
         faker-cxx::faker-cxx)
 # Note: reflectcpp comes transitively through ores.platform.lib (PUBLIC)
 

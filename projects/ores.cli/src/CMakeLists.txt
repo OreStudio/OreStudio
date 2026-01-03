@@ -68,6 +68,7 @@ target_include_directories(${exe_target_name}
 target_link_libraries(${exe_target_name}
     PRIVATE
         ${lib_target_name}
+        OpenSSL::Crypto
         ${CMAKE_THREAD_LIBS_INIT})
 
 install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)

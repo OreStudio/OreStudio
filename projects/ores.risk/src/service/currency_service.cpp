@@ -56,6 +56,16 @@ bool currency_service::delete_currency(const std::string& iso_code) {
     }
 }
 
+std::optional<domain::currency> currency_service::get_currency(
+    const std::string& iso_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting currency: " << iso_code;
+    auto results = repo_.read_latest(ctx_, iso_code);
+    if (results.empty()) {
+        return std::nullopt;
+    }
+    return results.front();
+}
+
 std::vector<domain::currency> currency_service::get_currency_history(
     const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting currency history for: " << iso_code;

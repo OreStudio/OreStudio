@@ -22,6 +22,7 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 #include "ores.database/domain/context.hpp"
 #include "ores.risk/domain/currency.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
@@ -88,6 +89,14 @@ public:
      * @return true if the operation was successful.
      */
     bool delete_currency(const std::string& iso_code);
+
+    /**
+     * @brief Retrieves a single currency by its ISO code.
+     *
+     * @param iso_code The ISO code of the currency.
+     * @return The currency if found, std::nullopt otherwise.
+     */
+    std::optional<domain::currency> get_currency(const std::string& iso_code);
 
     /**
      * @brief Retrieves all historical versions of a currency.

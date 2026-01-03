@@ -245,7 +245,11 @@ std::string endpoint_registry::generate_swagger_ui_html(const std::string& spec_
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>)" << info_.title << R"( - API Documentation</title>
-    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui.css"
+          integrity="sha512-eZpfl9qlKnbDvlJ2brfdx3nhlP1FMsA23w65motxKdYsUcfMcdO2bcLPr7mXhvyzmDZwuzYCJKrl/sEo1ditVQ=="
+          crossorigin="anonymous"
+          referrerpolicy="no-referrer">
     <style>
         body { margin: 0; padding: 0; }
         .topbar { display: none; }
@@ -253,7 +257,14 @@ std::string endpoint_registry::generate_swagger_ui_html(const std::string& spec_
 </head>
 <body>
     <div id="swagger-ui"></div>
-    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui-bundle.js"
+            integrity="sha512-iDdi6WwSTimAFh1NhPyFZpHJWr16m/PupHztElqQL+gQoQDavUATsP9hcvgs9Yci+EUA//WvZYZsCTDhRDKc3g=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.29.1/swagger-ui-standalone-preset.js"
+            integrity="sha512-oGq+mP+3XUyYDm9vsprsd6YdhOokdkcLNUZnmEE6HJzG0F9fIaB8kgGZsjdfTWN8w/1f2kN4a/0xkla0hsetcQ=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"></script>
     <script>
         window.onload = function() {
             SwaggerUIBundle({
@@ -261,7 +272,7 @@ std::string endpoint_registry::generate_swagger_ui_html(const std::string& spec_
                 dom_id: '#swagger-ui',
                 presets: [
                     SwaggerUIBundle.presets.apis,
-                    SwaggerUIBundle.SwaggerUIStandalonePreset
+                    SwaggerUIStandalonePreset
                 ],
                 layout: "StandaloneLayout",
                 deepLinking: true,

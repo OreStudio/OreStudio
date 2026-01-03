@@ -1,0 +1,512 @@
+:PROPERTIES:
+:ID: 10408305-f864-4152-8fca-8132179f4df4
+:END:
+#+title: HTTP Recipes
+#+author: Marco Craveiro
+#+startup: inlineimages
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+
+Recipes for exercising the ORE Studio HTTP API using Emacs [[https://github.com/federicotdn/verb][verb mode]].
+
+To use these recipes:
+
+1. Ensure =verb= package is installed in Emacs
+2. Start the HTTP server: =ores.http.server=
+3. Position cursor on a request and run =C-c C-r C-r=
+   (=verb-send-request-on-point=)
+
+All requests in this file inherit from this base URL.
+
+* Requests                                                             :verb:
+
+template http://localhost:8080/api/v1
+
+** Authentication                                                      :verb:
+  :PROPERTIES:
+  :header-args:verb: :exports both
+  :END:
+
+*** Check Bootstrap Status
+
+Check if the system is in bootstrap mode (awaiting initial admin account).
+
+#+begin_src verb :wrap src json
+get /auth/bootstrap-status
+Accept: application/json
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 63
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "is_in_bootstrap_mode": false,
+  "message": "System is configured"
+}
+#+end_src
+
+*** Bootstrap Initial Admin
+
+Create the initial admin account. Only works from localhost when system is in
+bootstrap mode.
+
+#+begin_src verb :wrap src json
+post /auth/bootstrap
+Accept: application/json
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "email": "admin@example.com",
+    "password": "SecureP@ssword123"
+}
+#+end_src
+
+*** Login
+
+Authenticate with username and password.
+
+#+begin_src verb :wrap src json
+post /auth/login
+Accept: application/json
+Content-Type: application/json
+
+{
+    "username": "newuser3",
+    "password": "Secure-Password-123"
+}
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 401 Unauthorized
+Content-Type: application/json
+Content-Length: 31
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "error": "Invalid credentials"
+}
+#+end_src
+
+*** Signup
+
+Create a new account (when self-registration is enabled).
+
+#+begin_src verb :wrap src json
+post /auth/signup
+Accept: application/json
+Content-Type: application/json
+
+{
+    "username": "newuser",
+    "email": "newuser@example.com",
+    "password": "MyP@ssword456"
+}
+#+end_src
+
+*** Logout
+
+End the current session.
+
+#+begin_src verb :wrap src json
+post /auth/logout
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+* Accounts                                                             :verb:
+  :PROPERTIES:
+  :header-args:verb: :exports both
+  :END:
+
+** List Accounts
+
+Retrieve accounts with optional pagination.
+
+#+begin_src verb :wrap src json
+get /accounts?offset=0&limit=10
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+** Create Account
+
+Create a new user account (admin only).
+
+#+begin_src verb :wrap src json
+post /accounts
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "username": "testuser",
+    "email": "testuser@example.com",
+    "password": "TestP@ss789"
+}
+#+end_src
+
+** Update Account
+
+Update account details by ID (admin only).
+
+#+begin_src verb :wrap src json
+put /accounts/{{(verb-var account_id)}}
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "email": "updated@example.com"
+}
+#+end_src
+
+** Delete Account
+
+Delete an account by ID (admin only).
+
+#+begin_src verb :wrap src json
+delete /accounts/{{(verb-var account_id)}}
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+** Get Account History
+
+Retrieve version history for an account.
+
+#+begin_src verb :wrap src json
+get /accounts/admin/history
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+** List Login Info
+
+Retrieve login info for all accounts.
+
+#+begin_src verb :wrap src json
+get /accounts/login-info
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+** Lock Accounts
+
+Lock one or more accounts (admin only).
+
+#+begin_src verb :wrap src json
+post /accounts/lock
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "account_ids": ["{{(verb-var account_id)}}"]
+}
+#+end_src
+
+** Unlock Accounts
+
+Unlock one or more accounts (admin only).
+
+#+begin_src verb :wrap src json
+post /accounts/unlock
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "account_ids": ["{{(verb-var account_id)}}"]
+}
+#+end_src
+
+** Reset Password
+
+Admin-initiated password reset for accounts (admin only).
+
+#+begin_src verb :wrap src json
+post /accounts/reset-password
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "account_ids": ["{{(verb-var account_id)}}"]
+}
+#+end_src
+
+* Current User                                                         :verb:
+  :PROPERTIES:
+  :header-args:verb: :exports both
+  :END:
+
+** Change Password
+
+Change the current user's password.
+
+#+begin_src verb :wrap src json
+post /me/change-password
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "new_password": "NewSecureP@ss123"
+}
+#+end_src
+
+** Update Email
+
+Update the current user's email address.
+
+#+begin_src verb :wrap src json
+put /me/email
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "new_email": "mynewemail@example.com"
+}
+#+end_src
+
+* RBAC (Role-Based Access Control)                                     :verb:
+  :PROPERTIES:
+  :header-args:verb: :exports both
+  :END:
+
+** List Roles
+
+List all roles in the system.
+
+#+begin_src verb :wrap src json
+get /roles
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+** Get Role
+
+Get a specific role by ID.
+
+#+begin_src verb :wrap src json
+get /roles/{{(verb-var role_id)}}
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+** List Permissions
+
+List all permissions in the system.
+
+#+begin_src verb :wrap src json
+get /permissions
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+** Get Account Roles
+
+Get all roles assigned to an account.
+
+#+begin_src verb :wrap src json
+get /accounts/{{(verb-var account_id)}}/roles
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+** Get Account Permissions
+
+Get effective permissions for an account.
+
+#+begin_src verb :wrap src json
+get /accounts/{{(verb-var account_id)}}/permissions
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+** Assign Role
+
+Assign a role to an account (admin only).
+
+#+begin_src verb :wrap src json
+post /accounts/{{(verb-var account_id)}}/roles
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "role_id": "{{(verb-var role_id)}}"
+}
+#+end_src
+
+** Revoke Role
+
+Revoke a role from an account (admin only).
+
+#+begin_src verb :wrap src json
+delete /accounts/{{(verb-var account_id)}}/roles/{{(verb-var role_id)}}
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+* Sessions                                                             :verb:
+  :PROPERTIES:
+  :header-args:verb: :exports both
+  :END:
+
+** List Sessions
+
+List session history.
+
+#+begin_src verb :wrap src json
+get /sessions?offset=0&limit=10
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+** Get Session Statistics
+
+Get aggregated session statistics.
+
+#+begin_src verb :wrap src json
+get /sessions/statistics
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+** Get Active Sessions
+
+Get currently active sessions.
+
+#+begin_src verb :wrap src json
+get /sessions/active
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+* Currencies                                                           :verb:
+  :PROPERTIES:
+  :header-args:verb: :exports both
+  :END:
+
+** List Currencies
+
+Retrieve currencies with optional pagination.
+
+#+begin_src verb :wrap src json
+get /currencies?offset=0&limit=10
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+** Save Currency
+
+Create or update a currency (admin only).
+
+#+begin_src verb :wrap src json
+post /currencies
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "currency": {
+        "iso_code": "TST",
+        "name": "Test Currency",
+        "numeric_code": 999,
+        "symbol": "T",
+        "fractions_per_unit": 100
+    }
+}
+#+end_src
+
+** Delete Currencies
+
+Delete one or more currencies (admin only).
+
+#+begin_src verb :wrap src json
+delete /currencies
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "iso_codes": ["TST"]
+}
+#+end_src
+
+** Get Currency History
+
+Retrieve version history for a currency.
+
+#+begin_src verb :wrap src json
+get /currencies/USD/history
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+* Feature Flags                                                        :verb:
+  :PROPERTIES:
+  :header-args:verb: :exports both
+  :END:
+
+** List Feature Flags
+
+Retrieve all feature flags in the system.
+
+#+begin_src verb :wrap src json
+get /feature-flags
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+* Assets                                                               :verb:
+  :PROPERTIES:
+  :header-args:verb: :exports both
+  :END:
+
+** Get Currency Images
+
+Retrieve currency-to-image mappings.
+
+#+begin_src verb :wrap src json
+get /assets/currency-images
+Accept: application/json
+Authorization: Bearer {{(verb-var token)}}
+#+end_src
+
+** Get Images
+
+Retrieve images by ID (batch, max 100).
+
+#+begin_src verb :wrap src json
+post /assets/images
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{(verb-var token)}}
+
+{
+    "image_ids": ["{{(verb-var image_id)}}"]
+}
+#+end_src
+
+* Variables                                                        :noexport:
+
+Use =M-x verb-set-var= to set these variables before running authenticated requests:
+
+| Variable   | Description                            | Example                              |
+|------------+----------------------------------------+--------------------------------------|
+| token      | JWT authentication token               | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 |
+| account_id | UUID of an account                     | 12345678-1234-1234-1234-123456789abc |
+| role_id    | UUID of a role                         | 87654321-4321-4321-4321-cba987654321 |
+| image_id   | UUID of an image                       | abcdef12-3456-7890-abcd-ef1234567890 |
+
+| Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |

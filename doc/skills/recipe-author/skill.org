@@ -45,6 +45,7 @@ demonstrate functionality through runnable code blocks with captured results.
 |---------------------+--------------------------+---------------------------|
 | =shell_recipes.org= | ORE Studio Shell (REPL)  | C++ command files         |
 | =cli_recipes.org=   | ORE Studio CLI           | C++ entity parser files   |
+| =http_recipes.org=  | HTTP API (verb mode)     | C++ route files           |
 | =sql_recipes.org=   | SQL database queries     | SQL schema files          |
 | =git_recipes.org=   | Git operations           | None (general reference)  |
 

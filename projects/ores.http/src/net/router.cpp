@@ -104,6 +104,34 @@ route_builder& route_builder::tags(std::vector<std::string> t) {
     return *this;
 }
 
+route_builder& route_builder::query_param(const std::string& name,
+    const std::string& type,
+    bool required,
+    const std::string& desc,
+    const std::optional<std::string>& default_value) {
+
+    domain::query_param param;
+    param.name = name;
+    param.type = type;
+    param.required = required;
+    param.description = desc;
+    param.default_value = default_value;
+    query_params_.push_back(param);
+    return *this;
+}
+
+route_builder& route_builder::body(std::vector<domain::schema_property> properties,
+    bool required,
+    const std::string& content_type) {
+
+    domain::request_body_schema schema;
+    schema.content_type = content_type;
+    schema.properties = std::move(properties);
+    schema.required = required;
+    body_schema_ = schema;
+    return *this;
+}
+
 domain::route route_builder::build() const {
     auto [regex, param_names] = compile_pattern(pattern_);
 
@@ -118,6 +146,8 @@ domain::route route_builder::build() const {
     r.summary = summary_;
     r.description = description_;
     r.tags = tags_;
+    r.query_params = query_params_;
+    r.body_schema = body_schema_;
     return r;
 }
 

@@ -65,6 +65,10 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .summary("User login")
         .description("Authenticate user with username and password")
         .tags({"auth"})
+        .body({
+            {"username", "string", "", true, "Username for authentication"},
+            {"password", "string", "password", true, "Password for authentication"}
+        })
         .handler([this](const http_request& req) { return handle_login(req); });
     router->add_route(login.build());
     registry->register_route(login.build());
@@ -82,6 +86,11 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .summary("User signup")
         .description("Create a new account (when self-registration is enabled)")
         .tags({"auth"})
+        .body({
+            {"username", "string", "", true, "Desired username"},
+            {"email", "string", "email", true, "Email address"},
+            {"password", "string", "password", true, "Password"}
+        })
         .handler([this](const http_request& req) { return handle_signup(req); });
     router->add_route(signup.build());
     registry->register_route(signup.build());
@@ -98,6 +107,11 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .summary("Create initial admin")
         .description("Create initial admin account (bootstrap mode only, localhost only)")
         .tags({"auth"})
+        .body({
+            {"username", "string", "", true, "Admin username"},
+            {"email", "string", "email", true, "Admin email address"},
+            {"password", "string", "password", true, "Admin password"}
+        })
         .handler([this](const http_request& req) { return handle_create_initial_admin(req); });
     router->add_route(bootstrap.build());
     registry->register_route(bootstrap.build());
@@ -108,6 +122,8 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Retrieve accounts with pagination")
         .tags({"accounts"})
         .auth_required()
+        .query_param("offset", "integer", false, "Pagination offset", "0")
+        .query_param("limit", "integer", false, "Maximum number of results", "100")
         .handler([this](const http_request& req) { return handle_list_accounts(req); });
     router->add_route(list_accounts.build());
     registry->register_route(list_accounts.build());
@@ -118,6 +134,11 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"accounts"})
         .auth_required()
         .roles({"admin"})
+        .body({
+            {"username", "string", "", true, "Username for new account"},
+            {"email", "string", "email", true, "Email address"},
+            {"password", "string", "password", true, "Password"}
+        })
         .handler([this](const http_request& req) { return handle_create_account(req); });
     router->add_route(create_account.build());
     registry->register_route(create_account.build());
@@ -138,6 +159,9 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"accounts"})
         .auth_required()
         .roles({"admin"})
+        .body({
+            {"email", "string", "email", false, "New email address"}
+        })
         .handler([this](const http_request& req) { return handle_update_account(req); });
     router->add_route(update_account.build());
     registry->register_route(update_account.build());
@@ -157,6 +181,9 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"accounts"})
         .auth_required()
         .roles({"admin"})
+        .body({
+            {"account_ids", "array", "", true, "Array of account UUIDs to lock"}
+        })
         .handler([this](const http_request& req) { return handle_lock_accounts(req); });
     router->add_route(lock_accounts.build());
     registry->register_route(lock_accounts.build());
@@ -167,6 +194,9 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"accounts"})
         .auth_required()
         .roles({"admin"})
+        .body({
+            {"account_ids", "array", "", true, "Array of account UUIDs to unlock"}
+        })
         .handler([this](const http_request& req) { return handle_unlock_accounts(req); });
     router->add_route(unlock_accounts.build());
     registry->register_route(unlock_accounts.build());
@@ -186,6 +216,9 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"accounts"})
         .auth_required()
         .roles({"admin"})
+        .body({
+            {"account_ids", "array", "", true, "Array of account UUIDs to reset"}
+        })
         .handler([this](const http_request& req) { return handle_reset_password(req); });
     router->add_route(reset_password.build());
     registry->register_route(reset_password.build());
@@ -196,6 +229,9 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Change own password")
         .tags({"me"})
         .auth_required()
+        .body({
+            {"new_password", "string", "password", true, "New password"}
+        })
         .handler([this](const http_request& req) { return handle_change_password(req); });
     router->add_route(change_password.build());
     registry->register_route(change_password.build());
@@ -205,6 +241,9 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Update own email address")
         .tags({"me"})
         .auth_required()
+        .body({
+            {"new_email", "string", "email", true, "New email address"}
+        })
         .handler([this](const http_request& req) { return handle_update_my_email(req); });
     router->add_route(update_email.build());
     registry->register_route(update_email.build());
@@ -243,6 +282,9 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"rbac"})
         .auth_required()
         .roles({"admin"})
+        .body({
+            {"role_id", "string", "uuid", true, "UUID of the role to assign"}
+        })
         .handler([this](const http_request& req) { return handle_assign_role(req); });
     router->add_route(assign_role.build());
     registry->register_route(assign_role.build());
@@ -281,6 +323,9 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("List session history")
         .tags({"sessions"})
         .auth_required()
+        .query_param("account_id", "string", false, "Filter by account UUID")
+        .query_param("offset", "integer", false, "Pagination offset", "0")
+        .query_param("limit", "integer", false, "Maximum number of results", "100")
         .handler([this](const http_request& req) { return handle_list_sessions(req); });
     router->add_route(list_sessions.build());
     registry->register_route(list_sessions.build());

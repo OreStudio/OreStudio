@@ -23,6 +23,7 @@
 #include <regex>
 #include <string>
 #include <vector>
+#include <optional>
 #include <functional>
 #include <boost/asio/awaitable.hpp>
 #include "ores.http/domain/http_method.hpp"
@@ -30,6 +31,37 @@
 #include "ores.http/domain/http_response.hpp"
 
 namespace ores::http::domain {
+
+/**
+ * @brief Describes a property for OpenAPI schema generation.
+ */
+struct schema_property final {
+    std::string name;
+    std::string type = "string";  // string, integer, boolean, array, object
+    std::string format;           // Optional format (e.g., email, uuid, date-time)
+    bool required = false;
+    std::string description;
+};
+
+/**
+ * @brief Describes a query parameter for OpenAPI.
+ */
+struct query_param final {
+    std::string name;
+    std::string type = "string";
+    bool required = false;
+    std::string description;
+    std::optional<std::string> default_value;
+};
+
+/**
+ * @brief Describes the request body schema for OpenAPI.
+ */
+struct request_body_schema final {
+    std::string content_type = "application/json";
+    std::vector<schema_property> properties;
+    bool required = true;
+};
 
 /**
  * @brief Handler function type for HTTP requests.
@@ -90,6 +122,16 @@ struct route final {
      * @brief OpenAPI tags for grouping.
      */
     std::vector<std::string> tags;
+
+    /**
+     * @brief Query parameters for this route.
+     */
+    std::vector<query_param> query_params;
+
+    /**
+     * @brief Request body schema for POST/PUT/PATCH routes.
+     */
+    std::optional<request_body_schema> body_schema;
 
     /**
      * @brief Attempts to match the given path and extracts parameters.

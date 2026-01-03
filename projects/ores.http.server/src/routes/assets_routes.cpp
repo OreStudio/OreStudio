@@ -55,6 +55,9 @@ void assets_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Retrieve images by ID (batch, max 100)")
         .tags({"assets"})
         .auth_required()
+        .body({
+            {"image_ids", "array", "", true, "Array of image UUIDs to retrieve (max 100)", "uuid"}
+        })
         .handler([this](const http_request& req) { return handle_get_images(req); });
     router->add_route(get_images.build());
     registry->register_route(get_images.build());

@@ -82,11 +82,40 @@ struct openapi_response final {
     std::string description;
 };
 
+struct openapi_items final {
+    std::string type;
+    std::optional<std::string> format;
+};
+
+struct openapi_schema_property final {
+    std::string type;
+    std::optional<std::string> format;
+    std::optional<std::string> description;
+    std::optional<openapi_items> items;  // For array type
+};
+
+struct openapi_schema final {
+    std::string type = "object";
+    std::optional<std::map<std::string, openapi_schema_property>> properties;
+    std::optional<std::vector<std::string>> required;
+};
+
+struct openapi_media_type final {
+    openapi_schema schema;
+};
+
+struct openapi_request_body final {
+    std::optional<std::string> description;
+    bool required = true;
+    std::map<std::string, openapi_media_type> content;
+};
+
 struct openapi_operation final {
     std::optional<std::vector<std::string>> tags;
     std::optional<std::string> summary;
     std::optional<std::string> description;
     std::optional<std::vector<openapi_parameter>> parameters;
+    std::optional<openapi_request_body> requestBody;
     std::optional<std::vector<rfl::Object<std::vector<std::string>>>> security;
     std::map<std::string, openapi_response> responses;
 };
@@ -202,15 +231,87 @@ std::string endpoint_registry::generate_openapi_json() const {
             operation.description = route.description;
         }
 
+        // Parameters (path + query)
+        std::vector<openapi_parameter> params;
+
         // Path parameters
-        if (!route.param_names.empty()) {
-            std::vector<openapi_parameter> params;
-            for (const auto& param_name : route.param_names) {
-                rfl::Object<std::string> schema;
-                schema["type"] = "string";
-                params.push_back(openapi_parameter{param_name, "path", true, schema});
+        for (const auto& param_name : route.param_names) {
+            rfl::Object<std::string> schema;
+            schema["type"] = "string";
+            params.push_back(openapi_parameter{param_name, "path", true, schema});
+        }
+
+        // Query parameters
+        for (const auto& qp : route.query_params) {
+            rfl::Object<std::string> schema;
+            schema["type"] = qp.type;
+            if (!qp.format.empty()) {
+                schema["format"] = qp.format;
             }
+            openapi_parameter param;
+            param.name = qp.name;
+            param.in = "query";
+            param.required = qp.required;
+            param.schema = schema;
+            params.push_back(param);
+        }
+
+        if (!params.empty()) {
             operation.parameters = params;
+        }
+
+        // Request body
+        if (route.body_schema.has_value()) {
+            const auto& body = route.body_schema.value();
+
+            openapi_schema schema;
+            schema.type = "object";
+
+            std::map<std::string, openapi_schema_property> props;
+            std::vector<std::string> required_props;
+
+            for (const auto& prop : body.properties) {
+                openapi_schema_property sp;
+                sp.type = prop.type;
+                if (!prop.format.empty()) {
+                    sp.format = prop.format;
+                }
+                if (!prop.description.empty()) {
+                    sp.description = prop.description;
+                }
+                // Add items for array types
+                if (prop.type == "array" && !prop.items_type.empty()) {
+                    openapi_items items;
+                    items.type = prop.items_type;
+                    // Check if items_type contains a format hint like "uuid"
+                    if (prop.items_type == "uuid") {
+                        items.type = "string";
+                        items.format = "uuid";
+                    }
+                    sp.items = items;
+                }
+                props[prop.name] = sp;
+
+                if (prop.required) {
+                    required_props.push_back(prop.name);
+                }
+            }
+
+            if (!props.empty()) {
+                schema.properties = props;
+            }
+            if (!required_props.empty()) {
+                schema.required = required_props;
+            }
+
+            openapi_media_type media_type;
+            media_type.schema = schema;
+
+            openapi_request_body request_body;
+            request_body.required = body.required;
+            request_body.content[body.content_type] = media_type;
+
+            operation.requestBody = request_body;
         }
 
         // Security

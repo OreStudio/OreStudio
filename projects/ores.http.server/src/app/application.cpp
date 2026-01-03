@@ -91,7 +91,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     router->add_route(api_info_builder.build());
 
     // Register IAM routes (accounts, auth, roles, sessions)
-    routes::iam_routes iam(ctx, system_flags, sessions, auth_service);
+    routes::iam_routes iam(ctx, system_flags, sessions, auth_service,
+        server.get_authenticator());
     iam.register_routes(router, registry);
 
     // Register Risk routes (currencies)

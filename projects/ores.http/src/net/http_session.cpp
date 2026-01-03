@@ -43,9 +43,9 @@ http_session::http_session(asio::ip::tcp::socket socket,
     , options_(options) {
 
     auto endpoint = stream_.socket().remote_endpoint();
-    remote_address_ = endpoint.address().to_string() + ":" +
-        std::to_string(endpoint.port());
-    BOOST_LOG_SEV(lg(), debug) << "HTTP session created for: " << remote_address_;
+    remote_address_ = endpoint.address().to_string();
+    BOOST_LOG_SEV(lg(), debug) << "HTTP session created for: " << remote_address_
+        << ":" << endpoint.port();
 }
 
 asio::awaitable<void> http_session::run() {

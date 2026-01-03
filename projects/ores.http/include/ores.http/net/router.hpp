@@ -66,6 +66,23 @@ public:
     route_builder& tags(std::vector<std::string> t);
 
     /**
+     * @brief Adds a query parameter for OpenAPI documentation.
+     */
+    route_builder& query_param(const std::string& name,
+        const std::string& type = "string",
+        const std::string& format = "",
+        bool required = false,
+        const std::string& desc = "",
+        const std::optional<std::string>& default_value = std::nullopt);
+
+    /**
+     * @brief Sets the request body schema for OpenAPI documentation.
+     */
+    route_builder& body(std::vector<domain::schema_property> properties,
+        bool required = true,
+        const std::string& content_type = "application/json");
+
+    /**
      * @brief Builds the route.
      */
     domain::route build() const;
@@ -79,6 +96,8 @@ private:
     std::string summary_;
     std::string description_;
     std::vector<std::string> tags_;
+    std::vector<domain::query_param> query_params_;
+    std::optional<domain::request_body_schema> body_schema_;
 };
 
 /**

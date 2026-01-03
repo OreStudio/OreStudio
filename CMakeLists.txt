@@ -137,6 +137,12 @@ find_package(Boost 1.88 REQUIRED COMPONENTS
 # OpenSSL
 find_package(OpenSSL REQUIRED)
 
+# Interface library for targets that use OPENSSL_cleanup() for proper resource
+# cleanup. This centralizes the OpenSSL::Crypto dependency for main() functions
+# and test harnesses that need to call OPENSSL_cleanup() on exit.
+add_library(ores.openssl_cleanup INTERFACE)
+target_link_libraries(ores.openssl_cleanup INTERFACE OpenSSL::Crypto)
+
 # Qt
 set(QT_NO_PRIVATE_MODULE_WARNING ON)
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent Svg)

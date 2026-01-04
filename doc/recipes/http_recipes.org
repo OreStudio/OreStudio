@@ -83,14 +83,19 @@ Content-Type: application/json
 
 #+RESULTS:
 #+begin_src json
-HTTP/1.1 401 Unauthorized
+HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 31
+Content-Length: 480
 Server: ores-http-server-v1
 Access-Control-Allow-Origin: *
 
 {
-  "error": "Invalid credentials"
+  "success": true,
+  "account_id": "019b7c15-5f67-76a1-84be-9d74381b1c7f",
+  "username": "newuser3",
+  "email": "newuser3@test.com",
+  "password_reset_required": false,
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMTliN2MxNS01ZjY3LTc2YTEtODRiZS05ZDc0MzgxYjFjN2YiLCJpYXQiOjE3Njc0OTAxNzUsImV4cCI6MTc2NzU3NjU3NSwiaXNzIjoib3JlcyIsImF1ZCI6Im9yZXMtYXBpIiwicm9sZXMiOlsiQWRtaW4iXSwidXNlcm5hbWUiOiJuZXd1c2VyMyIsImVtYWlsIjoibmV3dXNlcjNAdGVzdC5jb20ifQ.HFjNNvIAlNBNecTJm3IwVqZRLKF7C-SWuTN9wRgFe0I"
 }
 #+end_src
 

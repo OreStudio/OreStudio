@@ -82,9 +82,18 @@ configured database name and user."
 (prodigy-define-tag
   :name 'comms-service
   :env (ores/setup-environment "SERVICE"))
+(defun ores/setup-http-server-environment ()
+  "Set up environment variables for the HTTP server.
+Includes database credentials and JWT secret from auth-source."
+  (let ((jwt-secret (auth-source-pick-first-password
+                     :host "ores-jwt"
+                     :user "http-server")))
+    `(("ORES_HTTP_SERVER_JWT_SECRET" ,jwt-secret)
+      ,@(ores/setup-environment "HTTP_SERVER"))))
+
 (prodigy-define-tag
   :name 'http-server
-  :env (ores/setup-environment "HTTP_SERVER"))
+  :env (ores/setup-http-server-environment))
 (prodigy-define-tag
   :name 'wt-server
   :env (ores/setup-environment "WT"))

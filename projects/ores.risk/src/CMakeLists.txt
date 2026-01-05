@@ -42,7 +42,6 @@ target_link_libraries(${lib_target_name}
         faker-cxx::faker-cxx
         libfort::fort
         OpenSSL::SSL
-        OpenSSL::Crypto
     PUBLIC
         ores.comms.lib)
 

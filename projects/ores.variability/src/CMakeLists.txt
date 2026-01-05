@@ -39,7 +39,6 @@ target_link_libraries(${lib_target_name}
         ores.comms.lib
     PRIVATE
         libfort::fort
-        OpenSSL::SSL
-        OpenSSL::Crypto)
+        OpenSSL::SSL)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

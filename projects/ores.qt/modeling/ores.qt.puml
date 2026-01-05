@@ -70,6 +70,7 @@ namespace ores #F2F2F2 {
             class CurrencyItemDelegate
             class MessageBoxHelper
             class IconUtils
+            class MdiUtils
             class LogoLabel
         }
 
@@ -86,7 +87,8 @@ namespace ores #F2F2F2 {
         MyAccountDialog -[hidden]down- ChangePasswordDialog
         CurrencyItemDelegate -[hidden]down- MessageBoxHelper
         MessageBoxHelper -[hidden]down- IconUtils
-        IconUtils -[hidden]down- LogoLabel
+        IconUtils -[hidden]down- MdiUtils
+        MdiUtils -[hidden]down- LogoLabel
 
         ' Create row structure between groups
         MainWindow -[hidden]down- MdiAreaWithBackground
@@ -547,6 +549,17 @@ namespace ores #F2F2F2 {
         Utility class for icon manipulation operations.
         end note
 
+        class MdiUtils #ECECEC {
+            +{static} markParentWindowAsStale(QWidget* widget) bool
+            +{static} clearParentWindowStaleMarker(QWidget* widget) bool
+            -{static}{field} stale_marker const char*
+        }
+        note top of MdiUtils
+        Utility class for MDI window operations.
+
+        - stale_marker: " (Data Changed)" suffix for stale windows
+        end note
+
         class LogoLabel #ECECEC {
             +LogoLabel(QWidget* parent)
             +setTextOverlay(const QString& text) void
@@ -596,6 +609,9 @@ namespace ores #F2F2F2 {
         ores::qt::CurrencyController ..> ores::qt::CurrencyMdiWindow : creates
         ores::qt::CurrencyController ..> ores::qt::CurrencyDetailDialog : creates
         ores::qt::CurrencyController ..> ores::qt::CurrencyHistoryDialog : creates
+
+        ' Relationships - MdiUtils usage for stale window marking
+        ores::qt::CurrencyDetailDialog ..> ores::qt::MdiUtils : uses
     }
 }
 

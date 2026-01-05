@@ -47,14 +47,7 @@ domain::account account_setup_service::create_account_with_role(
     BOOST_LOG_SEV(lg(), info) << "Creating account '" << username
                               << "' with role '" << role_name << "'";
 
-    // Step 1: Create the account (and login_info)
-    domain::account account = account_svc_.create_account(
-        username, email, password, recorded_by);
-
-    BOOST_LOG_SEV(lg(), debug) << "Account created with ID: "
-                               << boost::uuids::to_string(account.id);
-
-    // Step 2: Look up the role
+    // Step 1: Look up the role FIRST to fail fast if RBAC isn't seeded
     auto role = auth_svc_->find_role_by_name(role_name);
     if (!role) {
         BOOST_LOG_SEV(lg(), error) << "Role '" << role_name
@@ -62,6 +55,13 @@ domain::account account_setup_service::create_account_with_role(
         throw std::runtime_error("Role '" + role_name +
             "' not found. Ensure RBAC is properly seeded.");
     }
+
+    // Step 2: Create the account (and login_info)
+    domain::account account = account_svc_.create_account(
+        username, email, password, recorded_by);
+
+    BOOST_LOG_SEV(lg(), debug) << "Account created with ID: "
+                               << boost::uuids::to_string(account.id);
 
     // Step 3: Assign the role to the account
     auth_svc_->assign_role(account.id, role->id, recorded_by);

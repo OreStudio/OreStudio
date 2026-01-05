@@ -88,7 +88,8 @@ TEST_CASE("postgres_listener_service_notification_reception", tags) {
     std::string entity_name = "ores.eventing.test_entity";
     std::string payload_timestamp_str = "2025-12-05T15:30:00.000Z";
     std::string test_payload = R"({"entity":")" + entity_name +
-        R"(", "timestamp":")" + payload_timestamp_str + R"("})";
+        R"(", "timestamp":")" + payload_timestamp_str +
+        R"(", "entity_ids":[]})";
 
     std::promise<entity_change_event> promise;
     std::future<entity_change_event> future = promise.get_future();
@@ -130,7 +131,7 @@ TEST_CASE("postgres_listener_service_no_notification_without_subscribe", tags) {
     std::string channel_name = "test_channel_no_subscribe_" +
         std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
     std::string test_payload =
-        R"({"entity":"test_no_subscribe", "timestamp":"2025-12-05T16:00:00.000Z"})";
+        R"({"entity":"test_no_subscribe", "timestamp":"2025-12-05T16:00:00.000Z", "entity_ids":[]})";
 
     bool callback_invoked = false;
     auto callback = [&](const entity_change_event&) {
@@ -165,7 +166,7 @@ TEST_CASE("postgres_listener_service_subscribe_before_start", tags) {
         std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
     std::string entity_name = "ores.eventing.pre_subscribe_entity";
     std::string test_payload = R"({"entity":")" + entity_name +
-        R"(", "timestamp":"2025-12-05T17:00:00.000Z"})";
+        R"(", "timestamp":"2025-12-05T17:00:00.000Z", "entity_ids":[]})";
 
     std::promise<entity_change_event> promise;
     std::future<entity_change_event> future = promise.get_future();
@@ -211,7 +212,7 @@ TEST_CASE("postgres_listener_service_notify_method", tags) {
         std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
     std::string entity_name = "ores.eventing.notify_method_entity";
     std::string test_payload = R"({"entity":")" + entity_name +
-        R"(", "timestamp":"2025-12-05T18:00:00.000Z"})";
+        R"(", "timestamp":"2025-12-05T18:00:00.000Z", "entity_ids":[]})";
 
     std::promise<entity_change_event> promise;
     std::future<entity_change_event> future = promise.get_future();

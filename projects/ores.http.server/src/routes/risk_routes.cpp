@@ -57,13 +57,11 @@ void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
 
     auto save_currency = router->post("/api/v1/currencies")
         .summary("Save currency")
-        .description("Create or update a currency. Request body: {\"currency\": {\"iso_code\": \"USD\", \"name\": \"US Dollar\", \"numeric_code\": 840, \"symbol\": \"$\", \"fractions_per_unit\": 100}}")
+        .description("Create or update a currency")
         .tags({"currencies"})
         .auth_required()
         .roles({"admin"})
-        .body({
-            {"currency", "object", "", true, "Currency object with iso_code (string, required), name (string, required), numeric_code (integer, required), symbol (string), fractions_per_unit (integer, default 100)"}
-        })
+        .body<risk::messaging::save_currency_request>()
         .handler([this](const http_request& req) { return handle_save_currency(req); });
     router->add_route(save_currency.build());
     registry->register_route(save_currency.build());
@@ -74,9 +72,7 @@ void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"currencies"})
         .auth_required()
         .roles({"admin"})
-        .body({
-            {"iso_codes", "array", "", true, "Array of ISO currency codes to delete", "string"}
-        })
+        .body<risk::messaging::delete_currency_request>()
         .handler([this](const http_request& req) { return handle_delete_currencies(req); });
     router->add_route(delete_currencies.build());
     registry->register_route(delete_currencies.build());

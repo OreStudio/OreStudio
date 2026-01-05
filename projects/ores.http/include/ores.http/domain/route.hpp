@@ -33,22 +33,6 @@
 namespace ores::http::domain {
 
 /**
- * @brief Describes a property for OpenAPI schema generation.
- *
- * Note: For nested objects, use type="object" and describe the structure
- * in the description field. A more expressive recursive schema would require
- * significant additional complexity.
- */
-struct schema_property final {
-    std::string name;
-    std::string type = "string";  // string, integer, boolean, array, object
-    std::string format;           // Optional format (e.g., email, uuid, date-time)
-    bool required = false;
-    std::string description;
-    std::string items_type;       // For array type: type of array items (string, integer, uuid, etc.)
-};
-
-/**
  * @brief Describes a query parameter for OpenAPI.
  */
 struct query_param final {
@@ -62,11 +46,15 @@ struct query_param final {
 
 /**
  * @brief Describes the request body schema for OpenAPI.
+ *
+ * Uses rfl::json::to_schema<T>() to generate the JSON schema automatically
+ * from C++ types, ensuring the schema always matches the actual serialization.
  */
 struct request_body_schema final {
     std::string content_type = "application/json";
-    std::vector<schema_property> properties;
     bool required = true;
+    std::string json_schema;   // JSON schema from rfl::json::to_schema<T>()
+    std::string example_json;  // Example JSON from generator
 };
 
 /**

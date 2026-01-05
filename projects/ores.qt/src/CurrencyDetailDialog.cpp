@@ -32,6 +32,7 @@
 #include "ui_CurrencyDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/MdiUtils.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -504,18 +505,7 @@ void CurrencyDetailDialog::markAsStale() {
     BOOST_LOG_SEV(lg(), info) << "Currency detail data marked as stale for: "
                               << currentCurrency_.iso_code;
 
-    // Update window title to indicate stale data
-    QWidget* parent = parentWidget();
-    while (parent) {
-        if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
-            QString currentTitle = mdiSubWindow->windowTitle();
-            if (!currentTitle.contains("(Data Changed)")) {
-                mdiSubWindow->setWindowTitle(currentTitle + " (Data Changed)");
-            }
-            break;
-        }
-        parent = parent->parentWidget();
-    }
+    MdiUtils::markParentWindowAsStale(this);
 
     emit statusMessage(QString("Currency %1 has been modified on the server")
         .arg(QString::fromStdString(currentCurrency_.iso_code)));

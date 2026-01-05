@@ -46,6 +46,7 @@ void assets_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Retrieve currency-to-image mappings")
         .tags({"assets"})
         .auth_required()
+        .response<assets::messaging::get_currency_images_response>()
         .handler([this](const http_request& req) { return handle_get_currency_images(req); });
     router->add_route(currency_images.build());
     registry->register_route(currency_images.build());
@@ -56,6 +57,7 @@ void assets_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"assets"})
         .auth_required()
         .body<assets::messaging::get_images_request>()
+        .response<assets::messaging::get_images_response>()
         .handler([this](const http_request& req) { return handle_get_images(req); });
     router->add_route(get_images.build());
     registry->register_route(get_images.build());

@@ -85,6 +85,7 @@ void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Retrieve version history for a currency")
         .tags({"currencies"})
         .auth_required()
+        .response<risk::messaging::get_currency_history_response>()
         .handler([this](const http_request& req) { return handle_get_currency_history(req); });
     router->add_route(currency_history.build());
     registry->register_route(currency_history.build());

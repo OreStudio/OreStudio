@@ -80,6 +80,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Logout current session")
         .tags({"auth"})
         .auth_required()
+        .response<iam::messaging::logout_response>()
         .handler([this](const http_request& req) { return handle_logout(req); });
     router->add_route(logout.build());
     registry->register_route(logout.build());
@@ -89,6 +90,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Create a new account (when self-registration is enabled)")
         .tags({"auth"})
         .body<iam::messaging::signup_request>()
+        .response<iam::messaging::signup_response>()
         .handler([this](const http_request& req) { return handle_signup(req); });
     router->add_route(signup.build());
     registry->register_route(signup.build());
@@ -97,6 +99,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .summary("Get bootstrap status")
         .description("Check if system is in bootstrap mode awaiting initial admin")
         .tags({"auth"})
+        .response<iam::messaging::bootstrap_status_response>()
         .handler([this](const http_request& req) { return handle_bootstrap_status(req); });
     router->add_route(bootstrap_status.build());
     registry->register_route(bootstrap_status.build());
@@ -106,6 +109,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Create initial admin account (bootstrap mode only, localhost only)")
         .tags({"auth"})
         .body<iam::messaging::create_initial_admin_request>()
+        .response<iam::messaging::create_initial_admin_response>()
         .handler([this](const http_request& req) { return handle_create_initial_admin(req); });
     router->add_route(bootstrap.build());
     registry->register_route(bootstrap.build());
@@ -141,6 +145,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"accounts"})
         .auth_required()
         .roles({"Admin"})
+        .response<iam::messaging::delete_account_response>()
         .handler([this](const http_request& req) { return handle_delete_account(req); });
     router->add_route(delete_account.build());
     registry->register_route(delete_account.build());
@@ -152,6 +157,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .auth_required()
         .roles({"Admin"})
         .body<iam::messaging::update_account_request>()
+        .response<iam::messaging::update_account_response>()
         .handler([this](const http_request& req) { return handle_update_account(req); });
     router->add_route(update_account.build());
     registry->register_route(update_account.build());
@@ -161,6 +167,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Retrieve version history for an account")
         .tags({"accounts"})
         .auth_required()
+        .response<iam::messaging::get_account_history_response>()
         .handler([this](const http_request& req) { return handle_get_account_history(req); });
     router->add_route(account_history.build());
     registry->register_route(account_history.build());
@@ -172,6 +179,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .auth_required()
         .roles({"Admin"})
         .body<iam::messaging::lock_account_request>()
+        .response<iam::messaging::lock_account_response>()
         .handler([this](const http_request& req) { return handle_lock_accounts(req); });
     router->add_route(lock_accounts.build());
     registry->register_route(lock_accounts.build());
@@ -183,6 +191,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .auth_required()
         .roles({"Admin"})
         .body<iam::messaging::unlock_account_request>()
+        .response<iam::messaging::unlock_account_response>()
         .handler([this](const http_request& req) { return handle_unlock_accounts(req); });
     router->add_route(unlock_accounts.build());
     registry->register_route(unlock_accounts.build());
@@ -192,6 +201,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Retrieve login info for all accounts")
         .tags({"accounts"})
         .auth_required()
+        .response<iam::messaging::list_login_info_response>()
         .handler([this](const http_request& req) { return handle_list_login_info(req); });
     router->add_route(login_info.build());
     registry->register_route(login_info.build());
@@ -203,6 +213,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .auth_required()
         .roles({"Admin"})
         .body<iam::messaging::reset_password_request>()
+        .response<iam::messaging::reset_password_response>()
         .handler([this](const http_request& req) { return handle_reset_password(req); });
     router->add_route(reset_password.build());
     registry->register_route(reset_password.build());
@@ -214,6 +225,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"me"})
         .auth_required()
         .body<iam::messaging::change_password_request>()
+        .response<iam::messaging::change_password_response>()
         .handler([this](const http_request& req) { return handle_change_password(req); });
     router->add_route(change_password.build());
     registry->register_route(change_password.build());
@@ -224,6 +236,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"me"})
         .auth_required()
         .body<iam::messaging::update_my_email_request>()
+        .response<iam::messaging::update_my_email_response>()
         .handler([this](const http_request& req) { return handle_update_my_email(req); });
     router->add_route(update_email.build());
     registry->register_route(update_email.build());
@@ -234,6 +247,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("List all roles in the system")
         .tags({"rbac"})
         .auth_required()
+        .response<iam::messaging::list_roles_response>()
         .handler([this](const http_request& req) { return handle_list_roles(req); });
     router->add_route(list_roles.build());
     registry->register_route(list_roles.build());
@@ -243,6 +257,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Get a specific role by ID")
         .tags({"rbac"})
         .auth_required()
+        .response<iam::messaging::get_role_response>()
         .handler([this](const http_request& req) { return handle_get_role(req); });
     router->add_route(get_role.build());
     registry->register_route(get_role.build());
@@ -252,6 +267,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("List all permissions in the system")
         .tags({"rbac"})
         .auth_required()
+        .response<iam::messaging::list_permissions_response>()
         .handler([this](const http_request& req) { return handle_list_permissions(req); });
     router->add_route(list_permissions.build());
     registry->register_route(list_permissions.build());
@@ -263,6 +279,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .auth_required()
         .roles({"Admin"})
         .body<iam::messaging::assign_role_request>()
+        .response<iam::messaging::assign_role_response>()
         .handler([this](const http_request& req) { return handle_assign_role(req); });
     router->add_route(assign_role.build());
     registry->register_route(assign_role.build());
@@ -273,6 +290,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"rbac"})
         .auth_required()
         .roles({"Admin"})
+        .response<iam::messaging::revoke_role_response>()
         .handler([this](const http_request& req) { return handle_revoke_role(req); });
     router->add_route(revoke_role.build());
     registry->register_route(revoke_role.build());
@@ -282,6 +300,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Get all roles assigned to an account")
         .tags({"rbac"})
         .auth_required()
+        .response<iam::messaging::get_account_roles_response>()
         .handler([this](const http_request& req) { return handle_get_account_roles(req); });
     router->add_route(account_roles.build());
     registry->register_route(account_roles.build());
@@ -291,6 +310,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Get effective permissions for an account")
         .tags({"rbac"})
         .auth_required()
+        .response<iam::messaging::get_account_permissions_response>()
         .handler([this](const http_request& req) { return handle_get_account_permissions(req); });
     router->add_route(account_perms.build());
     registry->register_route(account_perms.build());
@@ -304,6 +324,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .query_param("account_id", "string", "uuid", false, "Filter by account UUID")
         .query_param("offset", "integer", "", false, "Pagination offset", "0")
         .query_param("limit", "integer", "", false, "Maximum number of results", "100")
+        .response<iam::messaging::list_sessions_response>()
         .handler([this](const http_request& req) { return handle_list_sessions(req); });
     router->add_route(list_sessions.build());
     registry->register_route(list_sessions.build());
@@ -313,6 +334,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Get aggregated session statistics")
         .tags({"sessions"})
         .auth_required()
+        .response<iam::messaging::get_session_statistics_response>()
         .handler([this](const http_request& req) { return handle_get_session_statistics(req); });
     router->add_route(session_stats.build());
     registry->register_route(session_stats.build());
@@ -322,6 +344,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Get currently active sessions")
         .tags({"sessions"})
         .auth_required()
+        .response<iam::messaging::get_active_sessions_response>()
         .handler([this](const http_request& req) { return handle_get_active_sessions(req); });
     router->add_route(active_sessions.build());
     registry->register_route(active_sessions.build());

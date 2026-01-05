@@ -49,6 +49,7 @@ void variability_routes::register_routes(std::shared_ptr<http::net::router> rout
         .description("Retrieve all feature flags in the system")
         .tags({"feature-flags"})
         .auth_required()
+        .response<variability::messaging::list_feature_flags_response>()
         .handler([this](const http_request& req) { return handle_list_feature_flags(req); });
     router->add_route(list_flags.build());
     registry->register_route(list_flags.build());

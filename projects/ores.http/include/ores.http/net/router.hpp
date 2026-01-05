@@ -23,6 +23,8 @@
 #include <vector>
 #include <memory>
 #include <optional>
+#include <functional>
+#include <rfl/json.hpp>
 #include "ores.http/domain/route.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 
@@ -76,11 +78,65 @@ public:
         const std::optional<std::string>& default_value = std::nullopt);
 
     /**
-     * @brief Sets the request body schema for OpenAPI documentation.
+     * @brief Sets the request body schema from a C++ type using reflection.
+     *
+     * Uses rfl::json::to_schema<T>() to generate the JSON schema automatically.
+     * Optionally accepts a generator function to create example data.
+     *
+     * @tparam T The request body type (must be rfl-serializable)
+     * @param example_generator Optional function that returns an example T
+     * @param required Whether the body is required (default: true)
+     * @param content_type Content type (default: application/json)
      */
-    route_builder& body(std::vector<domain::schema_property> properties,
+    template<typename T>
+    route_builder& body(
+        std::function<T()> example_generator = nullptr,
         bool required = true,
-        const std::string& content_type = "application/json");
+        const std::string& content_type = "application/json") {
+
+        domain::request_body_schema schema;
+        schema.content_type = content_type;
+        schema.required = required;
+        schema.json_schema = rfl::json::to_schema<T>();
+
+        if (example_generator) {
+            schema.example_json = rfl::json::write(example_generator());
+        }
+
+        body_schema_ = schema;
+        return *this;
+    }
+
+    /**
+     * @brief Sets the response schema from a C++ type using reflection.
+     *
+     * Uses rfl::json::to_schema<T>() to generate the JSON schema automatically.
+     * Optionally accepts a generator function to create example data.
+     *
+     * @tparam T The response body type (must be rfl-serializable)
+     * @param example_generator Optional function that returns an example T
+     * @param description Description of the response (default: "Successful response")
+     * @param content_type Content type (default: application/json)
+     */
+    template<typename T>
+    route_builder& response(
+        std::function<T()> example_generator = nullptr,
+        const std::string& desc = "Successful response",
+        const std::string& content_type = "application/json") {
+
+        domain::response_schema schema;
+        schema.status_code = "200";
+        schema.description = desc;
+        schema.content_type = content_type;
+        schema.json_schema = rfl::json::to_schema<T>();
+
+        if (example_generator) {
+            schema.example_json = rfl::json::write(example_generator());
+        }
+
+        success_response_schema_ = schema;
+        return *this;
+    }
 
     /**
      * @brief Builds the route.
@@ -98,6 +154,7 @@ private:
     std::vector<std::string> tags_;
     std::vector<domain::query_param> query_params_;
     std::optional<domain::request_body_schema> body_schema_;
+    std::optional<domain::response_schema> success_response_schema_;
 };
 
 /**

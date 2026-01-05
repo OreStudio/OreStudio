@@ -51,19 +51,19 @@ void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
         .auth_required()
         .query_param("offset", "integer", "", false, "Pagination offset", "0")
         .query_param("limit", "integer", "", false, "Maximum number of results", "100")
+        .response<risk::messaging::get_currencies_response>()
         .handler([this](const http_request& req) { return handle_get_currencies(req); });
     router->add_route(get_currencies.build());
     registry->register_route(get_currencies.build());
 
     auto save_currency = router->post("/api/v1/currencies")
         .summary("Save currency")
-        .description("Create or update a currency. Request body: {\"currency\": {\"iso_code\": \"USD\", \"name\": \"US Dollar\", \"numeric_code\": 840, \"symbol\": \"$\", \"fractions_per_unit\": 100}}")
+        .description("Create or update a currency")
         .tags({"currencies"})
         .auth_required()
-        .roles({"admin"})
-        .body({
-            {"currency", "object", "", true, "Currency object with iso_code (string, required), name (string, required), numeric_code (integer, required), symbol (string), fractions_per_unit (integer, default 100)"}
-        })
+        .roles({"Admin"})
+        .body<risk::messaging::save_currency_request>()
+        .response<risk::messaging::save_currency_response>()
         .handler([this](const http_request& req) { return handle_save_currency(req); });
     router->add_route(save_currency.build());
     registry->register_route(save_currency.build());
@@ -73,10 +73,9 @@ void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Delete one or more currencies")
         .tags({"currencies"})
         .auth_required()
-        .roles({"admin"})
-        .body({
-            {"iso_codes", "array", "", true, "Array of ISO currency codes to delete", "string"}
-        })
+        .roles({"Admin"})
+        .body<risk::messaging::delete_currency_request>()
+        .response<risk::messaging::delete_currency_response>()
         .handler([this](const http_request& req) { return handle_delete_currencies(req); });
     router->add_route(delete_currencies.build());
     registry->register_route(delete_currencies.build());
@@ -86,6 +85,7 @@ void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Retrieve version history for a currency")
         .tags({"currencies"})
         .auth_required()
+        .response<risk::messaging::get_currency_history_response>()
         .handler([this](const http_request& req) { return handle_get_currency_history(req); });
     router->add_route(currency_history.build());
     registry->register_route(currency_history.build());

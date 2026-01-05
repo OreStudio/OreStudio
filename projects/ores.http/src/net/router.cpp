@@ -122,18 +122,6 @@ route_builder& route_builder::query_param(const std::string& name,
     return *this;
 }
 
-route_builder& route_builder::body(std::vector<domain::schema_property> properties,
-    bool required,
-    const std::string& content_type) {
-
-    domain::request_body_schema schema;
-    schema.content_type = content_type;
-    schema.properties = std::move(properties);
-    schema.required = required;
-    body_schema_ = schema;
-    return *this;
-}
-
 domain::route route_builder::build() const {
     auto [regex, param_names] = compile_pattern(pattern_);
 
@@ -150,6 +138,7 @@ domain::route route_builder::build() const {
     r.tags = tags_;
     r.query_params = query_params_;
     r.body_schema = body_schema_;
+    r.success_response_schema = success_response_schema_;
     return r;
 }
 

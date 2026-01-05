@@ -17,35 +17,34 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-02 Fri 02:15], for Friday, January 02, 2026.
-|       | <75>                                        |        |      |      |       |
-| Tags  | Headline                                    | Time   |      |      |     % |
-|-------+---------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                | *2:12* |      |      | 100.0 |
-|-------+---------------------------------------------+--------+------+------+-------|
-|       | Stories                                     | 2:12   |      |      | 100.0 |
-|       | Active                                      |        | 2:12 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |        |      | 0:12 |   9.1 |
-| code  | Run qt client and validate all new features |        |      | 1:19 |  59.8 |
-| code  | Refactor options and parser                 |        |      | 0:27 |  20.5 |
-| code  | Check functionality in =ores.wt=            |        |      | 0:14 |  10.6 |
+#+CAPTION: Clock summary at [2026-01-04 Sun 01:34], for Sunday, January 04, 2026.
+|      | <75>                |        |      |      |       |
+| Tags | Headline            | Time   |      |      |     % |
+|------+---------------------+--------+------+------+-------|
+|      | *Total time*        | *1:34* |      |      | 100.0 |
+|------+---------------------+--------+------+------+-------|
+|      | Stories             | 1:34   |      |      | 100.0 |
+|      | Active              |        | 1:34 |      | 100.0 |
+| code | Review HTTP service |        |      | 1:34 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-02 Fri 02:15]
+#+CAPTION: Clock summary at [2026-01-04 Sun 01:34]
 |       | <75>                                        |         |       |      |       |
 | Tags  | Headline                                    | Time    |       |      |     % |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                | *11:09* |       |      | 100.0 |
+|       | *Total time*                                | *16:12* |       |      | 100.0 |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | Stories                                     | 11:09   |       |      | 100.0 |
-|       | Active                                      |         | 11:09 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       | 1:17 |  11.5 |
-| code  | Rerun SQL scripts from scratch              |         |       | 7:52 |  70.6 |
-| code  | Run qt client and validate all new features |         |       | 1:19 |  11.8 |
-| code  | Refactor options and parser                 |         |       | 0:27 |   4.0 |
-| code  | Check functionality in =ores.wt=            |         |       | 0:14 |   2.1 |
+|       | Stories                                     | 16:12   |       |      | 100.0 |
+|       | Active                                      |         | 16:12 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       | 1:17 |   7.9 |
+| code  | Rerun SQL scripts from scratch              |         |       | 7:52 |  48.6 |
+| code  | Run qt client and validate all new features |         |       | 1:19 |   8.1 |
+| code  | Refactor options and parser                 |         |       | 0:27 |   2.8 |
+| code  | Check functionality in =ores.wt=            |         |       | 2:03 |  12.7 |
+| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       | 1:30 |   9.3 |
+| code  | Review HTTP service                         |         |       | 1:44 |  10.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -325,7 +324,7 @@ and fix what needs fixing. Features:
 - flags display. Looks good.
 - Roles and permissions: cannot edit, display should use a table.
 
-*** STARTED Refactor options and parser                                :code:
+*** COMPLETED Refactor options and parser                              :code:
     :LOGBOOK:
     CLOCK: [2026-01-02 Fri 01:33]--[2026-01-02 Fri 02:00] =>  0:27
     :END:
@@ -359,7 +358,7 @@ Highlights:
   and standardized flags.
 #+end_quote
 
-*** STARTED Check functionality in =ores.wt=                           :code:
+*** COMPLETED Check functionality in =ores.wt=                         :code:
     :LOGBOOK:
     CLOCK: [2026-01-02 Fri 11:00]--[2026-01-02 Fri 12:49] =>  1:49
     CLOCK: [2026-01-02 Fri 02:01]--[2026-01-02 Fri 02:15] =>  0:14
@@ -376,9 +375,41 @@ Notes:
 - edit currency dialog is too tall.
 - use images for site logo, etc.
 
-*** Rename =ores.shell= to =ores.comms.shell=                          :code:
+*** COMPLETED Rename =ores.shell= to =ores.comms.shell=                :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-03 Sat 14:10]--[2026-01-03 Sat 15:40] =>  1:30
+    :END:
 
 The shell is specific to the binary protocol.
+
+#+begin_quote
+This pull request implements a significant renaming effort, transitioning the
+ores.shell component to ores.comms.shell. This change clarifies the component's
+specific function as an interactive shell for the binary communications
+protocol. The modifications are comprehensive, touching all aspects of the
+project from file paths and C++ namespaces to build configurations and
+user-facing documentation, ensuring consistency and improved clarity regarding
+the component's purpose.
+
+Highlights:
+
+- Project Renaming: The ores.shell project has been renamed to ores.comms.shell
+  to accurately reflect its role as a shell specifically designed for the binary
+  communications protocol.
+- Namespace Updates: All C++ namespaces within the project have been updated
+  from ores::shell to ores::comms::shell.
+- Build System & Paths: CMake targets, include paths, and header guards across
+  the project have been modified to align with the new naming convention.
+- Documentation Alignment: System UML diagrams, documentation references, and
+  shell recipe examples have been updated to reflect the ores.comms.shell name.
+#+end_quote
+
+*** COMPLETED Review HTTP service                                      :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-03 Sat 23:50]--[2026-01-04 Sun 01:34] =>  1:44
+    :END:
+
+We need to make sure the swagger works, create recipes etc.
 
 *** Allow editing of permissions in ores.qt                            :code:
 

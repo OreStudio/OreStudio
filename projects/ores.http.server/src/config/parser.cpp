@@ -82,7 +82,7 @@ options_description make_options_description() {
         ("max-connections,m", value<std::uint32_t>()->default_value(100),
             "Maximum number of concurrent connections. Defaults to 100.")
         ("jwt-secret", value<std::string>()->default_value(""),
-            "JWT secret for HS256 authentication.")
+            "JWT secret for HS256 authentication. Required.")
         ("jwt-issuer", value<std::string>()->default_value("ores"),
             "JWT issuer for token validation.")
         ("jwt-audience", value<std::string>()->default_value("ores-api"),
@@ -192,6 +192,12 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     r.logging = logging_configuration::read_options(vm);
     r.server = read_server_configuration(vm);
     r.database = database_configuration::read_options(vm);
+
+    // Validate required configuration
+    if (r.server.jwt_secret.empty()) {
+        BOOST_THROW_EXCEPTION(parser_exception(
+            "JWT secret is required. Set --jwt-secret or ORES_HTTP_SERVER_JWT_SECRET."));
+    }
 
     return r;
 }

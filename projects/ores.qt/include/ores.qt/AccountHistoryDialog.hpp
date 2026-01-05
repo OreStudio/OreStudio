@@ -103,6 +103,7 @@ private slots:
     void onHistoryLoadError(const QString& error);
     void onOpenClicked();
     void onRevertClicked();
+    void onReloadClicked();
 
 private:
     void displayChangesTab(int version_index);
@@ -128,6 +129,7 @@ private:
     iam::domain::account_version_history history_;
 
     QToolBar* toolBar_;
+    QAction* reloadAction_;
     QAction* openAction_;
     QAction* revertAction_;
 };

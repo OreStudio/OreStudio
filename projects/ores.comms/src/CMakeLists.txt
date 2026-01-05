@@ -43,9 +43,12 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.eventing.lib
+        OpenSSL::SSL
     PRIVATE
-        Boost::iostreams
-        OpenSSL::SSL)
+        Boost::iostreams)
+# Note: OpenSSL::SSL is PUBLIC because public headers (net/client.hpp,
+# net/server.hpp, net/connection.hpp) include <boost/asio/ssl.hpp> which
+# contains inline/template code that calls OpenSSL functions.
 # Note: reflectcpp comes transitively through ores.eventing.lib
 # -> ores.database.lib (reflectcpp is linked)
 

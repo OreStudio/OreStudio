@@ -18,13 +18,13 @@ To use these recipes:
 All requests in this file inherit from this base URL.
 
 * Requests                                                             :verb:
+  :PROPERTIES:
+  :header-args:verb: :exports both
+  :END:
 
 template http://localhost:8080/api/v1
 
 ** Authentication                                                      :verb:
-  :PROPERTIES:
-  :header-args:verb: :exports both
-  :END:
 
 *** Check Bootstrap Status
 
@@ -95,7 +95,7 @@ Access-Control-Allow-Origin: *
   "username": "newuser3",
   "email": "newuser3@test.com",
   "password_reset_required": false,
-  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMTliN2MxNS01ZjY3LTc2YTEtODRiZS05ZDc0MzgxYjFjN2YiLCJpYXQiOjE3Njc0OTAxNzUsImV4cCI6MTc2NzU3NjU3NSwiaXNzIjoib3JlcyIsImF1ZCI6Im9yZXMtYXBpIiwicm9sZXMiOlsiQWRtaW4iXSwidXNlcm5hbWUiOiJuZXd1c2VyMyIsImVtYWlsIjoibmV3dXNlcjNAdGVzdC5jb20ifQ.HFjNNvIAlNBNecTJm3IwVqZRLKF7C-SWuTN9wRgFe0I"
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMTliN2MxNS01ZjY3LTc2YTEtODRiZS05ZDc0MzgxYjFjN2YiLCJpYXQiOjE3Njc2MTk4MTYsImV4cCI6MTc2NzcwNjIxNiwiaXNzIjoib3JlcyIsImF1ZCI6Im9yZXMtYXBpIiwicm9sZXMiOlsiQWRtaW4iXSwidXNlcm5hbWUiOiJuZXd1c2VyMyIsImVtYWlsIjoibmV3dXNlcjNAdGVzdC5jb20ifQ.RGtIt0iORwiK-gEcfv-47Y__AoVcWmC0pGspHsSiiNs"
 }
 #+end_src
 
@@ -109,9 +109,22 @@ Accept: application/json
 Content-Type: application/json
 
 {
-    "username": "newuser",
+    "username": "newuser100",
     "email": "newuser@example.com",
     "password": "MyP@ssword456"
+}
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+Content-Length: 37
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "error": "User signups are disabled"
 }
 #+end_src
 
@@ -125,12 +138,22 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-* Accounts                                                             :verb:
-  :PROPERTIES:
-  :header-args:verb: :exports both
-  :END:
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 16
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
 
-** List Accounts
+{
+  "success": true
+}
+#+end_src
+
+** Accounts                                                            :verb:
+
+*** List Accounts
 
 Retrieve accounts with optional pagination.
 
@@ -140,7 +163,55 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-** Create Account
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 1153
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "accounts": [
+    {
+      "version": 1,
+      "id": "019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c",
+      "recorded_by": "ores",
+      "username": "newuser41",
+      "password_hash": "$scrypt$ln=14,r=8,p=1$YoIWT7Jwih2jRoZxEQBBvA==$agEKwXo1BtDcIl24ivvyHiKDWOCDsqnf6YyhcMKNYr4rC2DhqyrDTTGa7EYA1Rb7/DwigNjLa1QdeaTbAktqIQ==",
+      "password_salt": "",
+      "totp_secret": "",
+      "email": "newuser41@example.com",
+      "recorded_at": "2026-01-02 00:23:37.000000000Z"
+    },
+    {
+      "version": 1,
+      "id": "019b7c16-a28c-7444-9546-9a051962f014",
+      "recorded_by": "ores",
+      "username": "newuser40",
+      "password_hash": "$scrypt$ln=14,r=8,p=1$FKrHX/iCqRgTpHJ6oWUGGg==$w1NmGegkf9dUNzECQ5DS3y0+715Y9FrfNLQf5ntbHS6p/wNVGzVUdjlWew8niMUo+vTfDTx/emZAmaeK8xEKXg==",
+      "password_salt": "",
+      "totp_secret": "",
+      "email": "newuser40@example.com",
+      "recorded_at": "2026-01-02 00:23:36.000000000Z"
+    },
+    {
+      "version": 1,
+      "id": "019b7c15-5f67-76a1-84be-9d74381b1c7f",
+      "recorded_by": "bootstrap",
+      "username": "newuser3",
+      "password_hash": "$scrypt$ln=14,r=8,p=1$eFla55pN+lcJjds+khRSFw==$jRVePLcDKtZxKykD8cDEizRMf32GsYul4FIkd0LH8iCZcB0NkXq0WN2xPi4Ao9BUrTz5xsvaxq0YKt45me1iGQ==",
+      "password_salt": "",
+      "totp_secret": "",
+      "email": "newuser3@test.com",
+      "recorded_at": "2026-01-02 00:22:14.000000000Z"
+    }
+  ],
+  "total_available_count": 0
+}
+#+end_src
+
+*** Create Account
 
 Create a new user account (admin only).
 
@@ -157,7 +228,18 @@ Authorization: Bearer {{(verb-var token)}}
 }
 #+end_src
 
-** Update Account
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 403 Forbidden
+Content-Type: application/json
+Content-Length: 36
+
+{
+  "error": "Insufficient permissions"
+}
+#+end_src
+
+*** Update Account
 
 Update account details by ID (admin only).
 
@@ -172,7 +254,7 @@ Authorization: Bearer {{(verb-var token)}}
 }
 #+end_src
 
-** Delete Account
+*** Delete Account
 
 Delete an account by ID (admin only).
 
@@ -182,7 +264,7 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-** Get Account History
+*** Get Account History
 
 Retrieve version history for an account.
 
@@ -192,7 +274,25 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-** List Login Info
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 74
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "success": true,
+  "message": "",
+  "history": {
+    "username": "admin",
+    "versions": []
+  }
+}
+#+end_src
+
+*** List Login Info
 
 Retrieve login info for all accounts.
 
@@ -202,7 +302,51 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-** Lock Accounts
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 707
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "login_infos": [
+    {
+      "last_login": "2026-01-02 12:50:28.000000000Z",
+      "account_id": "019b7c16-a28c-7444-9546-9a051962f014",
+      "failed_logins": 0,
+      "locked": false,
+      "online": true,
+      "password_reset_required": false,
+      "last_ip": "127.0.0.1",
+      "last_attempt_ip": "127.0.0.1"
+    },
+    {
+      "last_login": "1969-12-31 21:00:00.000000000Z",
+      "account_id": "019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c",
+      "failed_logins": 0,
+      "locked": false,
+      "online": false,
+      "password_reset_required": false,
+      "last_ip": "0.0.0.0",
+      "last_attempt_ip": "0.0.0.0"
+    },
+    {
+      "last_login": "2026-01-05 13:30:16.000000000Z",
+      "account_id": "019b7c15-5f67-76a1-84be-9d74381b1c7f",
+      "failed_logins": 0,
+      "locked": false,
+      "online": true,
+      "password_reset_required": false,
+      "last_ip": "127.0.0.1",
+      "last_attempt_ip": "127.0.0.1"
+    }
+  ]
+}
+#+end_src
+
+*** Lock Accounts
 
 Lock one or more accounts (admin only).
 
@@ -217,7 +361,7 @@ Authorization: Bearer {{(verb-var token)}}
 }
 #+end_src
 
-** Unlock Accounts
+*** Unlock Accounts
 
 Unlock one or more accounts (admin only).
 
@@ -232,7 +376,7 @@ Authorization: Bearer {{(verb-var token)}}
 }
 #+end_src
 
-** Reset Password
+*** Reset Password
 
 Admin-initiated password reset for accounts (admin only).
 
@@ -247,12 +391,12 @@ Authorization: Bearer {{(verb-var token)}}
 }
 #+end_src
 
-* Current User                                                         :verb:
+** Current User                                                        :verb:
   :PROPERTIES:
   :header-args:verb: :exports both
   :END:
 
-** Change Password
+*** Change Password
 
 Change the current user's password.
 
@@ -267,7 +411,7 @@ Authorization: Bearer {{(verb-var token)}}
 }
 #+end_src
 
-** Update Email
+*** Update Email
 
 Update the current user's email address.
 
@@ -282,12 +426,9 @@ Authorization: Bearer {{(verb-var token)}}
 }
 #+end_src
 
-* RBAC (Role-Based Access Control)                                     :verb:
-  :PROPERTIES:
-  :header-args:verb: :exports both
-  :END:
+** RBAC (Role-Based Access Control)                                    :verb:
 
-** List Roles
+*** List Roles
 
 List all roles in the system.
 
@@ -297,7 +438,102 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-** Get Role
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 1746
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "roles": [
+    {
+      "version": 1,
+      "id": "dd2ecaec-138b-453c-a110-77441a60583e",
+      "name": "Admin",
+      "description": "Full administrative access to all system functions",
+      "recorded_by": "system",
+      "recorded_at": "2026-01-01 23:51:42.000000000Z",
+      "permission_codes": [
+        "*"
+      ]
+    },
+    {
+      "version": 1,
+      "id": "b898350f-f704-4e97-b8ec-36c3481af052",
+      "name": "Operations",
+      "description": "Operations - currency management and account viewing",
+      "recorded_by": "system",
+      "recorded_at": "2026-01-01 23:51:43.000000000Z",
+      "permission_codes": [
+        "accounts:read",
+        "currencies:create",
+        "currencies:delete",
+        "currencies:history",
+        "currencies:read",
+        "currencies:update",
+        "flags:read"
+      ]
+    },
+    {
+      "version": 1,
+      "id": "d48b608d-c894-4346-887d-228e342d36c6",
+      "name": "Sales",
+      "description": "Sales operations - read-only currency access",
+      "recorded_by": "system",
+      "recorded_at": "2026-01-01 23:51:43.000000000Z",
+      "permission_codes": [
+        "currencies:read",
+        "flags:read"
+      ]
+    },
+    {
+      "version": 1,
+      "id": "d533c93f-bf3c-4d1f-bba8-4e949b976a8a",
+      "name": "Support",
+      "description": "Support - read-only access to all resources and admin screens",
+      "recorded_by": "system",
+      "recorded_at": "2026-01-01 23:51:43.000000000Z",
+      "permission_codes": [
+        "accounts:read",
+        "currencies:history",
+        "currencies:read",
+        "flags:read",
+        "login_info:read",
+        "roles:read"
+      ]
+    },
+    {
+      "version": 1,
+      "id": "a74f8a4e-f331-4179-aecb-cda61e472805",
+      "name": "Trading",
+      "description": "Trading operations - currency read access",
+      "recorded_by": "system",
+      "recorded_at": "2026-01-01 23:51:42.000000000Z",
+      "permission_codes": [
+        "currencies:history",
+        "currencies:read",
+        "flags:read"
+      ]
+    },
+    {
+      "version": 1,
+      "id": "6e4ee358-1970-400f-a3cb-fbcfe8296f52",
+      "name": "Viewer",
+      "description": "Viewer - basic read-only access to domain data",
+      "recorded_by": "system",
+      "recorded_at": "2026-01-01 23:51:43.000000000Z",
+      "permission_codes": [
+        "currencies:read",
+        "flags:read"
+      ]
+    }
+  ]
+}
+#+end_src
+
+*** Get Role
 
 Get a specific role by ID.
 
@@ -307,7 +543,7 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-** List Permissions
+*** List Permissions
 
 List all permissions in the system.
 
@@ -317,7 +553,141 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-** Get Account Roles
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 2648
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "permissions": [
+    {
+      "id": "8f827c95-2af4-4d78-9ccb-22f5d9f4df99",
+      "code": "*",
+      "description": "Full access to all operations"
+    },
+    {
+      "id": "9e337a58-2ee6-4de4-8946-76015de6e928",
+      "code": "accounts:create",
+      "description": "Create new user accounts"
+    },
+    {
+      "id": "7151df18-e4c9-4522-bb65-c1055a3e97c1",
+      "code": "accounts:delete",
+      "description": "Delete user accounts"
+    },
+    {
+      "id": "c225162e-2b04-4685-b1be-0bacbe367e45",
+      "code": "accounts:lock",
+      "description": "Lock user accounts"
+    },
+    {
+      "id": "4956001c-5ece-4dc8-b437-c834045c25eb",
+      "code": "accounts:read",
+      "description": "View user account details"
+    },
+    {
+      "id": "5f5f8909-3820-411f-a9f2-d5efb5ad351a",
+      "code": "accounts:reset_password",
+      "description": "Force password reset on user accounts"
+    },
+    {
+      "id": "fc5587f3-72ad-4706-a1ac-ca735af5a919",
+      "code": "accounts:unlock",
+      "description": "Unlock user accounts"
+    },
+    {
+      "id": "cf4ac1a8-b39e-4faa-b6d3-f9ed3d1ef41a",
+      "code": "accounts:update",
+      "description": "Modify user account settings"
+    },
+    {
+      "id": "43ce84fb-b14a-490a-92d1-4eade25eda37",
+      "code": "currencies:create",
+      "description": "Create new currencies"
+    },
+    {
+      "id": "7fb3f2e6-9b0d-4996-9c02-14e39a732acd",
+      "code": "currencies:delete",
+      "description": "Delete currencies"
+    },
+    {
+      "id": "5472a25a-40cf-4bac-9c95-dda2589f12f7",
+      "code": "currencies:history",
+      "description": "View currency version history"
+    },
+    {
+      "id": "17f8d400-47fa-4648-8b47-48ab3c1ec82b",
+      "code": "currencies:read",
+      "description": "View currency details"
+    },
+    {
+      "id": "e1bca8df-8133-4c08-9365-160baf99125e",
+      "code": "currencies:update",
+      "description": "Modify currency settings"
+    },
+    {
+      "id": "62e6e9ea-5258-41d2-9107-0602512801e6",
+      "code": "flags:create",
+      "description": "Create new feature flags"
+    },
+    {
+      "id": "8e42e330-5467-48c2-9a26-5af5b5fcb10e",
+      "code": "flags:delete",
+      "description": "Delete feature flags"
+    },
+    {
+      "id": "3b26954f-6368-4c12-b2e2-67797d442714",
+      "code": "flags:read",
+      "description": "View feature flag status"
+    },
+    {
+      "id": "5f72cfef-c8a9-4926-a1a3-f51c955595f7",
+      "code": "flags:update",
+      "description": "Modify feature flag settings"
+    },
+    {
+      "id": "12e8300a-e76c-4cd6-a439-2098e45393a2",
+      "code": "login_info:read",
+      "description": "View login history and info"
+    },
+    {
+      "id": "95d69095-1223-4dbb-970e-8042d90d61de",
+      "code": "roles:assign",
+      "description": "Assign roles to accounts"
+    },
+    {
+      "id": "2301fe57-f568-4930-b3ec-4a9fba903932",
+      "code": "roles:create",
+      "description": "Create new roles"
+    },
+    {
+      "id": "e12a56d4-64a8-436d-8ad8-1909b2439369",
+      "code": "roles:delete",
+      "description": "Delete roles"
+    },
+    {
+      "id": "eba37c8c-79e2-4193-9a54-ceb555b1cdda",
+      "code": "roles:read",
+      "description": "View role details"
+    },
+    {
+      "id": "cd69a420-e93b-4e41-9bab-ee8d6dcd0b7a",
+      "code": "roles:revoke",
+      "description": "Revoke roles from accounts"
+    },
+    {
+      "id": "af5743da-3042-469d-8487-ed859b9de7f5",
+      "code": "roles:update",
+      "description": "Modify role permissions"
+    }
+  ]
+}
+#+end_src
+
+*** Get Account Roles
 
 Get all roles assigned to an account.
 
@@ -327,7 +697,7 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-** Get Account Permissions
+*** Get Account Permissions
 
 Get effective permissions for an account.
 
@@ -337,7 +707,7 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-** Assign Role
+*** Assign Role
 
 Assign a role to an account (admin only).
 
@@ -352,7 +722,7 @@ Authorization: Bearer {{(verb-var token)}}
 }
 #+end_src
 
-** Revoke Role
+*** Revoke Role
 
 Revoke a role from an account (admin only).
 
@@ -362,12 +732,9 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-* Sessions                                                             :verb:
-  :PROPERTIES:
-  :header-args:verb: :exports both
-  :END:
+** Sessions                                                            :verb:
 
-** List Sessions
+*** List Sessions
 
 List session history.
 
@@ -377,7 +744,21 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-** Get Session Statistics
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 31
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "sessions": [],
+  "total_count": 0
+}
+#+end_src
+
+*** Get Session Statistics
 
 Get aggregated session statistics.
 
@@ -387,7 +768,7 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-** Get Active Sessions
+*** Get Active Sessions
 
 Get currently active sessions.
 
@@ -397,12 +778,12 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-* Currencies                                                           :verb:
+** Currencies                                                          :verb:
   :PROPERTIES:
   :header-args:verb: :exports both
   :END:
 
-** List Currencies
+*** List Currencies
 
 Retrieve currencies with optional pagination.
 
@@ -412,7 +793,7 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-** Save Currency
+*** Save Currency
 
 Create or update a currency (admin only).
 
@@ -433,7 +814,7 @@ Authorization: Bearer {{(verb-var token)}}
 }
 #+end_src
 
-** Delete Currencies
+*** Delete Currencies
 
 Delete one or more currencies (admin only).
 
@@ -448,7 +829,7 @@ Authorization: Bearer {{(verb-var token)}}
 }
 #+end_src
 
-** Get Currency History
+*** Get Currency History
 
 Retrieve version history for a currency.
 
@@ -458,12 +839,12 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-* Feature Flags                                                        :verb:
+** Feature Flags                                                       :verb:
   :PROPERTIES:
   :header-args:verb: :exports both
   :END:
 
-** List Feature Flags
+*** List Feature Flags
 
 Retrieve all feature flags in the system.
 
@@ -473,12 +854,9 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-* Assets                                                               :verb:
-  :PROPERTIES:
-  :header-args:verb: :exports both
-  :END:
+** Assets                                                              :verb:
 
-** Get Currency Images
+*** Get Currency Images
 
 Retrieve currency-to-image mappings.
 
@@ -488,7 +866,969 @@ Accept: application/json
 Authorization: Bearer {{(verb-var token)}}
 #+end_src
 
-** Get Images
+#+RESULTS:
+#+begin_src json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 20245
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
+
+{
+  "currency_images": [
+    {
+      "iso_code": "USD",
+      "image_id": "f6a9d8f3-f32e-4bed-83c2-a865f8f9f3e3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CAD",
+      "image_id": "2f57960f-5654-4fcb-9552-ada48f2d1634",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MXN",
+      "image_id": "2e7d4121-e91c-47c6-9a4b-a6620cd951d6",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BRL",
+      "image_id": "621bfb00-9958-4e1a-8242-7cd2065c25db",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ARS",
+      "image_id": "85de14d6-5556-410b-83dc-c0c92098d5db",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CLP",
+      "image_id": "a82097a8-52b4-4b10-a92d-d7b3c4470ad3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "COP",
+      "image_id": "40a7658a-5fe3-4444-8123-69eeac6b74f0",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "PEN",
+      "image_id": "797072b2-a60f-4026-83cd-29606eba83e3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "UYU",
+      "image_id": "ce1b7aa2-6832-4ac4-9ad4-77a9d4b95068",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "PYG",
+      "image_id": "0fa355ad-08a6-4273-82ea-3ae2ee5c998d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BOB",
+      "image_id": "0abcc77d-6cac-48b1-b568-cc80121c0a91",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "VES",
+      "image_id": "2467a970-0bd4-46e9-84ed-19746a9066f5",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CRC",
+      "image_id": "0a7b72e0-1e6f-4af6-9aae-85263761a6c1",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "PAB",
+      "image_id": "97eec69b-5e53-4af2-8fdc-b54e6ae924b1",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GTQ",
+      "image_id": "88fd171b-7dfc-431f-85ca-2f45cee084ca",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "HNL",
+      "image_id": "fd5b63a1-79f4-408d-9c9b-4347bf018178",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "NIO",
+      "image_id": "674207cf-1bad-4ecd-a8e6-6d564e92a7bc",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "DOP",
+      "image_id": "101a0062-d84a-4174-8f15-3b68ab444814",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CUP",
+      "image_id": "7127088d-2832-47f2-8627-3dcc940e9d50",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "JMD",
+      "image_id": "451fc4e3-89ec-48fb-9fba-1240a3abb229",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TTD",
+      "image_id": "c2536cf2-6579-480d-9f04-a41e07eeb451",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BBD",
+      "image_id": "05f4a87e-b481-4953-b6cd-9e9b5d3fc7a6",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BSD",
+      "image_id": "d1175684-4046-440b-92ac-0945bdb84963",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "HTG",
+      "image_id": "eb100538-defe-49a7-bf61-51f73e76ab6b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SRD",
+      "image_id": "29ccafd5-02fe-4da2-a215-eb5537acfad0",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GYD",
+      "image_id": "5cf97e9f-02a3-4fbc-8b5c-89f82ab315bf",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BZD",
+      "image_id": "48727981-a842-45d0-9019-123c8edf83aa",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "AWG",
+      "image_id": "9dfc69aa-fe57-4518-a988-0e089f58e390",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ANG",
+      "image_id": "e5f7ae6e-2361-44c7-b627-6ac092d761e6",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KYD",
+      "image_id": "a8ad04a1-abed-4642-9d75-c967c9f40dc1",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BMD",
+      "image_id": "fc1b8b9b-0a95-4233-bcea-1b95486bf7a2",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "FKP",
+      "image_id": "121c7cbb-ba6b-4d7d-863d-9162316a2cbc",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XCD",
+      "image_id": "c056bd53-7c7b-4313-990c-7b9d1d80828d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "EUR",
+      "image_id": "422dd41f-420b-4070-be46-cb36447c0692",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GBP",
+      "image_id": "1847b80c-d2aa-436f-888e-57b9c1c7a483",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CHF",
+      "image_id": "054e2173-7db3-498d-a165-87c1ebbfa8bf",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "NOK",
+      "image_id": "124dda6e-5aaf-4a6e-a43c-2434efd30b27",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SEK",
+      "image_id": "b0f911a7-870c-49e2-9344-baa45d1a4e9a",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "DKK",
+      "image_id": "7ee6f25a-a9c4-44c5-8575-d6158cca4b01",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ISK",
+      "image_id": "12649e0f-8a6a-443f-8609-e3679f470aea",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "PLN",
+      "image_id": "43ee0e71-5806-4567-9f96-35b78b281d6e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CZK",
+      "image_id": "cbcbde0d-2066-4fec-912a-a1b7aaf81eb0",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "HUF",
+      "image_id": "3bf49cc2-19ee-4917-b9df-e4f21e1ccdef",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "RON",
+      "image_id": "edcbdb6f-662d-4208-8d5f-2a43062b373a",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BGN",
+      "image_id": "8c86c82e-e418-4af7-81f2-fc77fac38fef",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "HRK",
+      "image_id": "575d72b1-af6a-4db9-9c14-31628c937c42",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "RSD",
+      "image_id": "df250afa-c64b-4710-a226-9fa7993cc9dc",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BAM",
+      "image_id": "aa21e9e2-eac2-44dd-a927-7eef3c9ffa30",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MKD",
+      "image_id": "73ded437-c571-4bc4-b6a2-7c87c67b2527",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ALL",
+      "image_id": "458d56d5-e535-477c-8af5-32bc6097c24b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MDL",
+      "image_id": "b38e725e-02d6-4355-b4ab-b2326de60243",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "UAH",
+      "image_id": "1c9a2b8c-68a3-4800-bb9d-7a8250b94e77",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BYN",
+      "image_id": "d5cada37-d552-4ef9-8885-194b099afba7",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "RUB",
+      "image_id": "a0b0356d-441b-49fb-aae4-255ba30f13f5",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GEL",
+      "image_id": "e56ae222-cdb9-44c5-b3b0-8a04bbadb8db",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "AMD",
+      "image_id": "9e01af37-ac88-4488-a857-81843736cf21",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "AZN",
+      "image_id": "5e0b55f6-83df-4fda-862a-0d1ab3d5139e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TRY",
+      "image_id": "a3e0aa64-58be-4eb1-bfe0-421db1e3d329",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GIP",
+      "image_id": "ce717713-0ed7-40be-bf34-763e5ccb0aa6",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "JPY",
+      "image_id": "f9d5c4f9-de32-4611-b28d-bcc89aa6ee78",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CNY",
+      "image_id": "f208658f-885e-4a85-b7fd-770b3c9ec8ca",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "HKD",
+      "image_id": "3dc927c3-a55f-40bf-a1a4-6491c414bbff",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TWD",
+      "image_id": "193d7b72-4506-4026-8449-d08648d32f5c",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KRW",
+      "image_id": "b23967ff-7899-4de9-b9e3-36a0051d09bb",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KPW",
+      "image_id": "d8d5b38d-32b1-4b7d-b139-1a4bb4b50d73",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SGD",
+      "image_id": "88e0154c-ba36-4572-9d65-0fede2d00842",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MYR",
+      "image_id": "01ae7cde-d700-429c-805a-7d5785185da8",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "IDR",
+      "image_id": "db28c17d-dcf8-4b4d-898f-65ac5f1f4853",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "THB",
+      "image_id": "0a990bce-edfa-4fc5-9d3c-202fb3f226fe",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "VND",
+      "image_id": "85fedc35-178a-4efe-b669-a504e75781a6",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "PHP",
+      "image_id": "64087892-b0fe-44ce-ad51-58b6582a7303",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "INR",
+      "image_id": "4ee29c9b-6c98-44cc-b6a6-da7a24dce16b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "PKR",
+      "image_id": "83010360-7a46-4078-9171-64e58c66e334",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BDT",
+      "image_id": "fb7bf13d-4dee-4ee5-aa65-102ff8f08f1c",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "LKR",
+      "image_id": "f9def450-31b7-4ddc-af57-bfc9daf3b60a",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "NPR",
+      "image_id": "9d860744-cc2b-4f5d-a277-85c08d08814d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MMK",
+      "image_id": "74ba8535-2783-4a97-8fac-1dd208f85252",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KHR",
+      "image_id": "c1fe8fbf-4c2a-4ede-afbe-60e7b62401f4",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "LAK",
+      "image_id": "bfcc629a-70ee-439d-91ce-f71b97587f29",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MNT",
+      "image_id": "1ba01af3-7817-4b5d-9a49-5ed41602728d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KZT",
+      "image_id": "5c4fcf1d-5d96-4716-bb8a-ba663abaa257",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "UZS",
+      "image_id": "d4798afc-8af6-48d5-961d-a5d1e94ad23b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KGS",
+      "image_id": "e1a88336-817c-4016-82bb-5f88bc952cd9",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TJS",
+      "image_id": "1d64f417-9d1f-4c8e-b40c-a37f57a30e49",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TMT",
+      "image_id": "3be24a78-97d6-4fde-bb04-a6083d848717",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "AFN",
+      "image_id": "1116a6b0-7511-4fda-869f-b4f9946c15b4",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "AUD",
+      "image_id": "beb9ef9e-ba7c-438d-9282-85298a083347",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "NZD",
+      "image_id": "3e313203-8012-4fad-a5c0-5d86aeb22370",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "FJD",
+      "image_id": "aea8eef2-473f-4204-a5a8-2bd60b25a40b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "PGK",
+      "image_id": "da8d24f9-3b43-4da6-9d6f-7e904e258f28",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SBD",
+      "image_id": "447643e4-611f-4755-8cee-ae1416bcd8c6",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "VUV",
+      "image_id": "c7248e0d-46fe-4edf-80f2-115a4920258c",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "WST",
+      "image_id": "ec232baf-223f-48ca-ae18-ab7b78631238",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TOP",
+      "image_id": "b2622a2a-c78e-479e-a00b-91d121230d1a",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MOP",
+      "image_id": "8ac695fa-6fd9-4016-9c78-5e1ab38ad9a3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BND",
+      "image_id": "308d8d06-f0f6-4dc8-a8cf-8aac0a27ae3b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BTN",
+      "image_id": "e2b25c8f-f22f-4532-8b4b-02d96528f07d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MVR",
+      "image_id": "ff55126d-f9a7-4c58-a1d5-5b6e84aa40f4",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SAR",
+      "image_id": "0fd6e616-dfad-467d-8bf6-fb3fdae96a2b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "AED",
+      "image_id": "31cafad9-db0c-4359-ada8-da331f08949e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "QAR",
+      "image_id": "6f7322b3-ad31-481d-89a5-c4291198b8e3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KWD",
+      "image_id": "3269c3e5-3c60-43c4-84ea-31635ff7888a",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BHD",
+      "image_id": "25973a2f-1236-4690-87b4-cc9346b9796d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "OMR",
+      "image_id": "dde7bcbe-c4ee-4972-82d1-bcf80b932013",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "JOD",
+      "image_id": "aaa2d58e-fe2f-4ba3-9ca3-a90696a8eef1",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ILS",
+      "image_id": "e29bb118-ba9a-485f-8574-12c1d963315e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "LBP",
+      "image_id": "991d5ee8-e557-4202-becd-6e60eaa3d236",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SYP",
+      "image_id": "8d640073-cd72-42da-a9d6-df87cdf6fa4e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "IQD",
+      "image_id": "0a707774-49f9-4dc8-83bb-6eb40c7f1491",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "IRR",
+      "image_id": "edfd781f-2f12-4a2e-aa02-e3bd689c2d05",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "YER",
+      "image_id": "aeb2560a-2d87-4be8-8cc6-8c22a3e8469b",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ZAR",
+      "image_id": "556e30a8-0941-4e78-9fd8-8ddda851ef7d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "EGP",
+      "image_id": "7535ccd9-cfa4-4def-9253-5830383ad363",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "NGN",
+      "image_id": "6b7e84ec-d213-432e-bdd6-4cfdd4ff3f53",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KES",
+      "image_id": "224b3ed1-01d2-4cf4-8988-e08c09060b63",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GHS",
+      "image_id": "212f4371-13d0-4cb9-8f3a-27abaa86c5f1",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TZS",
+      "image_id": "a0d3b01c-dbad-4b9b-81ea-2ea51b1056ed",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "UGX",
+      "image_id": "e099909a-1a05-43a7-9dbe-f62dbb058807",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ETB",
+      "image_id": "0bf12652-8e80-4cc9-a718-b591556e2b26",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MAD",
+      "image_id": "5c4e7cb3-2439-45e2-85ab-39fca9e9aadc",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "TND",
+      "image_id": "9cf418e6-5812-43dc-8ea2-7c52e8df31f3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "DZD",
+      "image_id": "57210766-e01c-46ac-9c21-f9bcc6db03c3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "LYD",
+      "image_id": "5f11f142-5581-43ec-8577-a5721cc6a029",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SDG",
+      "image_id": "7ecb9019-f787-4c48-8c03-93c0f6cef647",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SSP",
+      "image_id": "6ab55238-4423-45cd-9523-ca93ffa1ef23",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "AOA",
+      "image_id": "fcdb0cd7-6184-4bfa-bad0-180cebeb2224",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XAF",
+      "image_id": "bc2a5c97-55d0-49a2-9ff5-760991f6cdb4",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XOF",
+      "image_id": "fa9e2012-0e44-4a17-9663-2d61ef76bc83",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ZMW",
+      "image_id": "fd16439c-b0cf-4edd-8c63-3bd6e5795e2f",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MZN",
+      "image_id": "699b5ea7-c74d-4d84-9615-decd7f7206f3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BWP",
+      "image_id": "39436777-1584-472a-bfdc-04534f0e2505",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "NAD",
+      "image_id": "c0bb63fe-ee7f-4fe4-b6bd-eea0b4ae2dee",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SZL",
+      "image_id": "7ee54284-d654-48ac-b03b-55f564959283",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "LSL",
+      "image_id": "a974f8ba-d820-4970-a996-15c50b2575d8",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MWK",
+      "image_id": "cae5d22c-9a8e-4d4f-881c-bd5e85ed76aa",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ZWL",
+      "image_id": "67c4c792-99b7-41a9-9d9f-ff327c7e4444",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "RWF",
+      "image_id": "5d514ca3-0979-405e-a2a2-8cf7ba8498b9",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "BIF",
+      "image_id": "16482952-7e65-484c-8be1-b26ccfc36722",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CDF",
+      "image_id": "01f27c3f-1b35-4905-8209-6ff247ff613e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "DJF",
+      "image_id": "b19ca24e-b641-4989-8ddd-f87942fc0eeb",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "ERN",
+      "image_id": "17bd40c0-d833-41ec-afdb-c3f97c76d5eb",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SOS",
+      "image_id": "749e2236-8f8a-4c63-97a2-5b03ee81be00",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GMD",
+      "image_id": "2869a88f-7d3d-4d59-a4a0-8d8f18d97ae3",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "GNF",
+      "image_id": "3f0286db-a9dd-411e-9b80-523d8e9afb2e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SLL",
+      "image_id": "f3d6ca42-9f3f-4a81-8ead-a5dd6664f902",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "LRD",
+      "image_id": "495e2cd6-c1b7-40f5-a166-ea1b55b36564",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "CVE",
+      "image_id": "0c790177-beb2-4991-8b7e-1faba24d92fd",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "STN",
+      "image_id": "ef1521da-3b8d-473a-9792-00210828cc87",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MRU",
+      "image_id": "20291b55-0ae2-41d7-80d5-7ed2cfa5ecc9",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MGA",
+      "image_id": "6baa83bd-25f4-4e92-b062-3067a0c0bba5",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "MUR",
+      "image_id": "3953fcb9-8d45-4052-92b9-9967b939fdca",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "SCR",
+      "image_id": "5e1e11e6-e7f2-4414-a7d5-a8deb4f36398",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "KMF",
+      "image_id": "b8992a6e-2ca1-4596-a34c-7b5b263ece4e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XAU",
+      "image_id": "2c2f3266-daa8-4208-9158-a6d1febc7b87",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XAG",
+      "image_id": "c78d4394-28d7-46ec-b141-90840a1ed45d",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XPT",
+      "image_id": "49650c61-d1f7-49f6-9b64-bbd4e9778b2f",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XPD",
+      "image_id": "61aecb59-6f3c-4af6-9572-b3ff7a5f254e",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    },
+    {
+      "iso_code": "XDR",
+      "image_id": "586fea71-089e-427f-ae9a-f543c5175588",
+      "assigned_by": "system",
+      "assigned_at": "2026-01-01 23:51:55"
+    }
+  ]
+}
+#+end_src
+
+*** Get Images
 
 Retrieve images by ID (batch, max 100).
 
@@ -503,7 +1843,7 @@ Authorization: Bearer {{(verb-var token)}}
 }
 #+end_src
 
-* Variables                                                        :noexport:
+** Variables                                                       :noexport:
 
 Use =M-x verb-set-var= to set these variables before running authenticated requests:
 
@@ -513,5 +1853,7 @@ Use =M-x verb-set-var= to set these variables before running authenticated reque
 | account_id | UUID of an account                     | 12345678-1234-1234-1234-123456789abc |
 | role_id    | UUID of a role                         | 87654321-4321-4321-4321-cba987654321 |
 | image_id   | UUID of an image                       | abcdef12-3456-7890-abcd-ef1234567890 |
+
+* Footer
 
 | Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |

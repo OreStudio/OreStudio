@@ -29,6 +29,7 @@
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.assets/domain/image.hpp"
 #include "ores.assets/domain/currency_image.hpp"
+#include "ores.assets/messaging/assets_protocol.hpp"
 
 namespace ores::qt {
 
@@ -109,6 +110,61 @@ public:
      */
     bool isLoading() const { return is_loading_mappings_ || is_loading_images_; }
 
+    /**
+     * @brief Load list of all available images from the server.
+     *
+     * Fetches metadata for all images (without SVG data).
+     * After completion, imageListLoaded() signal is emitted.
+     */
+    void loadImageList();
+
+    /**
+     * @brief Get the list of available images.
+     *
+     * @return Vector of image metadata (id, key, description)
+     */
+    const std::vector<assets::messaging::image_info>& availableImages() const {
+        return available_images_;
+    }
+
+    /**
+     * @brief Check if image list has been loaded.
+     */
+    bool hasImageList() const { return !available_images_.empty(); }
+
+    /**
+     * @brief Load a specific image by ID for preview.
+     *
+     * @param image_id The image ID to load
+     */
+    void loadImageById(const std::string& image_id);
+
+    /**
+     * @brief Get icon for an image ID (from preview cache).
+     *
+     * @param image_id The image ID
+     * @return QIcon for the image, or empty icon if not cached
+     */
+    QIcon getImageIcon(const std::string& image_id) const;
+
+    /**
+     * @brief Set or remove a currency's image association.
+     *
+     * @param iso_code The currency ISO code
+     * @param image_id The image ID to assign (empty to remove)
+     * @param assigned_by Username performing the assignment
+     */
+    void setCurrencyImage(const std::string& iso_code, const std::string& image_id,
+        const std::string& assigned_by);
+
+    /**
+     * @brief Get the image ID assigned to a currency.
+     *
+     * @param iso_code The currency ISO code
+     * @return The image ID, or empty string if no mapping
+     */
+    std::string getCurrencyImageId(const std::string& iso_code) const;
+
 signals:
     /**
      * @brief Emitted when currency mappings have been loaded.
@@ -130,9 +186,27 @@ signals:
      */
     void loadError(const QString& error_message);
 
+    /**
+     * @brief Emitted when image list has been loaded.
+     */
+    void imageListLoaded();
+
+    /**
+     * @brief Emitted when a single image has been loaded for preview.
+     */
+    void imageLoaded(const QString& image_id);
+
+    /**
+     * @brief Emitted when currency image assignment is complete.
+     */
+    void currencyImageSet(const QString& iso_code, bool success, const QString& message);
+
 private slots:
     void onMappingsLoaded();
     void onImagesLoaded();
+    void onImageListLoaded();
+    void onSingleImageLoaded();
+    void onCurrencyImageSet();
 
 private:
     /**
@@ -153,6 +227,23 @@ private:
         std::vector<assets::domain::image> images;
     };
 
+    struct ImageListResult {
+        bool success;
+        std::vector<assets::messaging::image_info> images;
+    };
+
+    struct SingleImageResult {
+        bool success;
+        std::string image_id;
+        assets::domain::image image;
+    };
+
+    struct SetCurrencyImageResult {
+        bool success;
+        std::string iso_code;
+        std::string message;
+    };
+
     ClientManager* clientManager_;
 
     // Currency ISO code -> image_id mapping
@@ -171,6 +262,15 @@ private:
 
     QFutureWatcher<MappingsResult>* mappings_watcher_;
     QFutureWatcher<ImagesResult>* images_watcher_;
+    QFutureWatcher<ImageListResult>* image_list_watcher_;
+    QFutureWatcher<SingleImageResult>* single_image_watcher_;
+    QFutureWatcher<SetCurrencyImageResult>* set_currency_image_watcher_;
+
+    // List of all available images (metadata only)
+    std::vector<assets::messaging::image_info> available_images_;
+
+    // image_id -> QIcon cache for preview (loaded on demand)
+    std::unordered_map<std::string, QIcon> image_preview_cache_;
 };
 
 }

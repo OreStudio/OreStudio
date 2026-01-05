@@ -226,4 +226,147 @@ std::ostream& operator<<(std::ostream& s, const get_images_response& v) {
     return s;
 }
 
+// list_images_request
+
+std::vector<std::byte> list_images_request::serialize() const {
+    return {};
+}
+
+std::expected<list_images_request, comms::messaging::error_code>
+list_images_request::deserialize(std::span<const std::byte> data) {
+    if (!data.empty()) {
+        return std::unexpected(comms::messaging::error_code::invalid_request);
+    }
+    return list_images_request{};
+}
+
+std::ostream& operator<<(std::ostream& s, const list_images_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// image_info
+
+std::ostream& operator<<(std::ostream& s, const image_info& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// list_images_response
+
+std::vector<std::byte> list_images_response::serialize() const {
+    std::vector<std::byte> buffer;
+
+    writer::write_uint32(buffer,
+        static_cast<std::uint32_t>(images.size()));
+
+    for (const auto& img : images) {
+        writer::write_string(buffer, img.image_id);
+        writer::write_string(buffer, img.key);
+        writer::write_string(buffer, img.description);
+    }
+
+    return buffer;
+}
+
+std::expected<list_images_response, comms::messaging::error_code>
+list_images_response::deserialize(std::span<const std::byte> data) {
+    list_images_response response;
+
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) {
+        return std::unexpected(count_result.error());
+    }
+    auto count = *count_result;
+
+    response.images.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        image_info img;
+
+        auto image_id_result = reader::read_string(data);
+        if (!image_id_result) return std::unexpected(image_id_result.error());
+        img.image_id = *image_id_result;
+
+        auto key_result = reader::read_string(data);
+        if (!key_result) return std::unexpected(key_result.error());
+        img.key = *key_result;
+
+        auto description_result = reader::read_string(data);
+        if (!description_result) return std::unexpected(description_result.error());
+        img.description = *description_result;
+
+        response.images.push_back(std::move(img));
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const list_images_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// set_currency_image_request
+
+std::vector<std::byte> set_currency_image_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, iso_code);
+    writer::write_string(buffer, image_id);
+    writer::write_string(buffer, assigned_by);
+    return buffer;
+}
+
+std::expected<set_currency_image_request, comms::messaging::error_code>
+set_currency_image_request::deserialize(std::span<const std::byte> data) {
+    set_currency_image_request request;
+
+    auto iso_code_result = reader::read_string(data);
+    if (!iso_code_result) return std::unexpected(iso_code_result.error());
+    request.iso_code = *iso_code_result;
+
+    auto image_id_result = reader::read_string(data);
+    if (!image_id_result) return std::unexpected(image_id_result.error());
+    request.image_id = *image_id_result;
+
+    auto assigned_by_result = reader::read_string(data);
+    if (!assigned_by_result) return std::unexpected(assigned_by_result.error());
+    request.assigned_by = *assigned_by_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const set_currency_image_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// set_currency_image_response
+
+std::vector<std::byte> set_currency_image_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    return buffer;
+}
+
+std::expected<set_currency_image_response, comms::messaging::error_code>
+set_currency_image_response::deserialize(std::span<const std::byte> data) {
+    set_currency_image_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const set_currency_image_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

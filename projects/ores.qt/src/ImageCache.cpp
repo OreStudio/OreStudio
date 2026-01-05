@@ -37,12 +37,21 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
     : QObject(parent),
       clientManager_(clientManager),
       mappings_watcher_(new QFutureWatcher<MappingsResult>(this)),
-      images_watcher_(new QFutureWatcher<ImagesResult>(this)) {
+      images_watcher_(new QFutureWatcher<ImagesResult>(this)),
+      image_list_watcher_(new QFutureWatcher<ImageListResult>(this)),
+      single_image_watcher_(new QFutureWatcher<SingleImageResult>(this)),
+      set_currency_image_watcher_(new QFutureWatcher<SetCurrencyImageResult>(this)) {
 
     connect(mappings_watcher_, &QFutureWatcher<MappingsResult>::finished,
         this, &ImageCache::onMappingsLoaded);
     connect(images_watcher_, &QFutureWatcher<ImagesResult>::finished,
         this, &ImageCache::onImagesLoaded);
+    connect(image_list_watcher_, &QFutureWatcher<ImageListResult>::finished,
+        this, &ImageCache::onImageListLoaded);
+    connect(single_image_watcher_, &QFutureWatcher<SingleImageResult>::finished,
+        this, &ImageCache::onSingleImageLoaded);
+    connect(set_currency_image_watcher_, &QFutureWatcher<SetCurrencyImageResult>::finished,
+        this, &ImageCache::onCurrencyImageSet);
 }
 
 void ImageCache::loadCurrencyMappings() {
@@ -307,6 +316,251 @@ QIcon ImageCache::svgToIcon(const std::string& svg_data) {
     }
 
     return icon;
+}
+
+void ImageCache::loadImageList() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load image list: not connected.";
+        return;
+    }
+
+    QPointer<ImageCache> self = this;
+
+    QFuture<ImageListResult> future =
+        QtConcurrent::run([self]() -> ImageListResult {
+            BOOST_LOG_SEV(lg(), debug) << "Fetching image list.";
+            if (!self) return {false, {}};
+
+            assets::messaging::list_images_request request;
+            auto payload = request.serialize();
+
+            frame request_frame(message_type::list_images_request,
+                0, std::move(payload));
+
+            auto response_result =
+                self->clientManager_->sendRequest(std::move(request_frame));
+
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send list images request: "
+                                           << response_result.error();
+                return {false, {}};
+            }
+
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
+                                           << payload_result.error();
+                return {false, {}};
+            }
+
+            auto response =
+                assets::messaging::list_images_response::deserialize(*payload_result);
+
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize list images response.";
+                return {false, {}};
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Received " << response->images.size()
+                                       << " images in list.";
+
+            return {true, std::move(response->images)};
+        });
+
+    image_list_watcher_->setFuture(future);
+}
+
+void ImageCache::onImageListLoaded() {
+    auto result = image_list_watcher_->result();
+    if (result.success) {
+        available_images_ = std::move(result.images);
+
+        BOOST_LOG_SEV(lg(), info) << "Loaded " << available_images_.size()
+                                  << " available images.";
+
+        emit imageListLoaded();
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Failed to load image list.";
+        emit loadError(tr("Failed to load image list"));
+    }
+}
+
+void ImageCache::loadImageById(const std::string& image_id) {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load image: not connected.";
+        return;
+    }
+
+    // Check if already cached
+    if (image_preview_cache_.find(image_id) != image_preview_cache_.end()) {
+        emit imageLoaded(QString::fromStdString(image_id));
+        return;
+    }
+
+    // Also check in the main SVG cache
+    auto svg_it = image_svg_cache_.find(image_id);
+    if (svg_it != image_svg_cache_.end()) {
+        QIcon icon = svgToIcon(svg_it->second);
+        if (!icon.isNull()) {
+            image_preview_cache_[image_id] = icon;
+            emit imageLoaded(QString::fromStdString(image_id));
+        }
+        return;
+    }
+
+    QPointer<ImageCache> self = this;
+    std::string requested_id = image_id;
+
+    QFuture<SingleImageResult> future =
+        QtConcurrent::run([self, requested_id]() -> SingleImageResult {
+            BOOST_LOG_SEV(lg(), debug) << "Fetching single image: " << requested_id;
+            if (!self) return {false, requested_id, {}};
+
+            assets::messaging::get_images_request request;
+            request.image_ids = {requested_id};
+            auto payload = request.serialize();
+
+            frame request_frame(message_type::get_images_request,
+                0, std::move(payload));
+
+            auto response_result =
+                self->clientManager_->sendRequest(std::move(request_frame));
+
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send get image request: "
+                                           << response_result.error();
+                return {false, requested_id, {}};
+            }
+
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
+                                           << payload_result.error();
+                return {false, requested_id, {}};
+            }
+
+            auto response =
+                assets::messaging::get_images_response::deserialize(*payload_result);
+
+            if (!response || response->images.empty()) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to get image: " << requested_id;
+                return {false, requested_id, {}};
+            }
+
+            return {true, requested_id, std::move(response->images[0])};
+        });
+
+    single_image_watcher_->setFuture(future);
+}
+
+void ImageCache::onSingleImageLoaded() {
+    auto result = single_image_watcher_->result();
+    if (result.success) {
+        // Cache SVG and render icon
+        image_svg_cache_[result.image_id] = result.image.svg_data;
+        QIcon icon = svgToIcon(result.image.svg_data);
+        if (!icon.isNull()) {
+            image_preview_cache_[result.image_id] = icon;
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Loaded single image: " << result.image_id;
+        emit imageLoaded(QString::fromStdString(result.image_id));
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Failed to load image: " << result.image_id;
+    }
+}
+
+QIcon ImageCache::getImageIcon(const std::string& image_id) const {
+    auto it = image_preview_cache_.find(image_id);
+    if (it != image_preview_cache_.end()) {
+        return it->second;
+    }
+    return {};
+}
+
+void ImageCache::setCurrencyImage(const std::string& iso_code,
+    const std::string& image_id, const std::string& assigned_by) {
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot set currency image: not connected.";
+        emit currencyImageSet(QString::fromStdString(iso_code), false,
+            tr("Not connected to server"));
+        return;
+    }
+
+    QPointer<ImageCache> self = this;
+    std::string req_iso_code = iso_code;
+    std::string req_image_id = image_id;
+    std::string req_assigned_by = assigned_by;
+
+    QFuture<SetCurrencyImageResult> future =
+        QtConcurrent::run([self, req_iso_code, req_image_id, req_assigned_by]() -> SetCurrencyImageResult {
+            BOOST_LOG_SEV(lg(), debug) << "Setting currency image: " << req_iso_code
+                                       << " -> " << (req_image_id.empty() ? "(none)" : req_image_id);
+            if (!self) return {false, req_iso_code, "Widget destroyed"};
+
+            assets::messaging::set_currency_image_request request;
+            request.iso_code = req_iso_code;
+            request.image_id = req_image_id;
+            request.assigned_by = req_assigned_by;
+            auto payload = request.serialize();
+
+            frame request_frame(message_type::set_currency_image_request,
+                0, std::move(payload));
+
+            auto response_result =
+                self->clientManager_->sendRequest(std::move(request_frame));
+
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send set currency image request: "
+                                           << response_result.error();
+                return {false, req_iso_code, "Failed to communicate with server"};
+            }
+
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
+                                           << payload_result.error();
+                return {false, req_iso_code, "Failed to decompress response"};
+            }
+
+            auto response =
+                assets::messaging::set_currency_image_response::deserialize(*payload_result);
+
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize set currency image response.";
+                return {false, req_iso_code, "Invalid server response"};
+            }
+
+            return {response->success, req_iso_code, response->message};
+        });
+
+    set_currency_image_watcher_->setFuture(future);
+}
+
+void ImageCache::onCurrencyImageSet() {
+    auto result = set_currency_image_watcher_->result();
+
+    if (result.success) {
+        BOOST_LOG_SEV(lg(), info) << "Currency image set successfully for: "
+                                  << result.iso_code;
+        // Reload mappings to get updated data
+        loadCurrencyMappings();
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Failed to set currency image for "
+                                   << result.iso_code << ": " << result.message;
+    }
+
+    emit currencyImageSet(QString::fromStdString(result.iso_code),
+        result.success, QString::fromStdString(result.message));
+}
+
+std::string ImageCache::getCurrencyImageId(const std::string& iso_code) const {
+    auto it = currency_to_image_id_.find(iso_code);
+    if (it != currency_to_image_id_.end()) {
+        return it->second;
+    }
+    return {};
 }
 
 }

@@ -20,6 +20,7 @@
 #include "ores.http/openapi/endpoint_registry.hpp"
 
 #include <map>
+#include <set>
 #include <sstream>
 #include <algorithm>
 #include <rfl.hpp>
@@ -115,6 +116,127 @@ struct openapi_spec final {
 } // namespace detail
 
 using namespace detail;
+
+namespace {
+
+// Forward declaration
+rfl::Generic resolve_refs_recursive(const rfl::Generic& schema,
+    const rfl::Object<rfl::Generic>& defs,
+    std::set<std::string>& visited);
+
+/**
+ * @brief Recursively resolves all $ref values in a schema by inlining them.
+ *
+ * OpenAPI 3.0.x interprets $ref paths relative to the document root, not the
+ * schema object. This function walks through the schema and replaces all
+ * $ref values with the actual type definitions from $defs.
+ *
+ * @param schema The schema object to process
+ * @param defs The $defs object containing type definitions
+ * @param visited Set of type names being resolved (for cycle detection)
+ * @return A new schema with all $refs resolved
+ */
+rfl::Generic resolve_refs_recursive(const rfl::Generic& schema,
+    const rfl::Object<rfl::Generic>& defs,
+    std::set<std::string>& visited) {
+
+    auto* obj = std::get_if<rfl::Object<rfl::Generic>>(&schema.get());
+    if (!obj) {
+        // Handle arrays
+        if (auto* arr = std::get_if<std::vector<rfl::Generic>>(&schema.get())) {
+            std::vector<rfl::Generic> new_arr;
+            for (const auto& item : *arr) {
+                new_arr.push_back(resolve_refs_recursive(item, defs, visited));
+            }
+            return rfl::Generic{new_arr};
+        }
+        return schema;
+    }
+
+    // Check if this object is a $ref
+    const rfl::Generic* ref_val = nullptr;
+    for (const auto& [key, val] : *obj) {
+        if (key == "$ref") {
+            ref_val = &val;
+            break;
+        }
+    }
+
+    if (ref_val) {
+        if (auto* ref_str = std::get_if<std::string>(&ref_val->get())) {
+            const std::string prefix = "#/$defs/";
+            if (ref_str->starts_with(prefix)) {
+                std::string type_name = ref_str->substr(prefix.size());
+
+                // Prevent infinite recursion
+                if (visited.count(type_name) > 0) {
+                    // Already resolving this type - return a simple object type
+                    rfl::Object<rfl::Generic> fallback;
+                    fallback["type"] = rfl::Generic{"object"};
+                    return rfl::Generic{fallback};
+                }
+
+                // Find the type in $defs
+                for (const auto& [def_name, def_val] : defs) {
+                    if (def_name == type_name) {
+                        if (auto* def_obj = std::get_if<rfl::Object<rfl::Generic>>(&def_val.get())) {
+                            // Mark as being visited
+                            visited.insert(type_name);
+
+                            // Create new object with resolved contents
+                            rfl::Object<rfl::Generic> result;
+                            for (const auto& [k, v] : *def_obj) {
+                                result[k] = resolve_refs_recursive(v, defs, visited);
+                            }
+
+                            visited.erase(type_name);
+                            return rfl::Generic{result};
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        // Couldn't resolve - return original
+        return schema;
+    }
+
+    // No $ref - recursively process all values in this object
+    rfl::Object<rfl::Generic> result;
+    for (const auto& [key, val] : *obj) {
+        if (key == "$defs" || key == "$schema") continue;  // Skip these
+        result[key] = resolve_refs_recursive(val, defs, visited);
+    }
+    return rfl::Generic{result};
+}
+
+/**
+ * @brief Processes a JSON schema from rfl, resolving $refs and removing $defs.
+ *
+ * @param schema The schema to process
+ * @return The processed schema with all $refs inlined
+ */
+rfl::Generic process_schema(const rfl::Generic& schema) {
+    auto* obj = std::get_if<rfl::Object<rfl::Generic>>(&schema.get());
+    if (!obj) return schema;
+
+    // Find $defs if present
+    const rfl::Object<rfl::Generic>* defs_ptr = nullptr;
+    for (const auto& [key, val] : *obj) {
+        if (key == "$defs") {
+            defs_ptr = std::get_if<rfl::Object<rfl::Generic>>(&val.get());
+            break;
+        }
+    }
+
+    if (!defs_ptr) return schema;  // No $defs to resolve
+
+    // Use the recursive resolver which handles everything
+    std::set<std::string> visited;
+    return resolve_refs_recursive(schema, *defs_ptr, visited);
+}
+
+} // anonymous namespace
 
 endpoint_registry::endpoint_registry() {
     BOOST_LOG_SEV(lg(), debug) << "Endpoint registry created";
@@ -250,86 +372,15 @@ std::string endpoint_registry::generate_openapi_json() const {
 
             openapi_media_type media_type;
 
-            // Parse the JSON schema generated by rfl::json::to_schema<T>()
-            // rfl generates schemas with $ref pointing to $defs, but OpenAPI
-            // interprets $ref relative to the document root. We need to resolve
-            // the reference and inline the schema with its $defs.
             auto schema_result = rfl::json::read<rfl::Generic>(body.json_schema);
             if (schema_result) {
-                auto& schema = *schema_result;
-
-                // rfl generates: { "$schema": ..., "$ref": "#/$defs/Type", "$defs": {...} }
-                // We need to transform this for OpenAPI 3.0 compatibility.
-                // Extract the $defs and create an inline schema.
-                if (auto* obj = std::get_if<rfl::Object<rfl::Generic>>(&schema.get())) {
-                    // Look for $ref and $defs by iterating
-                    const rfl::Generic* ref_val = nullptr;
-                    const rfl::Generic* defs_val = nullptr;
-
-                    for (const auto& [key, val] : *obj) {
-                        if (key == "$ref") ref_val = &val;
-                        else if (key == "$defs") defs_val = &val;
-                    }
-
-                    if (ref_val && defs_val) {
-                        // Get the ref target (e.g., "#/$defs/ores__iam__messaging__login_request")
-                        if (auto* ref_str = std::get_if<std::string>(&ref_val->get())) {
-                            const std::string prefix = "#/$defs/";
-                            if (ref_str->starts_with(prefix)) {
-                                std::string type_name = ref_str->substr(prefix.size());
-
-                                // Get the $defs object
-                                if (auto* defs_obj = std::get_if<rfl::Object<rfl::Generic>>(&defs_val->get())) {
-                                    // Find the type definition
-                                    const rfl::Generic* type_def = nullptr;
-                                    for (const auto& [key, val] : *defs_obj) {
-                                        if (key == type_name) {
-                                            type_def = &val;
-                                            break;
-                                        }
-                                    }
-
-                                    if (type_def) {
-                                        // Create new schema with the resolved type and $defs
-                                        rfl::Object<rfl::Generic> resolved_schema;
-
-                                        // Copy the type definition properties
-                                        if (auto* type_obj = std::get_if<rfl::Object<rfl::Generic>>(&type_def->get())) {
-                                            for (const auto& [key, value] : *type_obj) {
-                                                resolved_schema[key] = value;
-                                            }
-                                        }
-
-                                        // Keep $defs for nested type references
-                                        resolved_schema["$defs"] = *defs_val;
-
-                                        media_type.schema = rfl::Generic{resolved_schema};
-                                    } else {
-                                        media_type.schema = schema;
-                                    }
-                                } else {
-                                    media_type.schema = schema;
-                                }
-                            } else {
-                                media_type.schema = schema;
-                            }
-                        } else {
-                            media_type.schema = schema;
-                        }
-                    } else {
-                        media_type.schema = schema;
-                    }
-                } else {
-                    media_type.schema = schema;
-                }
+                media_type.schema = process_schema(*schema_result);
             } else {
-                // Fallback to empty object schema if parsing fails
                 BOOST_LOG_SEV(lg(), warn) << "Failed to parse JSON schema for route: "
                     << route.pattern;
                 media_type.schema = rfl::Generic{rfl::Object<rfl::Generic>{}};
             }
 
-            // Add example if provided
             if (!body.example_json.empty()) {
                 auto example_result = rfl::json::read<rfl::Generic>(body.example_json);
                 if (example_result) {
@@ -358,76 +409,27 @@ std::string endpoint_registry::generate_openapi_json() const {
             openapi_response success_response;
             success_response.description = resp_schema.description;
 
-            // Parse the JSON schema and resolve $ref like we do for request bodies
+            openapi_media_type media_type;
+
             auto schema_result = rfl::json::read<rfl::Generic>(resp_schema.json_schema);
             if (schema_result) {
-                openapi_media_type media_type;
-                auto& schema = *schema_result;
-
-                if (auto* obj = std::get_if<rfl::Object<rfl::Generic>>(&schema.get())) {
-                    const rfl::Generic* ref_val = nullptr;
-                    const rfl::Generic* defs_val = nullptr;
-
-                    for (const auto& [key, val] : *obj) {
-                        if (key == "$ref") ref_val = &val;
-                        else if (key == "$defs") defs_val = &val;
-                    }
-
-                    if (ref_val && defs_val) {
-                        if (auto* ref_str = std::get_if<std::string>(&ref_val->get())) {
-                            const std::string prefix = "#/$defs/";
-                            if (ref_str->starts_with(prefix)) {
-                                std::string type_name = ref_str->substr(prefix.size());
-
-                                if (auto* defs_obj = std::get_if<rfl::Object<rfl::Generic>>(&defs_val->get())) {
-                                    const rfl::Generic* type_def = nullptr;
-                                    for (const auto& [key, val] : *defs_obj) {
-                                        if (key == type_name) {
-                                            type_def = &val;
-                                            break;
-                                        }
-                                    }
-
-                                    if (type_def) {
-                                        rfl::Object<rfl::Generic> resolved_schema;
-                                        if (auto* type_obj = std::get_if<rfl::Object<rfl::Generic>>(&type_def->get())) {
-                                            for (const auto& [key, value] : *type_obj) {
-                                                resolved_schema[key] = value;
-                                            }
-                                        }
-                                        resolved_schema["$defs"] = *defs_val;
-                                        media_type.schema = rfl::Generic{resolved_schema};
-                                    } else {
-                                        media_type.schema = schema;
-                                    }
-                                } else {
-                                    media_type.schema = schema;
-                                }
-                            } else {
-                                media_type.schema = schema;
-                            }
-                        } else {
-                            media_type.schema = schema;
-                        }
-                    } else {
-                        media_type.schema = schema;
-                    }
-                } else {
-                    media_type.schema = schema;
-                }
-
-                // Add example if provided
-                if (!resp_schema.example_json.empty()) {
-                    auto example_result = rfl::json::read<rfl::Generic>(resp_schema.example_json);
-                    if (example_result) {
-                        media_type.example = *example_result;
-                    }
-                }
-
-                std::map<std::string, openapi_media_type> content;
-                content[resp_schema.content_type] = media_type;
-                success_response.content = content;
+                media_type.schema = process_schema(*schema_result);
+            } else {
+                BOOST_LOG_SEV(lg(), warn) << "Failed to parse response JSON schema for route: "
+                    << route.pattern;
+                media_type.schema = rfl::Generic{rfl::Object<rfl::Generic>{}};
             }
+
+            if (!resp_schema.example_json.empty()) {
+                auto example_result = rfl::json::read<rfl::Generic>(resp_schema.example_json);
+                if (example_result) {
+                    media_type.example = *example_result;
+                }
+            }
+
+            std::map<std::string, openapi_media_type> content;
+            content[resp_schema.content_type] = media_type;
+            success_response.content = content;
 
             operation.responses["200"] = success_response;
         } else {

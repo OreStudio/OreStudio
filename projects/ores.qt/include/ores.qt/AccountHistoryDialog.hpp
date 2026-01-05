@@ -67,6 +67,19 @@ public:
 
     QSize sizeHint() const override;
 
+    /**
+     * @brief Mark the history data as stale and reload.
+     *
+     * Called when a notification is received indicating this account has
+     * changed on the server. Automatically reloads the history data.
+     */
+    void markAsStale();
+
+    /**
+     * @brief Returns the username of the account.
+     */
+    [[nodiscard]] QString username() const { return username_; }
+
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);

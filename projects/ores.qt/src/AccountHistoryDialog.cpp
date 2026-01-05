@@ -411,4 +411,15 @@ QSize AccountHistoryDialog::sizeHint() const {
              qMax(baseSize.height(), minimumHeight) };
 }
 
+void AccountHistoryDialog::markAsStale() {
+    BOOST_LOG_SEV(lg(), info) << "Account history marked as stale for: "
+                              << username_.toStdString() << ", reloading...";
+
+    emit statusChanged(QString("Account %1 was modified - reloading history...")
+        .arg(username_));
+
+    // Reload history data
+    loadHistory();
+}
+
 }

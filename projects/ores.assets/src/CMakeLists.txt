@@ -44,6 +44,7 @@ target_link_libraries(${lib_target_name}
         ores.database.lib
         faker-cxx::faker-cxx
         libfort::fort
+        OpenSSL::SSL
         Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -67,6 +67,7 @@ struct client_session_info {
 struct pending_notification {
     std::string event_type;
     std::chrono::system_clock::time_point timestamp;
+    std::vector<std::string> entity_ids;
 };
 
 /**
@@ -532,7 +533,8 @@ private:
      * Queues notifications for later retrieval.
      */
     void on_notification(const std::string& event_type,
-        std::chrono::system_clock::time_point timestamp);
+        std::chrono::system_clock::time_point timestamp,
+        const std::vector<std::string>& entity_ids);
 
     std::shared_ptr<client> client_;
     std::unique_ptr<service::remote_event_adapter> event_adapter_;

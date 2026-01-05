@@ -41,8 +41,8 @@ target_link_libraries(${lib_target_name}
         ores.platform.lib
         faker-cxx::faker-cxx
         libfort::fort
-        OpenSSL::SSL
     PUBLIC
         ores.comms.lib)
+# Note: OpenSSL comes transitively through ores.comms.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

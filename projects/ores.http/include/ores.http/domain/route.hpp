@@ -58,6 +58,20 @@ struct request_body_schema final {
 };
 
 /**
+ * @brief Describes the response schema for OpenAPI.
+ *
+ * Uses rfl::json::to_schema<T>() to generate the JSON schema automatically
+ * from C++ types, ensuring the schema always matches the actual serialization.
+ */
+struct response_schema final {
+    std::string status_code = "200";
+    std::string description = "Successful response";
+    std::string content_type = "application/json";
+    std::string json_schema;   // JSON schema from rfl::json::to_schema<T>()
+    std::string example_json;  // Example JSON from generator
+};
+
+/**
  * @brief Handler function type for HTTP requests.
  */
 using request_handler = std::function<
@@ -126,6 +140,11 @@ struct route final {
      * @brief Request body schema for POST/PUT/PATCH routes.
      */
     std::optional<request_body_schema> body_schema;
+
+    /**
+     * @brief Response schema for the 200 response.
+     */
+    std::optional<response_schema> success_response_schema;
 
     /**
      * @brief Attempts to match the given path and extracts parameters.

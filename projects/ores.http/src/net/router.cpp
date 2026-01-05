@@ -138,6 +138,7 @@ domain::route route_builder::build() const {
     r.tags = tags_;
     r.query_params = query_params_;
     r.body_schema = body_schema_;
+    r.success_response_schema = success_response_schema_;
     return r;
 }
 

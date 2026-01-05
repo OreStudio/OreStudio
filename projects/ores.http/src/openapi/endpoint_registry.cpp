@@ -78,13 +78,14 @@ struct openapi_parameter final {
     rfl::Object<std::string> schema;
 };
 
-struct openapi_response final {
-    std::string description;
-};
-
 struct openapi_media_type final {
     rfl::Generic schema;
     std::optional<rfl::Generic> example;
+};
+
+struct openapi_response final {
+    std::string description;
+    std::optional<std::map<std::string, openapi_media_type>> content;
 };
 
 struct openapi_request_body final {
@@ -351,12 +352,93 @@ std::string endpoint_registry::generate_openapi_json() const {
         }
 
         // Responses
-        operation.responses["200"] = openapi_response{"Successful response"};
-        if (route.requires_auth) {
-            operation.responses["401"] = openapi_response{"Unauthorized"};
-            operation.responses["403"] = openapi_response{"Forbidden"};
+        if (route.success_response_schema.has_value()) {
+            const auto& resp_schema = route.success_response_schema.value();
+
+            openapi_response success_response;
+            success_response.description = resp_schema.description;
+
+            // Parse the JSON schema and resolve $ref like we do for request bodies
+            auto schema_result = rfl::json::read<rfl::Generic>(resp_schema.json_schema);
+            if (schema_result) {
+                openapi_media_type media_type;
+                auto& schema = *schema_result;
+
+                if (auto* obj = std::get_if<rfl::Object<rfl::Generic>>(&schema.get())) {
+                    const rfl::Generic* ref_val = nullptr;
+                    const rfl::Generic* defs_val = nullptr;
+
+                    for (const auto& [key, val] : *obj) {
+                        if (key == "$ref") ref_val = &val;
+                        else if (key == "$defs") defs_val = &val;
+                    }
+
+                    if (ref_val && defs_val) {
+                        if (auto* ref_str = std::get_if<std::string>(&ref_val->get())) {
+                            const std::string prefix = "#/$defs/";
+                            if (ref_str->starts_with(prefix)) {
+                                std::string type_name = ref_str->substr(prefix.size());
+
+                                if (auto* defs_obj = std::get_if<rfl::Object<rfl::Generic>>(&defs_val->get())) {
+                                    const rfl::Generic* type_def = nullptr;
+                                    for (const auto& [key, val] : *defs_obj) {
+                                        if (key == type_name) {
+                                            type_def = &val;
+                                            break;
+                                        }
+                                    }
+
+                                    if (type_def) {
+                                        rfl::Object<rfl::Generic> resolved_schema;
+                                        if (auto* type_obj = std::get_if<rfl::Object<rfl::Generic>>(&type_def->get())) {
+                                            for (const auto& [key, value] : *type_obj) {
+                                                resolved_schema[key] = value;
+                                            }
+                                        }
+                                        resolved_schema["$defs"] = *defs_val;
+                                        media_type.schema = rfl::Generic{resolved_schema};
+                                    } else {
+                                        media_type.schema = schema;
+                                    }
+                                } else {
+                                    media_type.schema = schema;
+                                }
+                            } else {
+                                media_type.schema = schema;
+                            }
+                        } else {
+                            media_type.schema = schema;
+                        }
+                    } else {
+                        media_type.schema = schema;
+                    }
+                } else {
+                    media_type.schema = schema;
+                }
+
+                // Add example if provided
+                if (!resp_schema.example_json.empty()) {
+                    auto example_result = rfl::json::read<rfl::Generic>(resp_schema.example_json);
+                    if (example_result) {
+                        media_type.example = *example_result;
+                    }
+                }
+
+                std::map<std::string, openapi_media_type> content;
+                content[resp_schema.content_type] = media_type;
+                success_response.content = content;
+            }
+
+            operation.responses["200"] = success_response;
+        } else {
+            operation.responses["200"] = openapi_response{"Successful response", std::nullopt};
         }
-        operation.responses["500"] = openapi_response{"Internal server error"};
+
+        if (route.requires_auth) {
+            operation.responses["401"] = openapi_response{"Unauthorized", std::nullopt};
+            operation.responses["403"] = openapi_response{"Forbidden", std::nullopt};
+        }
+        operation.responses["500"] = openapi_response{"Internal server error", std::nullopt};
 
         spec.paths[route.pattern][method] = operation;
     }

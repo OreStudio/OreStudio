@@ -17,34 +17,35 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-04 Sun 01:34], for Sunday, January 04, 2026.
-|      | <75>                |        |      |      |       |
-| Tags | Headline            | Time   |      |      |     % |
-|------+---------------------+--------+------+------+-------|
-|      | *Total time*        | *1:34* |      |      | 100.0 |
-|------+---------------------+--------+------+------+-------|
-|      | Stories             | 1:34   |      |      | 100.0 |
-|      | Active              |        | 1:34 |      | 100.0 |
-| code | Review HTTP service |        |      | 1:34 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-05 Mon 23:30], for Monday, January 05, 2026.
+|      | <75>                              |        |      |      |       |
+| Tags | Headline                          | Time   |      |      |     % |
+|------+-----------------------------------+--------+------+------+-------|
+|      | *Total time*                      | *4:36* |      |      | 100.0 |
+|------+-----------------------------------+--------+------+------+-------|
+|      | Stories                           | 4:36   |      |      | 100.0 |
+|      | Active                            |        | 4:36 |      | 100.0 |
+| code | Review HTTP service               |        |      | 2:01 |  43.8 |
+| code | Assorted fixes to currency dialog |        |      | 2:35 |  56.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
-#+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-04 Sun 01:34]
+#+CAPTION: Clock summary at [2026-01-05 Mon 23:30]
 |       | <75>                                        |         |       |      |       |
 | Tags  | Headline                                    | Time    |       |      |     % |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                | *16:12* |       |      | 100.0 |
+|       | *Total time*                                | *20:48* |       |      | 100.0 |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | Stories                                     | 16:12   |       |      | 100.0 |
-|       | Active                                      |         | 16:12 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       | 1:17 |   7.9 |
-| code  | Rerun SQL scripts from scratch              |         |       | 7:52 |  48.6 |
-| code  | Run qt client and validate all new features |         |       | 1:19 |   8.1 |
-| code  | Refactor options and parser                 |         |       | 0:27 |   2.8 |
-| code  | Check functionality in =ores.wt=            |         |       | 2:03 |  12.7 |
-| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       | 1:30 |   9.3 |
-| code  | Review HTTP service                         |         |       | 1:44 |  10.7 |
+|       | Stories                                     | 20:48   |       |      | 100.0 |
+|       | Active                                      |         | 20:48 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       | 1:17 |   6.2 |
+| code  | Rerun SQL scripts from scratch              |         |       | 7:52 |  37.8 |
+| code  | Run qt client and validate all new features |         |       | 1:19 |   6.3 |
+| code  | Refactor options and parser                 |         |       | 0:27 |   2.2 |
+| code  | Check functionality in =ores.wt=            |         |       | 2:03 |   9.9 |
+| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       | 1:30 |   7.2 |
+| code  | Review HTTP service                         |         |       | 3:45 |  18.0 |
+| code  | Assorted fixes to currency dialog           |         |       | 2:35 |  12.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -406,10 +407,47 @@ Highlights:
 
 *** COMPLETED Review HTTP service                                      :code:
     :LOGBOOK:
+    CLOCK: [2026-01-05 Mon 16:01]--[2026-01-05 Mon 18:02] =>  2:01
     CLOCK: [2026-01-03 Sat 23:50]--[2026-01-04 Sun 01:34] =>  1:44
     :END:
 
 We need to make sure the swagger works, create recipes etc.
+
+*** STARTED Assorted fixes to currency dialog                          :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-05 Mon 22:15]--[2026-01-05 Mon 23:30] =>  1:15
+    CLOCK: [2026-01-05 Mon 19:00]--[2026-01-05 Mon 20:20] =>  1:20
+    :END:
+
+At present the following is not working or is a snag:
+
+- can we make the details windows unmaximisable.
+- We need to either make the columns configurable, or remove some less useful
+  columns such as symbol, fraction etc. These are still visible in details.
+- can we refactor reload logic into common entity code?
+- wrong icon in revert for currency history. no option to reload history
+- when creating a new currency we cannot attach a flag to it.
+
+*** STARTED Assorted fixes to accounts dialog                          :code:
+
+- last login field does not fit the screen.
+- cannot reload account in account details. Need reload button.
+- remove "grant administrative privileges" from details screen.
+- old users remain online. Server should check sessions on start and update
+  table.
+- cannot tell who unlocked an account and when.
+- do not use "old" for accounts who never logged in. Maybe "unused"?
+- at present you can't tell if you asked for a password reset. We probably
+  should use Status to mean: locked, unlocked, reset. And maybe "Age" or "Last
+  Login" to mean: online, never, recent, old.
+- add right-click menu with the context options from the toolbar.
+- after reload, lock etc remember which line we were on and return to it.
+- email updated message is truncated.
+- user cannot lock it's own account.
+
+*** Review comms analyser work                                         :code:
+
+Need to check this works and add UI for it.
 
 *** Allow editing of permissions in ores.qt                            :code:
 
@@ -442,34 +480,6 @@ At present we are only listening for details in the main dialogs (accounts,
 currencies). It would be nice to be able to listen to events in the details
 dialogs. however, it needs to listen to events only for that specific entity
 (e.g. currency pair, account etc). Not sure we are setup for this.
-
-*** Assorted fixes to currency dialog                                  :code:
-
-At present the following is not working or is a snag:
-
-- can we make the details windows unmaximisable.
-- We need to either make the columns configurable, or remove some less useful
-  columns such as symbol, fraction etc. These are still visible in details.
-- can we refactor reload logic into common entity code?
-- wrong icon in revert for currency history. no option to reload history
-- when creating a new currency we cannot attach a flag to it.
-
-*** Assorted fixes to accounts dialog                                  :code:
-
-- last login field does not fit the screen.
-- cannot reload account in account details. Need reload button.
-- remove "grant administrative privileges" from details screen.
-- old users remain online. Server should check sessions on start and update
-  table.
-- cannot tell who unlocked an account and when.
-- do not use "old" for accounts who never logged in. Maybe "unused"?
-- at present you can't tell if you asked for a password reset. We probably
-  should use Status to mean: locked, unlocked, reset. And maybe "Age" or "Last
-  Login" to mean: online, never, recent, old.
-- add right-click menu with the context options from the toolbar.
-- after reload, lock etc remember which line we were on and return to it.
-- email updated message is truncated.
-- user cannot lock it's own account.
 
 *** Implement entity history in shell                                  :code:
 

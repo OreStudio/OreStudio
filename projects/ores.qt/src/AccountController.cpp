@@ -178,14 +178,16 @@ void AccountController::closeAllWindows() {
 }
 
 void AccountController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp) {
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
     // Check if this is an account change event
     if (eventType != QString::fromStdString(std::string{account_event_name})) {
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Received account change notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString();
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " account IDs";
 
     // If the account list window is open, mark it as stale
     if (accountListWindow_) {
@@ -195,6 +197,11 @@ void AccountController::onNotificationReceived(
             accountWidget->markAsStale();
             BOOST_LOG_SEV(lg(), debug) << "Marked account window as stale";
         }
+    }
+
+    // TODO: Notify open detail/history dialogs for affected accounts
+    for (const auto& accountId : entityIds) {
+        BOOST_LOG_SEV(lg(), debug) << "Changed account: " << accountId.toStdString();
     }
 }
 

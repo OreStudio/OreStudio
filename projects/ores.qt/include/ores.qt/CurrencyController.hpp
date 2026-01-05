@@ -170,11 +170,14 @@ private slots:
      *
      * Called when a notification is received indicating currencies have changed.
      * Marks the currency list window as stale to indicate data needs refreshing.
+     * Also notifies any open detail/history dialogs for affected currencies.
      *
      * @param eventType The event type name
      * @param timestamp When the event occurred
+     * @param entityIds ISO codes of currencies that changed (may be empty)
      */
-    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp);
+    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
+                                const QStringList& entityIds);
 
 private:
     /**

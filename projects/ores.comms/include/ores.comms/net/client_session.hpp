@@ -509,7 +509,8 @@ public:
      */
     using notification_callback_t = std::function<void(
         const std::string& event_type,
-        std::chrono::system_clock::time_point timestamp)>;
+        std::chrono::system_clock::time_point timestamp,
+        const std::vector<std::string>& entity_ids)>;
 
     /**
      * @brief Set an external notification callback.

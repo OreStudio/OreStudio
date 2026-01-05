@@ -162,14 +162,16 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         [&subscription_mgr](const risk::eventing::currency_changed_event& e) {
             using traits = eventing::domain::event_traits<
                 risk::eventing::currency_changed_event>;
-            subscription_mgr->notify(std::string{traits::name}, e.timestamp);
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.iso_codes);
         });
 
     auto account_sub = event_bus.subscribe<iam::eventing::account_changed_event>(
         [&subscription_mgr](const iam::eventing::account_changed_event& e) {
             using traits = eventing::domain::event_traits<
                 iam::eventing::account_changed_event>;
-            subscription_mgr->notify(std::string{traits::name}, e.timestamp);
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.account_ids);
         });
 
     // Create server with subscription manager

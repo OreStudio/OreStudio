@@ -21,6 +21,8 @@
 #define ORES_IAM_EVENTING_ACCOUNT_CHANGED_EVENT_HPP
 
 #include <chrono>
+#include <vector>
+#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
 
 namespace ores::iam::eventing {
@@ -40,6 +42,14 @@ struct account_changed_event final {
      * that have changed since this point.
      */
     std::chrono::system_clock::time_point timestamp;
+
+    /**
+     * @brief IDs of accounts that changed.
+     *
+     * Contains the UUIDs (as strings) of accounts that were created, updated,
+     * or deleted. May contain multiple IDs for batch operations.
+     */
+    std::vector<std::string> account_ids;
 };
 
 }

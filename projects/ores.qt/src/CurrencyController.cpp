@@ -396,14 +396,16 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
 }
 
 void CurrencyController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp) {
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
     // Check if this is a currency change event
     if (eventType != QString::fromStdString(std::string{currency_event_name})) {
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Received currency change notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString();
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " ISO codes";
 
     // If the currency list window is open, mark it as stale
     if (currencyListWindow_) {
@@ -413,6 +415,13 @@ void CurrencyController::onNotificationReceived(
             currencyWidget->markAsStale();
             BOOST_LOG_SEV(lg(), debug) << "Marked currency window as stale";
         }
+    }
+
+    // TODO: Notify open detail/history dialogs for affected currencies
+    // For now, we log the entity IDs. When detail dialogs have markAsStale(),
+    // we can iterate managed_windows_ and notify matching windows.
+    for (const auto& isoCode : entityIds) {
+        BOOST_LOG_SEV(lg(), debug) << "Changed currency: " << isoCode.toStdString();
     }
 }
 

@@ -183,8 +183,10 @@ private slots:
      *
      * @param eventType The event type name
      * @param timestamp When the event occurred
+     * @param entityIds Account IDs that changed (may be empty)
      */
-    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp);
+    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
+                                const QStringList& entityIds);
 
 private:
     /**

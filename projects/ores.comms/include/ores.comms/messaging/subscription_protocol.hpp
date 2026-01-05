@@ -163,12 +163,25 @@ struct notification_message final {
     std::chrono::system_clock::time_point timestamp;
 
     /**
+     * @brief Identifiers of entities that changed.
+     *
+     * For currencies, this contains ISO codes (e.g., "USD", "EUR").
+     * For accounts, this contains account IDs (UUIDs as strings).
+     * May be empty for bulk operations or when specific IDs are not available.
+     */
+    std::vector<std::string> entity_ids;
+
+    /**
      * @brief Serialize notification to bytes.
      *
      * Format:
      * - 2 bytes: event_type length
      * - N bytes: event_type (UTF-8)
      * - 8 bytes: timestamp (milliseconds since epoch, int64_t)
+     * - 4 bytes: entity_ids count
+     * - For each entity_id:
+     *   - 2 bytes: length
+     *   - N bytes: entity_id (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 

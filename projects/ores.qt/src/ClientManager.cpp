@@ -219,16 +219,23 @@ LoginResult ClientManager::connectAndLogin(
         // Set notification callback to emit Qt signals
         session_.set_notification_callback(
             [this](const std::string& event_type,
-                   std::chrono::system_clock::time_point timestamp) {
-                BOOST_LOG_SEV(lg(), debug) << "Received notification for " << event_type;
+                   std::chrono::system_clock::time_point timestamp,
+                   const std::vector<std::string>& entity_ids) {
+                BOOST_LOG_SEV(lg(), debug) << "Received notification for " << event_type
+                                           << " with " << entity_ids.size() << " entity IDs";
                 // Convert to Qt types and emit on main thread
                 auto qEventType = QString::fromStdString(event_type);
                 auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
                     timestamp.time_since_epoch()).count();
                 auto qTimestamp = QDateTime::fromMSecsSinceEpoch(msecs, QTimeZone::utc());
+                QStringList qEntityIds;
+                qEntityIds.reserve(static_cast<int>(entity_ids.size()));
+                for (const auto& id : entity_ids) {
+                    qEntityIds.append(QString::fromStdString(id));
+                }
 
-                QMetaObject::invokeMethod(this, [this, qEventType, qTimestamp]() {
-                    emit notificationReceived(qEventType, qTimestamp);
+                QMetaObject::invokeMethod(this, [this, qEventType, qTimestamp, qEntityIds]() {
+                    emit notificationReceived(qEventType, qTimestamp, qEntityIds);
                 }, Qt::QueuedConnection);
             });
 

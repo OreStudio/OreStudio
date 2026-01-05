@@ -146,7 +146,8 @@ bool subscription_manager::unsubscribe(const session_id& id,
 }
 
 std::size_t subscription_manager::notify(const std::string& event_type,
-    std::chrono::system_clock::time_point timestamp) {
+    std::chrono::system_clock::time_point timestamp,
+    const std::vector<std::string>& entity_ids) {
 
     // Copy the data we need while holding the lock
     std::vector<std::pair<session_id, notification_callback>> callbacks_to_invoke;
@@ -164,7 +165,8 @@ std::size_t subscription_manager::notify(const std::string& event_type,
 
         BOOST_LOG_SEV(lg(), info)
             << "Notifying " << event_it->second.size()
-            << " subscriber(s) of event type '" << event_type << "'";
+            << " subscriber(s) of event type '" << event_type
+            << "' with " << entity_ids.size() << " entity IDs";
 
         for (const auto& session_id : event_it->second) {
             auto session_it = sessions_.find(session_id);
@@ -179,7 +181,7 @@ std::size_t subscription_manager::notify(const std::string& event_type,
     std::size_t success_count = 0;
     for (const auto& [id, callback] : callbacks_to_invoke) {
         try {
-            if (callback(event_type, timestamp)) {
+            if (callback(event_type, timestamp, entity_ids)) {
                 ++success_count;
                 BOOST_LOG_SEV(lg(), debug)
                     << "Successfully notified session '" << id

@@ -45,8 +45,8 @@ using FutureResult = std::pair<bool, std::string>;
 
 CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyDetailDialog), isDirty_(false),
-      isAddMode_(false), isReadOnly_(false), historicalVersion_(0),
-      clientManager_(nullptr) {
+      isAddMode_(false), isReadOnly_(false), isStale_(false),
+      historicalVersion_(0), clientManager_(nullptr) {
 
     ui_->setupUi(this);
 
@@ -494,6 +494,35 @@ void CurrencyDetailDialog::updateSaveResetButtonState() {
 
     if (deleteAction_)
         deleteAction_->setEnabled(!isAddMode_);
+}
+
+void CurrencyDetailDialog::markAsStale() {
+    if (isStale_)
+        return;
+
+    isStale_ = true;
+    BOOST_LOG_SEV(lg(), info) << "Currency detail data marked as stale for: "
+                              << currentCurrency_.iso_code;
+
+    // Update window title to indicate stale data
+    QWidget* parent = parentWidget();
+    while (parent) {
+        if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
+            QString currentTitle = mdiSubWindow->windowTitle();
+            if (!currentTitle.contains("(Data Changed)")) {
+                mdiSubWindow->setWindowTitle(currentTitle + " (Data Changed)");
+            }
+            break;
+        }
+        parent = parent->parentWidget();
+    }
+
+    emit statusMessage(QString("Currency %1 has been modified on the server")
+        .arg(QString::fromStdString(currentCurrency_.iso_code)));
+}
+
+QString CurrencyDetailDialog::isoCode() const {
+    return QString::fromStdString(currentCurrency_.iso_code);
 }
 
 }

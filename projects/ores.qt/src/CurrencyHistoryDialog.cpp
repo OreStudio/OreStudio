@@ -440,4 +440,15 @@ QSize CurrencyHistoryDialog::sizeHint() const {
              qMax(baseSize.height(), minimumHeight) };
 }
 
+void CurrencyHistoryDialog::markAsStale() {
+    BOOST_LOG_SEV(lg(), info) << "Currency history marked as stale for: "
+                              << isoCode_.toStdString() << ", reloading...";
+
+    emit statusChanged(QString("Currency %1 was modified - reloading history...")
+        .arg(isoCode_));
+
+    // Reload history data
+    loadHistory();
+}
+
 }

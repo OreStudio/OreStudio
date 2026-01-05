@@ -67,6 +67,19 @@ public:
 
     QSize sizeHint() const override; // Provide optimal size based on table content
 
+    /**
+     * @brief Mark the history data as stale and reload.
+     *
+     * Called when a notification is received indicating this currency has
+     * changed on the server. Automatically reloads the history data.
+     */
+    void markAsStale();
+
+    /**
+     * @brief Returns the ISO code of the currency.
+     */
+    [[nodiscard]] QString isoCode() const { return isoCode_; }
+
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);

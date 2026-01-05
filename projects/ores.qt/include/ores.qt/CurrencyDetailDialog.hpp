@@ -77,6 +77,20 @@ public:
      */
     void setReadOnly(bool readOnly, int versionNumber = 0);
 
+    /**
+     * @brief Mark the dialog data as stale.
+     *
+     * Called when a notification is received indicating this currency has
+     * changed on the server. Shows a visual indicator that the data may be
+     * out of date.
+     */
+    void markAsStale();
+
+    /**
+     * @brief Returns the ISO code of the currency being edited.
+     */
+    [[nodiscard]] QString isoCode() const;
+
 signals:
     void currencyUpdated(const QString& iso_code);
     void currencyCreated(const QString& iso_code);
@@ -107,6 +121,7 @@ private:
     bool isDirty_;
     bool isAddMode_;
     bool isReadOnly_;
+    bool isStale_;
     int historicalVersion_;
     std::string username_;
     QToolBar* toolBar_;

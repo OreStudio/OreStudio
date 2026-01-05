@@ -427,57 +427,27 @@ void CurrencyController::onNotificationReceived(
     }
 
     // Notify open detail/history dialogs for affected currencies
-    for (const auto& isoCode : entityIds) {
-        BOOST_LOG_SEV(lg(), debug) << "Changed currency: " << isoCode.toStdString();
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        const QString& key = it.key();
+        auto* window = it.value();
+        if (!window)
+            continue;
 
-        // Check for detail window
-        const QString detailKey = build_window_key("details", isoCode);
-        if (managed_windows_.contains(detailKey)) {
-            auto* detailWindow = managed_windows_.value(detailKey);
-            if (detailWindow) {
-                auto* detailDialog = qobject_cast<CurrencyDetailDialog*>(
-                    detailWindow->widget());
-                if (detailDialog) {
+        if (key.startsWith("details:")) {
+            if (auto* detailDialog = qobject_cast<CurrencyDetailDialog*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(detailDialog->isoCode())) {
                     detailDialog->markAsStale();
                     BOOST_LOG_SEV(lg(), debug) << "Marked detail dialog as stale for: "
-                                               << isoCode.toStdString();
+                                               << detailDialog->isoCode().toStdString();
                 }
             }
-        }
-
-        // Check for history window
-        const QString historyKey = build_window_key("history", isoCode);
-        if (managed_windows_.contains(historyKey)) {
-            auto* historyWindow = managed_windows_.value(historyKey);
-            if (historyWindow) {
-                auto* historyDialog = qobject_cast<CurrencyHistoryDialog*>(
-                    historyWindow->widget());
-                if (historyDialog) {
+        } else if (key.startsWith("history:")) {
+            if (auto* historyDialog = qobject_cast<CurrencyHistoryDialog*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(historyDialog->isoCode())) {
                     historyDialog->markAsStale();
                     BOOST_LOG_SEV(lg(), debug) << "Marked history dialog as stale for: "
-                                               << isoCode.toStdString();
+                                               << historyDialog->isoCode().toStdString();
                 }
-            }
-        }
-    }
-
-    // If no specific entity IDs provided, notify all open detail/history windows
-    if (entityIds.isEmpty()) {
-        BOOST_LOG_SEV(lg(), debug) << "No specific entity IDs - marking all windows as stale";
-        for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
-            const QString& key = it.key();
-            auto* window = it.value();
-            if (!window)
-                continue;
-
-            if (key.startsWith("details:")) {
-                auto* detailDialog = qobject_cast<CurrencyDetailDialog*>(window->widget());
-                if (detailDialog)
-                    detailDialog->markAsStale();
-            } else if (key.startsWith("history:")) {
-                auto* historyDialog = qobject_cast<CurrencyHistoryDialog*>(window->widget());
-                if (historyDialog)
-                    historyDialog->markAsStale();
             }
         }
     }

@@ -197,7 +197,7 @@ handle_set_currency_image_request(std::span<const std::byte> payload) {
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Database error setting currency image: " << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = "An internal error occurred while setting the currency image.";
         co_return response.serialize();
     }
 }

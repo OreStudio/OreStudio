@@ -27,6 +27,7 @@
 #include <QIcon>
 #include <QTimer>
 #include <QSortFilterProxyModel>
+#include <QCloseEvent>
 #include <memory>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
@@ -111,6 +112,13 @@ private:
     void setupReloadAction();
     void startPulseAnimation();
     void stopPulseAnimation();
+    void setupColumnVisibility();
+    void showHeaderContextMenu(const QPoint& pos);
+    void saveSettings();
+    void restoreSettings();
+
+protected:
+    void closeEvent(QCloseEvent* event) override;
 
 private:
     QVBoxLayout* verticalLayout_;

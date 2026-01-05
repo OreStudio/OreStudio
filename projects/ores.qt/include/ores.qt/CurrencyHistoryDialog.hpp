@@ -27,7 +27,9 @@
 #include <QVector>
 #include <QToolBar>
 #include <QAction>
+#include <QLabel>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.risk/domain/currency_version.hpp"
 #include "ores.risk/domain/currency_version_history.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
@@ -64,6 +66,11 @@ public:
     ~CurrencyHistoryDialog() override;
 
     void loadHistory();
+
+    /**
+     * @brief Set the image cache for displaying currency flags.
+     */
+    void setImageCache(ImageCache* imageCache);
 
     QSize sizeHint() const override; // Provide optimal size based on table content
 
@@ -121,10 +128,12 @@ private:
 
     void setupToolbar();
     void updateButtonStates();
+    void updateFlagDisplay();
     int selectedVersionIndex() const;
 
     std::unique_ptr<Ui::CurrencyHistoryDialog> ui_;
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     QString isoCode_;
     risk::domain::currency_version_history history_;
 
@@ -132,6 +141,7 @@ private:
     QAction* reloadAction_;
     QAction* openAction_;
     QAction* revertAction_;
+    QLabel* flagIconLabel_;
 };
 
 }

@@ -343,6 +343,9 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
 
     auto* historyWidget = new CurrencyHistoryDialog(isoCode, clientManager_,
                                                      mainWindow_);
+    if (imageCache_) {
+        historyWidget->setImageCache(imageCache_);
+    }
 
     connect(historyWidget, &CurrencyHistoryDialog::statusChanged,
             this, [this](const QString& message) {

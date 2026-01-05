@@ -45,9 +45,11 @@ const QIcon& CurrencyHistoryDialog::getHistoryIcon() const {
 CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
     ClientManager* clientManager, QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyHistoryDialog),
-      clientManager_(clientManager), isoCode_(std::move(iso_code)),
+      clientManager_(clientManager), imageCache_(nullptr),
+      isoCode_(std::move(iso_code)),
       toolBar_(nullptr), reloadAction_(nullptr),
-      openAction_(nullptr), revertAction_(nullptr) {
+      openAction_(nullptr), revertAction_(nullptr),
+      flagIconLabel_(nullptr) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating currency history widget for: "
                               << isoCode_.toStdString();
@@ -210,6 +212,7 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
     }
 
     updateButtonStates();
+    updateFlagDisplay();
 
     emit statusChanged(QString("Loaded %1 versions")
         .arg(history_.versions.size()));
@@ -468,6 +471,41 @@ void CurrencyHistoryDialog::markAsStale() {
 
     // Reload history data
     loadHistory();
+}
+
+void CurrencyHistoryDialog::setImageCache(ImageCache* imageCache) {
+    imageCache_ = imageCache;
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::currencyMappingsLoaded,
+            this, &CurrencyHistoryDialog::updateFlagDisplay);
+    }
+}
+
+void CurrencyHistoryDialog::updateFlagDisplay() {
+    if (!flagIconLabel_) {
+        // Create the flag icon label and add it to the toolbar
+        if (toolBar_) {
+            flagIconLabel_ = new QLabel(this);
+            flagIconLabel_->setFixedSize(24, 24);
+            flagIconLabel_->setAlignment(Qt::AlignCenter);
+            toolBar_->insertWidget(toolBar_->actions().first(), flagIconLabel_);
+        }
+    }
+
+    if (!flagIconLabel_)
+        return;
+
+    if (!imageCache_) {
+        flagIconLabel_->clear();
+        return;
+    }
+
+    QIcon icon = imageCache_->getCurrencyIcon(isoCode_.toStdString());
+    if (icon.isNull()) {
+        flagIconLabel_->clear();
+    } else {
+        flagIconLabel_->setPixmap(icon.pixmap(24, 24));
+    }
 }
 
 }

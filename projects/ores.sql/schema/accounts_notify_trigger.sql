@@ -26,11 +26,11 @@ declare
     change_timestamp timestamptz := NOW();
     changed_account_id text;
 begin
-    -- Get the account_id (UUID) of the changed account
+    -- Get the id (UUID) of the changed account
     if TG_OP = 'DELETE' then
-        changed_account_id := OLD.account_id::text;
+        changed_account_id := OLD.id::text;
     else
-        changed_account_id := NEW.account_id::text;
+        changed_account_id := NEW.id::text;
     end if;
 
     -- Construct the JSON payload with entity_ids

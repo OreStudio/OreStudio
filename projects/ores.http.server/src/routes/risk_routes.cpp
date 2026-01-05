@@ -61,7 +61,7 @@ void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Create or update a currency")
         .tags({"currencies"})
         .auth_required()
-        .roles({"admin"})
+        .roles({"Admin"})
         .body<risk::messaging::save_currency_request>()
         .response<risk::messaging::save_currency_response>()
         .handler([this](const http_request& req) { return handle_save_currency(req); });
@@ -73,7 +73,7 @@ void risk_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Delete one or more currencies")
         .tags({"currencies"})
         .auth_required()
-        .roles({"admin"})
+        .roles({"Admin"})
         .body<risk::messaging::delete_currency_request>()
         .response<risk::messaging::delete_currency_response>()
         .handler([this](const http_request& req) { return handle_delete_currencies(req); });

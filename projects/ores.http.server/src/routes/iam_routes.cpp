@@ -128,7 +128,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Create a new user account")
         .tags({"accounts"})
         .auth_required()
-        .roles({"admin"})
+        .roles({"Admin"})
         .body<iam::messaging::create_account_request>()
         .response<iam::messaging::create_account_response>()
         .handler([this](const http_request& req) { return handle_create_account(req); });
@@ -140,7 +140,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Delete an account by ID")
         .tags({"accounts"})
         .auth_required()
-        .roles({"admin"})
+        .roles({"Admin"})
         .handler([this](const http_request& req) { return handle_delete_account(req); });
     router->add_route(delete_account.build());
     registry->register_route(delete_account.build());
@@ -150,7 +150,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Update account details")
         .tags({"accounts"})
         .auth_required()
-        .roles({"admin"})
+        .roles({"Admin"})
         .body<iam::messaging::update_account_request>()
         .handler([this](const http_request& req) { return handle_update_account(req); });
     router->add_route(update_account.build());
@@ -170,7 +170,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Lock one or more accounts")
         .tags({"accounts"})
         .auth_required()
-        .roles({"admin"})
+        .roles({"Admin"})
         .body<iam::messaging::lock_account_request>()
         .handler([this](const http_request& req) { return handle_lock_accounts(req); });
     router->add_route(lock_accounts.build());
@@ -181,7 +181,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Unlock one or more accounts")
         .tags({"accounts"})
         .auth_required()
-        .roles({"admin"})
+        .roles({"Admin"})
         .body<iam::messaging::unlock_account_request>()
         .handler([this](const http_request& req) { return handle_unlock_accounts(req); });
     router->add_route(unlock_accounts.build());
@@ -201,7 +201,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Admin-initiated password reset for accounts")
         .tags({"accounts"})
         .auth_required()
-        .roles({"admin"})
+        .roles({"Admin"})
         .body<iam::messaging::reset_password_request>()
         .handler([this](const http_request& req) { return handle_reset_password(req); });
     router->add_route(reset_password.build());
@@ -261,7 +261,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Assign a role to an account")
         .tags({"rbac"})
         .auth_required()
-        .roles({"admin"})
+        .roles({"Admin"})
         .body<iam::messaging::assign_role_request>()
         .handler([this](const http_request& req) { return handle_assign_role(req); });
     router->add_route(assign_role.build());
@@ -272,7 +272,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .description("Revoke a role from an account")
         .tags({"rbac"})
         .auth_required()
-        .roles({"admin"})
+        .roles({"Admin"})
         .handler([this](const http_request& req) { return handle_revoke_role(req); });
     router->add_route(revoke_role.build());
     registry->register_route(revoke_role.build());

@@ -23,9 +23,11 @@
 #include <QWidget>
 #include <QToolBar>
 #include <QAction>
+#include <QLabel>
 #include <memory>
 #include "ores.risk/domain/currency.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 
 
@@ -56,6 +58,7 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
+    void setImageCache(ImageCache* imageCache);
 
     void setCurrency(const risk::domain::currency& currency);
     [[nodiscard]] risk::domain::currency getCurrency() const;
@@ -111,10 +114,13 @@ private slots:
     void onDeleteClicked();
     void onRevertClicked();
     void onFieldChanged();
+    void onSelectFlagClicked();
+    void onCurrencyImageSet(const QString& iso_code, bool success, const QString& message);
 
 private:
     void updateSaveResetButtonState();
     void setFieldsReadOnly(bool readOnly);
+    void updateFlagDisplay();
 
 private:
     std::unique_ptr<Ui::CurrencyDetailDialog> ui_;
@@ -128,9 +134,14 @@ private:
     QAction* saveAction_;
     QAction* deleteAction_;
     QAction* revertAction_;
+    QAction* flagAction_;
+    QLabel* flagIconLabel_;
+    QLabel* flagDescLabel_;
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     risk::domain::currency currentCurrency_;
+    QString pendingImageId_;
     static constexpr const char* max_timestamp = "9999-12-31 23:59:59";
 };
 

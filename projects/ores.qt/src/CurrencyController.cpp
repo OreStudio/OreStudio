@@ -197,6 +197,9 @@ void CurrencyController::onAddNewRequested() {
         detailDialog->setClientManager(clientManager_);
         detailDialog->setUsername(username_.toStdString());
     }
+    if (imageCache_) {
+        detailDialog->setImageCache(imageCache_);
+    }
 
     connect(detailDialog, &CurrencyDetailDialog::statusMessage,
             this, [this](const QString& message) {
@@ -265,6 +268,9 @@ void CurrencyController::onShowCurrencyDetails(
     if (clientManager_) {
         detailDialog->setClientManager(clientManager_);
         detailDialog->setUsername(username_.toStdString());
+    }
+    if (imageCache_) {
+        detailDialog->setImageCache(imageCache_);
     }
 
     connect(detailDialog, &CurrencyDetailDialog::statusMessage,
@@ -495,6 +501,9 @@ void CurrencyController::onOpenCurrencyVersion(
     if (clientManager_) {
         detailDialog->setClientManager(clientManager_);
         detailDialog->setUsername(username_.toStdString());
+    }
+    if (imageCache_) {
+        detailDialog->setImageCache(imageCache_);
     }
 
     connect(detailDialog, &CurrencyDetailDialog::statusMessage,

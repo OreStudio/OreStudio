@@ -521,6 +521,9 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
             admin_req->username, admin_req->email, admin_req->password,
             "system", "Admin");
 
+        // Exit bootstrap mode now that initial admin is created
+        bootstrap_service.exit_bootstrap_mode();
+
         iam::messaging::create_initial_admin_response resp;
         resp.success = true;
         resp.account_id = account.id;

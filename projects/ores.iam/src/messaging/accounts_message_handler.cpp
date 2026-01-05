@@ -625,24 +625,15 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     try {
-        // Create the initial admin account
-        domain::account account = service_.create_account(
+        // Create the initial admin account with Admin role
+        // This checks role exists BEFORE creating account to avoid orphaned accounts
+        domain::account account = setup_service_.create_account_with_role(
             request.username,
             request.email,
             request.password,
-            "bootstrap"
+            "bootstrap",
+            domain::roles::admin
         );
-
-        // Assign Admin role to the account using RBAC
-        auto admin_role = auth_service_->find_role_by_name(domain::roles::admin);
-        if (admin_role) {
-            auth_service_->assign_role(account.id, admin_role->id, "bootstrap");
-            BOOST_LOG_SEV(lg(), info)
-                << "Assigned Admin role to initial admin account: " << account.id;
-        } else {
-            BOOST_LOG_SEV(lg(), error)
-                << "Admin role not found - RBAC may not be properly seeded";
-        }
 
         // Exit bootstrap mode - updates database and shared cache
         system_flags_->set_bootstrap_mode(false, "system");

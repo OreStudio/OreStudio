@@ -199,3 +199,26 @@ TEST_CASE("feature_flags_json_special_characters", tags) {
     CHECK(json_output.find("special_flag") != std::string::npos);
     CHECK(json_output.find("\\\"quotes\\\"") != std::string::npos);
 }
+
+TEST_CASE("feature_flags_convert_to_table_direct", tags) {
+    auto lg(make_logger(test_suite));
+
+    std::vector<feature_flags> flags;
+    feature_flags ff;
+    ff.version = 1;
+    ff.name = "direct_test_flag";
+    ff.enabled = true;
+    ff.description = "Testing convert_to_table directly";
+    ff.recorded_by = "tester";
+    ff.recorded_at = std::chrono::system_clock::now();
+    flags.push_back(ff);
+
+    std::string table = convert_to_table(flags);
+
+    BOOST_LOG_SEV(lg, info) << "Direct table output: " << table;
+
+    CHECK(!table.empty());
+    CHECK(table.find("direct_test_flag") != std::string::npos);
+    CHECK(table.find("Name") != std::string::npos);  // Header
+    CHECK(table.find("Version") != std::string::npos);  // Header
+}

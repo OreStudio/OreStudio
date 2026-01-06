@@ -63,6 +63,7 @@ UPDATE 1
 DROP DATABASE
 DROP DATABASE
 DROP DATABASE
+DROP DATABASE
 DROP ROLE
 #+end_example
 
@@ -238,6 +239,7 @@ CREATE TABLE
 CREATE INDEX
 CREATE INDEX
 CREATE INDEX
+CREATE INDEX
 DO
 SET
 DO
@@ -349,7 +351,7 @@ new database (development, testing, production, etc.).
 CREATE DATABASE
 name	enabled	description
 database_created
-ores_nameless_sea
+ores_frosty_leaf
 #+end_example
 
 *** With Specific Name
@@ -493,7 +495,7 @@ ores_little_morning
 
 ** Accounts
     :PROPERTIES:
-    :header-args+: :database ores_nameless_sea
+    :header-args+: :database ores_frosty_leaf
     :END:
 
 *** List All Current Accounts
@@ -561,7 +563,7 @@ where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 ** Login Info
     :PROPERTIES:
-    :header-args+: :database ores_nameless_sea
+    :header-args+: :database ores_frosty_leaf
     :END:
 
 *** List All Login Info
@@ -599,7 +601,7 @@ where li.online = 1;
 
 ** Sessions
    :PROPERTIES:
-   :header-args+: :database ores_nameless_sea
+   :header-args+: :database ores_frosty_leaf
    :END:
 
 *** List Recent Sessions
@@ -630,7 +632,7 @@ order by total_sessions desc;
 
 ** Population Scripts
    :PROPERTIES:
-   :header-args+: :database ores_nameless_sea
+   :header-args+: :database ores_frosty_leaf
    :END:
 
 The database template contains *schema only* - no data is pre-populated. After
@@ -703,17 +705,17 @@ SET
 CREATE FUNCTION
 CREATE FUNCTION
 upsert_role
-d8e64611-5763-436e-b851-87e894290c7b
+9918838a-c7a0-4dc2-8e56-e51e91882413
 upsert_role
-8418b62f-edb0-45c7-b582-766509ec64e0
+7bb325f2-6fdb-46d4-ae6b-ee7b578502e9
 upsert_role
-7ab2d074-c555-4829-ade4-a49d5834bb09
+4e9b437f-d47d-4602-8f0b-8bbadf9ca437
 upsert_role
-16ae23f4-f9bc-46f0-a790-fbc5ac1929e1
+4914fa49-fbba-46cf-bcdb-9ecdeecac0a7
 upsert_role
-a75d5d26-5b6a-4c45-bffd-60eeb7ad08db
+f26d3939-c4c5-4d2a-8107-de019899f014
 upsert_role
-49cb0dd3-a6aa-4871-be7c-5f0e67bd7be5
+3cd1d7b3-76fe-4f96-bca2-27f05381d4ca
 assign_permission_to_role
 
 assign_permission_to_role
@@ -1434,7 +1436,7 @@ To re-run only specific population scripts:
 ** RBAC (Roles and Permissions)
    :PROPERTIES:
    :header-args+: :results value table
-   :header-args+: :database ores_nameless_sea
+   :header-args+: :database ores_frosty_leaf
    :END:
 
 *** List All Roles
@@ -1576,7 +1578,7 @@ select ores.account_has_permission('admin', 'accounts:create') as has_permission
 ** Currencies
    :PROPERTIES:
    :header-args+: :results value table
-   :header-args+: :database ores_nameless_sea
+   :header-args+: :database ores_frosty_leaf
    :END:
 
 *** List All Currencies
@@ -1664,7 +1666,7 @@ where c.valid_to = '9999-12-31 23:59:59'::timestamptz
 ** Feature Flags
    :PROPERTIES:
    :header-args+: :results value table
-   :header-args+: :database ores_nameless_sea
+   :header-args+: :database ores_frosty_leaf
    :END:
 
 *** List All Feature Flags
@@ -1722,7 +1724,7 @@ order by name;
 ** Images and Tags
    :PROPERTIES:
    :header-args+: :results value table
-   :header-args+: :database ores_nameless_sea
+   :header-args+: :database ores_frosty_leaf
    :END:
 
 *** List All Images
@@ -1821,7 +1823,7 @@ limit 20;
 ** Temporal Queries
    :PROPERTIES:
    :header-args+: :results value table
-   :header-args+: :database ores_nameless_sea
+   :header-args+: :database ores_frosty_leaf
    :END:
 
 *** View Entity History
@@ -1868,7 +1870,7 @@ order by version_count desc;
 ** Administrative
    :PROPERTIES:
    :header-args+: :results value table
-   :header-args+: :database ores_nameless_sea
+   :header-args+: :database ores_frosty_leaf
    :END:
 
 *** Database Size

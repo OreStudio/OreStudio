@@ -39,13 +39,13 @@ Accept: application/json
 #+begin_src json
 HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 92
+Content-Length: 108
 Server: ores-http-server-v1
 Access-Control-Allow-Origin: *
 
 {
   "is_in_bootstrap_mode": true,
-  "message": "System is in bootstrap mode - create initial admin"
+  "message": "System in BOOTSTRAP MODE - awaiting initial admin account creation"
 }
 #+end_src
 
@@ -77,7 +77,7 @@ Access-Control-Allow-Origin: *
 {
   "success": true,
   "error_message": "",
-  "account_id": "019b9091-cf74-7020-afe1-42c4be8958aa"
+  "account_id": "019b90fe-877e-7d3c-8f85-7980d0a96c8d"
 }
 #+end_src
 
@@ -100,17 +100,17 @@ Content-Type: application/json
 #+begin_src json
 HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 487
+Content-Length: 556
 Server: ores-http-server-v1
 Access-Control-Allow-Origin: *
 
 {
   "success": true,
-  "account_id": "019b908f-7e71-7524-ac8b-e3188bbd16b6",
+  "account_id": "019b90fe-877e-7d3c-8f85-7980d0a96c8d",
   "username": "newuser3",
   "email": "newuser3@example.com",
   "password_reset_required": false,
-  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMTliOTA4Zi03ZTcxLTc1MjQtYWM4Yi1lMzE4OGJiZDE2YjYiLCJpYXQiOjE3Njc2NTY4ODYsImV4cCI6MTc2Nzc0MzI4NiwiaXNzIjoib3JlcyIsImF1ZCI6Im9yZXMtYXBpIiwicm9sZXMiOlsiQWRtaW4iXSwidXNlcm5hbWUiOiJuZXd1c2VyMyIsImVtYWlsIjoibmV3dXNlcjNAZXhhbXBsZS5jb20ifQ.BmsIWX5gPTHFLAhxM0HklX5be5QL24YD823lFDrkazo"
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMTliOTBmZS04NzdlLTdkM2MtOGY4NS03OTgwZDBhOTZjOGQiLCJpYXQiOjE3Njc2NjQxNjIsImV4cCI6MTc2Nzc1MDU2MiwiaXNzIjoib3JlcyIsImF1ZCI6Im9yZXMtYXBpIiwicm9sZXMiOlsiQWRtaW4iXSwidXNlcm5hbWUiOiJuZXd1c2VyMyIsImVtYWlsIjoibmV3dXNlcjNAZXhhbXBsZS5jb20iLCJzZXNzaW9uX2lkIjoiNWRhODA2ODYtYzQxMS00OWVmLTkzMGQtM2RkMjFmNmE2YjVlIn0.KLary7Fy_6iXGu8qQsBjABjee7wHGTWz1GfU-tzFLTQ"
 }
 #+end_src
 
@@ -182,7 +182,7 @@ Authorization: Bearer {{(verb-var token)}}
 #+begin_src json
 HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 1153
+Content-Length: 414
 Server: ores-http-server-v1
 Access-Control-Allow-Origin: *
 
@@ -190,36 +190,14 @@ Access-Control-Allow-Origin: *
   "accounts": [
     {
       "version": 1,
-      "id": "019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c",
-      "recorded_by": "ores",
-      "username": "newuser41",
-      "password_hash": "$scrypt$ln=14,r=8,p=1$YoIWT7Jwih2jRoZxEQBBvA==$agEKwXo1BtDcIl24ivvyHiKDWOCDsqnf6YyhcMKNYr4rC2DhqyrDTTGa7EYA1Rb7/DwigNjLa1QdeaTbAktqIQ==",
-      "password_salt": "",
-      "totp_secret": "",
-      "email": "newuser41@example.com",
-      "recorded_at": "2026-01-02 00:23:37.000000000Z"
-    },
-    {
-      "version": 1,
-      "id": "019b7c16-a28c-7444-9546-9a051962f014",
-      "recorded_by": "ores",
-      "username": "newuser40",
-      "password_hash": "$scrypt$ln=14,r=8,p=1$FKrHX/iCqRgTpHJ6oWUGGg==$w1NmGegkf9dUNzECQ5DS3y0+715Y9FrfNLQf5ntbHS6p/wNVGzVUdjlWew8niMUo+vTfDTx/emZAmaeK8xEKXg==",
-      "password_salt": "",
-      "totp_secret": "",
-      "email": "newuser40@example.com",
-      "recorded_at": "2026-01-02 00:23:36.000000000Z"
-    },
-    {
-      "version": 1,
-      "id": "019b7c15-5f67-76a1-84be-9d74381b1c7f",
+      "id": "019b90fe-877e-7d3c-8f85-7980d0a96c8d",
       "recorded_by": "bootstrap",
       "username": "newuser3",
-      "password_hash": "$scrypt$ln=14,r=8,p=1$eFla55pN+lcJjds+khRSFw==$jRVePLcDKtZxKykD8cDEizRMf32GsYul4FIkd0LH8iCZcB0NkXq0WN2xPi4Ao9BUrTz5xsvaxq0YKt45me1iGQ==",
+      "password_hash": "$scrypt$ln=14,r=8,p=1$mxzHwfFIbYV6ylmQR0I34A==$/zgE0EzSjrRowqK/d0cZOCMD+oQug2uXjLNGfjg2cnxPnXprf1K4LaVsaeSOa3HYHe6lMFCAxEDZfqugIxBAPg==",
       "password_salt": "",
       "totp_secret": "",
-      "email": "newuser3@test.com",
-      "recorded_at": "2026-01-02 00:22:14.000000000Z"
+      "email": "newuser3@example.com",
+      "recorded_at": "2026-01-06 01:49:18.000000000Z"
     }
   ],
   "total_available_count": 0

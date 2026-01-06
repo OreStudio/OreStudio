@@ -50,7 +50,7 @@ BUILD-TYPE should be either 'debug or 'release."
   (concat (ores--get-build-output-path build-type)
           "/vcpkg_installed/x64-linux/share/Wt/resources"))
 
-(defcustom ores/database-name "ores_nameless_sea"
+(defcustom ores/database-name "ores_frosty_leaf"
   "Database name for ORES services.
 This should be set to an instance database name like 'ores_autumn_sound'."
   :type 'string

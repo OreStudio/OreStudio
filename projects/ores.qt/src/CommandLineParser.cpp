@@ -20,7 +20,9 @@
 #include "ores.qt/CommandLineParser.hpp"
 
 #include <optional>
+#include <QSettings>
 #include "ores.comms/messaging/handshake_protocol.hpp"
+#include "ores.qt/TelemetrySettingsDialog.hpp"
 
 namespace ores::qt {
 
@@ -94,19 +96,35 @@ bool CommandLineParser::isLoggingEnabled() const {
 }
 
 std::optional<telemetry::log::logging_options> CommandLineParser::loggingOptions() const {
-    // If logging is not enabled, return nullopt to disable logging
-    if (!isLoggingEnabled()) {
+    // Command line takes precedence over QSettings
+    if (isLoggingEnabled()) {
+        telemetry::log::logging_options r;
+        r.filename = parser_.value("log-filename").toStdString();
+        r.output_to_console = parser_.isSet("log-to-console");
+        r.output_directory = parser_.value("log-directory").toStdString();
+        r.severity = parser_.value("log-level").toStdString();
+        r.include_pid = parser_.isSet("log-include-pid");
+        return r;
+    }
+
+    // Fall back to QSettings from TelemetrySettingsDialog
+    QSettings settings;
+    settings.beginGroup(TelemetrySettingsDialog::settingsPrefix());
+    settings.beginGroup("logging");
+
+    const bool settingsEnabled = settings.value("enabled", false).toBool();
+    const bool consoleEnabled = settings.value("console", false).toBool();
+
+    settings.endGroup();
+    settings.endGroup();
+
+    // If neither command line nor settings enable logging, disable it
+    if (!settingsEnabled && !consoleEnabled) {
         return std::nullopt;
     }
 
-    telemetry::log::logging_options r;
-    r.filename = parser_.value("log-filename").toStdString();
-    r.output_to_console = parser_.isSet("log-to-console");
-    r.output_directory = parser_.value("log-directory").toStdString();
-    r.severity = parser_.value("log-level").toStdString();
-    r.include_pid = parser_.isSet("log-include-pid");
-
-    return r;
+    // Load options from QSettings via TelemetrySettingsDialog helper
+    return TelemetrySettingsDialog::loadLoggingSettings();
 }
 
 bool CommandLineParser::isCompressionEnabled() const {

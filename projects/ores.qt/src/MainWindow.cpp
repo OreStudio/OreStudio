@@ -49,6 +49,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/AboutDialog.hpp"
 #include "ores.qt/ImageCache.hpp"
+#include "ores.qt/TelemetrySettingsDialog.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
 
 namespace ores::qt {
@@ -118,6 +119,8 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_folder_open_20_regular.svg", iconColor));
     ui_->ActionSetRecordingDirectory->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_folder_20_regular.svg", iconColor));
+    ui_->ActionTelemetrySettings->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_settings_20_regular.svg", iconColor));
 
     // Create record icons - regular (gray) for off, filled (red) for on
     recordOffIcon_ = IconUtils::createRecoloredIcon(
@@ -152,6 +155,11 @@ MainWindow::MainWindow(QWidget* parent) :
         &MainWindow::onOpenRecordingTriggered);
     connect(ui_->ActionSetRecordingDirectory, &QAction::triggered, this,
         &MainWindow::onSetRecordingDirectoryTriggered);
+    connect(ui_->ActionTelemetrySettings, &QAction::triggered, this,
+        [this]() {
+            TelemetrySettingsDialog dialog(this);
+            dialog.exec();
+        });
 
     // Connect recording signals
     connect(clientManager_, &ClientManager::recordingStarted, this, [this](const QString& filePath) {

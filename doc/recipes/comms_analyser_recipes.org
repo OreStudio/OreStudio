@@ -15,6 +15,7 @@ ores.qt or other clients with recording enabled.
   :header-args: :exports both
   :header-args+: :results raw
   :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin
+  :header-args+: :var data_dir="../comms"
   :header-args+: :wrap src text
   :header-args+: :results output
   :END:
@@ -75,23 +76,49 @@ IMPORTANT: build details are NOT for security purposes.
 
 Use the =info= command to display only the session metadata without listing
 all frames. This is useful for quickly checking when and where a session was
-recorded.
+recorded. You can call it against a directory:
 
-#+begin_src sh :results output :wrap example
-./ores.comms.analyser info /path/to/session.ores
+#+begin_src sh
+./ores.comms.analyser info ${data_dir}/
 #+end_src
 
-Sample output:
-
-#+begin_example
+#+RESULTS:
+#+begin_src text
 ores.comms.analyser:
-  File: "session_20250606_143205.ores"
-  Session ID: 12345678-1234-1234-1234-123456789abc
-  Start time: 2025-06-06 14:32:05
-  Server: 127.0.0.1:55555
-  Protocol: v13.0
-  Compression: none
-#+end_example
+  File: "session-20260106-115622-019b932a.ores"
+  Session ID: 019b932a-50d3-7e71-8e5d-bd46e092365c
+  Start time: 2026-01-06 11:56:22
+  Server: localhost:55555
+  Protocol: v16.1
+  Compression: zlib
+
+ores.comms.analyser:
+  File: "session-20260106-114916-019b9323.ores"
+  Session ID: 019b9323-d06d-7403-bb4c-cd2aa5deb13b
+  Start time: 2026-01-06 11:49:16
+  Server: localhost:55555
+  Protocol: v16.1
+  Compression: zlib
+
+#+end_src
+
+Or call it against a specific file:
+
+#+begin_src sh
+./ores.comms.analyser info ${data_dir}/session-20260106-114916-019b9323.ores
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ores.comms.analyser:
+  File: "session-20260106-114916-019b9323.ores"
+  Session ID: 019b9323-d06d-7403-bb4c-cd2aa5deb13b
+  Start time: 2026-01-06 11:49:16
+  Server: localhost:55555
+  Protocol: v16.1
+  Compression: zlib
+
+#+end_src
 
 *** Display All Frames
 
@@ -99,37 +126,43 @@ Use the =read= command (or just provide the filename) to display all frames
 in the session recording. This shows a Wireshark-like table of all messages
 sent and received.
 
-#+begin_src sh :results output :wrap example
-./ores.comms.analyser read /path/to/session.ores
+#+begin_src sh
+./ores.comms.analyser read ${data_dir}/session-20260106-114916-019b9323.ores
 #+end_src
 
-Sample output:
-
-#+begin_example
+#+RESULTS:
+#+begin_src text
 ores.comms.analyser:
-  File: "session_20250606_143205.ores"
-  Session ID: 12345678-1234-1234-1234-123456789abc
-  Start time: 2025-06-06 14:32:05
-  Server: 127.0.0.1:55555
-  Protocol: v13.0
-  Compression: none
+  File: "session-20260106-114916-019b9323.ores"
+  Session ID: 019b9323-d06d-7403-bb4c-cd2aa5deb13b
+  Start time: 2026-01-06 11:49:16
+  Server: localhost:55555
+  Protocol: v16.1
+  Compression: zlib
 
-Duration: 2.345s
+Duration: 18.291s
 Frames: 12
 
-  No.  Time            Dir   Type                              Length  Info
+  No.  Time           Dir   Type                             Length  Info
 ----------------------------------------------------------------------------------------------------
-    1  0.000000        ->    handshake_request                     24  corr=1 seq=1
-    2  0.001234        <-    handshake_response                    32  corr=1 seq=1
-    3  0.002345        ->    login_request                         48  corr=2 seq=2
-    4  0.015678        <-    login_response                        64  corr=2 seq=2
-    5  0.020000        ->    get_currencies_request                16  corr=3 seq=3
-    6  0.045678        <-    get_currencies_response              256  corr=3 seq=3
+    1  0.001602       ->    get_currency_images_request          32  corr=2 seq=4
+    2  0.002413       ->    subscribe_request                    68  corr=3 seq=5 zlib
+    3  0.002754       ->    subscribe_request                    66  corr=4 seq=6 zlib
+    4  0.014746       <-    get_currency_images_response       4350  corr=2 seq=3 zlib
+    5  0.055431       <-    subscribe_response                   96  corr=3 seq=4 zlib
+    6  0.055812       <-    subscribe_response                   94  corr=4 seq=5 zlib
+    7  6.503335       ->    get_currencies_request               44  corr=5 seq=7 zlib
+    8  6.522655       <-    get_currencies_response            2726  corr=5 seq=6 zlib
+    9  9.320511       ->    get_currency_history_request         45  corr=6 seq=8 zlib
+   10  9.323637       <-    get_currency_history_response       173  corr=6 seq=7 zlib
+   11  18.280607      ->    logout_request                       32  corr=7 seq=9
+   12  18.291296      <-    logout_response                      66  corr=7 seq=8 zlib
 
-6 frames captured
-#+end_example
+12 frames captured
+#+end_src
 
 The columns are:
+
 - *No.*: Frame number in sequence
 - *Time*: Offset from session start in seconds.microseconds
 - *Dir*: Direction (-> sent to server, <- received from server)
@@ -141,8 +174,39 @@ The columns are:
 
 If no command is specified, =read= is assumed:
 
-#+begin_src sh :results output :wrap example
-./ores.comms.analyser /path/to/session.ores
+#+begin_src sh
+./ores.comms.analyser ${data_dir}/session-20260106-114916-019b9323.ores
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ores.comms.analyser:
+  File: "session-20260106-114916-019b9323.ores"
+  Session ID: 019b9323-d06d-7403-bb4c-cd2aa5deb13b
+  Start time: 2026-01-06 11:49:16
+  Server: localhost:55555
+  Protocol: v16.1
+  Compression: zlib
+
+Duration: 18.291s
+Frames: 12
+
+  No.  Time           Dir   Type                             Length  Info
+----------------------------------------------------------------------------------------------------
+    1  0.001602       ->    get_currency_images_request          32  corr=2 seq=4
+    2  0.002413       ->    subscribe_request                    68  corr=3 seq=5 zlib
+    3  0.002754       ->    subscribe_request                    66  corr=4 seq=6 zlib
+    4  0.014746       <-    get_currency_images_response       4350  corr=2 seq=3 zlib
+    5  0.055431       <-    subscribe_response                   96  corr=3 seq=4 zlib
+    6  0.055812       <-    subscribe_response                   94  corr=4 seq=5 zlib
+    7  6.503335       ->    get_currencies_request               44  corr=5 seq=7 zlib
+    8  6.522655       <-    get_currencies_response            2726  corr=5 seq=6 zlib
+    9  9.320511       ->    get_currency_history_request         45  corr=6 seq=8 zlib
+   10  9.323637       <-    get_currency_history_response       173  corr=6 seq=7 zlib
+   11  18.280607      ->    logout_request                       32  corr=7 seq=9
+   12  18.291296      <-    logout_response                      66  corr=7 seq=8 zlib
+
+12 frames captured
 #+end_src
 
 ** Understanding the Output

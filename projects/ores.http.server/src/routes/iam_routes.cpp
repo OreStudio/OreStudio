@@ -355,6 +355,46 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
     BOOST_LOG_SEV(lg(), info) << "IAM routes registered: 26 endpoints";
 }
 
+// Authorization helper
+
+std::expected<auth_result, http_response> iam_routes::check_auth(
+    const http_request& req,
+    std::string_view required_permission,
+    std::string_view operation_name) {
+
+    // Step 1: Check authentication
+    if (!req.authenticated_user) {
+        BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: not authenticated";
+        return std::unexpected(http_response::unauthorized("Not authenticated"));
+    }
+
+    // Step 2: Extract account ID from JWT
+    boost::uuids::uuid account_id;
+    try {
+        account_id = boost::uuids::string_generator()(req.authenticated_user->subject);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << operation_name
+                                   << " failed: invalid account ID in JWT: " << e.what();
+        return std::unexpected(http_response::unauthorized("Invalid token"));
+    }
+
+    // Step 3: Check if user has admin permissions (for convenience)
+    bool is_admin = auth_service_->has_permission(account_id,
+        iam::domain::permissions::accounts_read);
+
+    // Step 4: Check required permission if specified
+    if (!required_permission.empty()) {
+        if (!auth_service_->has_permission(account_id, std::string(required_permission))) {
+            BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: account "
+                                      << boost::uuids::to_string(account_id)
+                                      << " lacks " << required_permission << " permission";
+            return std::unexpected(http_response::forbidden("Insufficient permissions"));
+        }
+    }
+
+    return auth_result{account_id, is_admin};
+}
+
 // Handler implementations
 
 asio::awaitable<http_response> iam_routes::handle_login(const http_request& req) {
@@ -430,22 +470,21 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
 asio::awaitable<http_response> iam_routes::handle_logout(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling logout request";
 
-    if (!req.authenticated_user) {
-        co_return http_response::unauthorized("Not authenticated");
+    auto auth = check_auth(req, "", "logout");
+    if (!auth) {
+        co_return auth.error();
     }
 
     try {
-        auto account_id = boost::uuids::string_generator()(req.authenticated_user->subject);
-
         // Record the logout event (updates login_info last_logout_time)
-        account_service_.logout(account_id);
+        account_service_.logout(auth->account_id);
 
         // Note: For HTTP/JWT, the "session" is stateless (the JWT is the session).
         // We don't track server-side sessions for HTTP like we do for binary protocol.
         // The client should discard the JWT on their end.
 
         BOOST_LOG_SEV(lg(), info) << "Successfully logged out account: "
-                                  << boost::uuids::to_string(account_id);
+                                  << boost::uuids::to_string(auth->account_id);
 
         iam::messaging::logout_response resp;
         resp.success = true;
@@ -816,8 +855,9 @@ asio::awaitable<http_response> iam_routes::handle_reset_password(const http_requ
 asio::awaitable<http_response> iam_routes::handle_change_password(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling change password request";
 
-    if (!req.authenticated_user) {
-        co_return http_response::unauthorized("Not authenticated");
+    auto auth = check_auth(req, "", "change_password");
+    if (!auth) {
+        co_return auth.error();
     }
 
     try {
@@ -826,8 +866,7 @@ asio::awaitable<http_response> iam_routes::handle_change_password(const http_req
             co_return http_response::bad_request("Invalid request body");
         }
 
-        auto uuid = boost::uuids::string_generator()(req.authenticated_user->subject);
-        auto error = account_service_.change_password(uuid, change_req->new_password);
+        auto error = account_service_.change_password(auth->account_id, change_req->new_password);
 
         iam::messaging::change_password_response resp;
         resp.success = error.empty();
@@ -843,8 +882,9 @@ asio::awaitable<http_response> iam_routes::handle_change_password(const http_req
 asio::awaitable<http_response> iam_routes::handle_update_my_email(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling update my email request";
 
-    if (!req.authenticated_user) {
-        co_return http_response::unauthorized("Not authenticated");
+    auto auth = check_auth(req, "", "update_my_email");
+    if (!auth) {
+        co_return auth.error();
     }
 
     try {
@@ -853,8 +893,7 @@ asio::awaitable<http_response> iam_routes::handle_update_my_email(const http_req
             co_return http_response::bad_request("Invalid request body");
         }
 
-        auto uuid = boost::uuids::string_generator()(req.authenticated_user->subject);
-        auto error = account_service_.update_my_email(uuid, update_req->new_email);
+        auto error = account_service_.update_my_email(auth->account_id, update_req->new_email);
 
         iam::messaging::update_my_email_response resp;
         resp.success = error.empty();
@@ -1023,8 +1062,9 @@ asio::awaitable<http_response> iam_routes::handle_get_account_permissions(const 
 asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling list sessions request";
 
-    if (!req.authenticated_user) {
-        co_return http_response::unauthorized("Not authenticated");
+    auto auth = check_auth(req, "", "list_sessions");
+    if (!auth) {
+        co_return auth.error();
     }
 
     try {
@@ -1039,16 +1079,11 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
         if (!limit_str.empty()) limit = std::stoul(limit_str);
 
         // Determine target account
-        auto requester_id = boost::uuids::string_generator()(req.authenticated_user->subject);
-        boost::uuids::uuid target_account_id = requester_id;
-
-        // Check if user is admin (has accounts_read permission)
-        bool is_admin = auth_service_->has_permission(requester_id,
-            iam::domain::permissions::accounts_read);
+        boost::uuids::uuid target_account_id = auth->account_id;
 
         if (!account_id_str.empty()) {
             auto requested_id = boost::uuids::string_generator()(account_id_str);
-            if (!is_admin && requested_id != requester_id) {
+            if (!auth->is_admin && requested_id != auth->account_id) {
                 // Non-admin trying to view someone else's sessions
                 co_return http_response::forbidden("Cannot view other users' sessions");
             }
@@ -1077,8 +1112,9 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
 asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling get session statistics request";
 
-    if (!req.authenticated_user) {
-        co_return http_response::unauthorized("Not authenticated");
+    auto auth = check_auth(req, "", "get_session_statistics");
+    if (!auth) {
+        co_return auth.error();
     }
 
     try {
@@ -1086,22 +1122,17 @@ asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const h
         auto start_str = req.get_query_param("start");
         auto end_str = req.get_query_param("end");
 
-        // Determine target account
-        auto requester_id = boost::uuids::string_generator()(req.authenticated_user->subject);
-        bool is_admin = auth_service_->has_permission(requester_id,
-            iam::domain::permissions::accounts_read);
-
-        boost::uuids::uuid target_account_id = requester_id;
+        boost::uuids::uuid target_account_id = auth->account_id;
         bool aggregate_mode = false;
 
         if (account_id_str.empty()) {
             // No account specified - aggregate mode for admin, own account for others
-            if (is_admin) {
+            if (auth->is_admin) {
                 aggregate_mode = true;
             }
         } else {
             auto requested_id = boost::uuids::string_generator()(account_id_str);
-            if (!is_admin && requested_id != requester_id) {
+            if (!auth->is_admin && requested_id != auth->account_id) {
                 co_return http_response::forbidden("Cannot view other users' statistics");
             }
             target_account_id = requested_id;
@@ -1142,28 +1173,25 @@ asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const h
 asio::awaitable<http_response> iam_routes::handle_get_active_sessions(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling get active sessions request";
 
-    if (!req.authenticated_user) {
-        co_return http_response::unauthorized("Not authenticated");
+    auto auth = check_auth(req, "", "get_active_sessions");
+    if (!auth) {
+        co_return auth.error();
     }
 
     try {
-        auto requester_id = boost::uuids::string_generator()(req.authenticated_user->subject);
-        bool is_admin = auth_service_->has_permission(requester_id,
-            iam::domain::permissions::accounts_read);
-
         std::vector<iam::domain::session> active_sessions;
 
-        if (is_admin) {
+        if (auth->is_admin) {
             // Admin gets all active sessions
             active_sessions = session_repo_.read_all_active();
             BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
                                       << " active sessions (admin view)";
         } else {
             // Non-admin gets only their own active sessions
-            active_sessions = session_repo_.read_active_by_account(requester_id);
+            active_sessions = session_repo_.read_active_by_account(auth->account_id);
             BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
                                       << " active sessions for account "
-                                      << boost::uuids::to_string(requester_id);
+                                      << boost::uuids::to_string(auth->account_id);
         }
 
         iam::messaging::get_active_sessions_response resp;

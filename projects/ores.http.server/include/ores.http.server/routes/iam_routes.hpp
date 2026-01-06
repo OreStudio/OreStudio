@@ -21,6 +21,8 @@
 #define ORES_HTTP_SERVER_ROUTES_IAM_ROUTES_HPP
 
 #include <memory>
+#include <expected>
+#include <boost/uuid/uuid.hpp>
 #include "ores.http/net/router.hpp"
 #include "ores.http/openapi/endpoint_registry.hpp"
 #include "ores.http/middleware/jwt_authenticator.hpp"
@@ -33,6 +35,14 @@
 #include "ores.telemetry/log/make_logger.hpp"
 
 namespace ores::http_server::routes {
+
+/**
+ * @brief Result of successful authorization check.
+ */
+struct auth_result {
+    boost::uuids::uuid account_id;
+    bool is_admin;
+};
 
 /**
  * @brief Registers IAM (Identity and Access Management) HTTP endpoints.
@@ -180,6 +190,19 @@ private:
 
     boost::asio::awaitable<http::domain::http_response>
     handle_get_active_sessions(const http::domain::http_request& req);
+
+    /**
+     * @brief Check authentication and optionally verify a specific permission.
+     *
+     * @param req The HTTP request containing authentication info
+     * @param required_permission Permission to check (empty = no permission check)
+     * @param operation_name Name of the operation for logging
+     * @return auth_result on success, http_response error (401/403) on failure
+     */
+    std::expected<auth_result, http::domain::http_response> check_auth(
+        const http::domain::http_request& req,
+        std::string_view required_permission = "",
+        std::string_view operation_name = "");
 
     database::context ctx_;
     iam::service::account_service account_service_;

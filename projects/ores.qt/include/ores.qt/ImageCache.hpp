@@ -140,6 +140,14 @@ public:
     void loadImageById(const std::string& image_id);
 
     /**
+     * @brief Load all available images from the image list.
+     *
+     * Fetches SVG data for all images in the available_images_ list.
+     * After completion, allAvailableImagesLoaded() signal is emitted.
+     */
+    void loadAllAvailableImages();
+
+    /**
      * @brief Get icon for an image ID (from preview cache).
      *
      * @param image_id The image ID
@@ -197,6 +205,11 @@ signals:
     void imageLoaded(const QString& image_id);
 
     /**
+     * @brief Emitted when all available images have been loaded.
+     */
+    void allAvailableImagesLoaded();
+
+    /**
      * @brief Emitted when currency image assignment is complete.
      */
     void currencyImageSet(const QString& iso_code, bool success, const QString& message);
@@ -207,6 +220,7 @@ private slots:
     void onImageListLoaded();
     void onSingleImageLoaded();
     void onCurrencyImageSet();
+    void onAllAvailableImagesLoaded();
 
 private:
     /**
@@ -226,6 +240,20 @@ private:
         bool success;
         std::vector<assets::domain::image> images;
     };
+
+    /**
+     * @brief Fetch images in batches from the server.
+     *
+     * This is a helper method used by both loadImagesForCurrencies and
+     * loadAllAvailableImages to avoid code duplication.
+     *
+     * @param clientManager The client manager to use for requests
+     * @param image_ids The list of image IDs to fetch
+     * @return ImagesResult containing fetched images
+     */
+    static ImagesResult fetchImagesInBatches(
+        ClientManager* clientManager,
+        const std::vector<std::string>& image_ids);
 
     struct ImageListResult {
         bool success;
@@ -258,6 +286,7 @@ private:
     // Loading state
     bool is_loading_mappings_{false};
     bool is_loading_images_{false};
+    bool is_loading_all_available_{false};
     bool load_images_after_mappings_{false};
 
     QFutureWatcher<MappingsResult>* mappings_watcher_;
@@ -265,12 +294,16 @@ private:
     QFutureWatcher<ImageListResult>* image_list_watcher_;
     QFutureWatcher<SingleImageResult>* single_image_watcher_;
     QFutureWatcher<SetCurrencyImageResult>* set_currency_image_watcher_;
+    QFutureWatcher<ImagesResult>* all_available_watcher_;
 
     // List of all available images (metadata only)
     std::vector<assets::messaging::image_info> available_images_;
 
     // image_id -> QIcon cache for preview (loaded on demand)
     std::unordered_map<std::string, QIcon> image_preview_cache_;
+
+    // Track image IDs currently being loaded to prevent duplicate requests
+    std::unordered_set<std::string> pending_image_requests_;
 };
 
 }

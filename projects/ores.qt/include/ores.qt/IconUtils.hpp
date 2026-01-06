@@ -54,6 +54,26 @@ public:
      * @return QIcon with recolored normal and disabled states, or empty icon on failure
      */
     static QIcon createRecoloredIcon(const QString& svgPath, const QColor& color);
+
+    /**
+     * @brief Renders SVG data to a QIcon preserving aspect ratio.
+     *
+     * Creates a QIcon from raw SVG data string, rendering at multiple sizes
+     * while preserving the SVG's native aspect ratio (from viewBox).
+     *
+     * @param svg_data Raw SVG content as a string
+     * @return QIcon rendered from the SVG, or empty icon on failure
+     */
+    static QIcon svgDataToIcon(const std::string& svg_data);
+
+    /**
+     * @brief Renders SVG data to a QPixmap at specified height, preserving aspect ratio.
+     *
+     * @param svg_data Raw SVG content as a string
+     * @param height Target height in pixels (width computed from aspect ratio)
+     * @return QPixmap rendered from the SVG, or null pixmap on failure
+     */
+    static QPixmap svgDataToPixmap(const std::string& svg_data, int height);
 };
 
 }

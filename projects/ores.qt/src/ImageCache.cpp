@@ -20,9 +20,7 @@
 #include "ores.qt/ImageCache.hpp"
 
 #include <QtConcurrent>
-#include <QSvgRenderer>
-#include <QPainter>
-#include <QPixmap>
+#include "ores.qt/IconUtils.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.assets/messaging/assets_protocol.hpp"
@@ -40,7 +38,8 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
       images_watcher_(new QFutureWatcher<ImagesResult>(this)),
       image_list_watcher_(new QFutureWatcher<ImageListResult>(this)),
       single_image_watcher_(new QFutureWatcher<SingleImageResult>(this)),
-      set_currency_image_watcher_(new QFutureWatcher<SetCurrencyImageResult>(this)) {
+      set_currency_image_watcher_(new QFutureWatcher<SetCurrencyImageResult>(this)),
+      all_available_watcher_(new QFutureWatcher<ImagesResult>(this)) {
 
     connect(mappings_watcher_, &QFutureWatcher<MappingsResult>::finished,
         this, &ImageCache::onMappingsLoaded);
@@ -52,6 +51,8 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
         this, &ImageCache::onSingleImageLoaded);
     connect(set_currency_image_watcher_, &QFutureWatcher<SetCurrencyImageResult>::finished,
         this, &ImageCache::onCurrencyImageSet);
+    connect(all_available_watcher_, &QFutureWatcher<ImagesResult>::finished,
+        this, &ImageCache::onAllAvailableImagesLoaded);
 }
 
 void ImageCache::loadCurrencyMappings() {
@@ -172,62 +173,11 @@ void ImageCache::loadImagesForCurrencies() {
     BOOST_LOG_SEV(lg(), debug) << "Fetching " << image_ids_to_fetch.size() << " images.";
 
     is_loading_images_ = true;
-    QPointer<ImageCache> self = this;
+    ClientManager* clientMgr = clientManager_;
 
     QFuture<ImagesResult> future =
-        QtConcurrent::run([self, image_ids_to_fetch]() -> ImagesResult {
-            if (!self) return {false, {}};
-
-            std::vector<assets::domain::image> all_images;
-
-            // Batch into groups of MAX_IMAGES_PER_REQUEST
-            constexpr std::size_t batch_size = assets::messaging::MAX_IMAGES_PER_REQUEST;
-            for (std::size_t i = 0; i < image_ids_to_fetch.size(); i += batch_size) {
-                std::vector<std::string> batch;
-                for (std::size_t j = i; j < std::min(i + batch_size, image_ids_to_fetch.size()); ++j) {
-                    batch.push_back(image_ids_to_fetch[j]);
-                }
-
-                BOOST_LOG_SEV(lg(), debug) << "Fetching batch of " << batch.size() << " images.";
-
-                assets::messaging::get_images_request request;
-                request.image_ids = std::move(batch);
-                auto payload = request.serialize();
-
-                frame request_frame(message_type::get_images_request,
-                    0, std::move(payload));
-
-                auto response_result =
-                    self->clientManager_->sendRequest(std::move(request_frame));
-
-                if (!response_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to send images request: "
-                                               << response_result.error();
-                    continue;
-                }
-
-                auto payload_result = response_result->decompressed_payload();
-                if (!payload_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to decompress images response: "
-                                               << payload_result.error();
-                    continue;
-                }
-
-                auto response =
-                    assets::messaging::get_images_response::deserialize(*payload_result);
-
-                if (!response) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to deserialize images response.";
-                    continue;
-                }
-
-                for (auto& img : response->images) {
-                    all_images.push_back(std::move(img));
-                }
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << all_images.size() << " images total.";
-            return {true, std::move(all_images)};
+        QtConcurrent::run([clientMgr, image_ids_to_fetch]() -> ImagesResult {
+            return fetchImagesInBatches(clientMgr, image_ids_to_fetch);
         });
 
     images_watcher_->setFuture(future);
@@ -289,33 +239,65 @@ bool ImageCache::hasCurrencyIcon(const std::string& iso_code) const {
 }
 
 QIcon ImageCache::svgToIcon(const std::string& svg_data) {
-    if (svg_data.empty()) {
-        return {};
+    return IconUtils::svgDataToIcon(svg_data);
+}
+
+ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
+    ClientManager* clientManager,
+    const std::vector<std::string>& image_ids) {
+
+    if (!clientManager) {
+        return {false, {}};
     }
 
-    QByteArray svgBytes(svg_data.data(), static_cast<qsizetype>(svg_data.size()));
-    QSvgRenderer renderer(svgBytes);
+    std::vector<assets::domain::image> all_images;
 
-    if (!renderer.isValid()) {
-        BOOST_LOG_SEV(lg(), warn) << "Invalid SVG data, cannot render icon.";
-        return {};
+    // Batch into groups of MAX_IMAGES_PER_REQUEST
+    constexpr std::size_t batch_size = assets::messaging::MAX_IMAGES_PER_REQUEST;
+    for (std::size_t i = 0; i < image_ids.size(); i += batch_size) {
+        std::vector<std::string> batch;
+        for (std::size_t j = i; j < std::min(i + batch_size, image_ids.size()); ++j) {
+            batch.push_back(image_ids[j]);
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Fetching batch of " << batch.size() << " images.";
+
+        assets::messaging::get_images_request request;
+        request.image_ids = std::move(batch);
+        auto payload = request.serialize();
+
+        frame request_frame(message_type::get_images_request, 0, std::move(payload));
+
+        auto response_result = clientManager->sendRequest(std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send images request: "
+                                       << response_result.error();
+            continue;
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress images response: "
+                                       << payload_result.error();
+            continue;
+        }
+
+        auto response =
+            assets::messaging::get_images_response::deserialize(*payload_result);
+
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize images response.";
+            continue;
+        }
+
+        for (auto& img : response->images) {
+            all_images.push_back(std::move(img));
+        }
     }
 
-    QIcon icon;
-
-    // Render at multiple sizes for crisp display
-    for (int size : {16, 20, 24, 32, 48}) {
-        QPixmap pixmap(size, size);
-        pixmap.fill(Qt::transparent);
-
-        QPainter painter(&pixmap);
-        renderer.render(&painter);
-        painter.end();
-
-        icon.addPixmap(pixmap);
-    }
-
-    return icon;
+    BOOST_LOG_SEV(lg(), debug) << "Fetched " << all_images.size() << " images total.";
+    return {true, std::move(all_images)};
 }
 
 void ImageCache::loadImageList() {
@@ -408,6 +390,13 @@ void ImageCache::loadImageById(const std::string& image_id) {
         return;
     }
 
+    // Skip if already being loaded
+    if (pending_image_requests_.find(image_id) != pending_image_requests_.end()) {
+        BOOST_LOG_SEV(lg(), debug) << "Image already pending: " << image_id;
+        return;
+    }
+
+    pending_image_requests_.insert(image_id);
     QPointer<ImageCache> self = this;
     std::string requested_id = image_id;
 
@@ -455,6 +444,10 @@ void ImageCache::loadImageById(const std::string& image_id) {
 
 void ImageCache::onSingleImageLoaded() {
     auto result = single_image_watcher_->result();
+
+    // Clear pending status
+    pending_image_requests_.erase(result.image_id);
+
     if (result.success) {
         // Cache SVG and render icon
         image_svg_cache_[result.image_id] = result.image.svg_data;
@@ -553,6 +546,83 @@ void ImageCache::onCurrencyImageSet() {
 
     emit currencyImageSet(QString::fromStdString(result.iso_code),
         result.success, QString::fromStdString(result.message));
+}
+
+void ImageCache::loadAllAvailableImages() {
+    if (is_loading_all_available_) {
+        BOOST_LOG_SEV(lg(), warn) << "All available images load already in progress.";
+        return;
+    }
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load all images: not connected.";
+        return;
+    }
+
+    if (available_images_.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No images in list to load.";
+        emit allAvailableImagesLoaded();
+        return;
+    }
+
+    // Collect image IDs that we need to fetch (not already cached or pending)
+    std::vector<std::string> image_ids_to_fetch;
+    for (const auto& img : available_images_) {
+        if (image_preview_cache_.find(img.image_id) == image_preview_cache_.end() &&
+            image_svg_cache_.find(img.image_id) == image_svg_cache_.end() &&
+            pending_image_requests_.find(img.image_id) == pending_image_requests_.end()) {
+            image_ids_to_fetch.push_back(img.image_id);
+            pending_image_requests_.insert(img.image_id);
+        }
+    }
+
+    if (image_ids_to_fetch.empty()) {
+        BOOST_LOG_SEV(lg(), debug) << "All available images already cached.";
+        emit allAvailableImagesLoaded();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Loading " << image_ids_to_fetch.size()
+                               << " available images.";
+
+    is_loading_all_available_ = true;
+    ClientManager* clientMgr = clientManager_;
+
+    QFuture<ImagesResult> future =
+        QtConcurrent::run([clientMgr, image_ids_to_fetch]() -> ImagesResult {
+            return fetchImagesInBatches(clientMgr, image_ids_to_fetch);
+        });
+
+    all_available_watcher_->setFuture(future);
+}
+
+void ImageCache::onAllAvailableImagesLoaded() {
+    is_loading_all_available_ = false;
+
+    auto result = all_available_watcher_->result();
+    if (result.success) {
+        // Cache SVG data and render icons, clear pending status
+        for (const auto& img : result.images) {
+            pending_image_requests_.erase(img.image_id);
+            image_svg_cache_[img.image_id] = img.svg_data;
+            QIcon icon = svgToIcon(img.svg_data);
+            if (!icon.isNull()) {
+                image_preview_cache_[img.image_id] = icon;
+            }
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Cached " << result.images.size()
+                                  << " available images.";
+
+        emit allAvailableImagesLoaded();
+    } else {
+        // Clear pending status for all items that were attempted
+        for (const auto& img : available_images_) {
+            pending_image_requests_.erase(img.image_id);
+        }
+        BOOST_LOG_SEV(lg(), error) << "Failed to load all available images.";
+        emit loadError(tr("Failed to load available images"));
+    }
 }
 
 std::string ImageCache::getCurrencyImageId(const std::string& iso_code) const {

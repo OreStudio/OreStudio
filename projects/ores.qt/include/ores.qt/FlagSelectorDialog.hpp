@@ -70,6 +70,7 @@ public:
 private slots:
     void onImageListLoaded();
     void onImageLoaded(const QString& image_id);
+    void onAllImagesLoaded();
     void onSearchTextChanged(const QString& text);
     void onItemSelectionChanged();
     void onClearClicked();

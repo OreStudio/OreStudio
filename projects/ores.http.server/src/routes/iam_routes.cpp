@@ -569,7 +569,9 @@ asio::awaitable<http_response> iam_routes::handle_create_account(const http_requ
             co_return http_response::bad_request("Invalid request body");
         }
 
-        auto account = account_service_.create_account(
+        // Use setup_service to create account with default Viewer role
+        iam::service::account_setup_service setup_service(account_service_, auth_service_);
+        auto account = setup_service.create_account(
             create_req->username, create_req->email,
             create_req->password, "system");
 

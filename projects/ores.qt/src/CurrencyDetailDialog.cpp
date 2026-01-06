@@ -50,8 +50,8 @@ using FutureResult = std::pair<bool, std::string>;
 CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), isStale_(false),
-      historicalVersion_(0), flagAction_(nullptr), flagIconLabel_(nullptr),
-      flagDescLabel_(nullptr), clientManager_(nullptr), imageCache_(nullptr) {
+      historicalVersion_(0), flagButton_(nullptr),
+      clientManager_(nullptr), imageCache_(nullptr) {
 
     ui_->setupUi(this);
 
@@ -83,15 +83,6 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
 
     toolBar_->addSeparator();
 
-    // Create Flag action
-    flagAction_ = new QAction("Flag", this);
-    flagAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
-    flagAction_->setToolTip("Select flag for this currency");
-    connect(flagAction_, &QAction::triggered, this,
-        &CurrencyDetailDialog::onSelectFlagClicked);
-    toolBar_->addAction(flagAction_);
-
     // Create Revert action (initially hidden)
     revertAction_ = new QAction("Revert to this version", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
@@ -108,20 +99,24 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     if (mainLayout)
         mainLayout->insertWidget(0, toolBar_);
 
-    // Add flag display group box after toolbar
+    // Add clickable flag button after toolbar
     if (mainLayout) {
-        auto* flagGroup = new QGroupBox(tr("Flag"), this);
-        auto* flagLayout = new QHBoxLayout(flagGroup);
+        auto* flagContainer = new QWidget(this);
+        auto* flagLayout = new QHBoxLayout(flagContainer);
+        flagLayout->setContentsMargins(0, 4, 0, 4);
 
-        flagIconLabel_ = new QLabel(this);
-        flagIconLabel_->setFixedSize(48, 48);
-        flagIconLabel_->setAlignment(Qt::AlignCenter);
-        flagLayout->addWidget(flagIconLabel_);
+        flagButton_ = new QPushButton(this);
+        flagButton_->setFixedSize(52, 52);
+        flagButton_->setIconSize(QSize(48, 48));
+        flagButton_->setFlat(true);
+        flagButton_->setCursor(Qt::PointingHandCursor);
+        flagButton_->setToolTip(tr("Click to select flag"));
+        connect(flagButton_, &QPushButton::clicked, this,
+            &CurrencyDetailDialog::onSelectFlagClicked);
+        flagLayout->addWidget(flagButton_);
+        flagLayout->addStretch();
 
-        flagDescLabel_ = new QLabel(tr("No flag assigned"), this);
-        flagLayout->addWidget(flagDescLabel_, 1);
-
-        mainLayout->insertWidget(1, flagGroup);
+        mainLayout->insertWidget(1, flagContainer);
     }
 
     // Connect signals for editable fields to detect changes
@@ -502,8 +497,8 @@ void CurrencyDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     if (deleteAction_)
         deleteAction_->setVisible(!readOnly);
 
-    if (flagAction_)
-        flagAction_->setVisible(!readOnly);
+    if (flagButton_)
+        flagButton_->setEnabled(!readOnly);
 
     if (revertAction_)
         revertAction_->setVisible(readOnly);
@@ -622,22 +617,27 @@ void CurrencyDetailDialog::onCurrencyImageSet(const QString& iso_code,
 }
 
 void CurrencyDetailDialog::updateFlagDisplay() {
-    if (!flagIconLabel_ || !flagDescLabel_)
+    if (!flagButton_)
         return;
 
+    // Define placeholder icon color (light gray for dark theme)
+    const QColor iconColor(220, 220, 220);
+
     if (!imageCache_ || currentCurrency_.iso_code.empty()) {
-        flagIconLabel_->clear();
-        flagDescLabel_->setText(tr("No flag assigned"));
+        flagButton_->setIcon(IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
+        flagButton_->setToolTip(tr("Click to select flag"));
         return;
     }
 
     QIcon icon = imageCache_->getCurrencyIcon(currentCurrency_.iso_code);
     if (icon.isNull()) {
-        flagIconLabel_->clear();
-        flagDescLabel_->setText(tr("No flag assigned"));
+        flagButton_->setIcon(IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
+        flagButton_->setToolTip(tr("Click to select flag"));
     } else {
-        flagIconLabel_->setPixmap(icon.pixmap(48, 48));
-        flagDescLabel_->setText(tr("Flag assigned"));
+        flagButton_->setIcon(icon);
+        flagButton_->setToolTip(tr("Click to change flag"));
     }
 }
 

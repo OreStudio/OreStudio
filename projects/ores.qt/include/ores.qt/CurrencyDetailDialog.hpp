@@ -24,6 +24,7 @@
 #include <QToolBar>
 #include <QAction>
 #include <QLabel>
+#include <QPushButton>
 #include <memory>
 #include "ores.risk/domain/currency.hpp"
 #include "ores.qt/ClientManager.hpp"
@@ -134,9 +135,7 @@ private:
     QAction* saveAction_;
     QAction* deleteAction_;
     QAction* revertAction_;
-    QAction* flagAction_;
-    QLabel* flagIconLabel_;
-    QLabel* flagDescLabel_;
+    QPushButton* flagButton_;
 
     ClientManager* clientManager_;
     ImageCache* imageCache_;

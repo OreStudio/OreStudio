@@ -32,7 +32,7 @@ namespace ores::iam::domain {
 /**
  * @brief Protocol used for the session connection.
  */
-enum class session_protocol : std::uint8_t {
+enum class session_protocol {
     /**
      * @brief ORE Studio binary protocol over TCP.
      */

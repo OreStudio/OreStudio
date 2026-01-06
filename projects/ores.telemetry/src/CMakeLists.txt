@@ -49,16 +49,9 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        Boost::log
-        Boost::program_options
-        Boost::exception
-        Boost::process
+        ores.logging.lib
         # NOTE: ores.database.lib dependency removed to break circular dependency.
         # Repository files are compiled in ores.comms.service instead.
-        # TODO: This is a design smell - telemetry has two responsibilities:
-        # 1. Logging infrastructure (used by ores.database)
-        # 2. Telemetry persistence (needs ores.database)
-        # These should be separated into different components.
     INTERFACE
         # reflectcpp is provided by ores.platform.lib at build time; expose to consumers here
         reflectcpp::reflectcpp

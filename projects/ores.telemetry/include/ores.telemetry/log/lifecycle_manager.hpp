@@ -22,33 +22,30 @@
 
 #include <memory>
 #include <optional>
-#include <filesystem>
 #include <boost/shared_ptr.hpp>
 #include <boost/log/sinks.hpp>
-#include "ores.telemetry/log/boost_severity.hpp"
-#include "ores.telemetry/log/logging_options.hpp"
+#include "ores.logging/lifecycle_manager.hpp"
 #include "ores.telemetry/log/telemetry_sink_backend.hpp"
 #include "ores.telemetry/domain/resource.hpp"
 
 namespace ores::telemetry::log {
 
+// Import logging_options from ores.logging for backward compatibility
+using ores::logging::logging_options;
+
 /**
- * @brief Manages the starting and stopping of logging for an application.
+ * @brief Extends the base lifecycle_manager with telemetry sink support.
  *
- * This class handles the lifecycle of all logging sinks including console,
- * file, and telemetry sinks. The telemetry sink enables correlation of logs
- * with distributed traces by extracting trace_id and span_id from log
- * attributes.
+ * This class inherits from ores::logging::lifecycle_manager and adds
+ * the ability to attach a telemetry sink for OpenTelemetry log correlation.
+ * The telemetry sink extracts trace_id and span_id from log attributes
+ * and creates domain::log_record instances for export.
  *
  * Note: this class uses boost shared_ptr due to legacy reasons (boost log does
  * not support std::shared_ptr).
  */
-class lifecycle_manager final {
+class lifecycle_manager final : public ores::logging::lifecycle_manager {
 private:
-    using file_sink_type = boost::log::sinks::synchronous_sink<
-        boost::log::sinks::text_file_backend>;
-    using console_sink_type = boost::log::sinks::synchronous_sink<
-        boost::log::sinks::text_ostream_backend>;
     using telemetry_sink_type = boost::log::sinks::asynchronous_sink<
         telemetry_sink_backend>;
 
@@ -57,28 +54,13 @@ public:
     lifecycle_manager(lifecycle_manager&&) = delete;
     lifecycle_manager& operator=(const lifecycle_manager&) = delete;
 
-private:
-    /**
-     * @brief Creates a boost log file sink.
-     *
-     * @note path is non-const by ref by design.
-     */
-  static boost::shared_ptr<file_sink_type>
-  make_file_sink(std::filesystem::path path, boost_severity severity,
-      std::string tag);
-
-    /**
-     * @brief Creates a boost log console sink.
-     */
-    static boost::shared_ptr<console_sink_type> make_console_sink(
-        boost_severity severity, std::string tag);
-
 public:
-
     /**
      * @brief Initialise logging for the entire application.
      *
      * If no configuration is supplied, logging is disabled.
+     * This constructor delegates to the base class for console and file
+     * sink setup, and initializes the telemetry sink member.
      *
      * @note Must be done in a thread-safe context.
      */
@@ -87,9 +69,9 @@ public:
     /**
      * @brief Shutdown logging for the entire application.
      *
-     * Should be done in a thread-safe context.
+     * Stops and flushes the telemetry sink before base class cleanup.
      */
-    ~lifecycle_manager();
+    ~lifecycle_manager() override;
 
     /**
      * @brief Adds a telemetry sink for log record correlation.
@@ -116,8 +98,6 @@ public:
         telemetry_sink_backend::log_record_handler handler);
 
 private:
-    boost::shared_ptr<file_sink_type> file_sink_;
-    boost::shared_ptr<console_sink_type> console_sink_;
     boost::shared_ptr<telemetry_sink_type> telemetry_sink_;
 };
 

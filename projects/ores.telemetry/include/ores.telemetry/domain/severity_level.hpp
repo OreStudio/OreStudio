@@ -20,25 +20,12 @@
 #ifndef ORES_TELEMETRY_DOMAIN_SEVERITY_LEVEL_HPP
 #define ORES_TELEMETRY_DOMAIN_SEVERITY_LEVEL_HPP
 
-#include <cstdint>
+// Forwarding header - type moved to ores.logging
+#include "ores.logging/severity_level.hpp"
 
 namespace ores::telemetry::domain {
 
-/**
- * @brief Log severity levels following OpenTelemetry conventions.
- *
- * These severity levels are compatible with OpenTelemetry's log data model
- * and map to standard logging frameworks. The numeric values match the
- * OpenTelemetry specification for interoperability.
- */
-enum class severity_level : std::uint8_t {
-    trace = 1,
-    debug = 5,
-    info = 9,
-    warn = 13,
-    error = 17,
-    fatal = 21
-};
+using ores::logging::severity_level;
 
 }
 

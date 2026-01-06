@@ -26,7 +26,7 @@
 #include <sstream>
 #include <format>
 #include <sqlgen/postgres.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::database::repository {
 
@@ -57,10 +57,10 @@ template<typename Source, typename Dest, typename MapFunc>
 std::vector<Dest> map_vector(
     const std::vector<Source>& source,
     MapFunc&& map_func,
-    telemetry::log::logger_t& lg,
+    logging::logger_t& lg,
     const std::string& log_prefix) {
 
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
 
     BOOST_LOG_SEV(lg, debug) << "Mapping " << log_prefix
                              << ". Total: " << source.size();
@@ -110,8 +110,8 @@ timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
  */
 inline sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">
 timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp,
-    telemetry::log::logger_t& lg) {
-    using namespace ores::telemetry::log;
+    logging::logger_t& lg) {
+    using namespace ores::logging;
 
     const auto s = std::format("{:%Y-%m-%d %H:%M:%S}", tp);
     const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);

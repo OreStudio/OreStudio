@@ -24,7 +24,7 @@
 #include <optional>
 #include <vector>
 #include <sqlgen/postgres.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/repository/helpers.hpp"
 
@@ -62,9 +62,9 @@ namespace ores::database::repository {
  */
 template<typename EntityType, typename DomainType, typename QueryType, typename MapperFunc>
 std::vector<DomainType> execute_read_query(context ctx, const QueryType& query,
-    MapperFunc&& mapper, telemetry::log::logger_t& lg, const std::string& operation_desc) {
+    MapperFunc&& mapper, logging::logger_t& lg, const std::string& operation_desc) {
 
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     using namespace sqlgen;
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
@@ -100,9 +100,9 @@ std::vector<DomainType> execute_read_query(context ctx, const QueryType& query,
  */
 template<typename EntityType>
 void execute_write_query(context ctx, const EntityType& entity,
-    telemetry::log::logger_t& lg, const std::string& operation_desc) {
+    logging::logger_t& lg, const std::string& operation_desc) {
 
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     using namespace sqlgen;
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
@@ -137,9 +137,9 @@ void execute_write_query(context ctx, const EntityType& entity,
  */
 template<typename QueryType>
 void execute_delete_query(context ctx, const QueryType& query,
-    telemetry::log::logger_t& lg, const std::string& operation_desc) {
+    logging::logger_t& lg, const std::string& operation_desc) {
 
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     using namespace sqlgen;
 
     BOOST_LOG_SEV(lg, debug) << operation_desc << ".";
@@ -171,7 +171,7 @@ void execute_delete_query(context ctx, const QueryType& query,
  *     lg(), "Reading effective permissions");
  */
 std::vector<std::string> execute_raw_string_query(context ctx,
-    const std::string& sql, telemetry::log::logger_t& lg,
+    const std::string& sql, logging::logger_t& lg,
     const std::string& operation_desc);
 
 /**
@@ -193,7 +193,7 @@ std::vector<std::string> execute_raw_string_query(context ctx,
  *     lg(), "Reading all role permission codes");
  */
 std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
-    context ctx, const std::string& sql, telemetry::log::logger_t& lg,
+    context ctx, const std::string& sql, logging::logger_t& lg,
     const std::string& operation_desc);
 
 /**
@@ -219,7 +219,7 @@ std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
  * }
  */
 std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_query(
-    context ctx, const std::string& sql, telemetry::log::logger_t& lg,
+    context ctx, const std::string& sql, logging::logger_t& lg,
     const std::string& operation_desc);
 
 }

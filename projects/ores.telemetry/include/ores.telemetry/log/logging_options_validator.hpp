@@ -20,18 +20,12 @@
 #ifndef ORES_TELEMETRY_LOG_LOGGING_OPTIONS_VALIDATOR_HPP
 #define ORES_TELEMETRY_LOG_LOGGING_OPTIONS_VALIDATOR_HPP
 
-#include "ores.telemetry/log/logging_options.hpp"
+// Forwarding header - types moved to ores.logging
+#include "ores.logging/logging_options_validator.hpp"
 
 namespace ores::telemetry::log {
 
-/**
- * @brief Checks the validity of the supplied logging options.
- */
-class logging_options_validator final {
-public:
-    logging_options_validator() = delete;
-    static void validate(const logging_options& cfg);
-};
+using ores::logging::logging_options_validator;
 
 }
 

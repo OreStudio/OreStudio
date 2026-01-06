@@ -32,18 +32,13 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/${name}/include
-    # Header-only dependency on ores.telemetry for logging macros.
-    # We cannot link against ores.telemetry.lib because ores.telemetry
-    # needs ores.database for its repository layer (circular dependency).
-    ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/include)
+    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
         sqlgen::sqlgen
     PRIVATE
         ores.utility.lib
-        # Note: ores.telemetry logging is header-only (BOOST_LOG_SEV macros)
-        Boost::log)
+        ores.logging.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

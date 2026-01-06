@@ -117,8 +117,14 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 //
 // Version 16.1 adds list_images_request/response to list all available flag images,
 // and set_currency_image_request/response to assign or remove flags from currencies.
+//
+// Version 16.2 adds server-side telemetry persistence. New messages:
+// submit_telemetry_response (0x5001) for acknowledging batch submissions.
+// get_telemetry_logs_request/response (0x5010/0x5011) for querying raw logs.
+// get_telemetry_stats_request/response (0x5020/0x5021) for querying aggregated stats.
+// Telemetry logs are stored in a TimescaleDB hypertable with 30-day retention.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 16;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 2;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -253,6 +259,11 @@ enum class message_type {
 
     // Telemetry subsystem messages (0x5000 - 0x5FFF)
     submit_log_records_request = 0x5000,
+    submit_telemetry_response = 0x5001,
+    get_telemetry_logs_request = 0x5010,
+    get_telemetry_logs_response = 0x5011,
+    get_telemetry_stats_request = 0x5020,
+    get_telemetry_stats_response = 0x5021,
 
     last_value
 };

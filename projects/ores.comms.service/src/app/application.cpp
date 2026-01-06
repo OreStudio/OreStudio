@@ -33,6 +33,7 @@
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.variability/messaging/registrar.hpp"
 #include "ores.assets/messaging/registrar.hpp"
+#include "ores.telemetry/messaging/registrar.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
@@ -186,6 +187,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         geo_service);
     ores::variability::messaging::registrar::register_handlers(*srv, ctx);
     ores::assets::messaging::registrar::register_handlers(*srv, ctx);
+    ores::telemetry::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
 
     // Register subscription handler for subscribe/unsubscribe messages
     auto subscription_handler =

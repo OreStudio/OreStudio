@@ -24,8 +24,18 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
+# Include telemetry repository files that are excluded from ores.telemetry.lib
+# to break the circular dependency (telemetry <-> database).
+# TODO: This is a workaround - telemetry's dual responsibility (logging infra +
+# persistence) should be separated into different components.
+set(telemetry_repo_files
+    ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/src/repository/telemetry_repository.cpp
+    ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/src/repository/telemetry_mapper.cpp
+    ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/src/repository/telemetry_entity.cpp)
+
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")
+list(APPEND lib_files ${telemetry_repo_files})
 
 add_library(${lib_target_name} ${lib_files})
 set_target_properties(${lib_target_name} PROPERTIES
@@ -34,7 +44,11 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.comms.service/include)
+    ${CMAKE_SOURCE_DIR}/projects/ores.comms.service/include
+    # Include telemetry headers for repository files compiled here
+    ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/include
+    # Include database headers needed by telemetry repository
+    ${CMAKE_SOURCE_DIR}/projects/ores.database/include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
@@ -45,6 +59,7 @@ target_link_libraries(${lib_target_name}
         ores.eventing.lib
         ores.comms.lib
         ores.telemetry.lib
+        ores.database.lib  # Required for telemetry repository compiled here
         ores.utility.lib
         ores.geo.lib)
 

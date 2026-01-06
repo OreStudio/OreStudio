@@ -303,12 +303,23 @@ QIcon ImageCache::svgToIcon(const std::string& svg_data) {
 
     QIcon icon;
 
+    // Get SVG's default (viewBox) size to preserve aspect ratio
+    QSizeF svgSize = renderer.defaultSize();
+    if (svgSize.isEmpty()) {
+        svgSize = QSizeF(4, 3);  // Default to 4:3 if no viewBox
+    }
+    qreal aspectRatio = svgSize.width() / svgSize.height();
+
     // Render at multiple sizes for crisp display
-    for (int size : {16, 20, 24, 32, 48}) {
-        QPixmap pixmap(size, size);
+    // Use height as the base and compute width to preserve aspect ratio
+    for (int height : {16, 20, 24, 32, 48}) {
+        int width = static_cast<int>(height * aspectRatio);
+        QPixmap pixmap(width, height);
         pixmap.fill(Qt::transparent);
 
         QPainter painter(&pixmap);
+        painter.setRenderHint(QPainter::Antialiasing);
+        painter.setRenderHint(QPainter::SmoothPixmapTransform);
         renderer.render(&painter);
         painter.end();
 

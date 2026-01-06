@@ -49,37 +49,97 @@ int application::run() {
 }
 
 int application::read_session() {
-    auto result = domain::session_reader::read(opts_.input_file);
-    if (!result) {
-        std::cerr << "Error reading session file: "
-                  << magic_enum::enum_name(result.error()) << "\n";
-        return 1;
+    namespace fs = std::filesystem;
+
+    // Check if input is a directory
+    if (fs::is_directory(opts_.input_file)) {
+        int error_count = 0;
+        int file_count = 0;
+
+        for (const auto& entry : fs::directory_iterator(opts_.input_file)) {
+            if (entry.is_regular_file() && entry.path().extension() == ".ores") {
+                if (!read_session_file(entry.path())) {
+                    ++error_count;
+                }
+                ++file_count;
+            }
+        }
+
+        if (file_count == 0) {
+            std::cerr << "No .ores files found in directory: "
+                      << opts_.input_file << "\n";
+            return 1;
+        }
+
+        return error_count > 0 ? 1 : 0;
     }
 
-    print_header(result->metadata);
+    // Single file
+    return read_session_file(opts_.input_file) ? 0 : 1;
+}
+
+bool application::read_session_file(const std::filesystem::path& file_path) {
+    auto result = domain::session_reader::read(file_path);
+    if (!result) {
+        std::cerr << "Error reading session file '" << file_path << "': "
+                  << magic_enum::enum_name(result.error()) << "\n";
+        return false;
+    }
+
+    print_header(file_path, result->metadata);
     print_frames(*result);
 
-    return 0;
+    return true;
 }
 
 int application::show_info() {
-    auto result = domain::session_reader::read_metadata(opts_.input_file);
-    if (!result) {
-        std::cerr << "Error reading session file: "
-                  << magic_enum::enum_name(result.error()) << "\n";
-        return 1;
+    namespace fs = std::filesystem;
+
+    // Check if input is a directory
+    if (fs::is_directory(opts_.input_file)) {
+        int error_count = 0;
+        int file_count = 0;
+
+        for (const auto& entry : fs::directory_iterator(opts_.input_file)) {
+            if (entry.is_regular_file() && entry.path().extension() == ".ores") {
+                if (!show_info_for_file(entry.path())) {
+                    ++error_count;
+                }
+                ++file_count;
+            }
+        }
+
+        if (file_count == 0) {
+            std::cerr << "No .ores files found in directory: "
+                      << opts_.input_file << "\n";
+            return 1;
+        }
+
+        return error_count > 0 ? 1 : 0;
     }
 
-    print_header(*result);
-
-    return 0;
+    // Single file
+    return show_info_for_file(opts_.input_file) ? 0 : 1;
 }
 
-void application::print_header(const domain::session_metadata& metadata) {
+bool application::show_info_for_file(const std::filesystem::path& file_path) {
+    auto result = domain::session_reader::read_metadata(file_path);
+    if (!result) {
+        std::cerr << "Error reading session file '" << file_path << "': "
+                  << magic_enum::enum_name(result.error()) << "\n";
+        return false;
+    }
+
+    print_header(file_path, *result);
+    return true;
+}
+
+void application::print_header(const std::filesystem::path& file_path,
+                               const domain::session_metadata& metadata) {
     using namespace ores::platform::time;
 
     std::cout << "ores.comms.analyser:\n";
-    std::cout << "  File: \"" << opts_.input_file.filename().string() << "\"\n";
+    std::cout << "  File: \"" << file_path.filename().string() << "\"\n";
     std::cout << "  Session ID: " << metadata.session_id << "\n";
     std::cout << "  Start time: "
               << datetime::format_time_point(metadata.start_time, "%Y-%m-%d %H:%M:%S")

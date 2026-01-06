@@ -241,6 +241,20 @@ private:
         std::vector<assets::domain::image> images;
     };
 
+    /**
+     * @brief Fetch images in batches from the server.
+     *
+     * This is a helper method used by both loadImagesForCurrencies and
+     * loadAllAvailableImages to avoid code duplication.
+     *
+     * @param clientManager The client manager to use for requests
+     * @param image_ids The list of image IDs to fetch
+     * @return ImagesResult containing fetched images
+     */
+    static ImagesResult fetchImagesInBatches(
+        ClientManager* clientManager,
+        const std::vector<std::string>& image_ids);
+
     struct ImageListResult {
         bool success;
         std::vector<assets::messaging::image_info> images;

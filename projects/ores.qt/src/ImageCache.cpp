@@ -175,62 +175,11 @@ void ImageCache::loadImagesForCurrencies() {
     BOOST_LOG_SEV(lg(), debug) << "Fetching " << image_ids_to_fetch.size() << " images.";
 
     is_loading_images_ = true;
-    QPointer<ImageCache> self = this;
+    ClientManager* clientMgr = clientManager_;
 
     QFuture<ImagesResult> future =
-        QtConcurrent::run([self, image_ids_to_fetch]() -> ImagesResult {
-            if (!self) return {false, {}};
-
-            std::vector<assets::domain::image> all_images;
-
-            // Batch into groups of MAX_IMAGES_PER_REQUEST
-            constexpr std::size_t batch_size = assets::messaging::MAX_IMAGES_PER_REQUEST;
-            for (std::size_t i = 0; i < image_ids_to_fetch.size(); i += batch_size) {
-                std::vector<std::string> batch;
-                for (std::size_t j = i; j < std::min(i + batch_size, image_ids_to_fetch.size()); ++j) {
-                    batch.push_back(image_ids_to_fetch[j]);
-                }
-
-                BOOST_LOG_SEV(lg(), debug) << "Fetching batch of " << batch.size() << " images.";
-
-                assets::messaging::get_images_request request;
-                request.image_ids = std::move(batch);
-                auto payload = request.serialize();
-
-                frame request_frame(message_type::get_images_request,
-                    0, std::move(payload));
-
-                auto response_result =
-                    self->clientManager_->sendRequest(std::move(request_frame));
-
-                if (!response_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to send images request: "
-                                               << response_result.error();
-                    continue;
-                }
-
-                auto payload_result = response_result->decompressed_payload();
-                if (!payload_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to decompress images response: "
-                                               << payload_result.error();
-                    continue;
-                }
-
-                auto response =
-                    assets::messaging::get_images_response::deserialize(*payload_result);
-
-                if (!response) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to deserialize images response.";
-                    continue;
-                }
-
-                for (auto& img : response->images) {
-                    all_images.push_back(std::move(img));
-                }
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << all_images.size() << " images total.";
-            return {true, std::move(all_images)};
+        QtConcurrent::run([clientMgr, image_ids_to_fetch]() -> ImagesResult {
+            return fetchImagesInBatches(clientMgr, image_ids_to_fetch);
         });
 
     images_watcher_->setFuture(future);
@@ -330,6 +279,64 @@ QIcon ImageCache::svgToIcon(const std::string& svg_data) {
     }
 
     return icon;
+}
+
+ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
+    ClientManager* clientManager,
+    const std::vector<std::string>& image_ids) {
+
+    if (!clientManager) {
+        return {false, {}};
+    }
+
+    std::vector<assets::domain::image> all_images;
+
+    // Batch into groups of MAX_IMAGES_PER_REQUEST
+    constexpr std::size_t batch_size = assets::messaging::MAX_IMAGES_PER_REQUEST;
+    for (std::size_t i = 0; i < image_ids.size(); i += batch_size) {
+        std::vector<std::string> batch;
+        for (std::size_t j = i; j < std::min(i + batch_size, image_ids.size()); ++j) {
+            batch.push_back(image_ids[j]);
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Fetching batch of " << batch.size() << " images.";
+
+        assets::messaging::get_images_request request;
+        request.image_ids = std::move(batch);
+        auto payload = request.serialize();
+
+        frame request_frame(message_type::get_images_request, 0, std::move(payload));
+
+        auto response_result = clientManager->sendRequest(std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send images request: "
+                                       << response_result.error();
+            continue;
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress images response: "
+                                       << payload_result.error();
+            continue;
+        }
+
+        auto response =
+            assets::messaging::get_images_response::deserialize(*payload_result);
+
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize images response.";
+            continue;
+        }
+
+        for (auto& img : response->images) {
+            all_images.push_back(std::move(img));
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Fetched " << all_images.size() << " images total.";
+    return {true, std::move(all_images)};
 }
 
 void ImageCache::loadImageList() {
@@ -618,64 +625,11 @@ void ImageCache::loadAllAvailableImages() {
                                << " available images.";
 
     is_loading_all_available_ = true;
-    QPointer<ImageCache> self = this;
+    ClientManager* clientMgr = clientManager_;
 
     QFuture<ImagesResult> future =
-        QtConcurrent::run([self, image_ids_to_fetch]() -> ImagesResult {
-            if (!self) return {false, {}};
-
-            std::vector<assets::domain::image> all_images;
-
-            // Batch into groups of MAX_IMAGES_PER_REQUEST
-            constexpr std::size_t batch_size = assets::messaging::MAX_IMAGES_PER_REQUEST;
-            for (std::size_t i = 0; i < image_ids_to_fetch.size(); i += batch_size) {
-                std::vector<std::string> batch;
-                for (std::size_t j = i; j < std::min(i + batch_size, image_ids_to_fetch.size()); ++j) {
-                    batch.push_back(image_ids_to_fetch[j]);
-                }
-
-                BOOST_LOG_SEV(lg(), debug) << "Fetching batch of " << batch.size()
-                                           << " available images.";
-
-                assets::messaging::get_images_request request;
-                request.image_ids = std::move(batch);
-                auto payload = request.serialize();
-
-                frame request_frame(message_type::get_images_request,
-                    0, std::move(payload));
-
-                auto response_result =
-                    self->clientManager_->sendRequest(std::move(request_frame));
-
-                if (!response_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to send images request: "
-                                               << response_result.error();
-                    continue;
-                }
-
-                auto payload_result = response_result->decompressed_payload();
-                if (!payload_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to decompress images response: "
-                                               << payload_result.error();
-                    continue;
-                }
-
-                auto response =
-                    assets::messaging::get_images_response::deserialize(*payload_result);
-
-                if (!response) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to deserialize images response.";
-                    continue;
-                }
-
-                for (auto& img : response->images) {
-                    all_images.push_back(std::move(img));
-                }
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << all_images.size()
-                                       << " available images total.";
-            return {true, std::move(all_images)};
+        QtConcurrent::run([clientMgr, image_ids_to_fetch]() -> ImagesResult {
+            return fetchImagesInBatches(clientMgr, image_ids_to_fetch);
         });
 
     all_available_watcher_->setFuture(future);

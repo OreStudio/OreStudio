@@ -153,6 +153,25 @@ private slots:
      */
     void onWindowMenuAboutToShow();
 
+    // Protocol recording slots
+    /**
+     * @brief Toggles protocol message recording on/off.
+     *
+     * When enabled, records all sent/received protocol messages to a file.
+     * If no recording directory is configured, prompts user to select one.
+     */
+    void onRecordSessionToggled(bool checked);
+
+    /**
+     * @brief Opens a file dialog to select and view a recorded session.
+     */
+    void onOpenRecordingTriggered();
+
+    /**
+     * @brief Opens a directory picker to set the recording output directory.
+     */
+    void onSetRecordingDirectoryTriggered();
+
 private:
     /**
      * @brief Updates menu and toolbar action states based on connection status.
@@ -202,6 +221,12 @@ private:
 
     /** @brief Icon displayed in status bar when reconnecting to server */
     QIcon reconnectingIcon_;
+
+    /** @brief Icon for recording off state (gray regular icon) */
+    QIcon recordOffIcon_;
+
+    /** @brief Icon for recording on state (red filled icon) */
+    QIcon recordOnIcon_;
 
     // Entity controllers
     /**

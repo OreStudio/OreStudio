@@ -64,9 +64,26 @@ private:
     int show_info();
 
     /**
+     * @brief Show info for a single file.
+     *
+     * @param file_path Path to the .ores file
+     * @return true if successful, false on error
+     */
+    bool show_info_for_file(const std::filesystem::path& file_path);
+
+    /**
+     * @brief Read and display a single session file.
+     *
+     * @param file_path Path to the .ores file
+     * @return true if successful, false on error
+     */
+    bool read_session_file(const std::filesystem::path& file_path);
+
+    /**
      * @brief Print session header information.
      */
-    void print_header(const domain::session_metadata& metadata);
+    void print_header(const std::filesystem::path& file_path,
+                      const domain::session_metadata& metadata);
 
     /**
      * @brief Print frame list in tshark-like format.

@@ -74,6 +74,12 @@
     <file>icons/ic_fluent_password_reset_48_filled.svg</file>
     <file>icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg</file>
     <file>icons/ic_fluent_arrow_rotate_counterclockwise_20_filled.svg</file>
+    <file>icons/ic_fluent_record_20_regular.svg</file>
+    <file>icons/ic_fluent_record_20_filled.svg</file>
+    <file>icons/ic_fluent_folder_20_regular.svg</file>
+    <file>icons/ic_fluent_folder_20_filled.svg</file>
+    <file>icons/ic_fluent_folder_open_20_regular.svg</file>
+    <file>icons/ic_fluent_folder_open_20_filled.svg</file>
     <file>images/modern-icon.png</file>
     <file>images/ore-studio-background.png</file>
     <file>images/splash-screen.png</file>

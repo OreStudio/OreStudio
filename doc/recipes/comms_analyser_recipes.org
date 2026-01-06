@@ -1,0 +1,230 @@
+:PROPERTIES:
+:ID: ADF4D1EB-5A83-4E14-B2FD-D204DBC91E8E
+:END:
+#+title: Comms Analyser Recipes
+#+author: Marco Craveiro
+#+startup: inlineimages
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+
+Demonstrates the functionality of the [[id:d26b67f9-7987-4b91-98e9-6baf6fe42ad9][ORE Studio Comms Analyser Component]],
+which reads and analyses session recording files (.ores) created by
+ores.qt or other clients with recording enabled.
+
+* Recipes
+  :PROPERTIES:
+  :header-args: :exports both
+  :header-args+: :results raw
+  :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin
+  :header-args+: :var data_dir="../comms"
+  :header-args+: :wrap src text
+  :header-args+: :results output
+  :END:
+
+** General
+
+*** Help
+
+Display the available commands and options.
+
+#+begin_src sh
+./ores.comms.analyser --help
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ores.comms.analyser - ORES session recording analyser
+
+Usage: ores.comms.analyser [command] <session-file> [options]
+
+Commands:
+  read    Read and display session frames (default)
+  info    Display session metadata only
+
+General:
+  -h [ --help ]         Display usage and exit.
+  -v [ --version ]      Output version information and exit.
+  --verbose             Enable verbose output.
+
+Examples:
+  ores.comms.analyser read session-20250115-143205-abc123.ores
+  ores.comms.analyser info session.ores
+  ores.comms.analyser session.ores --verbose
+#+end_src
+
+*** Version
+
+Display the version information.
+
+#+begin_src sh
+./ores.comms.analyser --version
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Session Analyser for ORE Studio v0.0.8
+Copyright (C) 2025 Marco Craveiro.
+License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Build: Provider = LOCAL
+IMPORTANT: build details are NOT for security purposes.
+#+end_src
+
+** Reading Session Files
+
+*** Display Session Metadata
+
+Use the =info= command to display only the session metadata without listing
+all frames. This is useful for quickly checking when and where a session was
+recorded. You can call it against a directory:
+
+#+begin_src sh
+./ores.comms.analyser info ${data_dir}/
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ores.comms.analyser:
+  File: "session-20260106-115622-019b932a.ores"
+  Session ID: 019b932a-50d3-7e71-8e5d-bd46e092365c
+  Start time: 2026-01-06 11:56:22
+  Server: localhost:55555
+  Protocol: v16.1
+  Compression: zlib
+
+ores.comms.analyser:
+  File: "session-20260106-114916-019b9323.ores"
+  Session ID: 019b9323-d06d-7403-bb4c-cd2aa5deb13b
+  Start time: 2026-01-06 11:49:16
+  Server: localhost:55555
+  Protocol: v16.1
+  Compression: zlib
+
+#+end_src
+
+Or call it against a specific file:
+
+#+begin_src sh
+./ores.comms.analyser info ${data_dir}/session-20260106-114916-019b9323.ores
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ores.comms.analyser:
+  File: "session-20260106-114916-019b9323.ores"
+  Session ID: 019b9323-d06d-7403-bb4c-cd2aa5deb13b
+  Start time: 2026-01-06 11:49:16
+  Server: localhost:55555
+  Protocol: v16.1
+  Compression: zlib
+
+#+end_src
+
+*** Display All Frames
+
+Use the =read= command (or just provide the filename) to display all frames
+in the session recording. This shows a Wireshark-like table of all messages
+sent and received.
+
+#+begin_src sh
+./ores.comms.analyser read ${data_dir}/session-20260106-114916-019b9323.ores
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ores.comms.analyser:
+  File: "session-20260106-114916-019b9323.ores"
+  Session ID: 019b9323-d06d-7403-bb4c-cd2aa5deb13b
+  Start time: 2026-01-06 11:49:16
+  Server: localhost:55555
+  Protocol: v16.1
+  Compression: zlib
+
+Duration: 18.291s
+Frames: 12
+
+  No.  Time           Dir   Type                             Length  Info
+----------------------------------------------------------------------------------------------------
+    1  0.001602       ->    get_currency_images_request          32  corr=2 seq=4
+    2  0.002413       ->    subscribe_request                    68  corr=3 seq=5 zlib
+    3  0.002754       ->    subscribe_request                    66  corr=4 seq=6 zlib
+    4  0.014746       <-    get_currency_images_response       4350  corr=2 seq=3 zlib
+    5  0.055431       <-    subscribe_response                   96  corr=3 seq=4 zlib
+    6  0.055812       <-    subscribe_response                   94  corr=4 seq=5 zlib
+    7  6.503335       ->    get_currencies_request               44  corr=5 seq=7 zlib
+    8  6.522655       <-    get_currencies_response            2726  corr=5 seq=6 zlib
+    9  9.320511       ->    get_currency_history_request         45  corr=6 seq=8 zlib
+   10  9.323637       <-    get_currency_history_response       173  corr=6 seq=7 zlib
+   11  18.280607      ->    logout_request                       32  corr=7 seq=9
+   12  18.291296      <-    logout_response                      66  corr=7 seq=8 zlib
+
+12 frames captured
+#+end_src
+
+The columns are:
+
+- *No.*: Frame number in sequence
+- *Time*: Offset from session start in seconds.microseconds
+- *Dir*: Direction (-> sent to server, <- received from server)
+- *Type*: Protocol message type
+- *Length*: Total frame size in bytes (header + payload)
+- *Info*: Additional information (correlation ID, sequence number, compression)
+
+*** Shorthand: Filename Only
+
+If no command is specified, =read= is assumed:
+
+#+begin_src sh
+./ores.comms.analyser ${data_dir}/session-20260106-114916-019b9323.ores
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ores.comms.analyser:
+  File: "session-20260106-114916-019b9323.ores"
+  Session ID: 019b9323-d06d-7403-bb4c-cd2aa5deb13b
+  Start time: 2026-01-06 11:49:16
+  Server: localhost:55555
+  Protocol: v16.1
+  Compression: zlib
+
+Duration: 18.291s
+Frames: 12
+
+  No.  Time           Dir   Type                             Length  Info
+----------------------------------------------------------------------------------------------------
+    1  0.001602       ->    get_currency_images_request          32  corr=2 seq=4
+    2  0.002413       ->    subscribe_request                    68  corr=3 seq=5 zlib
+    3  0.002754       ->    subscribe_request                    66  corr=4 seq=6 zlib
+    4  0.014746       <-    get_currency_images_response       4350  corr=2 seq=3 zlib
+    5  0.055431       <-    subscribe_response                   96  corr=3 seq=4 zlib
+    6  0.055812       <-    subscribe_response                   94  corr=4 seq=5 zlib
+    7  6.503335       ->    get_currencies_request               44  corr=5 seq=7 zlib
+    8  6.522655       <-    get_currencies_response            2726  corr=5 seq=6 zlib
+    9  9.320511       ->    get_currency_history_request         45  corr=6 seq=8 zlib
+   10  9.323637       <-    get_currency_history_response       173  corr=6 seq=7 zlib
+   11  18.280607      ->    logout_request                       32  corr=7 seq=9
+   12  18.291296      <-    logout_response                      66  corr=7 seq=8 zlib
+
+12 frames captured
+#+end_src
+
+** Understanding the Output
+
+*** Correlation IDs
+
+The =corr= field in the Info column shows the correlation ID. Requests and
+their corresponding responses share the same correlation ID, making it easy
+to match request/response pairs.
+
+*** Sequence Numbers
+
+The =seq= field shows the sequence number. This is an incrementing counter
+that helps detect missing or out-of-order frames.
+
+*** Compression
+
+If a frame uses compression, it will be shown in the Info column (e.g., =lz4=
+or =zstd=). The session metadata also shows the negotiated compression type.
+
+| Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |

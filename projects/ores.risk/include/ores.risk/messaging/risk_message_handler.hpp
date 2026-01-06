@@ -25,7 +25,7 @@
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
-#include "ores.risk/repository/currency_repository.hpp"
+#include "ores.risk/service/currency_service.hpp"
 
 namespace ores::risk::messaging {
 
@@ -101,7 +101,7 @@ private:
 
     database::context ctx_;
     std::shared_ptr<variability::service::system_flags_service> system_flags_;
-    repository::currency_repository currency_repo_;
+    service::currency_service currency_service_;
 };
 
 }

@@ -19,6 +19,7 @@
  */
 #include "ores.comms.analyser/config/parser.hpp"
 
+#include <filesystem>
 #include <iostream>
 #include <boost/program_options.hpp>
 #include "ores.utility/version/version.hpp"
@@ -58,20 +59,34 @@ std::optional<options> parser::parse(int argc, const char* argv[]) {
 
     if (vm.count("help")) {
         std::cout << "ores.comms.analyser - ORES session recording analyser\n\n"
-                  << "Usage: ores.comms.analyser [command] <session-file> [options]\n\n"
+                  << "Usage: ores.comms.analyser [command] <file-or-directory> [options]\n\n"
                   << "Commands:\n"
                   << "  read    Read and display session frames (default)\n"
                   << "  info    Display session metadata only\n\n"
+                  << "Arguments:\n"
+                  << "  file-or-directory   A .ores file or directory containing .ores files\n\n"
                   << visible << "\n"
                   << "Examples:\n"
-                  << "  ores.comms.analyser read session-20250115-143205-abc123.ores\n"
+                  << "  ores.comms.analyser read session.ores\n"
                   << "  ores.comms.analyser info session.ores\n"
+                  << "  ores.comms.analyser info ./recordings/     # process all .ores in directory\n"
                   << "  ores.comms.analyser session.ores --verbose\n";
         return std::nullopt;
     }
 
     if (vm.count("version")) {
-        std::cout << "ores.comms.analyser version " << ORES_VERSION << "\n";
+        std::cout << "Session Analyser for ORE Studio v" << ORES_VERSION << "\n"
+                  << "Copyright (C) 2025 Marco Craveiro.\n"
+                  << "License GPLv3: GNU GPL version 3 or later "
+                  << "<http://gnu.org/licenses/gpl.html>.\n"
+                  << "This is free software: you are free to change and redistribute it.\n"
+                  << "There is NO WARRANTY, to the extent permitted by law.\n";
+
+        const std::string build_info(ORES_BUILD_INFO);
+        if (!build_info.empty()) {
+            std::cout << build_info << "\n"
+                      << "IMPORTANT: build details are NOT for security purposes.\n";
+        }
         return std::nullopt;
     }
 
@@ -94,8 +109,13 @@ std::optional<options> parser::parse(int argc, const char* argv[]) {
     }
 
     if (opts.input_file.empty()) {
-        throw std::runtime_error("No input file specified. "
+        throw std::runtime_error("No input file or directory specified. "
             "Use --help for usage information.");
+    }
+
+    // Validate path exists
+    if (!std::filesystem::exists(opts.input_file)) {
+        throw std::runtime_error("Path does not exist: " + opts.input_file.string());
     }
 
     opts.verbose = common_configuration::read_options(vm).verbose;

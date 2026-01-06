@@ -25,6 +25,7 @@
 #include <optional>
 #include "ores.database/domain/context.hpp"
 #include "ores.risk/domain/currency.hpp"
+#include "ores.risk/domain/currency_version_history.hpp"
 #include "ores.risk/repository/currency_repository.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 
@@ -86,9 +87,9 @@ public:
      * @brief Deletes a currency by its ISO code.
      *
      * @param iso_code The ISO code of the currency to delete.
-     * @return true if the operation was successful.
+     * @throws std::exception on failure.
      */
-    bool delete_currency(const std::string& iso_code);
+    void delete_currency(const std::string& iso_code);
 
     /**
      * @brief Retrieves a single currency by its ISO code.
@@ -105,6 +106,19 @@ public:
      * @return Vector of all historical versions of the currency.
      */
     std::vector<domain::currency> get_currency_history(const std::string& iso_code);
+
+    /**
+     * @brief Retrieves currency version history with version metadata.
+     *
+     * Converts raw currency records to currency_version objects with
+     * version numbers, recorded_by, and recorded_at metadata. Versions
+     * are ordered from newest to oldest.
+     *
+     * @param iso_code The ISO code of the currency.
+     * @return The version history, or std::nullopt if currency not found.
+     */
+    std::optional<domain::currency_version_history>
+    get_currency_version_history(const std::string& iso_code);
 
 private:
     context ctx_;

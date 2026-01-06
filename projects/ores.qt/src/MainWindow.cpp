@@ -34,6 +34,9 @@
 #include <QFile>
 #include <QFont>
 #include <QIcon>
+#include <QFileDialog>
+#include <QSettings>
+#include <QStandardPaths>
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
@@ -111,6 +114,17 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_clock_16_regular.svg", iconColor));
     ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
+    ui_->ActionOpenRecording->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_folder_open_20_regular.svg", iconColor));
+    ui_->ActionSetRecordingDirectory->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_folder_20_regular.svg", iconColor));
+
+    // Create record icons - regular (gray) for off, filled (red) for on
+    recordOffIcon_ = IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_record_20_regular.svg", iconColor);
+    recordOnIcon_ = IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_record_20_filled.svg", QColor(220, 80, 80)); // Red for recording
+    ui_->ActionRecordSession->setIcon(recordOffIcon_);
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this,
@@ -130,6 +144,33 @@ MainWindow::MainWindow(QWidget* parent) :
         &MainWindow::onDetachAllTriggered);
     connect(ui_->menuWindow, &QMenu::aboutToShow, this,
         &MainWindow::onWindowMenuAboutToShow);
+
+    // Connect Protocol recording actions
+    connect(ui_->ActionRecordSession, &QAction::toggled, this,
+        &MainWindow::onRecordSessionToggled);
+    connect(ui_->ActionOpenRecording, &QAction::triggered, this,
+        &MainWindow::onOpenRecordingTriggered);
+    connect(ui_->ActionSetRecordingDirectory, &QAction::triggered, this,
+        &MainWindow::onSetRecordingDirectoryTriggered);
+
+    // Connect recording signals
+    connect(clientManager_, &ClientManager::recordingStarted, this, [this](const QString& filePath) {
+        ui_->statusbar->showMessage(QString("Recording to: %1").arg(filePath), 5000);
+        // Ensure icon shows recording is active
+        ui_->ActionRecordSession->setIcon(recordOnIcon_);
+        ui_->ActionRecordSession->blockSignals(true);
+        ui_->ActionRecordSession->setChecked(true);
+        ui_->ActionRecordSession->blockSignals(false);
+    });
+    connect(clientManager_, &ClientManager::recordingStopped, this, [this]() {
+        ui_->statusbar->showMessage("Recording stopped.", 3000);
+        // Ensure checkbox is unchecked when recording stops externally
+        // Block signals to prevent recursive toggle
+        ui_->ActionRecordSession->blockSignals(true);
+        ui_->ActionRecordSession->setChecked(false);
+        ui_->ActionRecordSession->setIcon(recordOffIcon_);
+        ui_->ActionRecordSession->blockSignals(false);
+    });
 
     // Connect ClientManager signals
     connect(clientManager_, &ClientManager::connected, this, &MainWindow::updateMenuState);
@@ -385,6 +426,13 @@ void MainWindow::updateMenuState() {
     ui_->ActionMyAccount->setEnabled(isConnected);
     ui_->ActionMySessions->setEnabled(isConnected);
 
+    // Protocol recording can be enabled before connection (will start on connect)
+    // Only disable when disconnecting if we were recording
+    if (!isConnected && clientManager_ && clientManager_->isRecording()) {
+        // Keep the checkbox checked but recording is now pending
+        ui_->statusbar->showMessage("Recording pending - will start on next connection", 3000);
+    }
+
     // Update connection status icon in status bar
     if (isConnected) {
         connectionStatusIconLabel_->setPixmap(connectedIcon_.pixmap(16, 16));
@@ -556,6 +604,118 @@ void MainWindow::onWindowMenuAboutToShow() {
                 windowAction->setChecked(true);
             }
         }
+    }
+}
+
+void MainWindow::onRecordSessionToggled(bool checked) {
+    BOOST_LOG_SEV(lg(), debug) << "Record Session toggled: " << (checked ? "on" : "off");
+
+    if (checked) {
+        // Get recording directory from settings or prompt user
+        QSettings settings;
+        QString recordingDir = settings.value("telemetry/recording_directory").toString();
+
+        if (recordingDir.isEmpty()) {
+            // First time - prompt user to select directory
+            recordingDir = QFileDialog::getExistingDirectory(
+                this,
+                tr("Select Recording Directory"),
+                QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation),
+                QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+            if (recordingDir.isEmpty()) {
+                // User cancelled - uncheck the action without triggering slot again
+                ui_->ActionRecordSession->blockSignals(true);
+                ui_->ActionRecordSession->setChecked(false);
+                ui_->ActionRecordSession->blockSignals(false);
+                return;
+            }
+
+            // Save the directory for future use
+            settings.setValue("telemetry/recording_directory", recordingDir);
+            BOOST_LOG_SEV(lg(), info) << "Recording directory set to: "
+                                      << recordingDir.toStdString();
+        }
+
+        // Enable recording (works before or after connection)
+        if (clientManager_->enableRecording(recordingDir.toStdString())) {
+            // Update icon to show recording is active
+            ui_->ActionRecordSession->setIcon(recordOnIcon_);
+            if (clientManager_->isConnected()) {
+                BOOST_LOG_SEV(lg(), info) << "Recording enabled to: "
+                                          << recordingDir.toStdString();
+            } else {
+                BOOST_LOG_SEV(lg(), info) << "Recording will start on connect to: "
+                                          << recordingDir.toStdString();
+                ui_->statusbar->showMessage(
+                    QString("Recording enabled - will start when connected"), 5000);
+            }
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Failed to enable recording";
+            ui_->statusbar->showMessage("Failed to enable recording", 5000);
+            ui_->ActionRecordSession->blockSignals(true);
+            ui_->ActionRecordSession->setChecked(false);
+            ui_->ActionRecordSession->blockSignals(false);
+        }
+    } else {
+        // Disable recording
+        clientManager_->disableRecording();
+        // Update icon to show recording is off
+        ui_->ActionRecordSession->setIcon(recordOffIcon_);
+        BOOST_LOG_SEV(lg(), info) << "Recording disabled";
+    }
+}
+
+void MainWindow::onOpenRecordingTriggered() {
+    BOOST_LOG_SEV(lg(), debug) << "Open Recording triggered";
+
+    // Get the last used recording directory as the starting point
+    QSettings settings;
+    QString startDir = settings.value("telemetry/recording_directory",
+        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
+
+    QString filePath = QFileDialog::getOpenFileName(
+        this,
+        tr("Open Recording"),
+        startDir,
+        tr("ORE Studio Recordings (*.ores);;All Files (*)"));
+
+    if (filePath.isEmpty()) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Opening recording: " << filePath.toStdString();
+
+    // TODO: Implement recording viewer dialog
+    // For now, just show a message
+    ui_->statusbar->showMessage(QString("Opening recording: %1 (viewer not yet implemented)")
+        .arg(filePath), 5000);
+}
+
+void MainWindow::onSetRecordingDirectoryTriggered() {
+    BOOST_LOG_SEV(lg(), debug) << "Set Recording Directory triggered";
+
+    QSettings settings;
+    QString currentDir = settings.value("telemetry/recording_directory",
+        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
+
+    QString newDir = QFileDialog::getExistingDirectory(
+        this,
+        tr("Select Recording Directory"),
+        currentDir,
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if (newDir.isEmpty()) {
+        return; // User cancelled
+    }
+
+    settings.setValue("telemetry/recording_directory", newDir);
+    BOOST_LOG_SEV(lg(), info) << "Recording directory updated to: " << newDir.toStdString();
+    ui_->statusbar->showMessage(QString("Recording directory set to: %1").arg(newDir), 5000);
+
+    // If currently recording, update the directory for the next recording
+    if (clientManager_) {
+        clientManager_->setRecordingDirectory(newDir.toStdString());
     }
 }
 

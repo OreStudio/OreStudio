@@ -14,11 +14,13 @@ using the org-mode publishing system.
 ** Meta-Skills
 
 - [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][Skill Manager]]: Skill to create new skills.
-- [[id:44d7a328-f69c-4ee9-83a5-74bd3634ad69][Skill Review]]: Review skills for consistency, conflicts, duplication, and alignment with codebase.
+- [[id:44d7a328-f69c-4ee9-83a5-74bd3634ad69][Skill Review]]: Review skills for consistency, conflicts, duplication, and
+  alignment with codebase.
 
 ** Documentation
 
-- [[id:2df8adaf-20c9-4757-9399-798eec6df828][Agile Product Owner]]: Manage development team through story creation, prioritization, and sprint planning.
+- [[id:2df8adaf-20c9-4757-9399-798eec6df828][Agile Product Owner]]: Manage development team through story creation,
+  prioritization, and sprint planning.
 - [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]]: PlantUML class diagrams for C++ components.
 - [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][PlantUML ER Modeler]]: Entity-Relationship diagrams for database schema.
 - [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][New Sprint]]: Create new sprint backlogs.
@@ -42,16 +44,20 @@ using the org-mode publishing system.
 - [[id:37b88704-7a45-4347-a80a-9d9b4ee71bef][System Architect]]: Analyze system architecture and plan incremental migrations
   for system-wide changes.
 - [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][Component Creator]]: Create new components in the ORE Studio product.
-- [[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][Binary Protocol Developer]]: Guide for extending and modifying the ORE Studio binary messaging protocol.
+- [[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][Binary Protocol Developer]]: Guide for extending and modifying the ORE Studio
+  binary messaging protocol.
 
 ** Design
 
-- [[id:460c89da-50d2-40c3-88b2-be52e430d170][Brainstorming]]: Explore user intent, requirements and design through collaborative dialogue before implementation.
+- [[id:460c89da-50d2-40c3-88b2-be52e430d170][Brainstorming]]: Explore user intent, requirements and design through
+  collaborative dialogue before implementation.
+- [[id:89935F29-7C6C-1E84-EAD3-EC4BD20421F5][Claude Design Skill]]: User Interface design skill.
 
 ** Code Review
 
 - [[id:04ca6bd9-7739-4213-a9dc-17aaace43252][Code Review PR]]: Review pull request changes for code quality, conventions, and correctness.
-- [[id:dadf4117-757a-4eef-a137-cc2ee8023c73][Code Review Component]]: Deep review of a component for technical debt, modernization, and convention compliance.
+- [[id:dadf4117-757a-4eef-a137-cc2ee8023c73][Code Review Component]]: Deep review of a component for technical debt,
+  modernization, and convention compliance.
 
 * Rebuilding skills
 

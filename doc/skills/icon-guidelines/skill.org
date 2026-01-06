@@ -424,7 +424,7 @@ Text validation, spell check, language processing.
 | Forward              | arrow_right_20             | Default | Active |
 | Download             | arrow_download_20          | Default | Active |
 | Sync                 | arrow_sync_20              | Default | Active |
-| Undo                 | arrow_rotate_counter...    | Default | Active |
+| Undo                 | arrow_rotate_counterclockwise_20 | Default | Active |
 | Info                 | info_20                    | Default | Active |
 | Warning              | warning_20                 | Default | Alert  |
 | Error                | error_circle_20            | Default | Alert  |

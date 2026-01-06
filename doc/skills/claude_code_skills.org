@@ -52,6 +52,7 @@ using the org-mode publishing system.
 - [[id:460c89da-50d2-40c3-88b2-be52e430d170][Brainstorming]]: Explore user intent, requirements and design through
   collaborative dialogue before implementation.
 - [[id:89935F29-7C6C-1E84-EAD3-EC4BD20421F5][Claude Design Skill]]: User Interface design skill.
+- [[id:2A167638-8B5A-4691-90CB-4A6B55785108][Icon Guidelines]]: Visual language reference for consistent iconography.
 
 ** Code Review
 

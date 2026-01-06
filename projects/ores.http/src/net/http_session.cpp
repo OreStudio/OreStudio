@@ -36,11 +36,13 @@ namespace asio = boost::asio;
 http_session::http_session(asio::ip::tcp::socket socket,
     std::shared_ptr<router> router,
     std::shared_ptr<middleware::jwt_authenticator> authenticator,
-    const http_server_options& options)
+    const http_server_options& options,
+    session_bytes_callback bytes_callback)
     : stream_(std::move(socket))
     , router_(std::move(router))
     , authenticator_(std::move(authenticator))
-    , options_(options) {
+    , options_(options)
+    , bytes_callback_(std::move(bytes_callback)) {
 
     auto endpoint = stream_.socket().remote_endpoint();
     remote_address_ = endpoint.address().to_string();
@@ -214,6 +216,22 @@ asio::awaitable<void> http_session::handle_request(
 
     auto beast_resp = convert_response(response, req.version(), req.keep_alive());
     co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
+
+    // Update session bytes if we have an authenticated user with session info
+    if (bytes_callback_ && domain_req.authenticated_user &&
+        domain_req.authenticated_user->session_id &&
+        domain_req.authenticated_user->session_start_time) {
+        try {
+            bytes_callback_(
+                *domain_req.authenticated_user->session_id,
+                *domain_req.authenticated_user->session_start_time,
+                response.body.size(),
+                domain_req.body.size());
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to update session bytes: "
+                                      << e.what();
+        }
+    }
 }
 
 domain::http_request http_session::convert_request(

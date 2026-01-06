@@ -464,13 +464,14 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
                 role_names.push_back(role.name);
             }
 
-            // Create JWT claims with session ID
+            // Create JWT claims with session ID and start time
             http::domain::jwt_claims claims;
             claims.subject = boost::uuids::to_string(account.id);
             claims.username = account.username;
             claims.email = account.email;
             claims.roles = role_names;
             claims.session_id = boost::uuids::to_string(sess.id);
+            claims.session_start_time = sess.start_time;
             claims.issued_at = std::chrono::system_clock::now();
             claims.expires_at = claims.issued_at + std::chrono::hours(24);
 
@@ -498,6 +499,9 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
         }
         oss << "}";
 
+        // Note: bytes_sent for the login response will be tracked by the
+        // centralized session_bytes_callback for subsequent authenticated requests.
+        // For login, bytes_received was already set when creating the session.
         co_return http_response::json(oss.str());
     } catch (const std::runtime_error&) {
         BOOST_LOG_SEV(lg(), warn) << "Login failed for user: " << login_req->username;

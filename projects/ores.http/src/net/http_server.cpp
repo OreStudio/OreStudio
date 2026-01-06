@@ -139,7 +139,7 @@ asio::awaitable<void> http_server::accept_connections() {
 
             // Create and run session
             auto session = std::make_shared<http_session>(
-                std::move(socket), router_, authenticator_, options_);
+                std::move(socket), router_, authenticator_, options_, bytes_callback_);
 
             asio::co_spawn(io_ctx_,
                 [this, session]() -> asio::awaitable<void> {

@@ -22,16 +22,19 @@
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include "ores.http/net/http_server.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
+#include "ores.iam/repository/session_repository.hpp"
 #include "ores.http.server/routes/iam_routes.hpp"
 #include "ores.http.server/routes/risk_routes.hpp"
 #include "ores.http.server/routes/variability_routes.hpp"
 #include "ores.http.server/routes/assets_routes.hpp"
+#include "ores.geo/service/geolocation_service.hpp"
 
 namespace ores::http_server::app {
 
@@ -59,9 +62,29 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     auto system_flags = std::make_shared<variability::service::system_flags_service>(ctx);
     auto sessions = std::make_shared<comms::service::auth_session_service>();
     auto auth_service = std::make_shared<iam::service::authorization_service>(ctx);
+    auto geo_service = std::make_shared<geo::service::geolocation_service>(ctx);
 
     // Create HTTP server
     http::net::http_server server(io_ctx, cfg.server);
+
+    // Set up session bytes tracking callback
+    auto session_repo = std::make_shared<iam::repository::session_repository>(ctx);
+    server.set_session_bytes_callback(
+        [session_repo](const std::string& session_id_str,
+            std::chrono::system_clock::time_point start_time,
+            std::size_t bytes_sent,
+            std::size_t bytes_received) {
+            try {
+                boost::uuids::string_generator gen;
+                auto session_id = gen(session_id_str);
+                session_repo->update_bytes(session_id, start_time,
+                    bytes_sent, bytes_received);
+            } catch (const std::exception& e) {
+                // Log but don't throw - bytes tracking is not critical
+                BOOST_LOG_SEV(lg(), warn) << "Failed to update session bytes: "
+                                          << e.what();
+            }
+        });
 
     // Get router for adding custom routes
     auto router = server.get_router();
@@ -92,7 +115,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     // Register IAM routes (accounts, auth, roles, sessions)
     routes::iam_routes iam(ctx, system_flags, sessions, auth_service,
-        server.get_authenticator());
+        server.get_authenticator(), geo_service);
     iam.register_routes(router, registry);
 
     // Register Risk routes (currencies)

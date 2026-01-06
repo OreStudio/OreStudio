@@ -30,6 +30,42 @@
 namespace ores::iam::domain {
 
 /**
+ * @brief Protocol used for the session connection.
+ */
+enum class session_protocol : std::uint8_t {
+    /**
+     * @brief ORE Studio binary protocol over TCP.
+     */
+    binary = 0,
+
+    /**
+     * @brief HTTP/REST API with JWT authentication.
+     */
+    http = 1
+};
+
+/**
+ * @brief Converts a session_protocol to its string representation.
+ */
+[[nodiscard]] constexpr std::string_view to_string(session_protocol p) {
+    switch (p) {
+        case session_protocol::binary: return "binary";
+        case session_protocol::http: return "http";
+        default: return "unknown";
+    }
+}
+
+/**
+ * @brief Converts a string to session_protocol.
+ */
+[[nodiscard]] constexpr session_protocol
+session_protocol_from_string(std::string_view s) {
+    if (s == "binary") return session_protocol::binary;
+    if (s == "http") return session_protocol::http;
+    return session_protocol::binary; // Default fallback
+}
+
+/**
  * @brief Represents a user session in the system.
  *
  * This is the unified session type that serves both as:
@@ -100,6 +136,11 @@ struct session final {
      * Empty if geolocation is not available or IP is private/localhost.
      */
     std::string country_code;
+
+    /**
+     * @brief Protocol used for this session (binary or HTTP).
+     */
+    session_protocol protocol = session_protocol::binary;
 
     /**
      * @brief Calculates the session duration.

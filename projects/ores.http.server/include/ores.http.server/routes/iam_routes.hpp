@@ -94,7 +94,7 @@ public:
         std::shared_ptr<comms::service::auth_session_service> sessions,
         std::shared_ptr<iam::service::authorization_service> auth_service,
         std::shared_ptr<http::middleware::jwt_authenticator> authenticator,
-        std::shared_ptr<geo::service::geolocation_service> geo_service = nullptr);
+        std::shared_ptr<geo::service::geolocation_service> geo_service);
 
     /**
      * @brief Registers all IAM routes with the router.

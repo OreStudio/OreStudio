@@ -149,6 +149,11 @@ std::expected<domain::jwt_claims, jwt_error> jwt_authenticator::validate(
             claims.session_id = decoded.get_payload_claim("session_id").as_string();
         }
 
+        if (decoded.has_payload_claim("session_start")) {
+            auto start_ts = decoded.get_payload_claim("session_start").as_integer();
+            claims.session_start_time = std::chrono::system_clock::from_time_t(start_ts);
+        }
+
         BOOST_LOG_SEV(lg(), debug) << "JWT claims extracted, subject: " << claims.subject
             << ", roles: " << claims.roles.size();
 
@@ -228,6 +233,12 @@ std::optional<std::string> jwt_authenticator::create_token(
         if (claims.session_id) {
             token = token.set_payload_claim("session_id",
                 jwt::basic_claim<json_traits>(std::string(*claims.session_id)));
+        }
+
+        if (claims.session_start_time) {
+            auto start_ts = std::chrono::system_clock::to_time_t(*claims.session_start_time);
+            token = token.set_payload_claim("session_start",
+                jwt::basic_claim<json_traits>(boost::json::value(start_ts)));
         }
 
         auto signed_token = token.sign(jwt::algorithm::hs256{secret_});

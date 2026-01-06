@@ -21,6 +21,7 @@
 #define ORES_HTTP_DOMAIN_HTTP_REQUEST_HPP
 
 #include <string>
+#include <cstdint>
 #include <optional>
 #include <unordered_map>
 #include "ores.http/domain/http_method.hpp"
@@ -66,6 +67,16 @@ struct http_request final {
      * @brief Remote endpoint address.
      */
     std::string remote_address;
+
+    /**
+     * @brief HTTP version major number (e.g., 1 for HTTP/1.1).
+     */
+    std::uint16_t http_version_major = 1;
+
+    /**
+     * @brief HTTP version minor number (e.g., 1 for HTTP/1.1).
+     */
+    std::uint16_t http_version_minor = 1;
 
     /**
      * @brief Authenticated user claims, if present.

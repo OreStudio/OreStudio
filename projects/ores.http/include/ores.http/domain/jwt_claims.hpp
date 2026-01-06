@@ -78,6 +78,15 @@ struct jwt_claims final {
      * created during login, allowing proper session termination on logout.
      */
     std::optional<std::string> session_id;
+
+    /**
+     * @brief Optional session start time for efficient database updates.
+     *
+     * The sessions table uses (id, start_time) as composite primary key
+     * for TimescaleDB hypertable partitioning. Including start_time in the
+     * token allows efficient UPDATE queries without full table scans.
+     */
+    std::optional<std::chrono::system_clock::time_point> session_start_time;
 };
 
 }

@@ -79,6 +79,7 @@ domain::session session_mapper::map(const session_entity& v) {
     r.bytes_sent = static_cast<std::uint64_t>(v.bytes_sent);
     r.bytes_received = static_cast<std::uint64_t>(v.bytes_received);
     r.country_code = v.country_code;
+    r.protocol = domain::session_protocol_from_string(v.protocol);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
@@ -99,6 +100,7 @@ session_entity session_mapper::map(const domain::session& v) {
     r.bytes_sent = static_cast<std::int64_t>(v.bytes_sent);
     r.bytes_received = static_cast<std::int64_t>(v.bytes_received);
     r.country_code = v.country_code;
+    r.protocol = std::string(domain::to_string(v.protocol));
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
     return r;

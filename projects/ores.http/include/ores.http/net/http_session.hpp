@@ -22,6 +22,8 @@
 
 #include <memory>
 #include <string>
+#include <chrono>
+#include <functional>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/beast/core.hpp>
@@ -34,6 +36,23 @@
 namespace ores::http::net {
 
 /**
+ * @brief Callback type for updating session bytes after each request.
+ *
+ * Called after each authenticated request with the session ID, start time,
+ * and byte counts. The callback should update the session record in the database.
+ *
+ * @param session_id UUID string of the session
+ * @param start_time Session start time (for efficient hypertable lookup)
+ * @param bytes_sent Number of bytes sent in this request's response
+ * @param bytes_received Number of bytes received in this request's body
+ */
+using session_bytes_callback = std::function<void(
+    const std::string& session_id,
+    std::chrono::system_clock::time_point start_time,
+    std::size_t bytes_sent,
+    std::size_t bytes_received)>;
+
+/**
  * @brief Handles a single HTTP session/connection.
  */
 class http_session final : public std::enable_shared_from_this<http_session> {
@@ -41,7 +60,8 @@ public:
     explicit http_session(boost::asio::ip::tcp::socket socket,
         std::shared_ptr<router> router,
         std::shared_ptr<middleware::jwt_authenticator> authenticator,
-        const http_server_options& options);
+        const http_server_options& options,
+        session_bytes_callback bytes_callback = nullptr);
 
     /**
      * @brief Starts processing the session.
@@ -76,6 +96,7 @@ private:
     std::shared_ptr<middleware::jwt_authenticator> authenticator_;
     http_server_options options_;
     std::string remote_address_;
+    session_bytes_callback bytes_callback_;
 };
 
 }

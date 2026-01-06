@@ -27,7 +27,9 @@ using namespace ores::telemetry::log;
 
 risk_message_handler::risk_message_handler(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags)
-    : ctx_(ctx), system_flags_(std::move(system_flags)) {}
+    : ctx_(std::move(ctx))
+    , system_flags_(std::move(system_flags))
+    , currency_service_(ctx_) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      comms::messaging::error_code>>
@@ -77,8 +79,7 @@ handle_save_currency_request(std::span<const std::byte> payload) {
 
     save_currency_response response;
     try {
-        // Write currency to repository (bitemporal - creates new version)
-        currency_repo_.write(ctx_, request.currency);
+        currency_service_.save_currency(request.currency);
         response.success = true;
         response.message = "Currency saved successfully";
         BOOST_LOG_SEV(lg(), info) << "Successfully saved currency: "
@@ -119,9 +120,8 @@ handle_get_currencies_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Fetching currencies with offset: "
                                << request.offset << ", limit: " << request.limit;
 
-    // Retrieve paginated currencies and total count from repository
-    auto currencies = currency_repo_.read_latest(ctx_, request.offset, request.limit);
-    auto total_count = currency_repo_.get_total_currency_count(ctx_);
+    auto currencies = currency_service_.list_currencies(request.offset, request.limit);
+    auto total_count = currency_service_.count_currencies();
 
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << currencies.size()
                               << " currencies (total available: " << total_count << ")";
@@ -158,17 +158,14 @@ handle_delete_currency_request(std::span<const std::byte> payload) {
         delete_currency_result result;
         result.iso_code = iso_code;
 
-        try {
-            // Remove currency from repository
-            currency_repo_.remove(ctx_, iso_code);
+        if (currency_service_.delete_currency(iso_code)) {
             result.success = true;
             result.message = "Currency deleted successfully";
             BOOST_LOG_SEV(lg(), info) << "Successfully deleted currency: " << iso_code;
-        } catch (const std::exception& e) {
+        } else {
             result.success = false;
-            result.message = std::string("Failed to delete currency: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting currency "
-                                       << iso_code << ": " << e.what();
+            result.message = "Failed to delete currency";
+            BOOST_LOG_SEV(lg(), error) << "Error deleting currency " << iso_code;
         }
 
         response.results.push_back(std::move(result));
@@ -198,44 +195,18 @@ handle_get_currency_history_request(std::span<const std::byte> payload) {
 
     get_currency_history_response response;
     try {
-        // Get all versions of the currency from repository
-        auto currencies = currency_repo_.read_all(ctx_, request.iso_code);
+        auto history_opt = currency_service_.get_currency_version_history(request.iso_code);
 
-        if (currencies.empty()) {
+        if (!history_opt) {
             response.success = false;
             response.message = "Currency not found: " + request.iso_code;
             BOOST_LOG_SEV(lg(), warn) << "No history found for currency: " << request.iso_code;
             co_return response.serialize();
         }
 
-        // Convert currencies to currency_version objects
-        domain::currency_version_history history;
-        history.iso_code = request.iso_code;
-
-        // Sort by version descending (newest first) - use database version field
-        std::sort(currencies.begin(), currencies.end(),
-            [](const auto& a, const auto& b) {
-                return a.version > b.version;
-            });
-
-        for (const auto& currency : currencies) {
-            domain::currency_version version;
-            version.data = currency;
-            version.version_number = currency.version;  // Use database version field
-            version.recorded_by = currency.recorded_by;
-            version.recorded_at = currency.recorded_at;
-            version.change_summary = "Version " + std::to_string(version.version_number);
-
-            BOOST_LOG_SEV(lg(), trace) << "Adding version: iso_code=" << currency.iso_code
-                                       << ", db_version=" << currency.version
-                                       << ", version_number=" << version.version_number;
-
-            history.versions.push_back(std::move(version));
-        }
-
         response.success = true;
         response.message = "History retrieved successfully";
-        response.history = std::move(history);
+        response.history = std::move(*history_opt);
 
         BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << response.history.versions.size()
                                   << " versions for currency: " << request.iso_code;

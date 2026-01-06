@@ -180,13 +180,17 @@ asio::awaitable<http_response> risk_routes::handle_get_currency_history(const ht
         }
 
         risk::service::currency_service service(ctx_);
-        auto history_records = service.get_currency_history(code);
+        auto history_opt = service.get_currency_version_history(code);
 
         risk::messaging::get_currency_history_response resp;
-        resp.success = true;
-        resp.history.iso_code = code;
-        // Note: Would need to convert currencies to currency_version objects
-        // For now, leaving history empty until currency_version conversion is added
+        if (!history_opt) {
+            resp.success = false;
+            resp.message = "Currency not found: " + code;
+        } else {
+            resp.success = true;
+            resp.message = "History retrieved successfully";
+            resp.history = std::move(*history_opt);
+        }
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {

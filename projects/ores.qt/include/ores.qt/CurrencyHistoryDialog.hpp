@@ -27,7 +27,9 @@
 #include <QVector>
 #include <QToolBar>
 #include <QAction>
+#include <QLabel>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.risk/domain/currency_version.hpp"
 #include "ores.risk/domain/currency_version_history.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
@@ -65,7 +67,25 @@ public:
 
     void loadHistory();
 
+    /**
+     * @brief Set the image cache for displaying currency flags.
+     */
+    void setImageCache(ImageCache* imageCache);
+
     QSize sizeHint() const override; // Provide optimal size based on table content
+
+    /**
+     * @brief Mark the history data as stale and reload.
+     *
+     * Called when a notification is received indicating this currency has
+     * changed on the server. Automatically reloads the history data.
+     */
+    void markAsStale();
+
+    /**
+     * @brief Returns the ISO code of the currency.
+     */
+    [[nodiscard]] QString isoCode() const { return isoCode_; }
 
 signals:
     void statusChanged(const QString& message);
@@ -90,6 +110,7 @@ private slots:
     void onHistoryLoadError(const QString& error);
     void onOpenClicked();
     void onRevertClicked();
+    void onReloadClicked();
 
 private:
     void displayChangesTab(int version_index);
@@ -107,16 +128,20 @@ private:
 
     void setupToolbar();
     void updateButtonStates();
+    void updateFlagDisplay();
     int selectedVersionIndex() const;
 
     std::unique_ptr<Ui::CurrencyHistoryDialog> ui_;
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     QString isoCode_;
     risk::domain::currency_version_history history_;
 
     QToolBar* toolBar_;
+    QAction* reloadAction_;
     QAction* openAction_;
     QAction* revertAction_;
+    QLabel* flagIconLabel_;
 };
 
 }

@@ -197,6 +197,9 @@ void CurrencyController::onAddNewRequested() {
         detailDialog->setClientManager(clientManager_);
         detailDialog->setUsername(username_.toStdString());
     }
+    if (imageCache_) {
+        detailDialog->setImageCache(imageCache_);
+    }
 
     connect(detailDialog, &CurrencyDetailDialog::statusMessage,
             this, [this](const QString& message) {
@@ -215,6 +218,8 @@ void CurrencyController::onAddNewRequested() {
     detailWindow->setWindowTitle("New Currency");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
 
     allDetachableWindows_.append(detailWindow);
     QPointer<CurrencyController> self = this;
@@ -264,6 +269,9 @@ void CurrencyController::onShowCurrencyDetails(
         detailDialog->setClientManager(clientManager_);
         detailDialog->setUsername(username_.toStdString());
     }
+    if (imageCache_) {
+        detailDialog->setImageCache(imageCache_);
+    }
 
     connect(detailDialog, &CurrencyDetailDialog::statusMessage,
             this, [this](const QString& message) {
@@ -282,6 +290,8 @@ void CurrencyController::onShowCurrencyDetails(
     detailWindow->setWindowTitle(QString("Currency Details: %1").arg(isoCode));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
 
     // Track this detail window
     track_window(windowKey, detailWindow);
@@ -333,6 +343,9 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
 
     auto* historyWidget = new CurrencyHistoryDialog(isoCode, clientManager_,
                                                      mainWindow_);
+    if (imageCache_) {
+        historyWidget->setImageCache(imageCache_);
+    }
 
     connect(historyWidget, &CurrencyHistoryDialog::statusChanged,
             this, [this](const QString& message) {
@@ -357,6 +370,8 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
     historyWindow->setWindowTitle(QString("History: %1").arg(isoCode));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+    historyWindow->setWindowFlags(historyWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -390,14 +405,16 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
 }
 
 void CurrencyController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp) {
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
     // Check if this is a currency change event
     if (eventType != QString::fromStdString(std::string{currency_event_name})) {
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Received currency change notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString();
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " ISO codes";
 
     // If the currency list window is open, mark it as stale
     if (currencyListWindow_) {
@@ -406,6 +423,32 @@ void CurrencyController::onNotificationReceived(
         if (currencyWidget) {
             currencyWidget->markAsStale();
             BOOST_LOG_SEV(lg(), debug) << "Marked currency window as stale";
+        }
+    }
+
+    // Notify open detail/history dialogs for affected currencies
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        const QString& key = it.key();
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (key.startsWith("details:")) {
+            if (auto* detailDialog = qobject_cast<CurrencyDetailDialog*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(detailDialog->isoCode())) {
+                    detailDialog->markAsStale();
+                    BOOST_LOG_SEV(lg(), debug) << "Marked detail dialog as stale for: "
+                                               << detailDialog->isoCode().toStdString();
+                }
+            }
+        } else if (key.startsWith("history:")) {
+            if (auto* historyDialog = qobject_cast<CurrencyHistoryDialog*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(historyDialog->isoCode())) {
+                    historyDialog->markAsStale();
+                    BOOST_LOG_SEV(lg(), debug) << "Marked history dialog as stale for: "
+                                               << historyDialog->isoCode().toStdString();
+                }
+            }
         }
     }
 }
@@ -432,6 +475,9 @@ void CurrencyController::onOpenCurrencyVersion(
         detailDialog->setClientManager(clientManager_);
         detailDialog->setUsername(username_.toStdString());
     }
+    if (imageCache_) {
+        detailDialog->setImageCache(imageCache_);
+    }
 
     connect(detailDialog, &CurrencyDetailDialog::statusMessage,
             this, [this](const QString& message) {
@@ -456,6 +502,8 @@ void CurrencyController::onOpenCurrencyVersion(
         .arg(isoCode).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
 
     // Track this version window
     track_window(windowKey, detailWindow);

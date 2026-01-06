@@ -189,6 +189,7 @@ After creating a database instance, you can optionally seed data using the
 population scripts (see [[*Population Scripts]] section).
 
 #+begin_src sql :database template1 :wrap example
+\ir '$project_sql_dir'/setup_template.sql
 #+end_src
 
 #+RESULTS:
@@ -348,7 +349,7 @@ new database (development, testing, production, etc.).
 CREATE DATABASE
 name	enabled	description
 database_created
-ores_delicate_violet
+ores_nameless_sea
 #+end_example
 
 *** With Specific Name
@@ -390,7 +391,7 @@ select * from ores_databases;
 #+RESULTS:
 #+begin_example
 database_name
-ores_delicate_violet
+ores_nameless_sea
 #+end_example
 
 *** List Test Databases
@@ -492,7 +493,7 @@ ores_little_morning
 
 ** Accounts
     :PROPERTIES:
-    :header-args+: :database ores_delicate_violet
+    :header-args+: :database ores_nameless_sea
     :END:
 
 *** List All Current Accounts
@@ -560,7 +561,7 @@ where valid_to = '9999-12-31 23:59:59'::timestamptz;
 
 ** Login Info
     :PROPERTIES:
-    :header-args+: :database ores_delicate_violet
+    :header-args+: :database ores_nameless_sea
     :END:
 
 *** List All Login Info
@@ -598,7 +599,7 @@ where li.online = 1;
 
 ** Sessions
    :PROPERTIES:
-   :header-args+: :database ores_delicate_violet
+   :header-args+: :database ores_nameless_sea
    :END:
 
 *** List Recent Sessions
@@ -629,7 +630,7 @@ order by total_sessions desc;
 
 ** Population Scripts
    :PROPERTIES:
-   :header-args+: :database ores_delicate_violet
+   :header-args+: :database ores_nameless_sea
    :END:
 
 The database template contains *schema only* - no data is pre-populated. After
@@ -1433,7 +1434,7 @@ To re-run only specific population scripts:
 ** RBAC (Roles and Permissions)
    :PROPERTIES:
    :header-args+: :results value table
-   :header-args+: :database ores_delicate_violet
+   :header-args+: :database ores_nameless_sea
    :END:
 
 *** List All Roles
@@ -1575,7 +1576,7 @@ select ores.account_has_permission('admin', 'accounts:create') as has_permission
 ** Currencies
    :PROPERTIES:
    :header-args+: :results value table
-   :header-args+: :database ores_delicate_violet
+   :header-args+: :database ores_nameless_sea
    :END:
 
 *** List All Currencies
@@ -1663,7 +1664,7 @@ where c.valid_to = '9999-12-31 23:59:59'::timestamptz
 ** Feature Flags
    :PROPERTIES:
    :header-args+: :results value table
-   :header-args+: :database ores_delicate_violet
+   :header-args+: :database ores_nameless_sea
    :END:
 
 *** List All Feature Flags
@@ -1721,7 +1722,7 @@ order by name;
 ** Images and Tags
    :PROPERTIES:
    :header-args+: :results value table
-   :header-args+: :database ores_delicate_violet
+   :header-args+: :database ores_nameless_sea
    :END:
 
 *** List All Images
@@ -1820,7 +1821,7 @@ limit 20;
 ** Temporal Queries
    :PROPERTIES:
    :header-args+: :results value table
-   :header-args+: :database ores_delicate_violet
+   :header-args+: :database ores_nameless_sea
    :END:
 
 *** View Entity History
@@ -1867,7 +1868,7 @@ order by version_count desc;
 ** Administrative
    :PROPERTIES:
    :header-args+: :results value table
-   :header-args+: :database ores_delicate_violet
+   :header-args+: :database ores_nameless_sea
    :END:
 
 *** Database Size

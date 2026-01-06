@@ -46,7 +46,8 @@ AccountHistoryDialog::AccountHistoryDialog(QString username,
     ClientManager* clientManager, QWidget* parent)
     : QWidget(parent), ui_(new Ui::AccountHistoryDialog),
       clientManager_(clientManager), username_(std::move(username)),
-      toolBar_(nullptr), openAction_(nullptr), revertAction_(nullptr) {
+      toolBar_(nullptr), reloadAction_(nullptr),
+      openAction_(nullptr), revertAction_(nullptr) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating account history widget for: "
                               << username_.toStdString();
@@ -318,6 +319,17 @@ void AccountHistoryDialog::setupToolbar() {
 
     const QColor iconColor(220, 220, 220);
 
+    // Create Reload action
+    reloadAction_ = new QAction("Reload", this);
+    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor));
+    reloadAction_->setToolTip("Reload history from server");
+    connect(reloadAction_, &QAction::triggered, this,
+        &AccountHistoryDialog::onReloadClicked);
+    toolBar_->addAction(reloadAction_);
+
+    toolBar_->addSeparator();
+
     // Create Open action
     openAction_ = new QAction("Open", this);
     openAction_->setIcon(IconUtils::createRecoloredIcon(
@@ -330,7 +342,7 @@ void AccountHistoryDialog::setupToolbar() {
     // Create Revert action
     revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
+        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
     revertAction_->setToolTip("Revert account to this version");
     connect(revertAction_, &QAction::triggered, this,
         &AccountHistoryDialog::onRevertClicked);
@@ -395,6 +407,13 @@ void AccountHistoryDialog::onRevertClicked() {
     emit revertVersionRequested(version.data);
 }
 
+void AccountHistoryDialog::onReloadClicked() {
+    BOOST_LOG_SEV(lg(), info) << "Reload requested for account history: "
+                              << username_.toStdString();
+    emit statusChanged(QString("Reloading history for %1...").arg(username_));
+    loadHistory();
+}
+
 QSize AccountHistoryDialog::sizeHint() const {
     // Call the base implementation first to get the minimum size required by
     // the layout manager and its content's size policies.
@@ -409,6 +428,17 @@ QSize AccountHistoryDialog::sizeHint() const {
     // elements) and the defined minimum size.
     return { qMax(baseSize.width(), minimumWidth),
              qMax(baseSize.height(), minimumHeight) };
+}
+
+void AccountHistoryDialog::markAsStale() {
+    BOOST_LOG_SEV(lg(), info) << "Account history marked as stale for: "
+                              << username_.toStdString() << ", reloading...";
+
+    emit statusChanged(QString("Account %1 was modified - reloading history...")
+        .arg(username_));
+
+    // Reload history data
+    loadHistory();
 }
 
 }

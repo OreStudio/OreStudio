@@ -140,6 +140,12 @@ std::vector<std::byte> notification_message::serialize() const {
         timestamp.time_since_epoch()).count();
     writer::write_int64(buffer, ms);
 
+    // Serialize entity_ids
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(entity_ids.size()));
+    for (const auto& id : entity_ids) {
+        writer::write_string(buffer, id);
+    }
+
     return buffer;
 }
 
@@ -156,14 +162,30 @@ notification_message::deserialize(std::span<const std::byte> data) {
     msg.timestamp = std::chrono::system_clock::time_point(
         std::chrono::milliseconds(*ms));
 
+    // Deserialize entity_ids
+    auto count = reader::read_uint32(data);
+    if (!count) return std::unexpected(count.error());
+
+    msg.entity_ids.reserve(*count);
+    for (std::uint32_t i = 0; i < *count; ++i) {
+        auto id = reader::read_string(data);
+        if (!id) return std::unexpected(id.error());
+        msg.entity_ids.push_back(*id);
+    }
+
     return msg;
 }
 
 std::ostream& operator<<(std::ostream& s, const notification_message& v) {
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
         v.timestamp.time_since_epoch()).count();
-    return s << "notification_message{event_type=" << v.event_type
-             << ", timestamp=" << ms << "ms}";
+    s << "notification_message{event_type=" << v.event_type
+      << ", timestamp=" << ms << "ms, entity_ids=[";
+    for (std::size_t i = 0; i < v.entity_ids.size(); ++i) {
+        if (i > 0) s << ", ";
+        s << v.entity_ids[i];
+    }
+    return s << "]}";
 }
 
 // database_status_message

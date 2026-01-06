@@ -65,7 +65,8 @@ void server_session::stop() {
 }
 
 bool server_session::queue_notification(const std::string& event_type,
-    std::chrono::system_clock::time_point timestamp) {
+    std::chrono::system_clock::time_point timestamp,
+    const std::vector<std::string>& entity_ids) {
     if (!active_) {
         BOOST_LOG_SEV(lg(), debug)
             << "Cannot queue notification - session not active";
@@ -74,7 +75,7 @@ bool server_session::queue_notification(const std::string& event_type,
 
     {
         std::lock_guard lock(notification_mutex_);
-        pending_notifications_.push({event_type, timestamp});
+        pending_notifications_.push({event_type, timestamp, entity_ids});
     }
 
     // Signal the notification writer by cancelling the timer
@@ -82,7 +83,8 @@ bool server_session::queue_notification(const std::string& event_type,
     notification_signal_.cancel();
 
     BOOST_LOG_SEV(lg(), debug)
-        << "Queued notification for event type '" << event_type << "'";
+        << "Queued notification for event type '" << event_type
+        << "' with " << entity_ids.size() << " entity IDs";
     return true;
 }
 
@@ -366,7 +368,8 @@ boost::asio::awaitable<void> server_session::send_pending_notifications() {
         try {
             messaging::notification_message msg{
                 .event_type = notification.event_type,
-                .timestamp = notification.timestamp
+                .timestamp = notification.timestamp,
+                .entity_ids = notification.entity_ids
             };
 
             auto payload = msg.serialize();
@@ -380,7 +383,8 @@ boost::asio::awaitable<void> server_session::send_pending_notifications() {
 
             BOOST_LOG_SEV(lg(), info)
                 << "Sent notification for event type '" << notification.event_type
-                << "' to " << conn_->remote_address();
+                << "' with " << notification.entity_ids.size() << " entity IDs"
+                << " to " << conn_->remote_address();
 
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
@@ -452,8 +456,9 @@ void server_session::register_with_subscription_manager() {
     // Note: This is safe because we unregister before the session is destroyed
     subscription_mgr_->register_session(remote_addr,
         [this](const std::string& event_type,
-               std::chrono::system_clock::time_point timestamp) {
-            return queue_notification(event_type, timestamp);
+               std::chrono::system_clock::time_point timestamp,
+               const std::vector<std::string>& entity_ids) {
+            return queue_notification(event_type, timestamp, entity_ids);
         });
 }
 

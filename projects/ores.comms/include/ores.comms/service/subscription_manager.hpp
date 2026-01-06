@@ -35,11 +35,12 @@ namespace ores::comms::service {
 /**
  * @brief Callback type for pushing notifications to clients.
  *
- * Takes event_type and timestamp, returns true if notification was sent
- * successfully, false otherwise (e.g., connection closed).
+ * Takes event_type, timestamp, and entity_ids. Returns true if notification
+ * was sent successfully, false otherwise (e.g., connection closed).
  */
 using notification_callback =
-    std::function<bool(const std::string&, std::chrono::system_clock::time_point)>;
+    std::function<bool(const std::string&, std::chrono::system_clock::time_point,
+                       const std::vector<std::string>&)>;
 
 /**
  * @brief Unique identifier for a client session.
@@ -151,10 +152,12 @@ public:
      *
      * @param event_type The event type that occurred.
      * @param timestamp The timestamp of the event.
+     * @param entity_ids Identifiers of entities that changed.
      * @return The number of successful notifications sent.
      */
     std::size_t notify(const std::string& event_type,
-                       std::chrono::system_clock::time_point timestamp);
+                       std::chrono::system_clock::time_point timestamp,
+                       const std::vector<std::string>& entity_ids = {});
 
     /**
      * @brief Get the number of subscribers for an event type.

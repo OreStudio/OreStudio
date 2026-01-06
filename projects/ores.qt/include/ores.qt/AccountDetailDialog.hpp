@@ -124,6 +124,20 @@ public:
      */
     void setReadOnly(bool readOnly, int versionNumber = 0);
 
+    /**
+     * @brief Mark the dialog data as stale.
+     *
+     * Called when a notification is received indicating this account has
+     * changed on the server. Shows a visual indicator that the data may be
+     * out of date.
+     */
+    void markAsStale();
+
+    /**
+     * @brief Returns the account ID of the account being edited.
+     */
+    [[nodiscard]] QString accountId() const;
+
 signals:
     void accountUpdated(const boost::uuids::uuid& account_id);
     void accountCreated(const boost::uuids::uuid& account_id);
@@ -156,6 +170,7 @@ private:
     bool isDirty_;
     bool isAddMode_;
     bool isReadOnly_;
+    bool isStale_;
     int historicalVersion_;
     std::string modifiedByUsername_;
     QToolBar* toolBar_;

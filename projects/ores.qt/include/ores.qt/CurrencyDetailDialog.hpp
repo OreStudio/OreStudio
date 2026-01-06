@@ -23,9 +23,11 @@
 #include <QWidget>
 #include <QToolBar>
 #include <QAction>
+#include <QLabel>
 #include <memory>
 #include "ores.risk/domain/currency.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 
 
@@ -56,6 +58,7 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
+    void setImageCache(ImageCache* imageCache);
 
     void setCurrency(const risk::domain::currency& currency);
     [[nodiscard]] risk::domain::currency getCurrency() const;
@@ -77,6 +80,20 @@ public:
      */
     void setReadOnly(bool readOnly, int versionNumber = 0);
 
+    /**
+     * @brief Mark the dialog data as stale.
+     *
+     * Called when a notification is received indicating this currency has
+     * changed on the server. Shows a visual indicator that the data may be
+     * out of date.
+     */
+    void markAsStale();
+
+    /**
+     * @brief Returns the ISO code of the currency being edited.
+     */
+    [[nodiscard]] QString isoCode() const;
+
 signals:
     void currencyUpdated(const QString& iso_code);
     void currencyCreated(const QString& iso_code);
@@ -97,25 +114,34 @@ private slots:
     void onDeleteClicked();
     void onRevertClicked();
     void onFieldChanged();
+    void onSelectFlagClicked();
+    void onCurrencyImageSet(const QString& iso_code, bool success, const QString& message);
 
 private:
     void updateSaveResetButtonState();
     void setFieldsReadOnly(bool readOnly);
+    void updateFlagDisplay();
 
 private:
     std::unique_ptr<Ui::CurrencyDetailDialog> ui_;
     bool isDirty_;
     bool isAddMode_;
     bool isReadOnly_;
+    bool isStale_;
     int historicalVersion_;
     std::string username_;
     QToolBar* toolBar_;
     QAction* saveAction_;
     QAction* deleteAction_;
     QAction* revertAction_;
+    QAction* flagAction_;
+    QLabel* flagIconLabel_;
+    QLabel* flagDescLabel_;
 
     ClientManager* clientManager_;
+    ImageCache* imageCache_;
     risk::domain::currency currentCurrency_;
+    QString pendingImageId_;
     static constexpr const char* max_timestamp = "9999-12-31 23:59:59";
 };
 

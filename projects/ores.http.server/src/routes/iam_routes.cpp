@@ -19,6 +19,7 @@
  */
 #include "ores.http.server/routes/iam_routes.hpp"
 
+#include <algorithm>
 #include <sstream>
 #include <rfl/json.hpp>
 #include "ores.http/domain/jwt_claims.hpp"
@@ -26,6 +27,10 @@
 #include "ores.iam/domain/account_json.hpp"
 #include "ores.iam/domain/role_json.hpp"
 #include "ores.iam/domain/permission_json.hpp"
+#include "ores.iam/domain/permission.hpp"
+#include "ores.iam/domain/role.hpp"
+#include "ores.iam/domain/session.hpp"
+#include <boost/uuid/uuid_generators.hpp>
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
@@ -36,7 +41,6 @@
 #include "ores.iam/domain/account_version.hpp"
 #include "ores.iam/service/signup_service.hpp"
 #include "ores.iam/service/account_setup_service.hpp"
-#include "ores.iam/service/bootstrap_mode_service.hpp"
 
 namespace ores::http_server::routes {
 
@@ -48,14 +52,16 @@ iam_routes::iam_routes(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
     std::shared_ptr<comms::service::auth_session_service> sessions,
     std::shared_ptr<iam::service::authorization_service> auth_service,
-    std::shared_ptr<http::middleware::jwt_authenticator> authenticator)
+    std::shared_ptr<http::middleware::jwt_authenticator> authenticator,
+    std::shared_ptr<geo::service::geolocation_service> geo_service)
     : ctx_(std::move(ctx))
     , account_service_(ctx_)
     , session_repo_(ctx_)
     , system_flags_(std::move(system_flags))
     , sessions_(std::move(sessions))
     , auth_service_(std::move(auth_service))
-    , authenticator_(std::move(authenticator)) {
+    , authenticator_(std::move(authenticator))
+    , geo_service_(std::move(geo_service)) {
     BOOST_LOG_SEV(lg(), debug) << "IAM routes initialized";
 }
 
@@ -352,72 +358,146 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
     BOOST_LOG_SEV(lg(), info) << "IAM routes registered: 26 endpoints";
 }
 
+// Authorization helper
+
+std::expected<auth_result, http_response> iam_routes::check_auth(
+    const http_request& req,
+    std::string_view required_permission,
+    std::string_view operation_name) {
+
+    // Step 1: Check authentication
+    if (!req.authenticated_user) {
+        BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: not authenticated";
+        return std::unexpected(http_response::unauthorized("Not authenticated"));
+    }
+
+    // Step 2: Extract account ID from JWT
+    boost::uuids::uuid account_id;
+    try {
+        account_id = boost::uuids::string_generator()(req.authenticated_user->subject);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << operation_name
+                                   << " failed: invalid account ID in JWT: " << e.what();
+        return std::unexpected(http_response::unauthorized("Invalid token"));
+    }
+
+    // Step 3: Check if user has admin permissions (for convenience)
+    bool is_admin = auth_service_->has_permission(account_id,
+        iam::domain::permissions::accounts_read);
+
+    // Step 4: Check required permission if specified
+    if (!required_permission.empty()) {
+        if (!auth_service_->has_permission(account_id, std::string(required_permission))) {
+            BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: account "
+                                      << boost::uuids::to_string(account_id)
+                                      << " lacks " << required_permission << " permission";
+            return std::unexpected(http_response::forbidden("Insufficient permissions"));
+        }
+    }
+
+    return auth_result{account_id, is_admin};
+}
+
 // Handler implementations
 
 asio::awaitable<http_response> iam_routes::handle_login(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling login request";
 
+    auto login_req = parse_body<iam::messaging::login_request>(req, "login");
+    if (!login_req) {
+        co_return login_req.error();
+    }
+
     try {
-        auto login_req = rfl::json::read<iam::messaging::login_request>(req.body);
-        if (!login_req) {
-            co_return http_response::bad_request("Invalid request body");
+        auto ip_address = boost::asio::ip::make_address(req.remote_address);
+        auto account = account_service_.login(
+            login_req->username, login_req->password, ip_address);
+
+        auto login_info = account_service_.get_login_info(account.id);
+
+        // Create session record for tracking
+        iam::domain::session sess;
+        sess.id = boost::uuids::random_generator()();
+        sess.account_id = account.id;
+        sess.start_time = std::chrono::system_clock::now();
+        sess.client_ip = ip_address;
+        auto user_agent = req.get_header("User-Agent");
+        sess.client_identifier = user_agent.empty() ? "HTTP Client" : user_agent;
+        sess.client_version_major = 1;  // HTTP/1.x
+        sess.client_version_minor = 1;
+
+        // Perform geolocation lookup if service is available
+        if (geo_service_) {
+            auto geo_result = geo_service_->lookup(ip_address);
+            if (geo_result) {
+                sess.country_code = geo_result->country_code;
+                BOOST_LOG_SEV(lg(), debug) << "Geolocation for " << ip_address
+                                           << ": " << sess.country_code;
+            } else {
+                BOOST_LOG_SEV(lg(), debug) << "Geolocation lookup failed for "
+                                           << ip_address;
+            }
         }
 
+        // Persist session to database
         try {
-            auto account = account_service_.login(
-                login_req->username, login_req->password,
-                boost::asio::ip::make_address(req.remote_address));
-
-            auto login_info = account_service_.get_login_info(account.id);
-
-            // Generate JWT token if authenticator is configured
-            std::string token;
-            if (authenticator_ && authenticator_->is_configured()) {
-                // Get user's roles for the token
-                auto roles = auth_service_->get_account_roles(account.id);
-                std::vector<std::string> role_names;
-                for (const auto& role : roles) {
-                    role_names.push_back(role.name);
-                }
-
-                // Create JWT claims
-                http::domain::jwt_claims claims;
-                claims.subject = boost::uuids::to_string(account.id);
-                claims.username = account.username;
-                claims.email = account.email;
-                claims.roles = role_names;
-                claims.issued_at = std::chrono::system_clock::now();
-                claims.expires_at = claims.issued_at + std::chrono::hours(24);
-
-                auto token_opt = authenticator_->create_token(claims);
-                if (token_opt) {
-                    token = *token_opt;
-                    BOOST_LOG_SEV(lg(), debug) << "Generated JWT token for user: "
-                        << account.username;
-                } else {
-                    BOOST_LOG_SEV(lg(), warn) << "Failed to generate JWT token for user: "
-                        << account.username;
-                }
-            }
-
-            // Build response with token
-            std::ostringstream oss;
-            oss << R"({"success":true,"account_id":")"
-                << boost::uuids::to_string(account.id) << R"(","username":")"
-                << account.username << R"(","email":")"
-                << account.email << R"(","password_reset_required":)"
-                << (login_info.password_reset_required ? "true" : "false");
-
-            if (!token.empty()) {
-                oss << R"(,"token":")" << token << R"(")";
-            }
-            oss << "}";
-
-            co_return http_response::json(oss.str());
-        } catch (const std::runtime_error&) {
-            BOOST_LOG_SEV(lg(), warn) << "Login failed for user: " << login_req->username;
-            co_return http_response::unauthorized("Invalid credentials");
+            session_repo_.create(sess);
+            BOOST_LOG_SEV(lg(), debug) << "HTTP session persisted: "
+                                       << boost::uuids::to_string(sess.id);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to persist HTTP session: "
+                                      << e.what();
+            // Continue anyway - session tracking is not critical
         }
+
+        // Generate JWT token if authenticator is configured
+        std::string token;
+        if (authenticator_ && authenticator_->is_configured()) {
+            // Get user's roles for the token
+            auto roles = auth_service_->get_account_roles(account.id);
+            std::vector<std::string> role_names;
+            for (const auto& role : roles) {
+                role_names.push_back(role.name);
+            }
+
+            // Create JWT claims with session ID
+            http::domain::jwt_claims claims;
+            claims.subject = boost::uuids::to_string(account.id);
+            claims.username = account.username;
+            claims.email = account.email;
+            claims.roles = role_names;
+            claims.session_id = boost::uuids::to_string(sess.id);
+            claims.issued_at = std::chrono::system_clock::now();
+            claims.expires_at = claims.issued_at + std::chrono::hours(24);
+
+            auto token_opt = authenticator_->create_token(claims);
+            if (token_opt) {
+                token = *token_opt;
+                BOOST_LOG_SEV(lg(), debug) << "Generated JWT token for user: "
+                    << account.username;
+            } else {
+                BOOST_LOG_SEV(lg(), warn) << "Failed to generate JWT token for user: "
+                    << account.username;
+            }
+        }
+
+        // Build response with token
+        std::ostringstream oss;
+        oss << R"({"success":true,"account_id":")"
+            << boost::uuids::to_string(account.id) << R"(","username":")"
+            << account.username << R"(","email":")"
+            << account.email << R"(","password_reset_required":)"
+            << (login_info.password_reset_required ? "true" : "false");
+
+        if (!token.empty()) {
+            oss << R"(,"token":")" << token << R"(")";
+        }
+        oss << "}";
+
+        co_return http_response::json(oss.str());
+    } catch (const std::runtime_error&) {
+        BOOST_LOG_SEV(lg(), warn) << "Login failed for user: " << login_req->username;
+        co_return http_response::unauthorized("Invalid credentials");
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Login error: " << e.what();
         co_return http_response::internal_error(e.what());
@@ -427,14 +507,45 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
 asio::awaitable<http_response> iam_routes::handle_logout(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling logout request";
 
-    if (!req.authenticated_user) {
-        co_return http_response::unauthorized("Not authenticated");
+    auto auth = check_auth(req, "", "logout");
+    if (!auth) {
+        co_return auth.error();
     }
 
     try {
-        // Mark session as logged out
-        sessions_->remove_session(req.remote_address);
-        co_return http_response::json(R"({"success":true})");
+        // Record the logout event (updates login_info last_logout_time)
+        account_service_.logout(auth->account_id);
+
+        // End the session record if session_id is in the JWT
+        if (req.authenticated_user && req.authenticated_user->session_id) {
+            try {
+                auto session_id = boost::uuids::string_generator()(
+                    *req.authenticated_user->session_id);
+                auto now = std::chrono::system_clock::now();
+
+                // We need the start_time to update the session. Read it first.
+                auto session = session_repo_.read(session_id);
+                if (session) {
+                    session_repo_.end_session(session_id, session->start_time,
+                        now, 0, 0);  // No byte tracking for HTTP
+                    BOOST_LOG_SEV(lg(), debug) << "HTTP session ended: "
+                                               << *req.authenticated_user->session_id;
+                }
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn) << "Failed to end HTTP session: "
+                                          << e.what();
+                // Continue anyway - session tracking is not critical
+            }
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully logged out account: "
+                                  << boost::uuids::to_string(auth->account_id);
+
+        iam::messaging::logout_response resp;
+        resp.success = true;
+        resp.message = "Logged out successfully";
+
+        co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Logout error: " << e.what();
         co_return http_response::internal_error(e.what());
@@ -444,17 +555,17 @@ asio::awaitable<http_response> iam_routes::handle_logout(const http_request& req
 asio::awaitable<http_response> iam_routes::handle_signup(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling signup request";
 
+    // Check if signups are enabled
+    if (!system_flags_->is_user_signups_enabled()) {
+        co_return http_response::forbidden("User signups are disabled");
+    }
+
+    auto signup_req = parse_body<iam::messaging::signup_request>(req, "signup");
+    if (!signup_req) {
+        co_return signup_req.error();
+    }
+
     try {
-        // Check if signups are enabled
-        if (!system_flags_->is_user_signups_enabled()) {
-            co_return http_response::forbidden("User signups are disabled");
-        }
-
-        auto signup_req = rfl::json::read<iam::messaging::signup_request>(req.body);
-        if (!signup_req) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-
         iam::service::signup_service signup_svc(ctx_, system_flags_, auth_service_);
         auto result = signup_svc.register_user(
             signup_req->username, signup_req->email, signup_req->password);
@@ -479,14 +590,13 @@ asio::awaitable<http_response> iam_routes::handle_bootstrap_status(const http_re
     BOOST_LOG_SEV(lg(), debug) << "Handling bootstrap status request";
 
     try {
-        iam::service::bootstrap_mode_service bootstrap_service(ctx_, auth_service_);
-        bool in_bootstrap = bootstrap_service.is_in_bootstrap_mode();
+        bool in_bootstrap = system_flags_->is_bootstrap_mode_enabled();
 
         iam::messaging::bootstrap_status_response resp;
         resp.is_in_bootstrap_mode = in_bootstrap;
         resp.message = in_bootstrap ?
-            "System is in bootstrap mode - create initial admin" :
-            "System is configured";
+            "System in BOOTSTRAP MODE - awaiting initial admin account creation" :
+            "System in SECURE MODE - admin account exists";
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -498,28 +608,43 @@ asio::awaitable<http_response> iam_routes::handle_bootstrap_status(const http_re
 asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling create initial admin request";
 
+    // Check if request is from localhost
+    bool is_localhost = req.remote_address.starts_with("127.0.0.1") ||
+                       req.remote_address.starts_with("::1");
+    if (!is_localhost) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Rejected create_initial_admin from non-localhost: "
+            << req.remote_address;
+        co_return http_response::forbidden("Bootstrap endpoint only accessible from localhost");
+    }
+
+    if (!system_flags_->is_bootstrap_mode_enabled()) {
+        BOOST_LOG_SEV(lg(), warn)
+            << "Rejected create_initial_admin: system not in bootstrap mode";
+        co_return http_response::forbidden("System not in bootstrap mode - admin account already exists");
+    }
+
+    auto admin_req = parse_body<iam::messaging::create_initial_admin_request>(
+        req, "create_initial_admin");
+    if (!admin_req) {
+        co_return admin_req.error();
+    }
+
     try {
-        // Check if request is from localhost
-        bool is_localhost = req.remote_address.starts_with("127.0.0.1") ||
-                           req.remote_address.starts_with("::1");
-        if (!is_localhost) {
-            co_return http_response::forbidden("Bootstrap only allowed from localhost");
-        }
-
-        iam::service::bootstrap_mode_service bootstrap_service(ctx_, auth_service_);
-        if (!bootstrap_service.is_in_bootstrap_mode()) {
-            co_return http_response::forbidden("System is not in bootstrap mode");
-        }
-
-        auto admin_req = rfl::json::read<iam::messaging::create_initial_admin_request>(req.body);
-        if (!admin_req) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-
+        // Create the initial admin account with Admin role
+        // This checks role exists BEFORE creating account to avoid orphaned accounts
         iam::service::account_setup_service setup_service(account_service_, auth_service_);
         auto account = setup_service.create_account_with_role(
             admin_req->username, admin_req->email, admin_req->password,
-            "system", "Admin");
+            "bootstrap", iam::domain::roles::admin);
+
+        // Exit bootstrap mode - updates database and shared cache
+        system_flags_->set_bootstrap_mode(false, "system");
+
+        BOOST_LOG_SEV(lg(), info)
+            << "Created initial admin account with ID: " << account.id
+            << " for username: " << account.username;
+        BOOST_LOG_SEV(lg(), info) << "System transitioned to SECURE MODE";
 
         iam::messaging::create_initial_admin_response resp;
         resp.success = true;
@@ -534,6 +659,11 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
 
 asio::awaitable<http_response> iam_routes::handle_list_accounts(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling list accounts request";
+
+    auto auth = check_auth(req, iam::domain::permissions::accounts_read, "list_accounts");
+    if (!auth) {
+        co_return auth.error();
+    }
 
     try {
         std::uint32_t offset = 0;
@@ -560,15 +690,22 @@ asio::awaitable<http_response> iam_routes::handle_list_accounts(const http_reque
 asio::awaitable<http_response> iam_routes::handle_create_account(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling create account request";
 
-    try {
-        auto create_req = rfl::json::read<iam::messaging::create_account_request>(req.body);
-        if (!create_req) {
-            co_return http_response::bad_request("Invalid request body");
-        }
+    auto auth = check_auth(req, iam::domain::permissions::accounts_create, "create_account");
+    if (!auth) {
+        co_return auth.error();
+    }
 
-        auto account = account_service_.create_account(
+    auto create_req = parse_body<iam::messaging::create_account_request>(req, "create_account");
+    if (!create_req) {
+        co_return create_req.error();
+    }
+
+    try {
+        // Use setup_service to create account with default Viewer role
+        iam::service::account_setup_service setup_service(account_service_, auth_service_);
+        auto account = setup_service.create_account(
             create_req->username, create_req->email,
-            create_req->password, "system");
+            create_req->password, req.authenticated_user->username.value_or("system"));
 
         iam::messaging::create_account_response resp;
         resp.account_id = account.id;
@@ -582,6 +719,11 @@ asio::awaitable<http_response> iam_routes::handle_create_account(const http_requ
 
 asio::awaitable<http_response> iam_routes::handle_delete_account(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling delete account request";
+
+    auto auth = check_auth(req, iam::domain::permissions::accounts_delete, "delete_account");
+    if (!auth) {
+        co_return auth.error();
+    }
 
     try {
         auto account_id = req.get_path_param("id");
@@ -605,19 +747,25 @@ asio::awaitable<http_response> iam_routes::handle_delete_account(const http_requ
 asio::awaitable<http_response> iam_routes::handle_update_account(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling update account request";
 
+    auto auth = check_auth(req, iam::domain::permissions::accounts_update, "update_account");
+    if (!auth) {
+        co_return auth.error();
+    }
+
+    auto account_id = req.get_path_param("id");
+    if (account_id.empty()) {
+        co_return http_response::bad_request("Account ID required");
+    }
+
+    auto update_req = parse_body<iam::messaging::update_account_request>(req, "update_account");
+    if (!update_req) {
+        co_return update_req.error();
+    }
+
     try {
-        auto account_id = req.get_path_param("id");
-        if (account_id.empty()) {
-            co_return http_response::bad_request("Account ID required");
-        }
-
-        auto update_req = rfl::json::read<iam::messaging::update_account_request>(req.body);
-        if (!update_req) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-
         auto uuid = boost::uuids::string_generator()(account_id);
-        bool success = account_service_.update_account(uuid, update_req->email, "system");
+        bool success = account_service_.update_account(uuid, update_req->email,
+            req.authenticated_user->username.value_or("system"));
 
         iam::messaging::update_account_response resp;
         resp.success = success;
@@ -638,22 +786,38 @@ asio::awaitable<http_response> iam_routes::handle_get_account_history(const http
             co_return http_response::bad_request("Username required");
         }
 
-        auto account_records = account_service_.get_account_history(username);
+        auto accounts = account_service_.get_account_history(username);
 
         iam::messaging::get_account_history_response resp;
-        resp.success = true;
-        resp.history.username = username;
-        // Convert account to account_version
-        int version_num = static_cast<int>(account_records.size());
-        for (const auto& acc : account_records) {
-            iam::domain::account_version ver;
-            ver.data = acc;
-            ver.version_number = version_num--;
-            ver.recorded_at = acc.recorded_at;
-            ver.recorded_by = acc.recorded_by;
-            ver.change_summary = (ver.version_number == 1) ? "Created account" : "Updated account";
-            resp.history.versions.push_back(ver);
+
+        if (accounts.empty()) {
+            resp.success = false;
+            resp.message = "Account not found: " + username;
+            co_return http_response::json(rfl::json::write(resp));
         }
+
+        // Sort by version descending (newest first) - use database version field
+        std::sort(accounts.begin(), accounts.end(),
+            [](const auto& a, const auto& b) {
+                return a.version > b.version;
+            });
+
+        resp.success = true;
+        resp.message = "History retrieved successfully";
+        resp.history.username = username;
+
+        for (const auto& account : accounts) {
+            iam::domain::account_version ver;
+            ver.data = account;
+            ver.version_number = account.version;  // Use database version field
+            ver.recorded_by = account.recorded_by;
+            ver.recorded_at = account.recorded_at;
+            ver.change_summary = "Version " + std::to_string(ver.version_number);
+            resp.history.versions.push_back(std::move(ver));
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << resp.history.versions.size()
+                                  << " versions for account: " << username;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -665,12 +829,17 @@ asio::awaitable<http_response> iam_routes::handle_get_account_history(const http
 asio::awaitable<http_response> iam_routes::handle_lock_accounts(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling lock accounts request";
 
-    try {
-        auto lock_req = rfl::json::read<iam::messaging::lock_account_request>(req.body);
-        if (!lock_req) {
-            co_return http_response::bad_request("Invalid request body");
-        }
+    auto auth = check_auth(req, iam::domain::permissions::accounts_lock, "lock_accounts");
+    if (!auth) {
+        co_return auth.error();
+    }
 
+    auto lock_req = parse_body<iam::messaging::lock_account_request>(req, "lock_accounts");
+    if (!lock_req) {
+        co_return lock_req.error();
+    }
+
+    try {
         std::vector<iam::messaging::lock_account_result> results;
         for (const auto& id : lock_req->account_ids) {
             bool success = account_service_.lock_account(id);
@@ -694,12 +863,17 @@ asio::awaitable<http_response> iam_routes::handle_lock_accounts(const http_reque
 asio::awaitable<http_response> iam_routes::handle_unlock_accounts(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling unlock accounts request";
 
-    try {
-        auto unlock_req = rfl::json::read<iam::messaging::unlock_account_request>(req.body);
-        if (!unlock_req) {
-            co_return http_response::bad_request("Invalid request body");
-        }
+    auto auth = check_auth(req, iam::domain::permissions::accounts_unlock, "unlock_accounts");
+    if (!auth) {
+        co_return auth.error();
+    }
 
+    auto unlock_req = parse_body<iam::messaging::unlock_account_request>(req, "unlock_accounts");
+    if (!unlock_req) {
+        co_return unlock_req.error();
+    }
+
+    try {
         std::vector<iam::messaging::unlock_account_result> results;
         for (const auto& id : unlock_req->account_ids) {
             bool success = account_service_.unlock_account(id);
@@ -720,8 +894,13 @@ asio::awaitable<http_response> iam_routes::handle_unlock_accounts(const http_req
     }
 }
 
-asio::awaitable<http_response> iam_routes::handle_list_login_info(const http_request&) {
+asio::awaitable<http_response> iam_routes::handle_list_login_info(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling list login info request";
+
+    auto auth = check_auth(req, iam::domain::permissions::login_info_read, "list_login_info");
+    if (!auth) {
+        co_return auth.error();
+    }
 
     try {
         auto login_infos = account_service_.list_login_info();
@@ -739,12 +918,18 @@ asio::awaitable<http_response> iam_routes::handle_list_login_info(const http_req
 asio::awaitable<http_response> iam_routes::handle_reset_password(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling reset password request";
 
-    try {
-        auto reset_req = rfl::json::read<iam::messaging::reset_password_request>(req.body);
-        if (!reset_req) {
-            co_return http_response::bad_request("Invalid request body");
-        }
+    auto auth = check_auth(req, iam::domain::permissions::accounts_reset_password,
+        "reset_password");
+    if (!auth) {
+        co_return auth.error();
+    }
 
+    auto reset_req = parse_body<iam::messaging::reset_password_request>(req, "reset_password");
+    if (!reset_req) {
+        co_return reset_req.error();
+    }
+
+    try {
         std::vector<iam::messaging::reset_password_result> results;
         for (const auto& id : reset_req->account_ids) {
             bool success = account_service_.set_password_reset_required(id);
@@ -768,18 +953,18 @@ asio::awaitable<http_response> iam_routes::handle_reset_password(const http_requ
 asio::awaitable<http_response> iam_routes::handle_change_password(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling change password request";
 
-    if (!req.authenticated_user) {
-        co_return http_response::unauthorized("Not authenticated");
+    auto auth = check_auth(req, "", "change_password");
+    if (!auth) {
+        co_return auth.error();
+    }
+
+    auto change_req = parse_body<iam::messaging::change_password_request>(req, "change_password");
+    if (!change_req) {
+        co_return change_req.error();
     }
 
     try {
-        auto change_req = rfl::json::read<iam::messaging::change_password_request>(req.body);
-        if (!change_req) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-
-        auto uuid = boost::uuids::string_generator()(req.authenticated_user->subject);
-        auto error = account_service_.change_password(uuid, change_req->new_password);
+        auto error = account_service_.change_password(auth->account_id, change_req->new_password);
 
         iam::messaging::change_password_response resp;
         resp.success = error.empty();
@@ -795,18 +980,18 @@ asio::awaitable<http_response> iam_routes::handle_change_password(const http_req
 asio::awaitable<http_response> iam_routes::handle_update_my_email(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling update my email request";
 
-    if (!req.authenticated_user) {
-        co_return http_response::unauthorized("Not authenticated");
+    auto auth = check_auth(req, "", "update_my_email");
+    if (!auth) {
+        co_return auth.error();
+    }
+
+    auto update_req = parse_body<iam::messaging::update_my_email_request>(req, "update_my_email");
+    if (!update_req) {
+        co_return update_req.error();
     }
 
     try {
-        auto update_req = rfl::json::read<iam::messaging::update_my_email_request>(req.body);
-        if (!update_req) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-
-        auto uuid = boost::uuids::string_generator()(req.authenticated_user->subject);
-        auto error = account_service_.update_my_email(uuid, update_req->new_email);
+        auto error = account_service_.update_my_email(auth->account_id, update_req->new_email);
 
         iam::messaging::update_my_email_response resp;
         resp.success = error.empty();
@@ -879,19 +1064,25 @@ asio::awaitable<http_response> iam_routes::handle_list_permissions(const http_re
 asio::awaitable<http_response> iam_routes::handle_assign_role(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling assign role request";
 
+    auto auth = check_auth(req, iam::domain::permissions::roles_assign, "assign_role");
+    if (!auth) {
+        co_return auth.error();
+    }
+
+    auto account_id = req.get_path_param("id");
+    if (account_id.empty()) {
+        co_return http_response::bad_request("Account ID required");
+    }
+
+    auto assign_req = parse_body<iam::messaging::assign_role_request>(req, "assign_role");
+    if (!assign_req) {
+        co_return assign_req.error();
+    }
+
     try {
-        auto account_id = req.get_path_param("id");
-        if (account_id.empty()) {
-            co_return http_response::bad_request("Account ID required");
-        }
-
-        auto assign_req = rfl::json::read<iam::messaging::assign_role_request>(req.body);
-        if (!assign_req) {
-            co_return http_response::bad_request("Invalid request body");
-        }
-
         auto uuid = boost::uuids::string_generator()(account_id);
-        auth_service_->assign_role(uuid, assign_req->role_id, "system");
+        auth_service_->assign_role(uuid, assign_req->role_id,
+            req.authenticated_user->username.value_or("system"));
 
         iam::messaging::assign_role_response resp;
         resp.success = true;
@@ -905,6 +1096,11 @@ asio::awaitable<http_response> iam_routes::handle_assign_role(const http_request
 
 asio::awaitable<http_response> iam_routes::handle_revoke_role(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling revoke role request";
+
+    auto auth = check_auth(req, iam::domain::permissions::roles_revoke, "revoke_role");
+    if (!auth) {
+        co_return auth.error();
+    }
 
     try {
         auto account_id = req.get_path_param("accountId");
@@ -975,6 +1171,11 @@ asio::awaitable<http_response> iam_routes::handle_get_account_permissions(const 
 asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling list sessions request";
 
+    auto auth = check_auth(req, "", "list_sessions");
+    if (!auth) {
+        co_return auth.error();
+    }
+
     try {
         auto account_id_str = req.get_query_param("account_id");
         std::uint32_t offset = 0;
@@ -986,20 +1187,29 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
         if (!offset_str.empty()) offset = std::stoul(offset_str);
         if (!limit_str.empty()) limit = std::stoul(limit_str);
 
-        std::optional<boost::uuids::uuid> account_id;
+        // Determine target account
+        boost::uuids::uuid target_account_id = auth->account_id;
+
         if (!account_id_str.empty()) {
-            account_id = boost::uuids::string_generator()(account_id_str);
-        } else if (req.authenticated_user) {
-            account_id = boost::uuids::string_generator()(req.authenticated_user->subject);
+            auto requested_id = boost::uuids::string_generator()(account_id_str);
+            if (!auth->is_admin && requested_id != auth->account_id) {
+                // Non-admin trying to view someone else's sessions
+                co_return http_response::forbidden("Cannot view other users' sessions");
+            }
+            target_account_id = requested_id;
         }
 
-        // TODO: session_repository doesn't have list_sessions yet
-        (void)account_id;
-        (void)offset;
-        (void)limit;
+        // Query sessions from database
+        auto sessions_list = session_repo_.read_by_account(target_account_id, limit, offset);
+        auto total_count = session_repo_.count_by_account(target_account_id);
+
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << sessions_list.size()
+                                  << " sessions for account "
+                                  << boost::uuids::to_string(target_account_id);
 
         iam::messaging::list_sessions_response resp;
-        // resp.sessions empty for now
+        resp.sessions = std::move(sessions_list);
+        resp.total_count = total_count;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -1011,19 +1221,56 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
 asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling get session statistics request";
 
+    auto auth = check_auth(req, "", "get_session_statistics");
+    if (!auth) {
+        co_return auth.error();
+    }
+
     try {
         auto account_id_str = req.get_query_param("account_id");
+        auto start_str = req.get_query_param("start");
+        auto end_str = req.get_query_param("end");
 
-        std::optional<boost::uuids::uuid> account_id;
-        if (!account_id_str.empty()) {
-            account_id = boost::uuids::string_generator()(account_id_str);
+        boost::uuids::uuid target_account_id = auth->account_id;
+        bool aggregate_mode = false;
+
+        if (account_id_str.empty()) {
+            // No account specified - aggregate mode for admin, own account for others
+            if (auth->is_admin) {
+                aggregate_mode = true;
+            }
+        } else {
+            auto requested_id = boost::uuids::string_generator()(account_id_str);
+            if (!auth->is_admin && requested_id != auth->account_id) {
+                co_return http_response::forbidden("Cannot view other users' statistics");
+            }
+            target_account_id = requested_id;
         }
 
-        // TODO: session_repository doesn't have get_statistics yet
-        (void)account_id;
+        // Parse time range (default to last 30 days)
+        auto now = std::chrono::system_clock::now();
+        auto start_time = now - std::chrono::hours(24 * 30);
+        auto end_time = now;
+
+        // TODO: Parse start/end from query params if provided
+        (void)start_str;
+        (void)end_str;
+
+        // Query statistics from database
+        std::vector<iam::domain::session_statistics> stats;
+        if (aggregate_mode) {
+            stats = session_repo_.read_aggregate_daily_statistics(start_time, end_time);
+            BOOST_LOG_SEV(lg(), info) << "Retrieved " << stats.size()
+                                      << " aggregate statistics entries";
+        } else {
+            stats = session_repo_.read_daily_statistics(target_account_id, start_time, end_time);
+            BOOST_LOG_SEV(lg(), info) << "Retrieved " << stats.size()
+                                      << " statistics entries for account "
+                                      << boost::uuids::to_string(target_account_id);
+        }
 
         iam::messaging::get_session_statistics_response resp;
-        // resp.statistics empty for now
+        resp.statistics = std::move(stats);
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -1035,28 +1282,29 @@ asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const h
 asio::awaitable<http_response> iam_routes::handle_get_active_sessions(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling get active sessions request";
 
-    try {
-        std::optional<boost::uuids::uuid> account_id;
+    auto auth = check_auth(req, "", "get_active_sessions");
+    if (!auth) {
+        co_return auth.error();
+    }
 
-        // Admin can see all, non-admin only sees own
-        if (req.authenticated_user) {
-            bool is_admin = false;
-            for (const auto& role : req.authenticated_user->roles) {
-                if (role == "admin") {
-                    is_admin = true;
-                    break;
-                }
-            }
-            if (!is_admin) {
-                account_id = boost::uuids::string_generator()(req.authenticated_user->subject);
-            }
+    try {
+        std::vector<iam::domain::session> active_sessions;
+
+        if (auth->is_admin) {
+            // Admin gets all active sessions
+            active_sessions = session_repo_.read_all_active();
+            BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
+                                      << " active sessions (admin view)";
+        } else {
+            // Non-admin gets only their own active sessions
+            active_sessions = session_repo_.read_active_by_account(auth->account_id);
+            BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
+                                      << " active sessions for account "
+                                      << boost::uuids::to_string(auth->account_id);
         }
 
-        // TODO: auth_session_service doesn't have get_active_sessions yet
-        (void)account_id;
-
         iam::messaging::get_active_sessions_response resp;
-        // resp.sessions empty for now
+        resp.sessions = std::move(active_sessions);
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {

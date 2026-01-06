@@ -145,7 +145,8 @@ private:
      * @brief Handle incoming notification from client.
      */
     void on_notification(const std::string& event_type,
-        std::chrono::system_clock::time_point timestamp);
+        std::chrono::system_clock::time_point timestamp,
+        const std::vector<std::string>& entity_ids);
 
     std::shared_ptr<net::client> client_;
     mutable std::mutex mutex_;

@@ -45,8 +45,11 @@ const QIcon& CurrencyHistoryDialog::getHistoryIcon() const {
 CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
     ClientManager* clientManager, QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyHistoryDialog),
-      clientManager_(clientManager), isoCode_(std::move(iso_code)),
-      toolBar_(nullptr), openAction_(nullptr), revertAction_(nullptr) {
+      clientManager_(clientManager), imageCache_(nullptr),
+      isoCode_(std::move(iso_code)),
+      toolBar_(nullptr), reloadAction_(nullptr),
+      openAction_(nullptr), revertAction_(nullptr),
+      flagIconLabel_(nullptr) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating currency history widget for: "
                               << isoCode_.toStdString();
@@ -209,6 +212,7 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
     }
 
     updateButtonStates();
+    updateFlagDisplay();
 
     emit statusChanged(QString("Loaded %1 versions")
         .arg(history_.versions.size()));
@@ -345,6 +349,17 @@ void CurrencyHistoryDialog::setupToolbar() {
 
     const QColor iconColor(220, 220, 220);
 
+    // Create Reload action
+    reloadAction_ = new QAction("Reload", this);
+    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor));
+    reloadAction_->setToolTip("Reload history from server");
+    connect(reloadAction_, &QAction::triggered, this,
+        &CurrencyHistoryDialog::onReloadClicked);
+    toolBar_->addAction(reloadAction_);
+
+    toolBar_->addSeparator();
+
     // Create Open action
     openAction_ = new QAction("Open", this);
     openAction_->setIcon(IconUtils::createRecoloredIcon(
@@ -357,7 +372,7 @@ void CurrencyHistoryDialog::setupToolbar() {
     // Create Revert action
     revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
+        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
     revertAction_->setToolTip("Revert currency to this version");
     connect(revertAction_, &QAction::triggered, this,
         &CurrencyHistoryDialog::onRevertClicked);
@@ -422,6 +437,13 @@ void CurrencyHistoryDialog::onRevertClicked() {
     emit revertVersionRequested(version.data);
 }
 
+void CurrencyHistoryDialog::onReloadClicked() {
+    BOOST_LOG_SEV(lg(), info) << "Reload requested for currency history: "
+                              << isoCode_.toStdString();
+    emit statusChanged(QString("Reloading history for %1...").arg(isoCode_));
+    loadHistory();
+}
+
 QSize CurrencyHistoryDialog::sizeHint() const {
     // Call the base implementation first to get the minimum size required by
     // the layout manager and its content's size policies.
@@ -438,6 +460,52 @@ QSize CurrencyHistoryDialog::sizeHint() const {
     // elements) and the defined minimum size.
     return { qMax(baseSize.width(), minimumWidth),
              qMax(baseSize.height(), minimumHeight) };
+}
+
+void CurrencyHistoryDialog::markAsStale() {
+    BOOST_LOG_SEV(lg(), info) << "Currency history marked as stale for: "
+                              << isoCode_.toStdString() << ", reloading...";
+
+    emit statusChanged(QString("Currency %1 was modified - reloading history...")
+        .arg(isoCode_));
+
+    // Reload history data
+    loadHistory();
+}
+
+void CurrencyHistoryDialog::setImageCache(ImageCache* imageCache) {
+    imageCache_ = imageCache;
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::currencyMappingsLoaded,
+            this, &CurrencyHistoryDialog::updateFlagDisplay);
+    }
+}
+
+void CurrencyHistoryDialog::updateFlagDisplay() {
+    if (!flagIconLabel_) {
+        // Create the flag icon label and add it to the toolbar
+        if (toolBar_) {
+            flagIconLabel_ = new QLabel(this);
+            flagIconLabel_->setFixedSize(24, 24);
+            flagIconLabel_->setAlignment(Qt::AlignCenter);
+            toolBar_->insertWidget(toolBar_->actions().first(), flagIconLabel_);
+        }
+    }
+
+    if (!flagIconLabel_)
+        return;
+
+    if (!imageCache_) {
+        flagIconLabel_->clear();
+        return;
+    }
+
+    QIcon icon = imageCache_->getCurrencyIcon(isoCode_.toStdString());
+    if (icon.isNull()) {
+        flagIconLabel_->clear();
+    } else {
+        flagIconLabel_->setPixmap(icon.pixmap(24, 24));
+    }
 }
 
 }

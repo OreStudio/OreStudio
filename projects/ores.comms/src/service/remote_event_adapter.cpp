@@ -33,8 +33,9 @@ remote_event_adapter::remote_event_adapter(std::shared_ptr<net::client> client)
     // Register ourselves as the notification handler on the client
     client_->set_notification_callback(
         [this](const std::string& event_type,
-               std::chrono::system_clock::time_point timestamp) {
-            on_notification(event_type, timestamp);
+               std::chrono::system_clock::time_point timestamp,
+               const std::vector<std::string>& entity_ids) {
+            on_notification(event_type, timestamp, entity_ids);
         });
 }
 
@@ -219,8 +220,10 @@ void remote_event_adapter::set_notification_callback(
 
 void remote_event_adapter::on_notification(
     const std::string& event_type,
-    std::chrono::system_clock::time_point timestamp) {
-    BOOST_LOG_SEV(lg(), debug) << "Received notification for " << event_type;
+    std::chrono::system_clock::time_point timestamp,
+    const std::vector<std::string>& entity_ids) {
+    BOOST_LOG_SEV(lg(), debug) << "Received notification for " << event_type
+                               << " with " << entity_ids.size() << " entity IDs";
 
     net::notification_callback_t callback;
     {
@@ -230,7 +233,7 @@ void remote_event_adapter::on_notification(
 
     if (callback) {
         BOOST_LOG_SEV(lg(), trace) << "Forwarding notification to user callback";
-        callback(event_type, timestamp);
+        callback(event_type, timestamp, entity_ids);
     } else {
         BOOST_LOG_SEV(lg(), trace) << "No user callback registered, ignoring notification";
     }

@@ -88,6 +88,75 @@ struct get_images_response final {
 
 std::ostream& operator<<(std::ostream& s, const get_images_response& v);
 
+/**
+ * @brief Request to list all available images.
+ *
+ * Returns metadata for all images without the SVG data (to reduce payload size).
+ */
+struct list_images_request final {
+    std::vector<std::byte> serialize() const;
+    static std::expected<list_images_request, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const list_images_request& v);
+
+/**
+ * @brief Metadata for an image (without SVG data).
+ */
+struct image_info final {
+    std::string image_id;
+    std::string key;
+    std::string description;
+};
+
+std::ostream& operator<<(std::ostream& s, const image_info& v);
+
+/**
+ * @brief Response containing metadata for all available images.
+ */
+struct list_images_response final {
+    std::vector<image_info> images;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<list_images_response, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const list_images_response& v);
+
+/**
+ * @brief Request to set or remove a currency's image association.
+ *
+ * To assign an image, provide the image_id.
+ * To remove an existing image, leave image_id empty.
+ */
+struct set_currency_image_request final {
+    std::string iso_code;
+    std::string image_id;  // Empty to remove association
+    std::string assigned_by;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<set_currency_image_request, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const set_currency_image_request& v);
+
+/**
+ * @brief Response for set_currency_image_request.
+ */
+struct set_currency_image_response final {
+    bool success;
+    std::string message;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<set_currency_image_response, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const set_currency_image_response& v);
+
 }
 
 namespace ores::comms::messaging {
@@ -112,6 +181,28 @@ struct message_traits<assets::messaging::get_images_request> {
     using response_type = assets::messaging::get_images_response;
     static constexpr message_type request_message_type =
         message_type::get_images_request;
+};
+
+/**
+ * @brief Message traits specialization for list_images_request.
+ */
+template<>
+struct message_traits<assets::messaging::list_images_request> {
+    using request_type = assets::messaging::list_images_request;
+    using response_type = assets::messaging::list_images_response;
+    static constexpr message_type request_message_type =
+        message_type::list_images_request;
+};
+
+/**
+ * @brief Message traits specialization for set_currency_image_request.
+ */
+template<>
+struct message_traits<assets::messaging::set_currency_image_request> {
+    using request_type = assets::messaging::set_currency_image_request;
+    using response_type = assets::messaging::set_currency_image_response;
+    static constexpr message_type request_message_type =
+        message_type::set_currency_image_request;
 };
 
 }

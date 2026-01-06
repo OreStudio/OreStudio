@@ -66,9 +66,11 @@ private:
     /**
      * @brief Type-erased publisher function.
      *
-     * Takes a timestamp and publishes the appropriate typed event to the bus.
+     * Takes a timestamp and entity_ids, publishes the appropriate typed event.
      */
-    using publisher_fn = std::function<void(std::chrono::system_clock::time_point)>;
+    using publisher_fn = std::function<void(
+        std::chrono::system_clock::time_point,
+        const std::vector<std::string>&)>;
 
     struct entity_mapping {
         std::string channel_name;
@@ -110,11 +112,13 @@ public:
 
         entity_mappings_[entity_name] = entity_mapping{
             .channel_name = channel_name,
-            .publisher = [this, entity_name](std::chrono::system_clock::time_point ts) {
+            .publisher = [this, entity_name](std::chrono::system_clock::time_point ts,
+                                              const std::vector<std::string>& entity_ids) {
                 using namespace ores::telemetry::log;
                 BOOST_LOG_SEV(lg(), info)
-                    << "Publishing domain event for entity: " << entity_name;
-                bus_.publish(Event{ts});
+                    << "Publishing domain event for entity: " << entity_name
+                    << " with " << entity_ids.size() << " entity IDs";
+                bus_.publish(Event{ts, entity_ids});
             }
         };
 

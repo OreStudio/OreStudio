@@ -5,11 +5,20 @@ declare
     notification_payload jsonb;
     entity_name text := 'ores.risk.currency';
     change_timestamp timestamptz := NOW();
+    changed_iso_code text;
 begin
-    -- Construct the JSON payload
+    -- Get the ISO code of the changed currency
+    if TG_OP = 'DELETE' then
+        changed_iso_code := OLD.iso_code;
+    else
+        changed_iso_code := NEW.iso_code;
+    end if;
+
+    -- Construct the JSON payload with entity_ids
     notification_payload := jsonb_build_object(
         'entity', entity_name,
-        'timestamp', to_char(change_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+        'timestamp', to_char(change_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+        'entity_ids', jsonb_build_array(changed_iso_code)
     );
 
     -- Notify on the 'ores_currencies' channel

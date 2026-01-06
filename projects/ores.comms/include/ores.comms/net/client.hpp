@@ -100,10 +100,12 @@ using reconnected_callback_t = std::function<void()>;
  *
  * @param event_type The fully qualified event type name (e.g., "ores.risk.currency_changed_event")
  * @param timestamp When the event occurred (UTC)
+ * @param entity_ids Identifiers of specific entities that changed (e.g., currency ISO codes)
  */
 using notification_callback_t = std::function<void(
     const std::string& event_type,
-    std::chrono::system_clock::time_point timestamp)>;
+    std::chrono::system_clock::time_point timestamp,
+    const std::vector<std::string>& entity_ids)>;
 
 /**
  * @brief ORES protocol client.

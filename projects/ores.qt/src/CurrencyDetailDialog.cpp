@@ -22,6 +22,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QToolBar>
 #include <QIcon>
 #include <QPixmap>
@@ -29,9 +30,12 @@
 #include <QPainter>
 #include <QMdiSubWindow>
 #include <QMetaObject>
+#include <QGroupBox>
 #include "ui_CurrencyDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/MdiUtils.hpp"
+#include "ores.qt/FlagSelectorDialog.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -45,8 +49,9 @@ using FutureResult = std::pair<bool, std::string>;
 
 CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyDetailDialog), isDirty_(false),
-      isAddMode_(false), isReadOnly_(false), historicalVersion_(0),
-      clientManager_(nullptr) {
+      isAddMode_(false), isReadOnly_(false), isStale_(false),
+      historicalVersion_(0), flagAction_(nullptr), flagIconLabel_(nullptr),
+      flagDescLabel_(nullptr), clientManager_(nullptr), imageCache_(nullptr) {
 
     ui_->setupUi(this);
 
@@ -76,6 +81,17 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
         &CurrencyDetailDialog::onDeleteClicked);
     toolBar_->addAction(deleteAction_);
 
+    toolBar_->addSeparator();
+
+    // Create Flag action
+    flagAction_ = new QAction("Flag", this);
+    flagAction_->setIcon(IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
+    flagAction_->setToolTip("Select flag for this currency");
+    connect(flagAction_, &QAction::triggered, this,
+        &CurrencyDetailDialog::onSelectFlagClicked);
+    toolBar_->addAction(flagAction_);
+
     // Create Revert action (initially hidden)
     revertAction_ = new QAction("Revert to this version", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
@@ -91,6 +107,22 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
     if (mainLayout)
         mainLayout->insertWidget(0, toolBar_);
+
+    // Add flag display group box after toolbar
+    if (mainLayout) {
+        auto* flagGroup = new QGroupBox(tr("Flag"), this);
+        auto* flagLayout = new QHBoxLayout(flagGroup);
+
+        flagIconLabel_ = new QLabel(this);
+        flagIconLabel_->setFixedSize(48, 48);
+        flagIconLabel_->setAlignment(Qt::AlignCenter);
+        flagLayout->addWidget(flagIconLabel_);
+
+        flagDescLabel_ = new QLabel(tr("No flag assigned"), this);
+        flagLayout->addWidget(flagDescLabel_, 1);
+
+        mainLayout->insertWidget(1, flagGroup);
+    }
 
     // Connect signals for editable fields to detect changes
     connect(ui_->isoCodeEdit, &QLineEdit::textChanged, this,
@@ -128,6 +160,16 @@ void CurrencyDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
+void CurrencyDetailDialog::setImageCache(ImageCache* imageCache) {
+    imageCache_ = imageCache;
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::currencyImageSet,
+            this, &CurrencyDetailDialog::onCurrencyImageSet);
+        connect(imageCache_, &ImageCache::currencyMappingsLoaded,
+            this, &CurrencyDetailDialog::updateFlagDisplay);
+    }
+}
+
 CurrencyDetailDialog::~CurrencyDetailDialog() {
     const auto watchers = findChildren<QFutureWatcherBase*>();
     for (auto* watcher : watchers) {
@@ -160,6 +202,7 @@ void CurrencyDetailDialog::setCurrency(const risk::domain::currency& currency) {
     isDirty_ = false;
     emit isDirtyChanged(false);
     updateSaveResetButtonState();
+    updateFlagDisplay();
 }
 
 risk::domain::currency CurrencyDetailDialog::getCurrency() const {
@@ -459,6 +502,9 @@ void CurrencyDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     if (deleteAction_)
         deleteAction_->setVisible(!readOnly);
 
+    if (flagAction_)
+        flagAction_->setVisible(!readOnly);
+
     if (revertAction_)
         revertAction_->setVisible(readOnly);
 
@@ -494,6 +540,105 @@ void CurrencyDetailDialog::updateSaveResetButtonState() {
 
     if (deleteAction_)
         deleteAction_->setEnabled(!isAddMode_);
+}
+
+void CurrencyDetailDialog::markAsStale() {
+    if (isStale_)
+        return;
+
+    isStale_ = true;
+    BOOST_LOG_SEV(lg(), info) << "Currency detail data marked as stale for: "
+                              << currentCurrency_.iso_code;
+
+    MdiUtils::markParentWindowAsStale(this);
+
+    emit statusMessage(QString("Currency %1 has been modified on the server")
+        .arg(QString::fromStdString(currentCurrency_.iso_code)));
+}
+
+QString CurrencyDetailDialog::isoCode() const {
+    return QString::fromStdString(currentCurrency_.iso_code);
+}
+
+void CurrencyDetailDialog::onSelectFlagClicked() {
+    if (!imageCache_) {
+        BOOST_LOG_SEV(lg(), warn) << "Flag clicked but no image cache available.";
+        emit errorMessage("Image cache not available");
+        return;
+    }
+
+    if (isAddMode_) {
+        // For new currencies, we need to save first
+        MessageBoxHelper::information(this, "Save Required",
+            "Please save the currency first before assigning a flag.");
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Opening flag selector for: "
+                               << currentCurrency_.iso_code;
+
+    // Get current image ID for this currency
+    QString currentImageId = QString::fromStdString(
+        imageCache_->getCurrencyImageId(currentCurrency_.iso_code));
+
+    FlagSelectorDialog dialog(imageCache_, currentImageId, this);
+    if (dialog.exec() == QDialog::Accepted) {
+        QString selectedImageId = dialog.selectedImageId();
+        BOOST_LOG_SEV(lg(), debug) << "Selected flag image: "
+                                   << selectedImageId.toStdString();
+
+        pendingImageId_ = selectedImageId;
+        imageCache_->setCurrencyImage(
+            currentCurrency_.iso_code,
+            selectedImageId.toStdString(),
+            username_.empty() ? "qt_user" : username_);
+
+        emit statusMessage(tr("Updating flag for %1...")
+            .arg(QString::fromStdString(currentCurrency_.iso_code)));
+    }
+}
+
+void CurrencyDetailDialog::onCurrencyImageSet(const QString& iso_code,
+    bool success, const QString& message) {
+
+    if (iso_code.toStdString() != currentCurrency_.iso_code) {
+        return;  // Not our currency
+    }
+
+    if (success) {
+        BOOST_LOG_SEV(lg(), info) << "Flag updated successfully for: "
+                                  << currentCurrency_.iso_code;
+        emit statusMessage(tr("Flag updated for %1")
+            .arg(QString::fromStdString(currentCurrency_.iso_code)));
+        updateFlagDisplay();
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Failed to update flag for "
+                                   << currentCurrency_.iso_code << ": "
+                                   << message.toStdString();
+        emit errorMessage(tr("Failed to update flag: %1").arg(message));
+        MessageBoxHelper::critical(this, "Flag Update Failed", message);
+    }
+    pendingImageId_.clear();
+}
+
+void CurrencyDetailDialog::updateFlagDisplay() {
+    if (!flagIconLabel_ || !flagDescLabel_)
+        return;
+
+    if (!imageCache_ || currentCurrency_.iso_code.empty()) {
+        flagIconLabel_->clear();
+        flagDescLabel_->setText(tr("No flag assigned"));
+        return;
+    }
+
+    QIcon icon = imageCache_->getCurrencyIcon(currentCurrency_.iso_code);
+    if (icon.isNull()) {
+        flagIconLabel_->clear();
+        flagDescLabel_->setText(tr("No flag assigned"));
+    } else {
+        flagIconLabel_->setPixmap(icon.pixmap(48, 48));
+        flagDescLabel_->setText(tr("Flag assigned"));
+    }
 }
 
 }

@@ -329,8 +329,10 @@ signals:
      *
      * @param eventType The event type name (e.g., "ores.risk.currency_changed_event")
      * @param timestamp When the event occurred
+     * @param entityIds Identifiers of entities that changed (e.g., currency ISO codes)
      */
-    void notificationReceived(const QString& eventType, const QDateTime& timestamp);
+    void notificationReceived(const QString& eventType, const QDateTime& timestamp,
+                              const QStringList& entityIds);
 
 private:
     void setupIO();

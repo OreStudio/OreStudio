@@ -109,7 +109,15 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // submit_log_records_request for fire-and-forget batched log record submission.
 // Clients can stream telemetry data to the server for centralized storage and
 // analysis. Controlled by telemetry.streaming.enabled feature flag.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 15;
+//
+// Version 16.0 adds entity_ids field to notification_message. This allows
+// clients to identify which specific entities changed (e.g., currency ISO codes
+// or account IDs) rather than just knowing that some entity of a type changed.
+// This is a breaking change as the wire format for notifications is extended.
+//
+// Version 16.1 adds list_images_request/response to list all available flag images,
+// and set_currency_image_request/response to assign or remove flags from currencies.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 16;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
@@ -238,6 +246,10 @@ enum class message_type {
     get_currency_images_response = 0x4001,
     get_images_request = 0x4002,
     get_images_response = 0x4003,
+    list_images_request = 0x4004,
+    list_images_response = 0x4005,
+    set_currency_image_request = 0x4006,
+    set_currency_image_response = 0x4007,
 
     // Telemetry subsystem messages (0x5000 - 0x5FFF)
     submit_log_records_request = 0x5000,

@@ -21,6 +21,9 @@
 #define ORES_HTTP_SERVER_ROUTES_IAM_ROUTES_HPP
 
 #include <memory>
+#include <expected>
+#include <boost/uuid/uuid.hpp>
+#include <rfl/json.hpp>
 #include "ores.http/net/router.hpp"
 #include "ores.http/openapi/endpoint_registry.hpp"
 #include "ores.http/middleware/jwt_authenticator.hpp"
@@ -30,9 +33,18 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
+#include "ores.geo/service/geolocation_service.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 
 namespace ores::http_server::routes {
+
+/**
+ * @brief Result of successful authorization check.
+ */
+struct auth_result {
+    boost::uuids::uuid account_id;
+    bool is_admin;
+};
 
 /**
  * @brief Registers IAM (Identity and Access Management) HTTP endpoints.
@@ -81,7 +93,8 @@ public:
         std::shared_ptr<variability::service::system_flags_service> system_flags,
         std::shared_ptr<comms::service::auth_session_service> sessions,
         std::shared_ptr<iam::service::authorization_service> auth_service,
-        std::shared_ptr<http::middleware::jwt_authenticator> authenticator);
+        std::shared_ptr<http::middleware::jwt_authenticator> authenticator,
+        std::shared_ptr<geo::service::geolocation_service> geo_service = nullptr);
 
     /**
      * @brief Registers all IAM routes with the router.
@@ -181,6 +194,42 @@ private:
     boost::asio::awaitable<http::domain::http_response>
     handle_get_active_sessions(const http::domain::http_request& req);
 
+    /**
+     * @brief Check authentication and optionally verify a specific permission.
+     *
+     * @param req The HTTP request containing authentication info
+     * @param required_permission Permission to check (empty = no permission check)
+     * @param operation_name Name of the operation for logging
+     * @return auth_result on success, http_response error (401/403) on failure
+     */
+    std::expected<auth_result, http::domain::http_response> check_auth(
+        const http::domain::http_request& req,
+        std::string_view required_permission = "",
+        std::string_view operation_name = "");
+
+    /**
+     * @brief Parse JSON request body into a typed struct.
+     *
+     * @tparam T The request type to parse into
+     * @param req The HTTP request containing the body
+     * @param operation_name Name of the operation for logging
+     * @return Parsed request on success, http_response error (400) on failure
+     */
+    template<typename T>
+    std::expected<T, http::domain::http_response> parse_body(
+        const http::domain::http_request& req,
+        std::string_view operation_name) {
+        using ores::telemetry::log::warn;
+        auto result = rfl::json::read<T>(req.body);
+        if (!result) {
+            BOOST_LOG_SEV(lg(), warn) << operation_name
+                                      << ": invalid request body";
+            return std::unexpected(
+                http::domain::http_response::bad_request("Invalid request body"));
+        }
+        return *result;
+    }
+
     database::context ctx_;
     iam::service::account_service account_service_;
     iam::repository::session_repository session_repo_;
@@ -188,6 +237,7 @@ private:
     std::shared_ptr<comms::service::auth_session_service> sessions_;
     std::shared_ptr<iam::service::authorization_service> auth_service_;
     std::shared_ptr<http::middleware::jwt_authenticator> authenticator_;
+    std::shared_ptr<geo::service::geolocation_service> geo_service_;
 };
 
 }

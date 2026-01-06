@@ -60,6 +60,7 @@ public:
     struct pending_notification {
         std::string event_type;
         std::chrono::system_clock::time_point timestamp;
+        std::vector<std::string> entity_ids;
     };
 
     /**
@@ -109,10 +110,12 @@ public:
      *
      * @param event_type The event type that occurred.
      * @param timestamp The timestamp of the event.
+     * @param entity_ids Identifiers of entities that changed.
      * @return true if queued successfully, false if session is not active.
      */
     bool queue_notification(const std::string& event_type,
-        std::chrono::system_clock::time_point timestamp);
+        std::chrono::system_clock::time_point timestamp,
+        const std::vector<std::string>& entity_ids = {});
 
     /**
      * @brief Queue a database status notification to be sent to this client.

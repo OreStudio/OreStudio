@@ -178,14 +178,16 @@ void AccountController::closeAllWindows() {
 }
 
 void AccountController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp) {
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
     // Check if this is an account change event
     if (eventType != QString::fromStdString(std::string{account_event_name})) {
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Received account change notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString();
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " account IDs";
 
     // If the account list window is open, mark it as stale
     if (accountListWindow_) {
@@ -194,6 +196,35 @@ void AccountController::onNotificationReceived(
         if (accountWidget) {
             accountWidget->markAsStale();
             BOOST_LOG_SEV(lg(), debug) << "Marked account window as stale";
+        }
+    }
+
+    // Notify open detail/history dialogs for affected accounts
+    // Since we track windows in allDetachableWindows_, iterate and match
+    for (auto* window : allDetachableWindows_) {
+        if (!window || window == accountListWindow_)
+            continue;
+
+        // Check if it's an account detail dialog
+        if (auto* detailDialog = qobject_cast<AccountDetailDialog*>(window->widget())) {
+            const QString dialogAccountId = detailDialog->accountId();
+
+            // Mark as stale if no specific IDs (broadcast) or if this account matches
+            if (entityIds.isEmpty() || entityIds.contains(dialogAccountId)) {
+                detailDialog->markAsStale();
+                BOOST_LOG_SEV(lg(), debug) << "Marked account detail dialog as stale for: "
+                                           << dialogAccountId.toStdString();
+            }
+            continue;
+        }
+
+        // Check if it's an account history dialog
+        if (auto* historyDialog = qobject_cast<AccountHistoryDialog*>(window->widget())) {
+            // History dialogs are always marked stale on account changes
+            // since we don't have easy access to account_id
+            historyDialog->markAsStale();
+            BOOST_LOG_SEV(lg(), debug) << "Marked account history dialog as stale for: "
+                                       << historyDialog->username().toStdString();
         }
     }
 }

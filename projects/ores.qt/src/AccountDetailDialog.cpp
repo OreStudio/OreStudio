@@ -34,6 +34,7 @@
 #include "ui_AccountDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/MdiUtils.hpp"
 #include "ores.iam/messaging/account_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -46,8 +47,8 @@ using FutureResult = std::pair<bool, std::string>;
 
 AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::AccountDetailDialog), isDirty_(false),
-      isAddMode_(false), isReadOnly_(false), historicalVersion_(0),
-      clientManager_(nullptr), rolesWidget_(nullptr) {
+      isAddMode_(false), isReadOnly_(false), isStale_(false),
+      historicalVersion_(0), clientManager_(nullptr), rolesWidget_(nullptr) {
 
     ui_->setupUi(this);
 
@@ -703,6 +704,24 @@ void AccountDetailDialog::updateSaveResetButtonState() {
 
     if (deleteAction_)
         deleteAction_->setEnabled(!isAddMode_);
+}
+
+void AccountDetailDialog::markAsStale() {
+    if (isStale_)
+        return;
+
+    isStale_ = true;
+    BOOST_LOG_SEV(lg(), info) << "Account detail data marked as stale for: "
+                              << currentAccount_.username;
+
+    MdiUtils::markParentWindowAsStale(this);
+
+    emit statusMessage(QString("Account %1 has been modified on the server")
+        .arg(QString::fromStdString(currentAccount_.username)));
+}
+
+QString AccountDetailDialog::accountId() const {
+    return QString::fromStdString(boost::uuids::to_string(currentAccount_.id));
 }
 
 }

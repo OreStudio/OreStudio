@@ -22,6 +22,7 @@
 
 #include <string>
 #include <chrono>
+#include <vector>
 
 namespace ores::eventing::domain {
 
@@ -40,6 +41,14 @@ struct entity_change_event final {
      * @brief The timestamp of when the change occurred (in UTC).
      */
     std::chrono::system_clock::time_point timestamp;
+
+    /**
+     * @brief Identifiers of the specific entities that changed.
+     *
+     * For currencies, this contains ISO codes. For accounts, UUIDs.
+     * May be empty if the trigger doesn't provide specific IDs.
+     */
+    std::vector<std::string> entity_ids;
 };
 
 }

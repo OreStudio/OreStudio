@@ -21,6 +21,8 @@
 #define ORES_RISK_EVENTING_CURRENCY_CHANGED_EVENT_HPP
 
 #include <chrono>
+#include <vector>
+#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
 
 namespace ores::risk::eventing {
@@ -40,6 +42,15 @@ struct currency_changed_event final {
      * that have changed since this point.
      */
     std::chrono::system_clock::time_point timestamp;
+
+    /**
+     * @brief ISO codes of currencies that changed.
+     *
+     * Contains the ISO 4217 codes (e.g., "USD", "EUR") of currencies that
+     * were created, updated, or deleted. May contain multiple codes for
+     * batch operations.
+     */
+    std::vector<std::string> iso_codes;
 };
 
 }

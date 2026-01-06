@@ -67,6 +67,19 @@ public:
 
     QSize sizeHint() const override;
 
+    /**
+     * @brief Mark the history data as stale and reload.
+     *
+     * Called when a notification is received indicating this account has
+     * changed on the server. Automatically reloads the history data.
+     */
+    void markAsStale();
+
+    /**
+     * @brief Returns the username of the account.
+     */
+    [[nodiscard]] QString username() const { return username_; }
+
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
@@ -90,6 +103,7 @@ private slots:
     void onHistoryLoadError(const QString& error);
     void onOpenClicked();
     void onRevertClicked();
+    void onReloadClicked();
 
 private:
     void displayChangesTab(int version_index);
@@ -115,6 +129,7 @@ private:
     iam::domain::account_version_history history_;
 
     QToolBar* toolBar_;
+    QAction* reloadAction_;
     QAction* openAction_;
     QAction* revertAction_;
 };

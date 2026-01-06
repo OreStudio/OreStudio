@@ -24,11 +24,20 @@ declare
     notification_payload jsonb;
     entity_name text := 'ores.accounts.account';
     change_timestamp timestamptz := NOW();
+    changed_account_id text;
 begin
-    -- Construct the JSON payload
+    -- Get the id (UUID) of the changed account
+    if TG_OP = 'DELETE' then
+        changed_account_id := OLD.id::text;
+    else
+        changed_account_id := NEW.id::text;
+    end if;
+
+    -- Construct the JSON payload with entity_ids
     notification_payload := jsonb_build_object(
         'entity', entity_name,
-        'timestamp', to_char(change_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+        'timestamp', to_char(change_timestamp, 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),
+        'entity_ids', jsonb_build_array(changed_account_id)
     );
 
     -- Notify on the 'ores_accounts' channel

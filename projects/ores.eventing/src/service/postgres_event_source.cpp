@@ -51,7 +51,8 @@ void postgres_event_source::stop() {
 
 void postgres_event_source::on_entity_change(const domain::entity_change_event& e) {
     BOOST_LOG_SEV(lg(), info)
-        << "Received PostgreSQL notification for entity: " << e.entity;
+        << "Received PostgreSQL notification for entity: " << e.entity
+        << " with " << e.entity_ids.size() << " entity IDs";
 
     auto it = entity_mappings_.find(e.entity);
     if (it == entity_mappings_.end()) {
@@ -65,7 +66,7 @@ void postgres_event_source::on_entity_change(const domain::entity_change_event& 
         << "Dispatching to registered publisher for entity: " << e.entity;
 
     try {
-        it->second.publisher(e.timestamp);
+        it->second.publisher(e.timestamp, e.entity_ids);
         BOOST_LOG_SEV(lg(), debug)
             << "Successfully published event for entity: " << e.entity;
     } catch (const std::exception& ex) {

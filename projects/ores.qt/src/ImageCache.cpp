@@ -20,9 +20,7 @@
 #include "ores.qt/ImageCache.hpp"
 
 #include <QtConcurrent>
-#include <QSvgRenderer>
-#include <QPainter>
-#include <QPixmap>
+#include "ores.qt/IconUtils.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.assets/messaging/assets_protocol.hpp"
@@ -241,44 +239,7 @@ bool ImageCache::hasCurrencyIcon(const std::string& iso_code) const {
 }
 
 QIcon ImageCache::svgToIcon(const std::string& svg_data) {
-    if (svg_data.empty()) {
-        return {};
-    }
-
-    QByteArray svgBytes(svg_data.data(), static_cast<qsizetype>(svg_data.size()));
-    QSvgRenderer renderer(svgBytes);
-
-    if (!renderer.isValid()) {
-        BOOST_LOG_SEV(lg(), warn) << "Invalid SVG data, cannot render icon.";
-        return {};
-    }
-
-    QIcon icon;
-
-    // Get SVG's default (viewBox) size to preserve aspect ratio
-    QSizeF svgSize = renderer.defaultSize();
-    if (svgSize.isEmpty()) {
-        svgSize = QSizeF(4, 3);  // Default to 4:3 if no viewBox
-    }
-    qreal aspectRatio = svgSize.width() / svgSize.height();
-
-    // Render at multiple sizes for crisp display
-    // Use height as the base and compute width to preserve aspect ratio
-    for (int height : {16, 20, 24, 32, 48}) {
-        int width = static_cast<int>(height * aspectRatio);
-        QPixmap pixmap(width, height);
-        pixmap.fill(Qt::transparent);
-
-        QPainter painter(&pixmap);
-        painter.setRenderHint(QPainter::Antialiasing);
-        painter.setRenderHint(QPainter::SmoothPixmapTransform);
-        renderer.render(&painter);
-        painter.end();
-
-        icon.addPixmap(pixmap);
-    }
-
-    return icon;
+    return IconUtils::svgDataToIcon(svg_data);
 }
 
 ImageCache::ImagesResult ImageCache::fetchImagesInBatches(

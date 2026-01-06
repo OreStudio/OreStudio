@@ -87,9 +87,9 @@ public:
      * @brief Deletes a currency by its ISO code.
      *
      * @param iso_code The ISO code of the currency to delete.
-     * @return true if the operation was successful.
+     * @throws std::exception on failure.
      */
-    bool delete_currency(const std::string& iso_code);
+    void delete_currency(const std::string& iso_code);
 
     /**
      * @brief Retrieves a single currency by its ISO code.

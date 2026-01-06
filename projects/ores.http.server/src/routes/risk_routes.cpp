@@ -156,8 +156,13 @@ asio::awaitable<http_response> risk_routes::handle_delete_currencies(const http_
         std::vector<risk::messaging::delete_currency_result> results;
 
         for (const auto& code : delete_req->iso_codes) {
-            bool success = service.delete_currency(code);
-            results.push_back({code, success, success ? "" : "Failed to delete"});
+            try {
+                service.delete_currency(code);
+                results.push_back({code, true, "Currency deleted successfully"});
+            } catch (const std::exception& e) {
+                results.push_back({code, false,
+                    std::string("Failed to delete currency: ") + e.what()});
+            }
         }
 
         risk::messaging::delete_currency_response resp;

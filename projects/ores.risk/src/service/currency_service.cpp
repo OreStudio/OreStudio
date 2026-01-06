@@ -45,15 +45,9 @@ void currency_service::save_currency(const domain::currency& currency) {
     repo_.write(ctx_, currency);
 }
 
-bool currency_service::delete_currency(const std::string& iso_code) {
+void currency_service::delete_currency(const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Deleting currency: " << iso_code;
-    try {
-        repo_.remove(ctx_, iso_code);
-        return true;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to delete currency: " << e.what();
-        return false;
-    }
+    repo_.remove(ctx_, iso_code);
 }
 
 std::optional<domain::currency> currency_service::get_currency(

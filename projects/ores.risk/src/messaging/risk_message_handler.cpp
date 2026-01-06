@@ -158,14 +158,16 @@ handle_delete_currency_request(std::span<const std::byte> payload) {
         delete_currency_result result;
         result.iso_code = iso_code;
 
-        if (currency_service_.delete_currency(iso_code)) {
+        try {
+            currency_service_.delete_currency(iso_code);
             result.success = true;
             result.message = "Currency deleted successfully";
             BOOST_LOG_SEV(lg(), info) << "Successfully deleted currency: " << iso_code;
-        } else {
+        } catch (const std::exception& e) {
             result.success = false;
-            result.message = "Failed to delete currency";
-            BOOST_LOG_SEV(lg(), error) << "Error deleting currency " << iso_code;
+            result.message = std::string("Failed to delete currency: ") + e.what();
+            BOOST_LOG_SEV(lg(), error) << "Error deleting currency "
+                                       << iso_code << ": " << e.what();
         }
 
         response.results.push_back(std::move(result));

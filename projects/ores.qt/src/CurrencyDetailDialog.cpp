@@ -109,10 +109,13 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
         flagButton_->setFixedSize(52, 52);
         flagButton_->setIconSize(QSize(48, 48));
         flagButton_->setFlat(true);
+        flagButton_->setStyleSheet("QPushButton { border: none; background: transparent; padding: 0px; } "
+                                   "QPushButton:hover { background: rgba(255, 255, 255, 15); }");
         flagButton_->setCursor(Qt::PointingHandCursor);
         flagButton_->setToolTip(tr("Click to select flag"));
         connect(flagButton_, &QPushButton::clicked, this,
             &CurrencyDetailDialog::onSelectFlagClicked);
+        flagLayout->addStretch();
         flagLayout->addWidget(flagButton_);
         flagLayout->addStretch();
 

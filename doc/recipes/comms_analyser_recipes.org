@@ -15,6 +15,8 @@ ores.qt or other clients with recording enabled.
   :header-args: :exports both
   :header-args+: :results raw
   :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin
+  :header-args+: :wrap src text
+  :header-args+: :results output
   :END:
 
 ** General
@@ -23,16 +25,48 @@ ores.qt or other clients with recording enabled.
 
 Display the available commands and options.
 
-#+begin_src sh :results output :wrap example
+#+begin_src sh
 ./ores.comms.analyser --help
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+ores.comms.analyser - ORES session recording analyser
+
+Usage: ores.comms.analyser [command] <session-file> [options]
+
+Commands:
+  read    Read and display session frames (default)
+  info    Display session metadata only
+
+General:
+  -h [ --help ]         Display usage and exit.
+  -v [ --version ]      Output version information and exit.
+  --verbose             Enable verbose output.
+
+Examples:
+  ores.comms.analyser read session-20250115-143205-abc123.ores
+  ores.comms.analyser info session.ores
+  ores.comms.analyser session.ores --verbose
 #+end_src
 
 *** Version
 
 Display the version information.
 
-#+begin_src sh :results output :wrap example
+#+begin_src sh
 ./ores.comms.analyser --version
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Session Analyser for ORE Studio v0.0.8
+Copyright (C) 2025 Marco Craveiro.
+License GPLv3: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+Build: Provider = LOCAL
+IMPORTANT: build details are NOT for security purposes.
 #+end_src
 
 ** Reading Session Files

@@ -71,7 +71,18 @@ std::optional<options> parser::parse(int argc, const char* argv[]) {
     }
 
     if (vm.count("version")) {
-        std::cout << "ores.comms.analyser version " << ORES_VERSION << "\n";
+        std::cout << "Session Analyser for ORE Studio v" << ORES_VERSION << "\n"
+                  << "Copyright (C) 2025 Marco Craveiro.\n"
+                  << "License GPLv3: GNU GPL version 3 or later "
+                  << "<http://gnu.org/licenses/gpl.html>.\n"
+                  << "This is free software: you are free to change and redistribute it.\n"
+                  << "There is NO WARRANTY, to the extent permitted by law.\n";
+
+        const std::string build_info(ORES_BUILD_INFO);
+        if (!build_info.empty()) {
+            std::cout << build_info << "\n"
+                      << "IMPORTANT: build details are NOT for security purposes.\n";
+        }
         return std::nullopt;
     }
 

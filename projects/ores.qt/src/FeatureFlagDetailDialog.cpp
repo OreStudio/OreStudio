@@ -78,7 +78,7 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
     // Connect signals for editable fields to detect changes
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
         &FeatureFlagDetailDialog::onFieldChanged);
-    connect(ui_->enabledCheckBox, &QCheckBox::stateChanged, this,
+    connect(ui_->enabledCheckBox, &QCheckBox::checkStateChanged, this,
         &FeatureFlagDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
         &FeatureFlagDetailDialog::onFieldChanged);

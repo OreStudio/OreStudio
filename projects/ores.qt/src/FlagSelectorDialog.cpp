@@ -95,8 +95,8 @@ void FlagSelectorDialog::setupUi() {
 
     // Button box
     auto* buttonLayout = new QHBoxLayout();
-    clearButton_ = new QPushButton(tr("Clear Flag"), this);
-    clearButton_->setToolTip(tr("Remove the current flag association"));
+    clearButton_ = new QPushButton(tr("Clear"), this);
+    clearButton_->setToolTip(tr("Remove current selection"));
     buttonLayout->addWidget(clearButton_);
 
     buttonLayout->addStretch();

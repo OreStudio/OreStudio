@@ -34,8 +34,9 @@ using namespace ores::telemetry::log;
 
 TelemetrySettingsDialog::TelemetrySettingsDialog(QWidget* parent)
     : QDialog(parent),
-      // Logging section
-      logging_group_(new QGroupBox("Logging", this)),
+      // Tab widget
+      tab_widget_(new QTabWidget(this)),
+      // Logging tab
       logging_enabled_checkbox_(new QCheckBox("Enable file logging", this)),
       log_level_combo_(new QComboBox(this)),
       console_output_checkbox_(new QCheckBox("Output to console", this)),
@@ -44,8 +45,7 @@ TelemetrySettingsDialog::TelemetrySettingsDialog(QWidget* parent)
       log_filename_edit_(new QLineEdit(this)),
       include_pid_checkbox_(new QCheckBox("Include PID in filename", this)),
       tag_filter_edit_(new QLineEdit(this)),
-      // Telemetry section
-      telemetry_group_(new QGroupBox("Telemetry Export", this)),
+      // Telemetry tab
       telemetry_enabled_checkbox_(new QCheckBox("Enable telemetry export", this)),
       telemetry_output_file_edit_(new QLineEdit(this)),
       telemetry_directory_edit_(new QLineEdit(this)),
@@ -53,10 +53,12 @@ TelemetrySettingsDialog::TelemetrySettingsDialog(QWidget* parent)
       streaming_enabled_checkbox_(new QCheckBox("Enable streaming to server", this)),
       batch_size_spin_(new QSpinBox(this)),
       flush_interval_spin_(new QSpinBox(this)),
+      // Networking tab
+      compression_enabled_checkbox_(new QCheckBox("Enable compression", this)),
+      compression_algorithm_combo_(new QComboBox(this)),
       // Dialog buttons
       apply_button_(new QPushButton("Apply", this)),
-      cancel_button_(new QPushButton("Cancel", this)),
-      restart_hint_label_(new QLabel(this)) {
+      cancel_button_(new QPushButton("Cancel", this)) {
 
     setupUI();
     loadSettings();
@@ -74,6 +76,10 @@ TelemetrySettingsDialog::TelemetrySettingsDialog(QWidget* parent)
             this, &TelemetrySettingsDialog::onLoggingEnabledChanged);
     connect(telemetry_enabled_checkbox_, &QCheckBox::checkStateChanged,
             this, &TelemetrySettingsDialog::onTelemetryExportEnabledChanged);
+    connect(streaming_enabled_checkbox_, &QCheckBox::checkStateChanged,
+            this, &TelemetrySettingsDialog::onTelemetryExportEnabledChanged);
+    connect(compression_enabled_checkbox_, &QCheckBox::checkStateChanged,
+            this, &TelemetrySettingsDialog::onCompressionEnabledChanged);
 }
 
 TelemetrySettingsDialog::~TelemetrySettingsDialog() {
@@ -84,28 +90,24 @@ void TelemetrySettingsDialog::setupUI() {
 
     setWindowTitle("Telemetry Settings");
     setModal(true);
-    setMinimumWidth(500);
-    setFixedWidth(500);
+    setMinimumWidth(450);
     setSizeGripEnabled(false);
 
     const QColor iconColor(220, 220, 220);
 
-    // Logging Group
-    auto* logging_layout = new QFormLayout(logging_group_);
+    // === Logging Tab ===
+    auto* logging_tab = new QWidget();
+    auto* logging_layout = new QFormLayout(logging_tab);
     logging_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
 
-    // Enabled checkbox
     logging_layout->addRow(logging_enabled_checkbox_);
 
-    // Log level
     log_level_combo_->addItems({"trace", "debug", "info", "warn", "error"});
     log_level_combo_->setCurrentText("info");
     logging_layout->addRow("Log Level:", log_level_combo_);
 
-    // Console output
     logging_layout->addRow(console_output_checkbox_);
 
-    // Log directory with browse button
     auto* log_dir_layout = new QHBoxLayout();
     log_directory_edit_->setPlaceholderText("Leave empty for current directory");
     log_dir_layout->addWidget(log_directory_edit_);
@@ -113,35 +115,31 @@ void TelemetrySettingsDialog::setupUI() {
         IconUtils::createRecoloredIcon(":/icons/ic_fluent_folder_20_regular.svg", iconColor));
     log_directory_browse_->setFixedWidth(100);
     log_dir_layout->addWidget(log_directory_browse_);
-    logging_layout->addRow("Log Directory:", log_dir_layout);
+    logging_layout->addRow("Directory:", log_dir_layout);
 
-    // Filename
     log_filename_edit_->setPlaceholderText("e.g., ores-qt.log");
     logging_layout->addRow("Filename:", log_filename_edit_);
 
-    // Include PID
     include_pid_checkbox_->setToolTip(
         "When enabled, the filename includes the process ID (e.g., ores-qt.12345.log)");
     logging_layout->addRow(include_pid_checkbox_);
 
-    // Tag filter
     tag_filter_edit_->setPlaceholderText("Optional: filter logs by tag");
-    tag_filter_edit_->setToolTip(
-        "If set, only log messages with this tag will be written");
+    tag_filter_edit_->setToolTip("If set, only log messages with this tag will be written");
     logging_layout->addRow("Tag Filter:", tag_filter_edit_);
 
-    // Telemetry Export Group
-    auto* telemetry_layout = new QFormLayout(telemetry_group_);
+    tab_widget_->addTab(logging_tab, "Logging");
+
+    // === Telemetry Export Tab ===
+    auto* telemetry_tab = new QWidget();
+    auto* telemetry_layout = new QFormLayout(telemetry_tab);
     telemetry_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
 
-    // Enabled checkbox
     telemetry_layout->addRow(telemetry_enabled_checkbox_);
 
-    // Output file
     telemetry_output_file_edit_->setPlaceholderText("e.g., telemetry.jsonl");
     telemetry_layout->addRow("Output File:", telemetry_output_file_edit_);
 
-    // Output directory with browse button
     auto* telem_dir_layout = new QHBoxLayout();
     telemetry_directory_edit_->setPlaceholderText("Leave empty for current directory");
     telem_dir_layout->addWidget(telemetry_directory_edit_);
@@ -149,30 +147,41 @@ void TelemetrySettingsDialog::setupUI() {
         IconUtils::createRecoloredIcon(":/icons/ic_fluent_folder_20_regular.svg", iconColor));
     telemetry_directory_browse_->setFixedWidth(100);
     telem_dir_layout->addWidget(telemetry_directory_browse_);
-    telemetry_layout->addRow("Output Directory:", telem_dir_layout);
+    telemetry_layout->addRow("Directory:", telem_dir_layout);
 
-    // Streaming
     streaming_enabled_checkbox_->setToolTip(
-        "When enabled, log records are also sent to the server in addition to local file");
+        "When enabled, telemetry is also sent to the server");
     telemetry_layout->addRow(streaming_enabled_checkbox_);
 
-    // Batch size
     batch_size_spin_->setRange(1, 1000);
     batch_size_spin_->setValue(50);
-    batch_size_spin_->setToolTip("Number of records to batch before sending to server");
+    batch_size_spin_->setToolTip("Number of records to batch before sending");
     telemetry_layout->addRow("Batch Size:", batch_size_spin_);
 
-    // Flush interval
     flush_interval_spin_->setRange(1, 300);
     flush_interval_spin_->setValue(5);
     flush_interval_spin_->setSuffix(" seconds");
-    flush_interval_spin_->setToolTip("Maximum time to wait before flushing a partial batch");
+    flush_interval_spin_->setToolTip("Maximum time to wait before flushing");
     telemetry_layout->addRow("Flush Interval:", flush_interval_spin_);
 
-    // Restart hint
-    restart_hint_label_->setText(
-        "<i>Note: Most settings take effect on next application restart.</i>");
-    restart_hint_label_->setStyleSheet("QLabel { color: #888; }");
+    tab_widget_->addTab(telemetry_tab, "Telemetry Export");
+
+    // === Network Compression Tab ===
+    auto* compression_tab = new QWidget();
+    auto* compression_layout = new QFormLayout(compression_tab);
+    compression_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+
+    compression_enabled_checkbox_->setToolTip(
+        "Enable compression for network communication to reduce bandwidth");
+    compression_layout->addRow(compression_enabled_checkbox_);
+
+    compression_algorithm_combo_->addItems({"auto", "zlib", "gzip", "bzip2"});
+    compression_algorithm_combo_->setCurrentText("auto");
+    compression_algorithm_combo_->setToolTip(
+        "Select compression algorithm. 'auto' lets the server choose.");
+    compression_layout->addRow("Algorithm:", compression_algorithm_combo_);
+
+    tab_widget_->addTab(compression_tab, "Network Compression");
 
     // Dialog buttons
     apply_button_->setIcon(
@@ -181,24 +190,21 @@ void TelemetrySettingsDialog::setupUI() {
         IconUtils::createRecoloredIcon(":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
 
     auto* button_layout = new QHBoxLayout();
-    button_layout->addWidget(restart_hint_label_);
     button_layout->addStretch();
     button_layout->addWidget(apply_button_);
     button_layout->addWidget(cancel_button_);
 
     // Main layout
     auto* main_layout = new QVBoxLayout(this);
-    main_layout->addWidget(logging_group_);
-    main_layout->addWidget(telemetry_group_);
-    main_layout->addSpacing(10);
+    main_layout->addWidget(tab_widget_);
     main_layout->addLayout(button_layout);
 
-    // Set default button
     apply_button_->setDefault(true);
 
     // Initial state update
     updateLoggingGroupEnabled();
     updateTelemetryGroupEnabled();
+    updateCompressionGroupEnabled();
 }
 
 void TelemetrySettingsDialog::loadSettings() {
@@ -228,10 +234,17 @@ void TelemetrySettingsDialog::loadSettings() {
     flush_interval_spin_->setValue(settings.value("flush_interval", 5).toInt());
     settings.endGroup();
 
+    // Compression settings
+    settings.beginGroup("compression");
+    compression_enabled_checkbox_->setChecked(settings.value("enabled", false).toBool());
+    compression_algorithm_combo_->setCurrentText(settings.value("algorithm", "auto").toString());
+    settings.endGroup();
+
     settings.endGroup();
 
     updateLoggingGroupEnabled();
     updateTelemetryGroupEnabled();
+    updateCompressionGroupEnabled();
 }
 
 void TelemetrySettingsDialog::saveSettings() {
@@ -259,6 +272,12 @@ void TelemetrySettingsDialog::saveSettings() {
     settings.setValue("streaming", streaming_enabled_checkbox_->isChecked());
     settings.setValue("batch_size", batch_size_spin_->value());
     settings.setValue("flush_interval", flush_interval_spin_->value());
+    settings.endGroup();
+
+    // Compression settings
+    settings.beginGroup("compression");
+    settings.setValue("enabled", compression_enabled_checkbox_->isChecked());
+    settings.setValue("algorithm", compression_algorithm_combo_->currentText());
     settings.endGroup();
 
     settings.endGroup();
@@ -300,7 +319,7 @@ void TelemetrySettingsDialog::onApplyClicked() {
 
     MessageBoxHelper::information(this, "Settings Saved",
         "Telemetry settings have been saved.\n\n"
-        "Most changes will take effect when you restart the application.");
+        "You must restart the application for changes to take effect.");
 
     accept();
 }
@@ -365,14 +384,46 @@ void TelemetrySettingsDialog::updateLoggingGroupEnabled() {
 }
 
 void TelemetrySettingsDialog::updateTelemetryGroupEnabled() {
-    bool enabled = telemetry_enabled_checkbox_->isChecked();
+    bool file_export_enabled = telemetry_enabled_checkbox_->isChecked();
+    bool streaming_enabled = streaming_enabled_checkbox_->isChecked();
 
-    telemetry_output_file_edit_->setEnabled(enabled);
-    telemetry_directory_edit_->setEnabled(enabled);
-    telemetry_directory_browse_->setEnabled(enabled);
-    streaming_enabled_checkbox_->setEnabled(enabled);
-    batch_size_spin_->setEnabled(enabled && streaming_enabled_checkbox_->isChecked());
-    flush_interval_spin_->setEnabled(enabled && streaming_enabled_checkbox_->isChecked());
+    // File export settings - tied to file export checkbox
+    telemetry_output_file_edit_->setEnabled(file_export_enabled);
+    telemetry_directory_edit_->setEnabled(file_export_enabled);
+    telemetry_directory_browse_->setEnabled(file_export_enabled);
+
+    // Streaming settings - independent of file export
+    batch_size_spin_->setEnabled(streaming_enabled);
+    flush_interval_spin_->setEnabled(streaming_enabled);
+}
+
+void TelemetrySettingsDialog::onCompressionEnabledChanged(Qt::CheckState /*state*/) {
+    updateCompressionGroupEnabled();
+}
+
+void TelemetrySettingsDialog::updateCompressionGroupEnabled() {
+    bool enabled = compression_enabled_checkbox_->isChecked();
+    compression_algorithm_combo_->setEnabled(enabled);
+}
+
+bool TelemetrySettingsDialog::isCompressionEnabled() {
+    QSettings settings;
+    settings.beginGroup(settingsPrefix());
+    settings.beginGroup("compression");
+    bool enabled = settings.value("enabled", false).toBool();
+    settings.endGroup();
+    settings.endGroup();
+    return enabled;
+}
+
+QString TelemetrySettingsDialog::compressionAlgorithm() {
+    QSettings settings;
+    settings.beginGroup(settingsPrefix());
+    settings.beginGroup("compression");
+    QString algorithm = settings.value("algorithm", "auto").toString();
+    settings.endGroup();
+    settings.endGroup();
+    return algorithm;
 }
 
 }

@@ -20,14 +20,13 @@
 #ifndef ORES_QT_TELEMETRYSETTINGSDIALOG_HPP
 #define ORES_QT_TELEMETRYSETTINGSDIALOG_HPP
 
-#include <QLabel>
 #include <QDialog>
 #include <QCheckBox>
 #include <QComboBox>
-#include <QGroupBox>
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QPushButton>
+#include <QTabWidget>
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.telemetry/log/logging_options.hpp"
 
@@ -72,6 +71,18 @@ public:
     static telemetry::log::logging_options loadLoggingSettings();
 
     /**
+     * @brief Check if compression is enabled in QSettings.
+     * @return True if compression is enabled.
+     */
+    static bool isCompressionEnabled();
+
+    /**
+     * @brief Get compression algorithm from QSettings.
+     * @return Algorithm string (zlib, gzip, bzip2, or all).
+     */
+    static QString compressionAlgorithm();
+
+    /**
      * @brief Get the settings key prefix for telemetry settings.
      * @return The settings key prefix.
      */
@@ -84,6 +95,7 @@ private slots:
     void onBrowseTelemetryDirectoryClicked();
     void onLoggingEnabledChanged(Qt::CheckState state);
     void onTelemetryExportEnabledChanged(Qt::CheckState state);
+    void onCompressionEnabledChanged(Qt::CheckState state);
 
 private:
     void setupUI();
@@ -92,10 +104,13 @@ private:
     void applySettings();
     void updateLoggingGroupEnabled();
     void updateTelemetryGroupEnabled();
+    void updateCompressionGroupEnabled();
 
 private:
-    // Logging section
-    QGroupBox* logging_group_;
+    // Tab widget
+    QTabWidget* tab_widget_;
+
+    // Logging tab
     QCheckBox* logging_enabled_checkbox_;
     QComboBox* log_level_combo_;
     QCheckBox* console_output_checkbox_;
@@ -105,8 +120,7 @@ private:
     QCheckBox* include_pid_checkbox_;
     QLineEdit* tag_filter_edit_;
 
-    // Telemetry export section
-    QGroupBox* telemetry_group_;
+    // Telemetry export tab
     QCheckBox* telemetry_enabled_checkbox_;
     QLineEdit* telemetry_output_file_edit_;
     QLineEdit* telemetry_directory_edit_;
@@ -115,12 +129,13 @@ private:
     QSpinBox* batch_size_spin_;
     QSpinBox* flush_interval_spin_;
 
+    // Network tab
+    QCheckBox* compression_enabled_checkbox_;
+    QComboBox* compression_algorithm_combo_;
+
     // Dialog buttons
     QPushButton* apply_button_;
     QPushButton* cancel_button_;
-
-    // Status
-    QLabel* restart_hint_label_;
 };
 
 }

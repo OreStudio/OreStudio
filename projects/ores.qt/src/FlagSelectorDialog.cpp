@@ -45,12 +45,16 @@ FlagSelectorDialog::FlagSelectorDialog(ImageCache* imageCache,
         this, &FlagSelectorDialog::onImageListLoaded);
     connect(imageCache_, &ImageCache::imageLoaded,
         this, &FlagSelectorDialog::onImageLoaded);
+    connect(imageCache_, &ImageCache::allAvailableImagesLoaded,
+        this, &FlagSelectorDialog::onAllImagesLoaded);
 
     // Load image list if not already loaded
     if (!imageCache_->hasImageList()) {
         imageCache_->loadImageList();
     } else {
         populateList();
+        // Trigger loading all images if not cached
+        imageCache_->loadAllAvailableImages();
     }
 }
 
@@ -129,6 +133,8 @@ void FlagSelectorDialog::setupUi() {
 void FlagSelectorDialog::onImageListLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "Image list loaded, populating...";
     populateList();
+    // Trigger loading all images upfront
+    imageCache_->loadAllAvailableImages();
 }
 
 void FlagSelectorDialog::populateList() {
@@ -208,6 +214,30 @@ void FlagSelectorDialog::onImageLoaded(const QString& image_id) {
     auto selected = listWidget_->selectedItems();
     if (!selected.isEmpty() &&
         selected.first()->data(Qt::UserRole).toString() == image_id) {
+        QIcon icon = imageCache_->getImageIcon(image_id.toStdString());
+        if (!icon.isNull()) {
+            previewLabel_->setPixmap(icon.pixmap(64, 64));
+        }
+    }
+}
+
+void FlagSelectorDialog::onAllImagesLoaded() {
+    BOOST_LOG_SEV(lg(), debug) << "All images loaded, updating list icons...";
+
+    // Update all icons in the list
+    for (int i = 0; i < listWidget_->count(); ++i) {
+        auto* item = listWidget_->item(i);
+        QString image_id = item->data(Qt::UserRole).toString();
+        QIcon icon = imageCache_->getImageIcon(image_id.toStdString());
+        if (!icon.isNull()) {
+            item->setIcon(icon);
+        }
+    }
+
+    // Update preview for currently selected item
+    auto selected = listWidget_->selectedItems();
+    if (!selected.isEmpty()) {
+        QString image_id = selected.first()->data(Qt::UserRole).toString();
         QIcon icon = imageCache_->getImageIcon(image_id.toStdString());
         if (!icon.isNull()) {
             previewLabel_->setPixmap(icon.pixmap(64, 64));

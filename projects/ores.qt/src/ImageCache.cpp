@@ -40,7 +40,8 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
       images_watcher_(new QFutureWatcher<ImagesResult>(this)),
       image_list_watcher_(new QFutureWatcher<ImageListResult>(this)),
       single_image_watcher_(new QFutureWatcher<SingleImageResult>(this)),
-      set_currency_image_watcher_(new QFutureWatcher<SetCurrencyImageResult>(this)) {
+      set_currency_image_watcher_(new QFutureWatcher<SetCurrencyImageResult>(this)),
+      all_available_watcher_(new QFutureWatcher<ImagesResult>(this)) {
 
     connect(mappings_watcher_, &QFutureWatcher<MappingsResult>::finished,
         this, &ImageCache::onMappingsLoaded);
@@ -52,6 +53,8 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
         this, &ImageCache::onSingleImageLoaded);
     connect(set_currency_image_watcher_, &QFutureWatcher<SetCurrencyImageResult>::finished,
         this, &ImageCache::onCurrencyImageSet);
+    connect(all_available_watcher_, &QFutureWatcher<ImagesResult>::finished,
+        this, &ImageCache::onAllAvailableImagesLoaded);
 }
 
 void ImageCache::loadCurrencyMappings() {
@@ -564,6 +567,129 @@ void ImageCache::onCurrencyImageSet() {
 
     emit currencyImageSet(QString::fromStdString(result.iso_code),
         result.success, QString::fromStdString(result.message));
+}
+
+void ImageCache::loadAllAvailableImages() {
+    if (is_loading_all_available_) {
+        BOOST_LOG_SEV(lg(), warn) << "All available images load already in progress.";
+        return;
+    }
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load all images: not connected.";
+        return;
+    }
+
+    if (available_images_.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No images in list to load.";
+        emit allAvailableImagesLoaded();
+        return;
+    }
+
+    // Collect image IDs that we need to fetch (not already cached)
+    std::vector<std::string> image_ids_to_fetch;
+    for (const auto& img : available_images_) {
+        if (image_preview_cache_.find(img.image_id) == image_preview_cache_.end() &&
+            image_svg_cache_.find(img.image_id) == image_svg_cache_.end()) {
+            image_ids_to_fetch.push_back(img.image_id);
+        }
+    }
+
+    if (image_ids_to_fetch.empty()) {
+        BOOST_LOG_SEV(lg(), debug) << "All available images already cached.";
+        emit allAvailableImagesLoaded();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Loading " << image_ids_to_fetch.size()
+                               << " available images.";
+
+    is_loading_all_available_ = true;
+    QPointer<ImageCache> self = this;
+
+    QFuture<ImagesResult> future =
+        QtConcurrent::run([self, image_ids_to_fetch]() -> ImagesResult {
+            if (!self) return {false, {}};
+
+            std::vector<assets::domain::image> all_images;
+
+            // Batch into groups of MAX_IMAGES_PER_REQUEST
+            constexpr std::size_t batch_size = assets::messaging::MAX_IMAGES_PER_REQUEST;
+            for (std::size_t i = 0; i < image_ids_to_fetch.size(); i += batch_size) {
+                std::vector<std::string> batch;
+                for (std::size_t j = i; j < std::min(i + batch_size, image_ids_to_fetch.size()); ++j) {
+                    batch.push_back(image_ids_to_fetch[j]);
+                }
+
+                BOOST_LOG_SEV(lg(), debug) << "Fetching batch of " << batch.size()
+                                           << " available images.";
+
+                assets::messaging::get_images_request request;
+                request.image_ids = std::move(batch);
+                auto payload = request.serialize();
+
+                frame request_frame(message_type::get_images_request,
+                    0, std::move(payload));
+
+                auto response_result =
+                    self->clientManager_->sendRequest(std::move(request_frame));
+
+                if (!response_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send images request: "
+                                               << response_result.error();
+                    continue;
+                }
+
+                auto payload_result = response_result->decompressed_payload();
+                if (!payload_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to decompress images response: "
+                                               << payload_result.error();
+                    continue;
+                }
+
+                auto response =
+                    assets::messaging::get_images_response::deserialize(*payload_result);
+
+                if (!response) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to deserialize images response.";
+                    continue;
+                }
+
+                for (auto& img : response->images) {
+                    all_images.push_back(std::move(img));
+                }
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << all_images.size()
+                                       << " available images total.";
+            return {true, std::move(all_images)};
+        });
+
+    all_available_watcher_->setFuture(future);
+}
+
+void ImageCache::onAllAvailableImagesLoaded() {
+    is_loading_all_available_ = false;
+
+    auto result = all_available_watcher_->result();
+    if (result.success) {
+        // Cache SVG data and render icons
+        for (const auto& img : result.images) {
+            image_svg_cache_[img.image_id] = img.svg_data;
+            QIcon icon = svgToIcon(img.svg_data);
+            if (!icon.isNull()) {
+                image_preview_cache_[img.image_id] = icon;
+            }
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Cached " << result.images.size()
+                                  << " available images.";
+
+        emit allAvailableImagesLoaded();
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Failed to load all available images.";
+        emit loadError(tr("Failed to load available images"));
+    }
 }
 
 std::string ImageCache::getCurrencyImageId(const std::string& iso_code) const {

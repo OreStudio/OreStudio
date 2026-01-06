@@ -140,6 +140,14 @@ public:
     void loadImageById(const std::string& image_id);
 
     /**
+     * @brief Load all available images from the image list.
+     *
+     * Fetches SVG data for all images in the available_images_ list.
+     * After completion, allAvailableImagesLoaded() signal is emitted.
+     */
+    void loadAllAvailableImages();
+
+    /**
      * @brief Get icon for an image ID (from preview cache).
      *
      * @param image_id The image ID
@@ -197,6 +205,11 @@ signals:
     void imageLoaded(const QString& image_id);
 
     /**
+     * @brief Emitted when all available images have been loaded.
+     */
+    void allAvailableImagesLoaded();
+
+    /**
      * @brief Emitted when currency image assignment is complete.
      */
     void currencyImageSet(const QString& iso_code, bool success, const QString& message);
@@ -207,6 +220,7 @@ private slots:
     void onImageListLoaded();
     void onSingleImageLoaded();
     void onCurrencyImageSet();
+    void onAllAvailableImagesLoaded();
 
 private:
     /**
@@ -258,6 +272,7 @@ private:
     // Loading state
     bool is_loading_mappings_{false};
     bool is_loading_images_{false};
+    bool is_loading_all_available_{false};
     bool load_images_after_mappings_{false};
 
     QFutureWatcher<MappingsResult>* mappings_watcher_;
@@ -265,6 +280,7 @@ private:
     QFutureWatcher<ImageListResult>* image_list_watcher_;
     QFutureWatcher<SingleImageResult>* single_image_watcher_;
     QFutureWatcher<SetCurrencyImageResult>* set_currency_image_watcher_;
+    QFutureWatcher<ImagesResult>* all_available_watcher_;
 
     // List of all available images (metadata only)
     std::vector<assets::messaging::image_info> available_images_;

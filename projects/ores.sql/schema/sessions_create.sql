@@ -71,6 +71,9 @@ create table if not exists "ores"."sessions" (
     -- Only country code is available from ip2country data source
     "country_code" text not null default '',
 
+    -- Protocol used for this session (binary or http)
+    "protocol" text not null default 'binary',
+
     -- Composite primary key: id + start_time
     -- Required for TimescaleDB, also works for regular tables
     primary key (id, start_time)
@@ -87,6 +90,9 @@ where end_time = '';
 create index if not exists sessions_country_idx
 on "ores"."sessions" (country_code, start_time desc)
 where country_code != '';
+
+create index if not exists sessions_protocol_idx
+on "ores"."sessions" (protocol, start_time desc);
 
 --
 -- TimescaleDB-specific setup (only if extension is installed)

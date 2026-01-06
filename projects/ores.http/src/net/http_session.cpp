@@ -225,6 +225,11 @@ domain::http_request http_session::convert_request(
     result.body = req.body();
     result.remote_address = remote_address_;
 
+    // Extract HTTP version (e.g., 11 = HTTP/1.1, 20 = HTTP/2)
+    auto version = req.version();
+    result.http_version_major = static_cast<std::uint16_t>(version / 10);
+    result.http_version_minor = static_cast<std::uint16_t>(version % 10);
+
     // Copy headers (normalize keys to lowercase for case-insensitive lookup per RFC 7230)
     for (const auto& field : req) {
         std::string key = std::string(field.name_string());

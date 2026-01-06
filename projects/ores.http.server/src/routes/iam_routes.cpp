@@ -421,22 +421,26 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
         sess.account_id = account.id;
         sess.start_time = std::chrono::system_clock::now();
         sess.client_ip = ip_address;
+        sess.protocol = iam::domain::session_protocol::http;
+
+        // Extract User-Agent and HTTP version from request
         auto user_agent = req.get_header("User-Agent");
         sess.client_identifier = user_agent.empty() ? "HTTP Client" : user_agent;
-        sess.client_version_major = 1;  // HTTP/1.x
-        sess.client_version_minor = 1;
+        sess.client_version_major = req.http_version_major;
+        sess.client_version_minor = req.http_version_minor;
 
-        // Perform geolocation lookup if service is available
-        if (geo_service_) {
-            auto geo_result = geo_service_->lookup(ip_address);
-            if (geo_result) {
-                sess.country_code = geo_result->country_code;
-                BOOST_LOG_SEV(lg(), debug) << "Geolocation for " << ip_address
-                                           << ": " << sess.country_code;
-            } else {
-                BOOST_LOG_SEV(lg(), debug) << "Geolocation lookup failed for "
-                                           << ip_address;
-            }
+        // Track request body size as bytes_received
+        sess.bytes_received = req.body.size();
+
+        // Perform geolocation lookup
+        auto geo_result = geo_service_->lookup(ip_address);
+        if (geo_result) {
+            sess.country_code = geo_result->country_code;
+            BOOST_LOG_SEV(lg(), debug) << "Geolocation for " << ip_address
+                                       << ": " << sess.country_code;
+        } else {
+            BOOST_LOG_SEV(lg(), debug) << "Geolocation lookup failed for "
+                                       << ip_address;
         }
 
         // Persist session to database

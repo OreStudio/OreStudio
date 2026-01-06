@@ -32,6 +32,7 @@
 #include "ores.http.server/routes/risk_routes.hpp"
 #include "ores.http.server/routes/variability_routes.hpp"
 #include "ores.http.server/routes/assets_routes.hpp"
+#include "ores.geo/service/geolocation_service.hpp"
 
 namespace ores::http_server::app {
 
@@ -59,6 +60,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     auto system_flags = std::make_shared<variability::service::system_flags_service>(ctx);
     auto sessions = std::make_shared<comms::service::auth_session_service>();
     auto auth_service = std::make_shared<iam::service::authorization_service>(ctx);
+    auto geo_service = std::make_shared<geo::service::geolocation_service>(ctx);
 
     // Create HTTP server
     http::net::http_server server(io_ctx, cfg.server);
@@ -92,7 +94,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     // Register IAM routes (accounts, auth, roles, sessions)
     routes::iam_routes iam(ctx, system_flags, sessions, auth_service,
-        server.get_authenticator());
+        server.get_authenticator(), geo_service);
     iam.register_routes(router, registry);
 
     // Register Risk routes (currencies)

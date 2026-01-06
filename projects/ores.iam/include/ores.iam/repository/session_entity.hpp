@@ -98,6 +98,11 @@ struct session_entity {
      * @brief ISO 3166-1 alpha-2 country code.
      */
     std::string country_code;
+
+    /**
+     * @brief Protocol used for this session (binary or http).
+     */
+    std::string protocol = "binary";
 };
 
 std::ostream& operator<<(std::ostream& s, const session_entity& v);

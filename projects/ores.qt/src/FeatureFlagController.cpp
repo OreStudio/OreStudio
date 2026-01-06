@@ -166,7 +166,7 @@ void FeatureFlagController::showDetailWindow(
         QString("Feature Flag: %1").arg(QString::fromStdString(flag.name));
     subWindow->setWindowTitle(title);
     subWindow->setAttribute(Qt::WA_DeleteOnClose);
-    subWindow->resize(450, 350);
+    subWindow->resize(detailDialog->sizeHint());
 
     mdiArea_->addSubWindow(subWindow);
     subWindow->show();

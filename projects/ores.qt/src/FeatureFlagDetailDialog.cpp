@@ -237,17 +237,7 @@ void FeatureFlagDetailDialog::onSaveClicked() {
             self->updateSaveButtonState();
 
             emit self->featureFlagSaved(QString::fromStdString(flagToSave.name));
-
-            // Close window after successful save
-            QWidget* parent = self->parentWidget();
-            while (parent) {
-                if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
-                    QMetaObject::invokeMethod(mdiSubWindow, "close",
-                        Qt::QueuedConnection);
-                    break;
-                }
-                parent = parent->parentWidget();
-            }
+            self->closeParentWindow();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Feature flag save failed: " << message;
             emit self->errorMessage(QString("Failed to save feature flag: %1")
@@ -336,17 +326,7 @@ void FeatureFlagDetailDialog::onDeleteClicked() {
             emit self->statusMessage(QString("Successfully deleted feature flag: %1")
                 .arg(QString::fromStdString(name)));
             emit self->featureFlagDeleted(QString::fromStdString(name));
-
-            // Close window after successful deletion
-            QWidget* parent = self->parentWidget();
-            while (parent) {
-                if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
-                    QMetaObject::invokeMethod(mdiSubWindow, "close",
-                        Qt::QueuedConnection);
-                    break;
-                }
-                parent = parent->parentWidget();
-            }
+            self->closeParentWindow();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Feature flag deletion failed: " << message;
             emit self->errorMessage(QString("Failed to delete feature flag: %1")
@@ -371,6 +351,18 @@ void FeatureFlagDetailDialog::updateSaveButtonState() {
 
     if (deleteAction_)
         deleteAction_->setEnabled(!isAddMode_);
+}
+
+void FeatureFlagDetailDialog::closeParentWindow() {
+    QWidget* parent = parentWidget();
+    while (parent) {
+        if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
+            QMetaObject::invokeMethod(mdiSubWindow, "close",
+                Qt::QueuedConnection);
+            break;
+        }
+        parent = parent->parentWidget();
+    }
 }
 
 QString FeatureFlagDetailDialog::featureFlagName() const {

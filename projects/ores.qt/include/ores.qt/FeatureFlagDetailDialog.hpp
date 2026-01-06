@@ -82,6 +82,7 @@ private slots:
 
 private:
     void updateSaveButtonState();
+    void closeParentWindow();
 
 private:
     Ui::FeatureFlagDetailDialog* ui_;

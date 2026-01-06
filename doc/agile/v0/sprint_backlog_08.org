@@ -17,35 +17,36 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-06 Tue 01:33], for Tuesday, January 06, 2026.
-|      | <75>                |        |      |      |       |
-| Tags | Headline            | Time   |      |      |     % |
-|------+---------------------+--------+------+------+-------|
-|      | *Total time*        | *1:32* |      |      | 100.0 |
-|------+---------------------+--------+------+------+-------|
-|      | Stories             | 1:32   |      |      | 100.0 |
-|      | Active              |        | 1:32 |      | 100.0 |
-| code | Review HTTP service |        |      | 1:32 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-06 Tue 11:47], for Tuesday, January 06, 2026.
+|      | <75>                              |        |      |      |       |
+| Tags | Headline                          | Time   |      |      |     % |
+|------+-----------------------------------+--------+------+------+-------|
+|      | *Total time*                      | *4:54* |      |      | 100.0 |
+|------+-----------------------------------+--------+------+------+-------|
+|      | Stories                           | 4:54   |      |      | 100.0 |
+|      | Active                            |        | 4:54 |      | 100.0 |
+| code | Review HTTP service               |        |      | 3:10 |  64.6 |
+| code | Assorted fixes to currency dialog |        |      | 1:44 |  35.4 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-06 Tue 01:32]
+#+CAPTION: Clock summary at [2026-01-06 Tue 11:47]
 |       | <75>                                        |         |       |      |       |
 | Tags  | Headline                                    | Time    |       |      |     % |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                | *22:49* |       |      | 100.0 |
+|       | *Total time*                                | *26:11* |       |      | 100.0 |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | Stories                                     | 22:49   |       |      | 100.0 |
-|       | Active                                      |         | 22:49 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       | 1:17 |   5.6 |
-| code  | Rerun SQL scripts from scratch              |         |       | 7:52 |  34.5 |
-| code  | Run qt client and validate all new features |         |       | 1:19 |   5.8 |
-| code  | Refactor options and parser                 |         |       | 0:27 |   2.0 |
-| code  | Check functionality in =ores.wt=            |         |       | 2:03 |   9.0 |
-| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       | 1:30 |   6.6 |
-| code  | Review HTTP service                         |         |       | 5:46 |  25.3 |
-| code  | Assorted fixes to currency dialog           |         |       | 2:35 |  11.3 |
+|       | Stories                                     | 26:11   |       |      | 100.0 |
+|       | Active                                      |         | 26:11 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       | 1:17 |   4.9 |
+| code  | Rerun SQL scripts from scratch              |         |       | 7:52 |  30.0 |
+| code  | Run qt client and validate all new features |         |       | 1:19 |   5.0 |
+| code  | Refactor options and parser                 |         |       | 0:27 |   1.7 |
+| code  | Check functionality in =ores.wt=            |         |       | 2:03 |   7.8 |
+| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       | 1:30 |   5.7 |
+| code  | Review HTTP service                         |         |       | 7:24 |  28.3 |
+| code  | Assorted fixes to currency dialog           |         |       | 4:19 |  16.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -405,8 +406,9 @@ Highlights:
   shell recipe examples have been updated to reflect the ores.comms.shell name.
 #+end_quote
 
-*** STARTED Review HTTP service                                        :code:
+*** COMPLETED Review HTTP service                                      :code:
     :LOGBOOK:
+    CLOCK: [2026-01-06 Tue 08:45]--[2026-01-06 Tue 10:02] =>  1:17
     CLOCK: [2026-01-06 Tue 01:33]--[2026-01-06 Tue 01:54] =>  0:21
     CLOCK: [2026-01-05 Mon 23:31]--[2026-01-06 Tue 01:32] =>  2:01
     CLOCK: [2026-01-05 Mon 16:01]--[2026-01-05 Mon 18:02] =>  2:01
@@ -415,8 +417,9 @@ Highlights:
 
 We need to make sure the swagger works, create recipes etc.
 
-*** STARTED Assorted fixes to currency dialog                          :code:
+*** COMPLETED Assorted fixes to currency dialog                        :code:
     :LOGBOOK:
+    CLOCK: [2026-01-06 Tue 10:03]--[2026-01-06 Tue 11:47] =>  1:44
     CLOCK: [2026-01-05 Mon 22:15]--[2026-01-05 Mon 23:30] =>  1:15
     CLOCK: [2026-01-05 Mon 19:00]--[2026-01-05 Mon 20:20] =>  1:20
     :END:
@@ -450,6 +453,10 @@ At present the following is not working or is a snag:
 *** Review comms analyser work                                         :code:
 
 Need to check this works and add UI for it.
+
+*** Disconnect shows reconnect message                                 :code:
+
+When you click disconnect the status bar says "Reconnecting to server".
 
 *** Allow editing of permissions in ores.qt                            :code:
 

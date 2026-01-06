@@ -1817,6 +1817,63 @@ This gives you **safe, gradual, observable rollouts** while keeping your archite
 
 
 
+*** Event Viewer advanced features                                     :code:
+
+Advanced features for the Event Viewer dialog that are not part of the initial
+implementation.
+
+**** Filtering and Search
+
+- Filter by event type (dropdown with checkboxes).
+- Filter by source (local/remote/all).
+- Text search across all fields.
+- Time range filter.
+
+**** Real-time vs Paused Mode
+
+- Pause/Resume button to stop event capture temporarily.
+- Max events spin box to limit history (e.g., last 1000 events).
+
+**** Event Statistics Panel
+
+Collapsible panel showing:
+
+- Events per second (rolling average).
+- Event type breakdown (pie chart).
+- Most active event types.
+
+**** Export Functionality
+
+- Export to JSON file.
+- Export to CSV.
+- Copy selected events to clipboard.
+
+**** Event Replay
+
+Store captured events and allow replay to test widget behavior:
+
+#+begin_src c++
+void replayEvent(const EventRecord& record) {
+    // Re-publish the event to the bus
+    eventBus_->publish(record.reconstruct());
+}
+#+end_src
+
+**** Subscription Visualisation
+
+A secondary tab showing a graph/table of:
+
+- All known event types.
+- Which widgets are subscribed to each.
+- Subscription counts over time.
+
+**** Breakpoints / Alerts
+
+Set conditions to pause or highlight specific events:
+
+- "Break when currency_changed with iso_code='USD'".
+- "Highlight all events with more than 10ms processing time".
+
 ** Far
 
 Stories that we want to capture, but won't work on for a while.

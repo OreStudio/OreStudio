@@ -81,6 +81,8 @@
      <addaction name="separator"/>
      <addaction name="ActionSetRecordingDirectory"/>
     </widget>
+    <addaction name="ActionEventViewer"/>
+    <addaction name="separator"/>
     <addaction name="menuProtocol"/>
    </widget>
    <addaction name="menuFile"/>
@@ -241,6 +243,18 @@
    </property>
    <property name="toolTip">
     <string>Set the directory for session recordings</string>
+   </property>
+  </action>
+  <action name="ActionEventViewer">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_document_code_16_regular.svg</normaloff>:/icons/ic_fluent_document_code_16_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Event Viewer...</string>
+   </property>
+   <property name="toolTip">
+    <string>View domain events in real-time</string>
    </property>
   </action>
  </widget>

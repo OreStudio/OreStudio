@@ -48,6 +48,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/AboutDialog.hpp"
+#include "ores.qt/EventViewerDialog.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
 
@@ -125,6 +126,8 @@ MainWindow::MainWindow(QWidget* parent) :
     recordOnIcon_ = IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_record_20_filled.svg", QColor(220, 80, 80)); // Red for recording
     ui_->ActionRecordSession->setIcon(recordOffIcon_);
+    ui_->ActionEventViewer->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_document_code_16_regular.svg", iconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this,
@@ -152,6 +155,14 @@ MainWindow::MainWindow(QWidget* parent) :
         &MainWindow::onOpenRecordingTriggered);
     connect(ui_->ActionSetRecordingDirectory, &QAction::triggered, this,
         &MainWindow::onSetRecordingDirectoryTriggered);
+
+    // Connect Event Viewer action
+    connect(ui_->ActionEventViewer, &QAction::triggered, this, [this]() {
+        BOOST_LOG_SEV(lg(), debug) << "Event Viewer action triggered";
+        auto* eventViewer = new EventViewerDialog(eventBus_, clientManager_, this);
+        eventViewer->setAttribute(Qt::WA_DeleteOnClose);
+        eventViewer->show();
+    });
 
     // Connect recording signals
     connect(clientManager_, &ClientManager::recordingStarted, this, [this](const QString& filePath) {

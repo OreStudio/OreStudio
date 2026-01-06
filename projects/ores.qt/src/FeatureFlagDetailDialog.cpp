@@ -96,11 +96,12 @@ void FeatureFlagDetailDialog::setUsername(const std::string& username) {
 }
 
 FeatureFlagDetailDialog::~FeatureFlagDetailDialog() {
+    // Cancel any pending operations. The QPointer in the lambdas ensures
+    // they safely handle this dialog being destroyed without blocking.
     const auto watchers = findChildren<QFutureWatcherBase*>();
     for (auto* watcher : watchers) {
         disconnect(watcher, nullptr, this, nullptr);
         watcher->cancel();
-        watcher->waitForFinished();
     }
     delete ui_;
 }

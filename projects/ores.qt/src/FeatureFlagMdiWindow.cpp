@@ -138,11 +138,12 @@ FeatureFlagMdiWindow(ClientManager* clientManager,
 FeatureFlagMdiWindow::~FeatureFlagMdiWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Destroying feature flag MDI window";
 
+    // Cancel any pending operations. The QPointer in the lambdas ensures
+    // they safely handle this window being destroyed without blocking.
     const auto watchers = findChildren<QFutureWatcherBase*>();
     for (auto* watcher : watchers) {
         disconnect(watcher, nullptr, this, nullptr);
         watcher->cancel();
-        watcher->waitForFinished();
     }
 }
 

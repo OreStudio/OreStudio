@@ -35,7 +35,7 @@
                               ":" (auth-source-pick-first-password :host "localhost")
                               "@localhost"
                               ":5432"
-                              "/ores_delicate_violet"
+                              "/ores_nameless_sea"
                               ))))
 (add-to-list 'sql-connection-alist
       '("ores-isaac-db" (sql-product 'postgres)
@@ -44,7 +44,7 @@
                               ":" (auth-source-pick-first-password :host "192.168.1.22")
                               "@192.168.1.22"
                               ":5432"
-                              "/ores_delicate_violet"
+                              "/ores_nameless_sea"
                               ))))
 
 (provide 'ores-database)

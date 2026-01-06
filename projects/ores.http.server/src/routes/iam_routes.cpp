@@ -26,6 +26,8 @@
 #include "ores.iam/domain/account_json.hpp"
 #include "ores.iam/domain/role_json.hpp"
 #include "ores.iam/domain/permission_json.hpp"
+#include "ores.iam/domain/permission.hpp"
+#include "ores.iam/domain/session.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
@@ -980,6 +982,10 @@ asio::awaitable<http_response> iam_routes::handle_get_account_permissions(const 
 asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling list sessions request";
 
+    if (!req.authenticated_user) {
+        co_return http_response::unauthorized("Not authenticated");
+    }
+
     try {
         auto account_id_str = req.get_query_param("account_id");
         std::uint32_t offset = 0;
@@ -991,20 +997,34 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
         if (!offset_str.empty()) offset = std::stoul(offset_str);
         if (!limit_str.empty()) limit = std::stoul(limit_str);
 
-        std::optional<boost::uuids::uuid> account_id;
+        // Determine target account
+        auto requester_id = boost::uuids::string_generator()(req.authenticated_user->subject);
+        boost::uuids::uuid target_account_id = requester_id;
+
+        // Check if user is admin (has accounts_read permission)
+        bool is_admin = auth_service_->has_permission(requester_id,
+            iam::domain::permissions::accounts_read);
+
         if (!account_id_str.empty()) {
-            account_id = boost::uuids::string_generator()(account_id_str);
-        } else if (req.authenticated_user) {
-            account_id = boost::uuids::string_generator()(req.authenticated_user->subject);
+            auto requested_id = boost::uuids::string_generator()(account_id_str);
+            if (!is_admin && requested_id != requester_id) {
+                // Non-admin trying to view someone else's sessions
+                co_return http_response::forbidden("Cannot view other users' sessions");
+            }
+            target_account_id = requested_id;
         }
 
-        // TODO: session_repository doesn't have list_sessions yet
-        (void)account_id;
-        (void)offset;
-        (void)limit;
+        // Query sessions from database
+        auto sessions_list = session_repo_.read_by_account(target_account_id, limit, offset);
+        auto total_count = session_repo_.count_by_account(target_account_id);
+
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << sessions_list.size()
+                                  << " sessions for account "
+                                  << boost::uuids::to_string(target_account_id);
 
         iam::messaging::list_sessions_response resp;
-        // resp.sessions empty for now
+        resp.sessions = std::move(sessions_list);
+        resp.total_count = total_count;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -1016,19 +1036,60 @@ asio::awaitable<http_response> iam_routes::handle_list_sessions(const http_reque
 asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling get session statistics request";
 
+    if (!req.authenticated_user) {
+        co_return http_response::unauthorized("Not authenticated");
+    }
+
     try {
         auto account_id_str = req.get_query_param("account_id");
+        auto start_str = req.get_query_param("start");
+        auto end_str = req.get_query_param("end");
 
-        std::optional<boost::uuids::uuid> account_id;
-        if (!account_id_str.empty()) {
-            account_id = boost::uuids::string_generator()(account_id_str);
+        // Determine target account
+        auto requester_id = boost::uuids::string_generator()(req.authenticated_user->subject);
+        bool is_admin = auth_service_->has_permission(requester_id,
+            iam::domain::permissions::accounts_read);
+
+        boost::uuids::uuid target_account_id = requester_id;
+        bool aggregate_mode = false;
+
+        if (account_id_str.empty()) {
+            // No account specified - aggregate mode for admin, own account for others
+            if (is_admin) {
+                aggregate_mode = true;
+            }
+        } else {
+            auto requested_id = boost::uuids::string_generator()(account_id_str);
+            if (!is_admin && requested_id != requester_id) {
+                co_return http_response::forbidden("Cannot view other users' statistics");
+            }
+            target_account_id = requested_id;
         }
 
-        // TODO: session_repository doesn't have get_statistics yet
-        (void)account_id;
+        // Parse time range (default to last 30 days)
+        auto now = std::chrono::system_clock::now();
+        auto start_time = now - std::chrono::hours(24 * 30);
+        auto end_time = now;
+
+        // TODO: Parse start/end from query params if provided
+        (void)start_str;
+        (void)end_str;
+
+        // Query statistics from database
+        std::vector<iam::domain::session_statistics> stats;
+        if (aggregate_mode) {
+            stats = session_repo_.read_aggregate_daily_statistics(start_time, end_time);
+            BOOST_LOG_SEV(lg(), info) << "Retrieved " << stats.size()
+                                      << " aggregate statistics entries";
+        } else {
+            stats = session_repo_.read_daily_statistics(target_account_id, start_time, end_time);
+            BOOST_LOG_SEV(lg(), info) << "Retrieved " << stats.size()
+                                      << " statistics entries for account "
+                                      << boost::uuids::to_string(target_account_id);
+        }
 
         iam::messaging::get_session_statistics_response resp;
-        // resp.statistics empty for now
+        resp.statistics = std::move(stats);
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -1040,28 +1101,32 @@ asio::awaitable<http_response> iam_routes::handle_get_session_statistics(const h
 asio::awaitable<http_response> iam_routes::handle_get_active_sessions(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling get active sessions request";
 
-    try {
-        std::optional<boost::uuids::uuid> account_id;
+    if (!req.authenticated_user) {
+        co_return http_response::unauthorized("Not authenticated");
+    }
 
-        // Admin can see all, non-admin only sees own
-        if (req.authenticated_user) {
-            bool is_admin = false;
-            for (const auto& role : req.authenticated_user->roles) {
-                if (role == "admin") {
-                    is_admin = true;
-                    break;
-                }
-            }
-            if (!is_admin) {
-                account_id = boost::uuids::string_generator()(req.authenticated_user->subject);
-            }
+    try {
+        auto requester_id = boost::uuids::string_generator()(req.authenticated_user->subject);
+        bool is_admin = auth_service_->has_permission(requester_id,
+            iam::domain::permissions::accounts_read);
+
+        std::vector<iam::domain::session> active_sessions;
+
+        if (is_admin) {
+            // Admin gets all active sessions
+            active_sessions = session_repo_.read_all_active();
+            BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
+                                      << " active sessions (admin view)";
+        } else {
+            // Non-admin gets only their own active sessions
+            active_sessions = session_repo_.read_active_by_account(requester_id);
+            BOOST_LOG_SEV(lg(), info) << "Retrieved " << active_sessions.size()
+                                      << " active sessions for account "
+                                      << boost::uuids::to_string(requester_id);
         }
 
-        // TODO: auth_session_service doesn't have get_active_sessions yet
-        (void)account_id;
-
         iam::messaging::get_active_sessions_response resp;
-        // resp.sessions empty for now
+        resp.sessions = std::move(active_sessions);
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {

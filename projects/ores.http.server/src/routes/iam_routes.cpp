@@ -603,6 +603,11 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
 asio::awaitable<http_response> iam_routes::handle_list_accounts(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling list accounts request";
 
+    auto auth = check_auth(req, iam::domain::permissions::accounts_read, "list_accounts");
+    if (!auth) {
+        co_return auth.error();
+    }
+
     try {
         std::uint32_t offset = 0;
         std::uint32_t limit = 100;

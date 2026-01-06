@@ -21,6 +21,7 @@
 #ifndef ORES_QT_EVENT_VIEWER_DIALOG_HPP
 #define ORES_QT_EVENT_VIEWER_DIALOG_HPP
 
+#include <deque>
 #include <vector>
 #include <memory>
 #include <QDialog>
@@ -79,7 +80,7 @@ public:
     [[nodiscard]] int eventCount() const { return static_cast<int>(events_.size()); }
 
 private:
-    std::vector<EventRecord> events_;
+    std::deque<EventRecord> events_;
     static constexpr int max_events_ = 1000;
 };
 

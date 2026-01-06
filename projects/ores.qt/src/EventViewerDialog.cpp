@@ -143,7 +143,7 @@ void EventTableModel::addEvent(EventRecord event) {
     // Remove oldest events if we exceed max
     while (events_.size() >= max_events_) {
         beginRemoveRows(QModelIndex(), 0, 0);
-        events_.erase(events_.begin());
+        events_.pop_front();
         endRemoveRows();
     }
 
@@ -583,17 +583,14 @@ void EventViewerDialog::onEventDoubleClicked(const QModelIndex& index) {
     layout->addWidget(jsonText);
 
     // Buttons
-    auto* buttonBox = new QDialogButtonBox(
-        QDialogButtonBox::Close | QDialogButtonBox::Ok,
-        &detailDialog);
-    buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Copy JSON"));
+    auto* buttonBox = new QDialogButtonBox(QDialogButtonBox::Close, &detailDialog);
+    auto* copyButton = buttonBox->addButton(tr("Copy JSON"), QDialogButtonBox::ActionRole);
 
-    connect(buttonBox->button(QDialogButtonBox::Ok), &QPushButton::clicked,
-            [&event]() {
-                QApplication::clipboard()->setText(event.jsonPayload);
-            });
+    connect(copyButton, &QPushButton::clicked, this, [&event]() {
+        QApplication::clipboard()->setText(event.jsonPayload);
+    });
     connect(buttonBox, &QDialogButtonBox::rejected,
-            &detailDialog, &QDialog::accept);
+            &detailDialog, &QDialog::reject);
 
     layout->addWidget(buttonBox);
 
@@ -634,7 +631,9 @@ void EventViewerDialog::onNotificationReceived(const QString& eventType,
         QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Indented))
     };
 
-    addEvent(std::move(record));
+    QMetaObject::invokeMethod(this, [this, r = std::move(record)]() {
+        addEvent(std::move(r));
+    }, Qt::QueuedConnection);
 }
 
 }

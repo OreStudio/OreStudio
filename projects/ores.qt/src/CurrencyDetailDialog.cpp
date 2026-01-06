@@ -648,8 +648,8 @@ void CurrencyDetailDialog::updateFlagDisplay() {
     if (!flagButton_)
         return;
 
-    // Define placeholder icon color (light gray for dark theme)
-    const QColor iconColor(220, 220, 220);
+    // Use theme-aware color for icons
+    const QColor iconColor = palette().color(QPalette::Disabled, QPalette::WindowText);
 
     if (!imageCache_) {
         flagButton_->setIcon(IconUtils::createRecoloredIcon(

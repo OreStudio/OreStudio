@@ -422,6 +422,13 @@ void ImageCache::loadImageById(const std::string& image_id) {
         return;
     }
 
+    // Skip if already being loaded
+    if (pending_image_requests_.find(image_id) != pending_image_requests_.end()) {
+        BOOST_LOG_SEV(lg(), debug) << "Image already pending: " << image_id;
+        return;
+    }
+
+    pending_image_requests_.insert(image_id);
     QPointer<ImageCache> self = this;
     std::string requested_id = image_id;
 
@@ -469,6 +476,10 @@ void ImageCache::loadImageById(const std::string& image_id) {
 
 void ImageCache::onSingleImageLoaded() {
     auto result = single_image_watcher_->result();
+
+    // Clear pending status
+    pending_image_requests_.erase(result.image_id);
+
     if (result.success) {
         // Cache SVG and render icon
         image_svg_cache_[result.image_id] = result.image.svg_data;
@@ -586,12 +597,14 @@ void ImageCache::loadAllAvailableImages() {
         return;
     }
 
-    // Collect image IDs that we need to fetch (not already cached)
+    // Collect image IDs that we need to fetch (not already cached or pending)
     std::vector<std::string> image_ids_to_fetch;
     for (const auto& img : available_images_) {
         if (image_preview_cache_.find(img.image_id) == image_preview_cache_.end() &&
-            image_svg_cache_.find(img.image_id) == image_svg_cache_.end()) {
+            image_svg_cache_.find(img.image_id) == image_svg_cache_.end() &&
+            pending_image_requests_.find(img.image_id) == pending_image_requests_.end()) {
             image_ids_to_fetch.push_back(img.image_id);
+            pending_image_requests_.insert(img.image_id);
         }
     }
 
@@ -673,8 +686,9 @@ void ImageCache::onAllAvailableImagesLoaded() {
 
     auto result = all_available_watcher_->result();
     if (result.success) {
-        // Cache SVG data and render icons
+        // Cache SVG data and render icons, clear pending status
         for (const auto& img : result.images) {
+            pending_image_requests_.erase(img.image_id);
             image_svg_cache_[img.image_id] = img.svg_data;
             QIcon icon = svgToIcon(img.svg_data);
             if (!icon.isNull()) {
@@ -687,6 +701,10 @@ void ImageCache::onAllAvailableImagesLoaded() {
 
         emit allAvailableImagesLoaded();
     } else {
+        // Clear pending status for all items that were attempted
+        for (const auto& img : available_images_) {
+            pending_image_requests_.erase(img.image_id);
+        }
         BOOST_LOG_SEV(lg(), error) << "Failed to load all available images.";
         emit loadError(tr("Failed to load available images"));
     }

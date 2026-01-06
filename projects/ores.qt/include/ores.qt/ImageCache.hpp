@@ -287,6 +287,9 @@ private:
 
     // image_id -> QIcon cache for preview (loaded on demand)
     std::unordered_map<std::string, QIcon> image_preview_cache_;
+
+    // Track image IDs currently being loaded to prevent duplicate requests
+    std::unordered_set<std::string> pending_image_requests_;
 };
 
 }

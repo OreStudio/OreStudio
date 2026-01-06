@@ -259,6 +259,24 @@ LoginResult ClientManager::connectAndLogin(
             }
         }
 
+        // Enable telemetry streaming if it was requested before connection
+        if (streaming_enabled_ && pending_streaming_options_) {
+            BOOST_LOG_SEV(lg(), info) << "Enabling pre-configured telemetry streaming for: "
+                                      << pending_streaming_options_->source_name;
+            try {
+                telemetry_streaming_ =
+                    std::make_unique<comms::service::telemetry_streaming_service>(
+                        client_, *pending_streaming_options_);
+                telemetry_streaming_->start();
+                BOOST_LOG_SEV(lg(), info) << "Telemetry streaming started";
+                QMetaObject::invokeMethod(this, [this]() {
+                    emit streamingStarted();
+                }, Qt::QueuedConnection);
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to enable streaming: " << e.what();
+            }
+        }
+
         // Publish connected event to event bus now that login succeeded
         if (event_bus_) {
             event_bus_->publish(comms::eventing::connected_event{
@@ -399,6 +417,16 @@ SignupResult ClientManager::signup(
 void ClientManager::disconnect() {
     if (client_) {
         BOOST_LOG_SEV(lg(), info) << "Disconnecting client";
+
+        // Stop telemetry streaming before disconnecting
+        if (telemetry_streaming_) {
+            BOOST_LOG_SEV(lg(), info) << "Stopping telemetry streaming before disconnect. "
+                                      << "Sent: " << telemetry_streaming_->total_sent()
+                                      << ", dropped: " << telemetry_streaming_->total_dropped();
+            telemetry_streaming_->stop();
+            telemetry_streaming_.reset();
+            emit streamingStopped();
+        }
 
         // Send logout request before disconnecting
         logout();
@@ -725,6 +753,83 @@ std::filesystem::path ClientManager::recordingFilePath() const {
     // We need to get it from there. For now, return empty since
     // client doesn't expose this directly. The signal contains the path.
     return {};
+}
+
+// =============================================================================
+// Telemetry Streaming
+// =============================================================================
+
+void ClientManager::enableStreaming(
+    const comms::service::telemetry_streaming_options& options) {
+
+    streaming_enabled_ = true;
+    pending_streaming_options_ = options;
+
+    if (!client_) {
+        // No client yet - streaming will start when we connect
+        BOOST_LOG_SEV(lg(), info) << "Streaming enabled (will start on connect) for: "
+                                  << options.source_name;
+        return;
+    }
+
+    if (!client_->is_connected()) {
+        BOOST_LOG_SEV(lg(), info) << "Streaming enabled (waiting for connection) for: "
+                                  << options.source_name;
+        return;
+    }
+
+    // Already connected - start streaming now
+    BOOST_LOG_SEV(lg(), info) << "Enabling telemetry streaming for: "
+                              << options.source_name;
+
+    try {
+        telemetry_streaming_ =
+            std::make_unique<comms::service::telemetry_streaming_service>(
+                client_, options);
+        telemetry_streaming_->start();
+
+        BOOST_LOG_SEV(lg(), info) << "Telemetry streaming started";
+        emit streamingStarted();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to enable streaming: " << e.what();
+        streaming_enabled_ = false;
+        pending_streaming_options_.reset();
+    }
+}
+
+void ClientManager::disableStreaming() {
+    streaming_enabled_ = false;
+    pending_streaming_options_.reset();
+
+    if (!telemetry_streaming_) {
+        BOOST_LOG_SEV(lg(), debug) << "Streaming disabled (was not active)";
+        emit streamingStopped();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Disabling telemetry streaming. "
+                              << "Sent: " << telemetry_streaming_->total_sent()
+                              << ", dropped: " << telemetry_streaming_->total_dropped();
+
+    telemetry_streaming_->stop();
+    telemetry_streaming_.reset();
+    emit streamingStopped();
+}
+
+bool ClientManager::isStreaming() const {
+    return telemetry_streaming_ && telemetry_streaming_->is_running();
+}
+
+std::size_t ClientManager::streamingPendingCount() const {
+    return telemetry_streaming_ ? telemetry_streaming_->pending_count() : 0;
+}
+
+std::uint64_t ClientManager::streamingTotalSent() const {
+    return telemetry_streaming_ ? telemetry_streaming_->total_sent() : 0;
+}
+
+std::uint64_t ClientManager::streamingTotalDropped() const {
+    return telemetry_streaming_ ? telemetry_streaming_->total_dropped() : 0;
 }
 
 }

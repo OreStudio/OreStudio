@@ -26,6 +26,7 @@
 #include "ores.telemetry/domain/resource.hpp"
 #include "ores.telemetry/domain/telemetry_context.hpp"
 #include "ores.telemetry/exporting/hybrid_log_exporter.hpp"
+#include "ores.comms/service/telemetry_streaming_service.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.comms.shell/app/application.hpp"
 #include "ores.comms.shell/config/parser.hpp"
@@ -127,10 +128,25 @@ int host::execute(const std::vector<std::string>& args,
     BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
 
     /*
+     * Build streaming options if telemetry streaming is enabled.
+     */
+    std::optional<comms::service::telemetry_streaming_options> streaming_options;
+    if (cfg.telemetry && cfg.telemetry->streaming_enabled) {
+        const auto& tcfg(*cfg.telemetry);
+        streaming_options = comms::service::telemetry_streaming_options{
+            .source_name = tcfg.service_name,
+            .source_version = tcfg.service_version,
+            .batch_size = tcfg.batch_size,
+            .flush_interval = tcfg.flush_interval
+        };
+    }
+
+    /*
      * Execute the application.
      */
     try {
-        ores::comms::shell::app::application app(cfg.connection, cfg.login, telemetry_ctx);
+        ores::comms::shell::app::application app(
+            cfg.connection, cfg.login, telemetry_ctx, streaming_options);
         app.run();
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {

@@ -426,4 +426,34 @@ QString TelemetrySettingsDialog::compressionAlgorithm() {
     return algorithm;
 }
 
+bool TelemetrySettingsDialog::isStreamingEnabled() {
+    QSettings settings;
+    settings.beginGroup(settingsPrefix());
+    settings.beginGroup("export");
+    bool enabled = settings.value("streaming", false).toBool();
+    settings.endGroup();
+    settings.endGroup();
+    return enabled;
+}
+
+int TelemetrySettingsDialog::streamingBatchSize() {
+    QSettings settings;
+    settings.beginGroup(settingsPrefix());
+    settings.beginGroup("export");
+    int batch_size = settings.value("batch_size", 50).toInt();
+    settings.endGroup();
+    settings.endGroup();
+    return batch_size;
+}
+
+int TelemetrySettingsDialog::streamingFlushInterval() {
+    QSettings settings;
+    settings.beginGroup(settingsPrefix());
+    settings.beginGroup("export");
+    int flush_interval = settings.value("flush_interval", 5).toInt();
+    settings.endGroup();
+    settings.endGroup();
+    return flush_interval;
+}
+
 }

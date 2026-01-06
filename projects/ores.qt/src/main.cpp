@@ -27,9 +27,11 @@
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.comms/messaging/message_types.hpp"
+#include "ores.comms/service/telemetry_streaming_service.hpp"
 #include "ores.qt/CommandLineParser.hpp"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/SplashScreen.hpp"
+#include "ores.qt/TelemetrySettingsDialog.hpp"
 
 namespace {
 
@@ -88,6 +90,20 @@ int main(int argc, char *argv[]) {
 
     ores::qt::MainWindow mainWindow;
     mainWindow.getClientManager()->setSupportedCompression(parser.supportedCompression());
+
+    // Enable telemetry streaming if configured in settings
+    if (ores::qt::TelemetrySettingsDialog::isStreamingEnabled()) {
+        BOOST_LOG_SEV(lg, info) << "Telemetry streaming is enabled in settings";
+        ores::comms::service::telemetry_streaming_options streaming_opts{
+            .source_name = "ores.qt",
+            .source_version = ORES_VERSION,
+            .batch_size = static_cast<std::size_t>(
+                ores::qt::TelemetrySettingsDialog::streamingBatchSize()),
+            .flush_interval = std::chrono::seconds(
+                ores::qt::TelemetrySettingsDialog::streamingFlushInterval())
+        };
+        mainWindow.getClientManager()->enableStreaming(streaming_opts);
+    }
 
     QTimer::singleShot(splashDuration, &splash, SLOT(close()));
     QTimer::singleShot(splashDuration, &mainWindow, SLOT(show()));

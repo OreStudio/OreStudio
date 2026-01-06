@@ -83,6 +83,24 @@ public:
     static QString compressionAlgorithm();
 
     /**
+     * @brief Check if telemetry streaming to server is enabled in QSettings.
+     * @return True if streaming is enabled.
+     */
+    static bool isStreamingEnabled();
+
+    /**
+     * @brief Get streaming batch size from QSettings.
+     * @return Batch size (default 50).
+     */
+    static int streamingBatchSize();
+
+    /**
+     * @brief Get streaming flush interval from QSettings.
+     * @return Flush interval in seconds (default 5).
+     */
+    static int streamingFlushInterval();
+
+    /**
      * @brief Get the settings key prefix for telemetry settings.
      * @return The settings key prefix.
      */

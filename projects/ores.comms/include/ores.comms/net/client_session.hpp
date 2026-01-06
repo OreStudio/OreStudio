@@ -191,6 +191,16 @@ public:
     [[nodiscard]] bool is_connected() const noexcept;
 
     /**
+     * @brief Get the underlying client.
+     *
+     * Provides access to the client for advanced use cases like telemetry
+     * streaming. Returns nullptr if not connected.
+     */
+    [[nodiscard]] std::shared_ptr<client> get_client() const noexcept {
+        return client_;
+    }
+
+    /**
      * @brief Check if logged in.
      */
     [[nodiscard]] bool is_logged_in() const noexcept {

@@ -435,9 +435,23 @@ asio::awaitable<http_response> iam_routes::handle_logout(const http_request& req
     }
 
     try {
-        // Mark session as logged out
-        sessions_->remove_session(req.remote_address);
-        co_return http_response::json(R"({"success":true})");
+        auto account_id = boost::uuids::string_generator()(req.authenticated_user->subject);
+
+        // Record the logout event (updates login_info last_logout_time)
+        account_service_.logout(account_id);
+
+        // Note: For HTTP/JWT, the "session" is stateless (the JWT is the session).
+        // We don't track server-side sessions for HTTP like we do for binary protocol.
+        // The client should discard the JWT on their end.
+
+        BOOST_LOG_SEV(lg(), info) << "Successfully logged out account: "
+                                  << boost::uuids::to_string(account_id);
+
+        iam::messaging::logout_response resp;
+        resp.success = true;
+        resp.message = "Logged out successfully";
+
+        co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Logout error: " << e.what();
         co_return http_response::internal_error(e.what());

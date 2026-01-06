@@ -456,3 +456,305 @@ TEST_CASE("get_images_response_deserialize_truncated_data", tags) {
     auto result = get_images_response::deserialize(serialized);
     REQUIRE_FALSE(result.has_value());
 }
+
+// list_images_request tests
+
+TEST_CASE("list_images_request_serialize_empty", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_request serialization";
+
+    list_images_request request;
+    auto serialized = request.serialize();
+
+    REQUIRE(serialized.empty());
+}
+
+TEST_CASE("list_images_request_deserialize_empty", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_request deserialization";
+
+    std::span<const std::byte> empty_data;
+    auto result = list_images_request::deserialize(empty_data);
+
+    REQUIRE(result.has_value());
+}
+
+TEST_CASE("list_images_request_deserialize_non_empty_fails", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_request deserialization with non-empty data";
+
+    std::vector<std::byte> data{std::byte{0x01}};
+    auto result = list_images_request::deserialize(data);
+
+    REQUIRE_FALSE(result.has_value());
+    REQUIRE(result.error() == error_code::invalid_request);
+}
+
+TEST_CASE("list_images_request_roundtrip", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_request roundtrip";
+
+    list_images_request request;
+    auto serialized = request.serialize();
+    auto result = list_images_request::deserialize(serialized);
+
+    REQUIRE(result.has_value());
+}
+
+TEST_CASE("list_images_request_stream_operator", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_request stream operator";
+
+    list_images_request request;
+    std::ostringstream oss;
+    oss << request;
+
+    REQUIRE_FALSE(oss.str().empty());
+}
+
+// list_images_response tests
+
+TEST_CASE("list_images_response_serialize_empty", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_response serialization with empty list";
+
+    list_images_response response;
+    auto serialized = response.serialize();
+
+    // Should contain at least the count (4 bytes)
+    REQUIRE(serialized.size() >= 4);
+}
+
+TEST_CASE("list_images_response_roundtrip_empty", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_response roundtrip with empty list";
+
+    list_images_response original;
+    auto serialized = original.serialize();
+    auto result = list_images_response::deserialize(serialized);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->images.empty());
+}
+
+TEST_CASE("list_images_response_roundtrip_single_item", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_response roundtrip with single item";
+
+    list_images_response original;
+    original.images.push_back({
+        .image_id = "img-001",
+        .key = "us",
+        .description = "United States flag"
+    });
+
+    auto serialized = original.serialize();
+    auto result = list_images_response::deserialize(serialized);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->images.size() == 1);
+    REQUIRE(result->images[0].image_id == "img-001");
+    REQUIRE(result->images[0].key == "us");
+    REQUIRE(result->images[0].description == "United States flag");
+}
+
+TEST_CASE("list_images_response_roundtrip_multiple_items", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_response roundtrip with multiple items";
+
+    list_images_response original;
+    original.images.push_back({
+        .image_id = "img-001",
+        .key = "us",
+        .description = "United States flag"
+    });
+    original.images.push_back({
+        .image_id = "img-002",
+        .key = "gb",
+        .description = "United Kingdom flag"
+    });
+    original.images.push_back({
+        .image_id = "img-003",
+        .key = "eu",
+        .description = "European Union flag"
+    });
+
+    auto serialized = original.serialize();
+    auto result = list_images_response::deserialize(serialized);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->images.size() == 3);
+    REQUIRE(result->images[0].key == "us");
+    REQUIRE(result->images[1].key == "gb");
+    REQUIRE(result->images[2].key == "eu");
+}
+
+TEST_CASE("list_images_response_stream_operator", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_response stream operator";
+
+    list_images_response response;
+    response.images.push_back({
+        .image_id = "img-001",
+        .key = "us",
+        .description = "United States flag"
+    });
+
+    std::ostringstream oss;
+    oss << response;
+
+    REQUIRE_FALSE(oss.str().empty());
+    REQUIRE(oss.str().find("img-001") != std::string::npos);
+}
+
+TEST_CASE("image_info_stream_operator", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing image_info stream operator";
+
+    image_info info{
+        .image_id = "img-001",
+        .key = "us",
+        .description = "United States flag"
+    };
+
+    std::ostringstream oss;
+    oss << info;
+
+    REQUIRE_FALSE(oss.str().empty());
+    REQUIRE(oss.str().find("img-001") != std::string::npos);
+}
+
+// set_currency_image_request tests
+
+TEST_CASE("set_currency_image_request_serialize", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing set_currency_image_request serialization";
+
+    set_currency_image_request request{
+        .iso_code = "USD",
+        .image_id = "img-001",
+        .assigned_by = "admin"
+    };
+    auto serialized = request.serialize();
+
+    REQUIRE(!serialized.empty());
+}
+
+TEST_CASE("set_currency_image_request_roundtrip", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing set_currency_image_request roundtrip";
+
+    set_currency_image_request original{
+        .iso_code = "USD",
+        .image_id = "img-001",
+        .assigned_by = "admin"
+    };
+
+    auto serialized = original.serialize();
+    auto result = set_currency_image_request::deserialize(serialized);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->iso_code == "USD");
+    REQUIRE(result->image_id == "img-001");
+    REQUIRE(result->assigned_by == "admin");
+}
+
+TEST_CASE("set_currency_image_request_roundtrip_remove", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing set_currency_image_request roundtrip for removal";
+
+    set_currency_image_request original{
+        .iso_code = "EUR",
+        .image_id = "",  // Empty to remove
+        .assigned_by = "user1"
+    };
+
+    auto serialized = original.serialize();
+    auto result = set_currency_image_request::deserialize(serialized);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->iso_code == "EUR");
+    REQUIRE(result->image_id.empty());
+    REQUIRE(result->assigned_by == "user1");
+}
+
+TEST_CASE("set_currency_image_request_stream_operator", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing set_currency_image_request stream operator";
+
+    set_currency_image_request request{
+        .iso_code = "USD",
+        .image_id = "img-001",
+        .assigned_by = "admin"
+    };
+
+    std::ostringstream oss;
+    oss << request;
+
+    REQUIRE_FALSE(oss.str().empty());
+    REQUIRE(oss.str().find("USD") != std::string::npos);
+}
+
+// set_currency_image_response tests
+
+TEST_CASE("set_currency_image_response_serialize_success", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing set_currency_image_response serialization (success)";
+
+    set_currency_image_response response{
+        .success = true,
+        .message = "Image assigned successfully"
+    };
+    auto serialized = response.serialize();
+
+    REQUIRE(!serialized.empty());
+}
+
+TEST_CASE("set_currency_image_response_roundtrip_success", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing set_currency_image_response roundtrip (success)";
+
+    set_currency_image_response original{
+        .success = true,
+        .message = "Image assigned successfully"
+    };
+
+    auto serialized = original.serialize();
+    auto result = set_currency_image_response::deserialize(serialized);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->success == true);
+    REQUIRE(result->message == "Image assigned successfully");
+}
+
+TEST_CASE("set_currency_image_response_roundtrip_failure", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing set_currency_image_response roundtrip (failure)";
+
+    set_currency_image_response original{
+        .success = false,
+        .message = "Image not found"
+    };
+
+    auto serialized = original.serialize();
+    auto result = set_currency_image_response::deserialize(serialized);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->success == false);
+    REQUIRE(result->message == "Image not found");
+}
+
+TEST_CASE("set_currency_image_response_stream_operator", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing set_currency_image_response stream operator";
+
+    set_currency_image_response response{
+        .success = true,
+        .message = "OK"
+    };
+
+    std::ostringstream oss;
+    oss << response;
+
+    REQUIRE_FALSE(oss.str().empty());
+}

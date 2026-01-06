@@ -112,6 +112,17 @@ void postgres_listener_service::stop() {
     if (listener_thread_.joinable()) {
         listener_thread_.join();
     }
+
+    // Reset ready state
+    {
+        std::lock_guard lock(mutex_);
+        ready_ = false;
+    }
+}
+
+bool postgres_listener_service::wait_until_ready(std::chrono::milliseconds timeout) {
+    std::unique_lock lock(mutex_);
+    return ready_cv_.wait_for(lock, timeout, [this] { return ready_; });
 }
 
 void postgres_listener_service::subscribe(const std::string& channel_name) {
@@ -170,7 +181,9 @@ void postgres_listener_service::listen_loop() {
     {
         std::lock_guard lock(mutex_);
         issue_pending_listens();
+        ready_ = true;
     }
+    ready_cv_.notify_all();
 
     while (running_) {
         {

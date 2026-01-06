@@ -27,6 +27,7 @@
 #include <vector>
 #include <optional>
 #include <functional>
+#include <condition_variable>
 #include <sqlgen/postgres.hpp>
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
@@ -122,6 +123,17 @@ public:
      */
     void notify(const std::string& channel_name, const std::string& payload);
 
+    /**
+     * @brief Waits until the listener is ready to receive notifications.
+     *
+     * Blocks until the listener thread has started and issued all pending
+     * LISTEN commands. Returns immediately if not started or already ready.
+     *
+     * @param timeout Maximum time to wait for the listener to become ready.
+     * @return true if the listener is ready, false if timeout occurred.
+     */
+    bool wait_until_ready(std::chrono::milliseconds timeout = std::chrono::seconds(5));
+
 private:
     /**
      * @brief Opens the dedicated PostgreSQL connection.
@@ -164,6 +176,9 @@ private:
 
     std::thread listener_thread_;
     std::atomic<bool> running_;
+
+    std::condition_variable ready_cv_;      ///< Signaled when listener is ready
+    bool ready_{false};                     ///< True when listener is actively polling
 };
 
 }

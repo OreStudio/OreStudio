@@ -28,6 +28,7 @@
 #include "ores.iam/domain/role_json.hpp"
 #include "ores.iam/domain/permission_json.hpp"
 #include "ores.iam/domain/permission.hpp"
+#include "ores.iam/domain/role.hpp"
 #include "ores.iam/domain/session.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
@@ -39,7 +40,6 @@
 #include "ores.iam/domain/account_version.hpp"
 #include "ores.iam/service/signup_service.hpp"
 #include "ores.iam/service/account_setup_service.hpp"
-#include "ores.iam/service/bootstrap_mode_service.hpp"
 
 namespace ores::http_server::routes {
 
@@ -482,14 +482,13 @@ asio::awaitable<http_response> iam_routes::handle_bootstrap_status(const http_re
     BOOST_LOG_SEV(lg(), debug) << "Handling bootstrap status request";
 
     try {
-        iam::service::bootstrap_mode_service bootstrap_service(ctx_, auth_service_);
-        bool in_bootstrap = bootstrap_service.is_in_bootstrap_mode();
+        bool in_bootstrap = system_flags_->is_bootstrap_mode_enabled();
 
         iam::messaging::bootstrap_status_response resp;
         resp.is_in_bootstrap_mode = in_bootstrap;
         resp.message = in_bootstrap ?
-            "System is in bootstrap mode - create initial admin" :
-            "System is configured";
+            "System in BOOTSTRAP MODE - awaiting initial admin account creation" :
+            "System in SECURE MODE - admin account exists";
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -506,12 +505,16 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
         bool is_localhost = req.remote_address.starts_with("127.0.0.1") ||
                            req.remote_address.starts_with("::1");
         if (!is_localhost) {
-            co_return http_response::forbidden("Bootstrap only allowed from localhost");
+            BOOST_LOG_SEV(lg(), warn)
+                << "Rejected create_initial_admin from non-localhost: "
+                << req.remote_address;
+            co_return http_response::forbidden("Bootstrap endpoint only accessible from localhost");
         }
 
-        iam::service::bootstrap_mode_service bootstrap_service(ctx_, auth_service_);
-        if (!bootstrap_service.is_in_bootstrap_mode()) {
-            co_return http_response::forbidden("System is not in bootstrap mode");
+        if (!system_flags_->is_bootstrap_mode_enabled()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Rejected create_initial_admin: system not in bootstrap mode";
+            co_return http_response::forbidden("System not in bootstrap mode - admin account already exists");
         }
 
         auto admin_req = rfl::json::read<iam::messaging::create_initial_admin_request>(req.body);
@@ -519,13 +522,20 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
             co_return http_response::bad_request("Invalid request body");
         }
 
+        // Create the initial admin account with Admin role
+        // This checks role exists BEFORE creating account to avoid orphaned accounts
         iam::service::account_setup_service setup_service(account_service_, auth_service_);
         auto account = setup_service.create_account_with_role(
             admin_req->username, admin_req->email, admin_req->password,
-            "system", "Admin");
+            "bootstrap", iam::domain::roles::admin);
 
-        // Exit bootstrap mode now that initial admin is created
-        bootstrap_service.exit_bootstrap_mode();
+        // Exit bootstrap mode - updates database and shared cache
+        system_flags_->set_bootstrap_mode(false, "system");
+
+        BOOST_LOG_SEV(lg(), info)
+            << "Created initial admin account with ID: " << account.id
+            << " for username: " << account.username;
+        BOOST_LOG_SEV(lg(), info) << "System transitioned to SECURE MODE";
 
         iam::messaging::create_initial_admin_response resp;
         resp.success = true;

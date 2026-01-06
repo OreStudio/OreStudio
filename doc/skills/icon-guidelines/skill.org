@@ -436,7 +436,7 @@ Text validation, spell check, language processing.
 | Unlocked             | lock_open_20               | Default | Active |
 | Connected            | plug_connected_20          | Default | Active |
 | Disconnected         | plug_disconnected_20       | Default | Alert  |
-| Verified Connection  | plug_connected_checkmark   | Default | Active |
+| Verified Connection  | plug_connected_checkmark_20 | Default | Active |
 | Folder               | folder_20                  | Closed  | Active |
 | Folder Open          | folder_open_20             | Open    | Active |
 | Table Document       | document_table_20          | Default | Active |

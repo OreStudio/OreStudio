@@ -19,6 +19,7 @@
  */
 #include "ores.http.server/routes/iam_routes.hpp"
 
+#include <algorithm>
 #include <sstream>
 #include <rfl/json.hpp>
 #include "ores.http/domain/jwt_claims.hpp"
@@ -645,22 +646,38 @@ asio::awaitable<http_response> iam_routes::handle_get_account_history(const http
             co_return http_response::bad_request("Username required");
         }
 
-        auto account_records = account_service_.get_account_history(username);
+        auto accounts = account_service_.get_account_history(username);
 
         iam::messaging::get_account_history_response resp;
-        resp.success = true;
-        resp.history.username = username;
-        // Convert account to account_version
-        int version_num = static_cast<int>(account_records.size());
-        for (const auto& acc : account_records) {
-            iam::domain::account_version ver;
-            ver.data = acc;
-            ver.version_number = version_num--;
-            ver.recorded_at = acc.recorded_at;
-            ver.recorded_by = acc.recorded_by;
-            ver.change_summary = (ver.version_number == 1) ? "Created account" : "Updated account";
-            resp.history.versions.push_back(ver);
+
+        if (accounts.empty()) {
+            resp.success = false;
+            resp.message = "Account not found: " + username;
+            co_return http_response::json(rfl::json::write(resp));
         }
+
+        // Sort by version descending (newest first) - use database version field
+        std::sort(accounts.begin(), accounts.end(),
+            [](const auto& a, const auto& b) {
+                return a.version > b.version;
+            });
+
+        resp.success = true;
+        resp.message = "History retrieved successfully";
+        resp.history.username = username;
+
+        for (const auto& account : accounts) {
+            iam::domain::account_version ver;
+            ver.data = account;
+            ver.version_number = account.version;  // Use database version field
+            ver.recorded_by = account.recorded_by;
+            ver.recorded_at = account.recorded_at;
+            ver.change_summary = "Version " + std::to_string(ver.version_number);
+            resp.history.versions.push_back(std::move(ver));
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << resp.history.versions.size()
+                                  << " versions for account: " << username;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {

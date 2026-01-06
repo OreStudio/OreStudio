@@ -629,6 +629,11 @@ asio::awaitable<http_response> iam_routes::handle_list_accounts(const http_reque
 asio::awaitable<http_response> iam_routes::handle_create_account(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling create account request";
 
+    auto auth = check_auth(req, iam::domain::permissions::accounts_create, "create_account");
+    if (!auth) {
+        co_return auth.error();
+    }
+
     try {
         auto create_req = rfl::json::read<iam::messaging::create_account_request>(req.body);
         if (!create_req) {
@@ -639,7 +644,7 @@ asio::awaitable<http_response> iam_routes::handle_create_account(const http_requ
         iam::service::account_setup_service setup_service(account_service_, auth_service_);
         auto account = setup_service.create_account(
             create_req->username, create_req->email,
-            create_req->password, "system");
+            create_req->password, req.authenticated_user->username.value_or("system"));
 
         iam::messaging::create_account_response resp;
         resp.account_id = account.id;
@@ -653,6 +658,11 @@ asio::awaitable<http_response> iam_routes::handle_create_account(const http_requ
 
 asio::awaitable<http_response> iam_routes::handle_delete_account(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling delete account request";
+
+    auto auth = check_auth(req, iam::domain::permissions::accounts_delete, "delete_account");
+    if (!auth) {
+        co_return auth.error();
+    }
 
     try {
         auto account_id = req.get_path_param("id");
@@ -676,6 +686,11 @@ asio::awaitable<http_response> iam_routes::handle_delete_account(const http_requ
 asio::awaitable<http_response> iam_routes::handle_update_account(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling update account request";
 
+    auto auth = check_auth(req, iam::domain::permissions::accounts_update, "update_account");
+    if (!auth) {
+        co_return auth.error();
+    }
+
     try {
         auto account_id = req.get_path_param("id");
         if (account_id.empty()) {
@@ -688,7 +703,8 @@ asio::awaitable<http_response> iam_routes::handle_update_account(const http_requ
         }
 
         auto uuid = boost::uuids::string_generator()(account_id);
-        bool success = account_service_.update_account(uuid, update_req->email, "system");
+        bool success = account_service_.update_account(uuid, update_req->email,
+            req.authenticated_user->username.value_or("system"));
 
         iam::messaging::update_account_response resp;
         resp.success = success;
@@ -752,6 +768,11 @@ asio::awaitable<http_response> iam_routes::handle_get_account_history(const http
 asio::awaitable<http_response> iam_routes::handle_lock_accounts(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling lock accounts request";
 
+    auto auth = check_auth(req, iam::domain::permissions::accounts_lock, "lock_accounts");
+    if (!auth) {
+        co_return auth.error();
+    }
+
     try {
         auto lock_req = rfl::json::read<iam::messaging::lock_account_request>(req.body);
         if (!lock_req) {
@@ -781,6 +802,11 @@ asio::awaitable<http_response> iam_routes::handle_lock_accounts(const http_reque
 asio::awaitable<http_response> iam_routes::handle_unlock_accounts(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling unlock accounts request";
 
+    auto auth = check_auth(req, iam::domain::permissions::accounts_unlock, "unlock_accounts");
+    if (!auth) {
+        co_return auth.error();
+    }
+
     try {
         auto unlock_req = rfl::json::read<iam::messaging::unlock_account_request>(req.body);
         if (!unlock_req) {
@@ -807,8 +833,13 @@ asio::awaitable<http_response> iam_routes::handle_unlock_accounts(const http_req
     }
 }
 
-asio::awaitable<http_response> iam_routes::handle_list_login_info(const http_request&) {
+asio::awaitable<http_response> iam_routes::handle_list_login_info(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling list login info request";
+
+    auto auth = check_auth(req, iam::domain::permissions::login_info_read, "list_login_info");
+    if (!auth) {
+        co_return auth.error();
+    }
 
     try {
         auto login_infos = account_service_.list_login_info();
@@ -825,6 +856,12 @@ asio::awaitable<http_response> iam_routes::handle_list_login_info(const http_req
 
 asio::awaitable<http_response> iam_routes::handle_reset_password(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling reset password request";
+
+    auto auth = check_auth(req, iam::domain::permissions::accounts_reset_password,
+        "reset_password");
+    if (!auth) {
+        co_return auth.error();
+    }
 
     try {
         auto reset_req = rfl::json::read<iam::messaging::reset_password_request>(req.body);
@@ -966,6 +1003,11 @@ asio::awaitable<http_response> iam_routes::handle_list_permissions(const http_re
 asio::awaitable<http_response> iam_routes::handle_assign_role(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling assign role request";
 
+    auto auth = check_auth(req, iam::domain::permissions::roles_assign, "assign_role");
+    if (!auth) {
+        co_return auth.error();
+    }
+
     try {
         auto account_id = req.get_path_param("id");
         if (account_id.empty()) {
@@ -978,7 +1020,8 @@ asio::awaitable<http_response> iam_routes::handle_assign_role(const http_request
         }
 
         auto uuid = boost::uuids::string_generator()(account_id);
-        auth_service_->assign_role(uuid, assign_req->role_id, "system");
+        auth_service_->assign_role(uuid, assign_req->role_id,
+            req.authenticated_user->username.value_or("system"));
 
         iam::messaging::assign_role_response resp;
         resp.success = true;
@@ -992,6 +1035,11 @@ asio::awaitable<http_response> iam_routes::handle_assign_role(const http_request
 
 asio::awaitable<http_response> iam_routes::handle_revoke_role(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling revoke role request";
+
+    auto auth = check_auth(req, iam::domain::permissions::roles_revoke, "revoke_role");
+    if (!auth) {
+        co_return auth.error();
+    }
 
     try {
         auto account_id = req.get_path_param("accountId");

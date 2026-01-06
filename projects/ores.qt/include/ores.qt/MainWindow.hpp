@@ -45,6 +45,7 @@ class DetachableMdiSubWindow;
 class CurrencyController;
 class AccountController;
 class RoleController;
+class FeatureFlagController;
 class ImageCache;
 
 /**
@@ -252,6 +253,14 @@ private:
      * Only accessible to admin users.
      */
     std::unique_ptr<RoleController> roleController_;
+
+    /**
+     * @brief Controller managing all feature flag windows and operations.
+     *
+     * Created after successful login, handles feature flag list and detail windows.
+     * Only accessible to admin users.
+     */
+    std::unique_ptr<FeatureFlagController> featureFlagController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

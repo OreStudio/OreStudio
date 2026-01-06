@@ -54,6 +54,60 @@ struct list_feature_flags_response final {
 
 std::ostream& operator<<(std::ostream& s, const list_feature_flags_response& v);
 
+/**
+ * @brief Request to save (create or update) a feature flag.
+ */
+struct save_feature_flag_request final {
+    domain::feature_flags flag;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<save_feature_flag_request, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const save_feature_flag_request& v);
+
+/**
+ * @brief Response to save feature flag request.
+ */
+struct save_feature_flag_response final {
+    bool success = false;
+    std::string error_message;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<save_feature_flag_response, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const save_feature_flag_response& v);
+
+/**
+ * @brief Request to delete a feature flag by name.
+ */
+struct delete_feature_flag_request final {
+    std::string name;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<delete_feature_flag_request, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const delete_feature_flag_request& v);
+
+/**
+ * @brief Response to delete feature flag request.
+ */
+struct delete_feature_flag_response final {
+    bool success = false;
+    std::string error_message;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<delete_feature_flag_response, comms::messaging::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const delete_feature_flag_response& v);
+
 }
 
 namespace ores::comms::messaging {
@@ -67,6 +121,28 @@ struct message_traits<variability::messaging::list_feature_flags_request> {
     using response_type = variability::messaging::list_feature_flags_response;
     static constexpr message_type request_message_type =
         message_type::list_feature_flags_request;
+};
+
+/**
+ * @brief Message traits specialization for save_feature_flag_request.
+ */
+template<>
+struct message_traits<variability::messaging::save_feature_flag_request> {
+    using request_type = variability::messaging::save_feature_flag_request;
+    using response_type = variability::messaging::save_feature_flag_response;
+    static constexpr message_type request_message_type =
+        message_type::save_feature_flag_request;
+};
+
+/**
+ * @brief Message traits specialization for delete_feature_flag_request.
+ */
+template<>
+struct message_traits<variability::messaging::delete_feature_flag_request> {
+    using request_type = variability::messaging::delete_feature_flag_request;
+    using response_type = variability::messaging::delete_feature_flag_response;
+    static constexpr message_type request_message_type =
+        message_type::delete_feature_flag_request;
 };
 
 }

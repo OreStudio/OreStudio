@@ -222,8 +222,9 @@ columnar alignment. Mono signals "this is data."
 
 ** Iconography
 
-Use *Phosphor Icons* (`@phosphor-icons/react`). Icons clarify, not decorate — if
-removing an icon loses no meaning, remove it.
+Use *Microsoft Fluent UI System Icons*. Icons clarify, not decorate — if
+removing an icon loses no meaning, remove it. Refer to the [[id:2A167638-8B5A-4691-90CB-4A6B55785108][Icon Guidelines]]
+skill for the complete icon inventory and semantic usage.
 
 Give standalone icons presence with subtle background containers.
 

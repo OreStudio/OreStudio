@@ -106,4 +106,125 @@ std::ostream& operator<<(std::ostream& s, const list_feature_flags_response& v) 
     return s;
 }
 
+std::vector<std::byte> save_feature_flag_request::serialize() const {
+    std::vector<std::byte> buffer;
+
+    writer::write_string(buffer, flag.name);
+    writer::write_bool(buffer, flag.enabled);
+    writer::write_string(buffer, flag.description);
+    writer::write_string(buffer, flag.recorded_by);
+
+    return buffer;
+}
+
+std::expected<save_feature_flag_request, comms::messaging::error_code>
+save_feature_flag_request::deserialize(std::span<const std::byte> data) {
+    save_feature_flag_request request;
+
+    auto name_result = reader::read_string(data);
+    if (!name_result) return std::unexpected(name_result.error());
+    request.flag.name = *name_result;
+
+    auto enabled_result = reader::read_bool(data);
+    if (!enabled_result) return std::unexpected(enabled_result.error());
+    request.flag.enabled = *enabled_result;
+
+    auto description_result = reader::read_string(data);
+    if (!description_result) return std::unexpected(description_result.error());
+    request.flag.description = *description_result;
+
+    auto recorded_by_result = reader::read_string(data);
+    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
+    request.flag.recorded_by = *recorded_by_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const save_feature_flag_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> save_feature_flag_response::serialize() const {
+    std::vector<std::byte> buffer;
+
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, error_message);
+
+    return buffer;
+}
+
+std::expected<save_feature_flag_response, comms::messaging::error_code>
+save_feature_flag_response::deserialize(std::span<const std::byte> data) {
+    save_feature_flag_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto error_message_result = reader::read_string(data);
+    if (!error_message_result) return std::unexpected(error_message_result.error());
+    response.error_message = *error_message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const save_feature_flag_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> delete_feature_flag_request::serialize() const {
+    std::vector<std::byte> buffer;
+
+    writer::write_string(buffer, name);
+
+    return buffer;
+}
+
+std::expected<delete_feature_flag_request, comms::messaging::error_code>
+delete_feature_flag_request::deserialize(std::span<const std::byte> data) {
+    delete_feature_flag_request request;
+
+    auto name_result = reader::read_string(data);
+    if (!name_result) return std::unexpected(name_result.error());
+    request.name = *name_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const delete_feature_flag_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> delete_feature_flag_response::serialize() const {
+    std::vector<std::byte> buffer;
+
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, error_message);
+
+    return buffer;
+}
+
+std::expected<delete_feature_flag_response, comms::messaging::error_code>
+delete_feature_flag_response::deserialize(std::span<const std::byte> data) {
+    delete_feature_flag_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto error_message_result = reader::read_string(data);
+    if (!error_message_result) return std::unexpected(error_message_result.error());
+    response.error_message = *error_message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const delete_feature_flag_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

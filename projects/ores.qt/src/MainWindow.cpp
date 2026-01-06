@@ -44,10 +44,12 @@
 #include "ores.qt/CurrencyController.hpp"
 #include "ores.qt/AccountController.hpp"
 #include "ores.qt/RoleController.hpp"
+#include "ores.qt/FeatureFlagController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/AboutDialog.hpp"
+#include "ores.qt/EventViewerDialog.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/TelemetrySettingsDialog.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
@@ -109,6 +111,8 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
     ui_->ActionRoles->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_lock_closed_20_regular.svg", iconColor));
+    ui_->ActionFeatureFlags->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_checkmark_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(
@@ -128,6 +132,8 @@ MainWindow::MainWindow(QWidget* parent) :
     recordOnIcon_ = IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_record_20_filled.svg", QColor(220, 80, 80)); // Red for recording
     ui_->ActionRecordSession->setIcon(recordOffIcon_);
+    ui_->ActionEventViewer->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_document_code_16_regular.svg", iconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this,
@@ -160,6 +166,14 @@ MainWindow::MainWindow(QWidget* parent) :
             TelemetrySettingsDialog dialog(this);
             dialog.exec();
         });
+
+    // Connect Event Viewer action
+    connect(ui_->ActionEventViewer, &QAction::triggered, this, [this]() {
+        BOOST_LOG_SEV(lg(), debug) << "Event Viewer action triggered";
+        auto* eventViewer = new EventViewerDialog(eventBus_, clientManager_, this);
+        eventViewer->setAttribute(Qt::WA_DeleteOnClose);
+        eventViewer->show();
+    });
 
     // Connect recording signals
     connect(clientManager_, &ClientManager::recordingStarted, this, [this](const QString& filePath) {
@@ -218,6 +232,12 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionRoles, &QAction::triggered, this, [this]() {
         if (roleController_)
             roleController_->showListWindow();
+    });
+
+    // Connect Feature Flags action to controller (admin only)
+    connect(ui_->ActionFeatureFlags, &QAction::triggered, this, [this]() {
+        if (featureFlagController_)
+            featureFlagController_->showListWindow();
     });
 
     // Initially disable data-related actions until logged in
@@ -407,6 +427,9 @@ void MainWindow::onLoginTriggered() {
         if (roleController_) {
             roleController_->setUsername(QString::fromStdString(username_));
         }
+        if (featureFlagController_) {
+            featureFlagController_->setUsername(QString::fromStdString(username_));
+        }
 
         BOOST_LOG_SEV(lg(), info) << "Successfully connected and authenticated.";
         ui_->statusbar->showMessage("Successfully connected and logged in.");
@@ -429,6 +452,7 @@ void MainWindow::updateMenuState() {
     ui_->menuSystem->menuAction()->setEnabled(isConnected);
     ui_->ActionAccounts->setEnabled(isConnected);
     ui_->ActionRoles->setEnabled(isConnected);
+    ui_->ActionFeatureFlags->setEnabled(isConnected);
 
     // My Account and My Sessions menu items are enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
@@ -495,6 +519,21 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
     connect(roleController_.get(), &RoleController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create feature flag controller (admin only functionality)
+    featureFlagController_ = std::make_unique<FeatureFlagController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect feature flag controller signals to status bar
+    connect(featureFlagController_.get(), &FeatureFlagController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(featureFlagController_.get(), &FeatureFlagController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });

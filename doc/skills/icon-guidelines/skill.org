@@ -1,0 +1,467 @@
+:PROPERTIES:
+:ID: 2A167638-8B5A-4691-90CB-4A6B55785108
+:END:
+#+title: Icon Guidelines
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: icon-guidelines
+description: Visual language reference for ORE Studio icons. Use this skill when selecting icons for UI elements, ensuring consistent iconography across the application.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Use this skill when:
+
+- Selecting icons for new UI components or features.
+- Reviewing icon usage for consistency across the application.
+- Understanding the semantic meaning of existing icons.
+- Deciding between filled and regular icon variants.
+
+* How to use this skill
+
+1. *Identify the semantic category* of what you need to represent (action,
+   status, navigation, etc.).
+2. *Find the appropriate icon* in the inventory below.
+3. *Choose the correct variant*: filled for emphasis/active states, regular for
+   passive/default states.
+4. *Follow the usage guidelines* for sizing and context.
+
+* Icon System Overview
+
+ORE Studio uses *Microsoft Fluent UI System Icons*. All icons follow the naming
+convention:
+
+#+begin_example
+ic_fluent_{concept}_{size}_{variant}.svg
+#+end_example
+
+** Variants
+
+- *Regular*: Outline style, used for default/passive states and secondary actions.
+- *Filled*: Solid style, used for active states, emphasis, and primary actions.
+
+** Sizes
+
+- *16px*: Compact UI, inline with text, dense tables.
+- *20px*: Standard UI elements, buttons, navigation.
+- *32px*: Headers, emphasis areas.
+- *48px*: Large feature icons, onboarding, empty states.
+
+** Usage Principles
+
+1. *Consistency*: Use the same icon for the same concept throughout the app.
+2. *Clarity over decoration*: If removing an icon loses no meaning, remove it.
+3. *Paired variants*: Use regular for default, filled for hover/active/selected.
+4. *Adequate spacing*: Give icons room to breathe, minimum 4px from text.
+
+* Icon Inventory
+
+** Actions
+
+Icons representing user-initiated operations.
+
+*** Add
+Create new items, add to lists, insert content.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_add_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_add_20_filled.svg]]
+
+*Usage*: "New" buttons, add to list, create actions.
+
+*** Delete
+Remove items, clear content, destructive actions.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_delete_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_delete_20_filled.svg]]
+
+*Usage*: Delete buttons, remove from list. Use filled variant sparingly to
+indicate destructive nature.
+
+*** Edit
+Modify existing content, enter edit mode.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_edit_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_edit_20_filled.svg]]
+
+*Usage*: Edit buttons, modify actions, pencil metaphor.
+
+*** Save
+Persist changes, commit data.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_save_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_save_20_filled.svg]]
+
+*Usage*: Save buttons, apply changes.
+
+*** Checkmark
+Confirm action, indicate completion, accept.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_checkmark_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_checkmark_20_filled.svg]]
+
+*Usage*: Confirmation buttons, success indicators, selected state in lists.
+
+*** Dismiss
+Close dialogs, cancel operations, clear notifications.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_dismiss_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_dismiss_20_filled.svg]]
+
+*Usage*: Close buttons, cancel actions, clear/dismiss.
+
+*** Star
+Favorite, bookmark, rate.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_star_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_star_20_filled.svg]]
+
+*Usage*: Regular for "not favorited", filled for "favorited" state.
+
+*** Record
+Start recording, capture session.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_record_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_record_20_filled.svg]]
+
+*Usage*: Recording controls. Filled indicates actively recording.
+
+** Navigation
+
+Icons for directional movement and navigation controls.
+
+*** Arrow Left
+Navigate back, move left.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_left_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_left_20_filled.svg]]
+
+*Usage*: Back navigation, left scroll controls.
+
+*** Arrow Right
+Navigate forward, move right.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_right_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_right_20_filled.svg]]
+
+*Usage*: Forward navigation, right scroll controls, proceed actions.
+
+*** Arrow Previous
+Step to previous item in sequence.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_previous_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_previous_20_filled.svg]]
+
+*Usage*: Pagination, stepper controls, previous item.
+
+*** Arrow Next
+Step to next item in sequence.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_next_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_next_20_filled.svg]]
+
+*Usage*: Pagination, stepper controls, next item.
+
+*** Arrow Download
+Download content, export data.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_download_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_download_20_filled.svg]]
+
+*Usage*: Download buttons, export actions.
+
+*** Arrow Sync
+Synchronize data, refresh with server.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_sync_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_sync_20_filled.svg]]
+
+*Usage*: Sync buttons, bidirectional refresh.
+
+*** Arrow Clockwise (16px)
+Rotate clockwise, redo action.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_clockwise_16_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_clockwise_16_filled.svg]]
+
+*Usage*: Redo buttons, clockwise rotation controls.
+
+*** Arrow Rotate Counterclockwise
+Undo action, rotate counterclockwise.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_rotate_counterclockwise_20_filled.svg]]
+
+*Usage*: Undo buttons, counterclockwise rotation, revert changes.
+
+** Status & Feedback
+
+Icons communicating system state and user feedback.
+
+*** Info
+Informational message, help content, details.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_info_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_info_20_filled.svg]]
+
+*Usage*: Info tooltips, help buttons, informational banners.
+
+*** Warning
+Caution, potential issue, requires attention.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_warning_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_warning_20_filled.svg]]
+
+*Usage*: Warning messages, caution indicators. Pair with amber/yellow color.
+
+*** Error Circle
+Error state, failed operation, critical issue.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_error_circle_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_error_circle_20_filled.svg]]
+
+*Usage*: Error messages, validation failures, blocked states. Pair with red color.
+
+*** Question
+Help, unknown state, requires clarification.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_question_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_question_20_filled.svg]]
+
+*Usage*: Help buttons, FAQ links, contextual help triggers.
+
+** Users & Identity
+
+Icons representing people and account management.
+
+*** Person
+Single user, current user, profile.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_person_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_person_20_filled.svg]]
+
+*Usage*: User profile, account menu, single user reference.
+
+*** Person Add
+Invite user, create account, add team member.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_person_add_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_person_add_20_filled.svg]]
+
+*Usage*: Invite buttons, add user actions, registration.
+
+*** Person Accounts
+Multiple users, team, user management.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_person_accounts_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_person_accounts_20_filled.svg]]
+
+*Usage*: Team views, user management, multi-user contexts.
+
+** Security & Access
+
+Icons for authentication and authorization concepts.
+
+*** Lock Closed
+Secured, protected, authentication required.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_lock_closed_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_lock_closed_20_filled.svg]]
+
+*Usage*: Locked content, secure areas, login required indicators.
+
+*** Lock Open
+Unlocked, accessible, public.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_lock_open_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_lock_open_20_filled.svg]]
+
+*Usage*: Unlocked state, public content, access granted.
+
+*** Password Reset (48px)
+Reset credentials, forgot password flow.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_password_reset_48_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_password_reset_48_filled.svg]]
+
+*Usage*: Password reset screens, credential recovery flows. Large size for
+feature prominence.
+
+** Connection Status
+
+Icons indicating connectivity and network state.
+
+*** Plug Connected
+Connected to server, online, link established.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_plug_connected_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_plug_connected_20_filled.svg]]
+
+*Usage*: Connection status indicators showing active connection.
+
+*** Plug Disconnected
+Disconnected, offline, no connection.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_plug_disconnected_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_plug_disconnected_20_filled.svg]]
+
+*Usage*: Disconnected state, offline mode, connection lost.
+
+*** Plug Connected Checkmark
+Connection verified, authenticated connection.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_plug_connected_checkmark_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_plug_connected_checkmark_20_filled.svg]]
+
+*Usage*: Verified connection, authenticated session, secure link confirmed.
+
+** Files & Documents
+
+Icons for file system and document operations.
+
+*** Folder
+Directory, container, file group.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_folder_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_folder_20_filled.svg]]
+
+*Usage*: Folder navigation, directory listings.
+
+*** Folder Open
+Open folder, expanded directory, selected container.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_folder_open_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_folder_open_20_filled.svg]]
+
+*Usage*: Expanded folder state in tree views, selected folder.
+
+*** Document Table
+Tabular data, spreadsheet, structured document.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_document_table_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_document_table_20_filled.svg]]
+
+*Usage*: Table views, data documents, spreadsheet-like content.
+
+*** Document Code (16px)
+Source code, script, technical document.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_document_code_16_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_document_code_16_filled.svg]]
+
+*Usage*: Code files, scripts, configuration files.
+
+** Data & Finance
+
+Icons for numerical data and financial concepts.
+
+*** Clipboard Number 123 (16px)
+Numeric data, ID reference, sequence.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_clipboard_number_123_16_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_clipboard_number_123_16_filled.svg]]
+
+*Usage*: ID fields, numeric references, serial numbers.
+
+*** Currency Dollar Euro
+Financial data, multi-currency, monetary values.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_currency_dollar_euro_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_currency_dollar_euro_20_filled.svg]]
+
+*Usage*: Currency fields, financial data, monetary transactions.
+
+** Time & History
+
+Icons for temporal concepts.
+
+*** Clock (16px)
+Time, schedule, duration.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_clock_16_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_clock_16_filled.svg]]
+
+*Usage*: Time fields, timestamps, schedule indicators.
+
+*** History
+Activity history, past actions, audit trail.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_history_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_history_20_filled.svg]]
+
+*Usage*: History views, recent items, activity logs.
+
+** Text & Formatting
+
+Icons for text manipulation and formatting.
+
+*** Text ABC Underline Double (32px)
+Text validation, spell check, language processing.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_text_abc_underline_double_32_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_text_abc_underline_double_32_filled.svg]]
+
+*Usage*: Spell check, text validation, language tools.
+
+* Quick Reference Table
+
+| Concept              | Icon Name                  | Regular | Filled |
+|----------------------+----------------------------+---------+--------|
+| Add/Create           | add_20                     | Default | Active |
+| Delete/Remove        | delete_20                  | Default | Danger |
+| Edit/Modify          | edit_20                    | Default | Active |
+| Save                 | save_20                    | Default | Active |
+| Confirm/Check        | checkmark_20               | Default | Done   |
+| Cancel/Close         | dismiss_20                 | Default | Active |
+| Favorite             | star_20                    | Off     | On     |
+| Back                 | arrow_left_20              | Default | Active |
+| Forward              | arrow_right_20             | Default | Active |
+| Download             | arrow_download_20          | Default | Active |
+| Sync                 | arrow_sync_20              | Default | Active |
+| Undo                 | arrow_rotate_counterclockwise_20 | Default | Active |
+| Info                 | info_20                    | Default | Active |
+| Warning              | warning_20                 | Default | Alert  |
+| Error                | error_circle_20            | Default | Alert  |
+| Help                 | question_20                | Default | Active |
+| User                 | person_20                  | Default | Active |
+| Add User             | person_add_20              | Default | Active |
+| Team                 | person_accounts_20         | Default | Active |
+| Locked               | lock_closed_20             | Default | Active |
+| Unlocked             | lock_open_20               | Default | Active |
+| Connected            | plug_connected_20          | Default | Active |
+| Disconnected         | plug_disconnected_20       | Default | Alert  |
+| Verified Connection  | plug_connected_checkmark_20 | Default | Active |
+| Folder               | folder_20                  | Closed  | Active |
+| Folder Open          | folder_open_20             | Open    | Active |
+| Table Document       | document_table_20          | Default | Active |
+| Code Document        | document_code_16           | Default | Active |
+| Currency             | currency_dollar_euro_20    | Default | Active |
+| Time                 | clock_16                   | Default | Active |
+| History              | history_20                 | Default | Active |
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

@@ -109,14 +109,14 @@ TEST_CASE("postgres_listener_service_notification_reception", tags) {
     listener.start();
     listener.subscribe(channel_name);
 
-    // Give listener time to subscribe
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    // Wait for listener to be ready
+    REQUIRE(listener.wait_until_ready());
 
     // Send a notification from a separate connection
     send_notify(credentials, channel_name, test_payload);
 
     // Wait for the notification with a timeout
-    auto status = future.wait_for(std::chrono::seconds(5));
+    auto status = future.wait_for(std::chrono::seconds(10));
     REQUIRE(status == std::future_status::ready);
 
     entity_change_event e = future.get();
@@ -189,14 +189,14 @@ TEST_CASE("postgres_listener_service_subscribe_before_start", tags) {
 
     listener.start();
 
-    // Give listener time to start and issue pending LISTENs
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    // Wait for listener to be ready
+    REQUIRE(listener.wait_until_ready());
 
     // Send a notification from a separate connection
     send_notify(credentials, channel_name, test_payload);
 
     // Wait for the notification with a timeout
-    auto status = future.wait_for(std::chrono::seconds(5));
+    auto status = future.wait_for(std::chrono::seconds(10));
     REQUIRE(status == std::future_status::ready);
 
     entity_change_event e = future.get();
@@ -231,14 +231,14 @@ TEST_CASE("postgres_listener_service_notify_method", tags) {
     listener.subscribe(channel_name);
     listener.start();
 
-    // Give listener time to start
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    // Wait for listener to be ready
+    REQUIRE(listener.wait_until_ready());
 
     // Use the service's own notify method
     listener.notify(channel_name, test_payload);
 
     // Wait for the notification with a timeout
-    auto status = future.wait_for(std::chrono::seconds(5));
+    auto status = future.wait_for(std::chrono::seconds(10));
     REQUIRE(status == std::future_status::ready);
 
     entity_change_event e = future.get();

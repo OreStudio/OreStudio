@@ -19,7 +19,6 @@
  */
 #include "ores.comms.analyser/config/parser.hpp"
 
-#include <filesystem>
 #include <iostream>
 #include <boost/program_options.hpp>
 #include "ores.utility/version/version.hpp"
@@ -111,11 +110,6 @@ std::optional<options> parser::parse(int argc, const char* argv[]) {
     if (opts.input_file.empty()) {
         throw std::runtime_error("No input file or directory specified. "
             "Use --help for usage information.");
-    }
-
-    // Validate path exists
-    if (!std::filesystem::exists(opts.input_file)) {
-        throw std::runtime_error("Path does not exist: " + opts.input_file.string());
     }
 
     opts.verbose = common_configuration::read_options(vm).verbose;

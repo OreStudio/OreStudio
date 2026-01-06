@@ -38,6 +38,10 @@ variability_message_handler::handle_message(comms::messaging::message_type type,
     switch (type) {
     case comms::messaging::message_type::list_feature_flags_request:
         co_return co_await handle_list_feature_flags_request(payload);
+    case comms::messaging::message_type::save_feature_flag_request:
+        co_return co_await handle_save_feature_flag_request(payload);
+    case comms::messaging::message_type::delete_feature_flag_request:
+        co_return co_await handle_delete_feature_flag_request(payload);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown variability message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
@@ -71,6 +75,66 @@ handle_list_feature_flags_request(std::span<const std::byte> payload) {
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Database error reading feature flags: " << e.what();
         co_return std::unexpected(comms::messaging::error_code::database_error);
+    }
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     comms::messaging::error_code>>
+variability_message_handler::
+handle_save_feature_flag_request(std::span<const std::byte> payload) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_feature_flag_request.";
+
+    // Deserialize request
+    auto request_result = save_feature_flag_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_feature_flag_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    save_feature_flag_response response;
+    try {
+        // Save the feature flag
+        feature_flags_repo_.write(request_result->flag);
+
+        BOOST_LOG_SEV(lg(), info) << "Saved feature flag: " << request_result->flag.name;
+
+        response.success = true;
+        co_return response.serialize();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Database error saving feature flag: " << e.what();
+        response.success = false;
+        response.error_message = e.what();
+        co_return response.serialize();
+    }
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     comms::messaging::error_code>>
+variability_message_handler::
+handle_delete_feature_flag_request(std::span<const std::byte> payload) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_feature_flag_request.";
+
+    // Deserialize request
+    auto request_result = delete_feature_flag_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_feature_flag_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    delete_feature_flag_response response;
+    try {
+        // Delete the feature flag
+        feature_flags_repo_.remove(request_result->name);
+
+        BOOST_LOG_SEV(lg(), info) << "Deleted feature flag: " << request_result->name;
+
+        response.success = true;
+        co_return response.serialize();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Database error deleting feature flag: " << e.what();
+        response.success = false;
+        response.error_message = e.what();
+        co_return response.serialize();
     }
 }
 

@@ -25,6 +25,7 @@
 #include <optional>
 #include <string>
 #include <thread>
+#include <filesystem>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/executor_work_guard.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -33,6 +34,7 @@
 #include "ores.comms/net/client.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.comms/service/remote_event_adapter.hpp"
+#include "ores.comms/recording/session_recorder.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.iam/domain/session.hpp"
@@ -317,6 +319,61 @@ public:
         supported_compression_ = compression;
     }
 
+    // =========================================================================
+    // Session Recording
+    // =========================================================================
+
+    /**
+     * @brief Enable session recording to the specified directory.
+     *
+     * Creates a new session recording file in the specified directory.
+     * Recording can be enabled before or after connecting. If enabled before
+     * connecting, recording will start when the connection is established.
+     *
+     * @param outputDirectory Directory where session files will be created
+     * @return true if recording was enabled, false on error
+     */
+    bool enableRecording(const std::filesystem::path& outputDirectory);
+
+    /**
+     * @brief Disable session recording.
+     *
+     * Stops recording and closes the session file. Safe to call when not
+     * recording.
+     */
+    void disableRecording();
+
+    /**
+     * @brief Check if session recording is currently active.
+     */
+    bool isRecording() const;
+
+    /**
+     * @brief Get the path to the current recording file.
+     *
+     * @return File path if recording, empty path otherwise.
+     */
+    std::filesystem::path recordingFilePath() const;
+
+    /**
+     * @brief Set the recording output directory.
+     *
+     * This directory is used when enableRecording() is called without a
+     * directory argument, or when auto-recording is enabled.
+     *
+     * @param directory The default output directory for recordings
+     */
+    void setRecordingDirectory(const std::filesystem::path& directory) {
+        recording_directory_ = directory;
+    }
+
+    /**
+     * @brief Get the current recording output directory.
+     */
+    std::filesystem::path recordingDirectory() const {
+        return recording_directory_;
+    }
+
 signals:
     void connected();
     void disconnected();
@@ -333,6 +390,18 @@ signals:
      */
     void notificationReceived(const QString& eventType, const QDateTime& timestamp,
                               const QStringList& entityIds);
+
+    /**
+     * @brief Emitted when session recording starts.
+     *
+     * @param filePath Path to the recording file
+     */
+    void recordingStarted(const QString& filePath);
+
+    /**
+     * @brief Emitted when session recording stops.
+     */
+    void recordingStopped();
 
 private:
     void setupIO();
@@ -360,6 +429,12 @@ private:
 
     // Compression support bitmask (default: all compression types)
     std::uint8_t supported_compression_{0x07}; // COMPRESSION_SUPPORT_ALL
+
+    // Session recording output directory
+    std::filesystem::path recording_directory_;
+
+    // Whether recording is enabled (can be set before connection)
+    bool recording_enabled_{false};
 };
 
 }

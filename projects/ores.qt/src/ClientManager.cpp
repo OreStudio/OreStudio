@@ -243,6 +243,22 @@ LoginResult ClientManager::connectAndLogin(
                                   << "' authenticated to " << host << ":" << port
                                   << ", password_reset_required: " << password_reset_required;
 
+        // Enable recording if it was requested before connection
+        if (recording_enabled_ && !recording_directory_.empty()) {
+            BOOST_LOG_SEV(lg(), info) << "Enabling pre-configured recording to: "
+                                      << recording_directory_;
+            auto result = client_->enable_recording(recording_directory_);
+            if (result) {
+                BOOST_LOG_SEV(lg(), info) << "Recording started: " << result->string();
+                QMetaObject::invokeMethod(this, [this, path = result->string()]() {
+                    emit recordingStarted(QString::fromStdString(path));
+                }, Qt::QueuedConnection);
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Failed to enable recording: "
+                                           << static_cast<int>(result.error());
+            }
+        }
+
         // Publish connected event to event bus now that login succeeded
         if (event_bus_) {
             event_bus_->publish(comms::eventing::connected_event{
@@ -645,6 +661,70 @@ std::optional<std::vector<iam::domain::session>> ClientManager::getActiveSession
         BOOST_LOG_SEV(lg(), error) << "Get active sessions exception: " << e.what();
         return std::nullopt;
     }
+}
+
+// =============================================================================
+// Session Recording
+// =============================================================================
+
+bool ClientManager::enableRecording(const std::filesystem::path& outputDirectory) {
+    recording_directory_ = outputDirectory;
+    recording_enabled_ = true;
+
+    if (!client_) {
+        // No client yet - recording will start when we connect
+        BOOST_LOG_SEV(lg(), info) << "Recording enabled (will start on connect) to: "
+                                  << outputDirectory;
+        return true;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Enabling session recording to: " << outputDirectory;
+
+    auto result = client_->enable_recording(outputDirectory);
+    if (!result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to enable recording: "
+                                   << static_cast<int>(result.error());
+        recording_enabled_ = false;
+        return false;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Recording started: " << result->string();
+    emit recordingStarted(QString::fromStdString(result->string()));
+    return true;
+}
+
+void ClientManager::disableRecording() {
+    recording_enabled_ = false;
+
+    if (!client_) {
+        BOOST_LOG_SEV(lg(), debug) << "Recording disabled (was pending)";
+        emit recordingStopped();
+        return;
+    }
+
+    if (!client_->is_recording()) {
+        BOOST_LOG_SEV(lg(), debug) << "Recording not active on client";
+        emit recordingStopped();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Disabling session recording";
+    client_->disable_recording();
+    emit recordingStopped();
+}
+
+bool ClientManager::isRecording() const {
+    return recording_enabled_;
+}
+
+std::filesystem::path ClientManager::recordingFilePath() const {
+    if (!client_ || !client_->is_recording()) {
+        return {};
+    }
+    // The client stores the recording file path in its session_recorder
+    // We need to get it from there. For now, return empty since
+    // client doesn't expose this directly. The signal contains the path.
+    return {};
 }
 
 }

@@ -68,9 +68,25 @@
     </property>
     <addaction name="ActionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuTelemetry">
+    <property name="title">
+     <string>&amp;Telemetry</string>
+    </property>
+    <widget class="QMenu" name="menuProtocol">
+     <property name="title">
+      <string>&amp;Protocol</string>
+     </property>
+     <addaction name="ActionRecordSession"/>
+     <addaction name="ActionOpenRecording"/>
+     <addaction name="separator"/>
+     <addaction name="ActionSetRecordingDirectory"/>
+    </widget>
+    <addaction name="menuProtocol"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuRefereceData"/>
    <addaction name="menuSystem"/>
+   <addaction name="menuTelemetry"/>
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -186,6 +202,45 @@
    </property>
    <property name="toolTip">
     <string>Manage roles and permissions</string>
+   </property>
+  </action>
+  <action name="ActionRecordSession">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_record_20_regular.svg</normaloff>:/icons/ic_fluent_record_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Record Session</string>
+   </property>
+   <property name="toolTip">
+    <string>Record protocol messages to file</string>
+   </property>
+  </action>
+  <action name="ActionOpenRecording">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_folder_open_20_regular.svg</normaloff>:/icons/ic_fluent_folder_open_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Open Recording...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open a recorded session file</string>
+   </property>
+  </action>
+  <action name="ActionSetRecordingDirectory">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_folder_20_regular.svg</normaloff>:/icons/ic_fluent_folder_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Set Recording &amp;Directory...</string>
+   </property>
+   <property name="toolTip">
+    <string>Set the directory for session recordings</string>
    </property>
   </action>
  </widget>

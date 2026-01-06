@@ -70,6 +70,14 @@ struct jwt_claims final {
      * @brief Optional email claim.
      */
     std::optional<std::string> email;
+
+    /**
+     * @brief Optional session ID for tracking HTTP sessions.
+     *
+     * When present, this identifies the database session record
+     * created during login, allowing proper session termination on logout.
+     */
+    std::optional<std::string> session_id;
 };
 
 }

@@ -30,6 +30,7 @@
 #include "ores.iam/domain/permission.hpp"
 #include "ores.iam/domain/role.hpp"
 #include "ores.iam/domain/session.hpp"
+#include <boost/uuid/uuid_generators.hpp>
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
@@ -51,14 +52,16 @@ iam_routes::iam_routes(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
     std::shared_ptr<comms::service::auth_session_service> sessions,
     std::shared_ptr<iam::service::authorization_service> auth_service,
-    std::shared_ptr<http::middleware::jwt_authenticator> authenticator)
+    std::shared_ptr<http::middleware::jwt_authenticator> authenticator,
+    std::shared_ptr<geo::service::geolocation_service> geo_service)
     : ctx_(std::move(ctx))
     , account_service_(ctx_)
     , session_repo_(ctx_)
     , system_flags_(std::move(system_flags))
     , sessions_(std::move(sessions))
     , auth_service_(std::move(auth_service))
-    , authenticator_(std::move(authenticator)) {
+    , authenticator_(std::move(authenticator))
+    , geo_service_(std::move(geo_service)) {
     BOOST_LOG_SEV(lg(), debug) << "IAM routes initialized";
 }
 
@@ -406,11 +409,46 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
     }
 
     try {
+        auto ip_address = boost::asio::ip::make_address(req.remote_address);
         auto account = account_service_.login(
-            login_req->username, login_req->password,
-            boost::asio::ip::make_address(req.remote_address));
+            login_req->username, login_req->password, ip_address);
 
         auto login_info = account_service_.get_login_info(account.id);
+
+        // Create session record for tracking
+        iam::domain::session sess;
+        sess.id = boost::uuids::random_generator()();
+        sess.account_id = account.id;
+        sess.start_time = std::chrono::system_clock::now();
+        sess.client_ip = ip_address;
+        auto user_agent = req.get_header("User-Agent");
+        sess.client_identifier = user_agent.empty() ? "HTTP Client" : user_agent;
+        sess.client_version_major = 1;  // HTTP/1.x
+        sess.client_version_minor = 1;
+
+        // Perform geolocation lookup if service is available
+        if (geo_service_) {
+            auto geo_result = geo_service_->lookup(ip_address);
+            if (geo_result) {
+                sess.country_code = geo_result->country_code;
+                BOOST_LOG_SEV(lg(), debug) << "Geolocation for " << ip_address
+                                           << ": " << sess.country_code;
+            } else {
+                BOOST_LOG_SEV(lg(), debug) << "Geolocation lookup failed for "
+                                           << ip_address;
+            }
+        }
+
+        // Persist session to database
+        try {
+            session_repo_.create(sess);
+            BOOST_LOG_SEV(lg(), debug) << "HTTP session persisted: "
+                                       << boost::uuids::to_string(sess.id);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to persist HTTP session: "
+                                      << e.what();
+            // Continue anyway - session tracking is not critical
+        }
 
         // Generate JWT token if authenticator is configured
         std::string token;
@@ -422,12 +460,13 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
                 role_names.push_back(role.name);
             }
 
-            // Create JWT claims
+            // Create JWT claims with session ID
             http::domain::jwt_claims claims;
             claims.subject = boost::uuids::to_string(account.id);
             claims.username = account.username;
             claims.email = account.email;
             claims.roles = role_names;
+            claims.session_id = boost::uuids::to_string(sess.id);
             claims.issued_at = std::chrono::system_clock::now();
             claims.expires_at = claims.issued_at + std::chrono::hours(24);
 
@@ -477,9 +516,27 @@ asio::awaitable<http_response> iam_routes::handle_logout(const http_request& req
         // Record the logout event (updates login_info last_logout_time)
         account_service_.logout(auth->account_id);
 
-        // Note: For HTTP/JWT, the "session" is stateless (the JWT is the session).
-        // We don't track server-side sessions for HTTP like we do for binary protocol.
-        // The client should discard the JWT on their end.
+        // End the session record if session_id is in the JWT
+        if (req.authenticated_user && req.authenticated_user->session_id) {
+            try {
+                auto session_id = boost::uuids::string_generator()(
+                    *req.authenticated_user->session_id);
+                auto now = std::chrono::system_clock::now();
+
+                // We need the start_time to update the session. Read it first.
+                auto session = session_repo_.read(session_id);
+                if (session) {
+                    session_repo_.end_session(session_id, session->start_time,
+                        now, 0, 0);  // No byte tracking for HTTP
+                    BOOST_LOG_SEV(lg(), debug) << "HTTP session ended: "
+                                               << *req.authenticated_user->session_id;
+                }
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn) << "Failed to end HTTP session: "
+                                          << e.what();
+                // Continue anyway - session tracking is not critical
+            }
+        }
 
         BOOST_LOG_SEV(lg(), info) << "Successfully logged out account: "
                                   << boost::uuids::to_string(auth->account_id);

@@ -43,6 +43,7 @@ target_link_libraries(${lib_target_name}
         ores.risk.lib
         ores.assets.lib
         ores.variability.lib
+        ores.geo.lib
         ores.telemetry.lib
         ores.utility.lib
         ores.database.lib

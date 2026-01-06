@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 943F0B37-DCD1-46EB-AD05-481BFF07DCFE
+:END:
+#+title: ORE Comms Analyser Recipes Skill
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: ores-comms-analyser-recipes
+description: Update comms analyser recipes by comparing commands to the recipe documentation.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Use this skill when:
+- The user wants to update the ORE Studio Comms Analyser recipes documentation
+- New analyser commands have been added and need to be documented
+- Existing analyser functionality has changed and recipes need updating
+
+* How to use this skill
+
+1. Compare the commands in =projects/ores.comms.analyser/src/config/parser.cpp=
+   to =doc/recipes/comms_analyser_recipes.org=.
+2. Check =projects/ores.comms.analyser/src/app/application.cpp= for
+   available commands and their implementations.
+3. Identify any missing commands that are not documented.
+4. Add recipes for missing commands following the existing pattern.
+5. Use the Detailed Instructions section for the proper recipe format.
+
+* Detailed instructions
+
+** Recipe file location
+
+The comms analyser recipes are stored in =doc/recipes/comms_analyser_recipes.org=.
+This file demonstrates all functionality available in the ORE Studio Comms
+Analyser tool.
+
+** Command source locations
+
+The comms analyser is implemented in the following files:
+- =projects/ores.comms.analyser/src/config/parser.cpp=: Command-line argument parsing
+- =projects/ores.comms.analyser/src/app/application.cpp=: Command implementations
+- =projects/ores.comms.analyser/src/domain/session_reader.cpp=: Session file reading
+
+** Available commands
+
+Currently supported commands:
+- =read=: Read and display all frames in a session file (default)
+- =info=: Display session metadata only (file, session ID, timestamp, server, protocol)
+
+** Recipe format
+
+Each recipe follows this pattern:
+
+#+begin_src fundamental
+*** Recipe Name
+
+Description of what this recipe demonstrates.
+
+#+begin_src sh :results output :wrap example
+./ores.comms.analyser command /path/to/session.ores
+#+end_src
+
+[Sample output example if helpful]
+#+end_src
+
+** Recipe sections
+
+Recipes are organized into sections:
+
+- *General*: Help, version, and basic options
+- *Reading Session Files*: Commands for reading and analysing .ores files
+- *Understanding the Output*: Explanation of output columns and fields
+
+** Adding a new recipe
+
+1. Identify which section the command belongs to.
+2. Create a sh src block that invokes ores.comms.analyser with appropriate arguments.
+3. Add a descriptive paragraph explaining what the recipe demonstrates.
+4. Include sample output if it helps illustrate the functionality.
+5. Document any relevant command-line options.
+
+** Session file format
+
+Session files (.ores) are binary files that contain:
+- Session metadata header (session ID, start time, server address, protocol version)
+- Recorded frames with timestamps and direction information
+
+The analyser reads these files and displays them in a human-readable format
+similar to packet capture tools like Wireshark.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

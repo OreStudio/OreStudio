@@ -1,0 +1,132 @@
+:PROPERTIES:
+:ID: ADF4D1EB-5A83-4E14-B2FD-D204DBC91E8E
+:END:
+#+title: Comms Analyser Recipes
+#+author: Marco Craveiro
+#+startup: inlineimages
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+
+Demonstrates the functionality of the [[id:d26b67f9-7987-4b91-98e9-6baf6fe42ad9][ORE Studio Comms Analyser Component]],
+which reads and analyses session recording files (.ores) created by
+ores.qt or other clients with recording enabled.
+
+* Recipes
+  :PROPERTIES:
+  :header-args: :exports both
+  :header-args+: :results raw
+  :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin
+  :END:
+
+** General
+
+*** Help
+
+Display the available commands and options.
+
+#+begin_src sh :results output :wrap example
+./ores.comms.analyser --help
+#+end_src
+
+*** Version
+
+Display the version information.
+
+#+begin_src sh :results output :wrap example
+./ores.comms.analyser --version
+#+end_src
+
+** Reading Session Files
+
+*** Display Session Metadata
+
+Use the =info= command to display only the session metadata without listing
+all frames. This is useful for quickly checking when and where a session was
+recorded.
+
+#+begin_src sh :results output :wrap example
+./ores.comms.analyser info /path/to/session.ores
+#+end_src
+
+Sample output:
+
+#+begin_example
+ores.comms.analyser:
+  File: "session_20250606_143205.ores"
+  Session ID: 12345678-1234-1234-1234-123456789abc
+  Start time: 2025-06-06 14:32:05
+  Server: 127.0.0.1:55555
+  Protocol: v13.0
+  Compression: none
+#+end_example
+
+*** Display All Frames
+
+Use the =read= command (or just provide the filename) to display all frames
+in the session recording. This shows a Wireshark-like table of all messages
+sent and received.
+
+#+begin_src sh :results output :wrap example
+./ores.comms.analyser read /path/to/session.ores
+#+end_src
+
+Sample output:
+
+#+begin_example
+ores.comms.analyser:
+  File: "session_20250606_143205.ores"
+  Session ID: 12345678-1234-1234-1234-123456789abc
+  Start time: 2025-06-06 14:32:05
+  Server: 127.0.0.1:55555
+  Protocol: v13.0
+  Compression: none
+
+Duration: 2.345s
+Frames: 12
+
+  No.  Time            Dir   Type                              Length  Info
+----------------------------------------------------------------------------------------------------
+    1  0.000000        ->    handshake_request                     24  corr=1 seq=1
+    2  0.001234        <-    handshake_response                    32  corr=1 seq=1
+    3  0.002345        ->    login_request                         48  corr=2 seq=2
+    4  0.015678        <-    login_response                        64  corr=2 seq=2
+    5  0.020000        ->    get_currencies_request                16  corr=3 seq=3
+    6  0.045678        <-    get_currencies_response              256  corr=3 seq=3
+
+6 frames captured
+#+end_example
+
+The columns are:
+- *No.*: Frame number in sequence
+- *Time*: Offset from session start in seconds.microseconds
+- *Dir*: Direction (-> sent to server, <- received from server)
+- *Type*: Protocol message type
+- *Length*: Total frame size in bytes (header + payload)
+- *Info*: Additional information (correlation ID, sequence number, compression)
+
+*** Shorthand: Filename Only
+
+If no command is specified, =read= is assumed:
+
+#+begin_src sh :results output :wrap example
+./ores.comms.analyser /path/to/session.ores
+#+end_src
+
+** Understanding the Output
+
+*** Correlation IDs
+
+The =corr= field in the Info column shows the correlation ID. Requests and
+their corresponding responses share the same correlation ID, making it easy
+to match request/response pairs.
+
+*** Sequence Numbers
+
+The =seq= field shows the sequence number. This is an incrementing counter
+that helps detect missing or out-of-order frames.
+
+*** Compression
+
+If a frame uses compression, it will be shown in the Info column (e.g., =lz4=
+or =zstd=). The session metadata also shows the negotiated compression type.
+
+| Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |

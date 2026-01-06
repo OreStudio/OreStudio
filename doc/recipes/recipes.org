@@ -12,6 +12,7 @@ Notebooks on how to use ORE Studio.
 - [[id:2E53EE1A-6856-6904-7FEB-AC95C6722A63][ORE Studio Shell Recipes]]: How to use the client REPL.
 - [[id:10408305-f864-4152-8fca-8132179f4df4][HTTP Recipes]]: Exercise the HTTP API using Emacs verb mode.
 - [[id:C4E8A2F1-D7B3-4A9C-8E6F-5B1D9C0A3E7F][SQL Recipes]]: Direct SQL queries for the ORES database.
+- [[id:ADF4D1EB-5A83-4E14-B2FD-D204DBC91E8E][Comms Analyser Recipes]]: Analyse session recording files (.ores).
 - [[id:B5F94CD2-E6E0-9F44-BB13-4C2CEEF01A44][Git Recipes]]: Tips and tricks for Git.
 
 | Previous: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] |

@@ -23,6 +23,7 @@
 #include <memory>
 #include <expected>
 #include <boost/uuid/uuid.hpp>
+#include <rfl/json.hpp>
 #include "ores.http/net/router.hpp"
 #include "ores.http/openapi/endpoint_registry.hpp"
 #include "ores.http/middleware/jwt_authenticator.hpp"
@@ -203,6 +204,29 @@ private:
         const http::domain::http_request& req,
         std::string_view required_permission = "",
         std::string_view operation_name = "");
+
+    /**
+     * @brief Parse JSON request body into a typed struct.
+     *
+     * @tparam T The request type to parse into
+     * @param req The HTTP request containing the body
+     * @param operation_name Name of the operation for logging
+     * @return Parsed request on success, http_response error (400) on failure
+     */
+    template<typename T>
+    std::expected<T, http::domain::http_response> parse_body(
+        const http::domain::http_request& req,
+        std::string_view operation_name) {
+        using ores::telemetry::log::warn;
+        auto result = rfl::json::read<T>(req.body);
+        if (!result) {
+            BOOST_LOG_SEV(lg(), warn) << operation_name
+                                      << ": invalid request body";
+            return std::unexpected(
+                http::domain::http_response::bad_request("Invalid request body"));
+        }
+        return *result;
+    }
 
     database::context ctx_;
     iam::service::account_service account_service_;

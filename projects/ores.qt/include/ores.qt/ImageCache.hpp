@@ -221,6 +221,8 @@ private slots:
     void onSingleImageLoaded();
     void onCurrencyImageSet();
     void onAllAvailableImagesLoaded();
+    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
+                                const QStringList& entityIds);
 
 private:
     /**

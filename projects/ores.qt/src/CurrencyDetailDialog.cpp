@@ -199,6 +199,7 @@ void CurrencyDetailDialog::setCurrency(const risk::domain::currency& currency) {
         platform::time::datetime::format_time_point(currency.recorded_at)));
 
     isDirty_ = false;
+    flagChanged_ = false;
     emit isDirtyChanged(false);
     updateSaveResetButtonState();
     updateFlagDisplay();
@@ -238,6 +239,7 @@ void CurrencyDetailDialog::clearDialog() {
     pendingImageId_.clear();
 
     isDirty_ = false;
+    flagChanged_ = false;
     emit isDirtyChanged(false);
     updateSaveResetButtonState();
 }
@@ -334,6 +336,7 @@ void CurrencyDetailDialog::onSaveClicked() {
             }
 
             self->isDirty_ = false;
+            self->flagChanged_ = false;
             emit self->isDirtyChanged(false);
             self->updateSaveResetButtonState();
 
@@ -609,6 +612,7 @@ void CurrencyDetailDialog::onSelectFlagClicked() {
 
         // Store the selection locally - will be persisted on Save
         pendingImageId_ = selectedImageId;
+        flagChanged_ = true;
 
         // Update display to show the new selection
         updateFlagDisplay();
@@ -654,40 +658,52 @@ void CurrencyDetailDialog::updateFlagDisplay() {
     // Use theme-aware color for icons
     const QColor iconColor = palette().color(QPalette::Disabled, QPalette::WindowText);
 
+    // Update styling based on changed state
+    if (flagChanged_) {
+        // Show orange border to indicate unsaved change
+        flagButton_->setStyleSheet("QPushButton { border: 2px solid orange; background: transparent; padding: 0px; border-radius: 4px; } "
+                                   "QPushButton:hover { background: rgba(255, 255, 255, 15); }");
+        flagButton_->setToolTip(tr("Flag changed (unsaved)"));
+    } else {
+        // Normal transparent style
+        flagButton_->setStyleSheet("QPushButton { border: none; background: transparent; padding: 0px; } "
+                                   "QPushButton:hover { background: rgba(255, 255, 255, 15); }");
+        flagButton_->setToolTip(tr("Click to select flag"));
+    }
+
     if (!imageCache_) {
         flagButton_->setIcon(IconUtils::createRecoloredIcon(
             ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
-        flagButton_->setToolTip(tr("Click to select flag"));
         return;
     }
 
-    // If there's a pending selection, show that icon
-    if (!pendingImageId_.isEmpty()) {
-        QIcon icon = imageCache_->getImageIcon(pendingImageId_.toStdString());
+    // Determine which image ID to show
+    QString imageIdToShow;
+
+    if (flagChanged_) {
+        // If changed, show pending ID (even if empty - meaning cleared)
+        imageIdToShow = pendingImageId_;
+    } else {
+        // If not changed, show saved mapping
+        imageIdToShow = QString::fromStdString(
+            imageCache_->getCurrencyImageId(currentCurrency_.iso_code));
+    }
+
+    // If we have an ID, try to get the icon
+    if (!imageIdToShow.isEmpty()) {
+        QIcon icon = imageCache_->getImageIcon(imageIdToShow.toStdString());
         if (!icon.isNull()) {
             flagButton_->setIcon(icon);
-            flagButton_->setToolTip(tr("Click to change flag (unsaved)"));
             return;
+        } else {
+            // Icon ID exists but not loaded (should generally be loaded due to preloading/selector)
+            // But fall through to default just in case
         }
     }
 
-    // Otherwise show the currently saved flag (if any)
-    if (currentCurrency_.iso_code.empty()) {
-        flagButton_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
-        flagButton_->setToolTip(tr("Click to select flag"));
-        return;
-    }
-
-    QIcon icon = imageCache_->getCurrencyIcon(currentCurrency_.iso_code);
-    if (icon.isNull()) {
-        flagButton_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
-        flagButton_->setToolTip(tr("Click to select flag"));
-    } else {
-        flagButton_->setIcon(icon);
-        flagButton_->setToolTip(tr("Click to change flag"));
-    }
+    // Default icon if no ID or loading failed
+    flagButton_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
 }
 
 }

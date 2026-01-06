@@ -24,6 +24,7 @@
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.assets/messaging/assets_protocol.hpp"
+#include "ores.assets/eventing/assets_changed_event.hpp"
 
 namespace ores::qt {
 
@@ -53,6 +54,33 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
         this, &ImageCache::onCurrencyImageSet);
     connect(all_available_watcher_, &QFutureWatcher<ImagesResult>::finished,
         this, &ImageCache::onAllAvailableImagesLoaded);
+
+    // Subscribe to asset change events to invalidate cache on external changes
+    const std::string event_name = std::string{
+        eventing::domain::event_traits<assets::eventing::assets_changed_event>::name};
+
+    connect(clientManager_, &ClientManager::notificationReceived,
+            this, &ImageCache::onNotificationReceived);
+
+    // Subscribe to events when connected
+    connect(clientManager_, &ClientManager::connected,
+            this, [this, event_name]() {
+        BOOST_LOG_SEV(lg(), info) << "Subscribing to asset change events";
+        clientManager_->subscribeToEvent(event_name);
+    });
+
+    // Re-subscribe after reconnection
+    connect(clientManager_, &ClientManager::reconnected,
+            this, [this, event_name]() {
+        BOOST_LOG_SEV(lg(), info) << "Re-subscribing to asset change events after reconnect";
+        clientManager_->subscribeToEvent(event_name);
+    });
+
+    // If already connected, subscribe now
+    if (clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to asset change events";
+        clientManager_->subscribeToEvent(event_name);
+    }
 }
 
 void ImageCache::loadCurrencyMappings() {
@@ -196,10 +224,10 @@ void ImageCache::onImagesLoaded() {
         // Render icons for all currencies
         for (const auto& [iso_code, image_id] : currency_to_image_id_) {
             auto svg_it = image_svg_cache_.find(image_id);
-            if (svg_it != image_svg_cache_.end() &&
-                currency_icons_.find(iso_code) == currency_icons_.end()) {
+            if (svg_it != image_svg_cache_.end()) {
                 QIcon icon = svgToIcon(svg_it->second);
                 if (!icon.isNull()) {
+                    // Always update the icon to reflect the latest mapping
                     currency_icons_[iso_code] = icon;
                 }
             }
@@ -537,7 +565,8 @@ void ImageCache::onCurrencyImageSet() {
     if (result.success) {
         BOOST_LOG_SEV(lg(), info) << "Currency image set successfully for: "
                                   << result.iso_code;
-        // Reload mappings to get updated data
+        // Reload mappings and then images to get updated data
+        load_images_after_mappings_ = true;
         loadCurrencyMappings();
     } else {
         BOOST_LOG_SEV(lg(), error) << "Failed to set currency image for "
@@ -631,6 +660,20 @@ std::string ImageCache::getCurrencyImageId(const std::string& iso_code) const {
         return it->second;
     }
     return {};
+}
+
+void ImageCache::onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
+                                         const QStringList& entityIds) {
+    Q_UNUSED(entityIds);
+    static const std::string event_name = std::string{
+        eventing::domain::event_traits<assets::eventing::assets_changed_event>::name};
+    if (eventType.toStdString() == event_name) {
+        BOOST_LOG_SEV(lg(), info) << "Assets changed event received at "
+                                  << timestamp.toString(Qt::ISODate).toStdString()
+                                  << ", reloading image cache.";
+        // Reload all currency mappings and their associated images.
+        loadAll();
+    }
 }
 
 }

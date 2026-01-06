@@ -157,17 +157,26 @@ void CurrencyController::showListWindow() {
     allDetachableWindows_.append(currencyListWindow_);
     QPointer<CurrencyController> self = this;
     QPointer<DetachableMdiSubWindow> windowBeingDestroyed = currencyListWindow_;
+    // to avoid race conditions with signal processing
     connect(currencyListWindow_, &QObject::destroyed, this,
-        [self, windowBeingDestroyed]() {
-        if (!self)
-            return;
+        [self, windowBeingDestroyed](QObject* obj) {
+            if (!self) return;
 
-        if (!windowBeingDestroyed.isNull()) {
-            self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
+            BOOST_LOG_SEV(lg(), debug) << "Detachable MDI Sub Window destroyed";
+
+            // Remove the window from the list of all detachable windows
+            self->allDetachableWindows_.removeAll(windowBeingDestroyed);
+
+            // If the destroyed window is the currency list, nullify the pointer
+            if (self->currencyListWindow_ == windowBeingDestroyed)
+                self->currencyListWindow_ = nullptr;
+        });
+    
+    // When the image cache reloads (due to external event), mark the list as stale
+    connect(imageCache_, &ImageCache::allLoaded, this, [this, currencyWidget](){
+        if (currencyWidget) {
+            currencyWidget->markAsStale();
         }
-
-        if (self->currencyListWindow_ == windowBeingDestroyed)
-            self->currencyListWindow_ = nullptr;
     });
 
     mdiArea_->addSubWindow(currencyListWindow_);

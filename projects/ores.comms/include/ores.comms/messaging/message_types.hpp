@@ -240,6 +240,10 @@ enum class message_type {
     // Variability subsystem messages (0x3000 - 0x3FFF)
     list_feature_flags_request = 0x3000,
     list_feature_flags_response = 0x3001,
+    save_feature_flag_request = 0x3002,
+    save_feature_flag_response = 0x3003,
+    delete_feature_flag_request = 0x3004,
+    delete_feature_flag_response = 0x3005,
 
     // Assets subsystem messages (0x4000 - 0x4FFF)
     get_currency_images_request = 0x4000,

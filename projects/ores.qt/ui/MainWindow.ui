@@ -54,6 +54,7 @@
     </property>
     <addaction name="ActionAccounts"/>
     <addaction name="ActionRoles"/>
+    <addaction name="ActionFeatureFlags"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -204,6 +205,18 @@
    </property>
    <property name="toolTip">
     <string>Manage roles and permissions</string>
+   </property>
+  </action>
+  <action name="ActionFeatureFlags">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_checkmark_20_regular.svg</normaloff>:/icons/ic_fluent_checkmark_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Feature Flags</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage feature flags</string>
    </property>
   </action>
   <action name="ActionRecordSession">

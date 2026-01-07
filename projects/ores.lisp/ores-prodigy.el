@@ -137,7 +137,7 @@ Includes database credentials and JWT secret from auth-source."
 (prodigy-define-service
   :name "ORE Studio HTTP Server - Debug"
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--port" "8081")
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.http.server")
   :tags '(ores debug http-server)
   :stop-signal 'sigint
@@ -146,7 +146,7 @@ Includes database credentials and JWT secret from auth-source."
 (prodigy-define-service
   :name "ORE Studio HTTP Server - Release"
   :cwd (concat (ores/path-to-publish 'release) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--port" "8081")
   :command (concat (ores/path-to-publish 'release) "/bin/ores.http.server")
   :tags '(ores release http-server)
   :stop-signal 'sigint

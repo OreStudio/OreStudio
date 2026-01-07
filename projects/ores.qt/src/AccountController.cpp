@@ -272,8 +272,6 @@ void AccountController::onShowAccountHistory(const QString& username) {
     historyWindow->setWindowTitle(QString("Account History: %1").arg(username));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
-    historyWindow->setWindowFlags(historyWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
 
     // Track window for cleanup
     allDetachableWindows_.append(historyWindow);
@@ -288,6 +286,9 @@ void AccountController::onShowAccountHistory(const QString& username) {
     });
 
     mdiArea_->addSubWindow(historyWindow);
+    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
+    historyWindow->setWindowFlags(historyWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
     historyWindow->adjustSize();
     historyWindow->show();
 
@@ -321,8 +322,6 @@ void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId
     sessionWindow->setWindowTitle(QString("Session History: %1").arg(username));
     sessionWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_clock_16_regular.svg", iconColor));
-    sessionWindow->setWindowFlags(sessionWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
 
     // Track window for cleanup
     allDetachableWindows_.append(sessionWindow);
@@ -337,6 +336,9 @@ void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId
     });
 
     mdiArea_->addSubWindow(sessionWindow);
+    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
+    sessionWindow->setWindowFlags(sessionWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
     sessionWindow->adjustSize();
     sessionWindow->show();
 

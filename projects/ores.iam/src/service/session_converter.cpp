@@ -18,6 +18,7 @@
  *
  */
 #include "ores.iam/service/session_converter.hpp"
+#include "ores.platform/unreachable.hpp"
 
 namespace ores::iam::service {
 
@@ -36,7 +37,7 @@ to_comms_protocol(domain::session_protocol p) {
         case domain::session_protocol::http:
             return comms::service::session_protocol::http;
     }
-    __builtin_unreachable();
+    platform::unreachable();
 }
 
 /**
@@ -52,7 +53,7 @@ from_comms_protocol(comms::service::session_protocol p) {
         case comms::service::session_protocol::http:
             return domain::session_protocol::http;
     }
-    __builtin_unreachable();
+    platform::unreachable();
 }
 
 }

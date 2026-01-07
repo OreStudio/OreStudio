@@ -168,14 +168,14 @@ const EventRecord& EventTableModel::eventAt(int row) const {
 }
 
 // ============================================================================
-// EventViewerDialog
+// EventViewerWindow
 // ============================================================================
 
-EventViewerDialog::EventViewerDialog(
+EventViewerWindow::EventViewerWindow(
     std::shared_ptr<eventing::service::event_bus> eventBus,
     ClientManager* clientManager,
     QWidget* parent)
-    : QDialog(parent)
+    : QWidget(parent)
     , eventBus_(std::move(eventBus))
     , clientManager_(clientManager)
     , tableView_(nullptr)
@@ -183,25 +183,17 @@ EventViewerDialog::EventViewerDialog(
     , statusLabel_(nullptr)
     , clearButton_(nullptr) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating event viewer dialog.";
+    BOOST_LOG_SEV(lg(), debug) << "Creating event viewer window.";
     setupUi();
 }
 
-EventViewerDialog::~EventViewerDialog() {
-    BOOST_LOG_SEV(lg(), debug) << "Destroying event viewer dialog.";
+EventViewerWindow::~EventViewerWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Destroying event viewer window.";
     unsubscribeFromEvents();
 }
 
-void EventViewerDialog::setupUi() {
-    setWindowTitle(tr("Event Viewer"));
+void EventViewerWindow::setupUi() {
     setMinimumSize(800, 500);
-    resize(1000, 600);
-
-    // Make dialog non-modal and behave as a normal window (not always on top).
-    // Remove maximize button since this is a utility window.
-    setModal(false);
-    setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint |
-                   Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
 
     auto* layout = new QVBoxLayout(this);
 
@@ -235,33 +227,28 @@ void EventViewerDialog::setupUi() {
     clearButton_ = new QPushButton(tr("Clear"), this);
     bottomLayout->addWidget(clearButton_);
 
-    auto* closeButton = new QPushButton(tr("Close"), this);
-    bottomLayout->addWidget(closeButton);
-
     layout->addLayout(bottomLayout);
 
     // Connections
     connect(tableView_, &QTableView::doubleClicked,
-            this, &EventViewerDialog::onEventDoubleClicked);
+            this, &EventViewerWindow::onEventDoubleClicked);
     connect(clearButton_, &QPushButton::clicked,
-            this, &EventViewerDialog::onClearClicked);
-    connect(closeButton, &QPushButton::clicked,
-            this, &QDialog::close);
+            this, &EventViewerWindow::onClearClicked);
 }
 
-void EventViewerDialog::showEvent(QShowEvent* event) {
-    QDialog::showEvent(event);
+void EventViewerWindow::showEvent(QShowEvent* event) {
+    QWidget::showEvent(event);
     BOOST_LOG_SEV(lg(), info) << "Event viewer shown - subscribing to events.";
     subscribeToEvents();
 }
 
-void EventViewerDialog::closeEvent(QCloseEvent* event) {
+void EventViewerWindow::closeEvent(QCloseEvent* event) {
     BOOST_LOG_SEV(lg(), info) << "Event viewer closing - unsubscribing from events.";
     unsubscribeFromEvents();
-    QDialog::closeEvent(event);
+    QWidget::closeEvent(event);
 }
 
-void EventViewerDialog::subscribeToEvents() {
+void EventViewerWindow::subscribeToEvents() {
     if (!eventBus_) {
         BOOST_LOG_SEV(lg(), warn) << "No event bus available.";
         return;
@@ -514,7 +501,7 @@ void EventViewerDialog::subscribeToEvents() {
     // Connect to ClientManager for remote notifications
     if (clientManager_ && !connectedToClientManager_) {
         connect(clientManager_, &ClientManager::notificationReceived,
-                this, &EventViewerDialog::onNotificationReceived);
+                this, &EventViewerWindow::onNotificationReceived);
         connectedToClientManager_ = true;
         BOOST_LOG_SEV(lg(), debug) << "Connected to ClientManager notifications.";
     }
@@ -523,7 +510,7 @@ void EventViewerDialog::subscribeToEvents() {
                               << " local event type(s).";
 }
 
-void EventViewerDialog::unsubscribeFromEvents() {
+void EventViewerWindow::unsubscribeFromEvents() {
     // Clear subscriptions - RAII handles unsubscription
     const auto count = subscriptions_.size();
     subscriptions_.clear();
@@ -531,7 +518,7 @@ void EventViewerDialog::unsubscribeFromEvents() {
     // Disconnect from ClientManager
     if (clientManager_ && connectedToClientManager_) {
         disconnect(clientManager_, &ClientManager::notificationReceived,
-                   this, &EventViewerDialog::onNotificationReceived);
+                   this, &EventViewerWindow::onNotificationReceived);
         connectedToClientManager_ = false;
     }
 
@@ -539,7 +526,7 @@ void EventViewerDialog::unsubscribeFromEvents() {
                               << " event type(s).";
 }
 
-void EventViewerDialog::addEvent(EventRecord record) {
+void EventViewerWindow::addEvent(EventRecord record) {
     model_->addEvent(std::move(record));
     statusLabel_->setText(tr("Events: %1").arg(model_->eventCount()));
 
@@ -547,7 +534,7 @@ void EventViewerDialog::addEvent(EventRecord record) {
     tableView_->scrollToBottom();
 }
 
-void EventViewerDialog::onEventDoubleClicked(const QModelIndex& index) {
+void EventViewerWindow::onEventDoubleClicked(const QModelIndex& index) {
     if (!index.isValid())
         return;
 
@@ -600,12 +587,12 @@ void EventViewerDialog::onEventDoubleClicked(const QModelIndex& index) {
     detailDialog.exec();
 }
 
-void EventViewerDialog::onClearClicked() {
+void EventViewerWindow::onClearClicked() {
     model_->clear();
     statusLabel_->setText(tr("Events: 0"));
 }
 
-void EventViewerDialog::onNotificationReceived(const QString& eventType,
+void EventViewerWindow::onNotificationReceived(const QString& eventType,
                                                 const QDateTime& timestamp,
                                                 const QStringList& entityIds) {
     QJsonObject json;

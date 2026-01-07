@@ -67,7 +67,7 @@ MainWindow::MainWindow(QWidget* parent) :
     clientManager_(new ClientManager(eventBus_, this)),
     imageCache_(new ImageCache(clientManager_, this)),
     systemTrayIcon_(nullptr), trayContextMenu_(nullptr),
-    instanceColorIndicator_(nullptr) {
+    instanceColorIndicator_(nullptr), eventViewerWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
@@ -174,9 +174,32 @@ MainWindow::MainWindow(QWidget* parent) :
     // Connect Event Viewer action
     connect(ui_->ActionEventViewer, &QAction::triggered, this, [this]() {
         BOOST_LOG_SEV(lg(), debug) << "Event Viewer action triggered";
-        auto* eventViewer = new EventViewerDialog(eventBus_, clientManager_, this);
-        eventViewer->setAttribute(Qt::WA_DeleteOnClose);
-        eventViewer->show();
+
+        // If window already exists, just activate it
+        if (eventViewerWindow_) {
+            eventViewerWindow_->showNormal();
+            mdiArea_->setActiveSubWindow(eventViewerWindow_);
+            return;
+        }
+
+        // Create the event viewer widget
+        auto* eventViewer = new EventViewerWindow(eventBus_, clientManager_, this);
+
+        // Wrap in MDI sub-window
+        eventViewerWindow_ = new DetachableMdiSubWindow();
+        eventViewerWindow_->setWidget(eventViewer);
+        eventViewerWindow_->setWindowTitle("Event Viewer");
+        eventViewerWindow_->setAttribute(Qt::WA_DeleteOnClose);
+        eventViewerWindow_->resize(1000, 600);
+
+        // Track window destruction
+        connect(eventViewerWindow_, &QObject::destroyed, this, [this]() {
+            eventViewerWindow_ = nullptr;
+        });
+
+        mdiArea_->addSubWindow(eventViewerWindow_);
+        allDetachableWindows_.append(eventViewerWindow_);
+        eventViewerWindow_->show();
     });
 
     // Connect recording signals

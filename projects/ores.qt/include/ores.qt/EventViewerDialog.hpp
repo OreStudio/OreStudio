@@ -18,13 +18,13 @@
  * MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_EVENT_VIEWER_DIALOG_HPP
-#define ORES_QT_EVENT_VIEWER_DIALOG_HPP
+#ifndef ORES_QT_EVENT_VIEWER_WINDOW_HPP
+#define ORES_QT_EVENT_VIEWER_WINDOW_HPP
 
 #include <deque>
 #include <vector>
 #include <memory>
-#include <QDialog>
+#include <QWidget>
 #include <QDateTime>
 #include <QAbstractTableModel>
 #include "ores.eventing/service/event_bus.hpp"
@@ -85,9 +85,9 @@ private:
 };
 
 /**
- * @brief Non-modal dialog for viewing domain events in real-time.
+ * @brief MDI window for viewing domain events in real-time.
  *
- * When opened, the dialog subscribes to all known event types on the event bus
+ * When opened, the window subscribes to all known event types on the event bus
  * and also listens for remote notifications from the server via ClientManager.
  * When closed, all subscriptions are automatically cleaned up via RAII.
  *
@@ -97,11 +97,11 @@ private:
  * - Double-click an event to see its full JSON payload
  * - Zero cost when closed (no subscriptions active)
  */
-class EventViewerDialog final : public QDialog {
+class EventViewerWindow final : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.event_viewer_dialog";
+    inline static std::string_view logger_name = "ores.qt.event_viewer_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::telemetry::log;
@@ -111,18 +111,18 @@ private:
 
 public:
     /**
-     * @brief Construct the event viewer dialog.
+     * @brief Construct the event viewer window.
      *
      * @param eventBus Shared pointer to the application event bus
      * @param clientManager Pointer to the client manager for remote events
      * @param parent Parent widget
      */
-    explicit EventViewerDialog(
+    explicit EventViewerWindow(
         std::shared_ptr<eventing::service::event_bus> eventBus,
         ClientManager* clientManager,
         QWidget* parent = nullptr);
 
-    ~EventViewerDialog() override;
+    ~EventViewerWindow() override;
 
 protected:
     void showEvent(QShowEvent* event) override;
@@ -160,6 +160,9 @@ private:
     // Track if we're connected to ClientManager signals
     bool connectedToClientManager_{false};
 };
+
+// Backwards compatibility alias
+using EventViewerDialog = EventViewerWindow;
 
 }
 

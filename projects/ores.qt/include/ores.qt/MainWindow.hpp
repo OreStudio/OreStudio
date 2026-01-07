@@ -308,6 +308,9 @@ private:
 
     /** @brief Colored indicator in status bar showing instance color */
     QLabel* instanceColorIndicator_;
+
+    /** @brief Event viewer MDI sub-window (nullptr if not open) */
+    DetachableMdiSubWindow* eventViewerWindow_;
 };
 
 }

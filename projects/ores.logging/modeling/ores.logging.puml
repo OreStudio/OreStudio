@@ -1,0 +1,142 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+
+title ores.logging Component - Core Logging Infrastructure
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "Core logging infrastructure extracted from ores.telemetry\nto break circular dependency with ores.database.\nProvides Boost.Log-based logging with no ores.* dependencies." as ores_logging_note
+    logging --- ores_logging_note
+
+    namespace logging #E8F4E8 {
+
+        enum severity_level {
+            trace = 1
+            debug = 5
+            info = 9
+            warn = 13
+            error = 17
+            fatal = 21
+        }
+        note right of severity_level
+            OpenTelemetry-aligned severity
+            levels. Values match OTLP spec
+            for interoperability.
+        end note
+
+        enum boost_severity {
+            trace
+            debug
+            info
+            warn
+            error
+        }
+        note right of boost_severity
+            Internal Boost.Log severity.
+            Maps to severity_level via
+            to_otel_severity().
+        end note
+
+        class logging_options <<struct>> {
+            +enabled : bool
+            +severity : string
+            +filename : string
+            +output_to_console : bool
+            +output_directory : path
+            +tag : string
+            +include_pid_in_filename : bool
+        }
+        note right of logging_options
+            Configuration for logging
+            subsystem. Parsed from
+            command-line or config file.
+        end note
+
+        class logging_options_validator <<class>> {
+            +validate(options) : void
+        }
+        note bottom of logging_options_validator
+            Validates options before
+            lifecycle_manager uses them.
+            Throws on invalid config.
+        end note
+
+        class logging_configuration <<class>> {
+            -core_ : boost::log::core
+            --
+            +logging_configuration(options)
+            +add_file_sink(options)
+            +add_console_sink()
+            +set_filter(severity)
+        }
+        note bottom of logging_configuration
+            Handles Boost.Log core setup:
+            sinks, formatters, filters.
+            Used by lifecycle_manager.
+        end note
+
+        abstract class lifecycle_manager <<abstract>> {
+            #config_ : logging_configuration
+            #options_ : logging_options
+            --
+            +lifecycle_manager(options)
+            +{abstract} ~lifecycle_manager()
+            #setup_logging()
+            #shutdown_logging()
+        }
+        note right of lifecycle_manager
+            Virtual base class for log
+            system lifecycle. Subclassed
+            by ores.telemetry version
+            which adds telemetry sink.
+        end note
+
+        class logging_exception <<class>> {
+            +what() : const char*
+        }
+        note bottom of logging_exception
+            Exception for logging
+            configuration errors.
+        end note
+
+        ' Relationships
+        lifecycle_manager o-- logging_configuration
+        lifecycle_manager o-- logging_options
+        logging_options_validator ..> logging_options : validates
+        logging_configuration ..> boost_severity : uses
+        logging_options ..> boost_severity : configures
+
+        ' make_logger function is not a class, so we use a note
+        note as make_logger_note
+            <b>make_logger(name)</b>
+            Factory function returning
+            severity_channel_logger_mt
+            configured with the given
+            channel name.
+        end note
+    }
+}
+
+' Layout hints
+severity_level -[hidden]right- boost_severity
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.logging.puml"
+' End:
+@enduml

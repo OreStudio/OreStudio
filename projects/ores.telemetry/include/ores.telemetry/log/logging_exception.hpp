@@ -20,27 +20,12 @@
 #ifndef ORES_TELEMETRY_LOG_LOGGING_EXCEPTION_HPP
 #define ORES_TELEMETRY_LOG_LOGGING_EXCEPTION_HPP
 
-#include <string>
-#include <boost/exception/info.hpp>
+// Forwarding header - types moved to ores.logging
+#include "ores.logging/logging_exception.hpp"
 
 namespace ores::telemetry::log {
 
-/**
- * @brief An exception has occurred during logging.
- */
-class logging_exception : public virtual std::exception,
-                          public virtual boost::exception {
-public:
-    explicit logging_exception(std::string_view message = "")
-        : message_(message) {}
-
-    [[nodiscard]] const char* what() const noexcept override {
-        return message_.c_str();
-    }
-
-private:
-    std::string message_;
-};
+using ores::logging::logging_exception;
 
 }
 

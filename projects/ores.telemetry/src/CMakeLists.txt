@@ -24,6 +24,15 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
+# Exclude messaging handler, registrar, and repository files - they require
+# ores.comms.lib or ores.database.lib which would create circular dependencies.
+# These files are built in ores.comms.service instead.
+list(FILTER files EXCLUDE REGEX "messaging/telemetry_message_handler.cpp")
+list(FILTER files EXCLUDE REGEX "messaging/registrar.cpp")
+list(FILTER files EXCLUDE REGEX "repository/telemetry_repository.cpp")
+list(FILTER files EXCLUDE REGEX "repository/telemetry_mapper.cpp")
+list(FILTER files EXCLUDE REGEX "repository/telemetry_entity.cpp")
+
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})
 set_target_properties(${lib_target_name} PROPERTIES
@@ -40,10 +49,9 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        Boost::log
-        Boost::program_options
-        Boost::exception
-        Boost::process
+        ores.logging.lib
+        # NOTE: ores.database.lib dependency removed to break circular dependency.
+        # Repository files are compiled in ores.comms.service instead.
     INTERFACE
         # reflectcpp is provided by ores.platform.lib at build time; expose to consumers here
         reflectcpp::reflectcpp

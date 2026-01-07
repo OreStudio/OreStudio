@@ -59,6 +59,10 @@ grant create on schema ores to ores;
 \ir ../schema/sessions_create.sql
 \ir ../schema/session_stats_create.sql
 
+-- Telemetry tables
+\ir ../schema/telemetry_logs_create.sql
+\ir ../schema/telemetry_stats_create.sql
+
 -- RBAC tables
 \ir ../schema/permissions_create.sql
 \ir ../schema/roles_create.sql

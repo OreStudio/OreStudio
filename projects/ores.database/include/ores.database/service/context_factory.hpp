@@ -22,7 +22,7 @@
 
 #include <iosfwd>
 #include <string_view>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/database_options.hpp"
 
@@ -37,7 +37,7 @@ private:
         "ores.utility.database.context_factory";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

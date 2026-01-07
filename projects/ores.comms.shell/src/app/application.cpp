@@ -36,10 +36,12 @@ using comms::net::client_session_info;
 application::application(
     std::optional<comms::net::client_options> connection_config,
     std::optional<config::login_options> login_config,
-    std::optional<telemetry::domain::telemetry_context> telemetry_ctx)
+    std::optional<telemetry::domain::telemetry_context> telemetry_ctx,
+    std::optional<comms::service::telemetry_streaming_options> streaming_options)
     : connection_config_(std::move(connection_config)),
       login_config_(std::move(login_config)),
-      telemetry_ctx_(std::move(telemetry_ctx)) {
+      telemetry_ctx_(std::move(telemetry_ctx)),
+      streaming_options_(std::move(streaming_options)) {
 }
 
 namespace {
@@ -129,7 +131,7 @@ void check_bootstrap_status(client_session& session, std::ostream& out) {
 
 } // anonymous namespace
 
-void application::run() const {
+void application::run() {
     BOOST_LOG_SEV(lg(), info) << "Starting client REPL";
     if (telemetry_ctx_) {
         BOOST_LOG_SEV(lg(), debug)
@@ -137,6 +139,8 @@ void application::run() const {
             << telemetry_ctx_->get_trace_id().to_hex()
             << ", span_id: " << telemetry_ctx_->get_span_id().to_hex();
     }
+
+    std::unique_ptr<comms::service::telemetry_streaming_service> streaming_service;
 
     try {
         client_session session;
@@ -152,12 +156,42 @@ void application::run() const {
                 if (login_config_) {
                     auto_login(session, std::cout, *login_config_);
                 }
+
+                // Start telemetry streaming if configured and connected
+                if (streaming_options_ && session.is_connected()) {
+                    BOOST_LOG_SEV(lg(), info)
+                        << "Starting telemetry streaming for: "
+                        << streaming_options_->source_name;
+                    try {
+                        streaming_service =
+                            std::make_unique<comms::service::telemetry_streaming_service>(
+                                session.get_client(), *streaming_options_);
+                        streaming_service->start();
+                        std::cout << "✓ Telemetry streaming enabled" << std::endl;
+                    } catch (const std::exception& e) {
+                        BOOST_LOG_SEV(lg(), error)
+                            << "Failed to start telemetry streaming: " << e.what();
+                    }
+                }
             }
         }
 
         repl client_repl(session);
         client_repl.run();
+
+        // Stop streaming when REPL exits
+        if (streaming_service) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Stopping telemetry streaming. Sent: "
+                << streaming_service->total_sent()
+                << ", dropped: " << streaming_service->total_dropped();
+            streaming_service->stop();
+        }
     } catch (const std::exception& e) {
+        // Ensure streaming is stopped on error
+        if (streaming_service) {
+            streaming_service->stop();
+        }
         BOOST_LOG_SEV(lg(), error) << "Client REPL error: " << e.what();
         throw;
     }

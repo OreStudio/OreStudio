@@ -20,47 +20,12 @@
 #ifndef ORES_TELEMETRY_LOG_LOGGING_OPTIONS_HPP
 #define ORES_TELEMETRY_LOG_LOGGING_OPTIONS_HPP
 
-#include <iosfwd>
-#include <string>
-#include <filesystem>
+// Forwarding header - types moved to ores.logging
+#include "ores.logging/logging_options.hpp"
 
 namespace ores::telemetry::log {
 
-/**
- * @brief Options related to logging.
- */
-struct logging_options final {
-    /**
-     * @brief Level at which to log.
-     */
-    std::string severity;
-    /**
-     * @brief Name of the file to log into. If empty, file logging is disabled.
-     */
-    std::string filename;
-    /**
-     * @brief If true, dumps the log into the console.
-     */
-    bool output_to_console;
-    /**
-     * @brief Directory in which to place the output.
-     */
-    std::filesystem::path output_directory;
-    /**
-     * @brief If true, includes the process ID in the log filename.
-     *
-     * When enabled, the filename is modified to include the PID before the
-     * extension. For example: "app.log" becomes "app.12345.log".
-     */
-    bool include_pid = false;
-    /**
-     * @brief Tag to filter the logging. If supplied, only messages with this
-     * tag will be logged.
-     */
-    std::string tag;
-};
-
-std::ostream& operator<<(std::ostream& s, const logging_options& v);
+using ores::logging::logging_options;
 
 }
 

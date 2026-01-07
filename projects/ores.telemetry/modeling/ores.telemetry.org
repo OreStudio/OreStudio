@@ -25,14 +25,16 @@ OpenTelemetry concepts. Key features:
 - Export: JSON Lines file exporter for log shipping
 - Resources: Machine/service identity with automatic host_id derivation
 
-The component is organized into four namespaces:
+The component is organized into the following namespaces:
 
 | Namespace    | Purpose                                            |
 |--------------+----------------------------------------------------|
 | =domain=     | Core types: trace_id, span_id, log_record, resource |
 | =generators= | ID generators for traces and spans                 |
 | =log=        | Boost.Log integration and lifecycle management     |
-| =exporting=  | Exporters for log records                          |
+| =exporting=  | Exporters for log records (file, hybrid)           |
+| =messaging=  | Protocol types for server communication            |
+| =repository= | Database persistence for telemetry logs            |
 
 * Logging Infrastructure
 
@@ -202,6 +204,173 @@ public:
 };
 #+end_src
 
+* Server-Side Telemetry Persistence
+
+The telemetry system supports centralized log storage in PostgreSQL with
+TimescaleDB for time-series optimizations. This allows clients to stream logs
+to the server for centralized analysis, aggregation, and long-term retention.
+
+** Architecture
+
+#+begin_src
+┌─────────────┐  submit_telemetry   ┌──────────────────┐
+│  Clients    │ ──────────────────► │ ores.comms.service│
+│ (qt, shell) │                     │                   │
+│             │ ◄────────────────── │  Also logs here   │
+│             │  get_telemetry_*    │        │          │
+└─────────────┘                     └────────┼──────────┘
+                                             │
+                                             ▼
+                                    ┌────────────────────┐
+                                    │    PostgreSQL      │
+                                    │  telemetry_logs    │
+                                    │  (hypertable)      │
+                                    └────────────────────┘
+#+end_src
+
+** Database Schema
+
+Logs are stored in a TimescaleDB hypertable with the following structure:
+
+| Column       | Type        | Description                                   |
+|--------------+-------------+-----------------------------------------------|
+| =id=         | UUID        | Unique log entry identifier                   |
+| =timestamp=  | TIMESTAMPTZ | When the log was created (partition key)      |
+| =source=     | TEXT        | 'client' or 'server'                          |
+| =source_name=| TEXT        | e.g., 'ores.qt', 'ores.comms.shell', 'ores.comms.service' |
+| =session_id= | UUID        | Client session (NULL for server logs)         |
+| =account_id= | UUID        | Logged-in user (NULL if not authenticated)    |
+| =level=      | TEXT        | trace, debug, info, warn, error               |
+| =component=  | TEXT        | Logger name                                   |
+| =message=    | TEXT        | Log message body                              |
+| =tag=        | TEXT        | Optional categorization tag                   |
+
+TimescaleDB features:
+- 1-day chunks for optimal query performance
+- Compression after 3 days
+- 30-day retention for raw logs
+- Continuous aggregates for hourly/daily statistics
+
+** Protocol Messages
+
+The telemetry subsystem uses message types in the 0x5000-0x5FFF range:
+
+| Message Type              | Code   | Description                    |
+|---------------------------+--------+--------------------------------|
+| =submit_telemetry_request=  | 0x5001 | Submit batch of log entries    |
+| =submit_telemetry_response= | 0x5002 | Acknowledge submission         |
+| =get_telemetry_logs_request=| 0x5010 | Query logs with filters        |
+| =get_telemetry_logs_response=| 0x5011 | Return matching log entries   |
+| =get_telemetry_stats_request=| 0x5020 | Query aggregated statistics   |
+| =get_telemetry_stats_response=| 0x5021 | Return statistics entries    |
+
+* Client-Side Streaming
+
+Clients can stream their logs to the server in real-time using the
+=telemetry_streaming_service=. This service:
+
+- Captures all Boost.Log records via a sink backend
+- Batches entries to reduce network overhead
+- Sends batches on timer or when batch is full
+- Gracefully handles disconnections
+
+** Qt Client Integration
+
+The Qt client enables streaming via =TelemetrySettingsDialog=:
+
+#+begin_src cpp
+#include "ores.comms/service/telemetry_streaming_service.hpp"
+
+// In main.cpp or ClientManager:
+if (TelemetrySettingsDialog::isStreamingEnabled()) {
+    comms::service::telemetry_streaming_options opts{
+        .source_name = "ores.qt",
+        .source_version = ORES_VERSION,
+        .batch_size = TelemetrySettingsDialog::streamingBatchSize(),
+        .flush_interval = std::chrono::seconds(
+            TelemetrySettingsDialog::streamingFlushInterval())
+    };
+    clientManager->enableStreaming(opts);
+}
+#+end_src
+
+** Shell Client Integration
+
+The shell client configures streaming via command line:
+
+#+begin_src cpp
+// In application.cpp:
+if (streaming_options_ && session.is_connected()) {
+    streaming_service = std::make_unique<
+        comms::service::telemetry_streaming_service>(
+            session.get_client(), *streaming_options_);
+    streaming_service->start();
+}
+#+end_src
+
+** Streaming Options
+
+| Option           | Default | Description                           |
+|------------------+---------+---------------------------------------|
+| =source_name=    | -       | Identifies the client (required)      |
+| =source_version= | -       | Client version string                 |
+| =batch_size=     | 100     | Max entries per batch                 |
+| =flush_interval= | 5s      | Time between forced flushes           |
+
+* Component Split: ores.logging
+
+The core logging infrastructure was extracted into a separate =ores.logging=
+component to break a circular dependency between =ores.telemetry= and
+=ores.database=.
+
+** Motivation
+
+The original design had:
+- =ores.telemetry= providing logging to all components including =ores.database=
+- =ores.telemetry= needing =ores.database= for telemetry persistence
+
+This created: =ores.telemetry → ores.database → ores.telemetry=
+
+** Solution
+
+Extract pure logging infrastructure to =ores.logging=:
+
+| Component       | Responsibility                              |
+|-----------------+---------------------------------------------|
+| =ores.logging=  | Core logging: severity, make_logger, lifecycle |
+| =ores.telemetry=| Tracing, export, server persistence         |
+| =ores.database= | Depends on ores.logging (no cycle)          |
+
+** ores.logging Contents
+
+#+begin_src
+ores.logging/
+├── include/ores.logging/
+│   ├── severity_level.hpp      # OpenTelemetry-compatible severity
+│   ├── boost_severity.hpp      # Boost.Log severity enum
+│   ├── make_logger.hpp         # Logger factory
+│   ├── lifecycle_manager.hpp   # Virtual base class
+│   ├── logging_options.hpp     # Configuration options
+│   ├── logging_configuration.hpp # Boost.Log setup
+│   └── logging_exception.hpp   # Exception type
+└── src/
+    ├── lifecycle_manager.cpp
+    ├── logging_options.cpp
+    └── logging_configuration.cpp
+#+end_src
+
+** Backward Compatibility
+
+The =ores.telemetry/log/= headers provide forwarding to =ores.logging= types,
+allowing existing code to continue working without changes:
+
+#+begin_src cpp
+// These still work:
+#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.telemetry/log/lifecycle_manager.hpp"
+// They forward to ores.logging equivalents
+#+end_src
+
 * Future Enhancements
 
 Planned features for the telemetry component:
@@ -210,5 +379,6 @@ Planned features for the telemetry component:
 - Span creation and management APIs
 - Metrics support
 - Baggage propagation for cross-service context
+- HTTP endpoints for telemetry submission and query
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

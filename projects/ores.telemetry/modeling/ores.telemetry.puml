@@ -146,6 +146,70 @@ namespace ores #F2F2F2 {
                 coroutine-safe tracing
             end note
 
+            ' Server-side persistence types
+            enum telemetry_source {
+                client
+                server
+            }
+
+            class telemetry_log_entry <<struct>> {
+                +id : uuid
+                +timestamp : time_point
+                +source : telemetry_source
+                +source_name : string
+                +session_id : optional<uuid>
+                +account_id : optional<uuid>
+                +level : string
+                +component : string
+                +message : string
+                +tag : string
+                +recorded_at : time_point
+            }
+            note right of telemetry_log_entry
+                Persisted log entry for
+                server-side telemetry.
+                Simpler than log_record.
+            end note
+
+            class telemetry_query <<struct>> {
+                +start_time : time_point
+                +end_time : time_point
+                +source : optional<telemetry_source>
+                +source_name : optional<string>
+                +session_id : optional<uuid>
+                +account_id : optional<uuid>
+                +level : optional<string>
+                +min_level : optional<string>
+                +component : optional<string>
+                +limit : uint32
+                +offset : uint32
+            }
+
+            enum stats_granularity {
+                hourly
+                daily
+            }
+
+            class telemetry_stats_query <<struct>> {
+                +start_time : time_point
+                +end_time : time_point
+                +granularity : stats_granularity
+                +source : optional<telemetry_source>
+                +source_name : optional<string>
+                +level : optional<string>
+            }
+
+            class telemetry_stats <<struct>> {
+                +period_start : time_point
+                +source : telemetry_source
+                +source_name : string
+                +component : string
+                +level : string
+                +log_count : uint64
+                +unique_sessions : uint32
+                +unique_accounts : uint32
+            }
+
             span_context *-- trace_id
             span_context *-- span_id
             span *-- span_context
@@ -158,6 +222,10 @@ namespace ores #F2F2F2 {
             log_record o-- resource
             telemetry_context *-- span_context
             telemetry_context o-- resource
+            telemetry_log_entry o-- telemetry_source
+            telemetry_query o-- telemetry_source
+            telemetry_stats_query o-- stats_granularity
+            telemetry_stats o-- telemetry_source
         }
 
         namespace generators #D4D4E8 {
@@ -242,8 +310,8 @@ namespace ores #F2F2F2 {
             telemetry_sink_backend o-- domain::resource
         }
 
-        namespace exp #F4E8E8 {
-            note "Exporters for telemetry data." as exp_note
+        namespace exporting #F4E8E8 {
+            note "Exporters for telemetry data." as exporting_note
 
             interface log_exporter <<interface>> {
                 +export_record(log_record)
@@ -266,11 +334,129 @@ namespace ores #F2F2F2 {
                 JSON Lines format.
             end note
 
+            class hybrid_log_exporter <<class>> {
+                -file_ : ofstream
+                -send_callback_ : function
+                -batch_ : vector<log_record>
+                -batch_size_ : size_t
+                --
+                +hybrid_log_exporter(path, options, callback)
+                +export_record(log_record)
+                +flush()
+                +shutdown()
+            }
+            note right of hybrid_log_exporter
+                Writes to file AND optionally
+                streams to server via callback.
+            end note
+
             file_log_exporter ..|> log_exporter
+            hybrid_log_exporter ..|> log_exporter
             log_exporter ..> domain::log_record : exports
+        }
+
+        namespace messaging #E8D4F4 {
+            note "Protocol messages for server-side\ntelemetry persistence." as messaging_note
+
+            class submit_telemetry_response <<struct>> {
+                +success : bool
+                +entries_accepted : uint32
+                +message : string
+                --
+                +serialize() : vector<byte>
+                {static} +deserialize(data) : expected
+            }
+
+            class get_telemetry_logs_request <<struct>> {
+                +query : telemetry_query
+                --
+                +serialize() : vector<byte>
+                {static} +deserialize(data) : expected
+            }
+
+            class get_telemetry_logs_response <<struct>> {
+                +success : bool
+                +entries : vector<telemetry_log_entry>
+                +total_count : uint64
+                +message : string
+                --
+                +serialize() : vector<byte>
+                {static} +deserialize(data) : expected
+            }
+
+            class get_telemetry_stats_request <<struct>> {
+                +query : telemetry_stats_query
+                --
+                +serialize() : vector<byte>
+                {static} +deserialize(data) : expected
+            }
+
+            class get_telemetry_stats_response <<struct>> {
+                +success : bool
+                +stats : vector<telemetry_stats>
+                +message : string
+                --
+                +serialize() : vector<byte>
+                {static} +deserialize(data) : expected
+            }
+
+            get_telemetry_logs_request o-- domain::telemetry_query
+            get_telemetry_logs_response o-- domain::telemetry_log_entry
+            get_telemetry_stats_request o-- domain::telemetry_stats_query
+            get_telemetry_stats_response o-- domain::telemetry_stats
+        }
+
+        namespace repository #F4E8D4 {
+            note "Database persistence for telemetry logs.\nUses TimescaleDB hypertables." as repository_note
+
+            class telemetry_entity <<struct>> {
+                +id : uuid
+                +timestamp : time_point
+                +source : string
+                +source_name : string
+                +session_id : optional<uuid>
+                +account_id : optional<uuid>
+                +level : string
+                +component : string
+                +message : string
+                +tag : string
+                +recorded_at : time_point
+            }
+
+            class telemetry_mapper <<class>> {
+                +to_entity(entry) : telemetry_entity
+                +to_domain(entity) : telemetry_log_entry
+            }
+
+            class telemetry_repository <<class>> {
+                -context_ : database::context
+                --
+                +create(entries) : size_t
+                +query_logs(query) : vector<telemetry_log_entry>
+                +query_stats(query) : vector<telemetry_stats>
+                +count_logs(query) : uint64
+            }
+            note right of telemetry_repository
+                Uses TimescaleDB hypertable
+                for efficient time-series
+                storage and queries.
+            end note
+
+            telemetry_repository ..> telemetry_mapper : uses
+            telemetry_mapper ..> telemetry_entity : creates
+            telemetry_mapper ..> domain::telemetry_log_entry : creates
         }
     }
 }
+
+' External dependencies
+namespace ores::logging #FAFAFA {
+    class lifecycle_manager <<abstract>>
+    class logging_options <<struct>>
+}
+
+ores::telemetry::log::lifecycle_manager --|> ores::logging::lifecycle_manager
+ores::telemetry::log::logging_options --|> ores::logging::logging_options
 
 ' Layout hints
 domain::telemetry_context -[hidden]down- generators::trace_id_generator

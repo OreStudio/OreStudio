@@ -20,76 +20,24 @@
 #ifndef ORES_TELEMETRY_LOG_BOOST_SEVERITY_HPP
 #define ORES_TELEMETRY_LOG_BOOST_SEVERITY_HPP
 
-#include <string>
-#include <ostream>
-#include <stdexcept>
+// Forwarding header - types moved to ores.logging
+#include "ores.logging/boost_severity.hpp"
+
+// Also import domain::severity_level for backward compatibility
 #include "ores.telemetry/domain/severity_level.hpp"
 
 namespace ores::telemetry::log {
 
-/**
- * @brief Internal Boost.Log severity level enum.
- *
- * This must be a C++03 enum due to Boost.Log internals. It is used only
- * internally for Boost.Log integration. External code should use
- * ores::telemetry::domain::severity_level instead.
- *
- * @note This is an implementation detail and should not be used directly
- * by client code.
- */
-enum boost_severity {
-    trace,
-    debug,
-    info,
-    warn,
-    error
-};
+using ores::logging::boost_severity;
+using ores::logging::to_boost_severity;
+using ores::logging::to_domain_severity;
 
-/**
- * @brief Converts a string to boost_severity.
- *
- * @param s String representation (trace, debug, info, warn, error).
- * @return Corresponding boost_severity value.
- * @throws std::invalid_argument if the string is not a valid severity.
- */
-boost_severity to_boost_severity(const std::string& s);
-
-/**
- * @brief Converts domain severity_level to internal boost_severity.
- *
- * @param level The domain severity level.
- * @return Corresponding boost_severity value.
- */
-boost_severity to_boost_severity(domain::severity_level level);
-
-/**
- * @brief Converts internal boost_severity to domain severity_level.
- *
- * @param sev The boost severity.
- * @return Corresponding domain severity_level value.
- */
-domain::severity_level to_domain_severity(boost_severity sev);
-
-/**
- * @brief Inserter for boost_severity enum.
- *
- * Required for interoperability with Boost.Log.
- */
-template<typename CharT, typename TraitsT>
-inline std::basic_ostream<CharT, TraitsT>&
-operator<<(std::basic_ostream<CharT, TraitsT>& stream, boost_severity level) {
-    switch(level) {
-    case boost_severity::trace: stream << "TRACE"; break;
-    case boost_severity::debug: stream << "DEBUG"; break;
-    case boost_severity::info:  stream << "INFO"; break;
-    case boost_severity::warn:  stream << "WARN"; break;
-    case boost_severity::error: stream << "ERROR"; break;
-    default:
-        throw std::invalid_argument("Invalid or unexpected severity level");
-        break;
-    }
-    return stream;
-}
+// Import enum values (C++03 enum values are in enclosing namespace)
+using ores::logging::trace;
+using ores::logging::debug;
+using ores::logging::info;
+using ores::logging::warn;
+using ores::logging::error;
 
 }
 

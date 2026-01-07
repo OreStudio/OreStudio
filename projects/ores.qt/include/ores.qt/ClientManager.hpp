@@ -35,6 +35,7 @@
 #include "ores.comms/net/client_session.hpp"
 #include "ores.comms/service/remote_event_adapter.hpp"
 #include "ores.comms/recording/session_recorder.hpp"
+#include "ores.comms/service/telemetry_streaming_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.iam/domain/session.hpp"
@@ -374,6 +375,50 @@ public:
         return recording_directory_;
     }
 
+    // =========================================================================
+    // Telemetry Streaming
+    // =========================================================================
+
+    /**
+     * @brief Enable telemetry streaming to the server.
+     *
+     * Streaming can be enabled before or after connecting. If enabled before
+     * connecting, streaming will start when the connection is established.
+     *
+     * @param options Streaming options (batch size, flush interval, etc.)
+     */
+    void enableStreaming(const comms::service::telemetry_streaming_options& options);
+
+    /**
+     * @brief Disable telemetry streaming.
+     *
+     * Stops streaming and flushes any pending logs. Safe to call when not
+     * streaming.
+     */
+    void disableStreaming();
+
+    /**
+     * @brief Check if telemetry streaming is currently active.
+     */
+    bool isStreaming() const;
+
+    /**
+     * @brief Get the number of pending telemetry records.
+     *
+     * @return Number of records waiting to be sent
+     */
+    std::size_t streamingPendingCount() const;
+
+    /**
+     * @brief Get total telemetry records sent successfully.
+     */
+    std::uint64_t streamingTotalSent() const;
+
+    /**
+     * @brief Get total telemetry records dropped.
+     */
+    std::uint64_t streamingTotalDropped() const;
+
 signals:
     void connected();
     void disconnected();
@@ -402,6 +447,16 @@ signals:
      * @brief Emitted when session recording stops.
      */
     void recordingStopped();
+
+    /**
+     * @brief Emitted when telemetry streaming starts.
+     */
+    void streamingStarted();
+
+    /**
+     * @brief Emitted when telemetry streaming stops.
+     */
+    void streamingStopped();
 
 private:
     void setupIO();
@@ -435,6 +490,15 @@ private:
 
     // Whether recording is enabled (can be set before connection)
     bool recording_enabled_{false};
+
+    // Telemetry streaming service
+    std::unique_ptr<comms::service::telemetry_streaming_service> telemetry_streaming_;
+
+    // Streaming options (stored when enabled before connection)
+    std::optional<comms::service::telemetry_streaming_options> pending_streaming_options_;
+
+    // Whether streaming is enabled (can be set before connection)
+    bool streaming_enabled_{false};
 };
 
 }

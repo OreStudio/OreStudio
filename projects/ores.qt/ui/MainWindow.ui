@@ -85,6 +85,8 @@
     <addaction name="ActionEventViewer"/>
     <addaction name="separator"/>
     <addaction name="menuProtocol"/>
+    <addaction name="separator"/>
+    <addaction name="ActionTelemetrySettings"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuRefereceData"/>
@@ -256,6 +258,18 @@
    </property>
    <property name="toolTip">
     <string>Set the directory for session recordings</string>
+   </property>
+  </action>
+  <action name="ActionTelemetrySettings">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_settings_20_regular.svg</normaloff>:/icons/ic_fluent_settings_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Settings...</string>
+   </property>
+   <property name="toolTip">
+    <string>Configure logging and telemetry settings</string>
    </property>
   </action>
   <action name="ActionEventViewer">

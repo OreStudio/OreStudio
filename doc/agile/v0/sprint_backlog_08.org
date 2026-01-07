@@ -450,15 +450,23 @@ At present the following is not working or is a snag:
 - email updated message is truncated.
 - user cannot lock it's own account.
 
-*** Review comms analyser work                                         :code:
+*** STARTED Review comms analyser work                                 :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-06 Tue 11:48]--[2026-01-06 Tue 12:15] =>  0:27
+    :END:
 
 Need to check this works and add UI for it.
+
+*** STARTED Review telemetry work                                      :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-06 Tue 14:45]--[2026-01-06 Tue 18:45] =>  4:00
+    :END:
+
+It seems we did not add database support for telemetry.
 
 *** Disconnect shows reconnect message                                 :code:
 
 When you click disconnect the status bar says "Reconnecting to server".
-
-*** Allow editing of permissions in ores.qt                            :code:
 
 We can see but not edit. Also, test permissions to make sure they are being
 enforced.

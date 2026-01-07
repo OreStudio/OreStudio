@@ -20,20 +20,15 @@
 #ifndef ORES_TELEMETRY_LOG_MAKE_LOGGER_HPP
 #define ORES_TELEMETRY_LOG_MAKE_LOGGER_HPP
 
-#include <string_view>
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/log/sources/severity_channel_logger.hpp>
+// Forwarding header - types moved to ores.logging
+#include "ores.logging/make_logger.hpp"
+// Include boost_severity forwarding header to bring enum values into namespace
 #include "ores.telemetry/log/boost_severity.hpp"
 
 namespace ores::telemetry::log {
 
-using logger_t = boost::log::sources::severity_channel_logger_mt<
-    boost_severity, std::string_view>;
-
-inline logger_t make_logger(std::string_view component_name) {
-    using namespace boost::log;
-    return logger_t(keywords::channel = component_name);
-}
+using ores::logging::logger_t;
+using ores::logging::make_logger;
 
 }
 

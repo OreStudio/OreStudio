@@ -24,7 +24,7 @@
 
 namespace ores::database {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 std::ostream&
 operator<<(std::ostream& s, const context_factory::configuration& v) {

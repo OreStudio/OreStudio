@@ -251,7 +251,19 @@ void ImageCache::loadImagesForCurrencies() {
     }
 
     if (image_ids_to_fetch.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "No new images to fetch.";
+        BOOST_LOG_SEV(lg(), debug) << "No new images to fetch, re-rendering icons.";
+
+        // Still need to re-render icons for updated mappings using cached SVG data
+        for (const auto& [iso_code, image_id] : currency_to_image_id_) {
+            auto svg_it = image_svg_cache_.find(image_id);
+            if (svg_it != image_svg_cache_.end()) {
+                QIcon icon = svgToIcon(svg_it->second);
+                if (!icon.isNull()) {
+                    currency_icons_[iso_code] = icon;
+                }
+            }
+        }
+
         emit imagesLoaded();
         emit allLoaded();
         return;

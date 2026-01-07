@@ -80,11 +80,10 @@ handle_submit_log_records_request(std::span<const std::byte> payload,
     std::string source_name = "unknown";
 
     if (sessions_) {
-        auto session_opt = sessions_->get_session(remote_address);
-        if (session_opt) {
-            // Note: session_info only has account_id; session_id would need
-            // to be retrieved from the session repository if needed
-            account_id = session_opt->account_id;
+        auto session_data = sessions_->get_session_data(remote_address);
+        if (session_data) {
+            session_id = session_data->id;
+            account_id = session_data->account_id;
         }
     }
 

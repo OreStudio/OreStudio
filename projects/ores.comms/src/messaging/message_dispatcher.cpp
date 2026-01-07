@@ -75,7 +75,7 @@ message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence,
     if (!result) {
         BOOST_LOG_SEV(lg(), error) << "Handler failed for message type "
                                    << std::hex << static_cast<std::uint16_t>(msg_type)
-                                   << ", error: " << static_cast<int>(result.error());
+                                   << std::dec << ", error: " << result.error();
         co_return std::unexpected(result.error());
     }
 

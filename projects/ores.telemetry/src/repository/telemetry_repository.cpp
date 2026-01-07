@@ -416,7 +416,7 @@ telemetry_repository::get_summary(std::uint32_t hours) {
         where("timestamp"_c >= start_ts && "timestamp"_c < end_ts) |
         sqlgen::to<count_result>;
 
-    auto total_r = ctx_.single_connection().and_then(total_query);
+    auto total_r = sqlgen::session(ctx_.connection_pool()).and_then(total_query);
     if (total_r) {
         summary.total_logs = static_cast<std::uint64_t>(total_r->count);
     }
@@ -437,7 +437,7 @@ telemetry_repository::get_summary(std::uint32_t hours) {
                   "level"_c == level) |
             sqlgen::to<count_result>;
 
-        auto level_r = ctx_.single_connection().and_then(level_query);
+        auto level_r = sqlgen::session(ctx_.connection_pool()).and_then(level_query);
         if (level_r) {
             *target = static_cast<std::uint64_t>(level_r->count);
         }
@@ -469,7 +469,7 @@ std::uint64_t telemetry_repository::count_errors(const std::string& source_name,
               "source_name"_c == source_name && "level"_c == "error") |
         sqlgen::to<count_result>;
 
-    const auto r = ctx_.single_connection().and_then(query);
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Error count: " << r->count;

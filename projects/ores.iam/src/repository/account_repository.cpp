@@ -90,18 +90,11 @@ account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts with offset: "
                                << offset << " and limit: " << limit;
 
-    // TODO: sqlgen doesn't support OFFSET yet. For now, we only use LIMIT.
-    // This means pagination will not work correctly - it will always return
-    // the first N records. This needs to be fixed once sqlgen adds offset support.
-    if (offset != 0) {
-        BOOST_LOG_SEV(lg(), warn) << "OFFSET not supported by sqlgen yet. "
-                                   << "Ignoring offset parameter: " << offset;
-    }
-
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc()) |
+        sqlgen::offset(offset) |
         sqlgen::limit(limit);
 
     return execute_read_query<account_entity, domain::account>(ctx_, query,
@@ -114,10 +107,6 @@ std::uint32_t account_repository::get_total_account_count() {
 
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    // HACK: Using single connection instead of session because sqlgen sessions
-    // doesn't seem to support SELECT FROM with aggregations. Plain connections
-    // work fine. This is a temporary workaround until the sqlgen library is
-    // fixed. See: https://github.com/getml/sqlgen/issues/99
     struct count_result {
         long long count;
     };
@@ -127,8 +116,7 @@ std::uint32_t account_repository::get_total_account_count() {
         where("valid_to"_c == max.value()) |
         sqlgen::to<count_result>;
 
-    const auto r = ctx_.single_connection()
-        .and_then(query);
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
     ensure_success(r, lg());
 
     const auto count = static_cast<std::uint32_t>(r->count);

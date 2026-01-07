@@ -28,15 +28,13 @@ namespace ores #F2F2F2 {
         namespace domain #F2F2F2 {
             class context #ECECEC {
                 +connection_pool() connection_pool_type
-                +single_connection() single_connection_type
                 +credentials() sqlgen::postgres::Credentials
             }
 
             note top of context
             Context for the operations on a postgres database.
 
-            Holds connection pool, single connection, and credentials
-            for database operations.
+            Holds connection pool and credentials for database operations.
             end note
 
             struct database_options #F7E5FF {

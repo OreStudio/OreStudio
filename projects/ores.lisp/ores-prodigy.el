@@ -117,6 +117,24 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
+  :name "ORE Studio QT 2 - Debug"
+  :cwd (concat (ores/path-to-publish 'debug) "/bin")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt2.log" "--compression-enabled")
+  :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
+  :tags '(ores ui debug)
+  :stop-signal 'sigint
+  :kill-process-buffer-on-stop t)
+
+(prodigy-define-service
+  :name "ORE Studio QT 2 - Release"
+  :cwd (concat (ores/path-to-publish 'release) "/bin")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt2.log" "--compression-enabled")
+  :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
+  :tags '(ores ui release)
+  :stop-signal 'sigint
+  :kill-process-buffer-on-stop t)
+
+(prodigy-define-service
   :name "ORE Studio Comms Service - Debug"
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")

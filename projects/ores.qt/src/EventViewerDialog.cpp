@@ -195,10 +195,13 @@ EventViewerDialog::~EventViewerDialog() {
 void EventViewerDialog::setupUi() {
     setWindowTitle(tr("Event Viewer"));
     setMinimumSize(800, 500);
-    resize(900, 600);
+    resize(1000, 600);
 
-    // Make dialog non-modal
+    // Make dialog non-modal and behave as a normal window (not always on top).
+    // Remove maximize button since this is a utility window.
     setModal(false);
+    setWindowFlags(Qt::Window | Qt::WindowTitleHint | Qt::WindowSystemMenuHint |
+                   Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint);
 
     auto* layout = new QVBoxLayout(this);
 
@@ -214,10 +217,10 @@ void EventViewerDialog::setupUi() {
     tableView_->horizontalHeader()->setStretchLastSection(true);
     tableView_->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    // Set column widths
-    tableView_->setColumnWidth(EventTableModel::Timestamp, 180);
-    tableView_->setColumnWidth(EventTableModel::EventType, 200);
-    tableView_->setColumnWidth(EventTableModel::Source, 80);
+    // Set column widths - ensure timestamp and event type are fully visible
+    tableView_->setColumnWidth(EventTableModel::Timestamp, 200);
+    tableView_->setColumnWidth(EventTableModel::EventType, 280);
+    tableView_->setColumnWidth(EventTableModel::Source, 70);
 
     layout->addWidget(tableView_);
 

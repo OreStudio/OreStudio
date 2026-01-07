@@ -6,7 +6,7 @@
 #+startup: inlineimages
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 
-Demonstrates the functionality of the [[id:d26b67f9-7987-4b91-98e9-6baf6fe42ad9][ORE Studio Comms Analyser Component]],
+Demonstrates the functionality of the [[id:6E2967C7-D79E-41DE-8A68-B3F755541C0D][ORE Studio Comms Analyser Component]],
 which reads and analyses session recording files (.ores) created by
 ores.qt or other clients with recording enabled.
 

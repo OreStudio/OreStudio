@@ -85,6 +85,12 @@ select ores.upsert_system_flag(
     'When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.'
 );
 
+select ores.upsert_system_flag(
+    'system.synthetic_data_generation',
+    false,
+    'Enables synthetic test data generation in the UI. FOR TESTING/DEVELOPMENT ONLY.'
+);
+
 -- Clean up helper function
 drop function ores.upsert_system_flag(text, boolean, text);
 

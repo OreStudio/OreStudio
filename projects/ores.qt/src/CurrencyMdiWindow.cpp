@@ -32,6 +32,7 @@
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QInputDialog>
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QUrl>
@@ -52,11 +53,24 @@
 #include "ores.risk/csv/exporter.hpp"
 #include "ores.risk/orexml/exporter.hpp"
 #include "ores.risk/orexml/importer.hpp"
+#include "ores.risk/generators/currency_generator.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.variability/eventing/feature_flags_changed_event.hpp"
+#include "ores.variability/messaging/feature_flags_protocol.hpp"
 
 namespace ores::qt {
 
 using comms::messaging::message_type;
 using namespace ores::telemetry::log;
+
+namespace {
+    // Event type name for feature flag changes
+    constexpr std::string_view feature_flag_event_name =
+        eventing::domain::event_traits<variability::eventing::feature_flags_changed_event>::name;
+
+    // Feature flag name for synthetic data generation
+    constexpr std::string_view synthetic_generation_flag = "system.synthetic_data_generation";
+}
 
 CurrencyMdiWindow::
 CurrencyMdiWindow(ClientManager* clientManager,
@@ -118,6 +132,9 @@ CurrencyMdiWindow(ClientManager* clientManager,
     connect(historyAction_, &QAction::triggered, this,
         &CurrencyMdiWindow::viewHistorySelected);
     toolBar_->addAction(historyAction_);
+
+    // Setup generate action (visibility controlled by feature flag)
+    setupGenerateAction();
 
     toolBar_->addSeparator();
 
@@ -221,6 +238,30 @@ CurrencyMdiWindow(ClientManager* clientManager,
     if (clientManager_) {
         connect(clientManager_, &ClientManager::connected, this, &CurrencyMdiWindow::onConnectionStateChanged);
         connect(clientManager_, &ClientManager::disconnected, this, &CurrencyMdiWindow::onConnectionStateChanged);
+
+        // Connect to feature flag notifications for generate action visibility
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &CurrencyMdiWindow::onFeatureFlagNotification);
+
+        // Subscribe to feature flag events when connected
+        connect(clientManager_, &ClientManager::connected,
+                this, [this]() {
+            clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
+            updateGenerateActionVisibility();
+        });
+
+        connect(clientManager_, &ClientManager::reconnected,
+                this, [this]() {
+            clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
+            updateGenerateActionVisibility();
+        });
+
+        // If already connected, subscribe and check flag
+        if (clientManager_->isConnected()) {
+            clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
+            // Defer visibility check to after event loop processes
+            QTimer::singleShot(0, this, &CurrencyMdiWindow::updateGenerateActionVisibility);
+        }
     }
 
     updateActionStates();
@@ -926,6 +967,118 @@ void CurrencyMdiWindow::restoreSettings() {
 void CurrencyMdiWindow::closeEvent(QCloseEvent* event) {
     saveSettings();
     QWidget::closeEvent(event);
+}
+
+void CurrencyMdiWindow::setupGenerateAction() {
+    const auto& iconColor = color_constants::icon_color;
+
+    generateAction_ = new QAction("Generate", this);
+    generateAction_->setIcon(IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_star_20_regular.svg", iconColor));
+    generateAction_->setToolTip("Generate synthetic test currencies");
+    connect(generateAction_, &QAction::triggered, this,
+        &CurrencyMdiWindow::generateSynthetic);
+    toolBar_->addAction(generateAction_);
+
+    // Initially hidden - will be shown if feature flag is enabled
+    generateAction_->setVisible(false);
+}
+
+void CurrencyMdiWindow::updateGenerateActionVisibility() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        generateAction_->setVisible(false);
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Checking feature flag: " << synthetic_generation_flag;
+
+    QPointer<CurrencyMdiWindow> self = this;
+    QtConcurrent::run([self]() -> bool {
+        if (!self || !self->clientManager_)
+            return false;
+
+        variability::messaging::get_feature_flag_request request;
+        request.name = std::string{synthetic_generation_flag};
+
+        auto result = self->clientManager_->
+            process_authenticated_request(std::move(request));
+
+        if (!result || !result->found) {
+            BOOST_LOG_SEV(lg(), debug) << "Feature flag not found or request failed";
+            return false;
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Feature flag " << synthetic_generation_flag
+                                   << " enabled: " << result->flag.enabled;
+        return result->flag.enabled;
+    }).then(this, [self](bool enabled) {
+        if (self && self->generateAction_) {
+            self->generateAction_->setVisible(enabled);
+            BOOST_LOG_SEV(lg(), info) << "Generate action visibility set to: " << enabled;
+        }
+    });
+}
+
+void CurrencyMdiWindow::generateSynthetic() {
+    BOOST_LOG_SEV(lg(), debug) << "Generate synthetic currencies requested";
+
+    bool ok;
+    int count = QInputDialog::getInt(this, tr("Generate Synthetic Currencies"),
+                                      tr("Number of currencies to generate:"),
+                                      5, 1, 100, 1, &ok);
+    if (!ok) {
+        BOOST_LOG_SEV(lg(), debug) << "Generation cancelled by user";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Generating " << count << " synthetic currencies";
+
+    try {
+        auto currencies = risk::generators::generate_unique_synthetic_currencies(
+            static_cast<std::size_t>(count));
+
+        if (currencies.empty()) {
+            BOOST_LOG_SEV(lg(), warn) << "No currencies generated";
+            emit statusChanged("Failed to generate currencies");
+            return;
+        }
+
+        // Set recorded_by for all generated currencies
+        for (auto& currency : currencies) {
+            currency.recorded_by = username_.toStdString();
+        }
+
+        currencyModel_->add_synthetic_currencies(std::move(currencies));
+
+        emit statusChanged(QString("Generated %1 synthetic currencies (shown in blue - not yet saved)")
+            .arg(count));
+
+        BOOST_LOG_SEV(lg(), info) << "Added " << count << " synthetic currencies to model";
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Error generating currencies: " << e.what();
+        MessageBoxHelper::critical(this, "Generation Error",
+            QString("Failed to generate currencies: %1").arg(e.what()));
+    }
+}
+
+void CurrencyMdiWindow::onFeatureFlagNotification(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
+
+    // Check if this is a feature flag change event
+    if (eventType != QString::fromStdString(std::string{feature_flag_event_name})) {
+        return;
+    }
+
+    // Check if our flag was affected
+    QString ourFlag = QString::fromStdString(std::string{synthetic_generation_flag});
+    if (!entityIds.isEmpty() && !entityIds.contains(ourFlag)) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Feature flag notification received, updating generate action visibility";
+    updateGenerateActionVisibility();
 }
 
 }

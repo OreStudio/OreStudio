@@ -83,6 +83,7 @@ public slots:
     void importFromXML();
     void exportToCSV();
     void exportToXML();
+    void generateSynthetic();
 
     /**
      * @brief Mark the data as stale (changed on server).
@@ -106,10 +107,14 @@ private slots:
     void onRowDoubleClicked(const QModelIndex& index);
     void onSelectionChanged();
     void onConnectionStateChanged();
+    void onFeatureFlagNotification(const QString& eventType, const QDateTime& timestamp,
+                                    const QStringList& entityIds);
 
 private:
     void updateActionStates();
     void setupReloadAction();
+    void setupGenerateAction();
+    void updateGenerateActionVisibility();
     void startPulseAnimation();
     void stopPulseAnimation();
     void setupColumnVisibility();
@@ -138,6 +143,7 @@ private:
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;
+    QAction* generateAction_;
 
     std::unique_ptr<ClientCurrencyModel> currencyModel_;
     QSortFilterProxyModel* proxyModel_;

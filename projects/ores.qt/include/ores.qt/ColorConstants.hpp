@@ -43,6 +43,14 @@ struct color_constants {
      * @brief Standard icon color for toolbar icons in dark theme.
      */
     static inline const QColor icon_color{220, 220, 220};
+
+    /**
+     * @brief Color for indicating synthetic/generated data that hasn't been saved.
+     *
+     * Used for: generated currency row highlighting in grids.
+     * Blue - distinguishes from yellow (stale/updated) indicator.
+     */
+    static inline const QColor synthetic_indicator{100, 149, 237};  // Cornflower blue
 };
 
 }

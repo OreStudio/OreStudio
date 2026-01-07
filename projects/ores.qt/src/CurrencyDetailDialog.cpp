@@ -31,14 +31,19 @@
 #include <QMdiSubWindow>
 #include <QMetaObject>
 #include <QGroupBox>
+#include <QTimer>
 #include "ui_CurrencyDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/MdiUtils.hpp"
 #include "ores.qt/FlagSelectorDialog.hpp"
 #include "ores.risk/messaging/protocol.hpp"
+#include "ores.risk/generators/currency_generator.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.variability/eventing/feature_flags_changed_event.hpp"
+#include "ores.variability/messaging/feature_flags_protocol.hpp"
 
 namespace ores::qt {
 
@@ -46,6 +51,15 @@ using comms::messaging::frame;
 using comms::messaging::message_type;
 using namespace ores::telemetry::log;
 using FutureResult = std::pair<bool, std::string>;
+
+namespace {
+    // Event type name for feature flag changes
+    constexpr std::string_view feature_flag_event_name =
+        eventing::domain::event_traits<variability::eventing::feature_flags_changed_event>::name;
+
+    // Feature flag name for synthetic data generation
+    constexpr std::string_view synthetic_generation_flag = "system.synthetic_data_generation";
+}
 
 CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyDetailDialog), isDirty_(false),
@@ -92,6 +106,9 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
         &CurrencyDetailDialog::onRevertClicked);
     toolBar_->addAction(revertAction_);
     revertAction_->setVisible(false);
+
+    // Create Generate action (visibility controlled by feature flag)
+    setupGenerateAction();
 
     // Add toolbar to the dialog's layout
     // Get the main layout from the UI
@@ -152,6 +169,32 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
 
 void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+
+    if (clientManager_) {
+        // Connect to feature flag notifications for generate action visibility
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &CurrencyDetailDialog::onFeatureFlagNotification);
+
+        // Subscribe to feature flag events when connected
+        connect(clientManager_, &ClientManager::connected,
+                this, [this]() {
+            clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
+            updateGenerateActionVisibility();
+        });
+
+        connect(clientManager_, &ClientManager::reconnected,
+                this, [this]() {
+            clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
+            updateGenerateActionVisibility();
+        });
+
+        // If already connected, subscribe and check flag
+        if (clientManager_->isConnected()) {
+            clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
+            // Defer visibility check to after event loop processes
+            QTimer::singleShot(0, this, &CurrencyDetailDialog::updateGenerateActionVisibility);
+        }
+    }
 }
 
 void CurrencyDetailDialog::setUsername(const std::string& username) {
@@ -711,6 +754,110 @@ void CurrencyDetailDialog::updateFlagDisplay() {
     if (!noFlagIcon.isNull()) {
         flagButton_->setIcon(noFlagIcon);
     }
+}
+
+void CurrencyDetailDialog::setupGenerateAction() {
+    const QColor iconColor(220, 220, 220);
+
+    generateAction_ = new QAction("Generate", this);
+    generateAction_->setIcon(IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_star_20_regular.svg", iconColor));
+    generateAction_->setToolTip("Fill fields with synthetic test data");
+    connect(generateAction_, &QAction::triggered, this,
+        &CurrencyDetailDialog::onGenerateClicked);
+    toolBar_->addAction(generateAction_);
+
+    // Initially hidden - will be shown if feature flag is enabled
+    generateAction_->setVisible(false);
+}
+
+void CurrencyDetailDialog::updateGenerateActionVisibility() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        generateAction_->setVisible(false);
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Checking feature flag for detail dialog: "
+                               << synthetic_generation_flag;
+
+    QPointer<CurrencyDetailDialog> self = this;
+    QtConcurrent::run([self]() -> bool {
+        if (!self || !self->clientManager_)
+            return false;
+
+        variability::messaging::get_feature_flag_request request;
+        request.name = std::string{synthetic_generation_flag};
+
+        auto result = self->clientManager_->
+            process_authenticated_request(std::move(request));
+
+        if (!result || !result->found) {
+            BOOST_LOG_SEV(lg(), debug) << "Feature flag not found or request failed";
+            return false;
+        }
+
+        return result->flag.enabled;
+    }).then(this, [self](bool enabled) {
+        if (self && self->generateAction_) {
+            self->generateAction_->setVisible(enabled);
+            BOOST_LOG_SEV(lg(), debug) << "Generate action visibility in detail dialog set to: "
+                                       << enabled;
+        }
+    });
+}
+
+void CurrencyDetailDialog::onGenerateClicked() {
+    BOOST_LOG_SEV(lg(), debug) << "Generate clicked in detail dialog";
+
+    try {
+        auto currency = risk::generators::generate_synthetic_currency();
+
+        // Fill all fields with generated data
+        ui_->isoCodeEdit->setText(QString::fromStdString(currency.iso_code));
+        ui_->nameEdit->setText(QString::fromStdString(currency.name));
+        ui_->numericCodeEdit->setText(QString::fromStdString(currency.numeric_code));
+        ui_->symbolEdit->setText(QString::fromStdString(currency.symbol));
+        ui_->fractionSymbolEdit->setText(QString::fromStdString(currency.fraction_symbol));
+        ui_->fractionsPerUnitSpinBox->setValue(currency.fractions_per_unit);
+        ui_->roundingTypeEdit->setText(QString::fromStdString(currency.rounding_type));
+        ui_->roundingPrecisionSpinBox->setValue(currency.rounding_precision);
+        ui_->formatEdit->setText(QString::fromStdString(currency.format));
+        ui_->currencyTypeEdit->setText(QString::fromStdString(currency.currency_type));
+
+        // Mark as dirty
+        isDirty_ = true;
+        emit isDirtyChanged(true);
+        updateSaveResetButtonState();
+
+        emit statusMessage("Generated synthetic currency data - modify as needed and save");
+
+        BOOST_LOG_SEV(lg(), info) << "Filled fields with generated currency: "
+                                  << currency.iso_code;
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Error generating currency: " << e.what();
+        MessageBoxHelper::critical(this, "Generation Error",
+            QString("Failed to generate currency data: %1").arg(e.what()));
+    }
+}
+
+void CurrencyDetailDialog::onFeatureFlagNotification(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
+
+    // Check if this is a feature flag change event
+    if (eventType != QString::fromStdString(std::string{feature_flag_event_name})) {
+        return;
+    }
+
+    // Check if our flag was affected
+    QString ourFlag = QString::fromStdString(std::string{synthetic_generation_flag});
+    if (!entityIds.isEmpty() && !entityIds.contains(ourFlag)) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Feature flag notification received in detail dialog";
+    updateGenerateActionVisibility();
 }
 
 }

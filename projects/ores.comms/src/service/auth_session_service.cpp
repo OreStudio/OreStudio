@@ -20,7 +20,7 @@
 #include "ores.comms/service/auth_session_service.hpp"
 
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
 
 namespace ores::comms::service {
 
@@ -58,7 +58,7 @@ void auth_session_service::store_session(const std::string& remote_address,
     session_info info) {
     // Create a minimal session object from the legacy session_info
     auto session = std::make_shared<session_data>();
-    session->id = boost::uuids::random_generator()();
+    session->id = utility::uuid::uuid_v7_generator{}();
     session->account_id = info.account_id;
     session->start_time = std::chrono::system_clock::now();
 

@@ -24,7 +24,9 @@ namespace ores::iam::service {
 namespace {
 
 /**
- * @brief Convert protocol enum between comms and iam representations.
+ * @brief Convert protocol enum from iam to comms representation.
+ *
+ * No default case so compiler warns if new enum values are added.
  */
 comms::service::session_protocol
 to_comms_protocol(domain::session_protocol p) {
@@ -33,11 +35,15 @@ to_comms_protocol(domain::session_protocol p) {
             return comms::service::session_protocol::binary;
         case domain::session_protocol::http:
             return comms::service::session_protocol::http;
-        default:
-            return comms::service::session_protocol::binary;
     }
+    __builtin_unreachable();
 }
 
+/**
+ * @brief Convert protocol enum from comms to iam representation.
+ *
+ * No default case so compiler warns if new enum values are added.
+ */
 domain::session_protocol
 from_comms_protocol(comms::service::session_protocol p) {
     switch (p) {
@@ -45,9 +51,8 @@ from_comms_protocol(comms::service::session_protocol p) {
             return domain::session_protocol::binary;
         case comms::service::session_protocol::http:
             return domain::session_protocol::http;
-        default:
-            return domain::session_protocol::binary;
     }
+    __builtin_unreachable();
 }
 
 }

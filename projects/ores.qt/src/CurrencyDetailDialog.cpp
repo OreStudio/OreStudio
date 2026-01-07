@@ -691,13 +691,17 @@ void CurrencyDetailDialog::updateFlagDisplay() {
 
     // If we have an ID, try to get the icon
     if (!imageIdToShow.isEmpty()) {
+        // First try the preview cache (used by flag selector)
         QIcon icon = imageCache_->getImageIcon(imageIdToShow.toStdString());
+
+        // If not in preview cache, try the currency icon cache (populated after setCurrencyImage)
+        if (icon.isNull() && !flagChanged_) {
+            icon = imageCache_->getCurrencyIcon(currentCurrency_.iso_code);
+        }
+
         if (!icon.isNull()) {
             flagButton_->setIcon(icon);
             return;
-        } else {
-            // Icon ID exists but not loaded (should generally be loaded due to preloading/selector)
-            // But fall through to default just in case
         }
     }
 

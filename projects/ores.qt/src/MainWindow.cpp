@@ -67,7 +67,7 @@ MainWindow::MainWindow(QWidget* parent) :
     clientManager_(new ClientManager(eventBus_, this)),
     imageCache_(new ImageCache(clientManager_, this)),
     systemTrayIcon_(nullptr), trayContextMenu_(nullptr),
-    instanceBanner_(nullptr), instanceBannerLabel_(nullptr) {
+    instanceColorIndicator_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
@@ -796,50 +796,25 @@ void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {
     BOOST_LOG_SEV(lg(), info) << "Instance info set: name='" << name.toStdString()
                               << "', color=" << (color.isValid() ? color.name().toStdString() : "none");
 
-    // Create/update the instance banner if color is specified
+    // Create/update the status bar indicator if color is specified
     if (color.isValid()) {
-        if (!instanceBanner_) {
-            // Create banner - we'll add it above the MDI area
-            instanceBanner_ = new QFrame(this);
-            instanceBanner_->setFrameShape(QFrame::NoFrame);
-            instanceBanner_->setFixedHeight(28);
-
-            auto* bannerLayout = new QHBoxLayout(instanceBanner_);
-            bannerLayout->setContentsMargins(10, 4, 10, 4);
-
-            instanceBannerLabel_ = new QLabel(instanceBanner_);
-            instanceBannerLabel_->setAlignment(Qt::AlignCenter);
-            bannerLayout->addWidget(instanceBannerLabel_);
-
-            // Create a vertical layout to hold banner + mdiArea
-            // First, remove the mdiArea from its current layout
-            ui_->horizontalLayout_3->removeWidget(mdiArea_);
-
-            // Create a container widget for the vertical layout
-            auto* container = new QWidget(this);
-            auto* vLayout = new QVBoxLayout(container);
-            vLayout->setContentsMargins(0, 0, 0, 0);
-            vLayout->setSpacing(0);
-
-            // Add banner and mdiArea to vertical layout
-            vLayout->addWidget(instanceBanner_);
-            vLayout->addWidget(mdiArea_);
-
-            // Add the container to the horizontal layout
-            ui_->horizontalLayout_3->addWidget(container);
+        if (!instanceColorIndicator_) {
+            // Create a small colored indicator for the status bar
+            instanceColorIndicator_ = new QLabel(this);
+            instanceColorIndicator_->setFixedSize(16, 16);
+            // Insert before the connection status icon (at position 0 of permanent widgets)
+            ui_->statusbar->insertPermanentWidget(0, instanceColorIndicator_);
         }
 
-        // Set the background color and contrasting text color
-        QString textColor = (color.lightness() > 127) ? "#000000" : "#FFFFFF";
-        instanceBanner_->setStyleSheet(
-            QString("background-color: %1;").arg(color.name()));
-        instanceBannerLabel_->setStyleSheet(
-            QString("color: %1; font-weight: bold; font-size: 11pt;").arg(textColor));
-        instanceBannerLabel_->setText(name.isEmpty() ? "Instance" : name);
-        instanceBanner_->show();
-    } else if (instanceBanner_) {
-        // Hide the banner if no color specified
-        instanceBanner_->hide();
+        // Style as a colored circle with the instance color
+        instanceColorIndicator_->setStyleSheet(
+            QString("background-color: %1; border-radius: 8px; border: 1px solid rgba(255,255,255,50);")
+                .arg(color.name()));
+        instanceColorIndicator_->setToolTip(name.isEmpty() ? tr("Instance") : name);
+        instanceColorIndicator_->show();
+    } else if (instanceColorIndicator_) {
+        // Hide the indicator if no color specified
+        instanceColorIndicator_->hide();
     }
 
     updateWindowTitle();

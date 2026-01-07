@@ -25,7 +25,6 @@
 #include <QTimer>
 #include <QSystemTrayIcon>
 #include <QMenu>
-#include <QFrame>
 #include <QColor>
 #include <memory>
 #include <vector>
@@ -304,14 +303,11 @@ private:
     /** @brief Instance name for multi-instance identification */
     QString instanceName_;
 
-    /** @brief Instance color for the banner (invalid color means no banner) */
+    /** @brief Instance color for the status bar indicator (invalid color means no indicator) */
     QColor instanceColor_;
 
-    /** @brief Colored banner frame shown when instance color is set */
-    QFrame* instanceBanner_;
-
-    /** @brief Label showing instance name in the banner */
-    QLabel* instanceBannerLabel_;
+    /** @brief Colored indicator in status bar showing instance color */
+    QLabel* instanceColorIndicator_;
 };
 
 }

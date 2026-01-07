@@ -147,6 +147,14 @@ std::uint64_t telemetry_streaming_service::total_dropped() const noexcept {
 void telemetry_streaming_service::on_log_record(
     telemetry::domain::log_record record) {
 
+    // Filter out logs from telemetry-related components to prevent feedback loop.
+    // These logs still go to file/console but are not sent to the server.
+    const auto& name = record.logger_name;
+    if (name.starts_with("ores.comms.service.telemetry") ||
+        name.starts_with("ores.telemetry")) {
+        return;
+    }
+
     std::lock_guard<std::mutex> lock(buffer_mutex_);
 
     // Check if we need to drop old records

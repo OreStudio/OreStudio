@@ -41,16 +41,6 @@ void assets_routes::register_routes(std::shared_ptr<http::net::router> router,
 
     BOOST_LOG_SEV(lg(), info) << "Registering Assets routes";
 
-    auto currency_images = router->get("/api/v1/assets/currency-images")
-        .summary("Get currency images")
-        .description("Retrieve currency-to-image mappings")
-        .tags({"assets"})
-        .auth_required()
-        .response<assets::messaging::get_currency_images_response>()
-        .handler([this](const http_request& req) { return handle_get_currency_images(req); });
-    router->add_route(currency_images.build());
-    registry->register_route(currency_images.build());
-
     auto get_images = router->post("/api/v1/assets/images")
         .summary("Get images")
         .description("Retrieve images by ID (batch, max 100)")
@@ -62,24 +52,7 @@ void assets_routes::register_routes(std::shared_ptr<http::net::router> router,
     router->add_route(get_images.build());
     registry->register_route(get_images.build());
 
-    BOOST_LOG_SEV(lg(), info) << "Assets routes registered: 2 endpoints";
-}
-
-asio::awaitable<http_response> assets_routes::handle_get_currency_images(const http_request&) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling get currency images request";
-
-    try {
-        assets::service::assets_service service(ctx_);
-        auto mappings = service.get_currency_images();
-
-        assets::messaging::get_currency_images_response resp;
-        resp.currency_images = mappings;
-
-        co_return http_response::json(rfl::json::write(resp));
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Get currency images error: " << e.what();
-        co_return http_response::internal_error(e.what());
-    }
+    BOOST_LOG_SEV(lg(), info) << "Assets routes registered: 1 endpoint";
 }
 
 asio::awaitable<http_response> assets_routes::handle_get_images(const http_request& req) {

@@ -224,7 +224,7 @@ private:
     /**
      * @brief Internal method to fetch currencies with specific offset and limit.
      */
-    void fetch_currencies(std::uint32_t offset, std::uint32_t limit, bool replace);
+    void fetch_currencies(std::uint32_t offset, std::uint32_t limit);
 };
 
 }

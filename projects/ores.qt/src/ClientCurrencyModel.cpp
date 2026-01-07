@@ -177,7 +177,7 @@ void ClientCurrencyModel::refresh(bool replace) {
         }
     }
 
-    fetch_currencies(offset, page_size_, replace);
+    fetch_currencies(offset, page_size_);
 }
 
 void ClientCurrencyModel::load_page(std::uint32_t offset, std::uint32_t limit) {
@@ -204,12 +204,11 @@ void ClientCurrencyModel::load_page(std::uint32_t offset, std::uint32_t limit) {
         endResetModel();
     }
 
-    fetch_currencies(offset, limit, true);
+    fetch_currencies(offset, limit);
 }
 
 void ClientCurrencyModel::fetch_currencies(std::uint32_t offset,
-                                            std::uint32_t limit,
-                                            bool /*replace*/) {
+                                            std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientCurrencyModel> self = this;
 

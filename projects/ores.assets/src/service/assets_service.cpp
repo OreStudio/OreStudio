@@ -25,13 +25,7 @@ using namespace ores::telemetry::log;
 
 assets_service::assets_service(context ctx)
     : ctx_(std::move(ctx))
-    , currency_image_repo_{}
     , image_repo_{} {
-}
-
-std::vector<domain::currency_image> assets_service::get_currency_images() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting all currency-image mappings";
-    return currency_image_repo_.read_latest(ctx_);
 }
 
 std::vector<domain::image> assets_service::get_images(

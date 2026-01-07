@@ -23,18 +23,16 @@
 #include <string>
 #include <vector>
 #include "ores.database/domain/context.hpp"
-#include "ores.assets/domain/currency_image.hpp"
 #include "ores.assets/domain/image.hpp"
-#include "ores.assets/repository/currency_image_repository.hpp"
 #include "ores.assets/repository/image_repository.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 
 namespace ores::assets::service {
 
 /**
- * @brief Service for managing assets including images and currency-image mappings.
+ * @brief Service for managing asset images.
  *
- * Provides a higher-level interface for asset operations, wrapping
+ * Provides a higher-level interface for image operations, wrapping
  * the underlying repositories.
  */
 class assets_service {
@@ -59,13 +57,6 @@ public:
     explicit assets_service(context ctx);
 
     /**
-     * @brief Retrieves all currency-image mappings.
-     *
-     * @return Vector of all currency-image associations.
-     */
-    std::vector<domain::currency_image> get_currency_images();
-
-    /**
      * @brief Retrieves images by their IDs.
      *
      * @param image_ids The IDs of the images to retrieve.
@@ -75,7 +66,6 @@ public:
 
 private:
     context ctx_;
-    repository::currency_image_repository currency_image_repo_;
     repository::image_repository image_repo_;
 };
 

@@ -24,7 +24,6 @@
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.assets/repository/image_repository.hpp"
-#include "ores.assets/repository/currency_image_repository.hpp"
 
 namespace ores::assets::messaging {
 
@@ -35,10 +34,8 @@ namespace ores::assets::messaging {
  *
  * Currently handles:
  *
- * - get_currency_images_request: Retrieves all currency-image mappings
  * - get_images_request: Retrieves images by their IDs (batched)
  * - list_images_request: Lists all available images (metadata only)
- * - set_currency_image_request: Sets or removes a currency's image association
  */
 class assets_message_handler final : public comms::messaging::message_handler {
 private:
@@ -74,12 +71,6 @@ public:
 
 private:
     /**
-     * @brief Handle get_currency_images_request message.
-     */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
-    handle_get_currency_images_request(std::span<const std::byte> payload);
-
-    /**
      * @brief Handle get_images_request message.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
@@ -91,15 +82,8 @@ private:
     boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
     handle_list_images_request(std::span<const std::byte> payload);
 
-    /**
-     * @brief Handle set_currency_image_request message.
-     */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
-    handle_set_currency_image_request(std::span<const std::byte> payload);
-
     database::context ctx_;
     repository::image_repository image_repo_;
-    repository::currency_image_repository currency_image_repo_;
 };
 
 }

@@ -234,7 +234,7 @@ create or replace function ores.telemetry_logs_for_session(
 )
 returns table (
     id uuid,
-    timestamp timestamp with time zone,
+    log_timestamp timestamp with time zone,
     level text,
     component text,
     message text,

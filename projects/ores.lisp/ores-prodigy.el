@@ -117,6 +117,60 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
+  :name "ORE Studio QT Blue - Debug"
+  :cwd (concat (ores/path-to-publish 'debug) "/bin")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.blue.log" "--compression-enabled" "--instance-name" "Blue Debug" "--instance-color" "2196F3")
+  :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
+  :tags '(ores ui debug)
+  :stop-signal 'sigint
+  :kill-process-buffer-on-stop t)
+
+(prodigy-define-service
+  :name "ORE Studio QT Blue - Release"
+  :cwd (concat (ores/path-to-publish 'release) "/bin")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.blue.log" "--compression-enabled" "--instance-name" "Blue Release" "--instance-color" "2196F3")
+  :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
+  :tags '(ores ui release)
+  :stop-signal 'sigint
+  :kill-process-buffer-on-stop t)
+
+(prodigy-define-service
+  :name "ORE Studio QT Red - Debug"
+  :cwd (concat (ores/path-to-publish 'debug) "/bin")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.red.log" "--compression-enabled" "--instance-name" "Red Debug" "--instance-color" "F44336")
+  :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
+  :tags '(ores ui debug)
+  :stop-signal 'sigint
+  :kill-process-buffer-on-stop t)
+
+(prodigy-define-service
+  :name "ORE Studio QT Red - Release"
+  :cwd (concat (ores/path-to-publish 'release) "/bin")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.red.log" "--compression-enabled" "--instance-name" "Red Release" "--instance-color" "F44336")
+  :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
+  :tags '(ores ui release)
+  :stop-signal 'sigint
+  :kill-process-buffer-on-stop t)
+
+(prodigy-define-service
+  :name "ORE Studio QT Green - Debug"
+  :cwd (concat (ores/path-to-publish 'debug) "/bin")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.green.log" "--compression-enabled" "--instance-name" "Green Debug" "--instance-color" "4CAF50")
+  :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
+  :tags '(ores ui debug)
+  :stop-signal 'sigint
+  :kill-process-buffer-on-stop t)
+
+(prodigy-define-service
+  :name "ORE Studio QT Green - Release"
+  :cwd (concat (ores/path-to-publish 'release) "/bin")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.green.log" "--compression-enabled" "--instance-name" "Green Release" "--instance-color" "4CAF50")
+  :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
+  :tags '(ores ui release)
+  :stop-signal 'sigint
+  :kill-process-buffer-on-stop t)
+
+(prodigy-define-service
   :name "ORE Studio Comms Service - Debug"
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
@@ -137,7 +191,7 @@ Includes database credentials and JWT secret from auth-source."
 (prodigy-define-service
   :name "ORE Studio HTTP Server - Debug"
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--port" "8081")
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.http.server")
   :tags '(ores debug http-server)
   :stop-signal 'sigint
@@ -146,7 +200,7 @@ Includes database credentials and JWT secret from auth-source."
 (prodigy-define-service
   :name "ORE Studio HTTP Server - Release"
   :cwd (concat (ores/path-to-publish 'release) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
+  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--port" "8081")
   :command (concat (ores/path-to-publish 'release) "/bin/ores.http.server")
   :tags '(ores release http-server)
   :stop-signal 'sigint

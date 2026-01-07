@@ -36,6 +36,8 @@
 #include <QIcon>
 #include <QFileDialog>
 #include <QSettings>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QStandardPaths>
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
@@ -53,6 +55,7 @@
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/TelemetrySettingsDialog.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
+#include "ores.utility/version/version.hpp"
 
 namespace ores::qt {
 
@@ -63,7 +66,8 @@ MainWindow::MainWindow(QWidget* parent) :
     eventBus_(std::make_shared<eventing::service::event_bus>()),
     clientManager_(new ClientManager(eventBus_, this)),
     imageCache_(new ImageCache(clientManager_, this)),
-    systemTrayIcon_(nullptr), trayContextMenu_(nullptr) {
+    systemTrayIcon_(nullptr), trayContextMenu_(nullptr),
+    instanceColorIndicator_(nullptr), eventViewerWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
@@ -170,9 +174,32 @@ MainWindow::MainWindow(QWidget* parent) :
     // Connect Event Viewer action
     connect(ui_->ActionEventViewer, &QAction::triggered, this, [this]() {
         BOOST_LOG_SEV(lg(), debug) << "Event Viewer action triggered";
-        auto* eventViewer = new EventViewerDialog(eventBus_, clientManager_, this);
-        eventViewer->setAttribute(Qt::WA_DeleteOnClose);
-        eventViewer->show();
+
+        // If window already exists, just activate it
+        if (eventViewerWindow_) {
+            eventViewerWindow_->showNormal();
+            mdiArea_->setActiveSubWindow(eventViewerWindow_);
+            return;
+        }
+
+        // Create the event viewer widget
+        auto* eventViewer = new EventViewerWindow(eventBus_, clientManager_, this);
+
+        // Wrap in MDI sub-window
+        eventViewerWindow_ = new DetachableMdiSubWindow();
+        eventViewerWindow_->setWidget(eventViewer);
+        eventViewerWindow_->setWindowTitle("Event Viewer");
+        eventViewerWindow_->setAttribute(Qt::WA_DeleteOnClose);
+        eventViewerWindow_->resize(1000, 600);
+
+        // Track window destruction
+        connect(eventViewerWindow_, &QObject::destroyed, this, [this]() {
+            eventViewerWindow_ = nullptr;
+        });
+
+        mdiArea_->addSubWindow(eventViewerWindow_);
+        allDetachableWindows_.append(eventViewerWindow_);
+        eventViewerWindow_->show();
     });
 
     // Connect recording signals
@@ -199,6 +226,8 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(clientManager_, &ClientManager::disconnected, this, &MainWindow::updateMenuState);
     connect(clientManager_, &ClientManager::disconnected, this, [this]() {
         ui_->statusbar->showMessage("Disconnected from server.", 5000);
+        username_.clear();
+        updateWindowTitle();
     });
     connect(clientManager_, &ClientManager::reconnecting, this, [this]() {
         connectionStatusIconLabel_->setPixmap(reconnectingIcon_.pixmap(16, 16));
@@ -369,6 +398,9 @@ MainWindow::MainWindow(QWidget* parent) :
                                    << x << ", " << y << ")";
     }
 
+    // Set initial window title (version only, no connection info yet)
+    updateWindowTitle();
+
     BOOST_LOG_SEV(lg(), info) << "Main window created.";
 }
 
@@ -441,6 +473,9 @@ void MainWindow::onLoginTriggered() {
         if (featureFlagController_) {
             featureFlagController_->setUsername(QString::fromStdString(username_));
         }
+
+        // Update window title with username and server info
+        updateWindowTitle();
 
         BOOST_LOG_SEV(lg(), info) << "Successfully connected and authenticated.";
         ui_->statusbar->showMessage("Successfully connected and logged in.");
@@ -775,6 +810,61 @@ void MainWindow::onSetRecordingDirectoryTriggered() {
     if (clientManager_) {
         clientManager_->setRecordingDirectory(newDir.toStdString());
     }
+}
+
+void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {
+    instanceName_ = name;
+    instanceColor_ = color;
+
+    BOOST_LOG_SEV(lg(), info) << "Instance info set: name='" << name.toStdString()
+                              << "', color=" << (color.isValid() ? color.name().toStdString() : "none");
+
+    // Create/update the status bar indicator if color is specified
+    if (color.isValid()) {
+        if (!instanceColorIndicator_) {
+            // Create a small colored indicator for the status bar
+            instanceColorIndicator_ = new QLabel(this);
+            instanceColorIndicator_->setFixedSize(16, 16);
+            // Insert before the connection status icon (at position 0 of permanent widgets)
+            ui_->statusbar->insertPermanentWidget(0, instanceColorIndicator_);
+        }
+
+        // Style as a colored circle with the instance color
+        instanceColorIndicator_->setStyleSheet(
+            QString("background-color: %1; border-radius: 8px; border: 1px solid rgba(255,255,255,50);")
+                .arg(color.name()));
+        instanceColorIndicator_->setToolTip(name.isEmpty() ? tr("Instance") : name);
+        instanceColorIndicator_->show();
+    } else if (instanceColorIndicator_) {
+        // Hide the indicator if no color specified
+        instanceColorIndicator_->hide();
+    }
+
+    updateWindowTitle();
+}
+
+void MainWindow::updateWindowTitle() {
+    QString title = QString("ORE Studio v%1").arg(ORES_VERSION);
+
+    // Add connection info if connected
+    if (clientManager_ && clientManager_->isConnected()) {
+        QString serverInfo = QString::fromStdString(clientManager_->serverAddress());
+        if (!username_.empty()) {
+            title += QString(" - %1@%2")
+                .arg(QString::fromStdString(username_))
+                .arg(serverInfo);
+        } else {
+            title += QString(" - %1").arg(serverInfo);
+        }
+    }
+
+    // Add instance name if set
+    if (!instanceName_.isEmpty()) {
+        title += QString(" [%1]").arg(instanceName_);
+    }
+
+    setWindowTitle(title);
+    BOOST_LOG_SEV(lg(), debug) << "Window title updated: " << title.toStdString();
 }
 
 }

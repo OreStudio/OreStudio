@@ -158,6 +158,7 @@ private slots:
     void onDeleteClicked();
     void onRevertClicked();
     void onFieldChanged();
+    void updatePasswordMatchIndicator();
 
 private:
     void updateSaveResetButtonState();

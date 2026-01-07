@@ -414,6 +414,10 @@ void AccountController::showDetailWindow(
     });
 
     mdiArea_->addSubWindow(detailWindow);
+
+    // Disable maximize button (account details is a fixed-size form)
+    detailWindow->setWindowFlags(detailWindow->windowFlags() & ~Qt::WindowMaximizeButtonHint);
+
     detailWindow->adjustSize();
     detailWindow->show();
 }
@@ -467,6 +471,10 @@ void AccountController::onOpenAccountVersion(
     });
 
     mdiArea_->addSubWindow(detailWindow);
+
+    // Disable maximize button (account details is a fixed-size form)
+    detailWindow->setWindowFlags(detailWindow->windowFlags() & ~Qt::WindowMaximizeButtonHint);
+
     detailWindow->adjustSize();
     detailWindow->show();
 }

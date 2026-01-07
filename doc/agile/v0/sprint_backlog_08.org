@@ -17,36 +17,37 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-06 Tue 11:47], for Tuesday, January 06, 2026.
-|      | <75>                              |        |      |      |       |
-| Tags | Headline                          | Time   |      |      |     % |
-|------+-----------------------------------+--------+------+------+-------|
-|      | *Total time*                      | *4:54* |      |      | 100.0 |
-|------+-----------------------------------+--------+------+------+-------|
-|      | Stories                           | 4:54   |      |      | 100.0 |
-|      | Active                            |        | 4:54 |      | 100.0 |
-| code | Review HTTP service               |        |      | 3:10 |  64.6 |
-| code | Assorted fixes to currency dialog |        |      | 1:44 |  35.4 |
+#+CAPTION: Clock summary at [2026-01-07 Wed 10:13], for Wednesday, January 07, 2026.
+|      | <75>                  |        |      |      |       |
+| Tags | Headline              | Time   |      |      |     % |
+|------+-----------------------+--------+------+------+-------|
+|      | *Total time*          | *1:02* |      |      | 100.0 |
+|------+-----------------------+--------+------+------+-------|
+|      | Stories               | 1:02   |      |      | 100.0 |
+|      | Active                |        | 1:02 |      | 100.0 |
+| code | Review telemetry work |        |      | 1:02 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-06 Tue 11:47]
+#+CAPTION: Clock summary at [2026-01-07 Wed 10:13]
 |       | <75>                                        |         |       |      |       |
 | Tags  | Headline                                    | Time    |       |      |     % |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                | *26:11* |       |      | 100.0 |
+|       | *Total time*                                | *33:25* |       |      | 100.0 |
 |-------+---------------------------------------------+---------+-------+------+-------|
-|       | Stories                                     | 26:11   |       |      | 100.0 |
-|       | Active                                      |         | 26:11 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       | 1:17 |   4.9 |
-| code  | Rerun SQL scripts from scratch              |         |       | 7:52 |  30.0 |
-| code  | Run qt client and validate all new features |         |       | 1:19 |   5.0 |
-| code  | Refactor options and parser                 |         |       | 0:27 |   1.7 |
-| code  | Check functionality in =ores.wt=            |         |       | 2:03 |   7.8 |
-| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       | 1:30 |   5.7 |
-| code  | Review HTTP service                         |         |       | 7:24 |  28.3 |
-| code  | Assorted fixes to currency dialog           |         |       | 4:19 |  16.5 |
+|       | Stories                                     | 33:25   |       |      | 100.0 |
+|       | Active                                      |         | 33:25 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       | 1:17 |   3.8 |
+| code  | Rerun SQL scripts from scratch              |         |       | 7:52 |  23.5 |
+| code  | Run qt client and validate all new features |         |       | 1:19 |   3.9 |
+| code  | Refactor options and parser                 |         |       | 0:27 |   1.3 |
+| code  | Check functionality in =ores.wt=            |         |       | 2:03 |   6.1 |
+| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       | 1:30 |   4.5 |
+| code  | Review HTTP service                         |         |       | 7:24 |  22.1 |
+| code  | Assorted fixes to currency dialog           |         |       | 4:19 |  12.9 |
+| code  | Review comms analyser work                  |         |       | 0:27 |   1.3 |
+| code  | Review telemetry work                       |         |       | 6:47 |  20.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -459,10 +460,107 @@ Need to check this works and add UI for it.
 
 *** STARTED Review telemetry work                                      :code:
     :LOGBOOK:
+    CLOCK: [2026-01-07 Wed 12:19]
+    CLOCK: [2026-01-07 Wed 10:45]--[2026-01-07 Wed 12:18] =>  1:33
+    CLOCK: [2026-01-07 Wed 10:14]--[2026-01-07 Wed 10:44] =>  0:30
+    CLOCK: [2026-01-07 Wed 09:11]--[2026-01-07 Wed 10:13] =>  1:02
+    CLOCK: [2026-01-06 Tue 22:45]--[2026-01-06 Tue 23:40] =>  0:55
+    CLOCK: [2026-01-06 Tue 19:10]--[2026-01-06 Tue 20:00] =>  0:50
     CLOCK: [2026-01-06 Tue 14:45]--[2026-01-06 Tue 18:45] =>  4:00
     :END:
 
 It seems we did not add database support for telemetry.
+
+Ores.QT:
+
+- logging about telemetry generates telemetry events. Done.
+- unknown in telemetry. Done.
+
+#+begin_src logviewer
+2026-01-07 12:03:24.195664 [INFO] [ores.telemetry.messaging.telemetry_message_handler] Persisted 29 telemetry log entries from unknown
+#+end_src
+
+- event viewer is always on top
+- can't see timestamps properly in event viewer. can't see event type.
+- make accounts dialog bigger. do not allow resizing.
+- update flag does not update cache in currency dialog.
+
+*** Event viewer review
+
+- cannot see account created events but can see currencies created.
+- when a user logs in or out it does not generate an event, should it?
+- saving new flag does not save it in server side.
+- non admin users can see roles, update feature flags.
+- account is locked due to many failed attempts: just say account is locked.
+- remove check box in main feature flags table.
+- replace the blurb in feature flags with a simple combo for enabled/disabled.
+- enabling feature flag does not show events in event viewer on any ores.qt,
+  reload does not go yellow.
+- can't add, delete etc for roles. Make dialog bigger, do not allow maximising.
+  Probably has no eventing.
+- cannot add or remove permissions for a role, cannot add new permissions (which
+  probably makes sense?)
+- cannot distinguish accounts created by user or by sign-up.
+
+*** Add support for offsets in pagination                              :code:
+
+Now available in vcpkg with all required features.
+
+At present we disabled pagination in UI because sqlgen does not support offset.
+We implemented this feature in sqlgen. When it is released to vcpkg we should
+update our code to use it.
+
+Remember also this:
+
+#+begin_src c++
+    // HACK: Using single connection instead of session because sqlgen sessions
+    // doesn't seem to support SELECT FROM with aggregations. Plain connections
+    // work fine. This is a temporary workaround until the sqlgen library is
+    // fixed. See: https://github.com/getml/sqlgen/issues/99
+    struct count_result {
+        long long count;
+    };
+#+end_src
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]
+- https://vcpkg.io/en/packages?query=sqlgen
+
+
+*** Locking an account should log user out                             :code:
+
+At present if you lock an account the user will remain logged in.
+
+*** Review of Wt                                                       :code:
+
+Problems:
+
+- no icons in website for the tab.
+- no flags in currencies in wt.
+- no way of knowing about reload (eventing) in wt. we should make the reload
+  button change colour?
+- currency edit window in wt is too large, can't see bottom of screen.
+- cannot edit account in wt.
+- iso code field too small, numeric code field too small
+- adding new account crashes wt. saving new currency crashes wt.
+
+#+begin_src
+[2026-Jan-07 12:16:08.080] 1050920 - [access] "wthttp: 127.0.0.1   POST /?wtd=kh0IzYWIDev5vqgQ HTTP/1.1 200 271"
+[2026-Jan-07 12:16:08.080] 1050920 - [info] "WebRequest: took 0.969 ms"
+#+end_src
+
+#+begin_src logviewer
+2026-01-07 12:16:15.578713 [TRACE] [ores.iam.repository.account_mapper] Mapping db entity: {"id":"019b9856-215c-7fd4-b139-11821e39d80a","version":1,"username":"newuser3","password_hash":"$scrypt$ln=14,r=8,p=1$wcZS3a7UEPEz8RBhIuOWIA==$vFYxagrQLQ1FXzMhP1u1D4xMJF2G4HMMsmoOxpRsdwYjSChBIsGiuA92cD8dPODlSYoG9uiX6SohLcUaZNUUUg==","password_salt":"","totp_secret":"","email":"newuser3@example.com","modified_by":"bootstrap","valid_from":"2026-01-07 12:02:20","valid_to":"9999-12-31 23:59:59"}
+2026-01-07 12:16:15.578787 [TRACE] [ores.iam.repository.account_mapper] Mapped db entity. Result: {"version":1,"id":"019b9856-215c-7fd4-b139-11821e39d80a","recorded_by":"bootstrap","username":"newuser3","password_hash":"$scrypt$ln=14,r=8,p=1$wcZS3a7UEPEz8RBhIuOWIA==$vFYxagrQLQ1FXzMhP1u1D4xMJF2G4HMMsmoOxpRsdwYjSChBIsGiuA92cD8dPODlSYoG9uiX6SohLcUaZNUUUg==","password_salt":"","totp_secret":"","email":"newuser3@example.com","recorded_at":"2026-01-07 12:02:20.000000000Z"}
+2026-01-07 12:16:15.578866 [DEBUG] [ores.iam.repository.account_mapper] Mapped db entities.
+2026-01-07 12:16:15.578895 [DEBUG] [ores.iam.repository.login_info_repository] Reading all login_info.
+2026-01-07 12:16:15.579395 [DEBUG] [ores.iam.repository.login_info_repository] Read all login_info. Total: 1
+2026-01-07 12:16:15.579436 [DEBUG] [ores.iam.repository.login_info_mapper] Mapping db entities. Total: 1
+2026-01-07 12:16:15.579465 [TRACE] [ores.iam.repository.login_info_mapper] Mapping db entity: {"account_id":"019b9856-215c-7fd4-b139-11821e39d80a","last_ip":"127.0.0.1","last_attempt_ip":"127.0.0.1","failed_logins":0,"locked":0,"last_login":"2026-01-07 12:14:01","online":1,"password_reset_required":0}
+2026-01-07 12:16:15.579519 [TRACE] [ores.iam.repository.login_info_mapper] Mapped db entity. Result: {"last_login":"2026-01-07 12:14:01.000000000Z","account_id":"019b9856-215c-7fd4-b139-11821e39d80a","failed_logins":0,"locked":false,"online":true,"password_reset_required":false,"last_ip":"127.0.0.1","last_attempt_ip":"127.0.0.1"}
+2026-01-07 12:16:15.579585 [DEBUG] [ores.iam.repository.login_info_mapper] Mapped db entities.
+#+end_src
 
 *** Disconnect shows reconnect message                                 :code:
 

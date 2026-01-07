@@ -102,6 +102,12 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     connect(ui_->confirmPasswordEdit, &QLineEdit::textChanged, this,
         &AccountDetailDialog::onFieldChanged);
 
+    // Connect password fields for match indicator
+    connect(ui_->passwordEdit, &QLineEdit::textChanged, this,
+        &AccountDetailDialog::updatePasswordMatchIndicator);
+    connect(ui_->confirmPasswordEdit, &QLineEdit::textChanged, this,
+        &AccountDetailDialog::updatePasswordMatchIndicator);
+
     // Hide isAdminCheckBox - admin privileges are now managed via RBAC role assignments
     ui_->isAdminCheckBox->setVisible(false);
 
@@ -722,6 +728,28 @@ void AccountDetailDialog::markAsStale() {
 
 QString AccountDetailDialog::accountId() const {
     return QString::fromStdString(boost::uuids::to_string(currentAccount_.id));
+}
+
+void AccountDetailDialog::updatePasswordMatchIndicator() {
+    const QString password = ui_->passwordEdit->text();
+    const QString confirmPassword = ui_->confirmPasswordEdit->text();
+
+    // Only show indicator when confirm field has content
+    if (confirmPassword.isEmpty()) {
+        // Reset to default style
+        ui_->confirmPasswordEdit->setStyleSheet("");
+        return;
+    }
+
+    if (password == confirmPassword) {
+        // Green border for matching passwords
+        ui_->confirmPasswordEdit->setStyleSheet(
+            "QLineEdit { border: 2px solid #4CAF50; }");
+    } else {
+        // Orange/red border for non-matching passwords
+        ui_->confirmPasswordEdit->setStyleSheet(
+            "QLineEdit { border: 2px solid #FF9800; }");
+    }
 }
 
 }

@@ -22,7 +22,7 @@ All requests in this file inherit from this base URL.
   :header-args:verb: :exports both
   :END:
 
-template http://localhost:8080/api/v1
+template http://localhost:8081/api/v1
 
 ** Authentication                                                      :verb:
 
@@ -77,7 +77,7 @@ Access-Control-Allow-Origin: *
 {
   "success": true,
   "error_message": "",
-  "account_id": "019b90fe-877e-7d3c-8f85-7980d0a96c8d"
+  "account_id": "019b9856-215c-7fd4-b139-11821e39d80a"
 }
 #+end_src
 
@@ -100,17 +100,17 @@ Content-Type: application/json
 #+begin_src json
 HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 556
+Content-Length: 592
 Server: ores-http-server-v1
 Access-Control-Allow-Origin: *
 
 {
   "success": true,
-  "account_id": "019b90fe-877e-7d3c-8f85-7980d0a96c8d",
+  "account_id": "019b9856-215c-7fd4-b139-11821e39d80a",
   "username": "newuser3",
   "email": "newuser3@example.com",
   "password_reset_required": false,
-  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMTliOTBmZS04NzdlLTdkM2MtOGY4NS03OTgwZDBhOTZjOGQiLCJpYXQiOjE3Njc2NjQxNjIsImV4cCI6MTc2Nzc1MDU2MiwiaXNzIjoib3JlcyIsImF1ZCI6Im9yZXMtYXBpIiwicm9sZXMiOlsiQWRtaW4iXSwidXNlcm5hbWUiOiJuZXd1c2VyMyIsImVtYWlsIjoibmV3dXNlcjNAZXhhbXBsZS5jb20iLCJzZXNzaW9uX2lkIjoiNWRhODA2ODYtYzQxMS00OWVmLTkzMGQtM2RkMjFmNmE2YjVlIn0.KLary7Fy_6iXGu8qQsBjABjee7wHGTWz1GfU-tzFLTQ"
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMTliOTg1Ni0yMTVjLTdmZDQtYjEzOS0xMTgyMWUzOWQ4MGEiLCJpYXQiOjE3Njc3ODg1MzYsImV4cCI6MTc2Nzg3NDkzNiwiaXNzIjoib3JlcyIsImF1ZCI6Im9yZXMtYXBpIiwicm9sZXMiOlsiQWRtaW4iXSwidXNlcm5hbWUiOiJuZXd1c2VyMyIsImVtYWlsIjoibmV3dXNlcjNAZXhhbXBsZS5jb20iLCJzZXNzaW9uX2lkIjoiM2IyMTUzYmYtNWM0ZS00Yzg3LWE2ODMtZjY4NWE5OTk5MzFkIiwic2Vzc2lvbl9zdGFydCI6MTc2Nzc4ODUzNn0.xg6PT_c59qYsgKniBfdP_TIKyAwkv0bNOOi3d4Yu8aU"
 }
 #+end_src
 
@@ -215,20 +215,22 @@ Content-Type: application/json
 Authorization: Bearer {{(verb-var token)}}
 
 {
-    "username": "testuser",
-    "email": "testuser@example.com",
-    "password": "TestP@ss789"
+    "username": "newuser10",
+    "email": "newuser10@example.com",
+    "password": "Secure-Password-123"
 }
 #+end_src
 
 #+RESULTS:
 #+begin_src json
-HTTP/1.1 403 Forbidden
+HTTP/1.1 400 Bad Request
 Content-Type: application/json
-Content-Length: 36
+Content-Length: 32
+Server: ores-http-server-v1
+Access-Control-Allow-Origin: *
 
 {
-  "error": "Insufficient permissions"
+  "error": "Invalid request body"
 }
 #+end_src
 

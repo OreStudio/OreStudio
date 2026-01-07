@@ -63,7 +63,6 @@ UPDATE 1
 DROP DATABASE
 DROP DATABASE
 DROP DATABASE
-DROP DATABASE
 DROP ROLE
 #+end_example
 
@@ -231,6 +230,9 @@ CREATE INDEX
 CREATE FUNCTION
 CREATE TRIGGER
 SET
+CREATE FUNCTION
+CREATE TRIGGER
+SET
 CREATE TABLE
 CREATE INDEX
 CREATE INDEX
@@ -243,6 +245,20 @@ CREATE INDEX
 DO
 SET
 DO
+CREATE FUNCTION
+CREATE FUNCTION
+SET
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+DO
+SET
+DO
+CREATE FUNCTION
+CREATE FUNCTION
 CREATE FUNCTION
 CREATE FUNCTION
 SET
@@ -356,8 +372,8 @@ ores_frosty_leaf
 
 *** With Specific Name
 
-#+begin_src sh :wrap example
-psql -U postgres -v db_name='my_ores_db' -f projects/ores.sql/create_instance.sql
+#+begin_src sh :database template1 :results output :wrap example
+psql -U postgres -v db_name='ores_frosty_leaf' -f projects/ores.sql/create_instance.sql
 #+end_src
 
 * Recipes
@@ -705,17 +721,17 @@ SET
 CREATE FUNCTION
 CREATE FUNCTION
 upsert_role
-9918838a-c7a0-4dc2-8e56-e51e91882413
+d7aed9b2-4ff5-4c2c-9896-515b8e9495fc
 upsert_role
-7bb325f2-6fdb-46d4-ae6b-ee7b578502e9
+3f4a4fec-7f8d-467d-aa8f-4a115beb31cf
 upsert_role
-4e9b437f-d47d-4602-8f0b-8bbadf9ca437
+c9ff75b9-e043-495f-8e5e-e33dfb4f768e
 upsert_role
-4914fa49-fbba-46cf-bcdb-9ecdeecac0a7
+eb406e9b-dd1e-4b56-a243-e0e7aff713ea
 upsert_role
-f26d3939-c4c5-4d2a-8107-de019899f014
+4280845f-ce87-4c2e-9d83-bdf0ca9ab07a
 upsert_role
-3cd1d7b3-76fe-4f96-bca2-27f05381d4ca
+a457bb0f-d5f0-4f05-978c-f0b5663747c8
 assign_permission_to_role
 
 assign_permission_to_role

@@ -68,6 +68,7 @@ private slots:
     void onSaveEmailResult(bool success, const QString& error_message);
     void onViewSessionsClicked();
     void onCloseClicked();
+    void updatePasswordMatchIndicator();
 
 signals:
     void changePasswordCompleted(bool success, const QString& error_message);

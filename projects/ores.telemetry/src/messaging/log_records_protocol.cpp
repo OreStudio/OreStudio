@@ -203,15 +203,18 @@ submit_log_records_request::deserialize(std::span<const std::byte> data) {
         }
 
         /*
-         * Service name - we read it but don't store it as we don't
-         * reconstruct the full resource on the server side.
+         * Service name - reconstruct a minimal resource to preserve the
+         * source_name for the handler to use.
          */
         auto service_result = reader::read_string(data);
         if (!service_result) {
             return std::unexpected(service_result.error());
         }
-        // Note: service_name is dropped - the server will use its own
-        // resource assignment for storage.
+        if (!service_result->empty()) {
+            auto res = std::make_shared<domain::resource>();
+            res->attrs["service.name"] = *service_result;
+            rec.source_resource = res;
+        }
 
         request.records.push_back(std::move(rec));
     }

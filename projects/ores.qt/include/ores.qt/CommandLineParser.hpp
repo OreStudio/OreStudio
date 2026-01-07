@@ -24,6 +24,8 @@
 #include <optional>
 #include <QCoreApplication>
 #include <QCommandLineParser>
+#include <QString>
+#include <QColor>
 #include "ores.telemetry/log/logging_options.hpp"
 
 namespace ores::qt {
@@ -78,6 +80,26 @@ public:
      * @return Compression support bitmask
      */
     [[nodiscard]] std::uint8_t supportedCompression() const;
+
+    /**
+     * @brief Get the instance name for identifying this application instance.
+     *
+     * Used when running multiple instances for testing or debugging.
+     * Returns empty string if not specified.
+     *
+     * @return Instance name or empty string
+     */
+    [[nodiscard]] QString instanceName() const;
+
+    /**
+     * @brief Get the instance color for the title bar.
+     *
+     * Returns the color specified via --instance-color as a QColor.
+     * Returns an invalid color (QColor()) if not specified.
+     *
+     * @return Instance color or invalid QColor
+     */
+    [[nodiscard]] QColor instanceColor() const;
 
 private:
     void setupOptions();

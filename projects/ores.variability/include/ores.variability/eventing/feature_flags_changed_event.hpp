@@ -21,6 +21,8 @@
 #define ORES_VARIABILITY_EVENTING_FEATURE_FLAGS_CHANGED_EVENT_HPP
 
 #include <chrono>
+#include <vector>
+#include <string>
 #include "ores.eventing/domain/event_traits.hpp"
 
 namespace ores::variability::eventing {
@@ -30,7 +32,8 @@ namespace ores::variability::eventing {
  *
  * This event is published when any feature flag entity is created, updated,
  * or deleted in the database. Subscribers can use the timestamp to query for
- * changes since that point.
+ * changes since that point, and the flag_names to identify which specific
+ * flags were affected.
  */
 struct feature_flags_changed_event final {
     /**
@@ -40,6 +43,14 @@ struct feature_flags_changed_event final {
      * that have changed since this point.
      */
     std::chrono::system_clock::time_point timestamp;
+
+    /**
+     * @brief Names of feature flags that changed.
+     *
+     * Contains the names of flags that were created, updated, or deleted.
+     * May contain multiple names for batch operations.
+     */
+    std::vector<std::string> flag_names;
 };
 
 }

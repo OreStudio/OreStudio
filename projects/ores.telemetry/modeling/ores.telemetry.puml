@@ -356,7 +356,20 @@ namespace ores #F2F2F2 {
         }
 
         namespace messaging #E8D4F4 {
-            note "Protocol messages for server-side\ntelemetry persistence." as messaging_note
+            note "Protocol messages for server-side telemetry persistence.\nUses ores::utility::serialization for binary I/O." as messaging_note
+
+            class submit_log_records_request <<message>> #E1F5FF {
+                +{field} records : vector<log_record>
+                --
+                +serialize() : vector<byte>
+                {static} +deserialize(data) : expected<submit_log_records_request, error_code>
+            }
+            note right of submit_log_records_request
+                Fire-and-forget batched log record submission.
+                Uses ores::utility::serialization::reader and
+                ores::utility::serialization::writer for binary I/O.
+                Error codes from ores::utility::serialization::error_code.
+            end note
 
             class submit_telemetry_response <<struct>> {
                 +success : bool
@@ -400,6 +413,7 @@ namespace ores #F2F2F2 {
                 {static} +deserialize(data) : expected
             }
 
+            submit_log_records_request o-- domain::log_record
             get_telemetry_logs_request o-- domain::telemetry_query
             get_telemetry_logs_response o-- domain::telemetry_log_entry
             get_telemetry_stats_request o-- domain::telemetry_stats_query

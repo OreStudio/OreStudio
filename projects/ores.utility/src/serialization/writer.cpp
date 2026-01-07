@@ -17,19 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/writer.hpp"
 
 #include <cstring>
-#include <expected>
 
-namespace ores::comms::messaging {
+namespace ores::utility::serialization {
 
 void writer::write_uint8(std::vector<std::byte>& buffer, std::uint8_t value) {
     buffer.push_back(static_cast<std::byte>(value));
 }
 
-void writer::
-write_uint16(std::vector<std::byte>& buffer, std::uint16_t value) {
+void writer::write_uint16(std::vector<std::byte>& buffer, std::uint16_t value) {
     buffer.push_back(static_cast<std::byte>(value >> 8));
     buffer.push_back(static_cast<std::byte>(value & 0xFF));
 }
@@ -72,7 +70,8 @@ void writer::write_string(std::vector<std::byte>& buffer, const std::string& str
     std::memcpy(buffer.data() + offset, str.data(), len);
 }
 
-void writer::write_uuid(std::vector<std::byte>& buffer, const boost::uuids::uuid& uuid) {
+void writer::write_uuid(std::vector<std::byte>& buffer,
+    const boost::uuids::uuid& uuid) {
     auto offset = buffer.size();
     buffer.resize(offset + uuid.size());
     std::memcpy(buffer.data() + offset, uuid.data(), uuid.size());

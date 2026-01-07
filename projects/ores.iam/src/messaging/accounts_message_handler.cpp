@@ -27,6 +27,7 @@
 #include "ores.iam/messaging/authorization_protocol.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
 #include "ores.iam/service/signup_service.hpp"
+#include "ores.iam/service/session_converter.hpp"
 #include "ores.iam/domain/permission.hpp"
 #include "ores.iam/domain/role.hpp"
 
@@ -322,7 +323,9 @@ handle_login_request(std::span<const std::byte> payload,
         }
 
         // Store session in shared session service for authorization
-        sessions_->store_session_data(remote_address, sess);
+        // Convert to comms::service::session_data for storage
+        sessions_->store_session_data(remote_address,
+            service::session_converter::to_session_data(*sess));
 
         login_response response{
             .success = true,

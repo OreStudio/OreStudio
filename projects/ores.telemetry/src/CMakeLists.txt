@@ -42,14 +42,13 @@ set_target_properties(${lib_target_name}
 
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/include
-    # Header-only dependency on ores.comms for error_code type in protocol header.
-    # We do NOT use ores.comms reader/writer implementations to avoid circular
-    # dependency (ores.telemetry -> ores.eventing -> ores.comms).
+    # Header-only include for telemetry_protocol.hpp which uses comms message types
     ${CMAKE_SOURCE_DIR}/projects/ores.comms/include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.logging.lib
+        ores.utility.lib
         # NOTE: ores.database.lib dependency removed to break circular dependency.
         # Repository files are compiled in ores.comms.service instead.
     INTERFACE

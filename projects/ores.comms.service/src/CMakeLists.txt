@@ -28,14 +28,14 @@ file(GLOB_RECURSE files RELATIVE
 # to break the circular dependency (telemetry <-> database).
 # TODO: This is a workaround - telemetry's dual responsibility (logging infra +
 # persistence) should be separated into different components.
-set(telemetry_repo_files
+set(telemetry_extra_files
     ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/src/repository/telemetry_repository.cpp
     ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/src/repository/telemetry_mapper.cpp
     ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/src/repository/telemetry_entity.cpp)
 
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")
-list(APPEND lib_files ${telemetry_repo_files})
+list(APPEND lib_files ${telemetry_extra_files})
 
 add_library(${lib_target_name} ${lib_files})
 set_target_properties(${lib_target_name} PROPERTIES

@@ -34,9 +34,11 @@
 // Forward declarations for enum types that need custom reflectors
 // to avoid GCC 15 std::min/max type deduction errors in rfl's
 // internal enum range detection.
+namespace ores::utility::serialization {
+    enum class error_code : std::uint16_t;
+}
 namespace ores::comms::messaging {
     enum class compression_type : std::uint8_t;
-    enum class error_code;
     enum class message_type;
 }
 
@@ -152,25 +154,25 @@ struct Reflector<ores::comms::messaging::compression_type> {
 };
 
 /**
- * @brief Custom reflector for ores::comms::messaging::error_code.
+ * @brief Custom reflector for ores::utility::serialization::error_code.
  *
  * Serializes as underlying integer type to avoid GCC 15 compilation errors
  * in rfl's internal enum range detection (std::min/max type mismatch).
  */
 template<>
-struct Reflector<ores::comms::messaging::error_code> {
+struct Reflector<ores::utility::serialization::error_code> {
     using ReflType = std::uint16_t;
 
-    static ores::comms::messaging::error_code to(const ReflType& v) {
+    static ores::utility::serialization::error_code to(const ReflType& v) {
         // Valid values: none=0x0000 through payload_incomplete=0x0019
         if (v > 0x0019) {
             throw std::runtime_error("Invalid value for error_code enum: " +
                                      std::to_string(v));
         }
-        return static_cast<ores::comms::messaging::error_code>(v);
+        return static_cast<ores::utility::serialization::error_code>(v);
     }
 
-    static ReflType from(const ores::comms::messaging::error_code& v) {
+    static ReflType from(const ores::utility::serialization::error_code& v) {
         return static_cast<ReflType>(v);
     }
 };

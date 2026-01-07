@@ -166,20 +166,50 @@ void ClientAccountModel::refresh(bool replace) {
         }
     }
 
+    fetch_accounts(offset, page_size_);
+}
+
+void ClientAccountModel::load_page(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
+
+    if (is_fetching_) {
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring load_page request.";
+        return;
+    }
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load page: disconnected.";
+        return;
+    }
+
+    // Clear existing data and load the requested page
+    if (!accounts_.empty()) {
+        beginResetModel();
+        accounts_.clear();
+        recent_usernames_.clear();
+        pulse_timer_->stop();
+        pulse_count_ = 0;
+        pulse_state_ = false;
+        endResetModel();
+    }
+
+    fetch_accounts(offset, limit);
+}
+
+void ClientAccountModel::fetch_accounts(std::uint32_t offset, std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientAccountModel> self = this;
-    const std::uint32_t page_size = page_size_;
 
     QFuture<FutureWatcherResult> future =
-        QtConcurrent::run([self, offset, page_size]() -> FutureWatcherResult {
+        QtConcurrent::run([self, offset, limit]() -> FutureWatcherResult {
             BOOST_LOG_SEV(lg(), debug) << "Making an accounts request with offset="
-                                       << offset << ", limit=" << page_size;
+                                       << offset << ", limit=" << limit;
             if (!self) return {false, {}, {}, 0};
 
             // Fetch accounts using typed request
             iam::messaging::list_accounts_request accounts_request;
             accounts_request.offset = offset;
-            accounts_request.limit = page_size;
+            accounts_request.limit = limit;
 
             auto accounts_result = self->clientManager_->
                 process_authenticated_request(std::move(accounts_request));

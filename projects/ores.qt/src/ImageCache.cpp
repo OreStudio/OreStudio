@@ -19,12 +19,16 @@
  */
 #include "ores.qt/ImageCache.hpp"
 
+#include <algorithm>
 #include <QtConcurrent>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.assets/messaging/assets_protocol.hpp"
-#include "ores.assets/eventing/assets_changed_event.hpp"
+#include "ores.risk/messaging/currency_protocol.hpp"
+#include "ores.risk/eventing/currency_changed_event.hpp"
 
 namespace ores::qt {
 
@@ -55,9 +59,9 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
     connect(all_available_watcher_, &QFutureWatcher<ImagesResult>::finished,
         this, &ImageCache::onAllAvailableImagesLoaded);
 
-    // Subscribe to asset change events to invalidate cache on external changes
+    // Subscribe to currency change events to invalidate cache when flags change
     const std::string event_name = std::string{
-        eventing::domain::event_traits<assets::eventing::assets_changed_event>::name};
+        eventing::domain::event_traits<risk::eventing::currency_changed_event>::name};
 
     connect(clientManager_, &ClientManager::notificationReceived,
             this, &ImageCache::onNotificationReceived);
@@ -65,20 +69,20 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
     // Subscribe to events when connected
     connect(clientManager_, &ClientManager::connected,
             this, [this, event_name]() {
-        BOOST_LOG_SEV(lg(), info) << "Subscribing to asset change events";
+        BOOST_LOG_SEV(lg(), info) << "Subscribing to currency change events for flag updates";
         clientManager_->subscribeToEvent(event_name);
     });
 
     // Re-subscribe after reconnection
     connect(clientManager_, &ClientManager::reconnected,
             this, [this, event_name]() {
-        BOOST_LOG_SEV(lg(), info) << "Re-subscribing to asset change events after reconnect";
+        BOOST_LOG_SEV(lg(), info) << "Re-subscribing to currency change events after reconnect";
         clientManager_->subscribeToEvent(event_name);
     });
 
     // If already connected, subscribe now
     if (clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to asset change events";
+        BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to currency change events";
         clientManager_->subscribeToEvent(event_name);
     }
 }
@@ -99,20 +103,23 @@ void ImageCache::loadCurrencyMappings() {
 
     QFuture<MappingsResult> future =
         QtConcurrent::run([self]() -> MappingsResult {
-            BOOST_LOG_SEV(lg(), debug) << "Fetching currency-image mappings.";
+            BOOST_LOG_SEV(lg(), debug) << "Fetching currencies to extract image_id mappings.";
             if (!self) return {false, {}};
 
-            assets::messaging::get_currency_images_request request;
+            // Fetch all currencies (we just need iso_code and image_id)
+            risk::messaging::get_currencies_request request;
+            request.offset = 0;
+            request.limit = 10000;  // Large limit to get all currencies
             auto payload = request.serialize();
 
-            frame request_frame(message_type::get_currency_images_request,
+            frame request_frame(message_type::get_currencies_request,
                 0, std::move(payload));
 
             auto response_result =
                 self->clientManager_->sendRequest(std::move(request_frame));
 
             if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send currency images request: "
+                BOOST_LOG_SEV(lg(), error) << "Failed to send currencies request: "
                                            << response_result.error();
                 return {false, {}};
             }
@@ -125,17 +132,26 @@ void ImageCache::loadCurrencyMappings() {
             }
 
             auto response =
-                assets::messaging::get_currency_images_response::deserialize(*payload_result);
+                risk::messaging::get_currencies_response::deserialize(*payload_result);
 
             if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize currency images response.";
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize currencies response.";
                 return {false, {}};
             }
 
-            BOOST_LOG_SEV(lg(), debug) << "Received " << response->currency_images.size()
-                                       << " currency-image mappings.";
+            // Extract iso_code -> image_id mappings from currencies
+            std::unordered_map<std::string, std::string> mappings;
+            for (const auto& currency : response->currencies) {
+                if (currency.image_id) {
+                    mappings[currency.iso_code] = boost::uuids::to_string(*currency.image_id);
+                }
+            }
 
-            return {true, std::move(response->currency_images)};
+            BOOST_LOG_SEV(lg(), debug) << "Extracted " << mappings.size()
+                                       << " currency-image mappings from "
+                                       << response->currencies.size() << " currencies.";
+
+            return {true, std::move(mappings)};
         });
 
     mappings_watcher_->setFuture(future);
@@ -146,11 +162,8 @@ void ImageCache::onMappingsLoaded() {
 
     auto result = mappings_watcher_->result();
     if (result.success) {
-        // Store mappings
-        currency_to_image_id_.clear();
-        for (const auto& mapping : result.mappings) {
-            currency_to_image_id_[mapping.iso_code] = mapping.image_id;
-        }
+        // Store mappings (already in the right format)
+        currency_to_image_id_ = std::move(result.mappings);
 
         BOOST_LOG_SEV(lg(), info) << "Loaded " << currency_to_image_id_.size()
                                   << " currency-image mappings.";
@@ -591,40 +604,80 @@ void ImageCache::setCurrencyImage(const std::string& iso_code,
                                        << " -> " << (req_image_id.empty() ? "(none)" : req_image_id);
             if (!self) return {false, req_iso_code, "Widget destroyed"};
 
-            assets::messaging::set_currency_image_request request;
-            request.iso_code = req_iso_code;
-            request.image_id = req_image_id;
-            request.assigned_by = req_assigned_by;
-            auto payload = request.serialize();
+            // Step 1: Fetch currencies (protocol doesn't support filtering by iso_code)
+            risk::messaging::get_currencies_request get_request;
+            get_request.offset = 0;
+            get_request.limit = 10000;  // Large limit to get all currencies
+            auto get_payload = get_request.serialize();
 
-            frame request_frame(message_type::set_currency_image_request,
-                0, std::move(payload));
+            frame get_frame(message_type::get_currencies_request, 0, std::move(get_payload));
 
-            auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
-
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send set currency image request: "
-                                           << response_result.error();
-                return {false, req_iso_code, "Failed to communicate with server"};
+            auto get_response_result = self->clientManager_->sendRequest(std::move(get_frame));
+            if (!get_response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to fetch currencies: "
+                                           << get_response_result.error();
+                return {false, req_iso_code, "Failed to fetch currencies"};
             }
 
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
-                                           << payload_result.error();
+            auto get_payload_result = get_response_result->decompressed_payload();
+            if (!get_payload_result) {
                 return {false, req_iso_code, "Failed to decompress response"};
             }
 
-            auto response =
-                assets::messaging::set_currency_image_response::deserialize(*payload_result);
-
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize set currency image response.";
-                return {false, req_iso_code, "Invalid server response"};
+            auto get_response =
+                risk::messaging::get_currencies_response::deserialize(*get_payload_result);
+            if (!get_response) {
+                return {false, req_iso_code, "Invalid currencies response"};
             }
 
-            return {response->success, req_iso_code, response->message};
+            // Find the currency with matching iso_code
+            auto it = std::find_if(get_response->currencies.begin(), get_response->currencies.end(),
+                [&req_iso_code](const auto& c) { return c.iso_code == req_iso_code; });
+
+            if (it == get_response->currencies.end()) {
+                return {false, req_iso_code, "Currency not found"};
+            }
+
+            // Step 2: Update the image_id
+            auto currency = *it;
+            if (req_image_id.empty()) {
+                currency.image_id = std::nullopt;
+            } else {
+                currency.image_id = boost::lexical_cast<boost::uuids::uuid>(req_image_id);
+            }
+            currency.recorded_by = req_assigned_by;
+
+            // Step 3: Save the updated currency
+            risk::messaging::save_currency_request save_request;
+            save_request.currency = currency;
+            auto save_payload = save_request.serialize();
+
+            frame save_frame(message_type::save_currency_request, 0, std::move(save_payload));
+
+            auto save_response_result = self->clientManager_->sendRequest(std::move(save_frame));
+            if (!save_response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to save currency: "
+                                           << save_response_result.error();
+                return {false, req_iso_code, "Failed to save currency"};
+            }
+
+            auto save_payload_result = save_response_result->decompressed_payload();
+            if (!save_payload_result) {
+                return {false, req_iso_code, "Failed to decompress save response"};
+            }
+
+            auto save_response =
+                risk::messaging::save_currency_response::deserialize(*save_payload_result);
+            if (!save_response) {
+                return {false, req_iso_code, "Invalid save response"};
+            }
+
+            if (save_response->success) {
+                BOOST_LOG_SEV(lg(), info) << "Currency image updated: " << req_iso_code
+                                          << " -> " << (req_image_id.empty() ? "(none)" : req_image_id);
+            }
+
+            return {save_response->success, req_iso_code, save_response->message};
         });
 
     set_currency_image_watcher_->setFuture(future);
@@ -736,12 +789,12 @@ std::string ImageCache::getCurrencyImageId(const std::string& iso_code) const {
 void ImageCache::onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
                                          const QStringList& entityIds) {
     static const std::string event_name = std::string{
-        eventing::domain::event_traits<assets::eventing::assets_changed_event>::name};
+        eventing::domain::event_traits<risk::eventing::currency_changed_event>::name};
     if (eventType.toStdString() != event_name) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Assets changed event received at "
+    BOOST_LOG_SEV(lg(), info) << "Currency changed event received at "
                               << timestamp.toString(Qt::ISODate).toStdString()
                               << " for " << entityIds.size() << " currencies.";
 

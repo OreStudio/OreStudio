@@ -34,6 +34,7 @@ create table if not exists "ores"."currencies" (
     "rounding_precision" integer not null,
     "format" text not null,
     "currency_type" text not null,
+    "image_id" uuid,  -- Optional reference to flag image in images table
     "modified_by" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,

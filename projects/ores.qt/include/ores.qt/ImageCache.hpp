@@ -28,7 +28,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.assets/domain/image.hpp"
-#include "ores.assets/domain/currency_image.hpp"
 #include "ores.assets/messaging/assets_protocol.hpp"
 
 namespace ores::qt {
@@ -235,7 +234,7 @@ private:
 
     struct MappingsResult {
         bool success;
-        std::vector<assets::domain::currency_image> mappings;
+        std::unordered_map<std::string, std::string> mappings;  // iso_code -> image_id
     };
 
     struct ImagesResult {

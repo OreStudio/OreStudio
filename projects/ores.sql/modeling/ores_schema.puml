@@ -218,6 +218,7 @@ package "Assets (Images & Currencies)" #F3E5F5 {
         * rounding_precision : integer
         * format : text
         * currency_type : text
+        image_id : uuid <<FK>>
         * modified_by : text
         * valid_from : timestamptz
         * valid_to : timestamptz
@@ -225,21 +226,8 @@ package "Assets (Images & Currencies)" #F3E5F5 {
 
     note right of currencies
     ISO 4217 currency definitions.
-    Includes formatting rules.
-    end note
-
-    entity currency_images <<junction>> #ECECEC {
-        * iso_code : text <<PK, FK>>
-        * valid_from : timestamptz <<PK>>
-        --
-        * image_id : uuid <<FK>>
-        * assigned_by : text
-        * assigned_at : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note bottom of currency_images
-    One-to-one: currency to primary image (flag).
+    Includes formatting rules and
+    optional flag image reference.
     end note
 }
 
@@ -281,8 +269,7 @@ permissions ||--o{ role_permissions : "included in"
 ' Assets relationships
 images ||--o{ image_tags : "tagged with"
 tags ||--o{ image_tags : "applied to"
-currencies ||--o| currency_images : "displayed as"
-images ||--o{ currency_images : "represents"
+currencies }o--o| images : "displayed as"
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores_schema.puml"

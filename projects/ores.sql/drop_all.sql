@@ -18,7 +18,6 @@
  *
  */
 \ir ./template/database_functions_drop.sql
-\ir ./drop/currency_images_drop.sql
 \ir ./drop/image_tags_drop.sql
 \ir ./drop/tags_drop.sql
 \ir ./drop/images_drop.sql

@@ -36,8 +36,7 @@ The ORES database is organised into four domains:
 - =images= (temporal): SVG image storage with version tracking
 - =tags= (temporal): image categories (flag, currency, commodity)
 - =image_tags= (junction): many-to-many image-to-tag mapping
-- =currencies= (temporal): ISO 4217 currency definitions with formatting
-- =currency_images= (junction): one-to-one currency to primary image (flag)
+- =currencies= (temporal): ISO 4217 currency definitions with formatting and optional image_id for flags
 
 ** Variability (Feature Flags)
 
@@ -242,7 +241,7 @@ Scripts run after creating an instance from template:
 Large reference data files loaded into the template:
 
 - =currencies_populate.sql= - ISO 4217 currency data (100+ currencies)
-- =currency_images_populate.sql= - Currency-to-flag image mappings
+- =currency_images_populate.sql= - Sets image_id on currencies to link to flag images
 - =flags_populate.sql= - Country flag SVG inline data
 - =flags/= - Source SVG files for country flags
 

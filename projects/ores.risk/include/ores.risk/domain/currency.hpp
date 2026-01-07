@@ -22,6 +22,8 @@
 
 #include <chrono>
 #include <string>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
 
 namespace ores::risk::domain {
 
@@ -81,6 +83,11 @@ struct currency final {
      * @brief Type classification (e.g., fiat, crypto, major, minor, etc.).
      */
     std::string currency_type;
+
+    /**
+     * @brief Optional reference to a flag image in the images table.
+     */
+    std::optional<boost::uuids::uuid> image_id;
 
     /**
      * @brief Username of the person who recorded this version in the system.

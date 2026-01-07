@@ -71,6 +71,21 @@ public:
     /**@}*/
 
     /**
+     * @brief Reads latest feature flags with pagination support.
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @return Vector of feature flags within the specified range
+     */
+    std::vector<domain::feature_flags> read_latest(std::uint32_t offset,
+                                                   std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active feature flags.
+     * @return Total number of feature flags with valid_to == max_timestamp
+     */
+    std::uint32_t get_total_feature_flags_count();
+
+    /**
      * @brief Reads all feature flags, possibly filtered by name.
      */
     /**@{*/

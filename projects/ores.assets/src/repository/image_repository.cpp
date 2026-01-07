@@ -150,6 +150,46 @@ image_repository::read_latest_by_key(context ctx, const std::string& key) {
         lg(), "Reading latest images by key.");
 }
 
+std::vector<domain::image>
+image_repository::read_latest(context ctx, std::uint32_t offset,
+                              std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest images with offset: "
+                               << offset << " and limit: " << limit;
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<image_entity>> |
+        where("valid_to"_c == max.value()) |
+        order_by("valid_from"_c.desc()) |
+        sqlgen::offset(offset) |
+        sqlgen::limit(limit);
+
+    return execute_read_query<image_entity, domain::image>(ctx, query,
+        [](const auto& entities) { return image_mapper::map(entities); },
+        lg(), "Reading latest images with pagination.");
+}
+
+std::uint32_t image_repository::get_total_image_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active image count";
+
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto query = sqlgen::select_from<image_entity>(
+        sqlgen::count().as<"count">()) |
+        where("valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active image count: " << count;
+    return count;
+}
+
 std::vector<domain::image> image_repository::read_all(context ctx) {
     const auto query = sqlgen::read<std::vector<image_entity>> |
         order_by("valid_from"_c.desc());

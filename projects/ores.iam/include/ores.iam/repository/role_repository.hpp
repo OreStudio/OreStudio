@@ -71,6 +71,21 @@ public:
     /**@}*/
 
     /**
+     * @brief Reads latest roles with pagination support.
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @return Vector of roles within the specified range
+     */
+    std::vector<domain::role> read_latest(std::uint32_t offset,
+                                          std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active roles.
+     * @return Total number of roles with valid_to == max_timestamp
+     */
+    std::uint32_t get_total_role_count();
+
+    /**
      * @brief Reads latest role by name.
      */
     std::vector<domain::role> read_latest_by_name(const std::string& name);

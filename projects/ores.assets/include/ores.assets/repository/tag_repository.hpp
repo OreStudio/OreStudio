@@ -71,6 +71,24 @@ public:
     /**@}*/
 
     /**
+     * @brief Reads latest tags with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @return Vector of tags within the specified range
+     */
+    std::vector<domain::tag> read_latest(context ctx,
+                                         std::uint32_t offset,
+                                         std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active tags.
+     * @param ctx Repository context with database connection
+     * @return Total number of tags with valid_to == max_timestamp
+     */
+    std::uint32_t get_total_tag_count(context ctx);
+
+    /**
      * @brief Reads all tags (including historical versions).
      */
     std::vector<domain::tag> read_all(context ctx);

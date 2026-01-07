@@ -109,6 +109,43 @@ login_info_repository::read(const boost::uuids::uuid& account_id) {
     return login_info_mapper::map(*r);
 }
 
+std::vector<domain::login_info>
+login_info_repository::read(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading login_info with offset: "
+                               << offset << " and limit: " << limit;
+
+    const auto query = sqlgen::read<std::vector<login_info_entity>> |
+        order_by("account_id"_c) |
+        sqlgen::offset(offset) |
+        sqlgen::limit(limit);
+
+    const auto r = session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    BOOST_LOG_SEV(lg(), debug) << "Read login_info with pagination. Total: "
+                               << r->size();
+    return login_info_mapper::map(*r);
+}
+
+std::uint32_t login_info_repository::get_total_login_info_count() {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total login_info count";
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto query = sqlgen::select_from<login_info_entity>(
+        sqlgen::count().as<"count">()) |
+        sqlgen::to<count_result>;
+
+    const auto r = session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total login_info count: " << count;
+    return count;
+}
+
 void login_info_repository::remove(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing login_info for account: "
                                << account_id;

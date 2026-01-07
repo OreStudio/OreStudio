@@ -73,6 +73,21 @@ public:
     /**@}*/
 
     /**
+     * @brief Reads login information with pagination support.
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @return Vector of login info within the specified range
+     */
+    std::vector<domain::login_info> read(std::uint32_t offset,
+                                         std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of login info records.
+     * @return Total number of login info records
+     */
+    std::uint32_t get_total_login_info_count();
+
+    /**
      * @brief Removes login information for a specific account.
      */
     void remove(const boost::uuids::uuid& account_id);

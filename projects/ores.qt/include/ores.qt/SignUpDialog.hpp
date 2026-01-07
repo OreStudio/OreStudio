@@ -72,6 +72,7 @@ public:
 private slots:
     void onSignUpClicked();
     void onSignUpResult(const SignupResult& result);
+    void updatePasswordMatchIndicator();
 
 signals:
     void signupCompleted(const SignupResult& result);

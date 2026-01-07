@@ -128,6 +128,12 @@ void SignUpDialog::setupUI() {
 
     // Set default button
     signup_button_->setDefault(true);
+
+    // Connect password fields for match indicator
+    connect(password_edit_, &QLineEdit::textChanged, this,
+        &SignUpDialog::updatePasswordMatchIndicator);
+    connect(confirm_password_edit_, &QLineEdit::textChanged, this,
+        &SignUpDialog::updatePasswordMatchIndicator);
 }
 
 void SignUpDialog::setServerInfo(const QString& host, int port) {
@@ -264,6 +270,28 @@ void SignUpDialog::onSignUpResult(const SignupResult& result) {
 
         MessageBoxHelper::critical(this, "Sign Up Failed",
             QString("Account creation failed: %1").arg(result.error_message));
+    }
+}
+
+void SignUpDialog::updatePasswordMatchIndicator() {
+    const QString password = password_edit_->text();
+    const QString confirmPassword = confirm_password_edit_->text();
+
+    // Only show indicator when confirm field has content
+    if (confirmPassword.isEmpty()) {
+        // Reset to default style
+        confirm_password_edit_->setStyleSheet("");
+        return;
+    }
+
+    if (password == confirmPassword) {
+        // Green border for matching passwords
+        confirm_password_edit_->setStyleSheet(
+            "QLineEdit { border: 2px solid #4CAF50; }");
+    } else {
+        // Orange/red border for non-matching passwords
+        confirm_password_edit_->setStyleSheet(
+            "QLineEdit { border: 2px solid #FF9800; }");
     }
 }
 

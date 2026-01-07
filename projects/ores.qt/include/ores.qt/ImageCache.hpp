@@ -221,6 +221,8 @@ private slots:
     void onSingleImageLoaded();
     void onCurrencyImageSet();
     void onAllAvailableImagesLoaded();
+    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
+                                const QStringList& entityIds);
 
 private:
     /**
@@ -304,6 +306,9 @@ private:
 
     // Track image IDs currently being loaded to prevent duplicate requests
     std::unordered_set<std::string> pending_image_requests_;
+
+    // ISO codes that need selective refresh (from notifications)
+    std::vector<std::string> pending_refresh_iso_codes_;
 };
 
 }

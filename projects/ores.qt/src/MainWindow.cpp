@@ -204,7 +204,18 @@ MainWindow::MainWindow(QWidget* parent) :
     // Load image cache when connected
     connect(clientManager_, &ClientManager::connected, this, [this]() {
         imageCache_->loadAll();
+        // Preload all available images for the flag selector to avoid on-demand loading delay
+        if (!imageCache_->hasImageList()) {
+            imageCache_->loadImageList();
+        } else {
+            imageCache_->loadAllAvailableImages();
+        }
     });
+
+    // When image list is loaded, automatically fetch the actual images
+    // This ensures that preloading gets all images ready for the FlagSelectorDialog
+    connect(imageCache_, &ImageCache::imageListLoaded,
+            imageCache_, &ImageCache::loadAllAvailableImages);
 
     // Connect Currencies action to controller
     // Controller is created immediately but will check connection status

@@ -4,6 +4,9 @@
 
 The project is implemented in C++ 23 and uses CMake as the build system.
 
+See `doc/skills/cmake-runner/skill.org` for details on how to run CMake. Key
+commands:
+
 - `cmake --preset linux-clang-debug` - Configure project in debug and install dependencies.
 - `cmake --build --preset linux-clang-debug` - Build project in debug.
 - `cmake --build --preset linux-clang-release --target rat` - Run all tests
@@ -18,27 +21,15 @@ The project is implemented in C++ 23 and uses CMake as the build system.
 
 ## Architecture
 
-- `ores.comms`: contains the client and server code that speak a binary bespoke
-  protocol, as well as infrastructure related to the protocol (frames, etc).
-- `ores.risk`: contains the domain types that implement the ORE (Open Source
-  Risk Engine) types, associated database support and import and export to ORE
-  XML representation.
-- `ores.variability`: contains feature flag domain types, repositories, and
-  messaging infrastructure for feature flag management protocol.
-- `ores.iam`: identity and access management - contains user account management,
-  authentication, authorization, and session management functionality.
-- `ores.comms.service`: binary to run the service. Simple host that just
-  instantiates the server defined in comms.
-- `ores.client`: deprecated. Code will be in comms instead.
-- `ores.cli`: command line interface that instantiates functionality in risk and
-  other core libraries.
-- `ores.qt`: Qt based GUI for the application.
-- `ores.utility`: assorted utilities which do not contain domain specific code.
+Read `projects/modeling/system_model.org` for details on how the system
+architecture.
 
 ## Testing
 
 - Write table-driven tests with clear input/output expectations
 - Include detailed error messages (expected vs. actual)
+- Read `doc/skills/unit-test-writer/skill.org` for details on how to write unit
+  tests.
 
 ## Dependencies
 
@@ -48,4 +39,5 @@ The project is implemented in C++ 23 and uses CMake as the build system.
 ## Pull Requests
 
 - do not add "Test plan" section to PRs.
-- git commit titles should use format [COMPONENT] Description. Example [qt] change xyz
+- git commit titles should use format: [COMPONENT] Description.
+  Example: [qt] Change xyz

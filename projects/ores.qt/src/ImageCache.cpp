@@ -24,6 +24,7 @@
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.assets/messaging/assets_protocol.hpp"
+#include "ores.assets/eventing/assets_changed_event.hpp"
 
 namespace ores::qt {
 
@@ -53,6 +54,33 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
         this, &ImageCache::onCurrencyImageSet);
     connect(all_available_watcher_, &QFutureWatcher<ImagesResult>::finished,
         this, &ImageCache::onAllAvailableImagesLoaded);
+
+    // Subscribe to asset change events to invalidate cache on external changes
+    const std::string event_name = std::string{
+        eventing::domain::event_traits<assets::eventing::assets_changed_event>::name};
+
+    connect(clientManager_, &ClientManager::notificationReceived,
+            this, &ImageCache::onNotificationReceived);
+
+    // Subscribe to events when connected
+    connect(clientManager_, &ClientManager::connected,
+            this, [this, event_name]() {
+        BOOST_LOG_SEV(lg(), info) << "Subscribing to asset change events";
+        clientManager_->subscribeToEvent(event_name);
+    });
+
+    // Re-subscribe after reconnection
+    connect(clientManager_, &ClientManager::reconnected,
+            this, [this, event_name]() {
+        BOOST_LOG_SEV(lg(), info) << "Re-subscribing to asset change events after reconnect";
+        clientManager_->subscribeToEvent(event_name);
+    });
+
+    // If already connected, subscribe now
+    if (clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to asset change events";
+        clientManager_->subscribeToEvent(event_name);
+    }
 }
 
 void ImageCache::loadCurrencyMappings() {
@@ -132,9 +160,68 @@ void ImageCache::onMappingsLoaded() {
         // If loadAll() was called, continue to load images
         if (load_images_after_mappings_) {
             load_images_after_mappings_ = false;
-            loadImagesForCurrencies();
+
+            // Check if we're doing a selective refresh for specific currencies
+            if (!pending_refresh_iso_codes_.empty()) {
+                // Selective refresh: only update the affected currencies
+                std::vector<std::string> image_ids_to_fetch;
+                std::unordered_set<std::string> unique_ids;
+
+                for (const auto& iso_code : pending_refresh_iso_codes_) {
+                    auto it = currency_to_image_id_.find(iso_code);
+                    if (it != currency_to_image_id_.end() && !it->second.empty()) {
+                        // Only fetch if we don't have this image cached already
+                        if (image_svg_cache_.find(it->second) == image_svg_cache_.end() &&
+                            unique_ids.find(it->second) == unique_ids.end()) {
+                            image_ids_to_fetch.push_back(it->second);
+                            unique_ids.insert(it->second);
+                        }
+                    }
+                    // Remove old icon to force re-render
+                    currency_icons_.erase(iso_code);
+                }
+
+                BOOST_LOG_SEV(lg(), debug) << "Selective refresh: "
+                    << pending_refresh_iso_codes_.size() << " currencies, "
+                    << image_ids_to_fetch.size() << " new images to fetch.";
+
+                // Re-render icons for affected currencies (using cached images)
+                for (const auto& iso_code : pending_refresh_iso_codes_) {
+                    auto map_it = currency_to_image_id_.find(iso_code);
+                    if (map_it != currency_to_image_id_.end()) {
+                        auto svg_it = image_svg_cache_.find(map_it->second);
+                        if (svg_it != image_svg_cache_.end()) {
+                            QIcon icon = svgToIcon(svg_it->second);
+                            if (!icon.isNull()) {
+                                currency_icons_[iso_code] = icon;
+                            }
+                        }
+                    }
+                }
+
+                pending_refresh_iso_codes_.clear();
+
+                if (image_ids_to_fetch.empty()) {
+                    // All images were already cached, we're done
+                    emit imagesLoaded();
+                    emit allLoaded();
+                } else {
+                    // Fetch the new images
+                    is_loading_images_ = true;
+                    ClientManager* clientMgr = clientManager_;
+                    QFuture<ImagesResult> future =
+                        QtConcurrent::run([clientMgr, image_ids_to_fetch]() -> ImagesResult {
+                            return fetchImagesInBatches(clientMgr, image_ids_to_fetch);
+                        });
+                    images_watcher_->setFuture(future);
+                }
+            } else {
+                // Full refresh: load all images
+                loadImagesForCurrencies();
+            }
         }
     } else {
+        pending_refresh_iso_codes_.clear();
         BOOST_LOG_SEV(lg(), error) << "Failed to load currency mappings.";
         emit loadError(tr("Failed to load currency-image mappings"));
     }
@@ -196,10 +283,10 @@ void ImageCache::onImagesLoaded() {
         // Render icons for all currencies
         for (const auto& [iso_code, image_id] : currency_to_image_id_) {
             auto svg_it = image_svg_cache_.find(image_id);
-            if (svg_it != image_svg_cache_.end() &&
-                currency_icons_.find(iso_code) == currency_icons_.end()) {
+            if (svg_it != image_svg_cache_.end()) {
                 QIcon icon = svgToIcon(svg_it->second);
                 if (!icon.isNull()) {
+                    // Always update the icon to reflect the latest mapping
                     currency_icons_[iso_code] = icon;
                 }
             }
@@ -537,7 +624,8 @@ void ImageCache::onCurrencyImageSet() {
     if (result.success) {
         BOOST_LOG_SEV(lg(), info) << "Currency image set successfully for: "
                                   << result.iso_code;
-        // Reload mappings to get updated data
+        // Reload mappings and then images to get updated data
+        load_images_after_mappings_ = true;
         loadCurrencyMappings();
     } else {
         BOOST_LOG_SEV(lg(), error) << "Failed to set currency image for "
@@ -631,6 +719,35 @@ std::string ImageCache::getCurrencyImageId(const std::string& iso_code) const {
         return it->second;
     }
     return {};
+}
+
+void ImageCache::onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
+                                         const QStringList& entityIds) {
+    static const std::string event_name = std::string{
+        eventing::domain::event_traits<assets::eventing::assets_changed_event>::name};
+    if (eventType.toStdString() != event_name) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Assets changed event received at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " for " << entityIds.size() << " currencies.";
+
+    if (entityIds.isEmpty()) {
+        // No specific currencies provided, reload everything
+        loadAll();
+        return;
+    }
+
+    // Store the ISO codes for selective refresh after mappings reload
+    pending_refresh_iso_codes_.clear();
+    for (const QString& id : entityIds) {
+        pending_refresh_iso_codes_.push_back(id.toStdString());
+    }
+
+    // Reload mappings; onMappingsLoaded will selectively update only affected currencies
+    load_images_after_mappings_ = true;
+    loadCurrencyMappings();
 }
 
 }

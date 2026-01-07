@@ -30,6 +30,7 @@
 #include "ores.risk/eventing/currency_changed_event.hpp"
 #include "ores.iam/messaging/registrar.hpp"
 #include "ores.iam/eventing/account_changed_event.hpp"
+#include "ores.assets/eventing/assets_changed_event.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.variability/messaging/registrar.hpp"
 #include "ores.assets/messaging/registrar.hpp"
@@ -149,6 +150,9 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     eventing::service::registrar::register_mapping<
         iam::eventing::account_changed_event>(
         event_source, "ores.iam.account", "ores_accounts");
+    eventing::service::registrar::register_mapping<
+        assets::eventing::assets_changed_event>(
+        event_source, "ores.assets.currency_image", "ores_currency_images");
 
     // Start the event source to begin listening for database notifications
     event_source.start();
@@ -172,6 +176,14 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                 iam::eventing::account_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
                                      e.account_ids);
+        });
+
+    auto assets_sub = event_bus.subscribe<assets::eventing::assets_changed_event>(
+        [&subscription_mgr](const assets::eventing::assets_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                assets::eventing::assets_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.iso_codes);
         });
 
     // Create server with subscription manager

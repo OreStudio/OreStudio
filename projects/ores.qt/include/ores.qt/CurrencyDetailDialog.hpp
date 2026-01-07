@@ -129,6 +129,7 @@ private:
     bool isAddMode_;
     bool isReadOnly_;
     bool isStale_;
+    bool flagChanged_;
     int historicalVersion_;
     std::string username_;
     QToolBar* toolBar_;

@@ -47,10 +47,32 @@ void CurrencyItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
     // Apply monospace font and alignment based on column
     using Column = ClientCurrencyModel::Column;
     switch (index.column()) {
-        case Column::Flag:
-            opt.decorationAlignment = Qt::AlignCenter;
-            opt.decorationPosition = QStyleOptionViewItem::Top;
-            break;
+        case Column::Flag: {
+            // Manually paint the flag to ensure it's centered
+            QVariant data = index.data(Qt::DecorationRole);
+            if (data.isValid()) {
+                QIcon icon = qvariant_cast<QIcon>(data);
+                if (!icon.isNull()) {
+                    // Reduce the target size to make the icon smaller (adding padding)
+                    const int padding = 4;
+                    QRect targetRect = option.rect.adjusted(padding, padding, -padding, -padding);
+                    
+                    QPixmap pixmap = icon.pixmap(targetRect.size());
+                    // Scale if necessary, keeping aspect ratio
+                    if (pixmap.width() > targetRect.width() || pixmap.height() > targetRect.height()) {
+                         pixmap = pixmap.scaled(targetRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                    }
+                    
+                    QPoint center = option.rect.center() - pixmap.rect().center();
+                    // Ensure we don't draw outside rect if something is weird
+                    if (center.x() < option.rect.left()) center.setX(option.rect.left());
+                    if (center.y() < option.rect.top()) center.setY(option.rect.top());
+                    
+                    painter->drawPixmap(center, pixmap);
+                }
+            }
+            return; // Done painting this cell
+        }
         case Column::CurrencyName:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;

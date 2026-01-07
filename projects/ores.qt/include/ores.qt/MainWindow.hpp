@@ -25,6 +25,8 @@
 #include <QTimer>
 #include <QSystemTrayIcon>
 #include <QMenu>
+#include <QFrame>
+#include <QColor>
 #include <memory>
 #include <vector>
 #include "ores.qt/ClientManager.hpp"
@@ -102,6 +104,22 @@ public:
      * @brief Get the client manager.
      */
     ClientManager* getClientManager() const { return clientManager_; }
+
+    /**
+     * @brief Set instance identification info for multi-instance testing.
+     *
+     * @param name Instance name (e.g., "Instance 1", "Primary")
+     * @param color Optional color for the instance banner
+     */
+    void setInstanceInfo(const QString& name, const QColor& color = QColor());
+
+    /**
+     * @brief Update the window title to reflect current state.
+     *
+     * Title format: "ORE Studio v{version} - {username}@{server} [Instance Name]"
+     * When not connected: "ORE Studio v{version} [Instance Name]"
+     */
+    void updateWindowTitle();
 
 protected:
     /**
@@ -282,6 +300,18 @@ private:
 
     /** @brief Subscriptions to keep alive for event handling */
     std::vector<eventing::service::subscription> eventSubscriptions_;
+
+    /** @brief Instance name for multi-instance identification */
+    QString instanceName_;
+
+    /** @brief Instance color for the banner (invalid color means no banner) */
+    QColor instanceColor_;
+
+    /** @brief Colored banner frame shown when instance color is set */
+    QFrame* instanceBanner_;
+
+    /** @brief Label showing instance name in the banner */
+    QLabel* instanceBannerLabel_;
 };
 
 }

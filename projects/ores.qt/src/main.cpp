@@ -91,6 +91,16 @@ int main(int argc, char *argv[]) {
     ores::qt::MainWindow mainWindow;
     mainWindow.getClientManager()->setSupportedCompression(parser.supportedCompression());
 
+    // Set instance identification info if provided
+    const QString instanceName = parser.instanceName();
+    const QColor instanceColor = parser.instanceColor();
+    if (!instanceName.isEmpty() || instanceColor.isValid()) {
+        mainWindow.setInstanceInfo(instanceName, instanceColor);
+        BOOST_LOG_SEV(lg, info) << "Instance info: name='" << instanceName.toStdString()
+                                << "', color="
+                                << (instanceColor.isValid() ? instanceColor.name().toStdString() : "none");
+    }
+
     // Enable telemetry streaming if configured in settings
     if (ores::qt::TelemetrySettingsDialog::isStreamingEnabled()) {
         BOOST_LOG_SEV(lg, info) << "Telemetry streaming is enabled in settings";

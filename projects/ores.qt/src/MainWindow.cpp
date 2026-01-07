@@ -36,6 +36,8 @@
 #include <QIcon>
 #include <QFileDialog>
 #include <QSettings>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QStandardPaths>
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
@@ -53,6 +55,7 @@
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/TelemetrySettingsDialog.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
+#include "ores.utility/version/version.hpp"
 
 namespace ores::qt {
 
@@ -63,7 +66,8 @@ MainWindow::MainWindow(QWidget* parent) :
     eventBus_(std::make_shared<eventing::service::event_bus>()),
     clientManager_(new ClientManager(eventBus_, this)),
     imageCache_(new ImageCache(clientManager_, this)),
-    systemTrayIcon_(nullptr), trayContextMenu_(nullptr) {
+    systemTrayIcon_(nullptr), trayContextMenu_(nullptr),
+    instanceBanner_(nullptr), instanceBannerLabel_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
@@ -199,6 +203,8 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(clientManager_, &ClientManager::disconnected, this, &MainWindow::updateMenuState);
     connect(clientManager_, &ClientManager::disconnected, this, [this]() {
         ui_->statusbar->showMessage("Disconnected from server.", 5000);
+        username_.clear();
+        updateWindowTitle();
     });
     connect(clientManager_, &ClientManager::reconnecting, this, [this]() {
         connectionStatusIconLabel_->setPixmap(reconnectingIcon_.pixmap(16, 16));
@@ -369,6 +375,9 @@ MainWindow::MainWindow(QWidget* parent) :
                                    << x << ", " << y << ")";
     }
 
+    // Set initial window title (version only, no connection info yet)
+    updateWindowTitle();
+
     BOOST_LOG_SEV(lg(), info) << "Main window created.";
 }
 
@@ -441,6 +450,9 @@ void MainWindow::onLoginTriggered() {
         if (featureFlagController_) {
             featureFlagController_->setUsername(QString::fromStdString(username_));
         }
+
+        // Update window title with username and server info
+        updateWindowTitle();
 
         BOOST_LOG_SEV(lg(), info) << "Successfully connected and authenticated.";
         ui_->statusbar->showMessage("Successfully connected and logged in.");
@@ -775,6 +787,86 @@ void MainWindow::onSetRecordingDirectoryTriggered() {
     if (clientManager_) {
         clientManager_->setRecordingDirectory(newDir.toStdString());
     }
+}
+
+void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {
+    instanceName_ = name;
+    instanceColor_ = color;
+
+    BOOST_LOG_SEV(lg(), info) << "Instance info set: name='" << name.toStdString()
+                              << "', color=" << (color.isValid() ? color.name().toStdString() : "none");
+
+    // Create/update the instance banner if color is specified
+    if (color.isValid()) {
+        if (!instanceBanner_) {
+            // Create banner - we'll add it above the MDI area
+            instanceBanner_ = new QFrame(this);
+            instanceBanner_->setFrameShape(QFrame::NoFrame);
+            instanceBanner_->setFixedHeight(28);
+
+            auto* bannerLayout = new QHBoxLayout(instanceBanner_);
+            bannerLayout->setContentsMargins(10, 4, 10, 4);
+
+            instanceBannerLabel_ = new QLabel(instanceBanner_);
+            instanceBannerLabel_->setAlignment(Qt::AlignCenter);
+            bannerLayout->addWidget(instanceBannerLabel_);
+
+            // Create a vertical layout to hold banner + mdiArea
+            // First, remove the mdiArea from its current layout
+            ui_->horizontalLayout_3->removeWidget(mdiArea_);
+
+            // Create a container widget for the vertical layout
+            auto* container = new QWidget(this);
+            auto* vLayout = new QVBoxLayout(container);
+            vLayout->setContentsMargins(0, 0, 0, 0);
+            vLayout->setSpacing(0);
+
+            // Add banner and mdiArea to vertical layout
+            vLayout->addWidget(instanceBanner_);
+            vLayout->addWidget(mdiArea_);
+
+            // Add the container to the horizontal layout
+            ui_->horizontalLayout_3->addWidget(container);
+        }
+
+        // Set the background color and contrasting text color
+        QString textColor = (color.lightness() > 127) ? "#000000" : "#FFFFFF";
+        instanceBanner_->setStyleSheet(
+            QString("background-color: %1;").arg(color.name()));
+        instanceBannerLabel_->setStyleSheet(
+            QString("color: %1; font-weight: bold; font-size: 11pt;").arg(textColor));
+        instanceBannerLabel_->setText(name.isEmpty() ? "Instance" : name);
+        instanceBanner_->show();
+    } else if (instanceBanner_) {
+        // Hide the banner if no color specified
+        instanceBanner_->hide();
+    }
+
+    updateWindowTitle();
+}
+
+void MainWindow::updateWindowTitle() {
+    QString title = QString("ORE Studio v%1").arg(ORES_VERSION);
+
+    // Add connection info if connected
+    if (clientManager_ && clientManager_->isConnected()) {
+        QString serverInfo = QString::fromStdString(clientManager_->serverAddress());
+        if (!username_.empty()) {
+            title += QString(" - %1@%2")
+                .arg(QString::fromStdString(username_))
+                .arg(serverInfo);
+        } else {
+            title += QString(" - %1").arg(serverInfo);
+        }
+    }
+
+    // Add instance name if set
+    if (!instanceName_.isEmpty()) {
+        title += QString(" [%1]").arg(instanceName_);
+    }
+
+    setWindowTitle(title);
+    BOOST_LOG_SEV(lg(), debug) << "Window title updated: " << title.toStdString();
 }
 
 }

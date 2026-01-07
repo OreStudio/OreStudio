@@ -195,6 +195,18 @@ public:
     std::optional<boost::uuids::uuid> accountId() const { return session_.account_id(); }
 
     /**
+     * @brief Get the server address string.
+     *
+     * @return Server address in "host:port" format, or empty if not connected.
+     */
+    std::string serverAddress() const {
+        if (!isConnected()) {
+            return "";
+        }
+        return connected_host_ + ":" + std::to_string(connected_port_);
+    }
+
+    /**
      * @brief Send a request if connected.
      *
      * @param request The request frame to send

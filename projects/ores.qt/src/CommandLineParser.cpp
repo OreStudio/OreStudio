@@ -85,6 +85,19 @@ void CommandLineParser::setupOptions() {
         "algorithm",
         "auto"
     });
+
+    // Instance identification options
+    parser_.addOption({
+        {"n", "instance-name"},
+        "Name for this application instance (for multi-instance testing).",
+        "name"
+    });
+
+    parser_.addOption({
+        "instance-color",
+        "Color for the window title bar as RGB hex (e.g., FF0000 for red).",
+        "color"
+    });
 }
 
 void CommandLineParser::process(const QCoreApplication& app) {
@@ -196,6 +209,25 @@ std::uint8_t CommandLineParser::supportedCompression() const {
         // "auto" or any unrecognized value defaults to all supported
         return COMPRESSION_SUPPORT_ALL;
     }
+}
+
+QString CommandLineParser::instanceName() const {
+    return parser_.value("instance-name");
+}
+
+QColor CommandLineParser::instanceColor() const {
+    const QString colorStr = parser_.value("instance-color");
+    if (colorStr.isEmpty()) {
+        return QColor();  // Invalid color
+    }
+
+    // Prepend # if not present for QColor parsing
+    QString hexColor = colorStr;
+    if (!hexColor.startsWith('#')) {
+        hexColor.prepend('#');
+    }
+
+    return QColor(hexColor);
 }
 
 }

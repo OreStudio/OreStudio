@@ -109,6 +109,101 @@ namespace ores #F2F2F2 {
         namespace rfl #F2F2F2 {
         }
 
+        namespace serialization #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                enum error_code
+                class reader
+                class writer
+            }
+
+            error_code -[hidden]down- reader
+            reader -[hidden]down- writer
+
+            '
+            ' Class definitions
+            '
+
+            enum error_code #F2DAFD {
+                none
+                version_mismatch
+                crc_validation_failed
+                invalid_message_type
+                handshake_timeout
+                handshake_failed
+                payload_too_large
+                network_error
+                handler_error
+                database_error
+                authentication_failed
+                authorization_failed
+                invalid_request
+                bootstrap_mode_only
+                bootstrap_mode_forbidden
+                weak_password
+                not_localhost
+                database_unavailable
+                decompression_failed
+                unsupported_compression
+                compression_failed
+                signup_disabled
+                username_taken
+                email_taken
+                signup_requires_authorization
+                payload_incomplete
+            }
+
+            note top of error_code
+            Error codes used during message serialization and deserialization.
+
+            These codes indicate specific failures that can occur when reading or
+            writing binary protocol data, as well as higher-level protocol errors.
+            end note
+
+            class reader #ECECEC {
+                +{static} read_uint8(std::span<const std::byte>&) std::expected<std::uint8_t, error_code>
+                +{static} read_uint16(std::span<const std::byte>&) std::expected<std::uint16_t, error_code>
+                +{static} read_uint32(std::span<const std::byte>&) std::expected<std::uint32_t, error_code>
+                +{static} read_int64(std::span<const std::byte>&) std::expected<std::int64_t, error_code>
+                +{static} read_uint64(std::span<const std::byte>&) std::expected<std::uint64_t, error_code>
+                +{static} read_string(std::span<const std::byte>&) std::expected<std::string, error_code>
+                +{static} read_uuid(std::span<const std::byte>&) std::expected<boost::uuids::uuid, error_code>
+                +{static} read_bool(std::span<const std::byte>&) std::expected<bool, error_code>
+            }
+
+            note top of reader
+            Helper class to read binary data in network byte order.
+
+            Provides static methods to deserialize various data types from a byte span.
+            All multi-byte integers are read in big-endian (network) byte order.
+            The span is advanced past the read data on success.
+            end note
+
+            class writer #ECECEC {
+                +{static} write_uint8(std::vector<std::byte>&, std::uint8_t) void
+                +{static} write_uint16(std::vector<std::byte>&, std::uint16_t) void
+                +{static} write_uint32(std::vector<std::byte>&, std::uint32_t) void
+                +{static} write_int64(std::vector<std::byte>&, std::int64_t) void
+                +{static} write_uint64(std::vector<std::byte>&, std::uint64_t) void
+                +{static} write_string(std::vector<std::byte>&, const std::string&) void
+                +{static} write_bool(std::vector<std::byte>&, bool) void
+                +{static} write_uuid(std::vector<std::byte>&, const boost::uuids::uuid&) void
+            }
+
+            note top of writer
+            Helper class to write binary data in network byte order.
+
+            Provides static methods to serialize various data types into a byte buffer.
+            All multi-byte integers are written in big-endian (network) byte order.
+            end note
+
+            ' Relationships
+            ores::utility::serialization::reader ..> ores::utility::serialization::error_code : returns
+        }
+
         namespace tests #F2F2F2 {
             '
             ' Layout groupings

@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.comms/messaging/reader.hpp"
+#include "ores.utility/serialization/reader.hpp"
 
-#include <expected>
+#include <cstring>
 
-namespace ores::comms::messaging {
+namespace ores::utility::serialization {
 
 std::expected<std::uint8_t, error_code>
 reader::read_uint8(std::span<const std::byte>& data) {

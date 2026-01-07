@@ -497,10 +497,12 @@ namespace ores #F2F2F2 {
                 class notification_message
             }
 
-            ' Group: Enums (Row 6)
+            ' Group: Enums and type aliases (Row 6)
             together {
                 enum message_type
-                enum error_code
+                class error_code
+                class reader
+                class writer
             }
 
             ' Hidden relationships to stack request/response pairs vertically
@@ -511,6 +513,8 @@ namespace ores #F2F2F2 {
             unsubscribe_request -[hidden]down- unsubscribe_response
             frame_header -[hidden]down- frame
             message_type -[hidden]down- error_code
+            error_code -[hidden]down- reader
+            reader -[hidden]down- writer
 
             ' Hidden relationships to create row structure
             result -[hidden]down- frame_header
@@ -923,22 +927,36 @@ namespace ores #F2F2F2 {
                 last_value
             }
 
-            enum error_code {
-                none
-                version_mismatch
-                crc_validation_failed
-                invalid_message_type
-                handshake_timeout
-                handshake_failed
-                payload_too_large
-                network_error
-                handler_error
-                database_error
-                authentication_failed
-                authorization_failed
-                invalid_request
-                last_value
+            class error_code <<alias>> #E1F5FF {
             }
+
+            note top of error_code
+            Type alias for ores::utility::serialization::error_code.
+
+            The canonical error_code enum is now defined in ores.utility.
+            This alias maintains backward compatibility with existing code
+            that references ores::comms::messaging::error_code.
+            end note
+
+            class reader <<alias>> #E1F5FF {
+            }
+
+            note top of reader
+            Type alias for ores::utility::serialization::reader.
+
+            Binary deserialization helper. The canonical implementation
+            is now in ores.utility to avoid circular dependencies.
+            end note
+
+            class writer <<alias>> #E1F5FF {
+            }
+
+            note top of writer
+            Type alias for ores::utility::serialization::writer.
+
+            Binary serialization helper. The canonical implementation
+            is now in ores.utility to avoid circular dependencies.
+            end note
         }
 
         namespace domain #F2F2F2 {

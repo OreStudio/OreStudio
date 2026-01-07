@@ -24,10 +24,12 @@
 #include <iosfwd>
 #include <vector>
 #include <expected>
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.utility/serialization/error_code.hpp"
 #include "ores.telemetry/domain/log_record.hpp"
 
 namespace ores::telemetry::messaging {
+
+using error_code = ores::utility::serialization::error_code;
 
 /**
  * @brief Request to submit a batch of log records to the server.
@@ -69,7 +71,7 @@ struct submit_log_records_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<submit_log_records_request, comms::messaging::error_code>
+    static std::expected<submit_log_records_request, error_code>
     deserialize(std::span<const std::byte> data);
 };
 

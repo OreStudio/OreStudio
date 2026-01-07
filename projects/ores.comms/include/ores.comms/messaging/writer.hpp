@@ -20,67 +20,14 @@
 #ifndef ORES_COMMS_MESSAGING_WRITE_HPP
 #define ORES_COMMS_MESSAGING_WRITE_HPP
 
-#include <vector>
-#include <string>
-#include <cstdint>
-#include <expected>
-#include <boost/uuid/uuid_io.hpp>
-
+#include "ores.utility/serialization/writer.hpp"
 
 namespace ores::comms::messaging {
 
 /**
- * @brief Helper to write network data.
+ * @brief Backward-compatible alias for ores::utility::serialization::writer.
  */
-class writer {
-public:
-    /**
-     * @brief Helper to write a single byte.
-     */
-    static void write_uint8(std::vector<std::byte>& buffer,
-        std::uint8_t value);
-
-    /**
-     * @brief Helper to write a 16-bit integer in network byte order.
-     */
-    static void write_uint16(std::vector<std::byte>& buffer,
-        std::uint16_t value);
-
-    /**
-     * @brief Helper to write a 32-bit integer in network byte order.
-     */
-    static void write_uint32(std::vector<std::byte>& buffer,
-        std::uint32_t value);
-
-    /**
-     * @brief Helper to write a signed 64-bit integer in network byte order.
-     */
-    static void write_int64(std::vector<std::byte>& buffer,
-        std::int64_t value);
-
-    /**
-     * @brief Helper to write an unsigned 64-bit integer in network byte order.
-     */
-    static void write_uint64(std::vector<std::byte>& buffer,
-        std::uint64_t value);
-
-    /**
-     * @brief Helper to write a string with 16-bit length prefix.
-     */
-    static void write_string(std::vector<std::byte>& buffer,
-        const std::string& str);
-
-    /**
-     * @brief Helper to write a boolean (1 byte).
-     */
-    static void write_bool(std::vector<std::byte>& buffer, bool value);
-
-    /**
-     * @brief Helper to write a UUID (16 bytes).
-     */
-    static void write_uuid(std::vector<std::byte>& buffer,
-    const boost::uuids::uuid& uuid);
-};
+using writer = ores::utility::serialization::writer;
 
 }
 

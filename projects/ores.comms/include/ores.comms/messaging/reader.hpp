@@ -20,75 +20,14 @@
 #ifndef ORES_COMMS_MESSAGING_READER_HPP
 #define ORES_COMMS_MESSAGING_READER_HPP
 
-#include <span>
-#include <vector>
-#include <string>
-#include <cstdint>
-#include <expected>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.comms/messaging/message_types.hpp"
+#include "ores.utility/serialization/reader.hpp"
 
 namespace ores::comms::messaging {
 
 /**
- * @brief Helper to read network data.
+ * @brief Backward-compatible alias for ores::utility::serialization::reader.
  */
-class reader {
-public:
-    /**
-     * @brief Helper to read a single byte.
-     */
-    static std::expected<std::uint8_t, error_code>
-    read_uint8(std::span<const std::byte>& data);
-
-    /**
-     * @brief Helper to read a 16-bit integer in network byte order.
-     */
-    static std::expected<std::uint16_t, error_code>
-    read_uint16(std::span<const std::byte>& data);
-
-    /**
-     * @brief Helper to read a 32-bit integer in network byte order.
-     */
-    static std::expected<std::uint32_t, error_code>
-    read_uint32(std::span<const std::byte>& data);
-
-    /**
-     * @brief Helper to read a signed 64-bit integer in network byte order.
-     */
-    static std::expected<std::int64_t, error_code>
-    read_int64(std::span<const std::byte>& data);
-
-    /**
-     * @brief Helper to read an unsigned 64-bit integer in network byte order.
-     */
-    static std::expected<std::uint64_t, error_code>
-    read_uint64(std::span<const std::byte>& data);
-
-    /**
-     * @brief Helper to write a UUID (16 bytes).
-     */
-    static void write_uuid(std::vector<std::byte>& buffer,
-        const boost::uuids::uuid& uuid);
-
-    /**
-     * @brief Helper to read a string with 16-bit length prefix.
-     */
-    static std::expected<std::string, error_code>
-    read_string(std::span<const std::byte>& data);
-
-    /**
-     * @brief Helper to read a UUID (16 bytes).
-     */
-    static std::expected<boost::uuids::uuid, error_code>
-    read_uuid(std::span<const std::byte>& data);
-
-    /**
-     * @brief Helper to read a boolean (1 byte).
-     */
-    static std::expected<bool, error_code>
-    read_bool(std::span<const std::byte>& data);
-};
+using reader = ores::utility::serialization::reader;
 
 }
 

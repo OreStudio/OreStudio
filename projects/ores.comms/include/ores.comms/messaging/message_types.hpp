@@ -22,6 +22,7 @@
 
 #include <ostream>
 #include <cstdint>
+#include "ores.utility/serialization/error_code.hpp"
 
 // Configure magic_enum to support our enum value ranges
 #ifdef MAGIC_ENUM_RANGE_MIN
@@ -272,35 +273,10 @@ enum class message_type {
     last_value
 };
 
-enum class error_code {
-    none = 0x0000,
-    version_mismatch = 0x0001,
-    crc_validation_failed = 0x0002,
-    invalid_message_type = 0x0003,
-    handshake_timeout = 0x0004,
-    handshake_failed = 0x0005,
-    payload_too_large = 0x0006,
-    network_error = 0x0007,
-    handler_error = 0x0008,
-    database_error = 0x0009,
-    authentication_failed = 0x000A,
-    authorization_failed = 0x000B,
-    invalid_request = 0x000C,
-    bootstrap_mode_only = 0x000D,
-    bootstrap_mode_forbidden = 0x000E,
-    weak_password = 0x000F,
-    not_localhost = 0x0010,
-    database_unavailable = 0x0011,
-    decompression_failed = 0x0012,
-    unsupported_compression = 0x0013,
-    compression_failed = 0x0014,
-    signup_disabled = 0x0015,
-    username_taken = 0x0016,
-    email_taken = 0x0017,
-    signup_requires_authorization = 0x0018,
-    payload_incomplete = 0x0019,
-    last_value
-};
+/**
+ * @brief Backward-compatible alias for ores::utility::serialization::error_code.
+ */
+using error_code = ores::utility::serialization::error_code;
 
 /**
  * @brief Stream output operator for message_type.

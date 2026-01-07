@@ -26,7 +26,7 @@ namespace ores::utility::serialization {
 std::expected<std::uint8_t, error_code>
 reader::read_uint8(std::span<const std::byte>& data) {
     if (data.size() < 1) {
-        return std::unexpected(error_code::payload_too_large);
+        return std::unexpected(error_code::payload_incomplete);
     }
     auto value = std::to_integer<std::uint8_t>(data[0]);
     data = data.subspan(1);
@@ -36,7 +36,7 @@ reader::read_uint8(std::span<const std::byte>& data) {
 std::expected<std::uint16_t, error_code>
 reader::read_uint16(std::span<const std::byte>& data) {
     if (data.size() < 2) {
-        return std::unexpected(error_code::payload_too_large);
+        return std::unexpected(error_code::payload_incomplete);
     }
     std::uint16_t value = (static_cast<std::uint16_t>(data[0]) << 8) |
                           static_cast<std::uint16_t>(data[1]);
@@ -47,7 +47,7 @@ reader::read_uint16(std::span<const std::byte>& data) {
 std::expected<std::uint32_t, error_code>
 reader::read_uint32(std::span<const std::byte>& data) {
     if (data.size() < 4) {
-        return std::unexpected(error_code::payload_too_large);
+        return std::unexpected(error_code::payload_incomplete);
     }
     std::uint32_t value = (static_cast<std::uint32_t>(data[0]) << 24) |
                           (static_cast<std::uint32_t>(data[1]) << 16) |
@@ -60,7 +60,7 @@ reader::read_uint32(std::span<const std::byte>& data) {
 std::expected<std::int64_t, error_code>
 reader::read_int64(std::span<const std::byte>& data) {
     if (data.size() < 8) {
-        return std::unexpected(error_code::payload_too_large);
+        return std::unexpected(error_code::payload_incomplete);
     }
     std::int64_t value = (static_cast<std::int64_t>(data[0]) << 56) |
                          (static_cast<std::int64_t>(data[1]) << 48) |
@@ -77,7 +77,7 @@ reader::read_int64(std::span<const std::byte>& data) {
 std::expected<std::uint64_t, error_code>
 reader::read_uint64(std::span<const std::byte>& data) {
     if (data.size() < 8) {
-        return std::unexpected(error_code::payload_too_large);
+        return std::unexpected(error_code::payload_incomplete);
     }
     std::uint64_t value = (static_cast<std::uint64_t>(data[0]) << 56) |
                           (static_cast<std::uint64_t>(data[1]) << 48) |
@@ -99,7 +99,7 @@ reader::read_string(std::span<const std::byte>& data) {
     }
     auto len = *len_result;
     if (data.size() < len) {
-        return std::unexpected(error_code::payload_too_large);
+        return std::unexpected(error_code::payload_incomplete);
     }
     std::string str(reinterpret_cast<const char*>(data.data()), len);
     data = data.subspan(len);
@@ -109,7 +109,7 @@ reader::read_string(std::span<const std::byte>& data) {
 std::expected<boost::uuids::uuid, error_code>
 reader::read_uuid(std::span<const std::byte>& data) {
     if (data.size() < 16) {
-        return std::unexpected(error_code::payload_too_large);
+        return std::unexpected(error_code::payload_incomplete);
     }
     boost::uuids::uuid uuid;
     std::memcpy(
@@ -125,7 +125,7 @@ reader::read_uuid(std::span<const std::byte>& data) {
 std::expected<bool, error_code>
 reader::read_bool(std::span<const std::byte>& data) {
     if (data.size() < 1) {
-        return std::unexpected(error_code::payload_too_large);
+        return std::unexpected(error_code::payload_incomplete);
     }
     bool value = std::to_integer<uint8_t>(data[0]);
     data = data.subspan(1);

@@ -768,6 +768,27 @@ namespace ores #F2F2F2 {
             end note
 
             rbac_seeder o-- ores::iam::service::authorization_service
+
+            class session_converter #ECECEC {
+                +{static} to_session_data(domain::session) std::shared_ptr<comms::service::session_data>
+                +{static} from_session_data(comms::service::session_data) domain::session
+                +{static} update_from_session_data(domain::session&, comms::service::session_data) void
+            }
+
+            note top of session_converter
+            Converts between comms::service::session_data and iam::domain::session.
+
+            This converter exists to support the dependency inversion between
+            ores.comms and ores.iam. The protocol-level session data lives in
+            ores.comms, while the domain model and persistence layer remain
+            in ores.iam.
+
+            Flow:
+            1. On login, ores.iam creates a domain::session
+            2. Converts to session_data and stores in auth_session_service
+            3. On logout, retrieves session_data and converts back to domain::session
+               for persistence updates
+            end note
         }
 
         namespace messaging #F2F2F2 {

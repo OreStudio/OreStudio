@@ -28,7 +28,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.comms/messaging/message_types.hpp"
-#include "ores.iam/domain/session.hpp"
+#include "ores.comms/service/session_data.hpp"
 
 namespace ores::comms::service {
 
@@ -111,7 +111,7 @@ public:
      * @param session Full session object with all tracking data
      */
     void store_session_data(const std::string& remote_address,
-        std::shared_ptr<iam::domain::session> session);
+        std::shared_ptr<session_data> session);
 
     /**
      * @brief Get full session data for a remote address.
@@ -119,7 +119,7 @@ public:
      * @param remote_address The client's remote address
      * @return Shared pointer to session data, nullptr if not found
      */
-    [[nodiscard]] std::shared_ptr<iam::domain::session>
+    [[nodiscard]] std::shared_ptr<session_data>
     get_session_data(const std::string& remote_address) const;
 
     /**
@@ -138,7 +138,7 @@ public:
      * @param remote_address The client's remote address
      * @return The removed session if found, nullptr otherwise
      */
-    std::shared_ptr<iam::domain::session>
+    std::shared_ptr<session_data>
     remove_session(const std::string& remote_address);
 
     /**
@@ -146,12 +146,12 @@ public:
      *
      * @return All removed sessions
      */
-    std::vector<std::shared_ptr<iam::domain::session>> clear_all_sessions();
+    std::vector<std::shared_ptr<session_data>> clear_all_sessions();
 
     /**
      * @brief Get all active sessions.
      */
-    [[nodiscard]] std::vector<std::shared_ptr<iam::domain::session>>
+    [[nodiscard]] std::vector<std::shared_ptr<session_data>>
     get_all_sessions() const;
 
     /**
@@ -209,7 +209,7 @@ private:
     static bool requires_authentication(messaging::message_type type);
 
     mutable std::mutex session_mutex_;
-    std::map<std::string, std::shared_ptr<iam::domain::session>> sessions_;
+    std::map<std::string, std::shared_ptr<session_data>> sessions_;
 
     mutable std::mutex client_info_mutex_;
     std::map<std::string, client_info> client_infos_;

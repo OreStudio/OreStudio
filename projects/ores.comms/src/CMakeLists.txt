@@ -33,10 +33,6 @@ set_target_properties(${lib_target_name}
 
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/ores.comms/include
-    # Header-only dependency on ores.iam for session domain type.
-    # We cannot link against ores.iam due to circular dependency chain
-    # (ores.comms -> ores.iam -> ores.variability -> ores.comms).
-    ${CMAKE_SOURCE_DIR}/projects/ores.iam/include
     # Required for session_recorder.hpp which uses ores.telemetry/log
     ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/include)
 

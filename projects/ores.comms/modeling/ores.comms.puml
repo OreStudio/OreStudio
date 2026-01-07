@@ -1010,6 +1010,13 @@ namespace ores #F2F2F2 {
             ' Layout groupings for better diagram structure
             '
 
+            ' Group: Session data classes
+            together {
+                enum session_protocol
+                class session_data
+                class client_info
+            }
+
             ' Group: Authentication classes
             together {
                 class session_info
@@ -1030,6 +1037,8 @@ namespace ores #F2F2F2 {
             }
 
             ' Hidden relationships to stack related classes vertically
+            session_protocol -[hidden]down- session_data
+            session_data -[hidden]down- client_info
             session_info -[hidden]down- auth_session_service
             handshake_service -[hidden]down- heartbeat_service
             subscription_manager -[hidden]down- subscription_handler
@@ -1039,12 +1048,79 @@ namespace ores #F2F2F2 {
             ' Class definitions
             '
 
+            enum session_protocol #F2DAFD {
+                binary
+                http
+            }
+
+            note top of session_protocol
+            Protocol used for the session connection.
+
+            - binary: ORE Studio binary protocol over TCP.
+            - http: HTTP/REST API with JWT authentication.
+            end note
+
+            class session_data #F7E5FF {
+                +{field} id boost::uuids::uuid
+                +{field} account_id boost::uuids::uuid
+                +{field} start_time std::chrono::system_clock::time_point
+                +{field} end_time std::optional<std::chrono::system_clock::time_point>
+                +{field} client_ip boost::asio::ip::address
+                +{field} client_identifier std::string
+                +{field} client_version_major std::uint16_t
+                +{field} client_version_minor std::uint16_t
+                +{field} bytes_sent std::uint64_t
+                +{field} bytes_received std::uint64_t
+                +{field} country_code std::string
+                +{field} protocol session_protocol
+                +is_active() bool
+                +duration() std::optional<std::chrono::seconds>
+            }
+
+            note top of session_data
+            Session data owned by ores.comms for protocol-level session tracking.
+
+            This struct exists to break the circular dependency between ores.comms
+            and ores.iam. Previously, ores.comms depended on ores.iam for the session
+            type, creating a cycle:
+
+              ores.comms -> ores.iam -> ores.variability -> ores.comms
+
+            By defining session data here, the dependency is inverted: ores.iam now
+            depends on ores.comms and provides conversion functions between this
+            struct and its domain::session.
+
+            This is a plain data struct with no behavior beyond trivial helpers.
+            The persistence layer (repository, mappers) remains in ores.iam.
+            end note
+
+            session_data o-- ores::comms::service::session_protocol
+
+            class client_info #F7E5FF {
+                +{field} client_identifier std::string
+                +{field} client_version_major std::uint16_t
+                +{field} client_version_minor std::uint16_t
+            }
+
+            note top of client_info
+            Client information captured during handshake.
+
+            Stored by remote address after successful handshake, retrieved during
+            login to populate session tracking fields.
+
+            Fields:
+
+            - client_identifier: Client identifier string from handshake.
+            - client_version_major: Client protocol version major number.
+            - client_version_minor: Client protocol version minor number.
+            end note
+
             class session_info #F7E5FF {
                 +{field} account_id boost::uuids::uuid
             }
 
             note top of session_info
-            Information about an authenticated session.
+            Lightweight session info for backward compatibility.
 
             Authorization is now handled via RBAC permissions checked
             at the handler level using authorization_service.
@@ -1056,14 +1132,23 @@ namespace ores #F2F2F2 {
 
             class auth_session_service #ECECEC {
                 +get_session(std::string) std::optional<session_info>
+                +get_session_data(std::string) std::shared_ptr<session_data>
                 +is_authenticated(std::string) bool
                 +store_session(std::string, session_info) void
-                +remove_session(std::string) void
-                +clear_all_sessions() void
+                +store_session_data(std::string, std::shared_ptr<session_data>) void
+                +update_session_bytes(std::string, std::uint64_t, std::uint64_t) void
+                +remove_session(std::string) std::shared_ptr<session_data>
+                +clear_all_sessions() std::vector<std::shared_ptr<session_data>>
+                +get_all_sessions() std::vector<std::shared_ptr<session_data>>
+                +store_client_info(std::string, client_info) void
+                +get_client_info(std::string) std::optional<client_info>
+                +remove_client_info(std::string) void
                 +authorize_request(messaging::message_type, std::string) std::expected<void, messaging::error_code>
                 -{static} requires_authentication(messaging::message_type) bool
                 -{field} session_mutex_ std::mutex
-                -{field} sessions_ std::map<std::string, session_info>
+                -{field} sessions_ std::map<std::string, std::shared_ptr<session_data>>
+                -{field} client_info_mutex_ std::mutex
+                -{field} client_infos_ std::map<std::string, client_info>
             }
 
             note top of auth_session_service
@@ -1072,15 +1157,21 @@ namespace ores #F2F2F2 {
             Tracks authenticated sessions by remote address. This service is shared
             across all message handlers to provide consistent authorization checks.
 
+            Stores full session_data for session tracking and client_info captured
+            during handshake. The session_data struct is owned by ores.comms to break
+            the circular dependency with ores.iam.
+
             Thread-safety: All public methods are thread-safe.
 
             Authorization logic:
             - Some messages don't require authentication (login, bootstrap, ping/pong)
-            - Some messages require authentication
-            - Some messages require admin privileges
+            - All other messages require authentication
+            - Permission-based authorization is handled at the handler level
             end note
 
             auth_session_service o-- ores::comms::service::session_info
+            auth_session_service o-- ores::comms::service::session_data
+            auth_session_service o-- ores::comms::service::client_info
             auth_session_service ..> ores::comms::messaging::message_type
             auth_session_service ..> ores::comms::messaging::error_code
 

@@ -71,6 +71,21 @@ public:
     /**@}*/
 
     /**
+     * @brief Reads latest permissions with pagination support.
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @return Vector of permissions within the specified range
+     */
+    std::vector<domain::permission> read_latest(std::uint32_t offset,
+                                                std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active permissions.
+     * @return Total number of permissions with valid_to == max_timestamp
+     */
+    std::uint32_t get_total_permission_count();
+
+    /**
      * @brief Reads latest permission by code.
      */
     std::vector<domain::permission> read_latest_by_code(const std::string& code);

@@ -73,6 +73,24 @@ public:
     /**@}*/
 
     /**
+     * @brief Reads latest images with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @return Vector of images within the specified range
+     */
+    std::vector<domain::image> read_latest(context ctx,
+                                           std::uint32_t offset,
+                                           std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active images.
+     * @param ctx Repository context with database connection
+     * @return Total number of images with valid_to == max_timestamp
+     */
+    std::uint32_t get_total_image_count(context ctx);
+
+    /**
      * @brief Reads all images (including historical versions).
      */
     std::vector<domain::image> read_all(context ctx);

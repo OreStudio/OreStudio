@@ -35,6 +35,10 @@
 #include "ores.http.server/routes/variability_routes.hpp"
 #include "ores.http.server/routes/assets_routes.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
+#include "ores.eventing/service/event_bus.hpp"
+#include "ores.eventing/service/postgres_event_source.hpp"
+#include "ores.eventing/service/registrar.hpp"
+#include "ores.variability/eventing/feature_flags_changed_event.hpp"
 
 namespace ores::http_server::app {
 
@@ -60,9 +64,32 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     // Initialize shared services
     BOOST_LOG_SEV(lg(), info) << "Initializing shared services...";
     auto system_flags = std::make_shared<variability::service::system_flags_service>(ctx);
+    system_flags->refresh();
     auto sessions = std::make_shared<comms::service::auth_session_service>();
     auto auth_service = std::make_shared<iam::service::authorization_service>(ctx);
     auto geo_service = std::make_shared<geo::service::geolocation_service>(ctx);
+
+    // Initialize event bus for cross-service cache invalidation
+    BOOST_LOG_SEV(lg(), info) << "Initializing event bus...";
+    eventing::service::event_bus event_bus;
+    eventing::service::postgres_event_source event_source(ctx, event_bus);
+
+    // Register feature flags mapping for system_flags cache invalidation
+    eventing::service::registrar::register_mapping<
+        variability::eventing::feature_flags_changed_event>(
+        event_source, "ores.variability.feature_flag", "ores_feature_flags");
+
+    // Subscribe to feature flag changes to refresh system_flags cache
+    auto flags_sub = event_bus.subscribe<variability::eventing::feature_flags_changed_event>(
+        [&system_flags](const variability::eventing::feature_flags_changed_event& e) {
+            BOOST_LOG_SEV(lg(), info) << "Feature flags changed notification received, "
+                                      << "refreshing system_flags cache ("
+                                      << e.flag_names.size() << " flags changed)";
+            system_flags->refresh();
+        });
+
+    // Start the event source to begin listening for database notifications
+    event_source.start();
 
     // Create HTTP server
     http::net::http_server server(io_ctx, cfg.server);
@@ -144,6 +171,9 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     // Run the server
     co_await server.run();
+
+    // Stop the event source
+    event_source.stop();
 
     BOOST_LOG_SEV(lg(), info) << "HTTP server application stopped";
 }

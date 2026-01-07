@@ -55,6 +55,7 @@ grant create on schema ores to ores;
 \ir ../schema/accounts_create.sql
 \ir ../schema/accounts_notify_trigger.sql
 \ir ../schema/feature_flags_create.sql
+\ir ../schema/feature_flags_notify_trigger.sql
 \ir ../schema/login_info_create.sql
 \ir ../schema/sessions_create.sql
 \ir ../schema/session_stats_create.sql

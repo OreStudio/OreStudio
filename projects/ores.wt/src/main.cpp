@@ -69,6 +69,7 @@ int run(int argc, char* argv[]) {
 
     auto& app_ctx = ores::wt::service::application_context::instance();
     app_ctx.initialize(opts.database);
+    app_ctx.start_eventing();
 
     std::vector<std::string> wt_argv_strings;
     wt_argv_strings.push_back(argv[0]);
@@ -118,7 +119,12 @@ int run(int argc, char* argv[]) {
 
     int wt_argc = static_cast<int>(wt_argv.size() - 1);
 
-    return Wt::WRun(wt_argc, wt_argv.data(), &create_application);
+    int exit_code = Wt::WRun(wt_argc, wt_argv.data(), &create_application);
+
+    app_ctx.stop_eventing();
+    BOOST_LOG_SEV(lg, info) << "ORE Studio Web stopped";
+
+    return exit_code;
 }
 
 }

@@ -31,6 +31,7 @@
 #include "ores.iam/messaging/registrar.hpp"
 #include "ores.iam/eventing/account_changed_event.hpp"
 #include "ores.assets/eventing/assets_changed_event.hpp"
+#include "ores.variability/eventing/feature_flags_changed_event.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.variability/messaging/registrar.hpp"
 #include "ores.assets/messaging/registrar.hpp"
@@ -154,6 +155,9 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     eventing::service::registrar::register_mapping<
         assets::eventing::assets_changed_event>(
         event_source, "ores.assets.currency_image", "ores_currency_images");
+    eventing::service::registrar::register_mapping<
+        variability::eventing::feature_flags_changed_event>(
+        event_source, "ores.variability.feature_flag", "ores_feature_flags");
 
     // Start the event source to begin listening for database notifications
     event_source.start();
@@ -185,6 +189,22 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                 assets::eventing::assets_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
                                      e.iso_codes);
+        });
+
+    // Subscribe to feature flag changes to refresh system_flags cache.
+    // This handles cross-service cache invalidation (e.g., HTTP server changes a flag,
+    // this service gets notified via PostgreSQL NOTIFY and refreshes its cache).
+    auto flags_sub = event_bus.subscribe<variability::eventing::feature_flags_changed_event>(
+        [&system_flags, &subscription_mgr](const variability::eventing::feature_flags_changed_event& e) {
+            BOOST_LOG_SEV(lg(), info) << "Feature flags changed notification received, "
+                                      << "refreshing system_flags cache";
+            system_flags->refresh();
+
+            // Also notify subscribed clients
+            using traits = eventing::domain::event_traits<
+                variability::eventing::feature_flags_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.flag_names);
         });
 
     // Create server with subscription manager

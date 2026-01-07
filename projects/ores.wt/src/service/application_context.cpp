@@ -22,6 +22,8 @@
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
+#include "ores.variability/eventing/feature_flags_changed_event.hpp"
+#include "ores.eventing/service/registrar.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
@@ -68,6 +70,7 @@ void application_context::initialize(const database::database_options& db_opts) 
     BOOST_LOG_SEV(lg(), info) << "Database context created";
 
     setup_services();
+    setup_eventing();
     check_bootstrap_mode();
 
     initialized_ = true;
@@ -100,6 +103,52 @@ void application_context::setup_services() {
         *db_context_);
 
     BOOST_LOG_SEV(lg(), info) << "Services setup complete";
+}
+
+void application_context::setup_eventing() {
+    using namespace ores::telemetry::log;
+
+    BOOST_LOG_SEV(lg(), info) << "Setting up eventing infrastructure";
+
+    // Create event bus and postgres event source
+    event_bus_ = std::make_unique<eventing::service::event_bus>();
+    event_source_ = std::make_unique<eventing::service::postgres_event_source>(
+        *db_context_, *event_bus_);
+
+    // Register feature flags mapping for system_flags cache invalidation
+    eventing::service::registrar::register_mapping<
+        variability::eventing::feature_flags_changed_event>(
+        *event_source_, "ores.variability.feature_flag", "ores_feature_flags");
+
+    // Subscribe to feature flag changes to refresh system_flags cache
+    flags_subscription_ = event_bus_->subscribe<variability::eventing::feature_flags_changed_event>(
+        [this](const variability::eventing::feature_flags_changed_event& e) {
+            BOOST_LOG_SEV(lg(), info) << "Feature flags changed notification received, "
+                                      << "refreshing system_flags cache ("
+                                      << e.flag_names.size() << " flags changed)";
+            system_flags_service_->refresh();
+            is_bootstrap_mode_ = system_flags_service_->is_bootstrap_mode_enabled();
+        });
+
+    BOOST_LOG_SEV(lg(), info) << "Eventing infrastructure setup complete";
+}
+
+void application_context::start_eventing() {
+    using namespace ores::telemetry::log;
+
+    if (event_source_) {
+        BOOST_LOG_SEV(lg(), info) << "Starting event source";
+        event_source_->start();
+    }
+}
+
+void application_context::stop_eventing() {
+    using namespace ores::telemetry::log;
+
+    if (event_source_) {
+        BOOST_LOG_SEV(lg(), info) << "Stopping event source";
+        event_source_->stop();
+    }
 }
 
 void application_context::check_bootstrap_mode() {

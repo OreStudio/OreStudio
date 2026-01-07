@@ -20,11 +20,14 @@
 #include "ores.wt/app/ore_application.hpp"
 #include "ores.wt/app/currency_list_widget.hpp"
 #include "ores.wt/app/currency_dialog.hpp"
+#include "ores.wt/app/country_list_widget.hpp"
+#include "ores.wt/app/country_dialog.hpp"
 #include "ores.wt/app/account_list_widget.hpp"
 #include "ores.wt/app/account_dialog.hpp"
 #include "ores.wt/service/application_context.hpp"
 #include "ores.iam/domain/login_info.hpp"
 #include "ores.risk/domain/currency.hpp"
+#include "ores.risk/domain/country.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 #include <Wt/WBootstrap5Theme.h>
 #include <Wt/WNavigationBar.h>
@@ -46,6 +49,7 @@ namespace {
 
 const std::string logger_name = "ores.wt.app.ore_application";
 constexpr std::uint32_t max_currencies_to_load = 1000;
+constexpr std::uint32_t max_countries_to_load = 1000;
 
 auto& lg() {
     using namespace ores::telemetry::log;
@@ -88,6 +92,34 @@ currency_data to_data(const risk::domain::currency& c) {
     d.rounding_precision = c.rounding_precision;
     d.format = c.format;
     d.currency_type = c.currency_type;
+    d.version = c.version;
+    return d;
+}
+
+country_row to_country_row(const risk::domain::country& c) {
+    return {c.alpha2_code, c.alpha3_code, c.name, c.numeric_code, c.version};
+}
+
+risk::domain::country to_country_domain(const country_data& d,
+                                         const std::string& username) {
+    risk::domain::country c;
+    c.version = d.version;
+    c.alpha2_code = d.alpha2_code;
+    c.alpha3_code = d.alpha3_code;
+    c.numeric_code = d.numeric_code;
+    c.name = d.name;
+    c.official_name = d.official_name;
+    c.recorded_by = username;
+    return c;
+}
+
+country_data to_country_data(const risk::domain::country& c) {
+    country_data d;
+    d.alpha2_code = c.alpha2_code;
+    d.alpha3_code = c.alpha3_code;
+    d.numeric_code = c.numeric_code;
+    d.name = c.name;
+    d.official_name = c.official_name;
     d.version = c.version;
     return d;
 }
@@ -258,6 +290,12 @@ void ore_application::show_main_view() {
     load_currencies();
     menu->addItem("Currencies", std::move(currency_widget));
 
+    auto country_widget = std::make_unique<country_list_widget>();
+    country_list_widget_ = country_widget.get();
+    setup_country_handlers();
+    load_countries();
+    menu->addItem("Countries", std::move(country_widget));
+
     auto account_widget = std::make_unique<account_list_widget>();
     account_list_widget_ = account_widget.get();
     setup_account_handlers();
@@ -409,6 +447,150 @@ void ore_application::confirm_delete_currency(const std::string& iso_code) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to delete currency: " << e.what();
                 auto err_box = addChild(std::make_unique<Wt::WMessageBox>(
                     "Error", "Failed to delete currency: " + std::string(e.what()),
+                    Wt::Icon::Critical, Wt::StandardButton::Ok));
+                err_box->buttonClicked().connect([this, err_box](Wt::StandardButton) {
+                    removeChild(err_box);
+                });
+                err_box->show();
+            }
+        }
+        removeChild(msg_box);
+    });
+
+    msg_box->show();
+}
+
+void ore_application::setup_country_handlers() {
+    country_list_widget_->add_requested().connect([this] {
+        show_add_country_dialog();
+    });
+
+    country_list_widget_->edit_requested().connect([this](const std::string& code) {
+        show_edit_country_dialog(code);
+    });
+
+    country_list_widget_->delete_requested().connect([this](const std::string& code) {
+        confirm_delete_country(code);
+    });
+}
+
+void ore_application::load_countries() {
+    auto& ctx = service::application_context::instance();
+    if (!ctx.is_initialized()) {
+        return;
+    }
+
+    using namespace ores::telemetry::log;
+    try {
+        auto countries = ctx.country_service().list_countries(0, max_countries_to_load);
+        std::vector<country_row> rows;
+        rows.reserve(countries.size());
+        for (const auto& c : countries) {
+            rows.push_back(to_country_row(c));
+        }
+        country_list_widget_->set_countries(rows);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to load countries: " << e.what();
+    }
+}
+
+void ore_application::show_add_country_dialog() {
+    using namespace ores::telemetry::log;
+    auto dialog = addChild(
+        std::make_unique<country_dialog>(country_dialog::mode::add));
+
+    dialog->saved().connect([this, dialog](const country_data& data) {
+        try {
+            auto& ctx = service::application_context::instance();
+            auto country = to_country_domain(data, get_current_username());
+            ctx.country_service().save_country(country);
+            load_countries();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to add country: " << e.what();
+            auto err_box = addChild(std::make_unique<Wt::WMessageBox>(
+                "Error", "Failed to add country: " + std::string(e.what()),
+                Wt::Icon::Critical, Wt::StandardButton::Ok));
+            err_box->buttonClicked().connect([this, err_box](Wt::StandardButton) {
+                removeChild(err_box);
+            });
+            err_box->show();
+        }
+        removeChild(dialog);
+    });
+
+    dialog->finished().connect([this, dialog](Wt::DialogCode) {
+        removeChild(dialog);
+    });
+
+    dialog->show();
+}
+
+void ore_application::show_edit_country_dialog(const std::string& alpha2_code) {
+    using namespace ores::telemetry::log;
+    auto& ctx = service::application_context::instance();
+    auto country_opt = ctx.country_service().get_country(alpha2_code);
+    if (!country_opt) {
+        BOOST_LOG_SEV(lg(), warn) << "Country not found: " << alpha2_code;
+        auto err_box = addChild(std::make_unique<Wt::WMessageBox>(
+            "Not Found", "Country " + alpha2_code + " was not found. "
+            "It may have been deleted by another user.",
+            Wt::Icon::Warning, Wt::StandardButton::Ok));
+        err_box->buttonClicked().connect([this, err_box](Wt::StandardButton) {
+            removeChild(err_box);
+        });
+        err_box->show();
+        load_countries();
+        return;
+    }
+
+    auto dialog = addChild(
+        std::make_unique<country_dialog>(country_dialog::mode::edit));
+    dialog->set_country(to_country_data(*country_opt));
+
+    dialog->saved().connect([this, dialog](const country_data& data) {
+        try {
+            auto& ctx = service::application_context::instance();
+            auto country = to_country_domain(data, get_current_username());
+            ctx.country_service().save_country(country);
+            load_countries();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to update country: " << e.what();
+            auto err_box = addChild(std::make_unique<Wt::WMessageBox>(
+                "Error", "Failed to update country: " + std::string(e.what()),
+                Wt::Icon::Critical, Wt::StandardButton::Ok));
+            err_box->buttonClicked().connect([this, err_box](Wt::StandardButton) {
+                removeChild(err_box);
+            });
+            err_box->show();
+        }
+        removeChild(dialog);
+    });
+
+    dialog->finished().connect([this, dialog](Wt::DialogCode) {
+        removeChild(dialog);
+    });
+
+    dialog->show();
+}
+
+void ore_application::confirm_delete_country(const std::string& alpha2_code) {
+    using namespace ores::telemetry::log;
+    auto msg_box = addChild(std::make_unique<Wt::WMessageBox>(
+        "Confirm Delete",
+        "Are you sure you want to delete country " + alpha2_code + "?",
+        Wt::Icon::Warning,
+        Wt::StandardButton::Yes | Wt::StandardButton::No));
+
+    msg_box->buttonClicked().connect([this, msg_box, alpha2_code](Wt::StandardButton btn) {
+        if (btn == Wt::StandardButton::Yes) {
+            try {
+                auto& ctx = service::application_context::instance();
+                ctx.country_service().delete_country(alpha2_code);
+                load_countries();
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to delete country: " << e.what();
+                auto err_box = addChild(std::make_unique<Wt::WMessageBox>(
+                    "Error", "Failed to delete country: " + std::string(e.what()),
                     Wt::Icon::Critical, Wt::StandardButton::Ok));
                 err_box->buttonClicked().connect([this, err_box](Wt::StandardButton) {
                     removeChild(err_box);

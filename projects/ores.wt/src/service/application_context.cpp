@@ -102,6 +102,9 @@ void application_context::setup_services() {
     currency_service_ = std::make_unique<risk::service::currency_service>(
         *db_context_);
 
+    country_service_ = std::make_unique<risk::service::country_service>(
+        *db_context_);
+
     BOOST_LOG_SEV(lg(), info) << "Services setup complete";
 }
 

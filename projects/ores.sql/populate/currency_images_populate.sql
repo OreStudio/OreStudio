@@ -213,3 +213,14 @@ FROM (
 ) AS v(currency_code, flag_key)
 JOIN images i ON i.key = v.flag_key AND i.valid_to = '9999-12-31 23:59:59'::timestamptz
 WHERE c.iso_code = v.currency_code AND c.valid_to = '9999-12-31 23:59:59'::timestamptz;
+
+--
+-- Assign placeholder "no-flag" image to currencies without a specific flag
+--
+UPDATE currencies c
+SET image_id = i.image_id
+FROM images i
+WHERE i.key = 'no-flag'
+  AND i.valid_to = '9999-12-31 23:59:59'::timestamptz
+  AND c.valid_to = '9999-12-31 23:59:59'::timestamptz
+  AND c.image_id IS NULL;

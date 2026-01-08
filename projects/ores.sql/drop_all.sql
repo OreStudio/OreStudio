@@ -28,6 +28,8 @@
 \ir ./drop/permissions_drop.sql
 \ir ./drop/currencies_notify_trigger_drop.sql
 \ir ./drop/currencies_drop.sql
+\ir ./drop/countries_notify_trigger_drop.sql
+\ir ./drop/countries_drop.sql
 \ir ./drop/accounts_notify_trigger_drop.sql
 \ir ./drop/accounts_drop.sql
 \ir ./drop/feature_flags_drop.sql

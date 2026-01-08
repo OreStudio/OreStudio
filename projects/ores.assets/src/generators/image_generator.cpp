@@ -35,14 +35,14 @@ domain::image generate_synthetic_image() {
     domain::image r;
 
     static boost::uuids::random_generator gen;
-    r.image_id = boost::uuids::to_string(gen());
+    r.image_id = gen();
     r.key = faker::string::alphanumeric(8);
     r.description = std::string(faker::lorem::sentence());
     r.svg_data = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\">"
                  "<rect fill=\"#" + faker::number::hexadecimal(6) + "\" width=\"100\" height=\"100\"/>"
                  "</svg>";
     r.recorded_by = std::string(faker::internet::username());
-    r.recorded_at = utility::faker::datetime::past_string();
+    r.recorded_at = utility::faker::datetime::past_timepoint();
 
     return r;
 }

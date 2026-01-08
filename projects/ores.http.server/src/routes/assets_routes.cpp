@@ -20,6 +20,7 @@
 #include "ores.http.server/routes/assets_routes.hpp"
 
 #include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.assets/messaging/assets_protocol.hpp"
 #include "ores.assets/service/assets_service.hpp"
 

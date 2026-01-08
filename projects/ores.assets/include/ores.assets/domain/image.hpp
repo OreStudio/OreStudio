@@ -20,7 +20,9 @@
 #ifndef ORES_ASSETS_DOMAIN_IMAGE_HPP
 #define ORES_ASSETS_DOMAIN_IMAGE_HPP
 
+#include <chrono>
 #include <string>
+#include <boost/uuid/uuid.hpp>
 
 namespace ores::assets::domain {
 
@@ -36,7 +38,7 @@ struct image final {
     /**
      * @brief Unique identifier for the image (UUID).
      */
-    std::string image_id;
+    boost::uuids::uuid image_id;
 
     /**
      * @brief Unique key used by the application (e.g., 'ro', 'us', 'gb').
@@ -63,7 +65,7 @@ struct image final {
     /**
      * @brief Timestamp when this version of the record was recorded in the system.
      */
-    std::string recorded_at;
+    std::chrono::system_clock::time_point recorded_at;
 };
 
 }

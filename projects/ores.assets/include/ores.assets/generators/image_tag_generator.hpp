@@ -21,6 +21,7 @@
 #define ORES_ASSETS_GENERATORS_IMAGE_TAG_GENERATOR_HPP
 
 #include <vector>
+#include <boost/uuid/uuid.hpp>
 #include "ores.assets/domain/image_tag.hpp"
 
 namespace ores::assets::generators {
@@ -33,8 +34,8 @@ domain::image_tag generate_synthetic_image_tag();
 /**
  * @brief Generates a synthetic image-tag with specific IDs.
  */
-domain::image_tag generate_synthetic_image_tag(const std::string& image_id,
-                                                const std::string& tag_id);
+domain::image_tag generate_synthetic_image_tag(const boost::uuids::uuid& image_id,
+                                                const boost::uuids::uuid& tag_id);
 
 /**
  * @brief Generates N synthetic image-tag associations. May contain duplicates.

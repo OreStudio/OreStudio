@@ -19,6 +19,7 @@
  */
 #include <set>
 #include <catch2/catch_test_macros.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.assets/domain/image_tag.hpp" // IWYU pragma: keep.
@@ -41,22 +42,26 @@ TEST_CASE("generate_single_image_tag", tags) {
     auto image_tag = generate_synthetic_image_tag();
     BOOST_LOG_SEV(lg, debug) << "Generated image_tag: " << image_tag;
 
-    CHECK(!image_tag.image_id.empty());
-    CHECK(!image_tag.tag_id.empty());
+    CHECK(!image_tag.image_id.is_nil());
+    CHECK(!image_tag.tag_id.is_nil());
     CHECK(!image_tag.assigned_by.empty());
-    CHECK(!image_tag.assigned_at.empty());
+    CHECK(image_tag.assigned_at != std::chrono::system_clock::time_point{});
 }
 
 TEST_CASE("generate_image_tag_with_params", tags) {
     auto lg(make_logger(test_suite));
 
-    auto image_tag = generate_synthetic_image_tag("test-image-id", "test-tag-id");
+    static boost::uuids::string_generator gen;
+    const auto test_image_id = gen("00000000-0000-0000-0000-000000000001");
+    const auto test_tag_id = gen("00000000-0000-0000-0000-000000000002");
+
+    auto image_tag = generate_synthetic_image_tag(test_image_id, test_tag_id);
     BOOST_LOG_SEV(lg, debug) << "Generated image_tag with params: " << image_tag;
 
-    CHECK(image_tag.image_id == "test-image-id");
-    CHECK(image_tag.tag_id == "test-tag-id");
+    CHECK(image_tag.image_id == test_image_id);
+    CHECK(image_tag.tag_id == test_tag_id);
     CHECK(!image_tag.assigned_by.empty());
-    CHECK(!image_tag.assigned_at.empty());
+    CHECK(image_tag.assigned_at != std::chrono::system_clock::time_point{});
 }
 
 TEST_CASE("generate_multiple_image_tags", tags) {

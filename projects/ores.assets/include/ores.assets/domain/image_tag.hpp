@@ -20,7 +20,9 @@
 #ifndef ORES_ASSETS_DOMAIN_IMAGE_TAG_HPP
 #define ORES_ASSETS_DOMAIN_IMAGE_TAG_HPP
 
+#include <chrono>
 #include <string>
+#include <boost/uuid/uuid.hpp>
 
 namespace ores::assets::domain {
 
@@ -33,12 +35,12 @@ struct image_tag final {
     /**
      * @brief The image identifier (UUID).
      */
-    std::string image_id;
+    boost::uuids::uuid image_id;
 
     /**
      * @brief The tag identifier (UUID).
      */
-    std::string tag_id;
+    boost::uuids::uuid tag_id;
 
     /**
      * @brief Username of the person who assigned this tag to the image.
@@ -48,7 +50,7 @@ struct image_tag final {
     /**
      * @brief Timestamp when this tag was assigned to the image.
      */
-    std::string assigned_at;
+    std::chrono::system_clock::time_point assigned_at;
 };
 
 }

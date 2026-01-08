@@ -19,16 +19,37 @@
  */
 #include "ores.assets/messaging/assets_protocol.hpp"
 
+#include <format>
+#include <sstream>
+#include <iomanip>
 #include <expected>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 #include "ores.utility/serialization/reader.hpp"
 #include "ores.utility/serialization/writer.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
 namespace ores::assets::messaging {
 
 using ores::utility::serialization::reader;
 using ores::utility::serialization::writer;
+
+namespace {
+
+std::string timepoint_to_string(const std::chrono::system_clock::time_point& tp) {
+    return std::format("{:%F %T}", tp);
+}
+
+std::chrono::system_clock::time_point string_to_timepoint(const std::string& str) {
+    std::tm tm = {};
+    std::istringstream ss(str);
+    ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+}
+
+}
 
 // get_images_request
 
@@ -85,12 +106,12 @@ std::vector<std::byte> get_images_response::serialize() const {
 
     for (const auto& img : images) {
         writer::write_uint32(buffer, static_cast<std::uint32_t>(img.version));
-        writer::write_string(buffer, img.image_id);
+        writer::write_string(buffer, boost::uuids::to_string(img.image_id));
         writer::write_string(buffer, img.key);
         writer::write_string(buffer, img.description);
         writer::write_string32(buffer, img.svg_data);  // Use 32-bit length for large SVGs
         writer::write_string(buffer, img.recorded_by);
-        writer::write_string(buffer, img.recorded_at);
+        writer::write_string(buffer, timepoint_to_string(img.recorded_at));
     }
 
     return buffer;
@@ -116,7 +137,7 @@ get_images_response::deserialize(std::span<const std::byte> data) {
 
         auto image_id_result = reader::read_string(data);
         if (!image_id_result) return std::unexpected(image_id_result.error());
-        img.image_id = *image_id_result;
+        img.image_id = boost::lexical_cast<boost::uuids::uuid>(*image_id_result);
 
         auto key_result = reader::read_string(data);
         if (!key_result) return std::unexpected(key_result.error());
@@ -136,7 +157,7 @@ get_images_response::deserialize(std::span<const std::byte> data) {
 
         auto recorded_at_result = reader::read_string(data);
         if (!recorded_at_result) return std::unexpected(recorded_at_result.error());
-        img.recorded_at = *recorded_at_result;
+        img.recorded_at = string_to_timepoint(*recorded_at_result);
 
         response.images.push_back(std::move(img));
     }

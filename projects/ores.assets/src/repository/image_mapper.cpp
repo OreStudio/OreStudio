@@ -19,6 +19,8 @@
  */
 #include "ores.assets/repository/image_mapper.hpp"
 
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 
 namespace ores::assets::repository {
@@ -31,12 +33,12 @@ domain::image image_mapper::map(const image_entity& v) {
 
     domain::image r;
     r.version = v.version;
-    r.image_id = v.image_id.value();
+    r.image_id = boost::lexical_cast<boost::uuids::uuid>(v.image_id.value());
     r.key = v.key;
     r.description = v.description;
     r.svg_data = v.svg_data;
     r.recorded_by = v.modified_by;
-    r.recorded_at = v.valid_from.value().str();
+    r.recorded_at = timestamp_to_timepoint(v.valid_from.value());
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity.";
     return r;
@@ -46,7 +48,7 @@ image_entity image_mapper::map(const domain::image& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity.";
 
     image_entity r;
-    r.image_id = v.image_id;
+    r.image_id = boost::uuids::to_string(v.image_id);
     r.version = v.version;
     r.key = v.key;
     r.description = v.description;

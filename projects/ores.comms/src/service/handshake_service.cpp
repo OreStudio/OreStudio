@@ -67,10 +67,20 @@ boost::asio::awaitable<messaging::compression_type> handshake_service::perform_c
     BOOST_LOG_SEV(lg(), debug) << "About to read handshake response frame.";
     auto response_frame_result = co_await conn.read_frame();
     if (!response_frame_result) {
+        const auto ec = response_frame_result.error();
         BOOST_LOG_SEV(lg(), error) << "Failed to read handshake response. "
-                                   << " Error code: "
-                                   << static_cast<int>(response_frame_result.error());
-        throw net::connection_error("Failed to read handshake response from server");
+                                   << " Error code: " << ec;
+
+        if (ec == error_code::version_mismatch) {
+            throw net::connection_error(std::format(
+                "Protocol version mismatch. Client version: {}.{}. "
+                "Server may be running an incompatible version.",
+                PROTOCOL_VERSION_MAJOR, PROTOCOL_VERSION_MINOR));
+        }
+
+        throw net::connection_error(std::format(
+            "Failed to read handshake response from server ({})",
+            messaging::to_string(ec)));
     }
 
     const auto& response_frame = *response_frame_result;

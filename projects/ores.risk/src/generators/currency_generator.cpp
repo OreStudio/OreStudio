@@ -190,4 +190,319 @@ generate_unique_synthetic_currencies(std::size_t n) {
     return r;
 }
 
+std::vector<domain::currency>
+generate_fictional_currencies(std::size_t n) {
+    const auto now = std::chrono::system_clock::now();
+    const auto user = std::string(faker::internet::username());
+
+    std::vector<domain::currency> all;
+    all.reserve(50);
+
+    all.push_back({
+        .iso_code = "ALD", .name = "Aerilonian Dollar", .numeric_code = "10001",
+        .symbol = "A$", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "ARA", .name = "Arcturian Arct", .numeric_code = "10002",
+        .symbol = "Ar", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "BAF", .name = "Balthorian Florin", .numeric_code = "10003",
+        .symbol = "Bf", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "BEB", .name = "Bellorian Bell", .numeric_code = "10004",
+        .symbol = "Bb", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "CAC", .name = "Calandrian Crown", .numeric_code = "10005",
+        .symbol = "Cc", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "CDC", .name = "Caledonian Caled", .numeric_code = "10006",
+        .symbol = "Cd", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "DAD", .name = "Daelorian Dinar", .numeric_code = "10007",
+        .symbol = "Dd", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "DED", .name = "Delvadian Delv", .numeric_code = "10008",
+        .symbol = "De", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "ERE", .name = "Eriadoran Euro", .numeric_code = "10009",
+        .symbol = "Er", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "ESE", .name = "Esterian Est", .numeric_code = "10010",
+        .symbol = "Es", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "FEF", .name = "Felorian Franc", .numeric_code = "10011",
+        .symbol = "Ff", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "FNF", .name = "Fendarian Fen", .numeric_code = "10012",
+        .symbol = "Fn", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "GAG", .name = "Galdorian Galleon", .numeric_code = "10013",
+        .symbol = "Gg", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "GRG", .name = "Grendorian Grend", .numeric_code = "10014",
+        .symbol = "Gr", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "HEF", .name = "Helvetian Franc", .numeric_code = "10015",
+        .symbol = "Hf", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "HYH", .name = "Hydronian Hyd", .numeric_code = "10016",
+        .symbol = "Hy", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "IRD", .name = "Iridian Dollar", .numeric_code = "10017",
+        .symbol = "I$", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "ITI", .name = "Ithacan Ith", .numeric_code = "10018",
+        .symbol = "It", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "JEJ", .name = "Jethronian Jet", .numeric_code = "10019",
+        .symbol = "Je", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "JOK", .name = "Jorvikian Krona", .numeric_code = "10020",
+        .symbol = "Jk", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "KAK", .name = "Kaelorian Krown", .numeric_code = "10021",
+        .symbol = "Kk", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "KRK", .name = "Krynnish Krynn", .numeric_code = "10022",
+        .symbol = "Kr", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "LUL", .name = "Luminian Lum", .numeric_code = "10023",
+        .symbol = "Lu", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "LYL", .name = "Lysandrian Lira", .numeric_code = "10024",
+        .symbol = "Ly", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "MAM", .name = "Maldorian Mal", .numeric_code = "10025",
+        .symbol = "Mm", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "MRP", .name = "Mariposan Peso", .numeric_code = "10026",
+        .symbol = "Mp", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "NEN", .name = "Nektonian Nek", .numeric_code = "10027",
+        .symbol = "Ne", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "NTN", .name = "Netharian Naira", .numeric_code = "10028",
+        .symbol = "Nt", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "ORB", .name = "Orinocan Bolivar", .numeric_code = "10029",
+        .symbol = "Ob", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "OLO", .name = "Orlanthian Orl", .numeric_code = "10030",
+        .symbol = "Ol", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "PAP", .name = "Paldorian Peso", .numeric_code = "10031",
+        .symbol = "Pp", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "PYP", .name = "Pyrrhian Pyr", .numeric_code = "10032",
+        .symbol = "Py", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "QUQ", .name = "Quentarian Quen", .numeric_code = "10033",
+        .symbol = "Qu", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "QNQ", .name = "Quinarian Quetzal", .numeric_code = "10034",
+        .symbol = "Qn", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "RER", .name = "Rendellian Rend", .numeric_code = "10035",
+        .symbol = "Re", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "RIR", .name = "Rivenian Ruble", .numeric_code = "10036",
+        .symbol = "Ri", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "SES", .name = "Serendian Shilling", .numeric_code = "10037",
+        .symbol = "Ss", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "SIS", .name = "Sildorian Sild", .numeric_code = "10038",
+        .symbol = "Si", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "TAT", .name = "Tandorian Taka", .numeric_code = "10039",
+        .symbol = "Ta", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "TET", .name = "Tenebrian Ten", .numeric_code = "10040",
+        .symbol = "Te", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "ULU", .name = "Uldorian Uld", .numeric_code = "10041",
+        .symbol = "Ul", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "UTU", .name = "Utopian Unit", .numeric_code = "10042",
+        .symbol = "Ut", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "VAV", .name = "Valorian Valt", .numeric_code = "10042",
+        .symbol = "Vv", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "VLV", .name = "Valtarian Val", .numeric_code = "10043",
+        .symbol = "Vl", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "WIW", .name = "Wintervalean Won", .numeric_code = "10044",
+        .symbol = "Ww", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "WYW", .name = "Wysterian Wys", .numeric_code = "10045",
+        .symbol = "Wy", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "XAX", .name = "Xandrian Xan", .numeric_code = "10046",
+        .symbol = "Xa", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "XEX", .name = "Xenorian Xen", .numeric_code = "10047",
+        .symbol = "Xe", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "YSY", .name = "Yslandian Yen", .numeric_code = "10048",
+        .symbol = "Ys", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+    all.push_back({
+        .iso_code = "ZEZ", .name = "Zephyrian Zephyr", .numeric_code = "10049",
+        .symbol = "Ze", .fractions_per_unit = 100, .rounding_type = "Closest",
+        .rounding_precision = 2, .format = "%3% %1$.2f", .currency_type = "Fiat",
+        .recorded_by = user, .recorded_at = now
+    });
+
+    if (n == 0 || n >= all.size())
+        return all;
+
+    return std::vector<domain::currency>(all.begin(), all.begin() + n);
+}
+
 }

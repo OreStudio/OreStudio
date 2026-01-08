@@ -20,6 +20,7 @@
 #include "ores.qt/CurrencyDetailDialog.hpp"
 
 #include <algorithm>
+#include <random>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QVBoxLayout>
@@ -755,7 +756,7 @@ void CurrencyDetailDialog::setupGenerateAction() {
 
     generateAction_ = new QAction("Generate", this);
     generateAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_star_20_regular.svg", iconColor));
+            ":/icons/ic_fluent_wand_20_regular.svg", iconColor));
     generateAction_->setToolTip("Fill fields with synthetic test data");
     connect(generateAction_, &QAction::triggered, this,
         &CurrencyDetailDialog::onGenerateClicked);
@@ -813,7 +814,11 @@ void CurrencyDetailDialog::onGenerateClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Generate clicked in detail dialog";
 
     try {
-        auto currency = risk::generators::generate_synthetic_currency();
+        auto currencies = risk::generators::generate_fictional_currencies();
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        std::uniform_int_distribution<std::size_t> dist(0, currencies.size() - 1);
+        const auto& currency = currencies[dist(gen)];
 
         // Only fill ISO code in add mode - in edit mode it's the primary key
         if (isAddMode_) {

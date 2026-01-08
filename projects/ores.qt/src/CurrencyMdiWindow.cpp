@@ -1032,9 +1032,9 @@ void CurrencyMdiWindow::generateSynthetic() {
     BOOST_LOG_SEV(lg(), debug) << "Generate synthetic currencies requested";
 
     bool ok;
-    int count = QInputDialog::getInt(this, tr("Generate Synthetic Currencies"),
+    int count = QInputDialog::getInt(this, tr("Generate Fictional Currencies"),
                                       tr("Number of currencies to generate:"),
-                                      5, 1, 100, 1, &ok);
+                                      5, 1, 50, 1, &ok);
     if (!ok) {
         BOOST_LOG_SEV(lg(), debug) << "Generation cancelled by user";
         return;
@@ -1043,7 +1043,7 @@ void CurrencyMdiWindow::generateSynthetic() {
     BOOST_LOG_SEV(lg(), info) << "Generating " << count << " synthetic currencies";
 
     try {
-        auto currencies = risk::generators::generate_unique_synthetic_currencies(
+        auto currencies = risk::generators::generate_fictional_currencies(
             static_cast<std::size_t>(count));
 
         if (currencies.empty()) {

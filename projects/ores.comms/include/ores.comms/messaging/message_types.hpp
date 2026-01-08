@@ -137,7 +137,10 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 //
 // Version 19.0 adds recorded_at field to list_feature_flags_response.
 // Previously the timestamp was not serialized. Breaking change.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 19;
+//
+// Version 20.0 adds version field to list_feature_flags_response.
+// Breaking change.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 20;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

@@ -62,6 +62,7 @@ std::vector<std::byte> list_feature_flags_response::serialize() const {
         writer::write_string(buffer, ff.name);
         writer::write_bool(buffer, ff.enabled);
         writer::write_string(buffer, ff.description);
+        writer::write_uint32(buffer, static_cast<std::uint32_t>(ff.version));
         writer::write_string(buffer, ff.recorded_by);
         writer::write_string(buffer,
             ores::platform::time::datetime::format_time_point(ff.recorded_at));
@@ -95,6 +96,10 @@ list_feature_flags_response::deserialize(std::span<const std::byte> data) {
         auto description_result = reader::read_string(data);
         if (!description_result) return std::unexpected(description_result.error());
         ff.description = *description_result;
+
+        auto version_result = reader::read_uint32(data);
+        if (!version_result) return std::unexpected(version_result.error());
+        ff.version = static_cast<int>(*version_result);
 
         auto recorded_by_result = reader::read_string(data);
         if (!recorded_by_result) return std::unexpected(recorded_by_result.error());

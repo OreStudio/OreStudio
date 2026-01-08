@@ -46,6 +46,7 @@ namespace ores #F2F2F2 {
         together {
             class EntityController
             class CurrencyController
+            class CountryController
         }
 
         ' Group: Currency Windows
@@ -54,6 +55,19 @@ namespace ores #F2F2F2 {
             class ClientCurrencyModel
             class CurrencyDetailDialog
             class CurrencyHistoryDialog
+        }
+
+        ' Group: Country Windows
+        together {
+            class CountryMdiWindow
+            class ClientCountryModel
+            class CountryDetailDialog
+            class CountryHistoryDialog
+        }
+
+        ' Group: Image Caching
+        together {
+            class ImageCache
         }
 
         ' Group: Dialogs
@@ -68,6 +82,7 @@ namespace ores #F2F2F2 {
         ' Group: Helpers
         together {
             class CurrencyItemDelegate
+            class CountryItemDelegate
             class MessageBoxHelper
             class IconUtils
             class MdiUtils
@@ -78,14 +93,19 @@ namespace ores #F2F2F2 {
         ClientManager -[hidden]down- MainWindow
         MdiAreaWithBackground -[hidden]down- DetachableMdiSubWindow
         EntityController -[hidden]down- CurrencyController
+        CurrencyController -[hidden]down- CountryController
         CurrencyMdiWindow -[hidden]down- ClientCurrencyModel
         ClientCurrencyModel -[hidden]down- CurrencyDetailDialog
         CurrencyDetailDialog -[hidden]down- CurrencyHistoryDialog
+        CountryMdiWindow -[hidden]down- ClientCountryModel
+        ClientCountryModel -[hidden]down- CountryDetailDialog
+        CountryDetailDialog -[hidden]down- CountryHistoryDialog
         LoginDialog -[hidden]down- AboutDialog
         AboutDialog -[hidden]down- SplashScreen
         SplashScreen -[hidden]down- MyAccountDialog
         MyAccountDialog -[hidden]down- ChangePasswordDialog
-        CurrencyItemDelegate -[hidden]down- MessageBoxHelper
+        CurrencyItemDelegate -[hidden]down- CountryItemDelegate
+        CountryItemDelegate -[hidden]down- MessageBoxHelper
         MessageBoxHelper -[hidden]down- IconUtils
         IconUtils -[hidden]down- MdiUtils
         MdiUtils -[hidden]down- LogoLabel
@@ -93,9 +113,11 @@ namespace ores #F2F2F2 {
         ' Create row structure between groups
         MainWindow -[hidden]down- MdiAreaWithBackground
         DetachableMdiSubWindow -[hidden]down- EntityController
-        CurrencyController -[hidden]down- CurrencyMdiWindow
-        CurrencyHistoryDialog -[hidden]down- LoginDialog
+        CountryController -[hidden]down- CurrencyMdiWindow
+        CurrencyHistoryDialog -[hidden]down- CountryMdiWindow
+        CountryHistoryDialog -[hidden]down- LoginDialog
         ChangePasswordDialog -[hidden]down- CurrencyItemDelegate
+        ImageCache -[hidden]down- LoginDialog
 
         '
         ' Class definitions
@@ -388,6 +410,242 @@ namespace ores #F2F2F2 {
         - history_: Version history data
         end note
 
+        ' Country Controller
+        class CountryController #ECECEC {
+            +CountryController(QMainWindow* mainWindow, QMdiArea* mdiArea, ClientManager* clientManager, ImageCache* imageCache, const QString& username, QList<DetachableMdiSubWindow*>& allDetachableWindows, QObject* parent)
+            +~CountryController()
+            +showListWindow() void
+            +closeAllWindows() void
+            -onAddNewRequested() void
+            -onShowCountryDetails(const risk::domain::country& country) void
+            -onShowCountryHistory(const QString& alpha2Code) void
+            -onNotificationReceived(const QString& eventType, const QDateTime& timestamp, const QStringList& entityIds) void
+            -{field} allDetachableWindows_ QList<DetachableMdiSubWindow*>&
+            -{field} imageCache_ ImageCache*
+            -{field} countryListWindow_ QPointer<DetachableMdiSubWindow>
+        }
+        note top of CountryController
+        Controller managing all country-related windows and operations.
+
+        - allDetachableWindows_: Reference to MainWindow's window list
+        - imageCache_: Image cache for country flags
+        - countryListWindow_: Weak pointer to country list window
+        end note
+
+        ' Country MDI Window
+        class CountryMdiWindow #ECECEC {
+            +CountryMdiWindow(ClientManager* clientManager, ImageCache* imageCache, const QString& username, QWidget* parent)
+            +~CountryMdiWindow()
+            +countryModel() ClientCountryModel*
+            +sizeHint() QSize
+            +reload() void
+            +addNew() void
+            +editSelected() void
+            +deleteSelected() void
+            +viewHistorySelected() void
+            +exportToCSV() void
+            +markAsStale() void
+            +clearStaleIndicator() void
+            -onDataLoaded() void
+            -onLoadError(const QString& error_message) void
+            -onRowDoubleClicked(const QModelIndex& index) void
+            -onSelectionChanged() void
+            -onConnectionStateChanged() void
+            -updateActionStates() void
+            -startPulseAnimation() void
+            -stopPulseAnimation() void
+            -{field} verticalLayout_ QVBoxLayout*
+            -{field} countryTableView_ QTableView*
+            -{field} toolBar_ QToolBar*
+            -{field} pagination_widget_ PaginationWidget*
+            -{field} countryModel_ std::unique_ptr<ClientCountryModel>
+            -{field} proxyModel_ QSortFilterProxyModel*
+            -{field} clientManager_ ClientManager*
+            -{field} imageCache_ ImageCache*
+        }
+        note top of CountryMdiWindow
+        MDI window for displaying countries.
+
+        - verticalLayout_: Layout for window
+        - countryTableView_: Table view for countries
+        - toolBar_: Toolbar with actions
+        - pagination_widget_: Pagination controls
+        - countryModel_: Country data model
+        - proxyModel_: Sort/filter proxy
+        - clientManager_: Client manager
+        - imageCache_: Image cache for flags
+        end note
+
+        ' Client Country Model
+        class ClientCountryModel #ECECEC {
+            +ClientCountryModel(ClientManager* clientManager, ImageCache* imageCache, QObject* parent)
+            +~ClientCountryModel()
+            +rowCount(const QModelIndex& parent) int
+            +columnCount(const QModelIndex& parent) int
+            +data(const QModelIndex& index, int role) QVariant
+            +headerData(int section, Qt::Orientation orientation, int role) QVariant
+            +refresh(bool replace) void
+            +load_page(std::uint32_t offset, std::uint32_t limit) void
+            +canFetchMore(const QModelIndex& parent) bool
+            +fetchMore(const QModelIndex& parent) void
+            +getCountry(int row) const risk::domain::country*
+            +getCountries() std::vector<risk::domain::country>
+            +page_size() std::uint32_t
+            +set_page_size(std::uint32_t size) void
+            +total_available_count() std::uint32_t
+            -onCountriesLoaded() void
+            -onPulseTimerTimeout() void
+            -recency_foreground_color(const std::string& alpha2_code) QVariant
+            -{field} clientManager_ ClientManager*
+            -{field} imageCache_ ImageCache*
+            -{field} countries_ std::vector<risk::domain::country>
+            -{field} watcher_ QFutureWatcher<FetchResult>*
+            -{field} page_size_ std::uint32_t
+            -{field} total_available_count_ std::uint32_t
+        }
+        note top of ClientCountryModel
+        Model for displaying countries fetched from the server via client.
+
+        - clientManager_: Client manager
+        - imageCache_: Image cache for flags
+        - countries_: Country data
+        - watcher_: Future watcher for async loading
+        - page_size_: Records per page
+        - total_available_count_: Total records available
+        end note
+
+        ' Country Detail Dialog
+        class CountryDetailDialog #ECECEC {
+            +CountryDetailDialog(QWidget* parent)
+            +~CountryDetailDialog()
+            +setClientManager(ClientManager* clientManager) void
+            +setUsername(const std::string& username) void
+            +setImageCache(ImageCache* imageCache) void
+            +setCountry(const risk::domain::country& country) void
+            +getCountry() risk::domain::country
+            +clearDialog() void
+            +save() void
+            +setReadOnly(bool readOnly, int versionNumber) void
+            +markAsStale() void
+            +alpha2Code() QString
+            -onSaveClicked() void
+            -onResetClicked() void
+            -onDeleteClicked() void
+            -onRevertClicked() void
+            -onFieldChanged() void
+            -onSelectFlagClicked() void
+            -updateSaveResetButtonState() void
+            -setFieldsReadOnly(bool readOnly) void
+            -updateFlagDisplay() void
+            -{field} ui_ std::unique_ptr<Ui::CountryDetailDialog>
+            -{field} isDirty_ bool
+            -{field} isAddMode_ bool
+            -{field} isReadOnly_ bool
+            -{field} isStale_ bool
+            -{field} username_ std::string
+            -{field} toolBar_ QToolBar*
+            -{field} saveAction_ QAction*
+            -{field} deleteAction_ QAction*
+            -{field} revertAction_ QAction*
+            -{field} clientManager_ ClientManager*
+            -{field} imageCache_ ImageCache*
+            -{field} currentCountry_ risk::domain::country
+        }
+        note top of CountryDetailDialog
+        Widget for creating/editing country details.
+
+        - ui_: Auto-generated UI elements
+        - isDirty_: Dirty flag
+        - isAddMode_: Add mode flag
+        - isReadOnly_: Read-only mode flag
+        - isStale_: Stale data flag
+        - username_: Logged-in username
+        - toolBar_: Toolbar with actions
+        - clientManager_: Client manager
+        - imageCache_: Image cache for flag display
+        - currentCountry_: Current country being edited
+        end note
+
+        ' Country History Dialog
+        class CountryHistoryDialog #ECECEC {
+            +CountryHistoryDialog(QString alpha2_code, ClientManager* clientManager, QWidget* parent)
+            +~CountryHistoryDialog()
+            +loadHistory() void
+            +setImageCache(ImageCache* imageCache) void
+            +sizeHint() QSize
+            +markAsStale() void
+            +alpha2Code() QString
+            -onVersionSelected(int index) void
+            -onHistoryLoaded() void
+            -onHistoryLoadError(const QString& error) void
+            -onOpenClicked() void
+            -onRevertClicked() void
+            -onReloadClicked() void
+            -displayChangesTab(int version_index) void
+            -displayFullDetailsTab(int version_index) void
+            -calculateDiff(const risk::domain::country& current, const risk::domain::country& previous) DiffResult
+            -{field} ui_ std::unique_ptr<Ui::CountryHistoryDialog>
+            -{field} clientManager_ ClientManager*
+            -{field} imageCache_ ImageCache*
+            -{field} alpha2Code_ QString
+            -{field} history_ std::vector<risk::domain::country>
+            -{field} toolBar_ QToolBar*
+        }
+        note top of CountryHistoryDialog
+        Widget for displaying country version history.
+
+        - ui_: Auto-generated UI elements
+        - clientManager_: Client manager
+        - imageCache_: Image cache for flag display
+        - alpha2Code_: Alpha-2 code of country
+        - history_: Version history data
+        - toolBar_: Toolbar with actions
+        end note
+
+        ' Image Cache
+        class ImageCache #ECECEC {
+            +ImageCache(ClientManager* clientManager, QObject* parent)
+            +~ImageCache()
+            +loadCurrencyMappings() void
+            +loadImagesForCurrencies() void
+            +loadAll() void
+            +getCurrencyIcon(const std::string& iso_code) QIcon
+            +hasCurrencyIcon(const std::string& iso_code) bool
+            +loadCountryMappings() void
+            +loadImagesForCountries() void
+            +getCountryIcon(const std::string& alpha2_code) QIcon
+            +hasCountryIcon(const std::string& alpha2_code) bool
+            +setCountryImage(const std::string& alpha2_code, const std::string& image_id, const std::string& assigned_by) void
+            +getCountryImageId(const std::string& alpha2_code) std::string
+            +cachedIconCount() std::size_t
+            +isLoading() bool
+            +loadImageList() void
+            +availableImages() std::vector<assets::messaging::image_info>
+            +loadImageById(const std::string& image_id) void
+            +loadAllAvailableImages() void
+            +getImageIcon(const std::string& image_id) QIcon
+            +setCurrencyImage(const std::string& iso_code, const std::string& image_id, const std::string& assigned_by) void
+            +getCurrencyImageId(const std::string& iso_code) std::string
+            +getNoFlagImageId() std::string
+            +getNoFlagIcon() QIcon
+            -{field} clientManager_ ClientManager*
+            -{field} currency_to_image_id_ std::unordered_map<std::string, std::string>
+            -{field} country_to_image_id_ std::unordered_map<std::string, std::string>
+            -{field} image_svg_cache_ std::unordered_map<std::string, std::string>
+            -{field} currency_icons_ std::unordered_map<std::string, QIcon>
+            -{field} country_icons_ std::unordered_map<std::string, QIcon>
+        }
+        note top of ImageCache
+        Cache for dynamically loaded images (flags, icons) from the server.
+
+        Manages fetching and caching of images from the server.
+        - currency_to_image_id_: Currency ISO -> image_id mapping
+        - country_to_image_id_: Country alpha-2 -> image_id mapping
+        - image_svg_cache_: image_id -> SVG data cache
+        - currency_icons_: Currency ISO -> QIcon cache
+        - country_icons_: Country alpha-2 -> QIcon cache
+        end note
+
         ' Dialogs
         class LoginDialog #ECECEC {
             +LoginDialog(ClientManager* clientManager, QWidget* parent)
@@ -531,6 +789,17 @@ namespace ores #F2F2F2 {
         - monospaceFont_: Monospace font for rendering
         end note
 
+        class CountryItemDelegate #ECECEC {
+            +CountryItemDelegate(QObject* parent)
+            +paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) void
+            -{field} monospaceFont_ QFont
+        }
+        note top of CountryItemDelegate
+        Custom item delegate for country display.
+
+        - monospaceFont_: Monospace font for rendering
+        end note
+
         class MessageBoxHelper #ECECEC {
             +{static} question(QWidget* parent, const QString& title, const QString& text, QMessageBox::StandardButtons buttons) QMessageBox::StandardButton
             +{static} warning(QWidget* parent, const QString& title, const QString& text) void
@@ -576,11 +845,15 @@ namespace ores #F2F2F2 {
         ores::qt::MainWindow *-- ores::qt::MdiAreaWithBackground
         ores::qt::MainWindow o-- ores::qt::DetachableMdiSubWindow
         ores::qt::MainWindow *-- ores::qt::CurrencyController
+        ores::qt::MainWindow *-- ores::qt::CountryController
         ores::qt::MainWindow *-- ores::qt::ClientManager
+        ores::qt::MainWindow *-- ores::qt::ImageCache
 
         ' Relationships - Entity Controller Pattern
         ores::qt::CurrencyController -up-|> ores::qt::EntityController
+        ores::qt::CountryController -up-|> ores::qt::EntityController
         ores::qt::CurrencyController o-- ores::qt::DetachableMdiSubWindow
+        ores::qt::CountryController o-- ores::qt::DetachableMdiSubWindow
         ores::qt::EntityController o-- ores::qt::ClientManager
 
         ' Relationships - Currency Components
@@ -590,6 +863,19 @@ namespace ores #F2F2F2 {
         ores::qt::ClientCurrencyModel o-- ores::qt::ClientManager
         ores::qt::CurrencyDetailDialog o-- ores::qt::ClientManager
         ores::qt::CurrencyHistoryDialog o-- ores::qt::ClientManager
+
+        ' Relationships - Country Components
+        ores::qt::CountryMdiWindow *-- ores::qt::ClientCountryModel
+        ores::qt::CountryMdiWindow ..> ores::qt::CountryItemDelegate : uses
+        ores::qt::CountryMdiWindow o-- ores::qt::ClientManager
+        ores::qt::CountryMdiWindow o-- ores::qt::ImageCache
+        ores::qt::ClientCountryModel o-- ores::qt::ClientManager
+        ores::qt::ClientCountryModel o-- ores::qt::ImageCache
+        ores::qt::CountryDetailDialog o-- ores::qt::ClientManager
+        ores::qt::CountryDetailDialog o-- ores::qt::ImageCache
+        ores::qt::CountryHistoryDialog o-- ores::qt::ClientManager
+        ores::qt::CountryHistoryDialog o-- ores::qt::ImageCache
+        ores::qt::CountryController o-- ores::qt::ImageCache
 
         ' Relationships - Dialogs
         ores::qt::AboutDialog *-- ores::qt::LogoLabel
@@ -610,8 +896,17 @@ namespace ores #F2F2F2 {
         ores::qt::CurrencyController ..> ores::qt::CurrencyDetailDialog : creates
         ores::qt::CurrencyController ..> ores::qt::CurrencyHistoryDialog : creates
 
+        ' Relationships - CountryController creates windows
+        ores::qt::CountryController ..> ores::qt::CountryMdiWindow : creates
+        ores::qt::CountryController ..> ores::qt::CountryDetailDialog : creates
+        ores::qt::CountryController ..> ores::qt::CountryHistoryDialog : creates
+
         ' Relationships - MdiUtils usage for stale window marking
         ores::qt::CurrencyDetailDialog ..> ores::qt::MdiUtils : uses
+        ores::qt::CountryDetailDialog ..> ores::qt::MdiUtils : uses
+
+        ' Relationships - ImageCache
+        ores::qt::ImageCache o-- ores::qt::ClientManager
     }
 }
 

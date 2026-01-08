@@ -132,6 +132,18 @@ TEST_CASE("generate_fictional_currencies_has_unique_iso_codes", tags) {
     CHECK(codes.size() == 50);
 }
 
+TEST_CASE("generate_fictional_currencies_has_unique_numeric_codes", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto currencies = generate_fictional_currencies();
+
+    std::set<std::string> codes;
+    for (const auto& c : currencies)
+        codes.insert(c.numeric_code);
+
+    CHECK(codes.size() == 50);
+}
+
 TEST_CASE("generate_fictional_currencies_has_expected_first_currency", tags) {
     auto lg(make_logger(test_suite));
 
@@ -139,7 +151,7 @@ TEST_CASE("generate_fictional_currencies_has_expected_first_currency", tags) {
     BOOST_LOG_SEV(lg, debug) << "First fictional currency: " << currencies;
 
     REQUIRE(currencies.size() == 1);
-    CHECK(currencies[0].iso_code == "ALD");
+    CHECK(currencies[0].iso_code == "XAE");
     CHECK(currencies[0].name == "Aerilonian Dollar");
     CHECK(!currencies[0].recorded_by.empty());
     CHECK(currencies[0].recorded_at != std::chrono::system_clock::time_point{});
@@ -154,9 +166,9 @@ TEST_CASE("generate_fictional_currencies_contains_known_currencies", tags) {
     for (const auto& c : currencies)
         codes.insert(c.iso_code);
 
-    CHECK(codes.count("ALD") == 1);  // Aerilonian Dollar
-    CHECK(codes.count("ZEZ") == 1);  // Zephyrian Zephyr
-    CHECK(codes.count("ERE") == 1);  // Eriadoran Euro
-    CHECK(codes.count("KRK") == 1);  // Krynnish Krynn
+    CHECK(codes.count("XAE") == 1);  // Aerilonian Dollar
+    CHECK(codes.count("XZE") == 1);  // Zephyrian Zephyr
+    CHECK(codes.count("XER") == 1);  // Eriadoran Euro
+    CHECK(codes.count("XKR") == 1);  // Krynnish Krynn
 }
 

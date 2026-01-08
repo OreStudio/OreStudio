@@ -124,6 +124,14 @@ Favorite, bookmark, rate.
 
 *Usage*: Regular for "not favorited", filled for "favorited" state.
 
+*** Wand
+Generate synthetic data, auto-fill, magic create.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_wand_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_wand_20_filled.svg]]
+
+*Usage*: Generate buttons, auto-fill actions, create synthetic/test data.
+
 *** Record
 Start recording, capture session.
 
@@ -420,6 +428,7 @@ Text validation, spell check, language processing.
 | Confirm/Check        | checkmark_20               | Default | Done   |
 | Cancel/Close         | dismiss_20                 | Default | Active |
 | Favorite             | star_20                    | Off     | On     |
+| Generate             | wand_20                    | Default | Active |
 | Back                 | arrow_left_20              | Default | Active |
 | Forward              | arrow_right_20             | Default | Active |
 | Download             | arrow_download_20          | Default | Active |

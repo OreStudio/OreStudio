@@ -974,7 +974,7 @@ void CurrencyMdiWindow::setupGenerateAction() {
 
     generateAction_ = new QAction("Generate", this);
     generateAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_star_20_regular.svg", iconColor));
+            ":/icons/ic_fluent_wand_20_regular.svg", iconColor));
     generateAction_->setToolTip("Generate synthetic test currencies");
     connect(generateAction_, &QAction::triggered, this,
         &CurrencyMdiWindow::generateSynthetic);

@@ -756,7 +756,7 @@ void CurrencyDetailDialog::setupGenerateAction() {
 
     generateAction_ = new QAction("Generate", this);
     generateAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_star_20_regular.svg", iconColor));
+            ":/icons/ic_fluent_wand_20_regular.svg", iconColor));
     generateAction_->setToolTip("Fill fields with synthetic test data");
     connect(generateAction_, &QAction::triggered, this,
         &CurrencyDetailDialog::onGenerateClicked);

@@ -17,6 +17,10 @@ See [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]] for the comp
 |----+------+-------------|
 | 0x3000 | list_feature_flags_request | Request to retrieve all feature flags. |
 | 0x3001 | list_feature_flags_response | Response containing all feature flags. |
+| 0x3002 | save_feature_flag_request | Request to save (create or update) a feature flag. |
+| 0x3003 | save_feature_flag_response | Response to save feature flag request. |
+| 0x3004 | delete_feature_flag_request | Request to delete a feature flag by name. |
+| 0x3005 | delete_feature_flag_response | Response to delete feature flag request. |
 
 * Message Details
 
@@ -33,3 +37,45 @@ Response containing all feature flags.
 | Field | Type | Description |
 |-------+------+-------------|
 | feature_flags | ~std::vector<domain::feature_flags>~ |  |
+
+** save_feature_flag_request (0x3002)
+
+Request to save (create or update) a feature flag.
+
+*** Fields
+
+| Field | Type | Description |
+|-------+------+-------------|
+| flag | ~domain::feature_flags~ |  |
+
+** save_feature_flag_response (0x3003)
+
+Response to save feature flag request.
+
+*** Fields
+
+| Field | Type | Description |
+|-------+------+-------------|
+| success | ~bool~ |  |
+| error_message | ~std::string~ |  |
+
+** delete_feature_flag_request (0x3004)
+
+Request to delete a feature flag by name.
+
+*** Fields
+
+| Field | Type | Description |
+|-------+------+-------------|
+| name | ~std::string~ |  |
+
+** delete_feature_flag_response (0x3005)
+
+Response to delete feature flag request.
+
+*** Fields
+
+| Field | Type | Description |
+|-------+------+-------------|
+| success | ~bool~ |  |
+| error_message | ~std::string~ |  |

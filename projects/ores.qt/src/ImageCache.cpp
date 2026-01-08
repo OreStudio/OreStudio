@@ -187,17 +187,8 @@ void ImageCache::loadCurrencyMappings() {
                     std::string image_id_str = boost::uuids::to_string(*currency.image_id);
                     mappings[currency.iso_code] = image_id_str;
                     currencies_with_image++;
-                    // MXN-specific trace
-                    if (currency.iso_code == "MXN") {
-                        BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] Currency has image_id: "
-                                                   << image_id_str;
-                    }
                 } else {
                     currencies_without_image++;
-                    // MXN-specific trace
-                    if (currency.iso_code == "MXN") {
-                        BOOST_LOG_SEV(lg(), warn) << "[MXN TRACE] Currency has NO image_id!";
-                    }
                 }
             }
 
@@ -226,15 +217,6 @@ void ImageCache::onMappingsLoaded() {
 
         BOOST_LOG_SEV(lg(), debug) << "Stored " << currency_to_image_id_.size()
                                    << " currency-image mappings.";
-
-        // MXN-specific trace: verify it's stored
-        auto mxn_it = currency_to_image_id_.find("MXN");
-        if (mxn_it != currency_to_image_id_.end()) {
-            BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] Stored in currency_to_image_id_: "
-                                       << mxn_it->second;
-        } else {
-            BOOST_LOG_SEV(lg(), warn) << "[MXN TRACE] NOT found in currency_to_image_id_!";
-        }
 
         emit currencyMappingsLoaded();
 
@@ -378,14 +360,6 @@ void ImageCache::onImagesLoaded() {
                                << ", images count=" << result.images.size();
 
     if (result.success) {
-        // MXN-specific trace: check if MXN's image_id is expected
-        auto mxn_map_it = currency_to_image_id_.find("MXN");
-        std::string mxn_expected_image_id = (mxn_map_it != currency_to_image_id_.end())
-            ? mxn_map_it->second : "";
-        if (!mxn_expected_image_id.empty()) {
-            BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] Expecting image_id: " << mxn_expected_image_id;
-        }
-
         // Cache SVG data and render icons
         for (const auto& img : result.images) {
             const auto image_id_str = boost::uuids::to_string(img.image_id);
@@ -395,11 +369,6 @@ void ImageCache::onImagesLoaded() {
             BOOST_LOG_SEV(lg(), debug) << "Cached SVG for image_id: " << image_id_str
                                        << ", size: " << img.svg_data.size()
                                        << ", preview: " << svg_preview;
-            // MXN-specific trace
-            if (image_id_str == mxn_expected_image_id) {
-                BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] Cached SVG for MXN's image_id: "
-                                           << image_id_str << ", size: " << img.svg_data.size();
-            }
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Cached " << result.images.size() << " SVGs. "
@@ -421,30 +390,16 @@ void ImageCache::onImagesLoaded() {
                     // Always update the icon to reflect the latest mapping
                     currency_icons_[iso_code] = icon;
                     rendered++;
-                    // MXN-specific trace
-                    if (iso_code == "MXN") {
-                        BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] Icon rendered successfully!";
-                    }
                 } else {
                     BOOST_LOG_SEV(lg(), warn) << "Failed to render icon for " << iso_code
                                               << " (image_id: " << image_id
                                               << ", svg size: " << svg_it->second.size() << ")";
                     render_failed++;
-                    // MXN-specific trace
-                    if (iso_code == "MXN") {
-                        BOOST_LOG_SEV(lg(), error) << "[MXN TRACE] Failed to render icon! "
-                                                    << "svg size: " << svg_it->second.size();
-                    }
                 }
             } else {
                 BOOST_LOG_SEV(lg(), debug) << "No SVG cache for " << iso_code
                                            << " (image_id: " << image_id << ")";
                 no_svg++;
-                // MXN-specific trace
-                if (iso_code == "MXN") {
-                    BOOST_LOG_SEV(lg(), error) << "[MXN TRACE] No SVG in cache for image_id: "
-                                                << image_id;
-                }
             }
         }
 
@@ -477,17 +432,7 @@ void ImageCache::loadAll() {
 QIcon ImageCache::getCurrencyIcon(const std::string& iso_code) const {
     auto it = currency_icons_.find(iso_code);
     if (it != currency_icons_.end()) {
-        // MXN-specific trace
-        if (iso_code == "MXN") {
-            BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] getCurrencyIcon() found icon, "
-                                       << "available sizes: " << it->second.availableSizes().size();
-        }
         return it->second;
-    }
-    // MXN-specific trace
-    if (iso_code == "MXN") {
-        BOOST_LOG_SEV(lg(), warn) << "[MXN TRACE] getCurrencyIcon() found NO icon! "
-                                   << "currency_icons_ size: " << currency_icons_.size();
     }
 
     // Return the "no-flag" placeholder icon if available
@@ -563,12 +508,6 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
                                    << response->images.size() << " images.";
 
         for (auto& img : response->images) {
-            // MXN-specific trace: check if this is the MX flag
-            if (img.key == "mx") {
-                BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] Fetched 'mx' flag image, "
-                                           << "image_id: " << img.image_id
-                                           << ", svg size: " << img.svg_data.size();
-            }
             all_images.push_back(std::move(img));
         }
     }

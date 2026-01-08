@@ -442,13 +442,15 @@ void ClientCurrencyModel::mark_as_saved(const std::string& iso_code) {
         BOOST_LOG_SEV(lg(), debug) << "Marked currency as saved: " << iso_code;
 
         // Find the row and emit dataChanged for the color update
-        for (std::size_t i = 0; i < currencies_.size(); ++i) {
-            if (currencies_[i].iso_code == iso_code) {
-                emit dataChanged(index(static_cast<int>(i), 0),
-                    index(static_cast<int>(i), columnCount() - 1),
-                    {Qt::ForegroundRole});
-                break;
-            }
+        auto currency_it = std::find_if(currencies_.begin(), currencies_.end(),
+            [&iso_code](const auto& currency) {
+                return currency.iso_code == iso_code;
+            });
+        if (currency_it != currencies_.end()) {
+            const auto row = std::distance(currencies_.begin(), currency_it);
+            emit dataChanged(index(static_cast<int>(row), 0),
+                index(static_cast<int>(row), columnCount() - 1),
+                {Qt::ForegroundRole});
         }
     }
 }

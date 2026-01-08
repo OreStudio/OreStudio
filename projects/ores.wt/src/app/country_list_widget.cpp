@@ -119,8 +119,4 @@ void country_list_widget::populate_table() {
     }
 }
 
-void country_list_widget::on_row_clicked(const std::string& alpha2_code) {
-    edit_requested_.emit(alpha2_code);
-}
-
 }

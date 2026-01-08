@@ -59,7 +59,6 @@ private:
     void setup_toolbar();
     void setup_table();
     void populate_table();
-    void on_row_clicked(const std::string& alpha2_code);
 
     Wt::WTable* table_;
     Wt::WText* status_text_;

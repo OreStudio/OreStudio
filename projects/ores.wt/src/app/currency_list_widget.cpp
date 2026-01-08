@@ -123,8 +123,4 @@ void currency_list_widget::populate_table() {
     }
 }
 
-void currency_list_widget::on_row_clicked(const std::string& iso_code) {
-    edit_requested_.emit(iso_code);
-}
-
 }

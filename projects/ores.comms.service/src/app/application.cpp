@@ -28,6 +28,7 @@
 #include <boost/asio/use_awaitable.hpp>
 #include "ores.risk/messaging/registrar.hpp"
 #include "ores.risk/eventing/currency_changed_event.hpp"
+#include "ores.risk/eventing/country_changed_event.hpp"
 #include "ores.iam/messaging/registrar.hpp"
 #include "ores.iam/eventing/account_changed_event.hpp"
 #include "ores.assets/eventing/assets_changed_event.hpp"
@@ -150,6 +151,9 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         risk::eventing::currency_changed_event>(
         event_source, "ores.risk.currency", "ores_currencies");
     eventing::service::registrar::register_mapping<
+        risk::eventing::country_changed_event>(
+        event_source, "ores.risk.country", "ores_countries");
+    eventing::service::registrar::register_mapping<
         iam::eventing::account_changed_event>(
         event_source, "ores.iam.account", "ores_accounts");
     eventing::service::registrar::register_mapping<
@@ -173,6 +177,14 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                 risk::eventing::currency_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
                                      e.iso_codes);
+        });
+
+    auto country_sub = event_bus.subscribe<risk::eventing::country_changed_event>(
+        [&subscription_mgr](const risk::eventing::country_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                risk::eventing::country_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.alpha2_codes);
         });
 
     auto account_sub = event_bus.subscribe<iam::eventing::account_changed_event>(

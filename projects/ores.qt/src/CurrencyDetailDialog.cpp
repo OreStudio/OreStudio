@@ -175,18 +175,11 @@ void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
         connect(clientManager_, &ClientManager::notificationReceived,
                 this, &CurrencyDetailDialog::onFeatureFlagNotification);
 
-        // Subscribe to feature flag events when connected
+        // Subscribe to feature flag events when connected/reconnected
         connect(clientManager_, &ClientManager::connected,
-                this, [this]() {
-            clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
-            updateGenerateActionVisibility();
-        });
-
+                this, &CurrencyDetailDialog::onConnectionEstablished);
         connect(clientManager_, &ClientManager::reconnected,
-                this, [this]() {
-            clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
-            updateGenerateActionVisibility();
-        });
+                this, &CurrencyDetailDialog::onConnectionEstablished);
 
         // If already connected, subscribe and check flag
         if (clientManager_->isConnected()) {
@@ -861,6 +854,11 @@ void CurrencyDetailDialog::onFeatureFlagNotification(
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Feature flag notification received in detail dialog";
+    updateGenerateActionVisibility();
+}
+
+void CurrencyDetailDialog::onConnectionEstablished() {
+    clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
     updateGenerateActionVisibility();
 }
 

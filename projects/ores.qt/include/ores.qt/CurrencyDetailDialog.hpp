@@ -120,6 +120,7 @@ private slots:
     void onCurrencyImageSet(const QString& iso_code, bool success, const QString& message);
     void onFeatureFlagNotification(const QString& eventType, const QDateTime& timestamp,
                                     const QStringList& entityIds);
+    void onConnectionEstablished();
 
 private:
     void updateSaveResetButtonState();

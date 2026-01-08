@@ -117,6 +117,40 @@
    fun:_Znwm
    fun:_ZN5boost6detail25make_external_thread_dataEv
 }
+#
+#  Boost.Log – ores::logging namespace variant
+#
+{
+   Boost Log Thread Local Get Severity (ores::logging)
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   # boost::log::v2s_mt_posix::sources::aux::get_severity_level()
+   fun:_ZN5boost3log12v2s_mt_posix7sources3aux18get_severity_levelEv
+   # boost::log::v2s_mt_posix::sources::aux::severity_level<ores::logging::boost_severity>::set_value(...)
+   fun:_ZN5boost3log12v2s_mt_posix7sources3aux14severity_levelIN4ores7logging14boost_severityEE9set_valueES7_
+   ...
+}
+{
+   Boost Log Thread Data Shared Ptr (ores::logging)
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZN5boost6detail12shared_countC1INS0_16thread_data_baseEEEPT_
+   fun:_ZN5boost6detail20sp_pointer_constructINS0_16thread_data_baseES2_EEvPNS_10shared_ptrIT_EEPT0_RNS0_12shared_countE
+   fun:_ZN5boost10shared_ptrINS_6detail16thread_data_baseEEC1IS2_EEPT_
+   fun:_ZN5boost10shared_ptrINS_6detail16thread_data_baseEE5resetIS2_EEvPT_
+   fun:_ZN5boost6detail25make_external_thread_dataEv
+   fun:_ZN5boost6detail31get_or_make_current_thread_dataEv
+   fun:_ZN5boost6detail24add_thread_exit_functionEPNS0_25thread_exit_function_baseE
+   fun:_ZN5boost11this_thread14at_thread_exitIZNS_3log12v2s_mt_posix7sources3aux18get_severity_levelEvEUlvE_EEvT_
+   # boost::log::v2s_mt_posix::sources::aux::get_severity_level()
+   fun:_ZN5boost3log12v2s_mt_posix7sources3aux18get_severity_levelEv
+   # boost::log::v2s_mt_posix::sources::aux::severity_level<ores::logging::boost_severity>::set_value(...)
+   fun:_ZN5boost3log12v2s_mt_posix7sources3aux14severity_levelIN4ores7logging14boost_severityEE9set_valueES7_
+   ...
+   fun:main
+}
 {
    Boost Log External Launch Thread Data
    Memcheck:Leak

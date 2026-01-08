@@ -93,7 +93,7 @@ public:
         std::shared_ptr<geo::service::geolocation_service> geo_service);
 
     using handler_result = boost::asio::awaitable<
-        std::expected<std::vector<std::byte>, comms::messaging::error_code>
+        std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
     >;
 
     /**
@@ -335,7 +335,7 @@ private:
      */
     using auth_check_result = std::expected<
         comms::service::session_info,
-        comms::messaging::error_code
+        ores::utility::serialization::error_code
     >;
 
     /**

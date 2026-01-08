@@ -22,12 +22,13 @@
 #include <expected>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.comms/messaging/reader.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
 
 namespace ores::assets::messaging {
 
-using namespace ores::comms::messaging;
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
 
 // get_images_request
 
@@ -44,7 +45,7 @@ std::vector<std::byte> get_images_request::serialize() const {
     return buffer;
 }
 
-std::expected<get_images_request, comms::messaging::error_code>
+std::expected<get_images_request, ores::utility::serialization::error_code>
 get_images_request::deserialize(std::span<const std::byte> data) {
     get_images_request request;
 
@@ -56,7 +57,7 @@ get_images_request::deserialize(std::span<const std::byte> data) {
 
     // Enforce maximum batch size
     if (count > MAX_IMAGES_PER_REQUEST) {
-        return std::unexpected(comms::messaging::error_code::payload_too_large);
+        return std::unexpected(ores::utility::serialization::error_code::payload_too_large);
     }
 
     request.image_ids.reserve(count);
@@ -87,7 +88,7 @@ std::vector<std::byte> get_images_response::serialize() const {
         writer::write_string(buffer, img.image_id);
         writer::write_string(buffer, img.key);
         writer::write_string(buffer, img.description);
-        writer::write_string(buffer, img.svg_data);
+        writer::write_string32(buffer, img.svg_data);  // Use 32-bit length for large SVGs
         writer::write_string(buffer, img.recorded_by);
         writer::write_string(buffer, img.recorded_at);
     }
@@ -95,7 +96,7 @@ std::vector<std::byte> get_images_response::serialize() const {
     return buffer;
 }
 
-std::expected<get_images_response, comms::messaging::error_code>
+std::expected<get_images_response, ores::utility::serialization::error_code>
 get_images_response::deserialize(std::span<const std::byte> data) {
     get_images_response response;
 
@@ -125,7 +126,7 @@ get_images_response::deserialize(std::span<const std::byte> data) {
         if (!description_result) return std::unexpected(description_result.error());
         img.description = *description_result;
 
-        auto svg_data_result = reader::read_string(data);
+        auto svg_data_result = reader::read_string32(data);  // Use 32-bit length for large SVGs
         if (!svg_data_result) return std::unexpected(svg_data_result.error());
         img.svg_data = *svg_data_result;
 
@@ -154,10 +155,10 @@ std::vector<std::byte> list_images_request::serialize() const {
     return {};
 }
 
-std::expected<list_images_request, comms::messaging::error_code>
+std::expected<list_images_request, ores::utility::serialization::error_code>
 list_images_request::deserialize(std::span<const std::byte> data) {
     if (!data.empty()) {
-        return std::unexpected(comms::messaging::error_code::invalid_request);
+        return std::unexpected(ores::utility::serialization::error_code::invalid_request);
     }
     return list_images_request{};
 }
@@ -191,7 +192,7 @@ std::vector<std::byte> list_images_response::serialize() const {
     return buffer;
 }
 
-std::expected<list_images_response, comms::messaging::error_code>
+std::expected<list_images_response, ores::utility::serialization::error_code>
 list_images_response::deserialize(std::span<const std::byte> data) {
     list_images_response response;
 

@@ -198,7 +198,7 @@ public:
      * @return Empty expected on success, error_code on failure:
      *         - authentication_failed if auth required but not logged in
      */
-    [[nodiscard]] std::expected<void, messaging::error_code>
+    [[nodiscard]] std::expected<void, ores::utility::serialization::error_code>
     authorize_request(messaging::message_type type,
                       const std::string& remote_address) const;
 

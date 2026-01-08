@@ -31,8 +31,8 @@
 #include "ores.comms/messaging/message_dispatcher.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include <boost/uuid/uuid_generators.hpp>
-#include "ores.comms/messaging/reader.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace {
@@ -63,19 +63,19 @@ struct test_request final {
 
     static std::vector<std::byte> serialize(const test_request& r) {
         std::vector<std::byte> buffer;
-        ores::comms::messaging::writer::write_uint32(buffer, r.value);
-        ores::comms::messaging::writer::write_string(buffer, r.message);
+        ores::utility::serialization::writer::write_uint32(buffer, r.value);
+        ores::utility::serialization::writer::write_string(buffer, r.message);
         return buffer;
     }
 
-    static std::expected<test_request, ores::comms::messaging::error_code>
+    static std::expected<test_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte>& data) {
-        auto value_result = ores::comms::messaging::reader::read_uint32(data);
+        auto value_result = ores::utility::serialization::reader::read_uint32(data);
         if (!value_result) {
             return std::unexpected(value_result.error());
         }
 
-        auto message_result = ores::comms::messaging::reader::read_string(data);
+        auto message_result = ores::utility::serialization::reader::read_string(data);
         if (!message_result) {
             return std::unexpected(message_result.error());
         }
@@ -96,25 +96,25 @@ struct test_response final {
 
     static std::vector<std::byte> serialize(const test_response& r) {
         std::vector<std::byte> buffer;
-        ores::comms::messaging::writer::write_bool(buffer, r.success);
-        ores::comms::messaging::writer::write_uint32(buffer, r.processed_value);
-        ores::comms::messaging::writer::write_string(buffer, r.response_message);
+        ores::utility::serialization::writer::write_bool(buffer, r.success);
+        ores::utility::serialization::writer::write_uint32(buffer, r.processed_value);
+        ores::utility::serialization::writer::write_string(buffer, r.response_message);
         return buffer;
     }
 
-    static std::expected<test_response, ores::comms::messaging::error_code>
+    static std::expected<test_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte>& data) {
-        auto success_result = ores::comms::messaging::reader::read_bool(data);
+        auto success_result = ores::utility::serialization::reader::read_bool(data);
         if (!success_result) {
             return std::unexpected(success_result.error());
         }
 
-        auto value_result = ores::comms::messaging::reader::read_uint32(data);
+        auto value_result = ores::utility::serialization::reader::read_uint32(data);
         if (!value_result) {
             return std::unexpected(value_result.error());
         }
 
-        auto message_result = ores::comms::messaging::reader::read_string(data);
+        auto message_result = ores::utility::serialization::reader::read_string(data);
         if (!message_result) {
             return std::unexpected(message_result.error());
         }
@@ -131,13 +131,13 @@ struct echo_request final {
 
     static std::vector<std::byte> serialize(const echo_request& r) {
         std::vector<std::byte> buffer;
-        ores::comms::messaging::writer::write_string(buffer, r.data);
+        ores::utility::serialization::writer::write_string(buffer, r.data);
         return buffer;
     }
 
-    static std::expected<echo_request, ores::comms::messaging::error_code>
+    static std::expected<echo_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte>& data) {
-        auto data_result = ores::comms::messaging::reader::read_string(data);
+        auto data_result = ores::utility::serialization::reader::read_string(data);
         if (!data_result) {
             return std::unexpected(data_result.error());
         }
@@ -153,13 +153,13 @@ struct echo_response final {
 
     static std::vector<std::byte> serialize(const echo_response& r) {
         std::vector<std::byte> buffer;
-        ores::comms::messaging::writer::write_string(buffer, r.echoed_data);
+        ores::utility::serialization::writer::write_string(buffer, r.echoed_data);
         return buffer;
     }
 
-    static std::expected<echo_response, ores::comms::messaging::error_code>
+    static std::expected<echo_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte>& data) {
-        auto data_result = ores::comms::messaging::reader::read_string(data);
+        auto data_result = ores::utility::serialization::reader::read_string(data);
         if (!data_result) {
             return std::unexpected(data_result.error());
         }
@@ -184,7 +184,7 @@ private:
 
 public:
     boost::asio::awaitable<std::expected<std::vector<std::byte>,
-        ores::comms::messaging::error_code>>
+        ores::utility::serialization::error_code>>
     handle_message(ores::comms::messaging::message_type type,
                    std::span<const std::byte> payload,
                    const std::string& remote_address) override {
@@ -200,12 +200,12 @@ public:
                 co_return handle_echo_request(payload);
             default:
                 BOOST_LOG_SEV(lg(), error) << "Unknown message type: " << static_cast<std::uint16_t>(type);
-                co_return std::unexpected(ores::comms::messaging::error_code::invalid_message_type);
+                co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
         }
     }
 
 private:
-    std::expected<std::vector<std::byte>, ores::comms::messaging::error_code>
+    std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
     handle_test_request(std::span<const std::byte> payload) {
         using namespace ores::telemetry::log;
         BOOST_LOG_SEV(lg(), debug) << "Processing test_request";
@@ -228,7 +228,7 @@ private:
         return test_response::serialize(response);
     }
 
-    std::expected<std::vector<std::byte>, ores::comms::messaging::error_code>
+    std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
     handle_echo_request(std::span<const std::byte> payload) {
         using namespace ores::telemetry::log;
         BOOST_LOG_SEV(lg(), debug) << "Processing echo_request";
@@ -251,6 +251,7 @@ private:
 using namespace ores::telemetry::log;
 using namespace ores::comms::messaging;
 using ores::testing::run_coroutine_test;
+using ores::utility::serialization::error_code;
 
 TEST_CASE("test_request_serialization_roundtrip", tags) {
     auto lg(make_logger(test_suite));

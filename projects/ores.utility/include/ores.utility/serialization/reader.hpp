@@ -71,9 +71,19 @@ public:
 
     /**
      * @brief Read a string with 16-bit length prefix.
+     *
+     * @note Maximum string length is 65535 bytes. For larger strings, use read_string32.
      */
     static std::expected<std::string, error_code>
     read_string(std::span<const std::byte>& data);
+
+    /**
+     * @brief Read a string with 32-bit length prefix.
+     *
+     * Use this for strings that may exceed 65535 bytes (e.g., SVG data, large text).
+     */
+    static std::expected<std::string, error_code>
+    read_string32(std::span<const std::byte>& data);
 
     /**
      * @brief Read a UUID (16 bytes).

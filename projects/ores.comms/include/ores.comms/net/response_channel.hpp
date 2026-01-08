@@ -71,7 +71,7 @@ public:
      *
      * @param ec The error code to deliver
      */
-    void set_error(messaging::error_code ec);
+    void set_error(ores::utility::serialization::error_code ec);
 
     /**
      * @brief Wait for and retrieve the response (consumer side).
@@ -80,7 +80,7 @@ public:
      *
      * @return Expected containing the response frame, or error_code
      */
-    boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>> get();
+    boost::asio::awaitable<std::expected<messaging::frame, ores::utility::serialization::error_code>> get();
 
     /**
      * @brief Check if the channel has already received a value or error.
@@ -91,7 +91,7 @@ private:
     boost::asio::steady_timer signal_;
     mutable std::mutex mutex_;
     std::optional<messaging::frame> response_;
-    std::optional<messaging::error_code> error_;
+    std::optional<ores::utility::serialization::error_code> error_;
     bool ready_;
 };
 

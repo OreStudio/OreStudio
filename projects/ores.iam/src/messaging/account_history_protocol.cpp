@@ -22,11 +22,13 @@
 #include <chrono>
 #include <expected>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.comms/messaging/reader.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
 
 using namespace ores::iam;
-using namespace ores::comms::messaging;
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
+using ores::utility::serialization::error_code;
 
 namespace {
 
@@ -37,7 +39,7 @@ void write_timepoint(std::vector<std::byte>& buffer,
     writer::write_int64(buffer, nanos);
 }
 
-std::expected<std::chrono::system_clock::time_point, error_code>
+std::expected<std::chrono::system_clock::time_point, ores::utility::serialization::error_code>
 read_timepoint(std::span<const std::byte>& data) {
     auto nanos = reader::read_int64(data);
     if (!nanos) return std::unexpected(nanos.error());
@@ -69,7 +71,7 @@ void serialize_account_version(std::vector<std::byte>& buffer,
     writer::write_string(buffer, version.change_summary);
 }
 
-std::expected<domain::account_version, error_code>
+std::expected<domain::account_version, ores::utility::serialization::error_code>
 deserialize_account_version(std::span<const std::byte>& data) {
     domain::account_version version;
 
@@ -140,7 +142,7 @@ std::vector<std::byte> get_account_history_request::serialize() const {
     return buffer;
 }
 
-std::expected<get_account_history_request, comms::messaging::error_code>
+std::expected<get_account_history_request, ores::utility::serialization::error_code>
 get_account_history_request::deserialize(std::span<const std::byte> data) {
     auto username_result = reader::read_string(data);
     if (!username_result) {
@@ -175,7 +177,7 @@ std::vector<std::byte> get_account_history_response::serialize() const {
     return buffer;
 }
 
-std::expected<get_account_history_response, comms::messaging::error_code>
+std::expected<get_account_history_response, ores::utility::serialization::error_code>
 get_account_history_response::deserialize(std::span<const std::byte> data) {
     get_account_history_response response;
 

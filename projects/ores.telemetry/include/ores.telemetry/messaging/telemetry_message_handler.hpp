@@ -71,7 +71,7 @@ public:
      * @param remote_address The remote endpoint address of the client connection
      * @return Expected containing response payload, or error code
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_message(comms::messaging::message_type type,
         std::span<const std::byte> payload,
         const std::string& remote_address) override;
@@ -88,7 +88,7 @@ private:
      * @param remote_address The client's remote address for session lookup
      * @return The serialized submit_telemetry_response
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_submit_log_records_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
@@ -101,7 +101,7 @@ private:
      * @param payload The serialized get_telemetry_logs_request
      * @return The serialized get_telemetry_logs_response
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_get_telemetry_logs_request(std::span<const std::byte> payload);
 
     /**
@@ -113,7 +113,7 @@ private:
      * @param payload The serialized get_telemetry_stats_request
      * @return The serialized get_telemetry_stats_response
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_get_telemetry_stats_request(std::span<const std::byte> payload);
 
     /**

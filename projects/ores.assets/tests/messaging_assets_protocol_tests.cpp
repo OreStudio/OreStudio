@@ -34,6 +34,7 @@ using namespace ores::assets::messaging;
 using namespace ores::assets::domain;
 using namespace ores::comms::messaging;
 using namespace ores::telemetry::log;
+using ores::utility::serialization::error_code;
 
 // get_images_request tests
 

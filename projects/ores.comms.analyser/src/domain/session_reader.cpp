@@ -21,13 +21,15 @@
 
 #include <span>
 #include <cstring>
-#include "ores.comms/messaging/reader.hpp"
+#include "ores.utility/serialization/reader.hpp"
 
 namespace ores::comms::analyser::domain {
 
 using namespace ores::telemetry::log;
 using namespace ores::comms::recording;
-using namespace ores::comms::messaging;
+using ores::utility::serialization::reader;
+using ores::comms::messaging::compression_type;
+using ores::comms::messaging::frame;
 
 std::expected<session_data, session_file_error>
 session_reader::read(const std::filesystem::path& file_path) {

@@ -60,6 +60,7 @@ enum class error_code : std::uint16_t {
     email_taken = 0x0017,
     signup_requires_authorization = 0x0018,
     payload_incomplete = 0x0019,
+    limit_exceeded = 0x001A,
     last_value
 };
 

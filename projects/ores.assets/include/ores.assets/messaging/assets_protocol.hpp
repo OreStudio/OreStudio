@@ -44,7 +44,7 @@ struct get_images_request final {
     std::vector<std::string> image_ids;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<get_images_request, comms::messaging::error_code>
+    static std::expected<get_images_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -57,7 +57,7 @@ struct get_images_response final {
     std::vector<domain::image> images;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<get_images_response, comms::messaging::error_code>
+    static std::expected<get_images_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -70,7 +70,7 @@ std::ostream& operator<<(std::ostream& s, const get_images_response& v);
  */
 struct list_images_request final {
     std::vector<std::byte> serialize() const;
-    static std::expected<list_images_request, comms::messaging::error_code>
+    static std::expected<list_images_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -94,7 +94,7 @@ struct list_images_response final {
     std::vector<image_info> images;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<list_images_response, comms::messaging::error_code>
+    static std::expected<list_images_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

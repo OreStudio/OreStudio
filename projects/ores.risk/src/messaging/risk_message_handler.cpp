@@ -17,8 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/rfl/reflectors.hpp" // Must be before rfl/json.hpp
 #include "ores.risk/messaging/risk_message_handler.hpp"
 
+#include <sstream>
+#include <rfl/json.hpp>
 #include "ores.risk/messaging/protocol.hpp"
 
 namespace ores::risk::messaging {
@@ -32,7 +35,7 @@ risk_message_handler::risk_message_handler(database::context ctx,
     , currency_service_(ctx_) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 risk_message_handler::handle_message(comms::messaging::message_type type,
     std::span<const std::byte> payload, const std::string& remote_address) {
 
@@ -42,7 +45,7 @@ risk_message_handler::handle_message(comms::messaging::message_type type,
     if (system_flags_->is_bootstrap_mode_enabled()) {
         BOOST_LOG_SEV(lg(), warn)
             << "Blocked risk operation " << type << " - system in bootstrap mode";
-        co_return std::unexpected(comms::messaging::error_code::bootstrap_mode_only);
+        co_return std::unexpected(ores::utility::serialization::error_code::bootstrap_mode_only);
     }
 
     switch (type) {
@@ -57,12 +60,12 @@ risk_message_handler::handle_message(comms::messaging::message_type type,
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown risk message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
-        co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
+        co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
     }
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 risk_message_handler::
 handle_save_currency_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing save_currency_request.";
@@ -95,7 +98,7 @@ handle_save_currency_request(std::span<const std::byte> payload) {
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 risk_message_handler::
 handle_get_currencies_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_currencies_request.";
@@ -114,7 +117,7 @@ handle_get_currencies_request(std::span<const std::byte> payload) {
     if (request.limit == 0 || request.limit > max_limit) {
         BOOST_LOG_SEV(lg(), warn) << "Invalid limit: " << request.limit
                                   << ". Must be between 1 and " << max_limit;
-        co_return std::unexpected(comms::messaging::error_code::invalid_request);
+        co_return std::unexpected(ores::utility::serialization::error_code::limit_exceeded);
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Fetching currencies with offset: "
@@ -126,6 +129,13 @@ handle_get_currencies_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << currencies.size()
                               << " currencies (total available: " << total_count << ")";
 
+    // TEMP: Log first currency as JSON for debugging
+    if (!currencies.empty()) {
+        std::ostringstream oss;
+        oss << "First currency JSON: " << rfl::json::write(currencies[0]);
+        BOOST_LOG_SEV(lg(), debug) << oss.str();
+    }
+
     // Create and serialize response
     get_currencies_response response{
         .currencies = std::move(currencies),
@@ -135,7 +145,7 @@ handle_get_currencies_request(std::span<const std::byte> payload) {
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 risk_message_handler::
 handle_delete_currency_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_currency_request.";
@@ -180,7 +190,7 @@ handle_delete_currency_request(std::span<const std::byte> payload) {
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 risk_message_handler::
 handle_get_currency_history_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_currency_history_request.";

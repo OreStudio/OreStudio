@@ -53,7 +53,7 @@ struct login_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<login_request, comms::messaging::error_code>
+    static std::expected<login_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -92,7 +92,7 @@ struct login_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<login_response, comms::messaging::error_code>
+    static std::expected<login_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -103,7 +103,7 @@ std::ostream& operator<<(std::ostream& s, const login_response& v);
  */
 struct list_login_info_request final {
     std::vector<std::byte> serialize() const;
-    static std::expected<list_login_info_request, comms::messaging::error_code>
+    static std::expected<list_login_info_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -116,7 +116,7 @@ struct list_login_info_response final {
     std::vector<domain::login_info> login_infos;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<list_login_info_response, comms::messaging::error_code>
+    static std::expected<list_login_info_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -141,7 +141,7 @@ struct logout_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<logout_request, comms::messaging::error_code>
+    static std::expected<logout_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -167,7 +167,7 @@ struct logout_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<logout_response, comms::messaging::error_code>
+    static std::expected<logout_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

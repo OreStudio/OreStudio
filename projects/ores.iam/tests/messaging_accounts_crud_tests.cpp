@@ -108,7 +108,7 @@ using namespace ores::telemetry::log;
 using namespace ores::iam::generators;
 
 using ores::comms::messaging::message_type;
-using ores::comms::messaging::error_code;
+using ores::utility::serialization::error_code;
 using ores::testing::scoped_database_helper;
 
 TEST_CASE("handle_single_create_account_request", tags) {

@@ -26,12 +26,14 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.comms/messaging/reader.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
 
 namespace ores::iam::messaging {
 
-using namespace ores::comms::messaging;
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
+using ores::utility::serialization::error_code;
 
 // ============================================================================
 // Helper functions for serializing roles
@@ -46,7 +48,7 @@ void write_timepoint(std::vector<std::byte>& buffer,
     writer::write_int64(buffer, nanos);
 }
 
-std::expected<std::chrono::system_clock::time_point, error_code>
+std::expected<std::chrono::system_clock::time_point, ores::utility::serialization::error_code>
 read_timepoint(std::span<const std::byte>& data) {
     auto nanos = reader::read_int64(data);
     if (!nanos) return std::unexpected(nanos.error());
@@ -69,7 +71,7 @@ void serialize_role(std::vector<std::byte>& buffer, const domain::role& role) {
     }
 }
 
-std::expected<domain::role, error_code>
+std::expected<domain::role, ores::utility::serialization::error_code>
 deserialize_role(std::span<const std::byte>& data) {
     domain::role role;
 
@@ -121,7 +123,7 @@ std::vector<std::byte> list_roles_request::serialize() const {
     return {}; // Empty payload
 }
 
-std::expected<list_roles_request, error_code>
+std::expected<list_roles_request, ores::utility::serialization::error_code>
 list_roles_request::deserialize(std::span<const std::byte> /*data*/) {
     return list_roles_request{};
 }
@@ -140,7 +142,7 @@ std::vector<std::byte> list_roles_response::serialize() const {
     return buffer;
 }
 
-std::expected<list_roles_response, error_code>
+std::expected<list_roles_response, ores::utility::serialization::error_code>
 list_roles_response::deserialize(std::span<const std::byte> data) {
     list_roles_response response;
 
@@ -171,7 +173,7 @@ std::vector<std::byte> list_permissions_request::serialize() const {
     return {}; // Empty payload
 }
 
-std::expected<list_permissions_request, error_code>
+std::expected<list_permissions_request, ores::utility::serialization::error_code>
 list_permissions_request::deserialize(std::span<const std::byte> /*data*/) {
     return list_permissions_request{};
 }
@@ -192,7 +194,7 @@ std::vector<std::byte> list_permissions_response::serialize() const {
     return buffer;
 }
 
-std::expected<list_permissions_response, error_code>
+std::expected<list_permissions_response, ores::utility::serialization::error_code>
 list_permissions_response::deserialize(std::span<const std::byte> data) {
     list_permissions_response response;
 
@@ -238,7 +240,7 @@ std::vector<std::byte> assign_role_request::serialize() const {
     return buffer;
 }
 
-std::expected<assign_role_request, error_code>
+std::expected<assign_role_request, ores::utility::serialization::error_code>
 assign_role_request::deserialize(std::span<const std::byte> data) {
     assign_role_request request;
 
@@ -265,7 +267,7 @@ std::vector<std::byte> assign_role_response::serialize() const {
     return buffer;
 }
 
-std::expected<assign_role_response, error_code>
+std::expected<assign_role_response, ores::utility::serialization::error_code>
 assign_role_response::deserialize(std::span<const std::byte> data) {
     assign_role_response response;
 
@@ -296,7 +298,7 @@ std::vector<std::byte> revoke_role_request::serialize() const {
     return buffer;
 }
 
-std::expected<revoke_role_request, error_code>
+std::expected<revoke_role_request, ores::utility::serialization::error_code>
 revoke_role_request::deserialize(std::span<const std::byte> data) {
     revoke_role_request request;
 
@@ -323,7 +325,7 @@ std::vector<std::byte> revoke_role_response::serialize() const {
     return buffer;
 }
 
-std::expected<revoke_role_response, error_code>
+std::expected<revoke_role_response, ores::utility::serialization::error_code>
 revoke_role_response::deserialize(std::span<const std::byte> data) {
     revoke_role_response response;
 
@@ -353,7 +355,7 @@ std::vector<std::byte> get_account_roles_request::serialize() const {
     return buffer;
 }
 
-std::expected<get_account_roles_request, error_code>
+std::expected<get_account_roles_request, ores::utility::serialization::error_code>
 get_account_roles_request::deserialize(std::span<const std::byte> data) {
     get_account_roles_request request;
 
@@ -378,7 +380,7 @@ std::vector<std::byte> get_account_roles_response::serialize() const {
     return buffer;
 }
 
-std::expected<get_account_roles_response, error_code>
+std::expected<get_account_roles_response, ores::utility::serialization::error_code>
 get_account_roles_response::deserialize(std::span<const std::byte> data) {
     get_account_roles_response response;
 
@@ -411,7 +413,7 @@ std::vector<std::byte> get_account_permissions_request::serialize() const {
     return buffer;
 }
 
-std::expected<get_account_permissions_request, error_code>
+std::expected<get_account_permissions_request, ores::utility::serialization::error_code>
 get_account_permissions_request::deserialize(std::span<const std::byte> data) {
     get_account_permissions_request request;
 
@@ -437,7 +439,7 @@ std::vector<std::byte> get_account_permissions_response::serialize() const {
     return buffer;
 }
 
-std::expected<get_account_permissions_response, error_code>
+std::expected<get_account_permissions_response, ores::utility::serialization::error_code>
 get_account_permissions_response::deserialize(std::span<const std::byte> data) {
     get_account_permissions_response response;
 
@@ -470,7 +472,7 @@ std::vector<std::byte> get_role_request::serialize() const {
     return buffer;
 }
 
-std::expected<get_role_request, error_code>
+std::expected<get_role_request, ores::utility::serialization::error_code>
 get_role_request::deserialize(std::span<const std::byte> data) {
     get_role_request request;
 
@@ -497,7 +499,7 @@ std::vector<std::byte> get_role_response::serialize() const {
     return buffer;
 }
 
-std::expected<get_role_response, error_code>
+std::expected<get_role_response, ores::utility::serialization::error_code>
 get_role_response::deserialize(std::span<const std::byte> data) {
     get_role_response response;
 

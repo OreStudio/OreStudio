@@ -70,6 +70,15 @@ void writer::write_string(std::vector<std::byte>& buffer, const std::string& str
     std::memcpy(buffer.data() + offset, str.data(), len);
 }
 
+void writer::write_string32(std::vector<std::byte>& buffer, const std::string& str) {
+    auto len = static_cast<std::uint32_t>(str.size());
+    write_uint32(buffer, len);
+
+    auto offset = buffer.size();
+    buffer.resize(offset + len);
+    std::memcpy(buffer.data() + offset, str.data(), len);
+}
+
 void writer::write_uuid(std::vector<std::byte>& buffer,
     const boost::uuids::uuid& uuid) {
     auto offset = buffer.size();

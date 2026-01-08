@@ -29,7 +29,7 @@ assets_message_handler::assets_message_handler(database::context ctx)
     : ctx_(std::move(ctx)) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 assets_message_handler::handle_message(comms::messaging::message_type type,
     std::span<const std::byte> payload, [[maybe_unused]] const std::string& remote_address) {
 
@@ -43,12 +43,12 @@ assets_message_handler::handle_message(comms::messaging::message_type type,
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown assets message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
-        co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
+        co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
     }
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 assets_message_handler::
 handle_get_images_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing get_images_request.";
@@ -75,12 +75,12 @@ handle_get_images_request(std::span<const std::byte> payload) {
         co_return response.serialize();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Database error reading images: " << e.what();
-        co_return std::unexpected(comms::messaging::error_code::database_error);
+        co_return std::unexpected(ores::utility::serialization::error_code::database_error);
     }
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 assets_message_handler::
 handle_list_images_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing list_images_request.";
@@ -114,7 +114,7 @@ handle_list_images_request(std::span<const std::byte> payload) {
         co_return response.serialize();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Database error listing images: " << e.what();
-        co_return std::unexpected(comms::messaging::error_code::database_error);
+        co_return std::unexpected(ores::utility::serialization::error_code::database_error);
     }
 }
 

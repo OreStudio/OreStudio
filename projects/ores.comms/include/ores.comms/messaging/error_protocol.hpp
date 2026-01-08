@@ -32,7 +32,7 @@ namespace ores::comms::messaging {
  * @brief Error response message sent when request processing fails.
  */
 struct error_response final {
-    error_code code;
+    ores::utility::serialization::error_code code;
     std::string message;
 
     /**
@@ -43,7 +43,7 @@ struct error_response final {
     /**
      * @brief Deserialize from frame payload.
      */
-    static std::expected<error_response, error_code> deserialize(std::span<const std::byte> data);
+    static std::expected<error_response, ores::utility::serialization::error_code> deserialize(std::span<const std::byte> data);
 };
 
 /**
@@ -57,7 +57,7 @@ struct error_response final {
 frame create_error_response_frame(
     std::uint32_t sequence,
     std::uint32_t correlation_id,
-    error_code code,
+    ores::utility::serialization::error_code code,
     const std::string& message);
 
 }

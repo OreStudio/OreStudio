@@ -64,7 +64,7 @@ struct create_account_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<create_account_request, comms::messaging::error_code>
+    static std::expected<create_account_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -87,7 +87,7 @@ struct create_account_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<create_account_response, comms::messaging::error_code>
+    static std::expected<create_account_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -116,7 +116,7 @@ struct list_accounts_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<list_accounts_request, comms::messaging::error_code>
+    static std::expected<list_accounts_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -157,7 +157,7 @@ struct list_accounts_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<list_accounts_response, comms::messaging::error_code>
+    static std::expected<list_accounts_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -186,7 +186,7 @@ struct unlock_account_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<unlock_account_request, comms::messaging::error_code>
+    static std::expected<unlock_account_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -228,7 +228,7 @@ struct unlock_account_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<unlock_account_response, comms::messaging::error_code>
+    static std::expected<unlock_account_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -251,7 +251,7 @@ struct delete_account_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<delete_account_request, comms::messaging::error_code>
+    static std::expected<delete_account_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -277,7 +277,7 @@ struct delete_account_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<delete_account_response, comms::messaging::error_code>
+    static std::expected<delete_account_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -306,7 +306,7 @@ struct lock_account_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<lock_account_request, comms::messaging::error_code>
+    static std::expected<lock_account_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -348,7 +348,7 @@ struct lock_account_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<lock_account_response, comms::messaging::error_code>
+    static std::expected<lock_account_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -383,7 +383,7 @@ struct update_account_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<update_account_request, comms::messaging::error_code>
+    static std::expected<update_account_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -409,7 +409,7 @@ struct update_account_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<update_account_response, comms::messaging::error_code>
+    static std::expected<update_account_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -438,7 +438,7 @@ struct reset_password_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<reset_password_request, comms::messaging::error_code>
+    static std::expected<reset_password_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -480,7 +480,7 @@ struct reset_password_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<reset_password_response, comms::messaging::error_code>
+    static std::expected<reset_password_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -507,7 +507,7 @@ struct change_password_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<change_password_request, comms::messaging::error_code>
+    static std::expected<change_password_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -533,7 +533,7 @@ struct change_password_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<change_password_response, comms::messaging::error_code>
+    static std::expected<change_password_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -560,7 +560,7 @@ struct update_my_email_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<update_my_email_request, comms::messaging::error_code>
+    static std::expected<update_my_email_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -586,7 +586,7 @@ struct update_my_email_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<update_my_email_response, comms::messaging::error_code>
+    static std::expected<update_my_email_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

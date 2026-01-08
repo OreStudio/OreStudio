@@ -21,12 +21,14 @@
 #include "ores.risk/messaging/currency_protocol.hpp"
 
 #include <expected>
-#include "ores.comms/messaging/reader.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
 #include "ores.platform/time/datetime.hpp"
 
 using namespace ores::risk;
-using namespace ores::comms::messaging;
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
+using ores::utility::serialization::error_code;
 
 namespace {
 
@@ -45,12 +47,17 @@ void serialize_currency(std::vector<std::byte>& buffer, const domain::currency& 
     writer::write_uint32(buffer, static_cast<std::uint32_t>(currency.rounding_precision));
     writer::write_string(buffer, currency.format);
     writer::write_string(buffer, currency.currency_type);
+    // Write optional image_id: bool flag followed by UUID if present
+    writer::write_bool(buffer, currency.image_id.has_value());
+    if (currency.image_id) {
+        writer::write_uuid(buffer, *currency.image_id);
+    }
     writer::write_string(buffer, currency.recorded_by);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(currency.recorded_at));
 }
 
-std::expected<domain::currency, error_code>
+std::expected<domain::currency, ores::utility::serialization::error_code>
 deserialize_currency(std::span<const std::byte>& data) {
     domain::currency currency;
 
@@ -98,6 +105,15 @@ deserialize_currency(std::span<const std::byte>& data) {
     if (!currency_type) return std::unexpected(currency_type.error());
     currency.currency_type = *currency_type;
 
+    // Read optional image_id: bool flag followed by UUID if present
+    auto has_image_id = reader::read_bool(data);
+    if (!has_image_id) return std::unexpected(has_image_id.error());
+    if (*has_image_id) {
+        auto image_id = reader::read_uuid(data);
+        if (!image_id) return std::unexpected(image_id.error());
+        currency.image_id = *image_id;
+    }
+
     auto recorded_by = reader::read_string(data);
     if (!recorded_by) return std::unexpected(recorded_by.error());
     currency.recorded_by = *recorded_by;
@@ -131,7 +147,7 @@ std::vector<std::byte> delete_currency_request::serialize() const {
     return buffer;
 }
 
-std::expected<delete_currency_request, comms::messaging::error_code>
+std::expected<delete_currency_request, ores::utility::serialization::error_code>
 delete_currency_request::deserialize(std::span<const std::byte> data) {
     delete_currency_request request;
 
@@ -181,7 +197,7 @@ std::vector<std::byte> delete_currency_response::serialize() const {
     return buffer;
 }
 
-std::expected<delete_currency_response, comms::messaging::error_code>
+std::expected<delete_currency_response, ores::utility::serialization::error_code>
 delete_currency_response::deserialize(std::span<const std::byte> data) {
     delete_currency_response response;
 
@@ -233,7 +249,7 @@ std::vector<std::byte> get_currencies_request::serialize() const {
     return buffer;
 }
 
-std::expected<get_currencies_request, comms::messaging::error_code>
+std::expected<get_currencies_request, ores::utility::serialization::error_code>
 get_currencies_request::deserialize(std::span<const std::byte> data) {
     get_currencies_request request;
 
@@ -263,28 +279,15 @@ std::vector<std::byte> get_currencies_response::serialize() const {
     // Write currency count in this response
     writer::write_uint32(buffer, static_cast<std::uint32_t>(currencies.size()));
 
-    // Write each currency
+    // Write each currency using the serialize helper
     for (const auto& currency : currencies) {
-        writer::write_uint32(buffer, static_cast<std::uint32_t>(currency.version));
-        writer::write_string(buffer, currency.iso_code);
-        writer::write_string(buffer, currency.name);
-        writer::write_string(buffer, currency.numeric_code);
-        writer::write_string(buffer, currency.symbol);
-        writer::write_string(buffer, currency.fraction_symbol);
-        writer::write_uint32(buffer, static_cast<std::uint32_t>(currency.fractions_per_unit));
-        writer::write_string(buffer, currency.rounding_type);
-        writer::write_uint32(buffer, static_cast<std::uint32_t>(currency.rounding_precision));
-        writer::write_string(buffer, currency.format);
-        writer::write_string(buffer, currency.currency_type);
-        writer::write_string(buffer, currency.recorded_by);
-        writer::write_string(buffer,
-            ores::platform::time::datetime::format_time_point(currency.recorded_at));
+        serialize_currency(buffer, currency);
     }
 
     return buffer;
 }
 
-std::expected<get_currencies_response, comms::messaging::error_code>
+std::expected<get_currencies_response, ores::utility::serialization::error_code>
 get_currencies_response::deserialize(std::span<const std::byte> data) {
     get_currencies_response response;
 
@@ -302,68 +305,14 @@ get_currencies_response::deserialize(std::span<const std::byte> data) {
     }
     auto count = *count_result;
 
-    // Read each currency
+    // Read each currency using the deserialize helper
     response.currencies.reserve(count);
     for (std::uint32_t i = 0; i < count; ++i) {
-        domain::currency currency;
-
-        auto version = reader::read_uint32(data);
-        if (!version) return std::unexpected(version.error());
-        currency.version = static_cast<int>(*version);
-
-        auto iso_code = reader::read_string(data);
-        if (!iso_code) return std::unexpected(iso_code.error());
-        currency.iso_code = *iso_code;
-
-        auto name = reader::read_string(data);
-        if (!name) return std::unexpected(name.error());
-        currency.name = *name;
-
-        auto numeric_code = reader::read_string(data);
-        if (!numeric_code) return std::unexpected(numeric_code.error());
-        currency.numeric_code = *numeric_code;
-
-        auto symbol = reader::read_string(data);
-        if (!symbol) return std::unexpected(symbol.error());
-        currency.symbol = *symbol;
-
-        auto fraction_symbol = reader::read_string(data);
-        if (!fraction_symbol) return std::unexpected(fraction_symbol.error());
-        currency.fraction_symbol = *fraction_symbol;
-
-        auto fractions_per_unit = reader::read_uint32(data);
-        if (!fractions_per_unit) return std::unexpected(fractions_per_unit.error());
-        currency.fractions_per_unit = static_cast<int>(*fractions_per_unit);
-
-        auto rounding_type = reader::read_string(data);
-        if (!rounding_type) return std::unexpected(rounding_type.error());
-        currency.rounding_type = *rounding_type;
-
-        auto rounding_precision = reader::read_uint32(data);
-        if (!rounding_precision) return std::unexpected(rounding_precision.error());
-        currency.rounding_precision = static_cast<int>(*rounding_precision);
-
-        auto format = reader::read_string(data);
-        if (!format) return std::unexpected(format.error());
-        currency.format = *format;
-
-        auto currency_type = reader::read_string(data);
-        if (!currency_type) return std::unexpected(currency_type.error());
-        currency.currency_type = *currency_type;
-
-        auto recorded_by = reader::read_string(data);
-        if (!recorded_by) return std::unexpected(recorded_by.error());
-        currency.recorded_by = *recorded_by;
-
-        auto recorded_at = reader::read_string(data);
-        if (!recorded_at) return std::unexpected(recorded_at.error());
-        try {
-            currency.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at);
-        } catch (const std::invalid_argument&) {
-            return std::unexpected(error_code::invalid_request);
+        auto currency_result = deserialize_currency(data);
+        if (!currency_result) {
+            return std::unexpected(currency_result.error());
         }
-
-        response.currencies.push_back(std::move(currency));
+        response.currencies.push_back(std::move(*currency_result));
     }
 
     return response;
@@ -381,7 +330,7 @@ std::vector<std::byte> save_currency_request::serialize() const {
     return buffer;
 }
 
-std::expected<save_currency_request, comms::messaging::error_code>
+std::expected<save_currency_request, ores::utility::serialization::error_code>
 save_currency_request::deserialize(std::span<const std::byte> data) {
     auto currency_result = deserialize_currency(data);
     if (!currency_result) {
@@ -402,7 +351,7 @@ std::vector<std::byte> save_currency_response::serialize() const {
     return buffer;
 }
 
-std::expected<save_currency_response, comms::messaging::error_code>
+std::expected<save_currency_response, ores::utility::serialization::error_code>
 save_currency_response::deserialize(std::span<const std::byte> data) {
     save_currency_response response;
 

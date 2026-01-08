@@ -62,8 +62,17 @@ public:
 
     /**
      * @brief Write a string with 16-bit length prefix.
+     *
+     * @note Maximum string length is 65535 bytes. For larger strings, use write_string32.
      */
     static void write_string(std::vector<std::byte>& buffer, const std::string& str);
+
+    /**
+     * @brief Write a string with 32-bit length prefix.
+     *
+     * Use this for strings that may exceed 65535 bytes (e.g., SVG data, large text).
+     */
+    static void write_string32(std::vector<std::byte>& buffer, const std::string& str);
 
     /**
      * @brief Write a boolean (1 byte).

@@ -57,7 +57,7 @@ struct submit_telemetry_response final {
     std::string message;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<submit_telemetry_response, comms::messaging::error_code>
+    static std::expected<submit_telemetry_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -76,7 +76,7 @@ struct get_telemetry_logs_request final {
     domain::telemetry_query query;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<get_telemetry_logs_request, comms::messaging::error_code>
+    static std::expected<get_telemetry_logs_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -107,7 +107,7 @@ struct get_telemetry_logs_response final {
     std::string message;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<get_telemetry_logs_response, comms::messaging::error_code>
+    static std::expected<get_telemetry_logs_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -126,7 +126,7 @@ struct get_telemetry_stats_request final {
     domain::telemetry_stats_query query;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<get_telemetry_stats_request, comms::messaging::error_code>
+    static std::expected<get_telemetry_stats_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -152,7 +152,7 @@ struct get_telemetry_stats_response final {
     std::string message;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<get_telemetry_stats_response, comms::messaging::error_code>
+    static std::expected<get_telemetry_stats_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

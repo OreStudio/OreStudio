@@ -61,13 +61,13 @@ accounts_message_handler::handle_message(message_type type,
     if (in_bootstrap && !is_bootstrap_endpoint) {
         BOOST_LOG_SEV(lg(), warn)
             << "Blocked operation " << type << " - system in bootstrap mode";
-        co_return std::unexpected(comms::messaging::error_code::bootstrap_mode_only);
+        co_return std::unexpected(ores::utility::serialization::error_code::bootstrap_mode_only);
     }
 
     if (!in_bootstrap && type == message_type::create_initial_admin_request) {
         BOOST_LOG_SEV(lg(), warn)
             << "Blocked create_initial_admin_request - system not in bootstrap mode";
-        co_return std::unexpected(comms::messaging::error_code::bootstrap_mode_forbidden);
+        co_return std::unexpected(ores::utility::serialization::error_code::bootstrap_mode_forbidden);
     }
 
     switch (type) {
@@ -127,7 +127,7 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_get_account_permissions_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
-        co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
+        co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
     }
 }
 
@@ -190,7 +190,7 @@ handle_list_accounts_request(std::span<const std::byte> payload,
     if (request.limit == 0 || request.limit > max_limit) {
         BOOST_LOG_SEV(lg(), warn) << "Invalid limit: " << request.limit
                                   << ". Must be between 1 and " << max_limit;
-        co_return std::unexpected(comms::messaging::error_code::invalid_request);
+        co_return std::unexpected(ores::utility::serialization::error_code::invalid_request);
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Fetching accounts with offset: "
@@ -561,7 +561,7 @@ accounts_message_handler::get_authenticated_session(
         BOOST_LOG_SEV(lg(), warn) << operation_name
                                   << " denied: no active session for "
                                   << remote_address;
-        return std::unexpected(comms::messaging::error_code::authentication_failed);
+        return std::unexpected(ores::utility::serialization::error_code::authentication_failed);
     }
     return *session;
 }
@@ -582,7 +582,7 @@ accounts_message_handler::check_authorization(
         BOOST_LOG_SEV(lg(), warn) << operation_name << " denied: requester "
                                   << boost::uuids::to_string(session.account_id)
                                   << " lacks " << permission << " permission";
-        return std::unexpected(comms::messaging::error_code::authorization_failed);
+        return std::unexpected(ores::utility::serialization::error_code::authorization_failed);
     }
 
     return session;
@@ -1445,7 +1445,7 @@ handle_list_sessions_request(std::span<const std::byte> payload,
     if (!session) {
         BOOST_LOG_SEV(lg(), warn) << "List sessions denied: no active session for "
                                   << remote_address;
-        co_return std::unexpected(comms::messaging::error_code::authentication_failed);
+        co_return std::unexpected(ores::utility::serialization::error_code::authentication_failed);
     }
 
     // Determine which account's sessions to return
@@ -1460,7 +1460,7 @@ handle_list_sessions_request(std::span<const std::byte> payload,
         BOOST_LOG_SEV(lg(), warn) << "List sessions denied: non-admin trying to view "
                                   << "sessions for account "
                                   << boost::uuids::to_string(target_account_id);
-        co_return std::unexpected(comms::messaging::error_code::authorization_failed);
+        co_return std::unexpected(ores::utility::serialization::error_code::authorization_failed);
     }
 
     // Query sessions from database
@@ -1499,7 +1499,7 @@ handle_get_session_statistics_request(std::span<const std::byte> payload,
     if (!session) {
         BOOST_LOG_SEV(lg(), warn) << "Get session statistics denied: no active session for "
                                   << remote_address;
-        co_return std::unexpected(comms::messaging::error_code::authentication_failed);
+        co_return std::unexpected(ores::utility::serialization::error_code::authentication_failed);
     }
 
     // Determine target account
@@ -1518,7 +1518,7 @@ handle_get_session_statistics_request(std::span<const std::byte> payload,
             BOOST_LOG_SEV(lg(), warn) << "Get session statistics denied: non-admin trying to view "
                                       << "statistics for account "
                                       << boost::uuids::to_string(target_account_id);
-            co_return std::unexpected(comms::messaging::error_code::authorization_failed);
+            co_return std::unexpected(ores::utility::serialization::error_code::authorization_failed);
         }
     }
 
@@ -1562,7 +1562,7 @@ handle_get_active_sessions_request(std::span<const std::byte> payload,
     if (!session) {
         BOOST_LOG_SEV(lg(), warn) << "Get active sessions denied: no active session for "
                                   << remote_address;
-        co_return std::unexpected(comms::messaging::error_code::authentication_failed);
+        co_return std::unexpected(ores::utility::serialization::error_code::authentication_failed);
     }
 
     std::vector<domain::session> active_sessions;

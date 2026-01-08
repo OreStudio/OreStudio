@@ -28,7 +28,7 @@
 namespace ores::comms::service {
 
 using messaging::message_type;
-using messaging::error_code;
+using ores::utility::serialization::error_code;
 using messaging::handshake_request;
 using messaging::handshake_response;
 using messaging::handshake_ack;

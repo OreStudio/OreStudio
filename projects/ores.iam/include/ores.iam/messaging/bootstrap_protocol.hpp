@@ -57,7 +57,7 @@ struct create_initial_admin_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<create_initial_admin_request, comms::messaging::error_code>
+    static std::expected<create_initial_admin_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -85,7 +85,7 @@ struct create_initial_admin_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<create_initial_admin_response, comms::messaging::error_code>
+    static std::expected<create_initial_admin_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -108,7 +108,7 @@ struct bootstrap_status_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<bootstrap_status_request, comms::messaging::error_code>
+    static std::expected<bootstrap_status_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -134,7 +134,7 @@ struct bootstrap_status_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<bootstrap_status_response, comms::messaging::error_code>
+    static std::expected<bootstrap_status_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

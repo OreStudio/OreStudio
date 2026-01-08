@@ -86,7 +86,7 @@ public:
      * @param ec The error code
      * @return true if a pending request was found and failed
      */
-    bool fail(std::uint32_t correlation_id, messaging::error_code ec);
+    bool fail(std::uint32_t correlation_id, ores::utility::serialization::error_code ec);
 
     /**
      * @brief Fail all pending requests with an error.
@@ -95,7 +95,7 @@ public:
      *
      * @param ec The error code to deliver to all pending requests
      */
-    void fail_all(messaging::error_code ec);
+    void fail_all(ores::utility::serialization::error_code ec);
 
     /**
      * @brief Remove a completed/cancelled request from the map.

@@ -68,7 +68,7 @@ struct handshake_request final {
     /**
      * @brief Deserialize from frame payload.
      */
-    static std::expected<handshake_request, error_code>
+    static std::expected<handshake_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -80,7 +80,7 @@ struct handshake_response final {
     std::uint16_t server_version_minor;
     bool version_compatible;
     std::string server_identifier;
-    error_code status;
+    ores::utility::serialization::error_code status;
     /**
      * @brief Compression type selected for this session.
      *
@@ -98,7 +98,7 @@ struct handshake_response final {
     /**
      * @brief Deserialize from frame payload.
      */
-    static std::expected<handshake_response, error_code>
+    static std::expected<handshake_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -106,7 +106,7 @@ struct handshake_response final {
  * @brief Handshake acknowledgment message sent by client to complete handshake.
  */
 struct handshake_ack final {
-    error_code status;
+    ores::utility::serialization::error_code status;
 
     /**
      * @brief Serialize to frame payload.
@@ -116,7 +116,7 @@ struct handshake_ack final {
     /**
      * @brief Deserialize from frame payload.
      */
-    static std::expected<handshake_ack, error_code>
+    static std::expected<handshake_ack, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -147,7 +147,7 @@ frame create_handshake_response_frame(
     std::uint32_t sequence,
     bool version_compatible,
     const std::string& server_identifier,
-    error_code status = error_code::none,
+    ores::utility::serialization::error_code status = ores::utility::serialization::error_code::none,
     compression_type selected_compression = compression_type::none);
 
 /**
@@ -155,7 +155,7 @@ frame create_handshake_response_frame(
  */
 frame create_handshake_ack_frame(
     std::uint32_t sequence,
-    error_code status = error_code::none);
+    ores::utility::serialization::error_code status = ores::utility::serialization::error_code::none);
 
 /**
  * @brief Create an error response frame.
@@ -168,7 +168,7 @@ frame create_handshake_ack_frame(
 frame create_error_response_frame(
     std::uint32_t sequence,
     std::uint32_t correlation_id,
-    error_code code,
+    ores::utility::serialization::error_code code,
     const std::string& message);
 
 /**

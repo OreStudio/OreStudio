@@ -130,7 +130,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // mappings come from get_currencies_response. Flag changes appear in currency
 // version history. Removed messages: get_currency_images_request/response,
 // set_currency_image_request/response. Breaking change.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 17;
+//
+// Version 18.0 uses 32-bit length prefix for svg_data in get_images_response.
+// Previously used 16-bit length which truncated SVGs larger than 65535 bytes.
+// This is a breaking change affecting image serialization.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 18;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
@@ -277,11 +281,6 @@ enum class message_type {
 };
 
 /**
- * @brief Backward-compatible alias for ores::utility::serialization::error_code.
- */
-using error_code = ores::utility::serialization::error_code;
-
-/**
  * @brief Stream output operator for message_type.
  *
  * Uses magic_enum to provide human-readable enum names with hex values in logs.
@@ -298,7 +297,7 @@ inline std::ostream& operator<<(std::ostream& os, message_type mt) {
  * Uses magic_enum to provide human-readable enum names with hex values in logs.
  * Example: "version_mismatch (0x0001)" instead of just "0x0001"
  */
-inline std::ostream& operator<<(std::ostream& os, error_code ec) {
+inline std::ostream& operator<<(std::ostream& os, ores::utility::serialization::error_code ec) {
     return os << magic_enum::enum_name(ec)
               << " (0x" << std::hex << static_cast<std::uint16_t>(ec) << std::dec << ")";
 }
@@ -314,7 +313,7 @@ inline std::ostream& operator<<(std::ostream& os, compression_type ct) {
 /**
  * @brief Convert error_code to string for display.
  */
-inline std::string to_string(error_code ec) {
+inline std::string to_string(ores::utility::serialization::error_code ec) {
     return std::string(magic_enum::enum_name(ec));
 }
 

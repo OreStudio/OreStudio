@@ -35,7 +35,7 @@ telemetry_message_handler::telemetry_message_handler(database::context ctx,
     , repo_(ctx_) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 telemetry_message_handler::handle_message(comms::messaging::message_type type,
     std::span<const std::byte> payload, const std::string& remote_address) {
 
@@ -51,12 +51,12 @@ telemetry_message_handler::handle_message(comms::messaging::message_type type,
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown telemetry message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
-        co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
+        co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
     }
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 telemetry_message_handler::
 handle_submit_log_records_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
@@ -141,7 +141,7 @@ handle_submit_log_records_request(std::span<const std::byte> payload,
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 telemetry_message_handler::
 handle_get_telemetry_logs_request(std::span<const std::byte> payload) {
 
@@ -161,7 +161,7 @@ handle_get_telemetry_logs_request(std::span<const std::byte> payload) {
     if (request.query.limit == 0 || request.query.limit > max_limit) {
         BOOST_LOG_SEV(lg(), warn) << "Invalid limit: " << request.query.limit
                                   << ". Must be between 1 and " << max_limit;
-        co_return std::unexpected(comms::messaging::error_code::invalid_request);
+        co_return std::unexpected(ores::utility::serialization::error_code::invalid_request);
     }
 
     get_telemetry_logs_response response;
@@ -188,7 +188,7 @@ handle_get_telemetry_logs_request(std::span<const std::byte> payload) {
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 telemetry_message_handler::
 handle_get_telemetry_stats_request(std::span<const std::byte> payload) {
 

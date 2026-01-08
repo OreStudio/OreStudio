@@ -35,7 +35,7 @@ namespace ores::variability::messaging {
  */
 struct list_feature_flags_request final {
     std::vector<std::byte> serialize() const;
-    static std::expected<list_feature_flags_request, comms::messaging::error_code>
+    static std::expected<list_feature_flags_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -48,7 +48,7 @@ struct list_feature_flags_response final {
     std::vector<domain::feature_flags> feature_flags;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<list_feature_flags_response, comms::messaging::error_code>
+    static std::expected<list_feature_flags_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -61,7 +61,7 @@ struct save_feature_flag_request final {
     domain::feature_flags flag;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<save_feature_flag_request, comms::messaging::error_code>
+    static std::expected<save_feature_flag_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -75,7 +75,7 @@ struct save_feature_flag_response final {
     std::string error_message;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<save_feature_flag_response, comms::messaging::error_code>
+    static std::expected<save_feature_flag_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -88,7 +88,7 @@ struct delete_feature_flag_request final {
     std::string name;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<delete_feature_flag_request, comms::messaging::error_code>
+    static std::expected<delete_feature_flag_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -102,7 +102,7 @@ struct delete_feature_flag_response final {
     std::string error_message;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<delete_feature_flag_response, comms::messaging::error_code>
+    static std::expected<delete_feature_flag_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

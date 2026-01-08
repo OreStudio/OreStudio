@@ -28,6 +28,7 @@ namespace ores::telemetry::messaging {
 
 using ores::utility::serialization::reader;
 using ores::utility::serialization::writer;
+using ores::utility::serialization::error_code;
 
 namespace {
 
@@ -36,7 +37,7 @@ void write_bytes(std::vector<std::byte>& buffer,
     buffer.insert(buffer.end(), bytes.begin(), bytes.end());
 }
 
-std::expected<void, error_code>
+std::expected<void, ores::utility::serialization::error_code>
 read_bytes(std::span<const std::byte>& data,
            std::span<std::byte> dest) {
     if (data.size() < dest.size()) {
@@ -115,7 +116,7 @@ std::vector<std::byte> submit_log_records_request::serialize() const {
     return buffer;
 }
 
-std::expected<submit_log_records_request, error_code>
+std::expected<submit_log_records_request, ores::utility::serialization::error_code>
 submit_log_records_request::deserialize(std::span<const std::byte> data) {
     submit_log_records_request request;
 

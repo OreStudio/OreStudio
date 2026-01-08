@@ -24,6 +24,8 @@
 
 namespace ores::comms::messaging {
 
+using ores::utility::serialization::error_code;
+
 std::vector<std::byte>
 ping::serialize(ping v) {
     auto bson_data = rfl::bson::write(v);
@@ -33,7 +35,7 @@ ping::serialize(ping v) {
     };
 }
 
-std::expected<ping, error_code>
+std::expected<ping, ores::utility::serialization::error_code>
 ping::deserialize(std::span<const std::byte> data) {
     auto result = rfl::bson::read<ping>(reinterpret_cast<const char*>(data.data()), data.size());
 
@@ -53,7 +55,7 @@ pong::serialize(pong v) {
     };
 }
 
-std::expected<pong, error_code>
+std::expected<pong, ores::utility::serialization::error_code>
 pong::deserialize(std::span<const std::byte> data) {
     auto result = rfl::bson::read<pong>(reinterpret_cast<const char*>(data.data()), data.size());
 

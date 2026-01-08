@@ -71,7 +71,7 @@ struct submit_log_records_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<submit_log_records_request, error_code>
+    static std::expected<submit_log_records_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

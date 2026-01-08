@@ -106,6 +106,21 @@ reader::read_string(std::span<const std::byte>& data) {
     return str;
 }
 
+std::expected<std::string, error_code>
+reader::read_string32(std::span<const std::byte>& data) {
+    auto len_result = read_uint32(data);
+    if (!len_result) {
+        return std::unexpected(len_result.error());
+    }
+    auto len = *len_result;
+    if (data.size() < len) {
+        return std::unexpected(error_code::payload_incomplete);
+    }
+    std::string str(reinterpret_cast<const char*>(data.data()), len);
+    data = data.subspan(len);
+    return str;
+}
+
 std::expected<boost::uuids::uuid, error_code>
 reader::read_uuid(std::span<const std::byte>& data) {
     if (data.size() < 16) {

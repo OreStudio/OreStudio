@@ -24,12 +24,13 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.comms/messaging/reader.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
 
 namespace ores::iam::messaging {
 
-using namespace ores::comms::messaging;
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
 
 std::vector<std::byte> signup_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -39,7 +40,7 @@ std::vector<std::byte> signup_request::serialize() const {
     return buffer;
 }
 
-std::expected<signup_request, comms::messaging::error_code>
+std::expected<signup_request, ores::utility::serialization::error_code>
 signup_request::deserialize(std::span<const std::byte> data) {
     signup_request request;
 
@@ -73,7 +74,7 @@ std::vector<std::byte> signup_response::serialize() const {
     return buffer;
 }
 
-std::expected<signup_response, comms::messaging::error_code>
+std::expected<signup_response, ores::utility::serialization::error_code>
 signup_response::deserialize(std::span<const std::byte> data) {
     signup_response response;
 

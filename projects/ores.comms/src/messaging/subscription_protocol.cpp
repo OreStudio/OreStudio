@@ -20,10 +20,13 @@
 #include "ores.comms/messaging/subscription_protocol.hpp"
 
 #include <ostream>
-#include "ores.comms/messaging/reader.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
 
 namespace ores::comms::messaging {
+
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
 
 // subscribe_request
 
@@ -33,7 +36,7 @@ std::vector<std::byte> subscribe_request::serialize() const {
     return buffer;
 }
 
-std::expected<subscribe_request, error_code>
+std::expected<subscribe_request, ores::utility::serialization::error_code>
 subscribe_request::deserialize(std::span<const std::byte> data) {
     subscribe_request req;
 
@@ -57,7 +60,7 @@ std::vector<std::byte> subscribe_response::serialize() const {
     return buffer;
 }
 
-std::expected<subscribe_response, error_code>
+std::expected<subscribe_response, ores::utility::serialization::error_code>
 subscribe_response::deserialize(std::span<const std::byte> data) {
     subscribe_response resp;
 
@@ -85,7 +88,7 @@ std::vector<std::byte> unsubscribe_request::serialize() const {
     return buffer;
 }
 
-std::expected<unsubscribe_request, error_code>
+std::expected<unsubscribe_request, ores::utility::serialization::error_code>
 unsubscribe_request::deserialize(std::span<const std::byte> data) {
     unsubscribe_request req;
 
@@ -109,7 +112,7 @@ std::vector<std::byte> unsubscribe_response::serialize() const {
     return buffer;
 }
 
-std::expected<unsubscribe_response, error_code>
+std::expected<unsubscribe_response, ores::utility::serialization::error_code>
 unsubscribe_response::deserialize(std::span<const std::byte> data) {
     unsubscribe_response resp;
 
@@ -149,7 +152,7 @@ std::vector<std::byte> notification_message::serialize() const {
     return buffer;
 }
 
-std::expected<notification_message, error_code>
+std::expected<notification_message, ores::utility::serialization::error_code>
 notification_message::deserialize(std::span<const std::byte> data) {
     notification_message msg;
 
@@ -203,7 +206,7 @@ std::vector<std::byte> database_status_message::serialize() const {
     return buffer;
 }
 
-std::expected<database_status_message, error_code>
+std::expected<database_status_message, ores::utility::serialization::error_code>
 database_status_message::deserialize(std::span<const std::byte> data) {
     database_status_message msg;
 

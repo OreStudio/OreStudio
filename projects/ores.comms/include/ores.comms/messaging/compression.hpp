@@ -35,7 +35,7 @@ namespace ores::comms::messaging {
  * @param type The compression algorithm to use
  * @return The compressed data, or error_code on failure
  */
-std::expected<std::vector<std::byte>, error_code>
+std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
 compress(std::span<const std::byte> data, compression_type type);
 
 /**
@@ -45,7 +45,7 @@ compress(std::span<const std::byte> data, compression_type type);
  * @param type The compression algorithm used
  * @return The decompressed data, or error_code on failure
  */
-std::expected<std::vector<std::byte>, error_code>
+std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
 decompress(std::span<const std::byte> data, compression_type type);
 
 /**

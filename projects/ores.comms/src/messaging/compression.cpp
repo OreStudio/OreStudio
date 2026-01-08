@@ -44,6 +44,7 @@ auto& lg() {
 namespace ores::comms::messaging {
 
 using namespace ores::telemetry::log;
+using ores::utility::serialization::error_code;
 namespace io = boost::iostreams;
 
 bool is_compression_supported(compression_type type) {
@@ -58,7 +59,7 @@ bool is_compression_supported(compression_type type) {
     }
 }
 
-std::expected<std::vector<std::byte>, error_code>
+std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
 compress(std::span<const std::byte> data, compression_type type) {
     if (type == compression_type::none) {
         return std::vector<std::byte>(data.begin(), data.end());
@@ -99,7 +100,7 @@ compress(std::span<const std::byte> data, compression_type type) {
     }
 }
 
-std::expected<std::vector<std::byte>, error_code>
+std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
 decompress(std::span<const std::byte> data, compression_type type) {
     if (type == compression_type::none) {
         return std::vector<std::byte>(data.begin(), data.end());

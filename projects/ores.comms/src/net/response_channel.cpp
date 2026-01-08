@@ -44,7 +44,7 @@ void response_channel::set_value(messaging::frame response) {
     signal_.cancel();
 }
 
-void response_channel::set_error(messaging::error_code ec) {
+void response_channel::set_error(ores::utility::serialization::error_code ec) {
     {
         std::lock_guard guard{mutex_};
         if (ready_) {
@@ -57,7 +57,7 @@ void response_channel::set_error(messaging::error_code ec) {
     signal_.cancel();
 }
 
-boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>>
+boost::asio::awaitable<std::expected<messaging::frame, ores::utility::serialization::error_code>>
 response_channel::get() {
     // Check if already ready (fast path)
     {
@@ -86,7 +86,7 @@ response_channel::get() {
             co_return std::move(*response_);
         }
         // This shouldn't happen - signal without value
-        co_return std::unexpected(messaging::error_code::network_error);
+        co_return std::unexpected(ores::utility::serialization::error_code::network_error);
     }
 }
 

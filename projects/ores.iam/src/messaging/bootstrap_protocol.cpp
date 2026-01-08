@@ -25,12 +25,13 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.comms/messaging/reader.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
 
 namespace ores::iam::messaging {
 
-using namespace ores::comms::messaging;
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
 
 std::vector<std::byte> create_initial_admin_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -40,7 +41,7 @@ std::vector<std::byte> create_initial_admin_request::serialize() const {
     return buffer;
 }
 
-std::expected<create_initial_admin_request, comms::messaging::error_code>
+std::expected<create_initial_admin_request, ores::utility::serialization::error_code>
 create_initial_admin_request::deserialize(std::span<const std::byte> data) {
     create_initial_admin_request request;
 
@@ -72,7 +73,7 @@ std::vector<std::byte> create_initial_admin_response::serialize() const {
     return buffer;
 }
 
-std::expected<create_initial_admin_response, comms::messaging::error_code>
+std::expected<create_initial_admin_response, ores::utility::serialization::error_code>
 create_initial_admin_response::deserialize(std::span<const std::byte> data) {
     create_initial_admin_response response;
 
@@ -101,7 +102,7 @@ std::vector<std::byte> bootstrap_status_request::serialize() const {
     return std::vector<std::byte>{};
 }
 
-std::expected<bootstrap_status_request, comms::messaging::error_code>
+std::expected<bootstrap_status_request, ores::utility::serialization::error_code>
 bootstrap_status_request::deserialize(std::span<const std::byte> data) {
     // Empty request - no data to deserialize
     return bootstrap_status_request{};
@@ -119,7 +120,7 @@ std::vector<std::byte> bootstrap_status_response::serialize() const {
     return buffer;
 }
 
-std::expected<bootstrap_status_response, comms::messaging::error_code>
+std::expected<bootstrap_status_response, ores::utility::serialization::error_code>
 bootstrap_status_response::deserialize(std::span<const std::byte> data) {
     bootstrap_status_response response;
 

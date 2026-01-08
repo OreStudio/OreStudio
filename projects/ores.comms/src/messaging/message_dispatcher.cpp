@@ -22,6 +22,7 @@
 namespace ores::comms::messaging {
 
 using namespace ores::telemetry::log;
+using ores::utility::serialization::error_code;
 
 message_dispatcher::message_dispatcher(
     std::shared_ptr<service::auth_session_service> sessions)
@@ -34,7 +35,7 @@ void message_dispatcher::register_handler(message_type_range range,
     handlers_[range] = std::move(handler);
 }
 
-boost::asio::awaitable<std::expected<frame, error_code>>
+boost::asio::awaitable<std::expected<frame, ores::utility::serialization::error_code>>
 message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence,
     const std::string& remote_address, compression_type response_compression) {
     const auto msg_type = request_frame.header().type;

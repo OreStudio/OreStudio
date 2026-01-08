@@ -52,6 +52,18 @@ private:
     }
 
 public:
+    /**
+     * @brief Enumeration of table columns.
+     */
+    enum Column {
+        Name,
+        Enabled,
+        Version,
+        RecordedBy,
+        RecordedAt,
+        ColumnCount
+    };
+
     explicit ClientFeatureFlagModel(ClientManager* clientManager,
                                     QObject* parent = nullptr);
     ~ClientFeatureFlagModel() override = default;
@@ -94,19 +106,6 @@ private slots:
 private:
     void update_recent_flags();
     QVariant recency_foreground_color(const std::string& name) const;
-
-
-    /**
-     * @brief Enumeration of table columns.
-     */
-    enum Column {
-        Name,
-        Enabled,
-        Version,
-        RecordedBy,
-        RecordedAt,
-        ColumnCount
-    };
 
     struct FetchResult {
         bool success;

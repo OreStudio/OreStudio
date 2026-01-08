@@ -78,7 +78,8 @@ application::application() = default;
 
 boost::asio::awaitable<void> application::
 run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
-    BOOST_LOG_SEV(lg(), info) << "Starting ORE Studio Service v" << ORES_VERSION;
+    BOOST_LOG_SEV(lg(), info) << "Starting ORE Studio Service v" << ORES_VERSION
+                              << " (" << ORES_BUILD_INFO << ")";
 
     // Create database health monitor
     database::health_monitor db_health_monitor(

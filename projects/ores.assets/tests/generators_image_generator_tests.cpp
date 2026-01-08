@@ -41,12 +41,12 @@ TEST_CASE("generate_single_image", tags) {
     auto image = generate_synthetic_image();
     BOOST_LOG_SEV(lg, debug) << "Generated image: " << image;
 
-    CHECK(!image.image_id.empty());
+    CHECK(!image.image_id.is_nil());
     CHECK(!image.key.empty());
     CHECK(!image.description.empty());
     CHECK(!image.svg_data.empty());
     CHECK(!image.recorded_by.empty());
-    CHECK(!image.recorded_at.empty());
+    CHECK(image.recorded_at != std::chrono::system_clock::time_point{});
 }
 
 TEST_CASE("generate_multiple_images", tags) {

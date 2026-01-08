@@ -21,6 +21,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -96,7 +97,7 @@ TEST_CASE("read_latest_image_by_id", tags) {
     img.description = original_description + " v2";
     repo.write(h.context(), img);
 
-    auto read_images = repo.read_latest_by_id(h.context(), img.image_id);
+    auto read_images = repo.read_latest_by_id(h.context(), boost::uuids::to_string(img.image_id));
     BOOST_LOG_SEV(lg, debug) << "Read images: " << read_images;
 
     REQUIRE(read_images.size() == 1);

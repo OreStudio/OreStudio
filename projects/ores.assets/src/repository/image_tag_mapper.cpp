@@ -19,6 +19,8 @@
  */
 #include "ores.assets/repository/image_tag_mapper.hpp"
 
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 
 namespace ores::assets::repository {
@@ -30,10 +32,10 @@ domain::image_tag image_tag_mapper::map(const image_tag_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
     domain::image_tag r;
-    r.image_id = v.image_id.value();
-    r.tag_id = v.tag_id.value();
+    r.image_id = boost::lexical_cast<boost::uuids::uuid>(v.image_id.value());
+    r.tag_id = boost::lexical_cast<boost::uuids::uuid>(v.tag_id.value());
     r.assigned_by = v.assigned_by;
-    r.assigned_at = v.assigned_at.value().str();
+    r.assigned_at = timestamp_to_timepoint(v.assigned_at.value());
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity.";
     return r;
@@ -43,8 +45,8 @@ image_tag_entity image_tag_mapper::map(const domain::image_tag& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity.";
 
     image_tag_entity r;
-    r.image_id = v.image_id;
-    r.tag_id = v.tag_id;
+    r.image_id = boost::uuids::to_string(v.image_id);
+    r.tag_id = boost::uuids::to_string(v.tag_id);
     r.assigned_by = v.assigned_by;
     // Note: assigned_at is read-only; managed by database triggers
 

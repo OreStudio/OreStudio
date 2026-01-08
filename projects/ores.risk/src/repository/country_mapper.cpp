@@ -17,42 +17,53 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.assets/repository/image_mapper.hpp"
+#include "ores.risk/repository/country_mapper.hpp"
 
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.risk/domain/country_json_io.hpp" // IWYU pragma: keep.
 
-namespace ores::assets::repository {
+namespace ores::risk::repository {
 
 using namespace ores::telemetry::log;
 using namespace ores::database::repository;
 
-domain::image image_mapper::map(const image_entity& v) {
+domain::country country_mapper::map(const country_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
 
-    domain::image r;
+    domain::country r;
     r.version = v.version;
-    r.image_id = boost::lexical_cast<boost::uuids::uuid>(v.image_id.value());
-    r.key = v.key;
-    r.description = v.description;
-    r.svg_data = v.svg_data;
+    BOOST_LOG_SEV(lg(), trace) << "Mapped version: entity.version=" << v.version
+                               << " -> domain.version=" << r.version;
+    r.alpha2_code = v.alpha2_code.value();
+    r.alpha3_code = v.alpha3_code;
+    r.numeric_code = v.numeric_code;
+    r.name = v.name;
+    r.official_name = v.official_name;
+    if (v.image_id) {
+        r.image_id = boost::lexical_cast<boost::uuids::uuid>(*v.image_id);
+    }
     r.recorded_by = v.modified_by;
     r.recorded_at = timestamp_to_timepoint(v.valid_from.value());
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity.";
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;
 }
 
-image_entity image_mapper::map(const domain::image& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity.";
+country_entity country_mapper::map(const domain::country& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
-    image_entity r;
-    r.image_id = boost::uuids::to_string(v.image_id);
+    country_entity r;
+    r.alpha2_code = v.alpha2_code;
     r.version = v.version;
-    r.key = v.key;
-    r.description = v.description;
-    r.svg_data = v.svg_data;
+    r.alpha3_code = v.alpha3_code;
+    r.numeric_code = v.numeric_code;
+    r.name = v.name;
+    r.official_name = v.official_name;
+    if (v.image_id) {
+        r.image_id = boost::uuids::to_string(*v.image_id);
+    }
     r.modified_by = v.recorded_by;
     // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers
 
@@ -60,18 +71,18 @@ image_entity image_mapper::map(const domain::image& v) {
     return r;
 }
 
-std::vector<domain::image>
-image_mapper::map(const std::vector<image_entity>& v) {
-    return map_vector<image_entity, domain::image>(
+std::vector<domain::country>
+country_mapper::map(const std::vector<country_entity>& v) {
+    return map_vector<country_entity, domain::country>(
         v,
         [](const auto& ve) { return map(ve); },
         lg(),
         "db entities");
 }
 
-std::vector<image_entity>
-image_mapper::map(const std::vector<domain::image>& v) {
-    return map_vector<domain::image, image_entity>(
+std::vector<country_entity>
+country_mapper::map(const std::vector<domain::country>& v) {
+    return map_vector<domain::country, country_entity>(
         v,
         [](const auto& ve) { return map(ve); },
         lg(),

@@ -17,18 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.assets/domain/image_json_io.hpp"
+#ifndef ORES_RISK_DOMAIN_COUNTRY_JSON_IO_HPP
+#define ORES_RISK_DOMAIN_COUNTRY_JSON_IO_HPP
 
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <iosfwd>
+#include "ores.risk/domain/country.hpp"
 
-namespace ores::assets::domain {
+namespace ores::risk::domain {
 
-std::ostream& operator<<(std::ostream& s, const image& v) {
-    rfl::json::write(v, s);
-    return s;
-}
+std::ostream& operator<<(std::ostream& s, const country& v);
 
 }
+
+#endif

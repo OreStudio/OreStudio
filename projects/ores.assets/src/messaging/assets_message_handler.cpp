@@ -19,6 +19,7 @@
  */
 #include "ores.assets/messaging/assets_message_handler.hpp"
 
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.assets/messaging/assets_protocol.hpp"
 
 namespace ores::assets::messaging {
@@ -101,7 +102,7 @@ handle_list_images_request(std::span<const std::byte> payload) {
         response.images.reserve(images.size());
         for (const auto& img : images) {
             response.images.push_back({
-                .image_id = img.image_id,
+                .image_id = boost::uuids::to_string(img.image_id),
                 .key = img.key,
                 .description = img.description
             });

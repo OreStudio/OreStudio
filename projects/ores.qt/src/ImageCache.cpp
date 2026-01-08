@@ -388,16 +388,17 @@ void ImageCache::onImagesLoaded() {
 
         // Cache SVG data and render icons
         for (const auto& img : result.images) {
-            image_svg_cache_[img.image_id] = img.svg_data;
+            const auto image_id_str = boost::uuids::to_string(img.image_id);
+            image_svg_cache_[image_id_str] = img.svg_data;
             // Log first 100 chars of SVG to verify content
             std::string svg_preview = img.svg_data.substr(0, 100);
-            BOOST_LOG_SEV(lg(), debug) << "Cached SVG for image_id: " << img.image_id
+            BOOST_LOG_SEV(lg(), debug) << "Cached SVG for image_id: " << image_id_str
                                        << ", size: " << img.svg_data.size()
                                        << ", preview: " << svg_preview;
             // MXN-specific trace
-            if (img.image_id == mxn_expected_image_id) {
+            if (image_id_str == mxn_expected_image_id) {
                 BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] Cached SVG for MXN's image_id: "
-                                           << img.image_id << ", size: " << img.svg_data.size();
+                                           << image_id_str << ", size: " << img.svg_data.size();
             }
         }
 
@@ -921,11 +922,12 @@ void ImageCache::onAllAvailableImagesLoaded() {
     if (result.success) {
         // Cache SVG data and render icons, clear pending status
         for (const auto& img : result.images) {
-            pending_image_requests_.erase(img.image_id);
-            image_svg_cache_[img.image_id] = img.svg_data;
+            const auto image_id_str = boost::uuids::to_string(img.image_id);
+            pending_image_requests_.erase(image_id_str);
+            image_svg_cache_[image_id_str] = img.svg_data;
             QIcon icon = svgToIcon(img.svg_data);
             if (!icon.isNull()) {
-                image_preview_cache_[img.image_id] = icon;
+                image_preview_cache_[image_id_str] = icon;
             }
         }
 

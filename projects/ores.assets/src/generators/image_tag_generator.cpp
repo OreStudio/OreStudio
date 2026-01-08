@@ -31,22 +31,22 @@ domain::image_tag generate_synthetic_image_tag() {
     domain::image_tag r;
 
     static boost::uuids::random_generator gen;
-    r.image_id = boost::uuids::to_string(gen());
-    r.tag_id = boost::uuids::to_string(gen());
+    r.image_id = gen();
+    r.tag_id = gen();
     r.assigned_by = std::string(faker::internet::username());
-    r.assigned_at = utility::faker::datetime::past_string();
+    r.assigned_at = utility::faker::datetime::past_timepoint();
 
     return r;
 }
 
-domain::image_tag generate_synthetic_image_tag(const std::string& image_id,
-                                                const std::string& tag_id) {
+domain::image_tag generate_synthetic_image_tag(const boost::uuids::uuid& image_id,
+                                                const boost::uuids::uuid& tag_id) {
     domain::image_tag r;
 
     r.image_id = image_id;
     r.tag_id = tag_id;
     r.assigned_by = std::string(faker::internet::username());
-    r.assigned_at = utility::faker::datetime::past_string();
+    r.assigned_at = utility::faker::datetime::past_timepoint();
 
     return r;
 }

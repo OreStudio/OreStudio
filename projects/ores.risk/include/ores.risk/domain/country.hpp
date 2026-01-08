@@ -17,45 +17,54 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ASSETS_DOMAIN_IMAGE_HPP
-#define ORES_ASSETS_DOMAIN_IMAGE_HPP
+#ifndef ORES_RISK_DOMAIN_COUNTRY_HPP
+#define ORES_RISK_DOMAIN_COUNTRY_HPP
 
 #include <chrono>
 #include <string>
+#include <optional>
 #include <boost/uuid/uuid.hpp>
 
-namespace ores::assets::domain {
+namespace ores::risk::domain {
 
 /**
- * @brief Represents a dynamically loaded image (typically SVG).
+ * @brief Represents a country using ISO 3166-1 standard codes.
  */
-struct image final {
+struct country final {
     /**
      * @brief Version number for optimistic locking and change tracking.
      */
     int version = 0;
 
     /**
-     * @brief Unique identifier for the image (UUID).
+     * @brief ISO 3166-1 alpha-2 code (e.g., "US", "GB").
      */
-    boost::uuids::uuid image_id;
+    std::string alpha2_code;
 
     /**
-     * @brief Unique key used by the application (e.g., 'ro', 'us', 'gb').
+     * @brief ISO 3166-1 alpha-3 code (e.g., "USA", "GBR").
      */
-    std::string key;
+    std::string alpha3_code;
 
     /**
-     * @brief Human-readable description of the image.
-     *
-     * Example: "Flag for country code RO (Romania)"
+     * @brief ISO 3166-1 numeric code (e.g., "840", "826").
      */
-    std::string description;
+    std::string numeric_code;
 
     /**
-     * @brief The entire SVG content stored as plain text.
+     * @brief Short name of the country (e.g., "United States").
      */
-    std::string svg_data;
+    std::string name;
+
+    /**
+     * @brief Official name of the country (e.g., "United States of America").
+     */
+    std::string official_name;
+
+    /**
+     * @brief Optional reference to a flag image in the images table.
+     */
+    std::optional<boost::uuids::uuid> image_id;
 
     /**
      * @brief Username of the person who recorded this version in the system.

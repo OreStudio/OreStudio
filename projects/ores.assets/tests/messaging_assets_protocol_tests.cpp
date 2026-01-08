@@ -21,12 +21,31 @@
 
 #include <sstream>
 #include <catch2/catch_test_macros.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include "ores.telemetry/log/make_logger.hpp"
 
 namespace {
 
 const std::string test_suite("ores.assets.tests");
 const std::string tags("[assets_protocol]");
+
+boost::uuids::uuid make_uuid(const std::string& s) {
+    static boost::uuids::string_generator gen;
+    return gen(s);
+}
+
+std::chrono::system_clock::time_point make_timepoint(int year, int month, int day,
+    int hour = 0, int min = 0, int sec = 0) {
+    std::tm tm = {};
+    tm.tm_year = year - 1900;
+    tm.tm_mon = month - 1;
+    tm.tm_mday = day;
+    tm.tm_hour = hour;
+    tm.tm_min = min;
+    tm.tm_sec = sec;
+    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+}
 
 }
 
@@ -135,15 +154,18 @@ TEST_CASE("get_images_response_roundtrip_single_image", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing get_images_response roundtrip with single image";
 
+    const auto uuid1 = make_uuid("00000000-0000-0000-0000-000000000001");
+    const auto time1 = make_timepoint(2025, 1, 1);
+
     get_images_response original;
     original.images.push_back({
         .version = 1,
-        .image_id = "img-001",
+        .image_id = uuid1,
         .key = "us",
         .description = "United States flag",
         .svg_data = "<svg>...</svg>",
         .recorded_by = "admin",
-        .recorded_at = "2025-01-01T00:00:00Z"
+        .recorded_at = time1
     });
 
     auto serialized = original.serialize();
@@ -152,36 +174,41 @@ TEST_CASE("get_images_response_roundtrip_single_image", tags) {
     REQUIRE(result.has_value());
     REQUIRE(result->images.size() == 1);
     REQUIRE(result->images[0].version == 1);
-    REQUIRE(result->images[0].image_id == "img-001");
+    REQUIRE(result->images[0].image_id == uuid1);
     REQUIRE(result->images[0].key == "us");
     REQUIRE(result->images[0].description == "United States flag");
     REQUIRE(result->images[0].svg_data == "<svg>...</svg>");
     REQUIRE(result->images[0].recorded_by == "admin");
-    REQUIRE(result->images[0].recorded_at == "2025-01-01T00:00:00Z");
+    REQUIRE(result->images[0].recorded_at == time1);
 }
 
 TEST_CASE("get_images_response_roundtrip_multiple_images", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing get_images_response roundtrip with multiple images";
 
+    const auto uuid1 = make_uuid("00000000-0000-0000-0000-000000000001");
+    const auto uuid2 = make_uuid("00000000-0000-0000-0000-000000000002");
+    const auto time1 = make_timepoint(2025, 1, 1);
+    const auto time2 = make_timepoint(2025, 1, 2, 12);
+
     get_images_response original;
     original.images.push_back({
         .version = 1,
-        .image_id = "img-001",
+        .image_id = uuid1,
         .key = "us",
         .description = "United States flag",
         .svg_data = "<svg id='us'>...</svg>",
         .recorded_by = "admin",
-        .recorded_at = "2025-01-01T00:00:00Z"
+        .recorded_at = time1
     });
     original.images.push_back({
         .version = 2,
-        .image_id = "img-002",
+        .image_id = uuid2,
         .key = "gb",
         .description = "United Kingdom flag",
         .svg_data = "<svg id='gb'>...</svg>",
         .recorded_by = "user1",
-        .recorded_at = "2025-01-02T12:00:00Z"
+        .recorded_at = time2
     });
 
     auto serialized = original.serialize();
@@ -199,15 +226,18 @@ TEST_CASE("get_images_response_roundtrip_with_unicode", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing get_images_response roundtrip with unicode content";
 
+    const auto uuid1 = make_uuid("00000000-0000-0000-0000-000000000003");
+    const auto time1 = make_timepoint(2025, 1, 1);
+
     get_images_response original;
     original.images.push_back({
         .version = 1,
-        .image_id = "img-unicode",
+        .image_id = uuid1,
         .key = "jp",
         .description = "Japanese flag - \xe6\x97\xa5\xe6\x9c\xac",
         .svg_data = "<svg><!-- \xe6\x97\xa5\xe6\x9c\xac --></svg>",
         .recorded_by = "\xe7\xab\xa0\xe5\xa4\xaa\xe9\x83\x8e",
-        .recorded_at = "2025-01-01T00:00:00Z"
+        .recorded_at = time1
     });
 
     auto serialized = original.serialize();
@@ -223,22 +253,25 @@ TEST_CASE("get_images_response_stream_operator", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing get_images_response stream operator";
 
+    const auto uuid1 = make_uuid("00000000-0000-0000-0000-000000000001");
+    const auto time1 = make_timepoint(2025, 1, 1);
+
     get_images_response response;
     response.images.push_back({
         .version = 1,
-        .image_id = "img-001",
+        .image_id = uuid1,
         .key = "us",
         .description = "United States flag",
         .svg_data = "<svg>...</svg>",
         .recorded_by = "admin",
-        .recorded_at = "2025-01-01T00:00:00Z"
+        .recorded_at = time1
     });
 
     std::ostringstream oss;
     oss << response;
 
     REQUIRE_FALSE(oss.str().empty());
-    REQUIRE(oss.str().find("img-001") != std::string::npos);
+    REQUIRE(oss.str().find("00000000-0000-0000-0000-000000000001") != std::string::npos);
 }
 
 // Error handling tests
@@ -262,15 +295,18 @@ TEST_CASE("get_images_response_deserialize_truncated_data", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing get_images_response deserialization with truncated data";
 
+    const auto uuid1 = make_uuid("00000000-0000-0000-0000-000000000001");
+    const auto time1 = make_timepoint(2025, 1, 1);
+
     get_images_response original;
     original.images.push_back({
         .version = 1,
-        .image_id = "img-001",
+        .image_id = uuid1,
         .key = "us",
         .description = "United States flag",
         .svg_data = "<svg>...</svg>",
         .recorded_by = "admin",
-        .recorded_at = "2025-01-01T00:00:00Z"
+        .recorded_at = time1
     });
 
     auto serialized = original.serialize();

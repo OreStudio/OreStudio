@@ -21,6 +21,7 @@
 
 #include <rfl.hpp>
 #include <rfl/json.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.assets/repository/image_tag_mapper.hpp"

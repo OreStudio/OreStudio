@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_WT_APP_CURRENCY_LIST_WIDGET_HPP
-#define ORES_WT_APP_CURRENCY_LIST_WIDGET_HPP
+#ifndef ORES_WT_APP_COUNTRY_LIST_WIDGET_HPP
+#define ORES_WT_APP_COUNTRY_LIST_WIDGET_HPP
 
 #include <Wt/WContainerWidget.h>
 #include <Wt/WTable.h>
@@ -31,30 +31,29 @@
 namespace ores::wt::app {
 
 /**
- * @brief Currency data for display.
+ * @brief Country data for display.
  */
-struct currency_row {
-    std::string iso_code;
+struct country_row {
+    std::string alpha2_code;
+    std::string alpha3_code;
     std::string name;
-    std::string symbol;
     std::string numeric_code;
-    std::string currency_type;
     int version = 0;
 };
 
 /**
- * @brief Widget displaying list of currencies with CRUD operations.
+ * @brief Widget displaying list of countries with CRUD operations.
  */
-class currency_list_widget : public Wt::WContainerWidget {
+class country_list_widget : public Wt::WContainerWidget {
 public:
-    currency_list_widget();
+    country_list_widget();
 
     Wt::Signal<>& add_requested() { return add_requested_; }
     Wt::Signal<std::string>& edit_requested() { return edit_requested_; }
     Wt::Signal<std::string>& delete_requested() { return delete_requested_; }
 
     void refresh();
-    void set_currencies(const std::vector<currency_row>& currencies);
+    void set_countries(const std::vector<country_row>& countries);
 
 private:
     void setup_toolbar();
@@ -66,7 +65,7 @@ private:
     Wt::WPushButton* add_button_;
     Wt::WPushButton* refresh_button_;
 
-    std::vector<currency_row> currencies_;
+    std::vector<country_row> countries_;
     Wt::Signal<> add_requested_;
     Wt::Signal<std::string> edit_requested_;
     Wt::Signal<std::string> delete_requested_;

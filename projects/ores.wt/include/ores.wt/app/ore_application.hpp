@@ -32,6 +32,7 @@
 namespace ores::wt::app {
 
 class currency_list_widget;
+class country_list_widget;
 class account_list_widget;
 
 /**
@@ -64,6 +65,12 @@ private:
     void show_edit_currency_dialog(const std::string& iso_code);
     void confirm_delete_currency(const std::string& iso_code);
 
+    void setup_country_handlers();
+    void load_countries();
+    void show_add_country_dialog();
+    void show_edit_country_dialog(const std::string& alpha2_code);
+    void confirm_delete_country(const std::string& alpha2_code);
+
     void setup_account_handlers();
     void load_accounts();
     void show_add_account_dialog();
@@ -75,6 +82,7 @@ private:
     service::session_manager session_manager_;
     login_widget* login_widget_ = nullptr;
     currency_list_widget* currency_list_widget_ = nullptr;
+    country_list_widget* country_list_widget_ = nullptr;
     account_list_widget* account_list_widget_ = nullptr;
 
     // Bootstrap form widgets

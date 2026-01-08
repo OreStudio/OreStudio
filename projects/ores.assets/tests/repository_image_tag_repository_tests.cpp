@@ -21,6 +21,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -92,7 +93,8 @@ TEST_CASE("read_latest_image_tags_by_image", tags) {
     image_tag_repository repo;
     repo.write(h.context(), it);
 
-    auto read_image_tags = repo.read_latest_by_image(h.context(), it.image_id);
+    auto read_image_tags = repo.read_latest_by_image(h.context(),
+        boost::uuids::to_string(it.image_id));
     BOOST_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
 
     REQUIRE(read_image_tags.size() == 1);
@@ -110,7 +112,8 @@ TEST_CASE("read_latest_image_tags_by_tag", tags) {
     image_tag_repository repo;
     repo.write(h.context(), it);
 
-    auto read_image_tags = repo.read_latest_by_tag(h.context(), it.tag_id);
+    auto read_image_tags = repo.read_latest_by_tag(h.context(),
+        boost::uuids::to_string(it.tag_id));
     BOOST_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
 
     REQUIRE(read_image_tags.size() == 1);
@@ -150,7 +153,8 @@ TEST_CASE("update_image_tag", tags) {
 
     CHECK_NOTHROW(repo.write(h.context(), updated_it));
 
-    auto read_image_tags = repo.read_latest_by_image(h.context(), it.image_id);
+    auto read_image_tags = repo.read_latest_by_image(h.context(),
+        boost::uuids::to_string(it.image_id));
     BOOST_LOG_SEV(lg, debug) << "Read image-tags: " << read_image_tags;
 
     REQUIRE(read_image_tags.size() == 1);

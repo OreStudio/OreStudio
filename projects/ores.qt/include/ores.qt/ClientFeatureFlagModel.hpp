@@ -21,6 +21,9 @@
 #define ORES_QT_CLIENT_FEATURE_FLAG_MODEL_HPP
 
 #include <vector>
+#include <unordered_set>
+#include <QTimer>
+#include <QDateTime>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
@@ -86,16 +89,22 @@ signals:
 
 private slots:
     void onFeatureFlagsLoaded();
+    void onPulseTimerTimeout();
 
 private:
+    void update_recent_flags();
+    QVariant recency_foreground_color(const std::string& name) const;
+
+
     /**
      * @brief Enumeration of table columns.
      */
     enum Column {
         Name,
         Enabled,
-        Description,
+        Version,
         RecordedBy,
+        RecordedAt,
         ColumnCount
     };
 
@@ -108,6 +117,15 @@ private:
     std::vector<variability::domain::feature_flags> flags_;
     QFutureWatcher<FetchResult>* watcher_;
     bool is_fetching_{false};
+
+    // Recency highlighting
+    QTimer* pulse_timer_;
+    std::unordered_set<std::string> recent_flag_names_;
+    QDateTime last_reload_time_;
+    bool pulse_state_{false};
+    int pulse_count_{0};
+    static constexpr int pulse_interval_ms_ = 500;
+    static constexpr int max_pulse_cycles_ = 6;
 };
 
 }

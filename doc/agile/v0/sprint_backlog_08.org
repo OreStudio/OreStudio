@@ -17,41 +17,43 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-08 Thu 10:32], for Thursday, January 08, 2026.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *2:40* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 2:40   |      |      | 100.0 |
-|       | Active                                |        | 2:40 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:33 |  20.6 |
-| code  | Assorted fixes to currencies dialog   |        |      | 2:07 |  79.4 |
+#+CAPTION: Clock summary at [2026-01-08 Thu 13:48], for Thursday, January 08, 2026.
+|       | <75>                                   |        |      |      |       |
+| Tags  | Headline                               | Time   |      |      |     % |
+|-------+----------------------------------------+--------+------+------+-------|
+|       | *Total time*                           | *5:32* |      |      | 100.0 |
+|-------+----------------------------------------+--------+------+------+-------|
+|       | Stories                                | 5:32   |      |      | 100.0 |
+|       | Active                                 |        | 5:32 |      | 100.0 |
+| agile | Sprint and product backlog refinement  |        |      | 0:33 |   9.9 |
+| code  | Assorted fixes to feature flags dialog |        |      | 2:52 |  51.8 |
+| code  | Assorted fixes to currencies dialog    |        |      | 2:07 |  38.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-08 Thu 10:32]
+#+CAPTION: Clock summary at [2026-01-08 Thu 13:48]
 |       | <75>                                        |         |       |       |       |
 | Tags  | Headline                                    | Time    |       |       |     % |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                | *45:21* |       |       | 100.0 |
+|       | *Total time*                                | *48:13* |       |       | 100.0 |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                     | 45:21   |       |       | 100.0 |
-|       | Active                                      |         | 45:21 |       | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       |  1:50 |   4.0 |
-| code  | Rerun SQL scripts from scratch              |         |       |  7:52 |  17.3 |
-| code  | Run qt client and validate all new features |         |       |  1:19 |   2.9 |
-| code  | Refactor options and parser                 |         |       |  0:27 |   1.0 |
-| code  | Check functionality in =ores.wt=            |         |       |  2:03 |   4.5 |
-| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       |  1:30 |   3.3 |
-| code  | Review HTTP service                         |         |       |  7:24 |  16.3 |
-| code  | Assorted fixes to currency dialog           |         |       |  4:19 |   9.5 |
-| code  | Add support for offsets in pagination       |         |       |  1:46 |   3.9 |
-| code  | Assorted fixes to currencies dialog         |         |       |  4:36 |  10.1 |
-| code  | Add country support                         |         |       |  1:37 |   3.6 |
-| code  | Review comms analyser work                  |         |       |  0:27 |   1.0 |
-| code  | Review telemetry work                       |         |       | 10:11 |  22.5 |
+|       | Stories                                     | 48:13   |       |       | 100.0 |
+|       | Active                                      |         | 48:13 |       | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       |  1:50 |   3.8 |
+| code  | Rerun SQL scripts from scratch              |         |       |  7:52 |  16.3 |
+| code  | Run qt client and validate all new features |         |       |  1:19 |   2.7 |
+| code  | Refactor options and parser                 |         |       |  0:27 |   0.9 |
+| code  | Check functionality in =ores.wt=            |         |       |  2:03 |   4.3 |
+| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       |  1:30 |   3.1 |
+| code  | Review HTTP service                         |         |       |  7:24 |  15.3 |
+| code  | Assorted fixes to currency dialog           |         |       |  4:19 |   9.0 |
+| code  | Add support for offsets in pagination       |         |       |  1:46 |   3.7 |
+| code  | Assorted fixes to feature flags dialog      |         |       |  2:52 |   5.9 |
+| code  | Assorted fixes to currencies dialog         |         |       |  4:36 |   9.5 |
+| code  | Add country support                         |         |       |  1:37 |   3.4 |
+| code  | Review comms analyser work                  |         |       |  0:27 |   0.9 |
+| code  | Review telemetry work                       |         |       | 10:11 |  21.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -535,6 +537,58 @@ Links:
 - [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]
 - https://vcpkg.io/en/packages?query=sqlgen
 
+*** COMPLETED Add faker support to model                               :code:
+
+*Rationale*: already implemented.
+
+vcpkg will support faker soon:
+
+- [[https://github.com/microsoft/vcpkg/pull/38583][#38583: [faker-cxx] add new port]]
+
+When that is available, we should try to add support for it.
+
+*** COMPLETED Assorted fixes to feature flags dialog                   :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-08 Thu 13:24]--[2026-01-08 Thu 13:48] =>  0:24
+    CLOCK: [2026-01-08 Thu 10:55]--[2026-01-08 Thu 13:23] =>  2:28
+    :END:
+
+#+begin_quote
+This pull request significantly enhances the user experience for managing
+feature flags within the Qt application. It introduces real-time feedback
+through event subscriptions and visual cues like pulsing highlights for recent
+changes and colored badges for status. Additionally, it improves data
+presentation by adding new columns and refining the detail dialog, while also
+updating the backend protocol to support these new data points. The changes aim
+to make feature flag management more intuitive and informative for users.
+
+Highlights:
+
+- Real-time Updates: The UI now subscribes to feature flag change events,
+  enabling real-time updates and notifications when flags are modified
+  externally.
+- Recency Highlighting: Recently modified feature flags in the list view will
+  now display a pulsing yellow highlight to draw attention to their recent
+  changes.
+- Enhanced 'Enabled' Column: The 'Enabled' column in the feature flags list now
+  uses colored badges (green for 'Yes', gray for 'No') for improved visual
+  clarity.
+- New Data Columns: The feature flags list has been augmented with 'Version' and
+  'Recorded At' columns, providing more detailed historical context for each
+  flag.
+- Improved Detail Dialog UX: The feature flag detail dialog has been updated to
+  use a combo box for the 'Enabled' status and now displays the 'Recorded At'
+  timestamp.
+- Optimized Reload Behavior: Saving a feature flag or receiving an external
+  change notification now marks the list as 'stale' instead of triggering an
+  immediate auto-reload, improving responsiveness.
+- Protocol Updates: The underlying communication protocol has been updated to
+  version 20.0 to include the new 'recorded_at' and 'version' fields for feature
+  flags.
+- Logging Cleanup: All MXN-specific debug logging has been removed from the
+  ImageCache component, streamlining log output.
+#+end_quote
+
 *** STARTED Assorted fixes to currencies dialog                        :code:
     :LOGBOOK:
     CLOCK: [2026-01-08 Thu 08:40]--[2026-01-08 Thu 09:58] =>  1:18
@@ -543,7 +597,7 @@ Links:
     CLOCK: [2026-01-07 Wed 16:29]--[2026-01-07 Wed 18:06] =>  1:37
     :END:
 
-- remove maximise button. Done.
+- remove maximise button.
 - updating flag does not seem to update after reload.
 - can't see flag changes in history.
 - cannot revert to version in history. Get an error saying incorrect version.
@@ -644,6 +698,7 @@ Ores.QT:
 
 *** STARTED Event viewer review                                        :code:
 
+- new events raise the dialog.
 - cannot see account created events but can see currencies created.
 - when a user logs in or out it does not generate an event, should it?
 - saving new flag does not save it in server side.

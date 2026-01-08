@@ -21,6 +21,7 @@
 #define ORES_QT_FEATURE_FLAG_CONTROLLER_HPP
 
 #include <QList>
+#include <QDateTime>
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
@@ -69,6 +70,8 @@ private slots:
     void onShowDetails(const variability::domain::feature_flags& flag);
     void onFeatureFlagSaved(const QString& name);
     void onFeatureFlagDeleted(const QString& name);
+    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
+                                const QStringList& entityIds);
 
 private:
     void showDetailWindow(const variability::domain::feature_flags& flag,

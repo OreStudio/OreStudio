@@ -33,9 +33,11 @@ ores::variability::domain::feature_flags generate_feature_flag() {
     ores::variability::domain::feature_flags flag;
     flag.name = std::string(faker::word::noun()) + "_" +
         std::string(faker::word::verb());
+    flag.version = faker::number::integer(1, 100);
     flag.enabled = faker::datatype::boolean();
     flag.description = std::string(faker::lorem::sentence());
     flag.recorded_by = std::string(faker::internet::username());
+    flag.recorded_at = std::chrono::system_clock::now();
     return flag;
 }
 
@@ -126,9 +128,11 @@ TEST_CASE("list_feature_flags_response_serialize_deserialize_with_flags", tags) 
     for (int i = 0; i < expected_size; ++i) {
         feature_flags ff;
         ff.name = "flag_" + std::to_string(i);
+        ff.version = i + 1;
         ff.enabled = (i % 2 == 0);
         ff.description = "Description for flag " + std::to_string(i);
         ff.recorded_by = "tester" + std::to_string(i);
+        ff.recorded_at = std::chrono::system_clock::now();
         e.feature_flags.push_back(ff);
     }
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
@@ -143,9 +147,14 @@ TEST_CASE("list_feature_flags_response_serialize_deserialize_with_flags", tags) 
     REQUIRE(a.feature_flags.size() == e.feature_flags.size());
     for (size_t i = 0; i < e.feature_flags.size(); ++i) {
         CHECK(a.feature_flags[i].name == e.feature_flags[i].name);
+        CHECK(a.feature_flags[i].version == e.feature_flags[i].version);
         CHECK(a.feature_flags[i].enabled == e.feature_flags[i].enabled);
         CHECK(a.feature_flags[i].description == e.feature_flags[i].description);
         CHECK(a.feature_flags[i].recorded_by == e.feature_flags[i].recorded_by);
+        // recorded_at is serialized as string, so check within 1 second tolerance
+        const auto diff = std::chrono::abs(
+            a.feature_flags[i].recorded_at - e.feature_flags[i].recorded_at);
+        CHECK(diff < std::chrono::seconds(1));
     }
 }
 
@@ -171,9 +180,14 @@ TEST_CASE("list_feature_flags_response_serialize_deserialize_with_faker", tags) 
     REQUIRE(a.feature_flags.size() == e.feature_flags.size());
     for (size_t i = 0; i < e.feature_flags.size(); ++i) {
         CHECK(a.feature_flags[i].name == e.feature_flags[i].name);
+        CHECK(a.feature_flags[i].version == e.feature_flags[i].version);
         CHECK(a.feature_flags[i].enabled == e.feature_flags[i].enabled);
         CHECK(a.feature_flags[i].description == e.feature_flags[i].description);
         CHECK(a.feature_flags[i].recorded_by == e.feature_flags[i].recorded_by);
+        // recorded_at is serialized as string, so check within 1 second tolerance
+        const auto diff = std::chrono::abs(
+            a.feature_flags[i].recorded_at - e.feature_flags[i].recorded_at);
+        CHECK(diff < std::chrono::seconds(1));
     }
 }
 

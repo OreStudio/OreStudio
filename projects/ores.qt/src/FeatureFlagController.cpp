@@ -23,10 +23,19 @@
 #include "ores.qt/FeatureFlagMdiWindow.hpp"
 #include "ores.qt/FeatureFlagDetailDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.variability/eventing/feature_flags_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::telemetry::log;
+
+namespace {
+    // Event type name for feature flag changes
+    constexpr std::string_view feature_flag_event_name =
+        eventing::domain::event_traits<
+            variability::eventing::feature_flags_changed_event>::name;
+}
 
 FeatureFlagController::FeatureFlagController(
     QMainWindow* mainWindow,
@@ -41,10 +50,42 @@ FeatureFlagController::FeatureFlagController(
       allDetachableWindows_(allDetachableWindows) {
 
     BOOST_LOG_SEV(lg(), debug) << "FeatureFlagController created";
+
+    // Connect to notification signal from ClientManager
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &FeatureFlagController::onNotificationReceived);
+
+        // Subscribe to events when connected
+        connect(clientManager_, &ClientManager::connected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to feature flag change events";
+            clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
+        });
+
+        // Re-subscribe after reconnection
+        connect(clientManager_, &ClientManager::reconnected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to feature flag change events after reconnect";
+            clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
+        });
+
+        // If already connected, subscribe now
+        if (clientManager_->isConnected()) {
+            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to feature flag change events";
+            clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
+        }
+    }
 }
 
 FeatureFlagController::~FeatureFlagController() {
     BOOST_LOG_SEV(lg(), debug) << "FeatureFlagController destroyed";
+
+    // Unsubscribe from feature flag change events
+    if (clientManager_) {
+        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from feature flag change events";
+        clientManager_->unsubscribeFromEvent(std::string{feature_flag_event_name});
+    }
 }
 
 void FeatureFlagController::showListWindow() {
@@ -187,18 +228,41 @@ void FeatureFlagController::showDetailWindow(
 
 void FeatureFlagController::onFeatureFlagSaved(const QString& name) {
     BOOST_LOG_SEV(lg(), info) << "Feature flag saved: " << name.toStdString();
-    refreshListWindow();
+    if (listWindow_) {
+        listWindow_->markAsStale();
+    }
 }
 
 void FeatureFlagController::onFeatureFlagDeleted(const QString& name) {
     BOOST_LOG_SEV(lg(), info) << "Feature flag deleted: " << name.toStdString();
-    refreshListWindow();
+    if (listWindow_) {
+        listWindow_->markAsStale();
+    }
 }
 
 void FeatureFlagController::refreshListWindow() {
     if (listWindow_) {
         BOOST_LOG_SEV(lg(), debug) << "Refreshing feature flags list";
         listWindow_->reload();
+    }
+}
+
+void FeatureFlagController::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
+    // Check if this is a feature flag change event
+    if (eventType != QString::fromStdString(std::string{feature_flag_event_name})) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Received feature flag change notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " flag names";
+
+    // Mark the list window as stale if it's open
+    if (listWindow_) {
+        listWindow_->markAsStale();
+        BOOST_LOG_SEV(lg(), debug) << "Marked feature flag window as stale";
     }
 }
 

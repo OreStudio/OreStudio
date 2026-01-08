@@ -64,6 +64,12 @@
 \echo '--- Currency Image Mappings ---'
 \ir currency_images_populate.sql
 
+-- Countries
+\echo ''
+\echo '--- Countries ---'
+\ir countries_populate.sql
+\ir country_images_populate.sql
+
 \echo ''
 \echo '=== System Population Complete ==='
 
@@ -85,4 +91,10 @@ from ores.images where valid_to = ores.infinity_timestamp()
 union all
 select 'Currencies with Flags', count(*)
 from ores.currencies where image_id is not null and valid_to = ores.infinity_timestamp()
+union all
+select 'Countries', count(*)
+from ores.countries where valid_to = ores.infinity_timestamp()
+union all
+select 'Countries with Flags', count(*)
+from ores.countries where image_id is not null and valid_to = ores.infinity_timestamp()
 order by entity;

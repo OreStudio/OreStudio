@@ -1817,14 +1817,6 @@ possibly different:
 
 
 
-*** Add faker support to model                                         :code:
-
-vcpkg will support faker soon:
-
-- [[https://github.com/microsoft/vcpkg/pull/38583][#38583: [faker-cxx] add new port]]
-
-When that is available, we should try to add support for it.
-
 *** Base the compute approach on BOINC                                 :code:
 
 Copy the BOINC data model.

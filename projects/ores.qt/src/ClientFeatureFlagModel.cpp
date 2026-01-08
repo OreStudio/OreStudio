@@ -21,6 +21,8 @@
 
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -34,10 +36,15 @@ ClientFeatureFlagModel::ClientFeatureFlagModel(ClientManager* clientManager,
                                                QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
-      watcher_(new QFutureWatcher<FetchResult>(this)) {
+      watcher_(new QFutureWatcher<FetchResult>(this)),
+      pulse_timer_(new QTimer(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &ClientFeatureFlagModel::onFeatureFlagsLoaded);
+
+    // Setup pulse timer for recency color updates
+    connect(pulse_timer_, &QTimer::timeout,
+            this, &ClientFeatureFlagModel::onPulseTimerTimeout);
 }
 
 int ClientFeatureFlagModel::rowCount(const QModelIndex& parent) const {
@@ -63,23 +70,25 @@ QVariant ClientFeatureFlagModel::data(const QModelIndex& index, int role) const 
     const auto& flag = flags_[row];
     const auto column = static_cast<Column>(index.column());
 
+    if (role == Qt::ForegroundRole) {
+        return recency_foreground_color(flag.name);
+    }
+
     if (role == Qt::DisplayRole) {
         switch (column) {
         case Name:
             return QString::fromStdString(flag.name);
         case Enabled:
             return flag.enabled ? tr("Yes") : tr("No");
-        case Description:
-            return QString::fromStdString(flag.description);
+        case Version:
+            return QString::number(flag.version);
         case RecordedBy:
             return QString::fromStdString(flag.recorded_by);
+        case RecordedAt:
+            return relative_time_helper::format(flag.recorded_at);
         default:
             return {};
         }
-    }
-
-    if (role == Qt::CheckStateRole && column == Enabled) {
-        return flag.enabled ? Qt::Checked : Qt::Unchecked;
     }
 
     return {};
@@ -95,10 +104,12 @@ QVariant ClientFeatureFlagModel::headerData(int section, Qt::Orientation orienta
         return tr("Name");
     case Enabled:
         return tr("Enabled");
-    case Description:
-        return tr("Description");
+    case Version:
+        return tr("Version");
     case RecordedBy:
-        return tr("Modified By");
+        return tr("Recorded By");
+    case RecordedAt:
+        return tr("Recorded At");
     default:
         return {};
     }
@@ -171,6 +182,16 @@ void ClientFeatureFlagModel::onFeatureFlagsLoaded() {
     flags_ = std::move(result.flags);
     endResetModel();
 
+    // Update the set of recent flags for recency coloring
+    update_recent_flags();
+
+    // Start the pulse timer if there are recent flags to highlight
+    if (!recent_flag_names_.empty() && !pulse_timer_->isActive()) {
+        pulse_count_ = 0;
+        pulse_state_ = true;  // Start with highlight on
+        pulse_timer_->start(pulse_interval_ms_);
+    }
+
     BOOST_LOG_SEV(lg(), info) << "Loaded " << flags_.size() << " feature flags";
     emit dataLoaded();
 }
@@ -180,6 +201,80 @@ ClientFeatureFlagModel::getFeatureFlag(int row) const {
     if (row < 0 || row >= static_cast<int>(flags_.size()))
         return nullptr;
     return &flags_[row];
+}
+
+void ClientFeatureFlagModel::update_recent_flags() {
+    recent_flag_names_.clear();
+
+    const QDateTime now = QDateTime::currentDateTime();
+
+    // First load: set baseline timestamp, no highlighting
+    if (!last_reload_time_.isValid()) {
+        last_reload_time_ = now;
+        BOOST_LOG_SEV(lg(), info) << "First load - setting baseline timestamp: "
+                                  << last_reload_time_.toString(Qt::ISODate).toStdString();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Checking flags newer than last reload: "
+                              << last_reload_time_.toString(Qt::ISODate).toStdString();
+
+    // Find flags that have been modified since the last reload
+    for (const auto& flag : flags_) {
+        const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
+            flag.recorded_at.time_since_epoch()).count();
+        QDateTime recordedAt = QDateTime::fromMSecsSinceEpoch(msecs);
+
+        BOOST_LOG_SEV(lg(), debug) << "Flag " << flag.name << " recorded_at: "
+                                   << recordedAt.toString(Qt::ISODate).toStdString()
+                                   << " (msecs=" << msecs << ")";
+
+        if (recordedAt.isValid() && recordedAt > last_reload_time_) {
+            recent_flag_names_.insert(flag.name);
+            BOOST_LOG_SEV(lg(), info) << "Flag " << flag.name << " is recent (recorded_at > last_reload)";
+        }
+    }
+
+    // Update the reload timestamp for next comparison
+    last_reload_time_ = now;
+
+    BOOST_LOG_SEV(lg(), info) << "Found " << recent_flag_names_.size()
+                              << " flags newer than last reload";
+}
+
+QVariant ClientFeatureFlagModel::recency_foreground_color(const std::string& name) const {
+    if (recent_flag_names_.empty() ||
+        recent_flag_names_.find(name) == recent_flag_names_.end()) {
+        return {};
+    }
+
+    // Only show color when pulse_state_ is true (pulsing on)
+    if (!pulse_state_) {
+        return {};
+    }
+
+    // Use the stale indicator color (same as reload button)
+    return color_constants::stale_indicator;
+}
+
+void ClientFeatureFlagModel::onPulseTimerTimeout() {
+    pulse_state_ = !pulse_state_;
+    pulse_count_++;
+
+    // Stop pulsing after max cycles but keep yellow color on
+    if (pulse_count_ >= max_pulse_cycles_) {
+        pulse_timer_->stop();
+        pulse_state_ = true;  // Keep highlight on after pulsing stops
+        BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete, staying highlighted";
+    }
+
+    // Emit dataChanged to update the view with new colors
+    if (!flags_.empty()) {
+        emit dataChanged(
+            index(0, 0),
+            index(static_cast<int>(flags_.size()) - 1, ColumnCount - 1),
+            {Qt::ForegroundRole});
+    }
 }
 
 }

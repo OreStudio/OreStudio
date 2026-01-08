@@ -52,6 +52,8 @@ grant create on schema ores to ores;
 -- Core tables
 \ir ../schema/currencies_create.sql
 \ir ../schema/currencies_notify_trigger.sql
+\ir ../schema/countries_create.sql
+\ir ../schema/countries_notify_trigger.sql
 \ir ../schema/accounts_create.sql
 \ir ../schema/accounts_notify_trigger.sql
 \ir ../schema/feature_flags_create.sql

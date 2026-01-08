@@ -24,11 +24,13 @@
 #include <QVBoxLayout>
 #include <QToolBar>
 #include <QIcon>
+#include <QComboBox>
 #include <QMdiSubWindow>
 #include <QMetaObject>
 #include "ui_FeatureFlagDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -78,7 +80,7 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
     // Connect signals for editable fields to detect changes
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
         &FeatureFlagDetailDialog::onFieldChanged);
-    connect(ui_->enabledCheckBox, &QCheckBox::checkStateChanged, this,
+    connect(ui_->enabledComboBox, &QComboBox::currentIndexChanged, this,
         &FeatureFlagDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
         &FeatureFlagDetailDialog::onFieldChanged);
@@ -114,10 +116,11 @@ void FeatureFlagDetailDialog::setFeatureFlag(
     setCreateMode(isAddMode_);
 
     ui_->nameEdit->setText(QString::fromStdString(flag.name));
-    ui_->enabledCheckBox->setChecked(flag.enabled);
+    ui_->enabledComboBox->setCurrentIndex(flag.enabled ? 0 : 1);  // 0=Yes, 1=No
     ui_->descriptionEdit->setPlainText(QString::fromStdString(flag.description));
     ui_->versionEdit->setText(QString::number(flag.version));
-    ui_->modifiedByEdit->setText(QString::fromStdString(flag.recorded_by));
+    ui_->recordedByEdit->setText(QString::fromStdString(flag.recorded_by));
+    ui_->recordedAtEdit->setText(relative_time_helper::format(flag.recorded_at));
 
     isDirty_ = false;
     emit isDirtyChanged(false);
@@ -137,7 +140,7 @@ void FeatureFlagDetailDialog::setCreateMode(bool createMode) {
 variability::domain::feature_flags FeatureFlagDetailDialog::getFeatureFlag() const {
     variability::domain::feature_flags flag = currentFlag_;
     flag.name = ui_->nameEdit->text().toStdString();
-    flag.enabled = ui_->enabledCheckBox->isChecked();
+    flag.enabled = ui_->enabledComboBox->currentIndex() == 0;  // 0=Yes, 1=No
     flag.description = ui_->descriptionEdit->toPlainText().toStdString();
     flag.recorded_by = modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_;
 
@@ -146,10 +149,10 @@ variability::domain::feature_flags FeatureFlagDetailDialog::getFeatureFlag() con
 
 void FeatureFlagDetailDialog::clearDialog() {
     ui_->nameEdit->clear();
-    ui_->enabledCheckBox->setChecked(false);
+    ui_->enabledComboBox->setCurrentIndex(1);  // Default to No
     ui_->descriptionEdit->clear();
     ui_->versionEdit->clear();
-    ui_->modifiedByEdit->clear();
+    ui_->recordedByEdit->clear();
 
     currentFlag_ = {};
     isDirty_ = false;

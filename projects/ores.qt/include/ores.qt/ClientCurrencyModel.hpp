@@ -164,6 +164,40 @@ public:
      */
     std::uint32_t total_available_count() const { return total_available_count_; }
 
+    /**
+     * @brief Add synthetic (generated) currencies to the model.
+     *
+     * These currencies are displayed with a distinct color to indicate
+     * they haven't been saved to the server yet.
+     *
+     * @param currencies The generated currencies to add.
+     */
+    void add_synthetic_currencies(std::vector<risk::domain::currency> currencies);
+
+    /**
+     * @brief Check if a currency is synthetic (generated but not saved).
+     *
+     * @param iso_code The ISO code to check.
+     * @return true if the currency is synthetic.
+     */
+    bool is_synthetic(const std::string& iso_code) const;
+
+    /**
+     * @brief Mark a synthetic currency as saved (no longer synthetic).
+     *
+     * Called after a generated currency has been successfully saved to server.
+     *
+     * @param iso_code The ISO code of the saved currency.
+     */
+    void mark_as_saved(const std::string& iso_code);
+
+    /**
+     * @brief Clear all synthetic currency markers.
+     *
+     * Called when refreshing data from server.
+     */
+    void clear_synthetic_markers();
+
 signals:
     /**
      * @brief Emitted when data has been successfully loaded.
@@ -181,15 +215,17 @@ private slots:
 
 private:
     /**
-     * @brief Calculate foreground color based on how recent the currency's valid_from date is.
+     * @brief Calculate foreground color based on currency state.
      *
-     * Returns a decaying highlight color for currencies with the most recent valid_from dates.
-     * The color fades from highlight to transparent over the decay duration.
+     * Returns a color based on:
+     * - Blue for synthetic (generated but not saved) currencies
+     * - Yellow for recently modified currencies (pulsing effect)
+     * - Default color otherwise
      *
-     * @param iso_code The currency's ISO code to check for recency.
+     * @param iso_code The currency's ISO code to check.
      * @return QVariant containing QColor for foreground, or invalid QVariant if no color.
      */
-    QVariant recency_foreground_color(const std::string& iso_code) const;
+    QVariant foreground_color(const std::string& iso_code) const;
 
     /**
      * @brief Update the set of recent currencies (valid_from within recency window).
@@ -225,6 +261,9 @@ private:
      * @brief Internal method to fetch currencies with specific offset and limit.
      */
     void fetch_currencies(std::uint32_t offset, std::uint32_t limit);
+
+    // Synthetic currency tracking (generated but not yet saved)
+    std::unordered_set<std::string> synthetic_iso_codes_;
 };
 
 }

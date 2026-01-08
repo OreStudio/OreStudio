@@ -114,14 +114,20 @@ private slots:
     void onResetClicked();
     void onDeleteClicked();
     void onRevertClicked();
+    void onGenerateClicked();
     void onFieldChanged();
     void onSelectFlagClicked();
     void onCurrencyImageSet(const QString& iso_code, bool success, const QString& message);
+    void onFeatureFlagNotification(const QString& eventType, const QDateTime& timestamp,
+                                    const QStringList& entityIds);
+    void onConnectionEstablished();
 
 private:
     void updateSaveResetButtonState();
     void setFieldsReadOnly(bool readOnly);
     void updateFlagDisplay();
+    void setupGenerateAction();
+    void updateGenerateActionVisibility();
 
 private:
     std::unique_ptr<Ui::CurrencyDetailDialog> ui_;
@@ -136,6 +142,7 @@ private:
     QAction* saveAction_;
     QAction* deleteAction_;
     QAction* revertAction_;
+    QAction* generateAction_;
     QPushButton* flagButton_;
 
     ClientManager* clientManager_;

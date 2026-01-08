@@ -93,7 +93,7 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(currency.iso_code);
+        return foreground_color(currency.iso_code);
     }
 
     if (role != Qt::DisplayRole)
@@ -169,6 +169,7 @@ void ClientCurrencyModel::refresh(bool replace) {
             beginResetModel();
             currencies_.clear();
             recent_iso_codes_.clear();
+            synthetic_iso_codes_.clear();
             pulse_timer_->stop();
             pulse_count_ = 0;
             pulse_state_ = false;
@@ -392,18 +393,74 @@ void ClientCurrencyModel::update_recent_currencies() {
 }
 
 QVariant ClientCurrencyModel::
-recency_foreground_color(const std::string& iso_code) const {
-    if (recent_iso_codes_.empty() || recent_iso_codes_.find(iso_code) == recent_iso_codes_.end()) {
-        return {};
+foreground_color(const std::string& iso_code) const {
+    // Synthetic currencies always show blue (no pulsing)
+    if (synthetic_iso_codes_.find(iso_code) != synthetic_iso_codes_.end()) {
+        return color_constants::synthetic_indicator;
     }
 
-    // Only show color when pulse_state_ is true (pulsing on)
-    if (!pulse_state_) {
-        return {};
+    // Recent currencies show yellow when pulsing
+    if (recent_iso_codes_.find(iso_code) != recent_iso_codes_.end() && pulse_state_) {
+        return color_constants::stale_indicator;
     }
 
-    // Use the stale indicator color (same as reload button)
-    return color_constants::stale_indicator;
+    return {};
+}
+
+void ClientCurrencyModel::
+add_synthetic_currencies(std::vector<risk::domain::currency> currencies) {
+    if (currencies.empty()) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Adding " << currencies.size()
+                               << " synthetic currencies to model";
+
+    const int old_size = static_cast<int>(currencies_.size());
+    const int new_count = static_cast<int>(currencies.size());
+
+    beginInsertRows(QModelIndex(), old_size, old_size + new_count - 1);
+    for (auto& currency : currencies) {
+        synthetic_iso_codes_.insert(currency.iso_code);
+        currencies_.push_back(std::move(currency));
+    }
+    endInsertRows();
+
+    BOOST_LOG_SEV(lg(), debug) << "Model now has " << currencies_.size()
+                               << " currencies (" << synthetic_iso_codes_.size()
+                               << " synthetic)";
+}
+
+bool ClientCurrencyModel::is_synthetic(const std::string& iso_code) const {
+    return synthetic_iso_codes_.find(iso_code) != synthetic_iso_codes_.end();
+}
+
+void ClientCurrencyModel::mark_as_saved(const std::string& iso_code) {
+    auto it = synthetic_iso_codes_.find(iso_code);
+    if (it != synthetic_iso_codes_.end()) {
+        synthetic_iso_codes_.erase(it);
+        BOOST_LOG_SEV(lg(), debug) << "Marked currency as saved: " << iso_code;
+
+        // Find the row and emit dataChanged for the color update
+        auto currency_it = std::find_if(currencies_.begin(), currencies_.end(),
+            [&iso_code](const auto& currency) {
+                return currency.iso_code == iso_code;
+            });
+        if (currency_it != currencies_.end()) {
+            const auto row = std::distance(currencies_.begin(), currency_it);
+            emit dataChanged(index(static_cast<int>(row), 0),
+                index(static_cast<int>(row), columnCount() - 1),
+                {Qt::ForegroundRole});
+        }
+    }
+}
+
+void ClientCurrencyModel::clear_synthetic_markers() {
+    if (!synthetic_iso_codes_.empty()) {
+        BOOST_LOG_SEV(lg(), debug) << "Clearing " << synthetic_iso_codes_.size()
+                                   << " synthetic markers";
+        synthetic_iso_codes_.clear();
+    }
 }
 
 void ClientCurrencyModel::onPulseTimerTimeout() {

@@ -172,6 +172,20 @@ public:
      */
     std::string getCurrencyImageId(const std::string& iso_code) const;
 
+    /**
+     * @brief Get the image ID for the "no-flag" placeholder.
+     *
+     * @return The image ID for the "no-flag" image, or empty string if not found
+     */
+    std::string getNoFlagImageId() const;
+
+    /**
+     * @brief Get the icon for the "no-flag" placeholder.
+     *
+     * @return The QIcon for the "no-flag" image, or empty icon if not loaded
+     */
+    QIcon getNoFlagIcon() const;
+
 signals:
     /**
      * @brief Emitted when currency mappings have been loaded.

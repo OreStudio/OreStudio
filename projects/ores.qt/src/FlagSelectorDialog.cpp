@@ -143,6 +143,9 @@ void FlagSelectorDialog::populateList() {
     const auto& images = imageCache_->availableImages();
     BOOST_LOG_SEV(lg(), debug) << "Populating list with " << images.size() << " images";
 
+    // Get no-flag icon to use as placeholder while loading
+    QIcon placeholderIcon = imageCache_->getNoFlagIcon();
+
     for (const auto& img : images) {
         auto* item = new QListWidgetItem();
         item->setText(QString::fromStdString(img.key));
@@ -150,8 +153,10 @@ void FlagSelectorDialog::populateList() {
         item->setData(Qt::UserRole, QString::fromStdString(img.image_id));
         item->setData(Qt::UserRole + 1, QString::fromStdString(img.description));
 
-        // Set placeholder icon (question mark until actual icon loads)
-        item->setIcon(QIcon(":/icons/ic_fluent_question_20_regular.svg"));
+        // Set placeholder icon (no-flag until actual icon loads)
+        if (!placeholderIcon.isNull()) {
+            item->setIcon(placeholderIcon);
+        }
 
         listWidget_->addItem(item);
 

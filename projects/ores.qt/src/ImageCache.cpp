@@ -488,7 +488,9 @@ QIcon ImageCache::getCurrencyIcon(const std::string& iso_code) const {
         BOOST_LOG_SEV(lg(), warn) << "[MXN TRACE] getCurrencyIcon() found NO icon! "
                                    << "currency_icons_ size: " << currency_icons_.size();
     }
-    return {};
+
+    // Return the "no-flag" placeholder icon if available
+    return getNoFlagIcon();
 }
 
 bool ImageCache::hasCurrencyIcon(const std::string& iso_code) const {
@@ -947,6 +949,24 @@ std::string ImageCache::getCurrencyImageId(const std::string& iso_code) const {
         return it->second;
     }
     return {};
+}
+
+std::string ImageCache::getNoFlagImageId() const {
+    for (const auto& img : available_images_) {
+        if (img.key == "no-flag") {
+            return img.image_id;
+        }
+    }
+    BOOST_LOG_SEV(lg(), warn) << "No 'no-flag' image found in available images.";
+    return {};
+}
+
+QIcon ImageCache::getNoFlagIcon() const {
+    std::string no_flag_id = getNoFlagImageId();
+    if (no_flag_id.empty()) {
+        return {};
+    }
+    return getImageIcon(no_flag_id);
 }
 
 void ImageCache::onNotificationReceived(const QString& eventType, const QDateTime& timestamp,

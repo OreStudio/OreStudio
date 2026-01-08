@@ -299,6 +299,8 @@ bool ClientCountryModel::canFetchMore(const QModelIndex& parent) const {
     if (parent.isValid())
         return false;
 
+    // For Qt's automatic fetch-more, we only allow it for appending data
+    // (e.g., infinite scroll). Page-based navigation uses load_page() instead.
     const bool has_more = countries_.size() < page_size_ &&
                           countries_.size() < total_available_count_;
 

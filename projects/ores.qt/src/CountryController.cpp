@@ -1,0 +1,239 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.qt/CountryController.hpp"
+
+#include <QPointer>
+#include "ores.qt/CountryMdiWindow.hpp"
+#include "ores.qt/ImageCache.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.risk/eventing/country_changed_event.hpp"
+
+namespace ores::qt {
+
+using namespace ores::telemetry::log;
+
+namespace {
+    // Event type name for country changes
+    constexpr std::string_view country_event_name =
+        eventing::domain::event_traits<risk::eventing::country_changed_event>::name;
+}
+
+CountryController::CountryController(
+    QMainWindow* mainWindow,
+    QMdiArea* mdiArea,
+    ClientManager* clientManager,
+    ImageCache* imageCache,
+    const QString& username,
+    QList<DetachableMdiSubWindow*>& allDetachableWindows,
+    QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+      allDetachableWindows_(allDetachableWindows),
+      imageCache_(imageCache),
+      countryListWindow_(nullptr) {
+    BOOST_LOG_SEV(lg(), debug) << "Country controller created";
+
+    // Connect to notification signal from ClientManager
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &CountryController::onNotificationReceived);
+
+        // Subscribe to events when connected (event adapter only available after login)
+        connect(clientManager_, &ClientManager::connected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to country change events";
+            clientManager_->subscribeToEvent(std::string{country_event_name});
+        });
+
+        // Re-subscribe after reconnection
+        connect(clientManager_, &ClientManager::reconnected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to country change events after reconnect";
+            clientManager_->subscribeToEvent(std::string{country_event_name});
+        });
+
+        // If already connected, subscribe now
+        if (clientManager_->isConnected()) {
+            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to country change events";
+            clientManager_->subscribeToEvent(std::string{country_event_name});
+        }
+    }
+}
+
+CountryController::~CountryController() {
+    BOOST_LOG_SEV(lg(), debug) << "Country controller destroyed";
+
+    // Unsubscribe from country change events
+    if (clientManager_) {
+        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from country change events";
+        clientManager_->unsubscribeFromEvent(std::string{country_event_name});
+    }
+}
+
+void CountryController::showListWindow() {
+    // Reuse existing window if it exists
+    if (countryListWindow_) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing countries window";
+
+        // Bring window to front
+        if (countryListWindow_->isDetached()) {
+            countryListWindow_->setVisible(true);
+            countryListWindow_->show();
+            countryListWindow_->raise();
+            countryListWindow_->activateWindow();
+        } else {
+            countryListWindow_->setVisible(true);
+            mdiArea_->setActiveSubWindow(countryListWindow_);
+            countryListWindow_->show();
+            countryListWindow_->raise();
+        }
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Creating new countries MDI window";
+    const QColor iconColor(220, 220, 220);
+    auto* countryWidget = new CountryMdiWindow(clientManager_, imageCache_,
+                                                username_, mainWindow_);
+
+    // Connect status signals
+    connect(countryWidget, &CountryMdiWindow::statusChanged,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(countryWidget, &CountryMdiWindow::errorOccurred,
+            this, [this](const QString& err_msg) {
+        emit errorMessage("Error loading countries: " + err_msg);
+    });
+
+    // Connect country operations (add, edit, history)
+    connect(countryWidget, &CountryMdiWindow::addNewRequested,
+            this, &CountryController::onAddNewRequested);
+    connect(countryWidget, &CountryMdiWindow::showCountryDetails,
+            this, &CountryController::onShowCountryDetails);
+    connect(countryWidget, &CountryMdiWindow::showCountryHistory,
+            this, &CountryController::onShowCountryHistory);
+
+    countryListWindow_ = new DetachableMdiSubWindow();
+    countryListWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    countryListWindow_->setWidget(countryWidget);
+    countryListWindow_->setWindowTitle("Countries");
+    countryListWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_globe_20_regular.svg", iconColor));
+
+    // Track window for detach/reattach operations
+    allDetachableWindows_.append(countryListWindow_);
+    QPointer<CountryController> self = this;
+    QPointer<DetachableMdiSubWindow> windowBeingDestroyed = countryListWindow_;
+    // to avoid race conditions with signal processing
+    connect(countryListWindow_, &QObject::destroyed, this,
+        [self, windowBeingDestroyed](QObject* obj) {
+            Q_UNUSED(obj);
+            if (!self) return;
+
+            BOOST_LOG_SEV(lg(), debug) << "Detachable MDI Sub Window destroyed";
+
+            // Remove the window from the list of all detachable windows
+            self->allDetachableWindows_.removeAll(windowBeingDestroyed);
+
+            // If the destroyed window is the country list, nullify the pointer
+            if (self->countryListWindow_ == windowBeingDestroyed)
+                self->countryListWindow_ = nullptr;
+        });
+
+    // When the image cache reloads (due to external event), mark the list as stale
+    connect(imageCache_, &ImageCache::allLoaded, this, [this, countryWidget](){
+        if (countryWidget) {
+            countryWidget->markAsStale();
+        }
+    });
+
+    mdiArea_->addSubWindow(countryListWindow_);
+    countryListWindow_->adjustSize();
+    countryListWindow_->show();
+}
+
+void CountryController::closeAllWindows() {
+    if (countryListWindow_) {
+        countryListWindow_->close();
+    }
+}
+
+void CountryController::onAddNewRequested() {
+    BOOST_LOG_SEV(lg(), info) << "Add new country requested";
+    // TODO: Implement CountryDetailDialog for adding new countries
+    // For now, show a placeholder message
+    emit statusMessage("Add new country: feature coming soon");
+}
+
+void CountryController::onShowCountryDetails(
+    const risk::domain::country& country) {
+    BOOST_LOG_SEV(lg(), info) << "Showing country details for: "
+                             << country.alpha2_code;
+    // TODO: Implement CountryDetailDialog for editing countries
+    // For now, show a placeholder message
+    emit statusMessage(QString("Edit country %1: feature coming soon")
+        .arg(QString::fromStdString(country.alpha2_code)));
+}
+
+void CountryController::onShowCountryHistory(const QString& alpha2Code) {
+    BOOST_LOG_SEV(lg(), info) << "Showing country history for: "
+                             << alpha2Code.toStdString();
+    // TODO: Implement CountryHistoryDialog for viewing history
+    // For now, show a placeholder message
+    emit statusMessage(QString("Country history for %1: feature coming soon")
+        .arg(alpha2Code));
+}
+
+void CountryController::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
+    // Check if this is a country change event
+    if (eventType != QString::fromStdString(std::string{country_event_name})) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Received country change notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " alpha2 codes";
+
+    // If the country list window is open, mark it as stale
+    if (countryListWindow_) {
+        auto* countryWidget = qobject_cast<CountryMdiWindow*>(
+            countryListWindow_->widget());
+        if (countryWidget) {
+            countryWidget->markAsStale();
+            BOOST_LOG_SEV(lg(), debug) << "Marked country window as stale";
+        }
+    }
+
+    // Notify open detail/history dialogs for affected countries
+    // (will be implemented when CountryDetailDialog/CountryHistoryDialog exist)
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        const QString& key = it.key();
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        // TODO: Handle detail and history dialogs when they are implemented
+        Q_UNUSED(key);
+    }
+}
+
+}

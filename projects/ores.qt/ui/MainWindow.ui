@@ -47,6 +47,7 @@
      <string>&amp;Ref Data</string>
     </property>
     <addaction name="CurrenciesAction"/>
+    <addaction name="CountriesAction"/>
    </widget>
    <widget class="QMenu" name="menuSystem">
     <property name="title">
@@ -110,6 +111,7 @@
    <addaction name="ActionDisconnect"/>
    <addaction name="separator"/>
    <addaction name="CurrenciesAction"/>
+   <addaction name="CountriesAction"/>
    <addaction name="ActionAccounts"/>
   </widget>
   <action name="ExitAction">
@@ -145,6 +147,15 @@
    </property>
    <property name="text">
     <string>&amp;Currencies</string>
+   </property>
+  </action>
+  <action name="CountriesAction">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_globe_20_regular.svg</normaloff>:/icons/ic_fluent_globe_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>C&amp;ountries</string>
    </property>
   </action>
   <action name="ActionConnect">

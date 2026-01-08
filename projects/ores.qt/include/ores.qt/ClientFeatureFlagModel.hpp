@@ -53,7 +53,7 @@ private:
 
 public:
     /**
-     * @brief Enumeration of table columns.
+     * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
         Name,

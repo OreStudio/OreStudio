@@ -140,8 +140,13 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 //
 // Version 20.0 adds version field to list_feature_flags_response.
 // Breaking change.
+//
+// Version 20.1 adds countries subsystem messages for CRUD operations on
+// ISO 3166-1 country reference data. New messages: get_countries_request/response,
+// save_country_request/response, delete_country_request/response,
+// get_country_history_request/response.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 20;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -191,6 +196,7 @@ enum class message_type {
     database_status_notification = 0x0020,
 
     // Risk subsystem messages (0x1000 - 0x1FFF)
+    // Currency messages (0x1001 - 0x1008)
     get_currencies_request = 0x1001,
     get_currencies_response = 0x1002,
     save_currency_request = 0x1003,
@@ -199,6 +205,16 @@ enum class message_type {
     delete_currency_response = 0x1006,
     get_currency_history_request = 0x1007,
     get_currency_history_response = 0x1008,
+
+    // Country messages (0x1009 - 0x1010)
+    get_countries_request = 0x1009,
+    get_countries_response = 0x100A,
+    save_country_request = 0x100B,
+    save_country_response = 0x100C,
+    delete_country_request = 0x100D,
+    delete_country_response = 0x100E,
+    get_country_history_request = 0x100F,
+    get_country_history_response = 0x1010,
 
     // Accounts subsystem messages (0x2000 - 0x2FFF)
     create_account_request = 0x2001,

@@ -100,6 +100,38 @@ public:
     bool hasCurrencyIcon(const std::string& iso_code) const;
 
     /**
+     * @brief Load country-image mappings from the server.
+     *
+     * Fetches all country->image_id mappings. After completion,
+     * countryMappingsLoaded() signal is emitted.
+     */
+    void loadCountryMappings();
+
+    /**
+     * @brief Load images for all countries that have mappings.
+     *
+     * Fetches image data for countries that have mappings but whose
+     * images haven't been loaded yet. Images are fetched in batches.
+     */
+    void loadImagesForCountries();
+
+    /**
+     * @brief Get the icon for a country.
+     *
+     * @param alpha2_code The country's ISO 3166-1 alpha-2 code (e.g., "US", "GB")
+     * @return QIcon for the country's flag, or empty icon if not cached
+     */
+    QIcon getCountryIcon(const std::string& alpha2_code) const;
+
+    /**
+     * @brief Check if the cache has an icon for the given country.
+     *
+     * @param alpha2_code The country's alpha-2 code
+     * @return true if icon is cached, false otherwise
+     */
+    bool hasCountryIcon(const std::string& alpha2_code) const;
+
+    /**
      * @brief Get the number of cached currency icons.
      */
     std::size_t cachedIconCount() const { return currency_icons_.size(); }
@@ -193,6 +225,11 @@ signals:
     void currencyMappingsLoaded();
 
     /**
+     * @brief Emitted when country mappings have been loaded.
+     */
+    void countryMappingsLoaded();
+
+    /**
      * @brief Emitted when images have been loaded.
      */
     void imagesLoaded();
@@ -229,6 +266,7 @@ signals:
 
 private slots:
     void onMappingsLoaded();
+    void onCountryMappingsLoaded();
     void onImagesLoaded();
     void onImageListLoaded();
     void onSingleImageLoaded();
@@ -292,19 +330,27 @@ private:
     // Currency ISO code -> image_id mapping
     std::unordered_map<std::string, std::string> currency_to_image_id_;
 
+    // Country alpha-2 code -> image_id mapping
+    std::unordered_map<std::string, std::string> country_to_image_id_;
+
     // image_id -> cached SVG data (for images we've fetched)
     std::unordered_map<std::string, std::string> image_svg_cache_;
 
     // Currency ISO code -> QIcon (final rendered icons)
     std::unordered_map<std::string, QIcon> currency_icons_;
 
+    // Country alpha-2 code -> QIcon (final rendered icons)
+    std::unordered_map<std::string, QIcon> country_icons_;
+
     // Loading state
     bool is_loading_mappings_{false};
+    bool is_loading_country_mappings_{false};
     bool is_loading_images_{false};
     bool is_loading_all_available_{false};
     bool load_images_after_mappings_{false};
 
     QFutureWatcher<MappingsResult>* mappings_watcher_;
+    QFutureWatcher<MappingsResult>* country_mappings_watcher_;
     QFutureWatcher<ImagesResult>* images_watcher_;
     QFutureWatcher<ImageListResult>* image_list_watcher_;
     QFutureWatcher<SingleImageResult>* single_image_watcher_;

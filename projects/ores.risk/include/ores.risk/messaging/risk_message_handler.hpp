@@ -26,6 +26,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.risk/service/currency_service.hpp"
+#include "ores.risk/service/country_service.hpp"
 
 namespace ores::risk::messaging {
 
@@ -99,9 +100,34 @@ private:
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_get_currency_history_request(std::span<const std::byte> payload);
 
+    /**
+     * @brief Handle get_countries_request message.
+     */
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_countries_request(std::span<const std::byte> payload);
+
+    /**
+     * @brief Handle save_country_request message (create or update).
+     */
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_country_request(std::span<const std::byte> payload);
+
+    /**
+     * @brief Handle delete_country_request message.
+     */
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_country_request(std::span<const std::byte> payload);
+
+    /**
+     * @brief Handle get_country_history_request message.
+     */
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_country_history_request(std::span<const std::byte> payload);
+
     database::context ctx_;
     std::shared_ptr<variability::service::system_flags_service> system_flags_;
     service::currency_service currency_service_;
+    service::country_service country_service_;
 };
 
 }

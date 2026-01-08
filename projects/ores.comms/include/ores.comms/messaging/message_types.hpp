@@ -134,7 +134,10 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 18.0 uses 32-bit length prefix for svg_data in get_images_response.
 // Previously used 16-bit length which truncated SVGs larger than 65535 bytes.
 // This is a breaking change affecting image serialization.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 18;
+//
+// Version 19.0 adds recorded_at field to list_feature_flags_response.
+// Previously the timestamp was not serialized. Breaking change.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 19;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

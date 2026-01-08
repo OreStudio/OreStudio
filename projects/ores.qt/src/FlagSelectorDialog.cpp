@@ -150,8 +150,8 @@ void FlagSelectorDialog::populateList() {
         item->setData(Qt::UserRole, QString::fromStdString(img.image_id));
         item->setData(Qt::UserRole + 1, QString::fromStdString(img.description));
 
-        // Set placeholder icon
-        item->setIcon(QIcon(":/icons/ic_fluent_flag_20_regular.svg"));
+        // Set placeholder icon (question mark until actual icon loads)
+        item->setIcon(QIcon(":/icons/ic_fluent_question_20_regular.svg"));
 
         listWidget_->addItem(item);
 

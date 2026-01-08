@@ -518,10 +518,10 @@ bool ClientManager::isAdmin() const {
     return false;
 }
 
-std::expected<comms::messaging::frame, comms::messaging::error_code>
+std::expected<comms::messaging::frame, ores::utility::serialization::error_code>
 ClientManager::sendRequest(comms::messaging::frame request) {
     if (!isConnected()) {
-        return std::unexpected(comms::messaging::error_code::network_error);
+        return std::unexpected(ores::utility::serialization::error_code::network_error);
     }
     return client_->send_request_sync(std::move(request));
 }

@@ -676,7 +676,7 @@ void CurrencyDetailDialog::updateFlagDisplay() {
 
     if (!imageCache_) {
         flagButton_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
+            ":/icons/ic_fluent_question_20_regular.svg", iconColor));
         return;
     }
 
@@ -710,7 +710,7 @@ void CurrencyDetailDialog::updateFlagDisplay() {
 
     // Default icon if no ID or loading failed
     flagButton_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
+        ":/icons/ic_fluent_question_20_regular.svg", iconColor));
 }
 
 }

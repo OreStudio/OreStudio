@@ -17,9 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep. Must be before rfl/json.hpp
 #include "ores.qt/ImageCache.hpp"
 
 #include <algorithm>
+#include <iomanip>
+#include <sstream>
+#include <rfl/json.hpp>
 #include <QtConcurrent>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -88,12 +92,19 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
 }
 
 void ImageCache::loadCurrencyMappings() {
+    BOOST_LOG_SEV(lg(), debug) << "loadCurrencyMappings() called.";
+
     if (is_loading_mappings_) {
         BOOST_LOG_SEV(lg(), warn) << "Mappings load already in progress.";
         return;
     }
 
-    if (!clientManager_ || !clientManager_->isConnected()) {
+    if (!clientManager_) {
+        BOOST_LOG_SEV(lg(), error) << "Cannot load mappings: clientManager_ is null.";
+        return;
+    }
+
+    if (!clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot load mappings: not connected.";
         return;
     }
@@ -101,19 +112,26 @@ void ImageCache::loadCurrencyMappings() {
     is_loading_mappings_ = true;
     QPointer<ImageCache> self = this;
 
+    BOOST_LOG_SEV(lg(), debug) << "Starting async currency mappings fetch.";
+
     QFuture<MappingsResult> future =
         QtConcurrent::run([self]() -> MappingsResult {
             BOOST_LOG_SEV(lg(), debug) << "Fetching currencies to extract image_id mappings.";
-            if (!self) return {false, {}};
+            if (!self) {
+                BOOST_LOG_SEV(lg(), error) << "ImageCache destroyed during async fetch.";
+                return {false, {}};
+            }
 
             // Fetch all currencies (we just need iso_code and image_id)
             risk::messaging::get_currencies_request request;
             request.offset = 0;
-            request.limit = 10000;  // Large limit to get all currencies
+            request.limit = 1000;  // Max allowed by server
             auto payload = request.serialize();
 
             frame request_frame(message_type::get_currencies_request,
                 0, std::move(payload));
+
+            BOOST_LOG_SEV(lg(), debug) << "Sending get_currencies_request.";
 
             auto response_result =
                 self->clientManager_->sendRequest(std::move(request_frame));
@@ -124,6 +142,8 @@ void ImageCache::loadCurrencyMappings() {
                 return {false, {}};
             }
 
+            BOOST_LOG_SEV(lg(), debug) << "Received currencies response, decompressing.";
+
             auto payload_result = response_result->decompressed_payload();
             if (!payload_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
@@ -131,25 +151,60 @@ void ImageCache::loadCurrencyMappings() {
                 return {false, {}};
             }
 
+            // Log payload size for debugging
+            BOOST_LOG_SEV(lg(), debug) << "Payload size: " << payload_result->size() << " bytes.";
+
             auto response =
                 risk::messaging::get_currencies_response::deserialize(*payload_result);
 
             if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize currencies response.";
+                // Log first 64 bytes of payload as hex for debugging
+                std::ostringstream hex_dump;
+                hex_dump << std::hex << std::setfill('0');
+                for (std::size_t i = 0; i < std::min<std::size_t>(64, payload_result->size()); ++i) {
+                    hex_dump << std::setw(2) << static_cast<int>((*payload_result)[i]) << " ";
+                }
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize currencies response. "
+                                           << "First 64 bytes: " << hex_dump.str();
                 return {false, {}};
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Received " << response->currencies.size()
+                                       << " currencies from server.";
+
+            // TEMP: Log first currency as JSON for debugging
+            if (!response->currencies.empty()) {
+                BOOST_LOG_SEV(lg(), debug) << "First currency JSON: "
+                                           << rfl::json::write(response->currencies[0]);
             }
 
             // Extract iso_code -> image_id mappings from currencies
             std::unordered_map<std::string, std::string> mappings;
+            int currencies_with_image = 0;
+            int currencies_without_image = 0;
             for (const auto& currency : response->currencies) {
                 if (currency.image_id) {
-                    mappings[currency.iso_code] = boost::uuids::to_string(*currency.image_id);
+                    std::string image_id_str = boost::uuids::to_string(*currency.image_id);
+                    mappings[currency.iso_code] = image_id_str;
+                    currencies_with_image++;
+                    // MXN-specific trace
+                    if (currency.iso_code == "MXN") {
+                        BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] Currency has image_id: "
+                                                   << image_id_str;
+                    }
+                } else {
+                    currencies_without_image++;
+                    // MXN-specific trace
+                    if (currency.iso_code == "MXN") {
+                        BOOST_LOG_SEV(lg(), warn) << "[MXN TRACE] Currency has NO image_id!";
+                    }
                 }
             }
 
             BOOST_LOG_SEV(lg(), debug) << "Extracted " << mappings.size()
-                                       << " currency-image mappings from "
-                                       << response->currencies.size() << " currencies.";
+                                       << " currency-image mappings. "
+                                       << currencies_with_image << " currencies have image_id, "
+                                       << currencies_without_image << " do not.";
 
             return {true, std::move(mappings)};
         });
@@ -158,15 +213,28 @@ void ImageCache::loadCurrencyMappings() {
 }
 
 void ImageCache::onMappingsLoaded() {
+    BOOST_LOG_SEV(lg(), debug) << "onMappingsLoaded() callback triggered.";
     is_loading_mappings_ = false;
 
     auto result = mappings_watcher_->result();
+    BOOST_LOG_SEV(lg(), debug) << "Mappings result: success=" << result.success
+                               << ", mappings count=" << result.mappings.size();
+
     if (result.success) {
         // Store mappings (already in the right format)
         currency_to_image_id_ = std::move(result.mappings);
 
-        BOOST_LOG_SEV(lg(), info) << "Loaded " << currency_to_image_id_.size()
-                                  << " currency-image mappings.";
+        BOOST_LOG_SEV(lg(), debug) << "Stored " << currency_to_image_id_.size()
+                                   << " currency-image mappings.";
+
+        // MXN-specific trace: verify it's stored
+        auto mxn_it = currency_to_image_id_.find("MXN");
+        if (mxn_it != currency_to_image_id_.end()) {
+            BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] Stored in currency_to_image_id_: "
+                                       << mxn_it->second;
+        } else {
+            BOOST_LOG_SEV(lg(), warn) << "[MXN TRACE] NOT found in currency_to_image_id_!";
+        }
 
         emit currencyMappingsLoaded();
 
@@ -241,6 +309,9 @@ void ImageCache::onMappingsLoaded() {
 }
 
 void ImageCache::loadImagesForCurrencies() {
+    BOOST_LOG_SEV(lg(), debug) << "loadImagesForCurrencies() called. "
+                               << "currency_to_image_id_ size: " << currency_to_image_id_.size();
+
     if (is_loading_images_) {
         BOOST_LOG_SEV(lg(), warn) << "Images load already in progress.";
         return;
@@ -262,6 +333,9 @@ void ImageCache::loadImagesForCurrencies() {
             unique_ids.insert(image_id);
         }
     }
+
+    BOOST_LOG_SEV(lg(), debug) << "Need to fetch " << image_ids_to_fetch.size()
+                               << " images (cached: " << image_svg_cache_.size() << ").";
 
     if (image_ids_to_fetch.empty()) {
         BOOST_LOG_SEV(lg(), debug) << "No new images to fetch, re-rendering icons.";
@@ -296,29 +370,88 @@ void ImageCache::loadImagesForCurrencies() {
 }
 
 void ImageCache::onImagesLoaded() {
+    BOOST_LOG_SEV(lg(), debug) << "onImagesLoaded() callback triggered.";
     is_loading_images_ = false;
 
     auto result = images_watcher_->result();
+    BOOST_LOG_SEV(lg(), debug) << "Images result: success=" << result.success
+                               << ", images count=" << result.images.size();
+
     if (result.success) {
+        // MXN-specific trace: check if MXN's image_id is expected
+        auto mxn_map_it = currency_to_image_id_.find("MXN");
+        std::string mxn_expected_image_id = (mxn_map_it != currency_to_image_id_.end())
+            ? mxn_map_it->second : "";
+        if (!mxn_expected_image_id.empty()) {
+            BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] Expecting image_id: " << mxn_expected_image_id;
+        }
+
         // Cache SVG data and render icons
         for (const auto& img : result.images) {
             image_svg_cache_[img.image_id] = img.svg_data;
+            // Log first 100 chars of SVG to verify content
+            std::string svg_preview = img.svg_data.substr(0, 100);
+            BOOST_LOG_SEV(lg(), debug) << "Cached SVG for image_id: " << img.image_id
+                                       << ", size: " << img.svg_data.size()
+                                       << ", preview: " << svg_preview;
+            // MXN-specific trace
+            if (img.image_id == mxn_expected_image_id) {
+                BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] Cached SVG for MXN's image_id: "
+                                           << img.image_id << ", size: " << img.svg_data.size();
+            }
         }
 
+        BOOST_LOG_SEV(lg(), debug) << "Cached " << result.images.size() << " SVGs. "
+                                   << "Total in cache: " << image_svg_cache_.size();
+
         // Render icons for all currencies
+        int rendered = 0;
+        int render_failed = 0;
+        int no_svg = 0;
+        BOOST_LOG_SEV(lg(), debug) << "Rendering icons for " << currency_to_image_id_.size()
+                                   << " currency-to-image mappings.";
         for (const auto& [iso_code, image_id] : currency_to_image_id_) {
             auto svg_it = image_svg_cache_.find(image_id);
             if (svg_it != image_svg_cache_.end()) {
+                BOOST_LOG_SEV(lg(), trace) << "Rendering " << iso_code << " with image_id: "
+                                           << image_id << ", svg size: " << svg_it->second.size();
                 QIcon icon = svgToIcon(svg_it->second);
                 if (!icon.isNull()) {
                     // Always update the icon to reflect the latest mapping
                     currency_icons_[iso_code] = icon;
+                    rendered++;
+                    // MXN-specific trace
+                    if (iso_code == "MXN") {
+                        BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] Icon rendered successfully!";
+                    }
+                } else {
+                    BOOST_LOG_SEV(lg(), warn) << "Failed to render icon for " << iso_code
+                                              << " (image_id: " << image_id
+                                              << ", svg size: " << svg_it->second.size() << ")";
+                    render_failed++;
+                    // MXN-specific trace
+                    if (iso_code == "MXN") {
+                        BOOST_LOG_SEV(lg(), error) << "[MXN TRACE] Failed to render icon! "
+                                                    << "svg size: " << svg_it->second.size();
+                    }
+                }
+            } else {
+                BOOST_LOG_SEV(lg(), debug) << "No SVG cache for " << iso_code
+                                           << " (image_id: " << image_id << ")";
+                no_svg++;
+                // MXN-specific trace
+                if (iso_code == "MXN") {
+                    BOOST_LOG_SEV(lg(), error) << "[MXN TRACE] No SVG in cache for image_id: "
+                                                << image_id;
                 }
             }
         }
 
-        BOOST_LOG_SEV(lg(), info) << "Cached " << currency_icons_.size()
-                                  << " currency icons.";
+        BOOST_LOG_SEV(lg(), debug) << "Rendered " << rendered << " icons, "
+                                   << render_failed << " render failures, "
+                                   << no_svg << " missing SVGs.";
+
+        BOOST_LOG_SEV(lg(), debug) << "Total currency_icons_: " << currency_icons_.size();
 
         emit imagesLoaded();
         emit allLoaded();
@@ -329,6 +462,8 @@ void ImageCache::onImagesLoaded() {
 }
 
 void ImageCache::loadAll() {
+    BOOST_LOG_SEV(lg(), debug) << "loadAll() called.";
+
     if (is_loading_mappings_ || is_loading_images_) {
         BOOST_LOG_SEV(lg(), warn) << "Load already in progress.";
         return;
@@ -341,7 +476,17 @@ void ImageCache::loadAll() {
 QIcon ImageCache::getCurrencyIcon(const std::string& iso_code) const {
     auto it = currency_icons_.find(iso_code);
     if (it != currency_icons_.end()) {
+        // MXN-specific trace
+        if (iso_code == "MXN") {
+            BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] getCurrencyIcon() found icon, "
+                                       << "available sizes: " << it->second.availableSizes().size();
+        }
         return it->second;
+    }
+    // MXN-specific trace
+    if (iso_code == "MXN") {
+        BOOST_LOG_SEV(lg(), warn) << "[MXN TRACE] getCurrencyIcon() found NO icon! "
+                                   << "currency_icons_ size: " << currency_icons_.size();
     }
     return {};
 }
@@ -358,7 +503,11 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
     ClientManager* clientManager,
     const std::vector<std::string>& image_ids) {
 
+    BOOST_LOG_SEV(lg(), debug) << "fetchImagesInBatches() called with "
+                               << image_ids.size() << " image IDs.";
+
     if (!clientManager) {
+        BOOST_LOG_SEV(lg(), error) << "clientManager is null in fetchImagesInBatches.";
         return {false, {}};
     }
 
@@ -366,13 +515,16 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
 
     // Batch into groups of MAX_IMAGES_PER_REQUEST
     constexpr std::size_t batch_size = assets::messaging::MAX_IMAGES_PER_REQUEST;
+    int batch_num = 0;
     for (std::size_t i = 0; i < image_ids.size(); i += batch_size) {
         std::vector<std::string> batch;
         for (std::size_t j = i; j < std::min(i + batch_size, image_ids.size()); ++j) {
             batch.push_back(image_ids[j]);
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Fetching batch of " << batch.size() << " images.";
+        batch_num++;
+        BOOST_LOG_SEV(lg(), debug) << "Fetching batch " << batch_num << " with "
+                                   << batch.size() << " images.";
 
         assets::messaging::get_images_request request;
         request.image_ids = std::move(batch);
@@ -383,15 +535,15 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
         auto response_result = clientManager->sendRequest(std::move(request_frame));
 
         if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send images request: "
-                                       << response_result.error();
+            BOOST_LOG_SEV(lg(), error) << "Failed to send images request (batch "
+                                       << batch_num << "): " << response_result.error();
             continue;
         }
 
         auto payload_result = response_result->decompressed_payload();
         if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress images response: "
-                                       << payload_result.error();
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress images response (batch "
+                                       << batch_num << "): " << payload_result.error();
             continue;
         }
 
@@ -399,16 +551,27 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
             assets::messaging::get_images_response::deserialize(*payload_result);
 
         if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize images response.";
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize images response (batch "
+                                       << batch_num << ").";
             continue;
         }
 
+        BOOST_LOG_SEV(lg(), debug) << "Batch " << batch_num << " returned "
+                                   << response->images.size() << " images.";
+
         for (auto& img : response->images) {
+            // MXN-specific trace: check if this is the MX flag
+            if (img.key == "mx") {
+                BOOST_LOG_SEV(lg(), info) << "[MXN TRACE] Fetched 'mx' flag image, "
+                                           << "image_id: " << img.image_id
+                                           << ", svg size: " << img.svg_data.size();
+            }
             all_images.push_back(std::move(img));
         }
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Fetched " << all_images.size() << " images total.";
+    BOOST_LOG_SEV(lg(), debug) << "fetchImagesInBatches complete. Total: "
+                               << all_images.size() << " images.";
     return {true, std::move(all_images)};
 }
 
@@ -607,7 +770,7 @@ void ImageCache::setCurrencyImage(const std::string& iso_code,
             // Step 1: Fetch currencies (protocol doesn't support filtering by iso_code)
             risk::messaging::get_currencies_request get_request;
             get_request.offset = 0;
-            get_request.limit = 10000;  // Large limit to get all currencies
+            get_request.limit = 1000;  // Max allowed by server
             auto get_payload = get_request.serialize();
 
             frame get_frame(message_type::get_currencies_request, 0, std::move(get_payload));

@@ -228,12 +228,16 @@ void FeatureFlagController::showDetailWindow(
 
 void FeatureFlagController::onFeatureFlagSaved(const QString& name) {
     BOOST_LOG_SEV(lg(), info) << "Feature flag saved: " << name.toStdString();
-    refreshListWindow();
+    if (listWindow_) {
+        listWindow_->markAsStale();
+    }
 }
 
 void FeatureFlagController::onFeatureFlagDeleted(const QString& name) {
     BOOST_LOG_SEV(lg(), info) << "Feature flag deleted: " << name.toStdString();
-    refreshListWindow();
+    if (listWindow_) {
+        listWindow_->markAsStale();
+    }
 }
 
 void FeatureFlagController::refreshListWindow() {

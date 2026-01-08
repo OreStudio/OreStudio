@@ -23,6 +23,7 @@
 #include <chrono>
 #include <optional>
 #include <type_traits>
+#include "ores.utility/version/version.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -305,7 +306,8 @@ export_data(const std::optional<config::export_options>& ocfg) const {
 }
 
 void application::run(const config::options& cfg) const {
-    BOOST_LOG_SEV(lg(), info) << "Started application.";
+    BOOST_LOG_SEV(lg(), info) << utility::version::format_startup_message(
+        "ORE Studio CLI");
 
     import_data(cfg.importing);
     export_data(cfg.exporting);

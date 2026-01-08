@@ -65,8 +65,8 @@ int run(int argc, char* argv[]) {
     }
 
     auto lg(make_logger("ores.wt"));
-    BOOST_LOG_SEV(lg, info) << "Starting ORE Studio Web v" << ORES_VERSION
-                            << " (" << ORES_BUILD_INFO << ")";
+    BOOST_LOG_SEV(lg, info) << ores::utility::version::format_startup_message(
+        "ORE Studio Web");
 
     auto& app_ctx = ores::wt::service::application_context::instance();
     app_ctx.initialize(opts.database);

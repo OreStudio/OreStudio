@@ -145,8 +145,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // ISO 3166-1 country reference data. New messages: get_countries_request/response,
 // save_country_request/response, delete_country_request/response,
 // get_country_history_request/response.
+//
+// Version 20.2 adds image_id field to currency version history serialization.
+// Previously the flag reference was missing from get_currency_history_response.
+// This is a breaking change affecting currency history wire format.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 20;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 2;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

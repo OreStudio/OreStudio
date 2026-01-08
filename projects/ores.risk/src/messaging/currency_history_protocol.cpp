@@ -52,6 +52,12 @@ void serialize_currency_version(std::vector<std::byte>& buffer, const domain::cu
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(version.data.recorded_at));
 
+    // Write optional image_id: bool flag followed by UUID if present
+    writer::write_bool(buffer, version.data.image_id.has_value());
+    if (version.data.image_id) {
+        writer::write_uuid(buffer, *version.data.image_id);
+    }
+
     // Write version metadata
     writer::write_uint32(buffer, static_cast<std::uint32_t>(version.version_number));
     writer::write_string(buffer, version.recorded_by);
@@ -119,6 +125,15 @@ deserialize_currency_version(std::span<const std::byte>& data) {
         version.data.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at);
     } catch (const std::invalid_argument&) {
         return std::unexpected(error_code::invalid_request);
+    }
+
+    // Read optional image_id: bool flag followed by UUID if present
+    auto has_image_id = reader::read_bool(data);
+    if (!has_image_id) return std::unexpected(has_image_id.error());
+    if (*has_image_id) {
+        auto image_id = reader::read_uuid(data);
+        if (!image_id) return std::unexpected(image_id.error());
+        version.data.image_id = *image_id;
     }
 
     // Read version metadata

@@ -22,6 +22,7 @@
 #include <QPointer>
 #include "ores.qt/CountryMdiWindow.hpp"
 #include "ores.qt/CountryDetailDialog.hpp"
+#include "ores.qt/CountryHistoryDialog.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -313,10 +314,71 @@ void CountryController::onShowCountryDetails(
 void CountryController::onShowCountryHistory(const QString& alpha2Code) {
     BOOST_LOG_SEV(lg(), info) << "Showing country history for: "
                              << alpha2Code.toStdString();
-    // TODO: Implement CountryHistoryDialog for viewing history
-    // For now, show a placeholder message
-    emit statusMessage(QString("Country history for %1: feature coming soon")
-        .arg(alpha2Code));
+
+    const QString windowKey = build_window_key("history", alpha2Code);
+
+    // Try to reuse existing window
+    if (try_reuse_window(windowKey)) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
+                                  << alpha2Code.toStdString();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
+                              << alpha2Code.toStdString();
+    const QColor iconColor(220, 220, 220);
+
+    auto* historyDialog = new CountryHistoryDialog(alpha2Code, clientManager_, mainWindow_);
+    if (imageCache_) {
+        historyDialog->setImageCache(imageCache_);
+    }
+
+    connect(historyDialog, &CountryHistoryDialog::statusChanged,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(historyDialog, &CountryHistoryDialog::errorOccurred,
+            this, [this](const QString& message) {
+        emit errorMessage(message);
+    });
+
+    // Load history data
+    historyDialog->loadHistory();
+
+    auto* historyWindow = new DetachableMdiSubWindow();
+    historyWindow->setAttribute(Qt::WA_DeleteOnClose);
+    historyWindow->setWidget(historyDialog);
+    historyWindow->setWindowTitle(QString("Country History: %1").arg(alpha2Code));
+    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+
+    // Track this history window
+    track_window(windowKey, historyWindow);
+
+    allDetachableWindows_.append(historyWindow);
+    QPointer<CountryController> self = this;
+    QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
+    connect(historyWindow, &QObject::destroyed, this,
+            [self, windowPtr, windowKey]() {
+        if (self) {
+            self->allDetachableWindows_.removeAll(windowPtr.data());
+            self->untrack_window(windowKey);
+        }
+    });
+
+    mdiArea_->addSubWindow(historyWindow);
+    historyWindow->adjustSize();
+
+    // If the parent country list window is detached, detach this window too
+    if (countryListWindow_ && countryListWindow_->isDetached()) {
+        historyWindow->show();
+        historyWindow->detach();
+
+        QPoint parentPos = countryListWindow_->pos();
+        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else {
+        historyWindow->show();
+    }
 }
 
 void CountryController::onNotificationReceived(
@@ -341,7 +403,7 @@ void CountryController::onNotificationReceived(
         }
     }
 
-    // Notify open detail dialogs for affected countries
+    // Notify open detail and history dialogs for affected countries
     for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
         const QString& key = it.key();
         auto* window = it.value();
@@ -358,6 +420,20 @@ void CountryController::onNotificationReceived(
                 if (detailDialog) {
                     detailDialog->markAsStale();
                     BOOST_LOG_SEV(lg(), debug) << "Marked detail dialog as stale for: "
+                                               << windowAlpha2.toStdString();
+                }
+            }
+        }
+        // Check if this is a history window for an affected country
+        else if (key.startsWith("history:")) {
+            QString windowAlpha2 = key.mid(8);  // Remove "history:" prefix
+            if (entityIds.isEmpty() || entityIds.contains(windowAlpha2)) {
+                // Mark history dialog as stale
+                auto* historyDialog = qobject_cast<CountryHistoryDialog*>(
+                    window->widget());
+                if (historyDialog) {
+                    historyDialog->markAsStale();
+                    BOOST_LOG_SEV(lg(), debug) << "Marked history dialog as stale for: "
                                                << windowAlpha2.toStdString();
                 }
             }

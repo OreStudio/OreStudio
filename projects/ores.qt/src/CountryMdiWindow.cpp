@@ -703,8 +703,15 @@ void CountryMdiWindow::restoreSettings() {
         header->restoreState(settings.value("headerState").toByteArray());
         BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
     } else {
-        BOOST_LOG_SEV(lg(), debug) << "No saved settings, using default column visibility";
-        // All columns visible by default for countries
+        BOOST_LOG_SEV(lg(), debug) << "No saved settings, applying default column visibility";
+
+        // Hide these columns by default (still visible in detail view):
+        // NumericCode, OfficialName, Version, RecordedBy, RecordedAt
+        header->setSectionHidden(ClientCountryModel::NumericCode, true);
+        header->setSectionHidden(ClientCountryModel::OfficialName, true);
+        header->setSectionHidden(ClientCountryModel::Version, true);
+        header->setSectionHidden(ClientCountryModel::RecordedBy, true);
+        header->setSectionHidden(ClientCountryModel::RecordedAt, true);
     }
 
     if (settings.contains("windowSize")) {

@@ -417,8 +417,16 @@ void ImageCache::onImagesLoaded() {
         BOOST_LOG_SEV(lg(), debug) << "Total currency_icons_: " << currency_icons_.size();
 
         emit imagesLoaded();
-        emit allLoaded();
+
+        // If doing a full load, continue with country mappings
+        if (load_all_in_progress_) {
+            BOOST_LOG_SEV(lg(), debug) << "Continuing loadAll() with country mappings.";
+            loadCountryMappings();
+        } else {
+            emit allLoaded();
+        }
     } else {
+        load_all_in_progress_ = false;
         BOOST_LOG_SEV(lg(), error) << "Failed to load images.";
         emit loadError(tr("Failed to load images"));
     }
@@ -427,12 +435,13 @@ void ImageCache::onImagesLoaded() {
 void ImageCache::loadAll() {
     BOOST_LOG_SEV(lg(), debug) << "loadAll() called.";
 
-    if (is_loading_mappings_ || is_loading_images_) {
+    if (is_loading_mappings_ || is_loading_images_ || is_loading_country_mappings_) {
         BOOST_LOG_SEV(lg(), warn) << "Load already in progress.";
         return;
     }
 
     load_images_after_mappings_ = true;
+    load_all_in_progress_ = true;
     loadCurrencyMappings();
 }
 
@@ -1030,7 +1039,14 @@ void ImageCache::onCountryMappingsLoaded() {
                                    << " country-image mappings.";
 
         emit countryMappingsLoaded();
+
+        // If doing a full load, continue with country images
+        if (load_all_in_progress_) {
+            BOOST_LOG_SEV(lg(), debug) << "Continuing loadAll() with country images.";
+            loadImagesForCountries();
+        }
     } else {
+        load_all_in_progress_ = false;
         BOOST_LOG_SEV(lg(), error) << "Failed to load country mappings.";
         emit loadError(tr("Failed to load country-image mappings"));
     }
@@ -1078,6 +1094,13 @@ void ImageCache::loadImagesForCountries() {
     if (image_ids_to_fetch.empty()) {
         BOOST_LOG_SEV(lg(), debug) << "No new country images to fetch.";
         emit imagesLoaded();
+        if (load_all_in_progress_) {
+            load_all_in_progress_ = false;
+            BOOST_LOG_SEV(lg(), info) << "loadAll() complete. Cached " << currency_icons_.size()
+                                       << " currency icons and " << country_icons_.size()
+                                       << " country icons.";
+            emit allLoaded();
+        }
         return;
     }
 
@@ -1111,7 +1134,16 @@ void ImageCache::loadImagesForCountries() {
 
         BOOST_LOG_SEV(lg(), debug) << "Total country icons: " << country_icons_.size();
         emit imagesLoaded();
+
+        if (load_all_in_progress_) {
+            load_all_in_progress_ = false;
+            BOOST_LOG_SEV(lg(), info) << "loadAll() complete. Cached " << currency_icons_.size()
+                                       << " currency icons and " << country_icons_.size()
+                                       << " country icons.";
+            emit allLoaded();
+        }
     } else {
+        load_all_in_progress_ = false;
         BOOST_LOG_SEV(lg(), error) << "Failed to load country images.";
         emit loadError(tr("Failed to load country images"));
     }

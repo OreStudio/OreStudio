@@ -378,6 +378,7 @@ private:
     bool is_loading_images_{false};
     bool is_loading_all_available_{false};
     bool load_images_after_mappings_{false};
+    bool load_all_in_progress_{false};  // Track full loadAll() sequence
 
     QFutureWatcher<MappingsResult>* mappings_watcher_;
     QFutureWatcher<MappingsResult>* country_mappings_watcher_;

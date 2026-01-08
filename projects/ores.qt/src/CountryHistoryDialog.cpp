@@ -1,0 +1,484 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.qt/CountryHistoryDialog.hpp"
+
+#include <QIcon>
+#include <QDateTime>
+#include <QScrollBar>
+#include <QVBoxLayout>
+#include <QtConcurrent>
+#include <QFutureWatcher>
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.risk/messaging/protocol.hpp"
+#include "ores.comms/messaging/frame.hpp"
+
+namespace ores::qt {
+
+using comms::messaging::frame;
+using comms::messaging::message_type;
+using namespace ores::telemetry::log;
+
+const QIcon& CountryHistoryDialog::getHistoryIcon() const {
+    static const QIcon historyIcon(":/icons/ic_fluent_history_20_regular.svg");
+    return historyIcon;
+}
+
+CountryHistoryDialog::CountryHistoryDialog(QString alpha2_code,
+    ClientManager* clientManager, QWidget* parent)
+    : QWidget(parent), ui_(new Ui::CountryHistoryDialog),
+      clientManager_(clientManager), imageCache_(nullptr),
+      alpha2Code_(std::move(alpha2_code)),
+      toolBar_(nullptr), reloadAction_(nullptr),
+      openAction_(nullptr), revertAction_(nullptr),
+      flagIconLabel_(nullptr) {
+
+    BOOST_LOG_SEV(lg(), info) << "Creating country history widget for: "
+                              << alpha2Code_.toStdString();
+
+    ui_->setupUi(this);
+
+    setupToolbar();
+
+    connect(ui_->versionListWidget, &QTableWidget::currentCellChanged,
+            this, [this](int currentRow, int, int, int) {
+        onVersionSelected(currentRow);
+    });
+
+    ui_->versionListWidget->setAlternatingRowColors(true);
+    ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui_->versionListWidget->resizeRowsToContents();
+
+    QHeaderView* versionVerticalHeader = ui_->versionListWidget->verticalHeader();
+    QHeaderView* versionHorizontalHeader = ui_->versionListWidget->horizontalHeader();
+    versionVerticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+    versionHorizontalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    ui_->changesTableWidget->horizontalHeader()->setStretchLastSection(true);
+    ui_->changesTableWidget->setColumnWidth(0, 200);
+    ui_->changesTableWidget->setColumnWidth(1, 200);
+
+    updateButtonStates();
+}
+
+CountryHistoryDialog::~CountryHistoryDialog() {
+    BOOST_LOG_SEV(lg(), info) << "Destroying country history widget";
+
+    // Disconnect and cancel any active QFutureWatcher objects
+    const auto watchers = findChildren<QFutureWatcherBase*>();
+    for (auto* watcher : watchers) {
+        disconnect(watcher, nullptr, this, nullptr);
+        watcher->cancel();
+        watcher->waitForFinished();
+    }
+}
+
+void CountryHistoryDialog::loadHistory() {
+    BOOST_LOG_SEV(lg(), info) << "Loading country history for: "
+                              << alpha2Code_.toStdString();
+
+    risk::messaging::get_country_history_request request{alpha2Code_.toStdString()};
+    auto payload = request.serialize();
+
+    frame request_frame(message_type::get_country_history_request,
+        0, std::move(payload)
+    );
+
+    using HistoryResult = std::expected<frame, std::string>;
+    QPointer<CountryHistoryDialog> self = this;
+    QFuture<HistoryResult> future =
+        QtConcurrent::run([self, frame = std::move(request_frame)]() mutable -> HistoryResult {
+        if (!self->clientManager_ || !self->clientManager_->isConnected()) {
+             return std::unexpected("Disconnected from server");
+        }
+        auto response_result = self->clientManager_->sendRequest(std::move(frame));
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Could not obtain country history: "
+                                       << "Failed to communicate with server.";
+            return std::unexpected("Failed to communicate with server");
+        }
+        return *response_result;
+    });
+
+    // Use watcher to handle results
+    auto* watcher = new QFutureWatcher<HistoryResult>(self);
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self,
+        [self, watcher]() {
+
+        if (!self) return;
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (!result) {
+            self->onHistoryLoadError(QString::fromStdString(result.error()));
+            return;
+        }
+
+        // Check if server sent an error_response instead
+        if (result->header().type != message_type::get_country_history_response) {
+            self->onHistoryLoadError(
+                QString("Server does not support country history: received message type %1")
+                .arg(static_cast<int>(result->header().type)));
+            return;
+        }
+
+        // Decompress payload
+        auto payload_result = result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress history response";
+            self->onHistoryLoadError("Failed to decompress server response");
+            return;
+        }
+
+        auto response = risk::messaging::get_country_history_response::
+            deserialize(*payload_result);
+
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Could not deserialise server response.";
+            self->onHistoryLoadError("Invalid server response");
+            return;
+        }
+
+        if (!response->success) {
+            BOOST_LOG_SEV(lg(), error) << "Response was not success.";
+            self->onHistoryLoadError(QString::fromStdString(response->message));
+            return;
+        }
+
+        self->history_ = std::move(response->history);
+        self->onHistoryLoaded();
+    });
+
+    watcher->setFuture(future);
+}
+
+void CountryHistoryDialog::onHistoryLoaded() {
+    BOOST_LOG_SEV(lg(), info) << "History loaded successfully: "
+                              << history_.size() << " versions";
+
+    const QIcon& cachedIcon = getHistoryIcon();
+    ui_->versionListWidget->setRowCount(0);
+    ui_->versionListWidget->setRowCount(history_.size());
+
+    for (int i = 0; i < static_cast<int>(history_.size()); ++i) {
+        const auto& country = history_[i];
+
+        BOOST_LOG_SEV(lg(), trace) << "Displaying version [" << i << "]: "
+                                   << "version=" << country.version
+                                   << ", recorded_by=" << country.recorded_by;
+
+        auto* versionItem =
+            new QTableWidgetItem(QString::number(country.version));
+        auto* recordedAtItem =
+            new QTableWidgetItem(relative_time_helper::format(country.recorded_at));
+        auto* recordedByItem =
+            new QTableWidgetItem(QString::fromStdString(country.recorded_by));
+
+        versionItem->setIcon(cachedIcon);
+
+        ui_->versionListWidget->setItem(i, 0, versionItem);
+        ui_->versionListWidget->setItem(i, 1, recordedAtItem);
+        ui_->versionListWidget->setItem(i, 2, recordedByItem);
+    }
+
+    if (!history_.empty())
+        ui_->versionListWidget->selectRow(0);
+
+    if (!history_.empty()) {
+        const auto& latest = history_[0];
+        ui_->titleLabel->setText(QString("Country History: %1 - %2")
+            .arg(alpha2Code_)
+            .arg(QString::fromStdString(latest.name)));
+    }
+
+    updateButtonStates();
+    updateFlagDisplay();
+
+    emit statusChanged(QString("Loaded %1 versions")
+        .arg(history_.size()));
+}
+
+void CountryHistoryDialog::onHistoryLoadError(const QString& error_msg) {
+    BOOST_LOG_SEV(lg(), error) << "Error loading history: "
+                               << error_msg.toStdString();
+
+    emit errorOccurred(QString("Failed to load country history: %1")
+        .arg(error_msg));
+    MessageBoxHelper::critical(this, "History Load Error",
+        QString("Failed to load country history:\n%1")
+        .arg(error_msg));
+}
+
+void CountryHistoryDialog::onVersionSelected(int index) {
+    if (index < 0 || index >= static_cast<int>(history_.size()))
+        return;
+
+    BOOST_LOG_SEV(lg(), trace) << "Version selected: " << index;
+
+    displayChangesTab(index);
+    displayFullDetailsTab(index);
+}
+
+void CountryHistoryDialog::displayChangesTab(int version_index) {
+    ui_->changesTableWidget->setRowCount(0);
+
+    if (version_index >= static_cast<int>(history_.size()))
+        return;
+
+    const auto& current = history_[version_index];
+
+    // If this is the first (oldest) version, there's nothing to diff against so
+    // leave the changes table empty
+    if (version_index == static_cast<int>(history_.size()) - 1) {
+        BOOST_LOG_SEV(lg(), trace) << "No previous version to diff against for oldest version";
+        return;
+    }
+
+    // Calculate diff with previous version
+    const auto& previous = history_[version_index + 1];
+
+    BOOST_LOG_SEV(lg(), trace) << "Calculating diff between version "
+                               << current.version << " and " << previous.version;
+    BOOST_LOG_SEV(lg(), trace) << "Current name: " << current.name
+                               << ", Previous name: " << previous.name;
+
+    auto diffs = calculateDiff(current, previous);
+
+    BOOST_LOG_SEV(lg(), trace) << "Found " << diffs.size() << " differences";
+
+    ui_->changesTableWidget->setRowCount(diffs.size());
+
+    for (int i = 0; i < diffs.size(); ++i) {
+        const auto& [field, values] = diffs[i];
+        const auto& [old_val, new_val] = values;
+
+        auto* fieldItem = new QTableWidgetItem(field);
+        auto* oldItem = new QTableWidgetItem(old_val);
+        auto* newItem = new QTableWidgetItem(new_val);
+
+        ui_->changesTableWidget->setItem(i, 0, fieldItem);
+        ui_->changesTableWidget->setItem(i, 1, oldItem);
+        ui_->changesTableWidget->setItem(i, 2, newItem);
+    }
+}
+
+void CountryHistoryDialog::displayFullDetailsTab(int version_index) {
+    if (version_index >= static_cast<int>(history_.size()))
+        return;
+
+    const auto& country = history_[version_index];
+
+    ui_->alpha2CodeValue->setText(QString::fromStdString(country.alpha2_code));
+    ui_->alpha3CodeValue->setText(QString::fromStdString(country.alpha3_code));
+    ui_->numericCodeValue->setText(QString::fromStdString(country.numeric_code));
+    ui_->nameValue->setText(QString::fromStdString(country.name));
+    ui_->officialNameValue->setText(QString::fromStdString(country.official_name));
+    ui_->versionNumberValue->setText(QString::number(country.version));
+    ui_->recordedByValue->setText(QString::fromStdString(country.recorded_by));
+    ui_->recordedAtValue->setText(relative_time_helper::format(country.recorded_at));
+}
+
+#define CHECK_DIFF_STRING(FIELD_NAME, FIELD) \
+    if (current.FIELD != previous.FIELD) { \
+        diffs.append({FIELD_NAME, { \
+            QString::fromStdString(previous.FIELD), \
+            QString::fromStdString(current.FIELD) \
+        }}); \
+    }
+
+CountryHistoryDialog::DiffResult CountryHistoryDialog::
+calculateDiff(const risk::domain::country& current,
+    const risk::domain::country& previous) {
+
+    DiffResult diffs;
+
+    // Compare string fields
+    CHECK_DIFF_STRING("Alpha-2 Code", alpha2_code);
+    CHECK_DIFF_STRING("Alpha-3 Code", alpha3_code);
+    CHECK_DIFF_STRING("Numeric Code", numeric_code);
+    CHECK_DIFF_STRING("Name", name);
+    CHECK_DIFF_STRING("Official Name", official_name);
+
+    return diffs;
+}
+
+#undef CHECK_DIFF_STRING
+
+void CountryHistoryDialog::setupToolbar() {
+    toolBar_ = new QToolBar(this);
+    toolBar_->setMovable(false);
+    toolBar_->setFloatable(false);
+
+    const QColor iconColor(220, 220, 220);
+
+    // Create Reload action
+    reloadAction_ = new QAction("Reload", this);
+    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor));
+    reloadAction_->setToolTip("Reload history from server");
+    connect(reloadAction_, &QAction::triggered, this,
+        &CountryHistoryDialog::onReloadClicked);
+    toolBar_->addAction(reloadAction_);
+
+    toolBar_->addSeparator();
+
+    // Create Open action
+    openAction_ = new QAction("Open", this);
+    openAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_edit_20_regular.svg", iconColor));
+    openAction_->setToolTip("Open this version in read-only mode");
+    connect(openAction_, &QAction::triggered, this,
+        &CountryHistoryDialog::onOpenClicked);
+    toolBar_->addAction(openAction_);
+
+    // Create Revert action
+    revertAction_ = new QAction("Revert", this);
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
+    revertAction_->setToolTip("Revert country to this version");
+    connect(revertAction_, &QAction::triggered, this,
+        &CountryHistoryDialog::onRevertClicked);
+    toolBar_->addAction(revertAction_);
+
+    // Add toolbar to layout
+    auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
+    if (mainLayout)
+        mainLayout->insertWidget(0, toolBar_);
+}
+
+void CountryHistoryDialog::updateButtonStates() {
+    const int index = selectedVersionIndex();
+    const bool hasSelection = index >= 0 &&
+        index < static_cast<int>(history_.size());
+
+    if (openAction_)
+        openAction_->setEnabled(hasSelection);
+
+    if (revertAction_)
+        revertAction_->setEnabled(hasSelection);
+}
+
+int CountryHistoryDialog::selectedVersionIndex() const {
+    return ui_->versionListWidget->currentRow();
+}
+
+void CountryHistoryDialog::onOpenClicked() {
+    const int index = selectedVersionIndex();
+    if (index < 0 || index >= static_cast<int>(history_.size()))
+        return;
+
+    const auto& country = history_[index];
+    BOOST_LOG_SEV(lg(), info) << "Opening country version "
+                              << country.version << " in read-only mode";
+
+    emit openVersionRequested(country, country.version);
+}
+
+void CountryHistoryDialog::onRevertClicked() {
+    const int index = selectedVersionIndex();
+    if (index < 0 || index >= static_cast<int>(history_.size()))
+        return;
+
+    const auto& country = history_[index];
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert to country version "
+                              << country.version;
+
+    // Confirm with user
+    auto reply = MessageBoxHelper::question(this, "Revert Country",
+        QString("Are you sure you want to revert '%1' to version %2?\n\n"
+                "This will create a new version with the data from version %2.")
+            .arg(alpha2Code_)
+            .arg(country.version),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Revert cancelled by user";
+        return;
+    }
+
+    emit revertVersionRequested(country);
+}
+
+void CountryHistoryDialog::onReloadClicked() {
+    BOOST_LOG_SEV(lg(), info) << "Reload requested for country history: "
+                              << alpha2Code_.toStdString();
+    emit statusChanged(QString("Reloading history for %1...").arg(alpha2Code_));
+    loadHistory();
+}
+
+QSize CountryHistoryDialog::sizeHint() const {
+    QSize baseSize = QWidget::sizeHint();
+
+    const int minimumWidth = 900;
+    const int minimumHeight = 600;
+
+    return { qMax(baseSize.width(), minimumWidth),
+             qMax(baseSize.height(), minimumHeight) };
+}
+
+void CountryHistoryDialog::markAsStale() {
+    BOOST_LOG_SEV(lg(), info) << "Country history marked as stale for: "
+                              << alpha2Code_.toStdString() << ", reloading...";
+
+    emit statusChanged(QString("Country %1 was modified - reloading history...")
+        .arg(alpha2Code_));
+
+    // Reload history data
+    loadHistory();
+}
+
+void CountryHistoryDialog::setImageCache(ImageCache* imageCache) {
+    imageCache_ = imageCache;
+    if (imageCache_) {
+        connect(imageCache_, &ImageCache::imagesLoaded,
+            this, &CountryHistoryDialog::updateFlagDisplay);
+    }
+}
+
+void CountryHistoryDialog::updateFlagDisplay() {
+    if (!flagIconLabel_) {
+        // Create the flag icon label and add it to the toolbar
+        if (toolBar_) {
+            flagIconLabel_ = new QLabel(this);
+            flagIconLabel_->setFixedSize(24, 24);
+            flagIconLabel_->setAlignment(Qt::AlignCenter);
+            toolBar_->insertWidget(toolBar_->actions().first(), flagIconLabel_);
+        }
+    }
+
+    if (!flagIconLabel_)
+        return;
+
+    if (!imageCache_) {
+        flagIconLabel_->clear();
+        return;
+    }
+
+    QIcon icon = imageCache_->getCountryIcon(alpha2Code_.toStdString());
+    if (icon.isNull()) {
+        flagIconLabel_->clear();
+    } else {
+        flagIconLabel_->setPixmap(icon.pixmap(24, 24));
+    }
+}
+
+}

@@ -812,8 +812,12 @@ void CurrencyDetailDialog::onGenerateClicked() {
     try {
         auto currency = risk::generators::generate_synthetic_currency();
 
-        // Fill all fields with generated data
-        ui_->isoCodeEdit->setText(QString::fromStdString(currency.iso_code));
+        // Only fill ISO code in add mode - in edit mode it's the primary key
+        if (isAddMode_) {
+            ui_->isoCodeEdit->setText(QString::fromStdString(currency.iso_code));
+        }
+
+        // Fill all other fields with generated data
         ui_->nameEdit->setText(QString::fromStdString(currency.name));
         ui_->numericCodeEdit->setText(QString::fromStdString(currency.numeric_code));
         ui_->symbolEdit->setText(QString::fromStdString(currency.symbol));

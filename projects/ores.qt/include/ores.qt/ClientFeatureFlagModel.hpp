@@ -102,6 +102,7 @@ private:
     enum Column {
         Name,
         Enabled,
+        Version,
         RecordedBy,
         RecordedAt,
         ColumnCount

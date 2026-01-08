@@ -31,8 +31,9 @@ namespace {
 // Column indices (matches ClientFeatureFlagModel::Column enum)
 constexpr int name_column_index = 0;
 constexpr int enabled_column_index = 1;
-constexpr int recorded_by_column_index = 2;
-constexpr int recorded_at_column_index = 3;
+constexpr int version_column_index = 2;
+constexpr int recorded_by_column_index = 3;
+constexpr int recorded_at_column_index = 4;
 
 // Enabled status badge colors
 const QColor enabled_badge_bg(34, 197, 94);       // Green background for enabled

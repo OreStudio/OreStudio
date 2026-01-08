@@ -80,6 +80,8 @@ QVariant ClientFeatureFlagModel::data(const QModelIndex& index, int role) const 
             return QString::fromStdString(flag.name);
         case Enabled:
             return flag.enabled ? tr("Yes") : tr("No");
+        case Version:
+            return QString::number(flag.version);
         case RecordedBy:
             return QString::fromStdString(flag.recorded_by);
         case RecordedAt:
@@ -102,6 +104,8 @@ QVariant ClientFeatureFlagModel::headerData(int section, Qt::Orientation orienta
         return tr("Name");
     case Enabled:
         return tr("Enabled");
+    case Version:
+        return tr("Version");
     case RecordedBy:
         return tr("Recorded By");
     case RecordedAt:

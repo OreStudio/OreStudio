@@ -22,6 +22,8 @@
 
 #include <chrono>
 #include <string>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
 
 namespace ores::risk::domain {
 
@@ -58,6 +60,11 @@ struct country final {
      * @brief Official name of the country (e.g., "United States of America").
      */
     std::string official_name;
+
+    /**
+     * @brief Optional reference to a flag image in the images table.
+     */
+    std::optional<boost::uuids::uuid> image_id;
 
     /**
      * @brief Username of the person who recorded this version in the system.

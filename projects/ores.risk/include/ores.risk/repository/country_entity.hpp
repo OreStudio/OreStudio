@@ -40,6 +40,7 @@ struct country_entity {
     std::string numeric_code;
     std::string name;
     std::string official_name;
+    std::optional<std::string> image_id;  // UUID stored as string, converted in mapper
     std::string modified_by;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from = "9999-12-31 23:59:59";
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to = "9999-12-31 23:59:59";

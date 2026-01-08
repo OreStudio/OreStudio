@@ -19,6 +19,8 @@
  */
 #include "ores.risk/repository/country_mapper.hpp"
 
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.risk/domain/country_json_io.hpp" // IWYU pragma: keep.
 
@@ -39,6 +41,9 @@ domain::country country_mapper::map(const country_entity& v) {
     r.numeric_code = v.numeric_code;
     r.name = v.name;
     r.official_name = v.official_name;
+    if (v.image_id) {
+        r.image_id = boost::lexical_cast<boost::uuids::uuid>(*v.image_id);
+    }
     r.recorded_by = v.modified_by;
     r.recorded_at = timestamp_to_timepoint(v.valid_from.value());
 
@@ -56,6 +61,9 @@ country_entity country_mapper::map(const domain::country& v) {
     r.numeric_code = v.numeric_code;
     r.name = v.name;
     r.official_name = v.official_name;
+    if (v.image_id) {
+        r.image_id = boost::uuids::to_string(*v.image_id);
+    }
     r.modified_by = v.recorded_by;
     // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers
 

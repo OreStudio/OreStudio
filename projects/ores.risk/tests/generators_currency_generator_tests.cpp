@@ -93,3 +93,70 @@ TEST_CASE("generate_unicode_currencies", tags) {
     CHECK(codes.count("BTC") == 1);
 }
 
+TEST_CASE("generate_fictional_currencies_returns_all_when_no_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto currencies = generate_fictional_currencies();
+    BOOST_LOG_SEV(lg, debug) << "Generated fictional currencies: " << currencies;
+
+    CHECK(currencies.size() == 50);
+}
+
+TEST_CASE("generate_fictional_currencies_returns_requested_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto currencies = generate_fictional_currencies(5);
+    BOOST_LOG_SEV(lg, debug) << "Generated 5 fictional currencies: " << currencies;
+
+    CHECK(currencies.size() == 5);
+}
+
+TEST_CASE("generate_fictional_currencies_returns_all_when_count_exceeds_available", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto currencies = generate_fictional_currencies(100);
+    BOOST_LOG_SEV(lg, debug) << "Generated fictional currencies with large count: " << currencies;
+
+    CHECK(currencies.size() == 50);
+}
+
+TEST_CASE("generate_fictional_currencies_has_unique_iso_codes", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto currencies = generate_fictional_currencies();
+
+    std::set<std::string> codes;
+    for (const auto& c : currencies)
+        codes.insert(c.iso_code);
+
+    CHECK(codes.size() == 50);
+}
+
+TEST_CASE("generate_fictional_currencies_has_expected_first_currency", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto currencies = generate_fictional_currencies(1);
+    BOOST_LOG_SEV(lg, debug) << "First fictional currency: " << currencies;
+
+    REQUIRE(currencies.size() == 1);
+    CHECK(currencies[0].iso_code == "ALD");
+    CHECK(currencies[0].name == "Aerilonian Dollar");
+    CHECK(!currencies[0].recorded_by.empty());
+    CHECK(currencies[0].recorded_at != std::chrono::system_clock::time_point{});
+}
+
+TEST_CASE("generate_fictional_currencies_contains_known_currencies", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto currencies = generate_fictional_currencies();
+
+    std::set<std::string> codes;
+    for (const auto& c : currencies)
+        codes.insert(c.iso_code);
+
+    CHECK(codes.count("ALD") == 1);  // Aerilonian Dollar
+    CHECK(codes.count("ZEZ") == 1);  // Zephyrian Zephyr
+    CHECK(codes.count("ERE") == 1);  // Eriadoran Euro
+    CHECK(codes.count("KRK") == 1);  // Krynnish Krynn
+}
+

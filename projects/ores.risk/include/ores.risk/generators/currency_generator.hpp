@@ -55,6 +55,19 @@ generate_synthetic_currencies(std::size_t n);
 std::vector<domain::currency>
 generate_unique_synthetic_currencies(std::size_t n);
 
+/**
+ * @brief Generates a set of fictional currencies.
+ *
+ * These are intentionally fake currencies with made-up codes that do not
+ * correspond to any real ISO 4217 codes. Useful for testing and demo
+ * purposes where real currency data should not be used.
+ *
+ * @param n Number of currencies to generate. If n is 0 or greater than the
+ *          available set (50), returns all available fictional currencies.
+ */
+std::vector<domain::currency>
+generate_fictional_currencies(std::size_t n = 0);
+
 }
 
 #endif

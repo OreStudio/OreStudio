@@ -30,3 +30,4 @@ CREATE OR REPLACE FUNCTION ores.infinity_timestamp()
 RETURNS timestamptz AS $$
     SELECT '9999-12-31 23:59:59'::timestamptz;
 $$ LANGUAGE sql IMMUTABLE;
+

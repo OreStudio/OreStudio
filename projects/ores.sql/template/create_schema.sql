@@ -75,6 +75,7 @@ grant create on schema ores to ores;
 \ir ../schema/images_create.sql
 \ir ../schema/tags_create.sql
 \ir ../schema/image_tags_create.sql
+\ir ../schema/images_functions_create.sql
 
 -- Geolocation tables and functions
 \ir ../schema/geolocation_create.sql

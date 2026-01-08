@@ -26,6 +26,7 @@
 --
 
 -- Create the 'flag' tag if it doesn't exist
+-- This tag is used to categorize flag images loaded by flags_populate.sql
 INSERT INTO ores.tags (tag_id, version, name, description, modified_by, valid_from, valid_to)
 SELECT
     gen_random_uuid(),
@@ -40,56 +41,8 @@ WHERE NOT EXISTS (
     WHERE name = 'flag' AND valid_to = ores.infinity_timestamp()
 );
 
--- Function to load a single flag SVG file
--- This function reads an SVG file and inserts it into the images table
--- Returns void to suppress per-call output when loading many flags
--- The function is idempotent: if the image already exists, it creates a new version
-CREATE OR REPLACE FUNCTION ores.load_flag(
-    p_key text,
-    p_description text,
-    p_svg_data text
-) RETURNS void AS $$
-DECLARE
-    v_image_id uuid;
-BEGIN
-    -- Check if image with this key already exists and get its ID
-    SELECT image_id INTO v_image_id
-    FROM ores.images
-    WHERE key = p_key AND valid_to = ores.infinity_timestamp();
-
-    -- If it's a new image, generate a new UUID
-    IF v_image_id IS NULL THEN
-        v_image_id := gen_random_uuid();
-    END IF;
-
-    -- Insert the image. The 'update_images' trigger handles versioning.
-    INSERT INTO ores.images (
-        image_id, version, key, description, svg_data,
-        modified_by, valid_from, valid_to
-    ) VALUES (
-        v_image_id, 0, p_key, p_description, p_svg_data,
-        'system', CURRENT_TIMESTAMP, ores.infinity_timestamp()
-    );
-
-    -- Link image to flag tag (skip if already linked)
-    INSERT INTO ores.image_tags (
-        image_id, tag_id, assigned_by, assigned_at, valid_from, valid_to
-    )
-    SELECT
-        v_image_id, tag_id, 'system', CURRENT_TIMESTAMP,
-        CURRENT_TIMESTAMP, ores.infinity_timestamp()
-    FROM ores.tags
-    WHERE name = 'flag' AND valid_to = ores.infinity_timestamp()
-      AND NOT EXISTS (
-          SELECT 1 FROM ores.image_tags it
-          WHERE it.image_id = v_image_id
-            AND it.tag_id = tags.tag_id
-            AND it.valid_to = ores.infinity_timestamp()
-      );
-
-    RETURN;
-END;
-$$ LANGUAGE plpgsql;
+-- Note: The load_flag() function is defined in schema/images_functions_create.sql
+-- and is available as part of the database schema.
 
 -- Note: The actual flag loading requires reading SVG files from the filesystem.
 -- This can be done using psql's \lo_import or by generating INSERT statements

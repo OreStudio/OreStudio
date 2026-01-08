@@ -192,7 +192,7 @@ TEST_CASE("test_decompress_invalid_data", tags) {
     // Try to decompress invalid data
     auto result = decompress(std::span<const std::byte>(invalid_data), compression_type::zlib);
     CHECK(!result.has_value());
-    CHECK(result.error() == ores::comms::messaging::error_code::decompression_failed);
+    CHECK(result.error() == ores::utility::serialization::error_code::decompression_failed);
 
     BOOST_LOG_SEV(lg, debug) << "Invalid data decompression correctly failed";
 }

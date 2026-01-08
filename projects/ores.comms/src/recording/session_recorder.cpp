@@ -21,9 +21,11 @@
 
 #include <cstring>
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/writer.hpp"
 
 namespace ores::comms::recording {
+
+using ores::utility::serialization::writer;
 
 using namespace ores::telemetry::log;
 
@@ -135,37 +137,37 @@ session_file_error session_recorder::write_header(
 
     // Write magic (8 bytes)
     for (const auto& byte : SESSION_FILE_MAGIC) {
-        messaging::writer::write_uint8(buffer, byte);
+        writer::write_uint8(buffer, byte);
     }
 
     // Write version and reserved
-    messaging::writer::write_uint16(buffer, SESSION_FILE_VERSION);
-    messaging::writer::write_uint16(buffer, 0); // reserved1
+    writer::write_uint16(buffer, SESSION_FILE_VERSION);
+    writer::write_uint16(buffer, 0); // reserved1
 
     // Write protocol version
-    messaging::writer::write_uint16(buffer, messaging::PROTOCOL_VERSION_MAJOR);
-    messaging::writer::write_uint16(buffer, messaging::PROTOCOL_VERSION_MINOR);
+    writer::write_uint16(buffer, messaging::PROTOCOL_VERSION_MAJOR);
+    writer::write_uint16(buffer, messaging::PROTOCOL_VERSION_MINOR);
 
     // Write session UUID (16 bytes)
-    messaging::writer::write_uuid(buffer, session_id_);
+    writer::write_uuid(buffer, session_id_);
 
     // Write start timestamp
     const auto now = std::chrono::system_clock::now();
     const auto us_since_epoch = std::chrono::duration_cast<std::chrono::microseconds>(
         now.time_since_epoch()).count();
-    messaging::writer::write_int64(buffer, us_since_epoch);
+    writer::write_int64(buffer, us_since_epoch);
 
     // Write server address length
     const auto addr_length = static_cast<std::uint16_t>(
         std::min(server_address.size(), static_cast<size_t>(255)));
-    messaging::writer::write_uint16(buffer, addr_length);
+    writer::write_uint16(buffer, addr_length);
 
     // Write compression type
-    messaging::writer::write_uint8(buffer, static_cast<std::uint8_t>(compression));
+    writer::write_uint8(buffer, static_cast<std::uint8_t>(compression));
 
     // Write reserved2 (21 bytes of zeros)
     for (int i = 0; i < 21; ++i) {
-        messaging::writer::write_uint8(buffer, 0);
+        writer::write_uint8(buffer, 0);
     }
 
     // Write header to file
@@ -208,13 +210,13 @@ void session_recorder::record_frame(const messaging::frame& f, frame_direction d
     std::vector<std::byte> header_buffer;
     header_buffer.reserve(frame_record_header::size);
 
-    messaging::writer::write_int64(header_buffer, offset);
-    messaging::writer::write_uint32(header_buffer, static_cast<std::uint32_t>(frame_data.size()));
-    messaging::writer::write_uint8(header_buffer, static_cast<std::uint8_t>(direction));
+    writer::write_int64(header_buffer, offset);
+    writer::write_uint32(header_buffer, static_cast<std::uint32_t>(frame_data.size()));
+    writer::write_uint8(header_buffer, static_cast<std::uint8_t>(direction));
 
     // Write reserved (3 bytes of zeros)
     for (int i = 0; i < 3; ++i) {
-        messaging::writer::write_uint8(header_buffer, 0);
+        writer::write_uint8(header_buffer, 0);
     }
 
     // Write record header

@@ -19,6 +19,8 @@
  */
 #include "ores.risk/repository/currency_mapper.hpp"
 
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.risk/domain/currency_json_io.hpp" // IWYU pragma: keep.
 
@@ -44,6 +46,9 @@ domain::currency currency_mapper::map(const currency_entity& v) {
     r.rounding_precision = v.rounding_precision;
     r.format = v.format;
     r.currency_type = v.currency_type;
+    if (v.image_id) {
+        r.image_id = boost::lexical_cast<boost::uuids::uuid>(*v.image_id);
+    }
     r.recorded_by = v.modified_by;
     r.recorded_at = timestamp_to_timepoint(v.valid_from.value());
 
@@ -65,6 +70,9 @@ currency_entity currency_mapper::map(const domain::currency& v) {
     r.rounding_precision = v.rounding_precision;
     r.format = v.format;
     r.currency_type = v.currency_type;
+    if (v.image_id) {
+        r.image_id = boost::uuids::to_string(*v.image_id);
+    }
     r.modified_by = v.recorded_by;
     // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers
 

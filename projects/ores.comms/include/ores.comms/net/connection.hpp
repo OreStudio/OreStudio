@@ -80,7 +80,7 @@ public:
      * version mismatch response instead of rejecting the frame immediately.
      * @param cancel_slot Optional cancellation slot for graceful shutdown
      */
-    boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>>
+    boost::asio::awaitable<std::expected<messaging::frame, ores::utility::serialization::error_code>>
     read_frame(bool skip_version_check = false,
         boost::asio::cancellation_slot cancel_slot = {});
 

@@ -35,13 +35,9 @@ namespace ores #F2F2F2 {
                 class tag
             }
 
-            together {
-                class image_tag
-                class currency_image
-            }
+            class image_tag
 
             image -[hidden]right- tag
-            image_tag -[hidden]right- currency_image
             image -[hidden]down- image_tag
 
             '
@@ -112,27 +108,8 @@ namespace ores #F2F2F2 {
             - assigned_at: Timestamp when tag was assigned.
             end note
 
-            class currency_image #F7E5FF {
-                +{field} iso_code : std::string
-                +{field} image_id : std::string
-                +{field} assigned_by : std::string
-                +{field} assigned_at : std::string
-            }
-
-            note top of currency_image
-            Links a currency to its primary image.
-
-            Fields:
-
-            - iso_code: Currency ISO code (e.g., 'USD', 'EUR').
-            - image_id: The image identifier (UUID).
-            - assigned_by: Username who assigned this image.
-            - assigned_at: Timestamp when image was assigned.
-            end note
-
             image "1" -- "*" image_tag
             tag "1" -- "*" image_tag
-            image "1" -- "*" currency_image
         }
 
         namespace repository #F2F2F2 {
@@ -158,20 +135,12 @@ namespace ores #F2F2F2 {
                 class image_tag_repository
             }
 
-            together {
-                class currency_image_entity
-                class currency_image_mapper
-                class currency_image_repository
-            }
-
             image_entity -[hidden]down- image_mapper
             image_mapper -[hidden]down- image_repository
             tag_entity -[hidden]down- tag_mapper
             tag_mapper -[hidden]down- tag_repository
             image_tag_entity -[hidden]down- image_tag_mapper
             image_tag_mapper -[hidden]down- image_tag_repository
-            currency_image_entity -[hidden]down- currency_image_mapper
-            currency_image_mapper -[hidden]down- currency_image_repository
 
             '
             ' Class definitions
@@ -268,35 +237,6 @@ namespace ores #F2F2F2 {
 
             image_tag_mapper ..> ores::assets::domain::image_tag : uses
             image_tag_repository ..> ores::assets::domain::image_tag : uses
-
-            class currency_image_entity <<orm>> #99CB99 {
-                +{field} iso_code : sqlgen::PrimaryKey<std::string>
-                +{field} image_id : std::string
-                +{field} assigned_by : std::string
-                +{field} assigned_at : sqlgen::Timestamp
-                +{field} valid_from : sqlgen::Timestamp
-                +{field} valid_to : sqlgen::Timestamp
-            }
-
-            class currency_image_mapper <<orm>> #99CB99 {
-                +{static} map(const currency_image_entity& v) : domain::currency_image
-                +{static} map(const domain::currency_image& v) : currency_image_entity
-                +{static} map(const std::vector<currency_image_entity>& v) : std::vector<domain::currency_image>
-                +{static} map(const std::vector<domain::currency_image>& v) : std::vector<currency_image_entity>
-            }
-
-            class currency_image_repository <<orm>> #99CB99 {
-                +sql() : std::string
-                +write(context ctx, const domain::currency_image& currency_image) : void
-                +write(context ctx, const std::vector<domain::currency_image>& currency_images) : void
-                +read_latest(context ctx) : std::vector<domain::currency_image>
-                +read_latest_by_currency(context ctx, const std::string& iso_code) : std::vector<domain::currency_image>
-                +read_latest_by_image(context ctx, const std::string& image_id) : std::vector<domain::currency_image>
-                +remove(context ctx, const std::string& iso_code) : void
-            }
-
-            currency_image_mapper ..> ores::assets::domain::currency_image : uses
-            currency_image_repository ..> ores::assets::domain::currency_image : uses
         }
 
         namespace generators #F2F2F2 {
@@ -318,17 +258,9 @@ namespace ores #F2F2F2 {
                 +{static} generate_synthetic_image_tags(std::size_t n) : std::vector<domain::image_tag>
             }
 
-            class "<functions>" as currency_image_generator #FFFACD {
-                +{static} generate_synthetic_currency_image() : domain::currency_image
-                +{static} generate_synthetic_currency_image(iso_code, image_id) : domain::currency_image
-                +{static} generate_synthetic_currency_images(std::size_t n) : std::vector<domain::currency_image>
-                +{static} generate_unique_synthetic_currency_images(std::size_t n) : std::vector<domain::currency_image>
-            }
-
             image_generator ..> ores::assets::domain::image : generates
             tag_generator ..> ores::assets::domain::tag : generates
             image_tag_generator ..> ores::assets::domain::image_tag : generates
-            currency_image_generator ..> ores::assets::domain::currency_image : generates
         }
 
         namespace tests #F2F2F2 {
@@ -361,19 +293,9 @@ namespace ores #F2F2F2 {
                 +read_nonexistent_image_tag() void
             }
 
-            class repository_currency_image_repository_tests <<test suite>> #C5E1A5 {
-                +write_single_currency_image() void
-                +write_multiple_currency_images() void
-                +read_latest_currency_images() void
-                +read_latest_currency_images_by_currency() void
-                +read_latest_currency_images_by_image() void
-                +read_nonexistent_currency_image() void
-            }
-
             repository_image_repository_tests ..> ores::assets::repository::image_repository : tests
             repository_tag_repository_tests ..> ores::assets::repository::tag_repository : tests
             repository_image_tag_repository_tests ..> ores::assets::repository::image_tag_repository : tests
-            repository_currency_image_repository_tests ..> ores::assets::repository::currency_image_repository : tests
         }
     }
 }

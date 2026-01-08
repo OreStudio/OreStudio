@@ -38,6 +38,7 @@ auto& lg() {
 namespace ores::comms::messaging {
 
 using namespace ores::telemetry::log;
+using ores::utility::serialization::error_code;
 
 std::vector<std::byte>
 handshake_request::serialize(handshake_request v) {
@@ -48,7 +49,7 @@ handshake_request::serialize(handshake_request v) {
     };
 }
 
-std::expected<handshake_request, error_code>
+std::expected<handshake_request, ores::utility::serialization::error_code>
 handshake_request::deserialize(std::span<const std::byte> data) {
     auto result = rfl::bson::read<handshake_request>(reinterpret_cast<const char*>(data.data()), data.size());
 
@@ -68,7 +69,7 @@ handshake_response::serialize(handshake_response v) {
     };
 }
 
-std::expected<handshake_response, error_code> handshake_response::
+std::expected<handshake_response, ores::utility::serialization::error_code> handshake_response::
 deserialize(std::span<const std::byte> data) {
     auto result = rfl::bson::read<handshake_response>(reinterpret_cast<const char*>(data.data()), data.size());
 
@@ -88,7 +89,7 @@ handshake_ack::serialize(handshake_ack v) {
     };
 }
 
-std::expected<handshake_ack, error_code> handshake_ack::
+std::expected<handshake_ack, ores::utility::serialization::error_code> handshake_ack::
 deserialize(std::span<const std::byte> data) {
     auto result = rfl::bson::read<handshake_ack>(reinterpret_cast<const char*>(data.data()), data.size());
 
@@ -108,7 +109,7 @@ error_response::serialize(error_response v) {
     };
 }
 
-std::expected<error_response, error_code> error_response::
+std::expected<error_response, ores::utility::serialization::error_code> error_response::
 deserialize(std::span<const std::byte> data) {
     auto result = rfl::bson::read<error_response>(reinterpret_cast<const char*>(data.data()), data.size());
 

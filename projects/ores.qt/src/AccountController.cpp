@@ -286,6 +286,9 @@ void AccountController::onShowAccountHistory(const QString& username) {
     });
 
     mdiArea_->addSubWindow(historyWindow);
+    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
+    historyWindow->setWindowFlags(historyWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
     historyWindow->adjustSize();
     historyWindow->show();
 
@@ -333,6 +336,9 @@ void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId
     });
 
     mdiArea_->addSubWindow(sessionWindow);
+    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
+    sessionWindow->setWindowFlags(sessionWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
     sessionWindow->adjustSize();
     sessionWindow->show();
 

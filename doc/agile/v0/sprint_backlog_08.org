@@ -17,41 +17,46 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-07 Wed 10:13], for Wednesday, January 07, 2026.
-|      | <75>                  |        |      |      |       |
-| Tags | Headline              | Time   |      |      |     % |
-|------+-----------------------+--------+------+------+-------|
-|      | *Total time*          | *1:02* |      |      | 100.0 |
-|------+-----------------------+--------+------+------+-------|
-|      | Stories               | 1:02   |      |      | 100.0 |
-|      | Active                |        | 1:02 |      | 100.0 |
-| code | Review telemetry work |        |      | 1:02 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-08 Thu 10:32], for Thursday, January 08, 2026.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *2:40* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 2:40   |      |      | 100.0 |
+|       | Active                                |        | 2:40 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:33 |  20.6 |
+| code  | Assorted fixes to currencies dialog   |        |      | 2:07 |  79.4 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-07 Wed 10:13]
-|       | <75>                                        |         |       |      |       |
-| Tags  | Headline                                    | Time    |       |      |     % |
-|-------+---------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                | *33:25* |       |      | 100.0 |
-|-------+---------------------------------------------+---------+-------+------+-------|
-|       | Stories                                     | 33:25   |       |      | 100.0 |
-|       | Active                                      |         | 33:25 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       | 1:17 |   3.8 |
-| code  | Rerun SQL scripts from scratch              |         |       | 7:52 |  23.5 |
-| code  | Run qt client and validate all new features |         |       | 1:19 |   3.9 |
-| code  | Refactor options and parser                 |         |       | 0:27 |   1.3 |
-| code  | Check functionality in =ores.wt=            |         |       | 2:03 |   6.1 |
-| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       | 1:30 |   4.5 |
-| code  | Review HTTP service                         |         |       | 7:24 |  22.1 |
-| code  | Assorted fixes to currency dialog           |         |       | 4:19 |  12.9 |
-| code  | Review comms analyser work                  |         |       | 0:27 |   1.3 |
-| code  | Review telemetry work                       |         |       | 6:47 |  20.3 |
+#+CAPTION: Clock summary at [2026-01-08 Thu 10:32]
+|       | <75>                                        |         |       |       |       |
+| Tags  | Headline                                    | Time    |       |       |     % |
+|-------+---------------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                                | *45:21* |       |       | 100.0 |
+|-------+---------------------------------------------+---------+-------+-------+-------|
+|       | Stories                                     | 45:21   |       |       | 100.0 |
+|       | Active                                      |         | 45:21 |       | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       |  1:50 |   4.0 |
+| code  | Rerun SQL scripts from scratch              |         |       |  7:52 |  17.3 |
+| code  | Run qt client and validate all new features |         |       |  1:19 |   2.9 |
+| code  | Refactor options and parser                 |         |       |  0:27 |   1.0 |
+| code  | Check functionality in =ores.wt=            |         |       |  2:03 |   4.5 |
+| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       |  1:30 |   3.3 |
+| code  | Review HTTP service                         |         |       |  7:24 |  16.3 |
+| code  | Assorted fixes to currency dialog           |         |       |  4:19 |   9.5 |
+| code  | Add support for offsets in pagination       |         |       |  1:46 |   3.9 |
+| code  | Assorted fixes to currencies dialog         |         |       |  4:36 |  10.1 |
+| code  | Add country support                         |         |       |  1:37 |   3.6 |
+| code  | Review comms analyser work                  |         |       |  0:27 |   1.0 |
+| code  | Review telemetry work                       |         |       | 10:11 |  22.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2026-01-08 Thu 09:59]--[2026-01-08 Thu 10:32] =>  0:33
     CLOCK: [2026-01-02 Fri 01:20]--[2026-01-02 Fri 01:32] =>  0:12
     CLOCK: [2025-12-31 Wed 10:21]--[2025-12-31 Wed 11:26] =>  1:05
     :END:
@@ -64,14 +69,14 @@ Updates to sprint and product backlog.
 #+end_src
 
 #+name: pie-stories-chart
-#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_08_stories_pie_sorted.png :width 1920 :height 1080
+#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_08_stories_pie_sorted.png :width 1920 :height 1080
 library(conflicted)
 library(ggplot2)
 library(tidyverse)
 library(tibble)
 
 # Filter to only rows with actual story data (non-empty Tags column)
-clean_sprint_summary <- sprint_summary %>% dplyr::filter(Tags != "")
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(!is.na(Tags) & nzchar(Tags))
 stories <- unlist(clean_sprint_summary[2])
 percent_values <- as.numeric(unlist(clean_sprint_summary[6]))
 
@@ -105,7 +110,6 @@ if (length(custom_palette) < length(df$stories)) {
   custom_palette <- rep(custom_palette, length.out = length(df$stories))
 }
 
-
 p <- ggplot(df, aes(x = "", y = percent, fill = stories)) +
   geom_bar(width = 1, stat = "identity") +
   coord_polar("y", start = 0) +
@@ -130,7 +134,7 @@ print(p)
 [[file:sprint_backlog_08_stories_pie_sorted.png]]
 
 #+name: stories-chart
-#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_08_stories.png :width 1200 :height 650
+#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_08_stories.png :width 1200 :height 650
 library(conflicted)
 library(grid)
 library(tidyverse)
@@ -165,7 +169,7 @@ print(p)
 [[file:sprint_backlog_08_stories.png]]
 
 #+name: tags-chart
-#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_08_tags.png :width 600 :height 400
+#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_08_tags.png :width 600 :height 400
 library(conflicted)
 library(grid)
 library(tidyverse)
@@ -434,8 +438,125 @@ At present the following is not working or is a snag:
 - wrong icon in revert for currency history. no option to reload history
 - when creating a new currency we cannot attach a flag to it.
 
+*** COMPLETED Troubleshoot skills in claude                           :infra:
+
+*Rationale*: this seems to work now, with the rename to SKILLS.md.
+
+We don't seem to be able to use skills reliably.
+
+Links:
+
+- [[https://code.claude.com/docs/en/skills][Claude: Agent Skills]]
+- [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
+- [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
+
+*** COMPLETED Add support for simple log shipping                      :code:
+
+*Rationale*: implemented with telemetry work.
+
+It would be very useful to be able to browse both client and server logs from
+the client (either command line or qt). This will be even more useful with AI
+agents. Add a simple component that periodically loads up the logs to the
+database.
+
+Possible names: log shipping, log forwarding, etc.
+
+*** COMPLETED Merge toolbars when you maximise currencies              :code:
+
+*Rationale*: you can't maximise currencies any longer.
+
+At present we end up with two tool bars, one below the other.
+
+*** COMPLETED Add support for JWT                                      :code:
+
+*Rationale*: implemented.
+
+When we add support for HTTP/REST, we need to ensure it uses JWT.
+
+Links:
+
+- [[https://iniakunhuda.medium.com/building-secure-jwt-authentication-in-go-with-postgresql-94b6724f9b75][Building Secure JWT Authentication in Go with PostgreSQL]]
+- [[https://github.com/Thalhammer/jwt-cpp][GH jwt-cpp]]
+
+*** COMPLETED Add support for offsets in pagination                    :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-07 Wed 15:30]--[2026-01-07 Wed 16:28] =>  0:58
+    CLOCK: [2026-01-07 Wed 14:41]--[2026-01-07 Wed 15:29] =>  0:48
+    :END:
+
+#+begin_quote
+This pull request focuses on a significant upgrade to the sqlgen library, moving
+to version 0.6.0. This update allows for the removal of several previous
+workarounds, including custom vcpkg overlay ports and a single_connection hack
+for aggregation queries. The primary impact is the adoption of sqlgen's native
+offset() and limit() operators, which streamlines pagination logic across
+various repositories, improving the robustness and maintainability of database
+interactions throughout the codebase.
+
+Highlights:
+
+- SQLGen Update: The sqlgen library has been updated to version 0.6.0 by
+  updating the vcpkg submodule to the latest release.
+- Overlay Port Removal: Custom vcpkg overlay ports for sqlgen have been removed
+  as the necessary fixes and features are now merged upstream into the main
+  sqlgen repository.
+- Native Pagination Support: Manual offset and limit workarounds in database
+  queries have been replaced with sqlgen's new native offset() and limit()
+  operators, simplifying pagination logic.
+- Single Connection Removal: The single_connection hack, previously used for
+  aggregation queries due to a sqlgen limitation (issue Fix cli tests #99), has
+  been removed as sqlgen 0.6.0 resolves this issue. Consequently, the
+  single_connection member has been removed from the database context entirely.
+- Expanded Pagination: Pagination support (offset/limit + total count) has been
+  added to feature_flags_repository, role_repository, permission_repository,
+  image_repository, tag_repository, and login_info_repository.
+#+end_quote
+
+Now available in vcpkg with all required features.
+
+At present we disabled pagination in UI because sqlgen does not support offset.
+We implemented this feature in sqlgen. When it is released to vcpkg we should
+update our code to use it.
+
+Remember also this:
+
+#+begin_src c++
+    // HACK: Using single connection instead of session because sqlgen sessions
+    // doesn't seem to support SELECT FROM with aggregations. Plain connections
+    // work fine. This is a temporary workaround until the sqlgen library is
+    // fixed. See: https://github.com/getml/sqlgen/issues/99
+    struct count_result {
+        long long count;
+    };
+#+end_src
+
+Links:
+
+- [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]
+- https://vcpkg.io/en/packages?query=sqlgen
+
+*** STARTED Assorted fixes to currencies dialog                        :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-08 Thu 08:40]--[2026-01-08 Thu 09:58] =>  1:18
+    CLOCK: [2026-01-07 Wed 23:21]--[2026-01-08 Thu 00:49] =>  1:28
+    CLOCK: [2026-01-07 Wed 23:07]--[2026-01-07 Wed 23:20] =>  0:13
+    CLOCK: [2026-01-07 Wed 16:29]--[2026-01-07 Wed 18:06] =>  1:37
+    :END:
+
+- remove maximise button. Done.
+- updating flag does not seem to update after reload.
+- can't see flag changes in history.
+- cannot revert to version in history. Get an error saying incorrect version.
+- on import, are we importing one currency at a time? should import the entire file.
+
 *** STARTED Assorted fixes to accounts dialog                          :code:
 
+- on my account, email saved successfully is not very visible. Instead, make
+  save button enabled after changes, once saved disable it. My account should be
+  a regular dialog, allowing you to keep it open and interact with rest of the app.
+- session history should not be maximisable.
+- sessions still have 0 bytes sent and received.
+- add any details such as instance id to session.
 - last login field does not fit the screen.
 - cannot reload account in account details. Need reload button.
 - remove "grant administrative privileges" from details screen.
@@ -451,6 +572,42 @@ At present the following is not working or is a snag:
 - email updated message is truncated.
 - user cannot lock it's own account.
 
+*** STARTED Add country support                                        :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-07 Wed 22:02]--[2026-01-07 Wed 23:06] =>  1:04
+    CLOCK: [2026-01-07 Wed 19:01]--[2026-01-07 Wed 19:34] =>  0:33
+    :END:
+
+#+begin_quote
+This pull request significantly expands the application's data management
+capabilities by adding full support for ISO 3166-1 countries. It establishes new
+data structures, persistence mechanisms, and a service layer for country-related
+operations, alongside user interface components for interactive management. The
+changes ensure that country data is stored bitemporally, allowing for historical
+tracking and auditing, and provides a framework for associating countries with
+visual assets like flags.
+
+Highlights:
+
+- ISO 3166-1 Country Support: Introduced a comprehensive system for managing ISO
+  3166-1 countries, including domain models, bitemporal repository, and a
+  dedicated service layer within the ores.risk module.
+- Database Schema and Population: Added new SQL scripts to create a bitemporal
+  countries table and populate it with data for all 249 ISO 3166-1 countries.
+  Also included drop scripts for cleanup.
+- Country Image Linkage: Implemented a new country_images table and associated
+  domain, repository, and mapper components in ores.assets to link countries
+  with their flag images.
+- Web UI Components: Developed new Wt UI components, country_list_widget and
+  country_dialog, enabling full CRUD (Create, Read, Update, Delete) operations
+  for country data through the web interface.
+- Service Integration: Integrated the new country_service into the
+  application_context to make country management functionalities available
+  across the application.
+#+end_quote
+
+Add standard ISO country codes.
+
 *** STARTED Review comms analyser work                                 :code:
     :LOGBOOK:
     CLOCK: [2026-01-06 Tue 11:48]--[2026-01-06 Tue 12:15] =>  0:27
@@ -460,7 +617,7 @@ Need to check this works and add UI for it.
 
 *** STARTED Review telemetry work                                      :code:
     :LOGBOOK:
-    CLOCK: [2026-01-07 Wed 12:19]
+    CLOCK: [2026-01-07 Wed 12:19]--[2026-01-07 Wed 13:40] =>  1:21
     CLOCK: [2026-01-07 Wed 10:45]--[2026-01-07 Wed 12:18] =>  1:33
     CLOCK: [2026-01-07 Wed 10:14]--[2026-01-07 Wed 10:44] =>  0:30
     CLOCK: [2026-01-07 Wed 09:11]--[2026-01-07 Wed 10:13] =>  1:02
@@ -485,7 +642,7 @@ Ores.QT:
 - make accounts dialog bigger. do not allow resizing.
 - update flag does not update cache in currency dialog.
 
-*** Event viewer review
+*** STARTED Event viewer review                                        :code:
 
 - cannot see account created events but can see currencies created.
 - when a user logs in or out it does not generate an event, should it?
@@ -502,30 +659,168 @@ Ores.QT:
   probably makes sense?)
 - cannot distinguish accounts created by user or by sign-up.
 
-*** Add support for offsets in pagination                              :code:
+*** Currencies should have tags                                        :code:
 
-Now available in vcpkg with all required features.
+Examples:
 
-At present we disabled pagination in UI because sqlgen does not support offset.
-We implemented this feature in sqlgen. When it is released to vcpkg we should
-update our code to use it.
+- metals, emerging markets
+- continent as a tag
+- crypto
 
-Remember also this:
+*** Retrieve NAT'ed IP address from local IP                           :code:
 
-#+begin_src c++
-    // HACK: Using single connection instead of session because sqlgen sessions
-    // doesn't seem to support SELECT FROM with aggregations. Plain connections
-    // work fine. This is a temporary workaround until the sqlgen library is
-    // fixed. See: https://github.com/getml/sqlgen/issues/99
-    struct count_result {
-        long long count;
-    };
+It would be nice to be able to resolve to the NAT'ed IP address. Gemini:
+
+#+begin_src cpp
+#include <iostream>
+#include <string>
+#include <boost/asio.hpp>
+
+using boost::asio::ip::tcp;
+
+std::string get_public_ip() { try { boost::asio::io_context io_context;
+
+    // 1. Resolve the address for api.ipify.org
+    tcp::resolver resolver(io_context);
+    tcp::resolver::results_type endpoints = resolver.resolve("api.ipify.org", "http");
+
+    // 2. Connect to the server
+    tcp::socket socket(io_context);
+    boost::asio::connect(socket, endpoints);
+
+    // 3. Formulate the HTTP GET request
+    std::string request =
+        "GET / HTTP/1.1\r\n"
+        "Host: api.ipify.org\r\n"
+        "Connection: close\r\n\r\n";
+
+    // 4. Send the request
+    boost::asio::write(socket, boost::asio::buffer(request));
+
+    // 5. Read the response
+    boost::asio::streambuf response;
+    boost::asio::read_until(socket, response, "\r\n");
+
+    // Check the status line (optional but recommended)
+    std::istream response_stream(&response);
+    std::string http_version;
+    unsigned int status_code;
+    response_stream >> http_version >> status_code;
+
+    if (status_code != 200) {
+        return "Error: HTTP Status " + std::to_string(status_code);
+    }
+
+    // Skip the HTTP headers
+    boost::asio::read_until(socket, response, "\r\n\r\n");
+
+    // The remaining data in the buffer (and what's left to read) is the IP
+    std::string public_ip;
+    while (boost::asio::read(socket, response, boost::asio::transfer_at_least(1), boost::system::error_code())) {
+        // Keep reading until EOF
+    }
+
+    // Convert the body content to a string
+    std::stringstream ss;
+    ss << &response;
+    public_ip = ss.str();
+
+    // api.ipify.org returns only the IP as plain text in the body
+    return public_ip;
+
+} catch (std::exception& e) {
+    return std::string("Exception: ") + e.what();
+}
+}
+
+int main() {
+        stdout::cout << "Fetching public IP..." << std::endl;
+        std::string ip = get_public_ip();
+        std::cout << "Your Public IP is: " << ip << std::endl;
+        return 0;
+}
 #+end_src
+
+
+*** Users should be able to add picture to profile                     :code:
+
+It would be useful to have avatars. We can then display those in other places.
+
+*** Add support for protocol debugging in Qt                           :code:
+
+We should add a view of all messages sent and received like the comms champ
+tools. It should be possible to record a session to file (maybe all the
+requests?) and then replay that session. You should be able to do it from the
+UI.
 
 Links:
 
-- [[https://github.com/getml/sqlgen/issues/100][GH #100: Feature request: offset support]]
-- https://vcpkg.io/en/packages?query=sqlgen
+- [[https://github.com/commschamp/cc_tools_qt][GH: cc_tools_qt]]: "This project contains tool application(s), which can be used
+  to develop, monitor and debug custom binary communication protocols, that were
+  developed using the COMMS Library. All the applications are plug-in based,
+  i.e. plug-ins are used to define I/O socket, data filters, and the custom
+  protocol itself. The tools use Qt framework for GUI interfaces as well as
+  loading and managing plug-ins."
+- [[https://github.com/commschamp/cc_tools_qt/wiki/How-to-Use-CommsChampion-Tools][How to Use CommsChampion Tools]]: screenshots of the UI to explore the protocol.
+
+*** History should have a revert button                                :code:
+
+It should be possible to choose a given version and ask the system to revert the
+currency to that version. It just makes an update with a new version to look
+like that version. It should also be possible to open at version. It shows the
+edit dialog in "read only mode" with the entity at that version. The tool bar
+should indicate this. It should also have a revert in that dialog.
+
+*** Assorted UI polish work                                            :code:
+
+Break these down into their own stories:
+
+- icons for CRUD are not enabling when on detached mode.
+- no status bar in dettached mode.
+- should we just have toolbars at the detached window level?
+- application should exit when main window is closed.
+- is it possible to dock windows like visual studio?
+- add a detach current window that just detaches that window.
+- disabled menu options are not properly greyed out. Done.
+
+*** Instrument components with telemetry context                       :code:
+
+Now that logging has been integrated with telemetry, the next step is to
+instrument key components with the =TLOG_SEV= macro to enable trace correlation.
+
+Tasks:
+
+- Instrument =server_session= with root span on connection, child spans per
+  request.
+- Instrument =client_session= with spans for outgoing requests.
+- Pass =telemetry_context= through message handlers in ores.iam, ores.risk, etc.
+- Add spans for database operations in ores.database.
+
+*** Add widget to manage assets                                        :code:
+
+We can't upload flags etc.
+
+*** Add UI for log viewing                                             :code:
+
+We should be able to see the log from qt.
+
+Notes:
+
+- it should be possible to change the log level from the UI for both the Qt app
+  and the service.
+
+Links:
+
+- [[https://github.com/Dingola/Qt-LogViewer/tree/main][GH: Qt-LogViewer]]
+
+
+
+*** Update currency details to use tabs                                :code:
+
+We need a main tab with the currency related properties, then a "system" tab
+with temporal data which is read-only even on edit and a "image" tab with the
+image used to represent the currency. It could also contain some description or
+notes.
 
 
 *** Locking an account should log user out                             :code:

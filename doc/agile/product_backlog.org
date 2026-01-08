@@ -120,7 +120,7 @@ Notes:
 
 *** New feature flags                                                  :code:
 
-- allow sign-ups. If true, users can create their own accounts.
+- allow sign-ups. If true, users can create their own accounts. Done.
 - auto-authorise sign-ups. If true, the account is automatically created. If
   false, admin user has to authorise it.
 
@@ -170,15 +170,6 @@ any field. The user needs to know when the list has been filtered. Ideally we
 should have buttons at the top per field and filter using those. It should go
 back to database rather than just filter what is available in UI.
 
-Links:
-
-- [[https://github.com/timescale/pg_textsearch][GH pg_textsearch]]: Modern ranked text search for Postgres.
-  - Simple syntax: ORDER BY content <@> 'search terms'
-  - BM25 ranking with configurable parameters (k1, b)
-  - Works with Postgres text search configurations (english, french, german, etc.)
-  - Supports partitioned tables
-  - Goal: state-of-the-art performance and scalability
-
 *** Add support for FIX                                                :code:
 
 Links:
@@ -206,7 +197,12 @@ then let users search across any type of entity.
 Links:
 
 - [[https://github.com/typesense/typesense][GH typesense]]
-
+- [[https://github.com/timescale/pg_textsearch][GH pg_textsearch]]: Modern ranked text search for Postgres.
+  - Simple syntax: ORDER BY content <@> 'search terms'
+  - BM25 ranking with configurable parameters (k1, b)
+  - Works with Postgres text search configurations (english, french, german, etc.)
+  - Supports partitioned tables
+  - Goal: state-of-the-art performance and scalability
 
 *** Add a generic tagging system                                       :code:
 
@@ -313,16 +309,6 @@ Links:
 
 - [[https://github.com/libharu/libharu][GH libharu]]: "Haru is a free, cross platform, open-sourced software library for
   generating PDF. It supports the following features."
-
-*** Troubleshoot skills in claude                                     :infra:
-
-We don't seem to be able to use skills reliably.
-
-Links:
-
-- [[https://code.claude.com/docs/en/skills][Claude: Agent Skills]]
-- [[https://www.reddit.com/r/ClaudeCode/comments/1oywsa1/claude_code_skills_activate_20_of_the_time_heres/][reddit: Claude Code skills activate 20% of the time. Here's how I got to 84%.]]
-- [[https://scottspence.com/posts/how-to-make-claude-code-skills-activate-reliably][How to Make Claude Code Skills Activate Reliably]]
 
 *** Automated SQL generation                                           :code:
 
@@ -586,13 +572,6 @@ Failed to connect to server: Failed to connect to server
 #+end_quote
 
 If we try again after the error, "authenticating..." shows up in red.
-
-*** Update currency details to use tabs                                :code:
-
-We need a main tab with the currency related properties, then a "system" tab
-with temporal data which is read-only even on edit and a "image" tab with the
-image used to represent the currency. It could also contain some description or
-notes.
 
 *** Consider adding log command line options to qt                     :code:
 
@@ -893,28 +872,6 @@ these crashes before we go any further.
 
 
 
-*** Add UI for log viewing                                             :code:
-
-We should be able to see the log from qt.
-
-Notes:
-
-- it should be possible to change the log level from the UI for both the Qt app
-  and the service.
-
-Links:
-
-- [[https://github.com/Dingola/Qt-LogViewer/tree/main][GH: Qt-LogViewer]]
-
-*** Add support for simple log shipping                                :code:
-
-It would be very useful to be able to browse both client and server logs from
-the client (either command line or qt). This will be even more useful with AI
-agents. Add a simple component that periodically loads up the logs to the
-database.
-
-Possible names: log shipping, log forwarding, etc.
-
 *** Add skill to improve UI design                                     :code:
 
 Make the UI more professional.
@@ -950,10 +907,6 @@ std::vector<domain::account_summary>.
 Change list_accounts_response::accounts to use a non-sensitive type like
 std::vector<domain::account_summary>.
 #+end_quote
-*** Merge toolbars when you maximise currencies                        :code:
-
-At present we end up with two tool bars, one below the other.
-
 *** Local versus remote connectivity                                   :code:
 
 In some cases it makes sense to use the UI directly against the database - for
@@ -962,26 +915,6 @@ complexity of having to have a server is not helpful. In addition, they may not
 even require a full blown postgres - sqlite is enough. It should be possible to
 setup a connection to a database in this manner. Ideally the client should
 support both at the same time.
-
-*** History should have a revert button                                :code:
-
-It should be possible to choose a given version and ask the system to revert the
-currency to that version. It just makes an update with a new version to look
-like that version. It should also be possible to open at version. It shows the
-edit dialog in "read only mode" with the entity at that version. The tool bar
-should indicate this. It should also have a revert in that dialog.
-
-*** Assorted UI polish work                                            :code:
-
-Break these down into their own stories:
-
-- icons for CRUD are not enabling when on detached mode.
-- no status bar in dettached mode.
-- should we just have toolbars at the detached window level?
-- application should exit when main window is closed.
-- is it possible to dock windows like visual studio?
-- add a detach current window that just detaches that window.
-- disabled menu options are not properly greyed out. Done.
 
 *** Allow in place editing of currencies                               :code:
 
@@ -1231,15 +1164,6 @@ Links:
 
 - [[https://justatheory.com/2012/04/postgres-use-timestamptz/][Always Use TIMESTAMP WITH TIME ZONE]]
 
-*** Add support for JWT                                                :code:
-
-When we add support for HTTP/REST, we need to ensure it uses JWT.
-
-Links:
-
-- [[https://iniakunhuda.medium.com/building-secure-jwt-authentication-in-go-with-postgresql-94b6724f9b75][Building Secure JWT Authentication in Go with PostgreSQL]]
-- [[https://github.com/Thalhammer/jwt-cpp][GH jwt-cpp]]
-
 *** Read up on ECS                                                 :analysis:
 
 Links:
@@ -1254,19 +1178,6 @@ Links:
 
 - [[https://github.com/destrex271/postgresexporter][GH postgresexporter]]: "Unofficial Postgres Exporter for OTEL"
 - [[https://opentelemetry-cpp.readthedocs.io/en/latest/otel_docs/classopentelemetry_1_1sdk_1_1trace_1_1SpanExporter.html][SpanExporter]]: create your own exporter.
-
-*** Instrument components with telemetry context                        :code:
-
-Now that logging has been integrated with telemetry, the next step is to
-instrument key components with the =TLOG_SEV= macro to enable trace correlation.
-
-Tasks:
-
-- Instrument =server_session= with root span on connection, child spans per
-  request.
-- Instrument =client_session= with spans for outgoing requests.
-- Pass =telemetry_context= through message handlers in ores.iam, ores.risk, etc.
-- Add spans for database operations in ores.database.
 
 *** Add trace context propagation to messaging protocol                 :code:
 
@@ -1453,23 +1364,6 @@ Links:
 
 - [[https://github.com/GoldenCheetah/GoldenCheetah][GH GoldenCheetah]]: "GoldenCheetah is a desktop application for cyclists and
   triathletes and coaches."
-
-*** Add support for protocol debugging in Qt                           :code:
-
-We should add a view of all messages sent and received like the comms champ
-tools. It should be possible to record a session to file (maybe all the
-requests?) and then replay that session. You should be able to do it from the
-UI.
-
-Links:
-
-- [[https://github.com/commschamp/cc_tools_qt][GH: cc_tools_qt]]: "This project contains tool application(s), which can be used
-  to develop, monitor and debug custom binary communication protocols, that were
-  developed using the COMMS Library. All the applications are plug-in based,
-  i.e. plug-ins are used to define I/O socket, data filters, and the custom
-  protocol itself. The tools use Qt framework for GUI interfaces as well as
-  loading and managing plug-ins."
-- [[https://github.com/commschamp/cc_tools_qt/wiki/How-to-Use-CommsChampion-Tools][How to Use CommsChampion Tools]]: screenshots of the UI to explore the protocol.
 
 *** Investigate the toolbar icon style in serial studio                :code:
 

@@ -62,7 +62,7 @@ public:
      * @param remote_address The remote endpoint address of the client.
      * @return Expected containing response payload, or error code.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, messaging::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_message(messaging::message_type type,
         std::span<const std::byte> payload,
         const std::string& remote_address) override;
@@ -71,14 +71,14 @@ private:
     /**
      * @brief Handle subscribe_request message.
      */
-    std::expected<std::vector<std::byte>, messaging::error_code>
+    std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
     handle_subscribe_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     /**
      * @brief Handle unsubscribe_request message.
      */
-    std::expected<std::vector<std::byte>, messaging::error_code>
+    std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
     handle_unsubscribe_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 

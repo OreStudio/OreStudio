@@ -29,7 +29,7 @@ variability_message_handler::variability_message_handler(database::context ctx)
     : feature_flags_repo_(std::move(ctx)) {}
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 variability_message_handler::handle_message(comms::messaging::message_type type,
     std::span<const std::byte> payload, [[maybe_unused]] const std::string& remote_address) {
 
@@ -45,12 +45,12 @@ variability_message_handler::handle_message(comms::messaging::message_type type,
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown variability message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
-        co_return std::unexpected(comms::messaging::error_code::invalid_message_type);
+        co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
     }
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 variability_message_handler::
 handle_list_feature_flags_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing list_feature_flags_request.";
@@ -74,12 +74,12 @@ handle_list_feature_flags_request(std::span<const std::byte> payload) {
         co_return response.serialize();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Database error reading feature flags: " << e.what();
-        co_return std::unexpected(comms::messaging::error_code::database_error);
+        co_return std::unexpected(ores::utility::serialization::error_code::database_error);
     }
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 variability_message_handler::
 handle_save_feature_flag_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing save_feature_flag_request.";
@@ -109,7 +109,7 @@ handle_save_feature_flag_request(std::span<const std::byte> payload) {
 }
 
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
-                                     comms::messaging::error_code>>
+                                     ores::utility::serialization::error_code>>
 variability_message_handler::
 handle_delete_feature_flag_request(std::span<const std::byte> payload) {
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_feature_flag_request.";

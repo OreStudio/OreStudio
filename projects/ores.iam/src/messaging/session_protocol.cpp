@@ -27,12 +27,14 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.comms/messaging/reader.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
 
 namespace ores::iam::messaging {
 
-using namespace ores::comms::messaging;
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
+using ores::utility::serialization::error_code;
 
 namespace {
 
@@ -50,7 +52,7 @@ void write_timestamp(std::vector<std::byte>& buffer,
 /**
  * @brief Read a timestamp from the buffer.
  */
-std::expected<std::chrono::system_clock::time_point, error_code>
+std::expected<std::chrono::system_clock::time_point, ores::utility::serialization::error_code>
 read_timestamp(std::span<const std::byte>& data) {
     auto high_result = reader::read_uint32(data);
     if (!high_result) return std::unexpected(high_result.error());
@@ -79,7 +81,7 @@ void write_optional_timestamp(std::vector<std::byte>& buffer,
 /**
  * @brief Read an optional timestamp.
  */
-std::expected<std::optional<std::chrono::system_clock::time_point>, error_code>
+std::expected<std::optional<std::chrono::system_clock::time_point>, ores::utility::serialization::error_code>
 read_optional_timestamp(std::span<const std::byte>& data) {
     auto has_value = reader::read_bool(data);
     if (!has_value) return std::unexpected(has_value.error());
@@ -112,7 +114,7 @@ void write_session(std::vector<std::byte>& buffer, const domain::session& s) {
 /**
  * @brief Deserialize a session from the buffer.
  */
-std::expected<domain::session, error_code>
+std::expected<domain::session, ores::utility::serialization::error_code>
 read_session(std::span<const std::byte>& data) {
     domain::session s;
 
@@ -187,7 +189,7 @@ void write_session_statistics(std::vector<std::byte>& buffer,
 /**
  * @brief Deserialize session_statistics from the buffer.
  */
-std::expected<domain::session_statistics, error_code>
+std::expected<domain::session_statistics, ores::utility::serialization::error_code>
 read_session_statistics(std::span<const std::byte>& data) {
     domain::session_statistics s;
 
@@ -246,7 +248,7 @@ std::vector<std::byte> list_sessions_request::serialize() const {
     return buffer;
 }
 
-std::expected<list_sessions_request, comms::messaging::error_code>
+std::expected<list_sessions_request, ores::utility::serialization::error_code>
 list_sessions_request::deserialize(std::span<const std::byte> data) {
     list_sessions_request request;
 
@@ -282,7 +284,7 @@ std::vector<std::byte> list_sessions_response::serialize() const {
     return buffer;
 }
 
-std::expected<list_sessions_response, comms::messaging::error_code>
+std::expected<list_sessions_response, ores::utility::serialization::error_code>
 list_sessions_response::deserialize(std::span<const std::byte> data) {
     list_sessions_response response;
 
@@ -318,7 +320,7 @@ std::vector<std::byte> get_session_statistics_request::serialize() const {
     return buffer;
 }
 
-std::expected<get_session_statistics_request, comms::messaging::error_code>
+std::expected<get_session_statistics_request, ores::utility::serialization::error_code>
 get_session_statistics_request::deserialize(std::span<const std::byte> data) {
     get_session_statistics_request request;
 
@@ -353,7 +355,7 @@ std::vector<std::byte> get_session_statistics_response::serialize() const {
     return buffer;
 }
 
-std::expected<get_session_statistics_response, comms::messaging::error_code>
+std::expected<get_session_statistics_response, ores::utility::serialization::error_code>
 get_session_statistics_response::deserialize(std::span<const std::byte> data) {
     get_session_statistics_response response;
 
@@ -381,7 +383,7 @@ std::vector<std::byte> get_active_sessions_request::serialize() const {
     return {};
 }
 
-std::expected<get_active_sessions_request, comms::messaging::error_code>
+std::expected<get_active_sessions_request, ores::utility::serialization::error_code>
 get_active_sessions_request::deserialize(std::span<const std::byte> data) {
     (void)data;
     return get_active_sessions_request{};
@@ -403,7 +405,7 @@ std::vector<std::byte> get_active_sessions_response::serialize() const {
     return buffer;
 }
 
-std::expected<get_active_sessions_response, comms::messaging::error_code>
+std::expected<get_active_sessions_response, ores::utility::serialization::error_code>
 get_active_sessions_response::deserialize(std::span<const std::byte> data) {
     get_active_sessions_response response;
 

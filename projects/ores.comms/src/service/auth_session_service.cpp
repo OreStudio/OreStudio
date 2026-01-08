@@ -179,7 +179,7 @@ bool auth_session_service::requires_authentication(messaging::message_type type)
     }
 }
 
-std::expected<void, messaging::error_code>
+std::expected<void, ores::utility::serialization::error_code>
 auth_session_service::authorize_request(messaging::message_type type,
     const std::string& remote_address) const {
 
@@ -194,7 +194,7 @@ auth_session_service::authorize_request(messaging::message_type type,
         BOOST_LOG_SEV(lg(), warn)
             << "Authentication failed for " << type
             << " from " << remote_address << ": not authenticated";
-        return std::unexpected(messaging::error_code::authentication_failed);
+        return std::unexpected(ores::utility::serialization::error_code::authentication_failed);
     }
 
     // Permission-based authorization is handled at the handler level

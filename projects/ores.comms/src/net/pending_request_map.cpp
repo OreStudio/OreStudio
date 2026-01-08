@@ -66,7 +66,7 @@ bool pending_request_map::complete(std::uint32_t correlation_id, messaging::fram
     return true;
 }
 
-bool pending_request_map::fail(std::uint32_t correlation_id, messaging::error_code ec) {
+bool pending_request_map::fail(std::uint32_t correlation_id, ores::utility::serialization::error_code ec) {
     std::shared_ptr<response_channel> channel;
     {
         std::lock_guard guard{mutex_};
@@ -86,7 +86,7 @@ bool pending_request_map::fail(std::uint32_t correlation_id, messaging::error_co
     return true;
 }
 
-void pending_request_map::fail_all(messaging::error_code ec) {
+void pending_request_map::fail_all(ores::utility::serialization::error_code ec) {
     std::unordered_map<std::uint32_t, std::shared_ptr<response_channel>> pending_copy;
     {
         std::lock_guard guard{mutex_};

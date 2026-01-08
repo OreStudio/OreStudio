@@ -209,6 +209,14 @@ CurrencyMdiWindow(ClientManager* clientManager,
         }
     });
 
+    connect(pagination_widget_, &PaginationWidget::page_requested,
+            this, [this](std::uint32_t offset, std::uint32_t limit) {
+        BOOST_LOG_SEV(lg(), debug) << "Page requested: offset=" << offset
+                                   << ", limit=" << limit;
+        emit statusChanged("Loading currencies...");
+        currencyModel_->load_page(offset, limit);
+    });
+
     // Connect connection state signals
     if (clientManager_) {
         connect(clientManager_, &ClientManager::connected, this, &CurrencyMdiWindow::onConnectionStateChanged);

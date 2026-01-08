@@ -25,7 +25,7 @@
 
 namespace ores::telemetry::messaging {
 
-using comms::messaging::error_code;
+using ores::utility::serialization::error_code;
 
 namespace {
 
@@ -91,7 +91,7 @@ void write_timestamp(std::vector<std::byte>& buffer,
     write_uint64(buffer, static_cast<std::uint64_t>(epoch_ms));
 }
 
-std::expected<std::uint8_t, error_code>
+std::expected<std::uint8_t, ores::utility::serialization::error_code>
 read_uint8(std::span<const std::byte>& data) {
     if (data.empty()) {
         return std::unexpected(error_code::payload_incomplete);
@@ -101,7 +101,7 @@ read_uint8(std::span<const std::byte>& data) {
     return value;
 }
 
-std::expected<std::uint16_t, error_code>
+std::expected<std::uint16_t, ores::utility::serialization::error_code>
 read_uint16(std::span<const std::byte>& data) {
     if (data.size() < 2) {
         return std::unexpected(error_code::payload_incomplete);
@@ -112,7 +112,7 @@ read_uint16(std::span<const std::byte>& data) {
     return value;
 }
 
-std::expected<std::uint32_t, error_code>
+std::expected<std::uint32_t, ores::utility::serialization::error_code>
 read_uint32(std::span<const std::byte>& data) {
     if (data.size() < 4) {
         return std::unexpected(error_code::payload_incomplete);
@@ -125,7 +125,7 @@ read_uint32(std::span<const std::byte>& data) {
     return value;
 }
 
-std::expected<std::uint64_t, error_code>
+std::expected<std::uint64_t, ores::utility::serialization::error_code>
 read_uint64(std::span<const std::byte>& data) {
     if (data.size() < 8) {
         return std::unexpected(error_code::payload_incomplete);
@@ -142,7 +142,7 @@ read_uint64(std::span<const std::byte>& data) {
     return value;
 }
 
-std::expected<bool, error_code>
+std::expected<bool, ores::utility::serialization::error_code>
 read_bool(std::span<const std::byte>& data) {
     if (data.empty()) {
         return std::unexpected(error_code::payload_incomplete);
@@ -152,7 +152,7 @@ read_bool(std::span<const std::byte>& data) {
     return value;
 }
 
-std::expected<std::string, error_code>
+std::expected<std::string, ores::utility::serialization::error_code>
 read_string(std::span<const std::byte>& data) {
     auto len_result = read_uint16(data);
     if (!len_result) {
@@ -167,7 +167,7 @@ read_string(std::span<const std::byte>& data) {
     return str;
 }
 
-std::expected<boost::uuids::uuid, error_code>
+std::expected<boost::uuids::uuid, ores::utility::serialization::error_code>
 read_uuid(std::span<const std::byte>& data) {
     auto str_result = read_string(data);
     if (!str_result) {
@@ -180,7 +180,7 @@ read_uuid(std::span<const std::byte>& data) {
     }
 }
 
-std::expected<std::optional<boost::uuids::uuid>, error_code>
+std::expected<std::optional<boost::uuids::uuid>, ores::utility::serialization::error_code>
 read_optional_uuid(std::span<const std::byte>& data) {
     auto has_value = read_bool(data);
     if (!has_value) {
@@ -196,7 +196,7 @@ read_optional_uuid(std::span<const std::byte>& data) {
     return *uuid_result;
 }
 
-std::expected<std::chrono::system_clock::time_point, error_code>
+std::expected<std::chrono::system_clock::time_point, ores::utility::serialization::error_code>
 read_timestamp(std::span<const std::byte>& data) {
     auto ts_result = read_uint64(data);
     if (!ts_result) {
@@ -206,7 +206,7 @@ read_timestamp(std::span<const std::byte>& data) {
         std::chrono::milliseconds(*ts_result));
 }
 
-std::expected<std::optional<std::string>, error_code>
+std::expected<std::optional<std::string>, ores::utility::serialization::error_code>
 read_optional_string(std::span<const std::byte>& data) {
     auto has_value = read_bool(data);
     if (!has_value) {
@@ -244,7 +244,7 @@ std::vector<std::byte> submit_telemetry_response::serialize() const {
     return buffer;
 }
 
-std::expected<submit_telemetry_response, error_code>
+std::expected<submit_telemetry_response, ores::utility::serialization::error_code>
 submit_telemetry_response::deserialize(std::span<const std::byte> data) {
     submit_telemetry_response response;
 
@@ -301,7 +301,7 @@ std::vector<std::byte> get_telemetry_logs_request::serialize() const {
     return buffer;
 }
 
-std::expected<get_telemetry_logs_request, error_code>
+std::expected<get_telemetry_logs_request, ores::utility::serialization::error_code>
 get_telemetry_logs_request::deserialize(std::span<const std::byte> data) {
     get_telemetry_logs_request request;
 
@@ -400,7 +400,7 @@ std::vector<std::byte> get_telemetry_logs_response::serialize() const {
     return buffer;
 }
 
-std::expected<get_telemetry_logs_response, error_code>
+std::expected<get_telemetry_logs_response, ores::utility::serialization::error_code>
 get_telemetry_logs_response::deserialize(std::span<const std::byte> data) {
     get_telemetry_logs_response response;
 
@@ -504,7 +504,7 @@ std::vector<std::byte> get_telemetry_stats_request::serialize() const {
     return buffer;
 }
 
-std::expected<get_telemetry_stats_request, error_code>
+std::expected<get_telemetry_stats_request, ores::utility::serialization::error_code>
 get_telemetry_stats_request::deserialize(std::span<const std::byte> data) {
     get_telemetry_stats_request request;
 
@@ -574,7 +574,7 @@ std::vector<std::byte> get_telemetry_stats_response::serialize() const {
     return buffer;
 }
 
-std::expected<get_telemetry_stats_response, error_code>
+std::expected<get_telemetry_stats_response, ores::utility::serialization::error_code>
 get_telemetry_stats_response::deserialize(std::span<const std::byte> data) {
     get_telemetry_stats_response response;
 

@@ -25,21 +25,22 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.comms/messaging/reader.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
 
 namespace ores::variability::messaging {
 
-using namespace ores::comms::messaging;
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
 
 std::vector<std::byte> list_feature_flags_request::serialize() const {
     return {};
 }
 
-std::expected<list_feature_flags_request, comms::messaging::error_code>
+std::expected<list_feature_flags_request, ores::utility::serialization::error_code>
 list_feature_flags_request::deserialize(std::span<const std::byte> data) {
     if (!data.empty()) {
-        return std::unexpected(comms::messaging::error_code::payload_too_large);
+        return std::unexpected(ores::utility::serialization::error_code::payload_too_large);
     }
     return list_feature_flags_request{};
 }
@@ -65,7 +66,7 @@ std::vector<std::byte> list_feature_flags_response::serialize() const {
     return buffer;
 }
 
-std::expected<list_feature_flags_response, comms::messaging::error_code>
+std::expected<list_feature_flags_response, ores::utility::serialization::error_code>
 list_feature_flags_response::deserialize(std::span<const std::byte> data) {
     list_feature_flags_response response;
 
@@ -117,7 +118,7 @@ std::vector<std::byte> save_feature_flag_request::serialize() const {
     return buffer;
 }
 
-std::expected<save_feature_flag_request, comms::messaging::error_code>
+std::expected<save_feature_flag_request, ores::utility::serialization::error_code>
 save_feature_flag_request::deserialize(std::span<const std::byte> data) {
     save_feature_flag_request request;
 
@@ -154,7 +155,7 @@ std::vector<std::byte> save_feature_flag_response::serialize() const {
     return buffer;
 }
 
-std::expected<save_feature_flag_response, comms::messaging::error_code>
+std::expected<save_feature_flag_response, ores::utility::serialization::error_code>
 save_feature_flag_response::deserialize(std::span<const std::byte> data) {
     save_feature_flag_response response;
 
@@ -182,7 +183,7 @@ std::vector<std::byte> delete_feature_flag_request::serialize() const {
     return buffer;
 }
 
-std::expected<delete_feature_flag_request, comms::messaging::error_code>
+std::expected<delete_feature_flag_request, ores::utility::serialization::error_code>
 delete_feature_flag_request::deserialize(std::span<const std::byte> data) {
     delete_feature_flag_request request;
 
@@ -207,7 +208,7 @@ std::vector<std::byte> delete_feature_flag_response::serialize() const {
     return buffer;
 }
 
-std::expected<delete_feature_flag_response, comms::messaging::error_code>
+std::expected<delete_feature_flag_response, ores::utility::serialization::error_code>
 delete_feature_flag_response::deserialize(std::span<const std::byte> data) {
     delete_feature_flag_response response;
 

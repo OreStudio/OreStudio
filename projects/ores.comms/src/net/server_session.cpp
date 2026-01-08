@@ -189,7 +189,7 @@ boost::asio::awaitable<void> server_session::process_messages() {
             auto frame_result = co_await conn_->read_frame(false);
             if (!frame_result) {
                 auto err = frame_result.error();
-                if (err == messaging::error_code::network_error) {
+                if (err == ores::utility::serialization::error_code::network_error) {
                     BOOST_LOG_SEV(lg(), info) << "Client disconnected";
                 } else {
                     BOOST_LOG_SEV(lg(), error) << "Failed to read frame: "
@@ -225,44 +225,47 @@ boost::asio::awaitable<void> server_session::process_messages() {
                     // Create error response with appropriate message
                     std::string error_msg;
                     switch (err) {
-                        case messaging::error_code::invalid_message_type:
+                        case ores::utility::serialization::error_code::invalid_message_type:
                             error_msg = "Invalid or unsupported message type";
                             break;
-                        case messaging::error_code::handler_error:
+                        case ores::utility::serialization::error_code::handler_error:
                             error_msg = "Request handler encountered an error";
                             break;
-                        case messaging::error_code::database_error:
+                        case ores::utility::serialization::error_code::database_error:
                             error_msg = "Database operation failed";
                             break;
-                        case messaging::error_code::authentication_failed:
+                        case ores::utility::serialization::error_code::authentication_failed:
                             error_msg = "Authentication failed";
                             break;
-                        case messaging::error_code::authorization_failed:
+                        case ores::utility::serialization::error_code::authorization_failed:
                             error_msg = "Authorization failed";
                             break;
-                        case messaging::error_code::invalid_request:
+                        case ores::utility::serialization::error_code::invalid_request:
                             error_msg = "Invalid request parameters";
                             break;
-                        case messaging::error_code::bootstrap_mode_only:
+                        case ores::utility::serialization::error_code::bootstrap_mode_only:
                             error_msg = "System is in bootstrap mode. Only initial admin account creation is allowed. Please create the initial admin account from localhost.";
                             break;
-                        case messaging::error_code::bootstrap_mode_forbidden:
+                        case ores::utility::serialization::error_code::bootstrap_mode_forbidden:
                             error_msg = "Operation not allowed - system is not in bootstrap mode";
                             break;
-                        case messaging::error_code::weak_password:
+                        case ores::utility::serialization::error_code::weak_password:
                             error_msg = "Password does not meet security requirements";
                             break;
-                        case messaging::error_code::not_localhost:
+                        case ores::utility::serialization::error_code::not_localhost:
                             error_msg = "Bootstrap operations are only allowed from localhost";
                             break;
-                        case messaging::error_code::decompression_failed:
+                        case ores::utility::serialization::error_code::decompression_failed:
                             error_msg = "Failed to decompress request payload - possible compression mismatch";
                             break;
-                        case messaging::error_code::unsupported_compression:
+                        case ores::utility::serialization::error_code::unsupported_compression:
                             error_msg = "Server does not support the compression algorithm used in request";
                             break;
-                        case messaging::error_code::compression_failed:
+                        case ores::utility::serialization::error_code::compression_failed:
                             error_msg = "Failed to compress response payload";
+                            break;
+                        case ores::utility::serialization::error_code::limit_exceeded:
+                            error_msg = "Request limit exceeds maximum allowed (1000)";
                             break;
                         default:
                             error_msg = "An error occurred processing your request";
@@ -281,7 +284,7 @@ boost::asio::awaitable<void> server_session::process_messages() {
                 BOOST_LOG_SEV(lg(), error) << "Exception in message handler: " << e.what();
                 response_frame = messaging::create_error_response_frame(
                     sequence_number_, request_frame.correlation_id(),
-                    messaging::error_code::database_error, e.what());
+                    ores::utility::serialization::error_code::database_error, e.what());
                 BOOST_LOG_SEV(lg(), debug) << "Sending error response with exception details"
                                           << " (correlation_id=" << request_frame.correlation_id() << ")";
             }

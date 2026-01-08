@@ -60,6 +60,7 @@ bool is_valid_message_type(std::uint16_t type) {
 namespace ores::comms::messaging {
 
 using namespace ores::telemetry::log;
+using ores::utility::serialization::error_code;
 
 frame::frame() : header_{}, payload_{} {
     header_.magic = PROTOCOL_MAGIC;
@@ -200,7 +201,7 @@ std::vector<std::byte> frame::serialize() const {
     return result;
 }
 
-std::expected<frame_header, error_code>
+std::expected<frame_header, ores::utility::serialization::error_code>
 frame::deserialize_header(std::span<const std::byte> data, bool skip_version_check) {
     BOOST_LOG_SEV(lg(), debug) << "Deserializing frame header from data of size: "
                                << data.size()
@@ -285,7 +286,7 @@ frame::deserialize_header(std::span<const std::byte> data, bool skip_version_che
     return header;
 }
 
-std::expected<frame, error_code> frame::
+std::expected<frame, ores::utility::serialization::error_code> frame::
 deserialize(const frame_header& header, std::span<const std::byte> data) {
     BOOST_LOG_SEV(lg(), debug) << "Deserializing frame with payload. Total data size: "
                                << data.size();
@@ -318,7 +319,7 @@ deserialize(const frame_header& header, std::span<const std::byte> data) {
     return f;
 }
 
-std::expected<void, error_code> frame::validate() const {
+std::expected<void, ores::utility::serialization::error_code> frame::validate() const {
     // Check magic number
     if (header_.magic != PROTOCOL_MAGIC) {
         BOOST_LOG_SEV(lg(), warn) << "Invalid protocol magic: "
@@ -357,7 +358,7 @@ std::expected<void, error_code> frame::validate() const {
     return {};
 }
 
-std::expected<std::vector<std::byte>, error_code> frame::decompressed_payload() const {
+std::expected<std::vector<std::byte>, ores::utility::serialization::error_code> frame::decompressed_payload() const {
     return decompress(
         std::span<const std::byte>(payload_.data(), payload_.size()),
         header_.compression);

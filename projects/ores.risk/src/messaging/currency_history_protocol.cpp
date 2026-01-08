@@ -21,12 +21,14 @@
 #include "ores.risk/messaging/currency_history_protocol.hpp"
 
 #include <expected>
-#include "ores.comms/messaging/reader.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
 #include "ores.platform/time/datetime.hpp"
 
 using namespace ores::risk;
-using namespace ores::comms::messaging;
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
+using ores::utility::serialization::error_code;
 
 namespace {
 
@@ -58,7 +60,7 @@ void serialize_currency_version(std::vector<std::byte>& buffer, const domain::cu
     writer::write_string(buffer, version.change_summary);
 }
 
-std::expected<domain::currency_version, error_code>
+std::expected<domain::currency_version, ores::utility::serialization::error_code>
 deserialize_currency_version(std::span<const std::byte>& data) {
     domain::currency_version version;
 
@@ -153,7 +155,7 @@ std::vector<std::byte> get_currency_history_request::serialize() const {
     return buffer;
 }
 
-std::expected<get_currency_history_request, comms::messaging::error_code>
+std::expected<get_currency_history_request, ores::utility::serialization::error_code>
 get_currency_history_request::deserialize(std::span<const std::byte> data) {
     auto iso_code_result = reader::read_string(data);
     if (!iso_code_result) {
@@ -188,7 +190,7 @@ std::vector<std::byte> get_currency_history_response::serialize() const {
     return buffer;
 }
 
-std::expected<get_currency_history_response, comms::messaging::error_code>
+std::expected<get_currency_history_response, ores::utility::serialization::error_code>
 get_currency_history_response::deserialize(std::span<const std::byte> data) {
     get_currency_history_response response;
 

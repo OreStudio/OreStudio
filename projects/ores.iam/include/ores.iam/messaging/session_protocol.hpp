@@ -44,7 +44,7 @@ struct list_sessions_request final {
     std::uint32_t offset = 0;       // Pagination offset
 
     std::vector<std::byte> serialize() const;
-    static std::expected<list_sessions_request, comms::messaging::error_code>
+    static std::expected<list_sessions_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -58,7 +58,7 @@ struct list_sessions_response final {
     std::uint32_t total_count = 0;  // Total available (for pagination)
 
     std::vector<std::byte> serialize() const;
-    static std::expected<list_sessions_response, comms::messaging::error_code>
+    static std::expected<list_sessions_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -76,7 +76,7 @@ struct get_session_statistics_request final {
     std::chrono::system_clock::time_point end_time;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<get_session_statistics_request, comms::messaging::error_code>
+    static std::expected<get_session_statistics_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -89,7 +89,7 @@ struct get_session_statistics_response final {
     std::vector<domain::session_statistics> statistics;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<get_session_statistics_response, comms::messaging::error_code>
+    static std::expected<get_session_statistics_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -103,7 +103,7 @@ std::ostream& operator<<(std::ostream& s, const get_session_statistics_response&
  */
 struct get_active_sessions_request final {
     std::vector<std::byte> serialize() const;
-    static std::expected<get_active_sessions_request, comms::messaging::error_code>
+    static std::expected<get_active_sessions_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -116,7 +116,7 @@ struct get_active_sessions_response final {
     std::vector<domain::session> sessions;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<get_active_sessions_response, comms::messaging::error_code>
+    static std::expected<get_active_sessions_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

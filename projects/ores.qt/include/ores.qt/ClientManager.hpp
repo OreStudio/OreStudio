@@ -213,7 +213,7 @@ public:
      * @return Response frame or error code
      * @deprecated Use typed process_request methods instead
      */
-    std::expected<comms::messaging::frame, comms::messaging::error_code>
+    std::expected<comms::messaging::frame, ores::utility::serialization::error_code>
     sendRequest(comms::messaging::frame request);
 
     /**

@@ -31,6 +31,16 @@
 -- Set schema
 SET search_path TO ores;
 
+-- No flag placeholder - used for currencies without an assigned flag
+SELECT ores.load_flag('no-flag', 'No flag placeholder', $svg$<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480">
+  <rect fill="#E8E8E8" width="640" height="480"/>
+  <rect fill="none" stroke="#BDBDBD" stroke-width="4" stroke-dasharray="12,8" x="20" y="15" width="600" height="450" rx="8"/>
+  <g fill="#9E9E9E" transform="translate(320, 240)">
+    <path d="M-40,-80 Q-40,-120 0,-120 Q40,-120 40,-80 Q40,-50 10,-40 L10,0 L-10,0 L-10,-30 Q30,-40 30,-70 Q30,-100 0,-100 Q-30,-100 -30,-70 L-30,-70 Z"/>
+    <circle cx="0" cy="50" r="15"/>
+  </g>
+</svg>$svg$);
+
 SELECT ores.load_flag('ad', 'Flag for code AD', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-ad" viewBox="0 0 640 480">
   <path fill="#d0103a" d="M0 0h640v480H0z"/>
   <path fill="#fedf00" d="M0 0h435.2v480H0z"/>

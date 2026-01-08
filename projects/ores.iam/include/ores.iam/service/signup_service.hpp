@@ -41,7 +41,7 @@ namespace ores::iam::service {
 struct signup_result {
     bool success = false;
     std::string error_message;
-    comms::messaging::error_code error_code = comms::messaging::error_code::none;
+    ores::utility::serialization::error_code error_code = ores::utility::serialization::error_code::none;
     boost::uuids::uuid account_id;
     std::string username;
 };

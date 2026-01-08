@@ -109,7 +109,7 @@ template<typename Response>
 concept Deserializable = requires(std::span<const std::byte> data) {
     {
         Response::deserialize(data)
-    } -> std::same_as<std::expected<Response, messaging::error_code>>;
+    } -> std::same_as<std::expected<Response, ores::utility::serialization::error_code>>;
 };
 
 /**
@@ -305,7 +305,7 @@ public:
             BOOST_LOG_SEV(lg(), error) << "Request failed with error code: "
                                        << static_cast<int>(error_code);
             // Check if this is a network error indicating connection loss
-            if (error_code == messaging::error_code::network_error) {
+            if (error_code == ores::utility::serialization::error_code::network_error) {
                 return std::unexpected(session_error(
                     client_session_error::connection_lost,
                     "Connection to server lost"));

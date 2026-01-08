@@ -28,7 +28,7 @@
 namespace ores::iam::service {
 
 using namespace ores::telemetry::log;
-using error_code = ores::comms::messaging::error_code;
+using error_code = ores::utility::serialization::error_code;
 
 signup_service::signup_service(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,

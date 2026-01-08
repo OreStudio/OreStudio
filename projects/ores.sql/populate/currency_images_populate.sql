@@ -19,9 +19,8 @@
  */
 
 --
--- Populates the currency_images table with mappings from currencies to their flags.
+-- Populates the image_id column on currencies with references to their flag images.
 -- Each currency is mapped to the flag of its primary issuing country/region.
--- Uses a single set-based INSERT for efficiency.
 --
 -- Prerequisites:
 --   - flags_populate.sql must be run first (to populate images table)
@@ -32,15 +31,12 @@ SET search_path TO ores;
 
 --
 -- Currency to flag mappings
--- Uses a single INSERT ... SELECT with JOINs to ensure data integrity:
--- - Only currencies that exist in the currencies table are linked
+-- Uses UPDATE with a FROM clause to set image_id on currencies:
+-- - Only currencies that exist in the currencies table are updated
 -- - Only flags that exist in the images table are used
 --
-INSERT INTO currency_images (iso_code, image_id, assigned_by)
-SELECT
-    v.currency_code,
-    i.image_id,
-    'system'
+UPDATE currencies c
+SET image_id = i.image_id
 FROM (
     VALUES
         -- Americas
@@ -216,4 +212,15 @@ FROM (
         ('XDR', 'xdr')   -- Special Drawing Rights -> SDR globe icon
 ) AS v(currency_code, flag_key)
 JOIN images i ON i.key = v.flag_key AND i.valid_to = '9999-12-31 23:59:59'::timestamptz
-JOIN currencies c ON c.iso_code = v.currency_code AND c.valid_to = '9999-12-31 23:59:59'::timestamptz;
+WHERE c.iso_code = v.currency_code AND c.valid_to = '9999-12-31 23:59:59'::timestamptz;
+
+--
+-- Assign placeholder "no-flag" image to currencies without a specific flag
+--
+UPDATE currencies c
+SET image_id = i.image_id
+FROM images i
+WHERE i.key = 'no-flag'
+  AND i.valid_to = '9999-12-31 23:59:59'::timestamptz
+  AND c.valid_to = '9999-12-31 23:59:59'::timestamptz
+  AND c.image_id IS NULL;

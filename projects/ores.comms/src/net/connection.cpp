@@ -42,7 +42,7 @@ boost::asio::awaitable<void> connection::ssl_handshake_client(
         boost::asio::bind_cancellation_slot(cancel_slot, boost::asio::use_awaitable));
 }
 
-boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>>
+boost::asio::awaitable<std::expected<messaging::frame, ores::utility::serialization::error_code>>
 connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot cancel_slot) {
     try {
         BOOST_LOG_SEV(lg(), debug) << "Waiting to read the next frame"
@@ -105,11 +105,11 @@ connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot c
     } catch (const boost::system::system_error& e) {
         BOOST_LOG_SEV(lg(), error) << "Network error in read_frame: "
                                  << e.what();
-        co_return std::unexpected(messaging::error_code::network_error);
+        co_return std::unexpected(ores::utility::serialization::error_code::network_error);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Unexpected error in read_frame: "
                                  << e.what();
-        co_return std::unexpected(messaging::error_code::invalid_message_type);
+        co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
     }
 }
 

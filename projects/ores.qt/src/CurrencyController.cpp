@@ -227,8 +227,6 @@ void CurrencyController::onAddNewRequested() {
     detailWindow->setWindowTitle("New Currency");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
 
     allDetachableWindows_.append(detailWindow);
     QPointer<CurrencyController> self = this;
@@ -239,6 +237,9 @@ void CurrencyController::onAddNewRequested() {
     });
 
     mdiArea_->addSubWindow(detailWindow);
+    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
     detailWindow->adjustSize();
 
     // If the parent currency list window is detached, detach this window too
@@ -299,8 +300,6 @@ void CurrencyController::onShowCurrencyDetails(
     detailWindow->setWindowTitle(QString("Currency Details: %1").arg(isoCode));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
 
     // Track this detail window
     track_window(windowKey, detailWindow);
@@ -317,6 +316,9 @@ void CurrencyController::onShowCurrencyDetails(
     });
 
     mdiArea_->addSubWindow(detailWindow);
+    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
     detailWindow->adjustSize();
 
     // If the parent currency list window is detached, detach this window too
@@ -379,8 +381,6 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
     historyWindow->setWindowTitle(QString("History: %1").arg(isoCode));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
-    historyWindow->setWindowFlags(historyWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -397,6 +397,9 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
     });
 
     mdiArea_->addSubWindow(historyWindow);
+    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
+    historyWindow->setWindowFlags(historyWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
     historyWindow->adjustSize();
 
     // If the parent currency list window is detached, detach this window too
@@ -511,8 +514,6 @@ void CurrencyController::onOpenCurrencyVersion(
         .arg(isoCode).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
 
     // Track this version window
     track_window(windowKey, detailWindow);
@@ -529,6 +530,9 @@ void CurrencyController::onOpenCurrencyVersion(
     });
 
     mdiArea_->addSubWindow(detailWindow);
+    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
     detailWindow->adjustSize();
 
     // If the parent currency list window is detached, detach this window too

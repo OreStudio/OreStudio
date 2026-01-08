@@ -58,7 +58,7 @@ struct subscribe_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<subscribe_request, error_code>
+    static std::expected<subscribe_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -84,7 +84,7 @@ struct subscribe_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<subscribe_response, error_code>
+    static std::expected<subscribe_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -111,7 +111,7 @@ struct unsubscribe_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<unsubscribe_request, error_code>
+    static std::expected<unsubscribe_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -137,7 +137,7 @@ struct unsubscribe_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<unsubscribe_response, error_code>
+    static std::expected<unsubscribe_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -188,7 +188,7 @@ struct notification_message final {
     /**
      * @brief Deserialize notification from bytes.
      */
-    static std::expected<notification_message, error_code>
+    static std::expected<notification_message, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -230,7 +230,7 @@ struct database_status_message final {
     /**
      * @brief Deserialize notification from bytes.
      */
-    static std::expected<database_status_message, error_code>
+    static std::expected<database_status_message, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

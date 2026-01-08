@@ -28,7 +28,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.assets/domain/image.hpp"
-#include "ores.assets/domain/currency_image.hpp"
 #include "ores.assets/messaging/assets_protocol.hpp"
 
 namespace ores::qt {
@@ -173,6 +172,20 @@ public:
      */
     std::string getCurrencyImageId(const std::string& iso_code) const;
 
+    /**
+     * @brief Get the image ID for the "no-flag" placeholder.
+     *
+     * @return The image ID for the "no-flag" image, or empty string if not found
+     */
+    std::string getNoFlagImageId() const;
+
+    /**
+     * @brief Get the icon for the "no-flag" placeholder.
+     *
+     * @return The QIcon for the "no-flag" image, or empty icon if not loaded
+     */
+    QIcon getNoFlagIcon() const;
+
 signals:
     /**
      * @brief Emitted when currency mappings have been loaded.
@@ -235,7 +248,7 @@ private:
 
     struct MappingsResult {
         bool success;
-        std::vector<assets::domain::currency_image> mappings;
+        std::unordered_map<std::string, std::string> mappings;  // iso_code -> image_id
     };
 
     struct ImagesResult {

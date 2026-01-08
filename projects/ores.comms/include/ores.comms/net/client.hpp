@@ -351,7 +351,7 @@ public:
      * @param request_frame The request frame to send
      * @return Expected containing response frame, or error_code
      */
-    boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>>
+    boost::asio::awaitable<std::expected<messaging::frame, ores::utility::serialization::error_code>>
     send_request(messaging::frame request_frame);
 
     /**
@@ -363,7 +363,7 @@ public:
      * @param request_frame The request frame to send
      * @return Expected containing response frame, or error_code
      */
-    std::expected<messaging::frame, messaging::error_code>
+    std::expected<messaging::frame, ores::utility::serialization::error_code>
     send_request_sync(messaging::frame request_frame);
 
     /**
@@ -379,7 +379,7 @@ public:
      */
     template <typename RequestType, typename ResponseType,
               messaging::message_type RequestMsgType>
-    std::expected<ResponseType, messaging::error_code>
+    std::expected<ResponseType, ores::utility::serialization::error_code>
     process_request(RequestType request) {
         using namespace ores::telemetry::log;
 
@@ -419,7 +419,7 @@ public:
      */
     template <typename RequestType, typename ResponseType,
               messaging::message_type RequestMsgType>
-    boost::asio::awaitable<std::expected<ResponseType, messaging::error_code>>
+    boost::asio::awaitable<std::expected<ResponseType, ores::utility::serialization::error_code>>
     process_request_async(RequestType request) {
         using namespace ores::telemetry::log;
 
@@ -465,7 +465,7 @@ public:
     template <typename RequestType>
         requires messaging::has_message_traits<RequestType>
     std::expected<typename messaging::message_traits<RequestType>::response_type,
-                  messaging::error_code>
+                  ores::utility::serialization::error_code>
     process_request(RequestType request) {
         using traits = messaging::message_traits<RequestType>;
         return process_request<
@@ -488,7 +488,7 @@ public:
         requires messaging::has_message_traits<RequestType>
     boost::asio::awaitable<
         std::expected<typename messaging::message_traits<RequestType>::response_type,
-                      messaging::error_code>>
+                      ores::utility::serialization::error_code>>
     process_request_async(RequestType request) {
         using traits = messaging::message_traits<RequestType>;
         return process_request_async<

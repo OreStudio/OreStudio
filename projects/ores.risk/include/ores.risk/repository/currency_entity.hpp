@@ -45,6 +45,7 @@ struct currency_entity {
     int rounding_precision;
     std::string format;
     std::string currency_type;
+    std::optional<std::string> image_id;  // UUID stored as string, converted in mapper
     std::string modified_by;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from = "9999-12-31 23:59:59";
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to = "9999-12-31 23:59:59";

@@ -103,6 +103,17 @@ public:
     void refresh(bool replace = true);
 
     /**
+     * @brief Load a specific page of currency data.
+     *
+     * Used for pagination navigation. Replaces current data with the
+     * requested page.
+     *
+     * @param offset Number of records to skip
+     * @param limit Number of records to fetch
+     */
+    void load_page(std::uint32_t offset, std::uint32_t limit);
+
+    /**
      * @brief Check if more data can be fetched from the server.
      *
      * @return true if there are more records available on the server
@@ -209,6 +220,11 @@ private:
     int pulse_count_{0};
     static constexpr int max_pulse_cycles_{6};  // 6 pulses (3 seconds at 500ms interval)
     static constexpr int pulse_interval_ms_{500};  // Pulse toggle interval in milliseconds
+
+    /**
+     * @brief Internal method to fetch currencies with specific offset and limit.
+     */
+    void fetch_currencies(std::uint32_t offset, std::uint32_t limit);
 };
 
 }

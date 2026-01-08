@@ -380,7 +380,7 @@ TEST_CASE("handle_invalid_message_type",
             empty_payload, "127.0.0.1:12345");
 
         CHECK(!result.has_value());
-        CHECK(result.error() == comms::messaging::error_code::invalid_message_type);
+        CHECK(result.error() == ores::utility::serialization::error_code::invalid_message_type);
         test_completed = true;
     }, boost::asio::detached);
 

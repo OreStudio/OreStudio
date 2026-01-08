@@ -73,6 +73,21 @@ public:
      */
     void set_load_all_enabled(bool enabled);
 
+    /**
+     * @brief Get the current page number (0-based).
+     */
+    [[nodiscard]] std::uint32_t current_page() const { return current_page_; }
+
+    /**
+     * @brief Get the total number of pages.
+     */
+    [[nodiscard]] std::uint32_t total_pages() const;
+
+    /**
+     * @brief Calculate the offset for the current page.
+     */
+    [[nodiscard]] std::uint32_t current_offset() const;
+
 signals:
     /**
      * @brief Emitted when user changes the page size selection.
@@ -86,9 +101,21 @@ signals:
      */
     void load_all_requested();
 
+    /**
+     * @brief Emitted when user requests to navigate to a specific page.
+     *
+     * @param offset The offset (number of records to skip)
+     * @param limit The page size (number of records to fetch)
+     */
+    void page_requested(std::uint32_t offset, std::uint32_t limit);
+
 private slots:
     void on_page_size_changed(int index);
     void on_load_all_clicked();
+    void on_first_clicked();
+    void on_prev_clicked();
+    void on_next_clicked();
+    void on_last_clicked();
 
 private:
     QLabel* info_label_;
@@ -102,6 +129,9 @@ private:
 
     std::uint32_t loaded_count_{0};
     std::uint32_t total_count_{0};
+    std::uint32_t current_page_{0};
+
+    void update_button_states();
 };
 
 }

@@ -606,7 +606,7 @@ void client::disconnect() {
 
     // Fail all pending requests so waiting coroutines can complete
     if (pending_requests_) {
-        pending_requests_->fail_all(messaging::error_code::network_error);
+        pending_requests_->fail_all(ores::utility::serialization::error_code::network_error);
     }
 
     BOOST_LOG_SEV(lg(), info) << "Disconnected from server";
@@ -774,7 +774,7 @@ boost::asio::awaitable<void> client::run_heartbeat() {
     BOOST_LOG_SEV(lg(), debug) << "Heartbeat loop ended";
 }
 
-boost::asio::awaitable<std::expected<messaging::frame, messaging::error_code>>
+boost::asio::awaitable<std::expected<messaging::frame, ores::utility::serialization::error_code>>
 client::send_request(messaging::frame request_frame) {
     BOOST_LOG_SEV(lg(), debug) << "Sending request.";
 
@@ -782,12 +782,12 @@ client::send_request(messaging::frame request_frame) {
     auto current_state = state_.load(std::memory_order_acquire);
     if (current_state == connection_state::reconnecting) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot send request: reconnecting";
-        co_return std::unexpected(messaging::error_code::network_error);
+        co_return std::unexpected(ores::utility::serialization::error_code::network_error);
     }
     if (current_state != connection_state::connected) {
         BOOST_LOG_SEV(lg(), error) << "Cannot send request: not connected (state="
                                    << current_state << ")";
-        co_return std::unexpected(messaging::error_code::network_error);
+        co_return std::unexpected(ores::utility::serialization::error_code::network_error);
     }
     BOOST_LOG_SEV(lg(), trace) << "Currently connected.";
 
@@ -817,7 +817,7 @@ client::send_request(messaging::frame request_frame) {
         } catch (const std::exception& e) {
             pending_requests_->remove(corr_id);
             BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << e.what();
-            co_return std::unexpected(messaging::error_code::network_error);
+            co_return std::unexpected(ores::utility::serialization::error_code::network_error);
         }
 
         // Wait for response via pending_requests (message loop delivers it)
@@ -893,18 +893,18 @@ client::send_request(messaging::frame request_frame) {
                 conn_->close();
             }
         }
-        co_return std::unexpected(messaging::error_code::network_error);
+        co_return std::unexpected(ores::utility::serialization::error_code::network_error);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Request exception: " << e.what();
-        co_return std::unexpected(messaging::error_code::network_error);
+        co_return std::unexpected(ores::utility::serialization::error_code::network_error);
     }
 }
 
-std::expected<messaging::frame, messaging::error_code>
+std::expected<messaging::frame, ores::utility::serialization::error_code>
 client::send_request_sync(messaging::frame request_frame) {
     BOOST_LOG_SEV(lg(), debug) << "Starting to send request synchronously.";
 
-    using result_type = std::expected<messaging::frame, messaging::error_code>;
+    using result_type = std::expected<messaging::frame, ores::utility::serialization::error_code>;
 
     auto task = [this, request_frame = std::move(
             request_frame)]() mutable -> boost::asio::awaitable<result_type> {
@@ -1066,7 +1066,7 @@ boost::asio::awaitable<void> client::run_message_loop() {
 
     // Fail all pending requests so waiting coroutines don't hang
     if (pending_requests_) {
-        pending_requests_->fail_all(messaging::error_code::network_error);
+        pending_requests_->fail_all(ores::utility::serialization::error_code::network_error);
     }
 
     message_loop_running_ = false;

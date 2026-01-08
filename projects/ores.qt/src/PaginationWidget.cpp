@@ -47,32 +47,28 @@ PaginationWidget::PaginationWidget(QWidget* parent)
     page_size_combo_->setCurrentIndex(2); // Default to 100
 
     // Configure navigation buttons with icons
-    const QColor disabledIconColor(100, 100, 100); // Gray for disabled state
     const QColor iconColor(220, 220, 220);
 
-    // NOTE: Disabled until sqlgen adds OFFSET support
-    const QString disabled_tooltip =
-        "Page navigation disabled: backend doesn't support OFFSET yet.\n"
-        "Use 'Load All' to load all records at once (max 1000).";
-
     first_button_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_previous_20_regular.svg", disabledIconColor));
-    first_button_->setToolTip("First page - " + disabled_tooltip);
-    first_button_->setEnabled(false);
+        ":/icons/ic_fluent_arrow_previous_20_regular.svg", iconColor));
+    first_button_->setToolTip("First page");
 
     prev_button_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_left_20_regular.svg", disabledIconColor));
-    prev_button_->setToolTip("Previous page - " + disabled_tooltip);
-    prev_button_->setEnabled(false);
+        ":/icons/ic_fluent_arrow_left_20_regular.svg", iconColor));
+    prev_button_->setToolTip("Previous page");
 
     next_button_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_right_20_regular.svg", disabledIconColor));
-    next_button_->setToolTip("Next page - " + disabled_tooltip);
-    next_button_->setEnabled(false);
+        ":/icons/ic_fluent_arrow_right_20_regular.svg", iconColor));
+    next_button_->setToolTip("Next page");
 
     last_button_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_next_20_regular.svg", disabledIconColor));
-    last_button_->setToolTip("Last page - " + disabled_tooltip);
+        ":/icons/ic_fluent_arrow_next_20_regular.svg", iconColor));
+    last_button_->setToolTip("Last page");
+
+    // Initially disabled until we know how many pages there are
+    first_button_->setEnabled(false);
+    prev_button_->setEnabled(false);
+    next_button_->setEnabled(false);
     last_button_->setEnabled(false);
 
     // Configure load all button
@@ -102,11 +98,15 @@ PaginationWidget::PaginationWidget(QWidget* parent)
     connect(load_all_button_, &QPushButton::clicked,
             this, &PaginationWidget::on_load_all_clicked);
 
-    // Navigation buttons would connect here when OFFSET is supported
-    // connect(first_button_, &QPushButton::clicked, ...);
-    // connect(prev_button_, &QPushButton::clicked, ...);
-    // connect(next_button_, &QPushButton::clicked, ...);
-    // connect(last_button_, &QPushButton::clicked, ...);
+    // Connect navigation buttons
+    connect(first_button_, &QPushButton::clicked,
+            this, &PaginationWidget::on_first_clicked);
+    connect(prev_button_, &QPushButton::clicked,
+            this, &PaginationWidget::on_prev_clicked);
+    connect(next_button_, &QPushButton::clicked,
+            this, &PaginationWidget::on_next_clicked);
+    connect(last_button_, &QPushButton::clicked,
+            this, &PaginationWidget::on_last_clicked);
 }
 
 void PaginationWidget::update_state(std::uint32_t loaded_count,
@@ -114,21 +114,28 @@ void PaginationWidget::update_state(std::uint32_t loaded_count,
     loaded_count_ = loaded_count;
     total_count_ = total_count;
 
-    // Update info label
+    const auto pages = total_pages();
+    const auto current = current_page_;
+
+    // Update info label with page information
     QString info_text;
     if (total_count == 0) {
         info_text = "No records";
-    } else if (loaded_count >= total_count) {
+    } else if (pages <= 1) {
         info_text = QString("Showing all %1 records").arg(total_count);
     } else {
-        info_text = QString("Showing %1 of %2 records")
-            .arg(loaded_count)
+        info_text = QString("Page %1 of %2 (%3 records)")
+            .arg(current + 1)
+            .arg(pages)
             .arg(total_count);
     }
     info_label_->setText(info_text);
 
+    update_button_states();
+
     BOOST_LOG_SEV(lg(), debug) << "update_state: loaded=" << loaded_count
-                               << ", total=" << total_count;
+                               << ", total=" << total_count
+                               << ", page=" << (current + 1) << "/" << pages;
 }
 
 std::uint32_t PaginationWidget::page_size() const {
@@ -137,6 +144,8 @@ std::uint32_t PaginationWidget::page_size() const {
 
 void PaginationWidget::on_page_size_changed(int index) {
     if (index >= 0) {
+        // Reset to first page when page size changes
+        current_page_ = 0;
         const auto size = page_size_combo_->itemData(index).toUInt();
         emit page_size_changed(size);
     }
@@ -153,6 +162,70 @@ void PaginationWidget::set_load_all_enabled(bool enabled) {
     load_all_button_->setEnabled(enabled);
     BOOST_LOG_SEV(lg(), debug) << "After setEnabled(" << enabled
                                << "): button_is_enabled=" << load_all_button_->isEnabled();
+}
+
+std::uint32_t PaginationWidget::total_pages() const {
+    if (total_count_ == 0) {
+        return 0;
+    }
+    const auto size = page_size();
+    return (total_count_ + size - 1) / size;  // Ceiling division
+}
+
+std::uint32_t PaginationWidget::current_offset() const {
+    return current_page_ * page_size();
+}
+
+void PaginationWidget::update_button_states() {
+    const auto pages = total_pages();
+    const bool has_pages = pages > 1;
+    const bool can_go_back = has_pages && current_page_ > 0;
+    const bool can_go_forward = has_pages && current_page_ < (pages - 1);
+
+    first_button_->setEnabled(can_go_back);
+    prev_button_->setEnabled(can_go_back);
+    next_button_->setEnabled(can_go_forward);
+    last_button_->setEnabled(can_go_forward);
+}
+
+void PaginationWidget::on_first_clicked() {
+    if (current_page_ == 0) {
+        return;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "First page clicked";
+    current_page_ = 0;
+    emit page_requested(current_offset(), page_size());
+}
+
+void PaginationWidget::on_prev_clicked() {
+    if (current_page_ == 0) {
+        return;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Previous page clicked, page " << current_page_
+                               << " -> " << (current_page_ - 1);
+    current_page_--;
+    emit page_requested(current_offset(), page_size());
+}
+
+void PaginationWidget::on_next_clicked() {
+    const auto pages = total_pages();
+    if (current_page_ >= pages - 1) {
+        return;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Next page clicked, page " << current_page_
+                               << " -> " << (current_page_ + 1);
+    current_page_++;
+    emit page_requested(current_offset(), page_size());
+}
+
+void PaginationWidget::on_last_clicked() {
+    const auto pages = total_pages();
+    if (pages == 0 || current_page_ >= pages - 1) {
+        return;
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Last page clicked, going to page " << (pages - 1);
+    current_page_ = pages - 1;
+    emit page_requested(current_offset(), page_size());
 }
 
 }

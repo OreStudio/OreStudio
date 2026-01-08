@@ -65,7 +65,7 @@ public:
      * @param remote_address The remote endpoint address of the client connection
      * @return Expected containing response payload, or error code
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_message(comms::messaging::message_type type,
         std::span<const std::byte> payload,
         const std::string& remote_address) override;
@@ -74,7 +74,7 @@ private:
     /**
      * @brief Handle get_currencies_request message.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_get_currencies_request(std::span<const std::byte> payload);
 
     /**
@@ -84,19 +84,19 @@ private:
      * result in writing a new record. Database triggers handle temporal
      * versioning automatically.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_save_currency_request(std::span<const std::byte> payload);
 
     /**
      * @brief Handle delete_currency_request message.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_delete_currency_request(std::span<const std::byte> payload);
 
     /**
      * @brief Handle get_currency_history_request message.
      */
-    boost::asio::awaitable<std::expected<std::vector<std::byte>, comms::messaging::error_code>>
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_get_currency_history_request(std::span<const std::byte> payload);
 
     database::context ctx_;

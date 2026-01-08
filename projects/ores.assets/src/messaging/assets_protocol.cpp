@@ -22,90 +22,13 @@
 #include <expected>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
-#include "ores.comms/messaging/reader.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
 
 namespace ores::assets::messaging {
 
-using namespace ores::comms::messaging;
-
-// get_currency_images_request
-
-std::vector<std::byte> get_currency_images_request::serialize() const {
-    return {};
-}
-
-std::expected<get_currency_images_request, comms::messaging::error_code>
-get_currency_images_request::deserialize(std::span<const std::byte> data) {
-    if (!data.empty()) {
-        return std::unexpected(comms::messaging::error_code::invalid_request);
-    }
-    return get_currency_images_request{};
-}
-
-std::ostream& operator<<(std::ostream& s, const get_currency_images_request& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-// get_currency_images_response
-
-std::vector<std::byte> get_currency_images_response::serialize() const {
-    std::vector<std::byte> buffer;
-
-    writer::write_uint32(buffer,
-        static_cast<std::uint32_t>(currency_images.size()));
-
-    for (const auto& ci : currency_images) {
-        writer::write_string(buffer, ci.iso_code);
-        writer::write_string(buffer, ci.image_id);
-        writer::write_string(buffer, ci.assigned_by);
-        writer::write_string(buffer, ci.assigned_at);
-    }
-
-    return buffer;
-}
-
-std::expected<get_currency_images_response, comms::messaging::error_code>
-get_currency_images_response::deserialize(std::span<const std::byte> data) {
-    get_currency_images_response response;
-
-    auto count_result = reader::read_uint32(data);
-    if (!count_result) {
-        return std::unexpected(count_result.error());
-    }
-    auto count = *count_result;
-
-    response.currency_images.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        domain::currency_image ci;
-
-        auto iso_code_result = reader::read_string(data);
-        if (!iso_code_result) return std::unexpected(iso_code_result.error());
-        ci.iso_code = *iso_code_result;
-
-        auto image_id_result = reader::read_string(data);
-        if (!image_id_result) return std::unexpected(image_id_result.error());
-        ci.image_id = *image_id_result;
-
-        auto assigned_by_result = reader::read_string(data);
-        if (!assigned_by_result) return std::unexpected(assigned_by_result.error());
-        ci.assigned_by = *assigned_by_result;
-
-        auto assigned_at_result = reader::read_string(data);
-        if (!assigned_at_result) return std::unexpected(assigned_at_result.error());
-        ci.assigned_at = *assigned_at_result;
-
-        response.currency_images.push_back(std::move(ci));
-    }
-
-    return response;
-}
-
-std::ostream& operator<<(std::ostream& s, const get_currency_images_response& v) {
-    rfl::json::write(v, s);
-    return s;
-}
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
 
 // get_images_request
 
@@ -122,7 +45,7 @@ std::vector<std::byte> get_images_request::serialize() const {
     return buffer;
 }
 
-std::expected<get_images_request, comms::messaging::error_code>
+std::expected<get_images_request, ores::utility::serialization::error_code>
 get_images_request::deserialize(std::span<const std::byte> data) {
     get_images_request request;
 
@@ -134,7 +57,7 @@ get_images_request::deserialize(std::span<const std::byte> data) {
 
     // Enforce maximum batch size
     if (count > MAX_IMAGES_PER_REQUEST) {
-        return std::unexpected(comms::messaging::error_code::payload_too_large);
+        return std::unexpected(ores::utility::serialization::error_code::payload_too_large);
     }
 
     request.image_ids.reserve(count);
@@ -165,7 +88,7 @@ std::vector<std::byte> get_images_response::serialize() const {
         writer::write_string(buffer, img.image_id);
         writer::write_string(buffer, img.key);
         writer::write_string(buffer, img.description);
-        writer::write_string(buffer, img.svg_data);
+        writer::write_string32(buffer, img.svg_data);  // Use 32-bit length for large SVGs
         writer::write_string(buffer, img.recorded_by);
         writer::write_string(buffer, img.recorded_at);
     }
@@ -173,7 +96,7 @@ std::vector<std::byte> get_images_response::serialize() const {
     return buffer;
 }
 
-std::expected<get_images_response, comms::messaging::error_code>
+std::expected<get_images_response, ores::utility::serialization::error_code>
 get_images_response::deserialize(std::span<const std::byte> data) {
     get_images_response response;
 
@@ -203,7 +126,7 @@ get_images_response::deserialize(std::span<const std::byte> data) {
         if (!description_result) return std::unexpected(description_result.error());
         img.description = *description_result;
 
-        auto svg_data_result = reader::read_string(data);
+        auto svg_data_result = reader::read_string32(data);  // Use 32-bit length for large SVGs
         if (!svg_data_result) return std::unexpected(svg_data_result.error());
         img.svg_data = *svg_data_result;
 
@@ -232,10 +155,10 @@ std::vector<std::byte> list_images_request::serialize() const {
     return {};
 }
 
-std::expected<list_images_request, comms::messaging::error_code>
+std::expected<list_images_request, ores::utility::serialization::error_code>
 list_images_request::deserialize(std::span<const std::byte> data) {
     if (!data.empty()) {
-        return std::unexpected(comms::messaging::error_code::invalid_request);
+        return std::unexpected(ores::utility::serialization::error_code::invalid_request);
     }
     return list_images_request{};
 }
@@ -269,7 +192,7 @@ std::vector<std::byte> list_images_response::serialize() const {
     return buffer;
 }
 
-std::expected<list_images_response, comms::messaging::error_code>
+std::expected<list_images_response, ores::utility::serialization::error_code>
 list_images_response::deserialize(std::span<const std::byte> data) {
     list_images_response response;
 
@@ -302,69 +225,6 @@ list_images_response::deserialize(std::span<const std::byte> data) {
 }
 
 std::ostream& operator<<(std::ostream& s, const list_images_response& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-// set_currency_image_request
-
-std::vector<std::byte> set_currency_image_request::serialize() const {
-    std::vector<std::byte> buffer;
-    writer::write_string(buffer, iso_code);
-    writer::write_string(buffer, image_id);
-    writer::write_string(buffer, assigned_by);
-    return buffer;
-}
-
-std::expected<set_currency_image_request, comms::messaging::error_code>
-set_currency_image_request::deserialize(std::span<const std::byte> data) {
-    set_currency_image_request request;
-
-    auto iso_code_result = reader::read_string(data);
-    if (!iso_code_result) return std::unexpected(iso_code_result.error());
-    request.iso_code = *iso_code_result;
-
-    auto image_id_result = reader::read_string(data);
-    if (!image_id_result) return std::unexpected(image_id_result.error());
-    request.image_id = *image_id_result;
-
-    auto assigned_by_result = reader::read_string(data);
-    if (!assigned_by_result) return std::unexpected(assigned_by_result.error());
-    request.assigned_by = *assigned_by_result;
-
-    return request;
-}
-
-std::ostream& operator<<(std::ostream& s, const set_currency_image_request& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-// set_currency_image_response
-
-std::vector<std::byte> set_currency_image_response::serialize() const {
-    std::vector<std::byte> buffer;
-    writer::write_bool(buffer, success);
-    writer::write_string(buffer, message);
-    return buffer;
-}
-
-std::expected<set_currency_image_response, comms::messaging::error_code>
-set_currency_image_response::deserialize(std::span<const std::byte> data) {
-    set_currency_image_response response;
-
-    auto success_result = reader::read_bool(data);
-    if (!success_result) return std::unexpected(success_result.error());
-    response.success = *success_result;
-
-    auto message_result = reader::read_string(data);
-    if (!message_result) return std::unexpected(message_result.error());
-    response.message = *message_result;
-
-    return response;
-}
-
-std::ostream& operator<<(std::ostream& s, const set_currency_image_response& v) {
     rfl::json::write(v, s);
     return s;
 }

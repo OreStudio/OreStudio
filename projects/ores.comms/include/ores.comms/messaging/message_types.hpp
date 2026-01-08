@@ -124,8 +124,18 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // get_telemetry_logs_request/response (0x5010/0x5011) for querying raw logs.
 // get_telemetry_stats_request/response (0x5020/0x5021) for querying aggregated stats.
 // Telemetry logs are stored in a TimescaleDB hypertable with 30-day retention.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 16;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 2;
+//
+// Version 17.0 removes obsolete currency_image junction table messages. The
+// image_id field is now directly on the currency entity, so currency->image
+// mappings come from get_currencies_response. Flag changes appear in currency
+// version history. Removed messages: get_currency_images_request/response,
+// set_currency_image_request/response. Breaking change.
+//
+// Version 18.0 uses 32-bit length prefix for svg_data in get_images_response.
+// Previously used 16-bit length which truncated SVGs larger than 65535 bytes.
+// This is a breaking change affecting image serialization.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 18;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -253,14 +263,11 @@ enum class message_type {
     delete_feature_flag_response = 0x3005,
 
     // Assets subsystem messages (0x4000 - 0x4FFF)
-    get_currency_images_request = 0x4000,
-    get_currency_images_response = 0x4001,
+    // Note: 0x4000-0x4001 and 0x4006-0x4007 removed in v17.0 (currency_image)
     get_images_request = 0x4002,
     get_images_response = 0x4003,
     list_images_request = 0x4004,
     list_images_response = 0x4005,
-    set_currency_image_request = 0x4006,
-    set_currency_image_response = 0x4007,
 
     // Telemetry subsystem messages (0x5000 - 0x5FFF)
     submit_log_records_request = 0x5000,
@@ -272,11 +279,6 @@ enum class message_type {
 
     last_value
 };
-
-/**
- * @brief Backward-compatible alias for ores::utility::serialization::error_code.
- */
-using error_code = ores::utility::serialization::error_code;
 
 /**
  * @brief Stream output operator for message_type.
@@ -295,7 +297,7 @@ inline std::ostream& operator<<(std::ostream& os, message_type mt) {
  * Uses magic_enum to provide human-readable enum names with hex values in logs.
  * Example: "version_mismatch (0x0001)" instead of just "0x0001"
  */
-inline std::ostream& operator<<(std::ostream& os, error_code ec) {
+inline std::ostream& operator<<(std::ostream& os, ores::utility::serialization::error_code ec) {
     return os << magic_enum::enum_name(ec)
               << " (0x" << std::hex << static_cast<std::uint16_t>(ec) << std::dec << ")";
 }
@@ -311,7 +313,7 @@ inline std::ostream& operator<<(std::ostream& os, compression_type ct) {
 /**
  * @brief Convert error_code to string for display.
  */
-inline std::string to_string(error_code ec) {
+inline std::string to_string(ores::utility::serialization::error_code ec) {
     return std::string(magic_enum::enum_name(ec));
 }
 

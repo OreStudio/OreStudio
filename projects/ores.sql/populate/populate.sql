@@ -28,13 +28,13 @@
  * This script is run automatically during template creation and seeds:
  * 1. RBAC: Permissions, roles, role-permission assignments
  * 2. System Flags: Bootstrap mode, user signups, etc.
+ * 3. Flag Images: Country flags and placeholder images
+ * 4. Currency-to-Flag Mappings: Links currencies to their flag images
  *
- * NOTE: Reference data (currencies, flags, images) is NOT included here.
- * Reference data should be imported via the CLI after database creation:
+ * NOTE: Currencies themselves are imported separately via the CLI:
  *   ores.cli import currencies <file.xml>
  *
- * Or use the separate reference data script:
- *   psql -U ores -d your_database -f populate/reference_data.sql
+ * After importing currencies, re-run this script to assign flag mappings.
  *
  * Usage:
  *   psql -U ores -d your_database -f populate/populate.sql
@@ -53,6 +53,17 @@
 \echo '--- System Flags ---'
 \ir system_flags_populate.sql
 
+-- Flag Images
+\echo ''
+\echo '--- Flag Images ---'
+\ir load_flags.sql
+\ir flags_populate.sql
+
+-- Currency-to-Flag Mappings
+\echo ''
+\echo '--- Currency Image Mappings ---'
+\ir currency_images_populate.sql
+
 \echo ''
 \echo '=== System Population Complete ==='
 
@@ -68,4 +79,10 @@ from ores.roles where valid_to = ores.infinity_timestamp()
 union all
 select 'System Flags', count(*)
 from ores.feature_flags where name like 'system.%' and valid_to = ores.infinity_timestamp()
+union all
+select 'Flag Images', count(*)
+from ores.images where valid_to = ores.infinity_timestamp()
+union all
+select 'Currencies with Flags', count(*)
+from ores.currencies where image_id is not null and valid_to = ores.infinity_timestamp()
 order by entity;

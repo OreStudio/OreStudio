@@ -46,7 +46,7 @@ struct get_currency_history_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<get_currency_history_request, comms::messaging::error_code>
+    static std::expected<get_currency_history_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -68,7 +68,7 @@ struct get_currency_history_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<get_currency_history_response, comms::messaging::error_code>
+    static std::expected<get_currency_history_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

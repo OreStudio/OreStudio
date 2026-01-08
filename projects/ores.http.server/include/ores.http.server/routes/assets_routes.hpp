@@ -35,7 +35,6 @@ namespace ores::http_server::routes {
  * Maps the following protocol messages to REST endpoints:
  *
  * Asset Management:
- * - GET /api/v1/assets/currency-images - get_currency_images_request
  * - POST /api/v1/assets/images - get_images_request (batch retrieval)
  */
 class assets_routes final {
@@ -57,9 +56,6 @@ private:
         static auto instance = make_logger(logger_name);
         return instance;
     }
-
-    boost::asio::awaitable<http::domain::http_response>
-    handle_get_currency_images(const http::domain::http_request& req);
 
     boost::asio::awaitable<http::domain::http_response>
     handle_get_images(const http::domain::http_request& req);

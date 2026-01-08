@@ -163,7 +163,10 @@ void CurrencyDetailDialog::setImageCache(ImageCache* imageCache) {
     if (imageCache_) {
         connect(imageCache_, &ImageCache::currencyImageSet,
             this, &CurrencyDetailDialog::onCurrencyImageSet);
-        connect(imageCache_, &ImageCache::currencyMappingsLoaded,
+        // Connect to imagesLoaded (not currencyMappingsLoaded) because:
+        // - currencyMappingsLoaded fires before icons are re-rendered
+        // - imagesLoaded fires after icons are ready in currency_icons_
+        connect(imageCache_, &ImageCache::imagesLoaded,
             this, &CurrencyDetailDialog::updateFlagDisplay);
     }
 }
@@ -316,20 +319,28 @@ void CurrencyDetailDialog::onSaveClicked() {
             emit self->statusMessage(QString("Successfully saved currency: %1")
                 .arg(QString::fromStdString(currency.iso_code)));
 
-            // If there's a pending flag change, persist it now
-            if (!self->pendingImageId_.isNull() && self->imageCache_) {
+            // Persist flag image - use pending selection or default to "no-flag"
+            if (self->imageCache_) {
                 std::string currentImageId =
                     self->imageCache_->getCurrencyImageId(currency.iso_code);
-                std::string pendingId = self->pendingImageId_.toStdString();
+                std::string targetImageId;
 
-                // Only persist if the flag actually changed
-                if (currentImageId != pendingId) {
-                    BOOST_LOG_SEV(lg(), debug) << "Persisting flag change for "
+                if (!self->pendingImageId_.isNull()) {
+                    // User explicitly selected a flag
+                    targetImageId = self->pendingImageId_.toStdString();
+                } else if (currentImageId.empty()) {
+                    // No flag selected and none currently assigned - use "no-flag"
+                    targetImageId = self->imageCache_->getNoFlagImageId();
+                }
+
+                // Only persist if there's a change to make
+                if (!targetImageId.empty() && currentImageId != targetImageId) {
+                    BOOST_LOG_SEV(lg(), debug) << "Persisting flag for "
                                                << currency.iso_code << ": "
-                                               << pendingId;
+                                               << targetImageId;
                     self->imageCache_->setCurrencyImage(
                         currency.iso_code,
-                        pendingId,
+                        targetImageId,
                         self->username_.empty() ? "qt_user" : self->username_);
                 }
                 self->pendingImageId_.clear();
@@ -589,13 +600,6 @@ void CurrencyDetailDialog::onSelectFlagClicked() {
         return;
     }
 
-    if (isAddMode_) {
-        // For new currencies, we need to save first
-        MessageBoxHelper::information(this, "Save Required",
-            "Please save the currency first before assigning a flag.");
-        return;
-    }
-
     BOOST_LOG_SEV(lg(), debug) << "Opening flag selector for: "
                                << currentCurrency_.iso_code;
 
@@ -655,9 +659,6 @@ void CurrencyDetailDialog::updateFlagDisplay() {
     if (!flagButton_)
         return;
 
-    // Use theme-aware color for icons
-    const QColor iconColor = palette().color(QPalette::Disabled, QPalette::WindowText);
-
     // Update styling based on changed state
     if (flagChanged_) {
         // Show orange border to indicate unsaved change
@@ -672,8 +673,8 @@ void CurrencyDetailDialog::updateFlagDisplay() {
     }
 
     if (!imageCache_) {
-        flagButton_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
+        // No image cache available - use the no-flag placeholder from cache
+        // when it becomes available
         return;
     }
 
@@ -705,9 +706,11 @@ void CurrencyDetailDialog::updateFlagDisplay() {
         }
     }
 
-    // Default icon if no ID or loading failed
-    flagButton_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
+    // Default to "no-flag" placeholder icon
+    QIcon noFlagIcon = imageCache_->getNoFlagIcon();
+    if (!noFlagIcon.isNull()) {
+        flagButton_->setIcon(noFlagIcon);
+    }
 }
 
 }

@@ -476,7 +476,10 @@ void CurrencyHistoryDialog::markAsStale() {
 void CurrencyHistoryDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
     if (imageCache_) {
-        connect(imageCache_, &ImageCache::currencyMappingsLoaded,
+        // Connect to imagesLoaded (not currencyMappingsLoaded) because:
+        // - currencyMappingsLoaded fires before icons are re-rendered
+        // - imagesLoaded fires after icons are ready in currency_icons_
+        connect(imageCache_, &ImageCache::imagesLoaded,
             this, &CurrencyHistoryDialog::updateFlagDisplay);
     }
 }

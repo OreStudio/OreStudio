@@ -38,7 +38,7 @@ int message_type_as_int(ores::comms::messaging::message_type mt) {
 }
 
 // Helper function to deserialize a complete frame (header + payload)
-std::expected<ores::comms::messaging::frame, ores::comms::messaging::error_code>
+std::expected<ores::comms::messaging::frame, ores::utility::serialization::error_code>
 deserialize_frame(std::span<const std::byte> data) {
     // First deserialize the header
     auto header_result = ores::comms::messaging::frame::deserialize_header(data);
@@ -218,7 +218,7 @@ TEST_CASE("test_frame_deserialization_invalid_data", tags) {
     CHECK(!result.has_value());
     if (!result.has_value()) {
         BOOST_LOG_SEV(lg, debug) << "Deserialization failed as expected with error code: invalid_message_type";
-        CHECK(result.error() == ores::comms::messaging::error_code::invalid_message_type);
+        CHECK(result.error() == ores::utility::serialization::error_code::invalid_message_type);
     }
 }
 
@@ -258,7 +258,7 @@ TEST_CASE("test_frame_deserialization_corrupted_data", tags) {
         CHECK(!result.has_value());
         if (!result.has_value()) {
             BOOST_LOG_SEV(lg, debug) << "Deserialization of corrupted data failed as expected";
-            CHECK(result.error() == ores::comms::messaging::error_code::invalid_message_type);
+            CHECK(result.error() == ores::utility::serialization::error_code::invalid_message_type);
         }
     }
 }
@@ -357,7 +357,7 @@ TEST_CASE("test_frame_version_mismatch_strict_mode", tags) {
 
     // Should fail with version_mismatch error
     REQUIRE(!header_result.has_value());
-    CHECK(header_result.error() == ores::comms::messaging::error_code::version_mismatch);
+    CHECK(header_result.error() == ores::utility::serialization::error_code::version_mismatch);
 
     BOOST_LOG_SEV(lg, debug) << "Version mismatch correctly detected in strict mode";
 }

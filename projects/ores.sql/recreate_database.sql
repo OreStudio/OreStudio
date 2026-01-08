@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,18 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_MESSAGING_WRITE_HPP
-#define ORES_COMMS_MESSAGING_WRITE_HPP
-
-#include "ores.utility/serialization/writer.hpp"
-
-namespace ores::comms::messaging {
 
 /**
- * @brief Backward-compatible alias for ores::utility::serialization::writer.
+ * Runs a clean up for the current database and then gets it into a ready state.
  */
-using writer = ores::utility::serialization::writer;
+\pset pager off
+\timing
 
-}
-
-#endif
+\ir clean_slate.sql
+\ir setup_user.sql
+\ir admin/setup_admin.sql
+\ir setup_template.sql
+\ir create_instance.sql
+\ir populate/populate.sql
+\ir populate/reference_data.sql

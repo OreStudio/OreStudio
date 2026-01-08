@@ -56,7 +56,7 @@ struct get_currencies_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<get_currencies_request, comms::messaging::error_code>
+    static std::expected<get_currencies_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -105,7 +105,7 @@ struct get_currencies_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<get_currencies_response, comms::messaging::error_code>
+    static std::expected<get_currencies_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -129,7 +129,7 @@ struct save_currency_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<save_currency_request, comms::messaging::error_code>
+    static std::expected<save_currency_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -150,7 +150,7 @@ struct save_currency_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<save_currency_response, comms::messaging::error_code>
+    static std::expected<save_currency_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -179,7 +179,7 @@ struct delete_currency_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<delete_currency_request, comms::messaging::error_code>
+    static std::expected<delete_currency_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -222,7 +222,7 @@ struct delete_currency_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<delete_currency_response, comms::messaging::error_code>
+    static std::expected<delete_currency_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

@@ -88,7 +88,7 @@ public:
      *         - No handler is registered for this message type
      *         - Handler returns an error
      */
-    boost::asio::awaitable<std::expected<frame, error_code>>
+    boost::asio::awaitable<std::expected<frame, ores::utility::serialization::error_code>>
     dispatch(const frame& request_frame, std::uint32_t sequence,
              const std::string& remote_address,
              compression_type response_compression = compression_type::none);

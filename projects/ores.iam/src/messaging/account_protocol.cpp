@@ -26,12 +26,14 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.comms/messaging/reader.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
 
 namespace ores::iam::messaging {
 
-using namespace ores::comms::messaging;
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
+using ores::utility::serialization::error_code;
 
 namespace {
 
@@ -42,7 +44,7 @@ void write_timepoint(std::vector<std::byte>& buffer,
     writer::write_int64(buffer, nanos);
 }
 
-std::expected<std::chrono::system_clock::time_point, error_code>
+std::expected<std::chrono::system_clock::time_point, ores::utility::serialization::error_code>
 read_timepoint(std::span<const std::byte>& data) {
     auto nanos = reader::read_int64(data);
     if (!nanos) return std::unexpected(nanos.error());
@@ -63,7 +65,7 @@ std::vector<std::byte> create_account_request::serialize() const {
     return buffer;
 }
 
-std::expected<create_account_request, comms::messaging::error_code>
+std::expected<create_account_request, ores::utility::serialization::error_code>
 create_account_request::deserialize(std::span<const std::byte> data) {
     create_account_request request;
 
@@ -102,7 +104,7 @@ std::vector<std::byte> create_account_response::serialize() const {
     return buffer;
 }
 
-std::expected<create_account_response, comms::messaging::error_code>
+std::expected<create_account_response, ores::utility::serialization::error_code>
 create_account_response::deserialize(std::span<const std::byte> data) {
     create_account_response response;
 
@@ -126,7 +128,7 @@ std::vector<std::byte> list_accounts_request::serialize() const {
     return buffer;
 }
 
-std::expected<list_accounts_request, comms::messaging::error_code>
+std::expected<list_accounts_request, ores::utility::serialization::error_code>
 list_accounts_request::deserialize(std::span<const std::byte> data) {
     list_accounts_request request;
 
@@ -172,7 +174,7 @@ std::vector<std::byte> list_accounts_response::serialize() const {
     return buffer;
 }
 
-std::expected<list_accounts_response, comms::messaging::error_code>
+std::expected<list_accounts_response, ores::utility::serialization::error_code>
 list_accounts_response::deserialize(std::span<const std::byte> data) {
     list_accounts_response response;
 
@@ -251,7 +253,7 @@ std::vector<std::byte> unlock_account_request::serialize() const {
     return buffer;
 }
 
-std::expected<unlock_account_request, comms::messaging::error_code>
+std::expected<unlock_account_request, ores::utility::serialization::error_code>
 unlock_account_request::deserialize(std::span<const std::byte> data) {
     unlock_account_request request;
 
@@ -292,7 +294,7 @@ std::vector<std::byte> unlock_account_response::serialize() const {
     return buffer;
 }
 
-std::expected<unlock_account_response, comms::messaging::error_code>
+std::expected<unlock_account_response, ores::utility::serialization::error_code>
 unlock_account_response::deserialize(std::span<const std::byte> data) {
     unlock_account_response response;
 
@@ -334,7 +336,7 @@ std::vector<std::byte> delete_account_request::serialize() const {
     return buffer;
 }
 
-std::expected<delete_account_request, comms::messaging::error_code>
+std::expected<delete_account_request, ores::utility::serialization::error_code>
 delete_account_request::deserialize(std::span<const std::byte> data) {
     auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) {
@@ -355,7 +357,7 @@ std::vector<std::byte> delete_account_response::serialize() const {
     return buffer;
 }
 
-std::expected<delete_account_response, comms::messaging::error_code>
+std::expected<delete_account_response, ores::utility::serialization::error_code>
 delete_account_response::deserialize(std::span<const std::byte> data) {
     delete_account_response response;
 
@@ -388,7 +390,7 @@ std::vector<std::byte> lock_account_request::serialize() const {
     return buffer;
 }
 
-std::expected<lock_account_request, comms::messaging::error_code>
+std::expected<lock_account_request, ores::utility::serialization::error_code>
 lock_account_request::deserialize(std::span<const std::byte> data) {
     lock_account_request request;
 
@@ -429,7 +431,7 @@ std::vector<std::byte> lock_account_response::serialize() const {
     return buffer;
 }
 
-std::expected<lock_account_response, comms::messaging::error_code>
+std::expected<lock_account_response, ores::utility::serialization::error_code>
 lock_account_response::deserialize(std::span<const std::byte> data) {
     lock_account_response response;
 
@@ -473,7 +475,7 @@ std::vector<std::byte> update_account_request::serialize() const {
     return buffer;
 }
 
-std::expected<update_account_request, comms::messaging::error_code>
+std::expected<update_account_request, ores::utility::serialization::error_code>
 update_account_request::deserialize(std::span<const std::byte> data) {
     update_account_request request;
 
@@ -505,7 +507,7 @@ std::vector<std::byte> update_account_response::serialize() const {
     return buffer;
 }
 
-std::expected<update_account_response, comms::messaging::error_code>
+std::expected<update_account_response, ores::utility::serialization::error_code>
 update_account_response::deserialize(std::span<const std::byte> data) {
     update_account_response response;
 
@@ -535,7 +537,7 @@ std::vector<std::byte> reset_password_request::serialize() const {
     return buffer;
 }
 
-std::expected<reset_password_request, comms::messaging::error_code>
+std::expected<reset_password_request, ores::utility::serialization::error_code>
 reset_password_request::deserialize(std::span<const std::byte> data) {
     reset_password_request request;
 
@@ -576,7 +578,7 @@ std::vector<std::byte> reset_password_response::serialize() const {
     return buffer;
 }
 
-std::expected<reset_password_response, comms::messaging::error_code>
+std::expected<reset_password_response, ores::utility::serialization::error_code>
 reset_password_response::deserialize(std::span<const std::byte> data) {
     reset_password_response response;
 
@@ -618,7 +620,7 @@ std::vector<std::byte> change_password_request::serialize() const {
     return buffer;
 }
 
-std::expected<change_password_request, comms::messaging::error_code>
+std::expected<change_password_request, ores::utility::serialization::error_code>
 change_password_request::deserialize(std::span<const std::byte> data) {
     change_password_request request;
 
@@ -643,7 +645,7 @@ std::vector<std::byte> change_password_response::serialize() const {
     return buffer;
 }
 
-std::expected<change_password_response, comms::messaging::error_code>
+std::expected<change_password_response, ores::utility::serialization::error_code>
 change_password_response::deserialize(std::span<const std::byte> data) {
     change_password_response response;
 
@@ -670,7 +672,7 @@ std::vector<std::byte> update_my_email_request::serialize() const {
     return buffer;
 }
 
-std::expected<update_my_email_request, comms::messaging::error_code>
+std::expected<update_my_email_request, ores::utility::serialization::error_code>
 update_my_email_request::deserialize(std::span<const std::byte> data) {
     update_my_email_request request;
 
@@ -694,7 +696,7 @@ std::vector<std::byte> update_my_email_response::serialize() const {
     return buffer;
 }
 
-std::expected<update_my_email_response, comms::messaging::error_code>
+std::expected<update_my_email_response, ores::utility::serialization::error_code>
 update_my_email_response::deserialize(std::span<const std::byte> data) {
     update_my_email_response response;
 

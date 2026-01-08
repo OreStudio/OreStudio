@@ -51,7 +51,7 @@ struct list_roles_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<list_roles_request, comms::messaging::error_code>
+    static std::expected<list_roles_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -89,7 +89,7 @@ struct list_roles_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<list_roles_response, comms::messaging::error_code>
+    static std::expected<list_roles_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -113,7 +113,7 @@ struct list_permissions_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<list_permissions_request, comms::messaging::error_code>
+    static std::expected<list_permissions_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -142,7 +142,7 @@ struct list_permissions_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<list_permissions_response, comms::messaging::error_code>
+    static std::expected<list_permissions_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -173,7 +173,7 @@ struct assign_role_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<assign_role_request, comms::messaging::error_code>
+    static std::expected<assign_role_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -199,7 +199,7 @@ struct assign_role_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<assign_role_response, comms::messaging::error_code>
+    static std::expected<assign_role_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -230,7 +230,7 @@ struct revoke_role_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<revoke_role_request, comms::messaging::error_code>
+    static std::expected<revoke_role_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -256,7 +256,7 @@ struct revoke_role_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<revoke_role_response, comms::messaging::error_code>
+    static std::expected<revoke_role_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -283,7 +283,7 @@ struct get_account_roles_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<get_account_roles_request, comms::messaging::error_code>
+    static std::expected<get_account_roles_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -305,7 +305,7 @@ struct get_account_roles_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<get_account_roles_response, comms::messaging::error_code>
+    static std::expected<get_account_roles_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -332,7 +332,7 @@ struct get_account_permissions_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<get_account_permissions_request, comms::messaging::error_code>
+    static std::expected<get_account_permissions_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -358,7 +358,7 @@ struct get_account_permissions_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<get_account_permissions_response, comms::messaging::error_code>
+    static std::expected<get_account_permissions_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -390,7 +390,7 @@ struct get_role_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<get_role_request, comms::messaging::error_code>
+    static std::expected<get_role_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -420,7 +420,7 @@ struct get_role_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<get_role_response, comms::messaging::error_code>
+    static std::expected<get_role_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

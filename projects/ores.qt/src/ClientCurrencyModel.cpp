@@ -156,9 +156,6 @@ void ClientCurrencyModel::refresh(bool replace) {
 
     // If not connected, we can't fetch.
     if (!clientManager_ || !clientManager_->isConnected()) {
-        // If replacing, we might want to clear the model to show "offline/empty"
-        // or keep stale data. Let's keep stale data but maybe emit error?
-        // For now, just log and return.
         BOOST_LOG_SEV(lg(), warn) << "Cannot refresh currency model: disconnected.";
         return;
     }
@@ -180,20 +177,51 @@ void ClientCurrencyModel::refresh(bool replace) {
         }
     }
 
+    fetch_currencies(offset, page_size_);
+}
+
+void ClientCurrencyModel::load_page(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
+
+    if (is_fetching_) {
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring load_page request.";
+        return;
+    }
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load page: disconnected.";
+        return;
+    }
+
+    // Clear existing data and load the requested page
+    if (!currencies_.empty()) {
+        beginResetModel();
+        currencies_.clear();
+        recent_iso_codes_.clear();
+        pulse_timer_->stop();
+        pulse_count_ = 0;
+        pulse_state_ = false;
+        endResetModel();
+    }
+
+    fetch_currencies(offset, limit);
+}
+
+void ClientCurrencyModel::fetch_currencies(std::uint32_t offset,
+                                            std::uint32_t limit) {
     is_fetching_ = true;
     QPointer<ClientCurrencyModel> self = this;
-    const std::uint32_t page_size = page_size_;
 
     QFuture<FutureWatcherResult> future =
-        QtConcurrent::run([self, offset, page_size]() -> FutureWatcherResult {
+        QtConcurrent::run([self, offset, limit]() -> FutureWatcherResult {
             BOOST_LOG_SEV(lg(), debug) << "Making a currencies request with offset="
-                                       << offset << ", limit=" << page_size;
+                                       << offset << ", limit=" << limit;
             if (!self) return {false, {}, 0};
 
             // Fetch currencies using typed request
             risk::messaging::get_currencies_request request;
             request.offset = offset;
-            request.limit = page_size;
+            request.limit = limit;
 
             auto result = self->clientManager_->
                 process_authenticated_request(std::move(request));
@@ -291,13 +319,8 @@ bool ClientCurrencyModel::canFetchMore(const QModelIndex& parent) const {
     if (parent.isValid())
         return false;
 
-    // NOTE: Automatic fetch-more is disabled because sqlgen doesn't support
-    // OFFSET yet (see repository implementation). Without OFFSET, subsequent
-    // fetches return the same first N records, causing duplicates.
-    // Users can use "Load All" button to load all records in one request.
-
-    // Only allow fetching if we have loaded fewer records than requested page size
-    // This handles the initial load, but prevents auto-pagination
+    // For Qt's automatic fetch-more, we only allow it for appending data
+    // (e.g., infinite scroll). Page-based navigation uses load_page() instead.
     const bool has_more = currencies_.size() < page_size_ &&
                           currencies_.size() < total_available_count_;
 

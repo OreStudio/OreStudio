@@ -118,7 +118,7 @@ public:
      * If no compression was used, returns a copy of the raw payload.
      * @return The decompressed payload, or error_code on failure
      */
-    std::expected<std::vector<std::byte>, error_code> decompressed_payload() const;
+    std::expected<std::vector<std::byte>, ores::utility::serialization::error_code> decompressed_payload() const;
 
     /**
      * @brief Serialize frame to bytes.
@@ -140,7 +140,7 @@ public:
      *        This is useful during handshake to allow the server to send a proper
      *        version mismatch response instead of rejecting the frame immediately.
      */
-    static std::expected<frame_header, error_code> deserialize_header(
+    static std::expected<frame_header, ores::utility::serialization::error_code> deserialize_header(
         std::span<const std::byte> data, bool skip_version_check = false);
 
     /**
@@ -150,7 +150,7 @@ public:
      * Validates CRC32 checksum over the entire frame.
      * Returns error if validation fails.
      */
-    static std::expected<frame, error_code>
+    static std::expected<frame, ores::utility::serialization::error_code>
     deserialize(const frame_header& header, std::span<const std::byte> data);
 
     /**
@@ -158,7 +158,7 @@ public:
      *
      * Checks magic number, version compatibility, and CRC.
      */
-    std::expected<void, error_code> validate() const;
+    std::expected<void, ores::utility::serialization::error_code> validate() const;
 
 private:
     frame_header header_;

@@ -25,12 +25,13 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.comms/messaging/reader.hpp"
-#include "ores.comms/messaging/writer.hpp"
+#include "ores.utility/serialization/reader.hpp"
+#include "ores.utility/serialization/writer.hpp"
 
 namespace ores::iam::messaging {
 
-using namespace ores::comms::messaging;
+using ores::utility::serialization::reader;
+using ores::utility::serialization::writer;
 
 std::vector<std::byte> login_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -39,7 +40,7 @@ std::vector<std::byte> login_request::serialize() const {
     return buffer;
 }
 
-std::expected<login_request, comms::messaging::error_code>
+std::expected<login_request, ores::utility::serialization::error_code>
 login_request::deserialize(std::span<const std::byte> data) {
     login_request request;
 
@@ -71,7 +72,7 @@ std::vector<std::byte> login_response::serialize() const {
     return buffer;
 }
 
-std::expected<login_response, comms::messaging::error_code>
+std::expected<login_response, ores::utility::serialization::error_code>
 login_response::deserialize(std::span<const std::byte> data) {
     login_response response;
 
@@ -113,10 +114,10 @@ std::vector<std::byte> list_login_info_request::serialize() const {
     return {};
 }
 
-std::expected<list_login_info_request, comms::messaging::error_code>
+std::expected<list_login_info_request, ores::utility::serialization::error_code>
 list_login_info_request::deserialize(std::span<const std::byte> data) {
     if (!data.empty()) {
-        return std::unexpected(comms::messaging::error_code::payload_too_large);
+        return std::unexpected(ores::utility::serialization::error_code::payload_too_large);
     }
     return list_login_info_request{};
 }
@@ -149,7 +150,7 @@ std::vector<std::byte> list_login_info_response::serialize() const {
     return buffer;
 }
 
-std::expected<list_login_info_response, comms::messaging::error_code>
+std::expected<list_login_info_response, ores::utility::serialization::error_code>
 list_login_info_response::deserialize(std::span<const std::byte> data) {
     list_login_info_response response;
 
@@ -217,7 +218,7 @@ std::vector<std::byte> logout_request::serialize() const {
     return {};
 }
 
-std::expected<logout_request, comms::messaging::error_code>
+std::expected<logout_request, ores::utility::serialization::error_code>
 logout_request::deserialize(std::span<const std::byte> data) {
     // Ignore any payload data - request is empty
     (void)data;
@@ -236,7 +237,7 @@ std::vector<std::byte> logout_response::serialize() const {
     return buffer;
 }
 
-std::expected<logout_response, comms::messaging::error_code>
+std::expected<logout_response, ores::utility::serialization::error_code>
 logout_response::deserialize(std::span<const std::byte> data) {
     logout_response response;
 
@@ -249,7 +250,7 @@ logout_response::deserialize(std::span<const std::byte> data) {
     response.message = *message_result;
 
     if (!data.empty()) {
-        return std::unexpected(comms::messaging::error_code::payload_too_large);
+        return std::unexpected(ores::utility::serialization::error_code::payload_too_large);
     }
 
     return response;

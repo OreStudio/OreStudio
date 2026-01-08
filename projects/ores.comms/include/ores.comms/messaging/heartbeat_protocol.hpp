@@ -41,7 +41,7 @@ struct ping final {
     /**
      * @brief Deserialize from frame payload.
      */
-    static std::expected<ping, error_code>
+    static std::expected<ping, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
@@ -59,7 +59,7 @@ struct pong final {
     /**
      * @brief Deserialize from frame payload.
      */
-    static std::expected<pong, error_code>
+    static std::expected<pong, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 

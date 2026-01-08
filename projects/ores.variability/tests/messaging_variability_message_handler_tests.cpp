@@ -66,7 +66,7 @@ generate_feature_flags(int count) {
 
 using namespace ores::telemetry::log;
 using ores::comms::messaging::message_type;
-using ores::comms::messaging::error_code;
+using ores::utility::serialization::error_code;
 using ores::testing::scoped_database_helper;
 using ores::variability::repository::feature_flags_repository;
 

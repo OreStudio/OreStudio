@@ -30,7 +30,7 @@ subscription_handler::subscription_handler(
     BOOST_LOG_SEV(lg(), debug) << "Subscription handler created.";
 }
 
-boost::asio::awaitable<std::expected<std::vector<std::byte>, messaging::error_code>>
+boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
 subscription_handler::handle_message(messaging::message_type type,
     std::span<const std::byte> payload,
     const std::string& remote_address) {
@@ -49,11 +49,11 @@ subscription_handler::handle_message(messaging::message_type type,
     default:
         BOOST_LOG_SEV(lg(), error)
             << "Unexpected message type in subscription handler: " << type;
-        co_return std::unexpected(messaging::error_code::invalid_message_type);
+        co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
     }
 }
 
-std::expected<std::vector<std::byte>, messaging::error_code>
+std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
 subscription_handler::handle_subscribe_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
 
@@ -88,7 +88,7 @@ subscription_handler::handle_subscribe_request(std::span<const std::byte> payloa
     return response.serialize();
 }
 
-std::expected<std::vector<std::byte>, messaging::error_code>
+std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
 subscription_handler::handle_unsubscribe_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
 

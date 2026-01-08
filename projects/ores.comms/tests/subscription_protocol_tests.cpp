@@ -30,6 +30,7 @@ namespace {
 const std::string tags("[messaging][subscription]");
 
 using namespace ores::comms::messaging;
+using ores::utility::serialization::error_code;
 
 // ============================================================================
 // subscribe_request tests

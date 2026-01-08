@@ -17,47 +17,46 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-07 Wed 23:20], for Wednesday, January 07, 2026.
-|      | <75>                                  |        |      |      |       |
-| Tags | Headline                              | Time   |      |      |     % |
-|------+---------------------------------------+--------+------+------+-------|
-|      | *Total time*                          | *9:39* |      |      | 100.0 |
-|------+---------------------------------------+--------+------+------+-------|
-|      | Stories                               | 9:39   |      |      | 100.0 |
-|      | Active                                |        | 9:39 |      | 100.0 |
-| code | Add support for offsets in pagination |        |      | 1:46 |  18.3 |
-| code | Assorted fixes to currencies dialog   |        |      | 1:50 |  19.0 |
-| code | Add country support                   |        |      | 1:37 |  16.8 |
-| code | Review telemetry work                 |        |      | 4:26 |  45.9 |
+#+CAPTION: Clock summary at [2026-01-08 Thu 10:32], for Thursday, January 08, 2026.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *2:40* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 2:40   |      |      | 100.0 |
+|       | Active                                |        | 2:40 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:33 |  20.6 |
+| code  | Assorted fixes to currencies dialog   |        |      | 2:07 |  79.4 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-07 Wed 23:20]
+#+CAPTION: Clock summary at [2026-01-08 Thu 10:32]
 |       | <75>                                        |         |       |       |       |
 | Tags  | Headline                                    | Time    |       |       |     % |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                | *42:02* |       |       | 100.0 |
+|       | *Total time*                                | *45:21* |       |       | 100.0 |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                     | 42:02   |       |       | 100.0 |
-|       | Active                                      |         | 42:02 |       | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       |  1:17 |   3.1 |
-| code  | Rerun SQL scripts from scratch              |         |       |  7:52 |  18.7 |
-| code  | Run qt client and validate all new features |         |       |  1:19 |   3.1 |
-| code  | Refactor options and parser                 |         |       |  0:27 |   1.1 |
-| code  | Check functionality in =ores.wt=            |         |       |  2:03 |   4.9 |
-| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       |  1:30 |   3.6 |
-| code  | Review HTTP service                         |         |       |  7:24 |  17.6 |
-| code  | Assorted fixes to currency dialog           |         |       |  4:19 |  10.3 |
-| code  | Add support for offsets in pagination       |         |       |  1:46 |   4.2 |
-| code  | Assorted fixes to currencies dialog         |         |       |  1:50 |   4.4 |
-| code  | Add country support                         |         |       |  1:37 |   3.8 |
-| code  | Review comms analyser work                  |         |       |  0:27 |   1.1 |
-| code  | Review telemetry work                       |         |       | 10:11 |  24.2 |
+|       | Stories                                     | 45:21   |       |       | 100.0 |
+|       | Active                                      |         | 45:21 |       | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       |  1:50 |   4.0 |
+| code  | Rerun SQL scripts from scratch              |         |       |  7:52 |  17.3 |
+| code  | Run qt client and validate all new features |         |       |  1:19 |   2.9 |
+| code  | Refactor options and parser                 |         |       |  0:27 |   1.0 |
+| code  | Check functionality in =ores.wt=            |         |       |  2:03 |   4.5 |
+| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       |  1:30 |   3.3 |
+| code  | Review HTTP service                         |         |       |  7:24 |  16.3 |
+| code  | Assorted fixes to currency dialog           |         |       |  4:19 |   9.5 |
+| code  | Add support for offsets in pagination       |         |       |  1:46 |   3.9 |
+| code  | Assorted fixes to currencies dialog         |         |       |  4:36 |  10.1 |
+| code  | Add country support                         |         |       |  1:37 |   3.6 |
+| code  | Review comms analyser work                  |         |       |  0:27 |   1.0 |
+| code  | Review telemetry work                       |         |       | 10:11 |  22.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2026-01-08 Thu 09:59]--[2026-01-08 Thu 10:32] =>  0:33
     CLOCK: [2026-01-02 Fri 01:20]--[2026-01-02 Fri 01:32] =>  0:12
     CLOCK: [2025-12-31 Wed 10:21]--[2025-12-31 Wed 11:26] =>  1:05
     :END:
@@ -70,14 +69,14 @@ Updates to sprint and product backlog.
 #+end_src
 
 #+name: pie-stories-chart
-#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_08_stories_pie_sorted.png :width 1920 :height 1080
+#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_08_stories_pie_sorted.png :width 1920 :height 1080
 library(conflicted)
 library(ggplot2)
 library(tidyverse)
 library(tibble)
 
 # Filter to only rows with actual story data (non-empty Tags column)
-clean_sprint_summary <- sprint_summary %>% dplyr::filter(Tags != "")
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(!is.na(Tags) & nzchar(Tags))
 stories <- unlist(clean_sprint_summary[2])
 percent_values <- as.numeric(unlist(clean_sprint_summary[6]))
 
@@ -111,7 +110,6 @@ if (length(custom_palette) < length(df$stories)) {
   custom_palette <- rep(custom_palette, length.out = length(df$stories))
 }
 
-
 p <- ggplot(df, aes(x = "", y = percent, fill = stories)) +
   geom_bar(width = 1, stat = "identity") +
   coord_polar("y", start = 0) +
@@ -136,7 +134,7 @@ print(p)
 [[file:sprint_backlog_08_stories_pie_sorted.png]]
 
 #+name: stories-chart
-#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_08_stories.png :width 1200 :height 650
+#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_08_stories.png :width 1200 :height 650
 library(conflicted)
 library(grid)
 library(tidyverse)
@@ -171,7 +169,7 @@ print(p)
 [[file:sprint_backlog_08_stories.png]]
 
 #+name: tags-chart
-#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_08_tags.png :width 600 :height 400
+#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_08_tags.png :width 600 :height 400
 library(conflicted)
 library(grid)
 library(tidyverse)
@@ -539,6 +537,8 @@ Links:
 
 *** STARTED Assorted fixes to currencies dialog                        :code:
     :LOGBOOK:
+    CLOCK: [2026-01-08 Thu 08:40]--[2026-01-08 Thu 09:58] =>  1:18
+    CLOCK: [2026-01-07 Wed 23:21]--[2026-01-08 Thu 00:49] =>  1:28
     CLOCK: [2026-01-07 Wed 23:07]--[2026-01-07 Wed 23:20] =>  0:13
     CLOCK: [2026-01-07 Wed 16:29]--[2026-01-07 Wed 18:06] =>  1:37
     :END:

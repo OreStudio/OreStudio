@@ -15,7 +15,6 @@
 ' GNU Emacs; see the file COPYING. If not, write to the Free Software
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 @startuml
-!pragma layout smetana
 
 title ores.risk Component
 
@@ -160,8 +159,13 @@ namespace ores #F2F2F2 {
                 class currency_version_history
             }
 
+            together {
+                class country
+            }
+
             currency -[hidden]down- currency_version
             currency_version -[hidden]down- currency_version_history
+            currency_version_history -[hidden]down- country
 
             '
             ' Class definitions
@@ -240,6 +244,34 @@ namespace ores #F2F2F2 {
             end note
 
             currency_version_history o-u- ores::risk::domain::currency_version
+
+            class country #F7E5FF {
+                +{field} version : int
+                +{field} alpha2_code : std::string
+                +{field} alpha3_code : std::string
+                +{field} numeric_code : std::string
+                +{field} name : std::string
+                +{field} official_name : std::string
+                +{field} image_id : std::optional<boost::uuids::uuid>
+                +{field} recorded_by : std::string
+                +{field} recorded_at : std::chrono::system_clock::time_point
+            }
+
+            note top of country
+            Represents a country using ISO 3166-1 standard codes.
+
+            Fields:
+
+            - version: Version number for optimistic locking.
+            - alpha2_code: ISO 3166-1 alpha-2 code (e.g., "US").
+            - alpha3_code: ISO 3166-1 alpha-3 code (e.g., "USA").
+            - numeric_code: ISO 3166-1 numeric code (e.g., "840").
+            - name: Short name of the country.
+            - official_name: Official name of the country.
+            - image_id: Optional reference to a flag image.
+            - recorded_by: Username who recorded this version.
+            - recorded_at: Timestamp when this version was recorded.
+            end note
         }
 
         namespace repository #F2F2F2 {
@@ -253,8 +285,17 @@ namespace ores #F2F2F2 {
                 class currency_repository
             }
 
+            together {
+                class country_entity
+                class country_mapper
+                class country_repository
+            }
+
             currency_entity -[hidden]down- currency_mapper
             currency_mapper -[hidden]down- currency_repository
+            currency_repository -[hidden]down- country_entity
+            country_entity -[hidden]down- country_mapper
+            country_mapper -[hidden]down- country_repository
 
             '
             ' Class definitions
@@ -333,6 +374,101 @@ namespace ores #F2F2F2 {
 
             currency_repository ..> ores::risk::domain::currency : uses
             currency_repository ..> ores::risk::repository::currency_entity : uses
+
+            class country_entity <<orm>> #99CB99 {
+                +{field} alpha2_code : sqlgen::PrimaryKey<std::string>
+                +{field} version : int
+                +{field} alpha3_code : std::string
+                +{field} numeric_code : std::string
+                +{field} name : std::string
+                +{field} official_name : std::string
+                +{field} image_id : std::optional<std::string>
+                +{field} modified_by : std::string
+                +{field} valid_from : std::optional<sqlgen::Timestamp>
+                +{field} valid_to : std::optional<sqlgen::Timestamp>
+            }
+
+            note top of country_entity
+            Represents a country in the database.
+
+            ORM Settings:
+
+            - Schema: ores
+            - Table: countries
+
+            Fields:
+
+            - alpha2_code: ISO 3166-1 alpha-2 code (primary key).
+            - version: Version number.
+            - alpha3_code: ISO 3166-1 alpha-3 code.
+            - numeric_code: ISO 3166-1 numeric code.
+            - name: Short name.
+            - official_name: Official name.
+            - image_id: UUID of flag image (as string).
+            - modified_by: User who modified.
+            - valid_from: Start of validity period.
+            - valid_to: End of validity period.
+            end note
+
+            class country_mapper <<orm>> #99CB99 {
+                +{static} map(const country_entity& v) : domain::country
+                +{static} map(const domain::country& v) : country_entity
+                +{static} map(const std::vector<country_entity>& v) : std::vector<domain::country>
+                +{static} map(const std::vector<domain::country>& v) : std::vector<country_entity>
+            }
+
+            note top of country_mapper
+            Maps domain model entities to data storage layer and vice-versa.
+            end note
+
+            country_mapper ..> ores::risk::repository::country_entity : uses
+            country_mapper ..> ores::risk::domain::country : uses
+
+            class country_repository <<orm>> #99CB99 {
+                +sql() : std::string
+                +write(context ctx, const domain::country& country) : void
+                +write(context ctx, const std::vector<domain::country>& countries) : void
+                +read_latest(context ctx) : std::vector<domain::country>
+                +read_latest(context ctx, const std::string& alpha2_code) : std::vector<domain::country>
+                +read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) : std::vector<domain::country>
+                +get_total_country_count(context ctx) : std::uint32_t
+                +read_at_timepoint(context ctx, const std::string& as_of) : std::vector<domain::country>
+                +read_at_timepoint(context ctx, const std::string& as_of, const std::string& alpha2_code) : std::vector<domain::country>
+                +read_all(context ctx) : std::vector<domain::country>
+                +read_all(context ctx, const std::string& alpha2_code) : std::vector<domain::country>
+                +remove(context ctx, const std::string& alpha2_code) : void
+            }
+
+            note top of country_repository
+            Reads and writes countries off of data storage.
+            end note
+
+            country_repository ..> ores::risk::domain::country : uses
+            country_repository ..> ores::risk::repository::country_entity : uses
+        }
+
+        namespace service #F2F2F2 {
+            class country_service #ECECEC {
+                +country_service(context ctx)
+                +list_countries(std::uint32_t offset, std::uint32_t limit) : std::vector<domain::country>
+                +count_countries() : std::uint32_t
+                +save_country(const domain::country& country) : void
+                +delete_country(const std::string& alpha2_code) : void
+                +get_country(const std::string& alpha2_code) : std::optional<domain::country>
+                +get_country_history(const std::string& alpha2_code) : std::vector<domain::country>
+                -{field} ctx_ : context
+                -{field} repo_ : repository::country_repository
+            }
+
+            note top of country_service
+            Service for managing countries.
+
+            Provides a higher-level interface for country operations,
+            wrapping the underlying repository.
+            end note
+
+            country_service o-- ores::risk::repository::country_repository
+            country_service ..> ores::risk::domain::country : uses
         }
 
         namespace generators #F2F2F2 {
@@ -391,6 +527,31 @@ namespace ores #F2F2F2 {
                 class get_currency_history_response
             }
 
+            ' Group: Get countries messages
+            together {
+                class get_countries_request
+                class get_countries_response
+            }
+
+            ' Group: Save country messages
+            together {
+                class save_country_request
+                class save_country_response
+            }
+
+            ' Group: Delete country messages
+            together {
+                class delete_country_request
+                class delete_country_result
+                class delete_country_response
+            }
+
+            ' Group: Get country history messages
+            together {
+                class get_country_history_request
+                class get_country_history_response
+            }
+
             ' Group: Handler infrastructure
             together {
                 class risk_message_handler
@@ -402,13 +563,22 @@ namespace ores #F2F2F2 {
             save_currency_request -[hidden]down- save_currency_response
             delete_currency_request -[hidden]down- delete_currency_response
             get_currency_history_request -[hidden]down- get_currency_history_response
+            get_countries_request -[hidden]down- get_countries_response
+            save_country_request -[hidden]down- save_country_response
+            delete_country_request -[hidden]down- delete_country_result
+            delete_country_result -[hidden]down- delete_country_response
+            get_country_history_request -[hidden]down- get_country_history_response
             risk_message_handler -[hidden]down- registrar
 
             ' Create row structure
             get_currencies_response -[hidden]down- save_currency_request
             save_currency_response -[hidden]down- delete_currency_request
             delete_currency_response -[hidden]down- get_currency_history_request
-            get_currency_history_response -[hidden]down- risk_message_handler
+            get_currency_history_response -[hidden]down- get_countries_request
+            get_countries_response -[hidden]down- save_country_request
+            save_country_response -[hidden]down- delete_country_request
+            delete_country_response -[hidden]down- get_country_history_request
+            get_country_history_response -[hidden]down- risk_message_handler
 
             '
             ' Class definitions
@@ -541,27 +711,188 @@ namespace ores #F2F2F2 {
 
             get_currency_history_response o-u- ores::risk::domain::currency_version_history
 
+            class get_countries_request <<message>> #E1F5FF {
+                +{field} offset : std::uint32_t
+                +{field} limit : std::uint32_t
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<get_countries_request, error_code>
+            }
+
+            note top of get_countries_request
+            Request to retrieve countries with pagination support.
+
+            Fields:
+
+            - offset: Number of records to skip (0-based).
+            - limit: Maximum number of records to return.
+            end note
+
+            class get_countries_response <<message>> #E1F5FF {
+                +{field} countries : std::vector<domain::country>
+                +{field} total_available_count : std::uint32_t
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<get_countries_response, error_code>
+            }
+
+            note top of get_countries_response
+            Response containing countries with pagination metadata.
+
+            Fields:
+
+            - countries: List of countries for this page.
+            - total_available_count: Total countries available.
+            end note
+
+            get_countries_response o-- ores::risk::domain::country
+
+            class save_country_request <<message>> #E1F5FF {
+                +{field} country : domain::country
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<save_country_request, error_code>
+            }
+
+            note top of save_country_request
+            Request to save a country (create or update).
+
+            Due to bitemporal storage, both create and update operations
+            result in writing a new record.
+
+            Fields:
+
+            - country: The country to save.
+            end note
+
+            save_country_request o-- ores::risk::domain::country
+
+            class save_country_response <<message>> #E1F5FF {
+                +{field} success : bool
+                +{field} message : std::string
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<save_country_response, error_code>
+            }
+
+            note top of save_country_response
+            Response confirming country save operation.
+
+            Fields:
+
+            - success: Whether the operation succeeded.
+            - message: Status or error message.
+            end note
+
+            class delete_country_request <<message>> #E1F5FF {
+                +{field} alpha2_codes : std::vector<std::string>
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<delete_country_request, error_code>
+            }
+
+            note top of delete_country_request
+            Request to delete one or more countries.
+
+            Supports batch deletion with individual results per country.
+
+            Fields:
+
+            - alpha2_codes: ISO 3166-1 alpha-2 codes to delete.
+            end note
+
+            class delete_country_result <<message>> #E1F5FF {
+                +{field} alpha2_code : std::string
+                +{field} success : bool
+                +{field} message : std::string
+            }
+
+            note top of delete_country_result
+            Result for a single country deletion.
+
+            Fields:
+
+            - alpha2_code: The alpha-2 code that was processed.
+            - success: Whether deletion succeeded.
+            - message: Status or error message.
+            end note
+
+            class delete_country_response <<message>> #E1F5FF {
+                +{field} results : std::vector<delete_country_result>
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<delete_country_response, error_code>
+            }
+
+            note top of delete_country_response
+            Response confirming country deletion(s).
+
+            Contains one result per requested country.
+            Supports partial success in batch operations.
+
+            Fields:
+
+            - results: Per-country deletion results.
+            end note
+
+            delete_country_response o-- ores::risk::messaging::delete_country_result
+
+            class get_country_history_request <<message>> #E1F5FF {
+                +{field} alpha2_code : std::string
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<get_country_history_request, error_code>
+            }
+
+            note top of get_country_history_request
+            Request to retrieve version history for a country.
+
+            Fields:
+
+            - alpha2_code: ISO 3166-1 alpha-2 code.
+            end note
+
+            class get_country_history_response <<message>> #E1F5FF {
+                +{field} success : bool
+                +{field} message : std::string
+                +{field} history : std::vector<domain::country>
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<get_country_history_response, error_code>
+            }
+
+            note top of get_country_history_response
+            Response containing country version history.
+
+            Fields:
+
+            - success: Whether the operation succeeded.
+            - message: Status or error message.
+            - history: All versions of the country.
+            end note
+
+            get_country_history_response o-- ores::risk::domain::country
+
             class risk_message_handler #ECECEC {
-                +risk_message_handler(utility::repository::context ctx)
-                +handle_message(comms::messaging::message_type type, std::span<const std::uint8_t> payload, const std::string& remote_address) : boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
-                -handle_get_currencies_request(std::span<const std::uint8_t> payload) : boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
-                -handle_update_currency_request(std::span<const std::uint8_t> payload) : boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
-                -handle_delete_currency_request(std::span<const std::uint8_t> payload) : boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
-                -handle_get_currency_history_request(std::span<const std::uint8_t> payload) : boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
-                -handle_save_currency_request(std::span<const std::uint8_t> payload) : boost::asio::awaitable<std::expected<std::vector<std::uint8_t>, comms::messaging::error_code>>
-                -{field} ctx_ : utility::repository::context
-                -{field} currency_repo_ : repository::currency_repository
+                +risk_message_handler(database::context ctx, std::shared_ptr<system_flags_service> system_flags)
+                +handle_message(message_type type, std::span<const std::byte> payload, const std::string& remote_address) : handler_result
+                -handle_get_currencies_request(std::span<const std::byte> payload) : handler_result
+                -handle_save_currency_request(std::span<const std::byte> payload) : handler_result
+                -handle_delete_currency_request(std::span<const std::byte> payload) : handler_result
+                -handle_get_currency_history_request(std::span<const std::byte> payload) : handler_result
+                -handle_get_countries_request(std::span<const std::byte> payload) : handler_result
+                -handle_save_country_request(std::span<const std::byte> payload) : handler_result
+                -handle_delete_country_request(std::span<const std::byte> payload) : handler_result
+                -handle_get_country_history_request(std::span<const std::byte> payload) : handler_result
+                -{field} ctx_ : database::context
+                -{field} system_flags_ : std::shared_ptr<system_flags_service>
+                -{field} currency_service_ : service::currency_service
+                -{field} country_service_ : service::country_service
             }
 
             note top of risk_message_handler
             Message handler for risk subsystem messages.
 
             Processes messages in the risk subsystem range (0x1000-0x1FFF).
-            Currently handles:
-            - get_currencies_request: Retrieves all currencies from the repository
+            Handles currency and country CRUD operations:
+            - get/save/delete currencies and history
+            - get/save/delete countries and history
             end note
 
-            risk_message_handler o-- ores::risk::repository::currency_repository
+            risk_message_handler o-- ores::risk::service::currency_service
+            risk_message_handler o-- ores::risk::service::country_service
             risk_message_handler ..> ores::risk::messaging::get_currencies_request : uses
             risk_message_handler ..> ores::risk::messaging::get_currencies_response : uses
             risk_message_handler ..> ores::risk::messaging::save_currency_request : uses
@@ -570,6 +901,14 @@ namespace ores #F2F2F2 {
             risk_message_handler ..> ores::risk::messaging::delete_currency_response : uses
             risk_message_handler ..> ores::risk::messaging::get_currency_history_request : uses
             risk_message_handler ..> ores::risk::messaging::get_currency_history_response : uses
+            risk_message_handler ..> ores::risk::messaging::get_countries_request : uses
+            risk_message_handler ..> ores::risk::messaging::get_countries_response : uses
+            risk_message_handler ..> ores::risk::messaging::save_country_request : uses
+            risk_message_handler ..> ores::risk::messaging::save_country_response : uses
+            risk_message_handler ..> ores::risk::messaging::delete_country_request : uses
+            risk_message_handler ..> ores::risk::messaging::delete_country_response : uses
+            risk_message_handler ..> ores::risk::messaging::get_country_history_request : uses
+            risk_message_handler ..> ores::risk::messaging::get_country_history_response : uses
 
             class registrar #ECECEC {
                 +{static} register_handlers(comms::server& server, utility::repository::context ctx) : void
@@ -583,6 +922,25 @@ namespace ores #F2F2F2 {
             end note
 
             registrar ..> ores::risk::messaging::risk_message_handler : creates
+        }
+
+        namespace eventing #F2F2F2 {
+            class country_changed_event #F7E5FF {
+                +{field} timestamp : std::chrono::system_clock::time_point
+                +{field} alpha2_codes : std::vector<std::string>
+            }
+
+            note top of country_changed_event
+            Domain event indicating that country data has changed.
+
+            Published when any country entity is created, updated,
+            or deleted. Subscribers use timestamp to query for changes.
+
+            Fields:
+
+            - timestamp: When the change occurred (UTC).
+            - alpha2_codes: Countries that changed.
+            end note
         }
 
         namespace tests #F2F2F2 {

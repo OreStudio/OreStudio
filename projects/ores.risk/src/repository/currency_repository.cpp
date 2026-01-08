@@ -177,10 +177,11 @@ currency_repository::read_all(context ctx, const std::string& iso_code) {
 void currency_repository::remove(context ctx, const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency from database: " << iso_code;
 
-    // Delete the currency - the database trigger will close the temporal record
-    // instead of actually deleting it (sets valid_to = current_timestamp)
+    // Delete only the current record - the database trigger will close the
+    // temporal record instead of actually deleting it (sets valid_to = current_timestamp)
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<currency_entity> |
-        where("iso_code"_c == iso_code);
+        where("iso_code"_c == iso_code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing currency from database.");
 }

@@ -177,10 +177,11 @@ country_repository::read_all(context ctx, const std::string& alpha2_code) {
 void country_repository::remove(context ctx, const std::string& alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing country from database: " << alpha2_code;
 
-    // Delete the country - the database trigger will close the temporal record
-    // instead of actually deleting it (sets valid_to = current_timestamp)
+    // Delete only the current record - the database trigger will close the
+    // temporal record instead of actually deleting it (sets valid_to = current_timestamp)
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<country_entity> |
-        where("alpha2_code"_c == alpha2_code);
+        where("alpha2_code"_c == alpha2_code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing country from database.");
 }

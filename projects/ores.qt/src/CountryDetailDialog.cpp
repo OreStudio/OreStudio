@@ -26,6 +26,7 @@
 #include <QToolBar>
 #include <QMdiSubWindow>
 #include <QMetaObject>
+#include <boost/uuid/string_generator.hpp>
 #include "ui_CountryDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -192,6 +193,17 @@ risk::domain::country CountryDetailDialog::getCountry() const {
     country.official_name = ui_->officialNameEdit->text().toStdString();
     country.recorded_by = username_.empty() ? "qt_user" : username_;
 
+    if (!pendingImageId_.isEmpty()) {
+        boost::uuids::string_generator gen;
+        country.image_id = gen(pendingImageId_.toStdString());
+    } else if (imageCache_ && country.alpha2_code.length() > 0) {
+        std::string existingId = imageCache_->getCountryImageId(country.alpha2_code);
+        if (!existingId.empty()) {
+            boost::uuids::string_generator gen;
+            country.image_id = gen(existingId);
+        }
+    }
+
     return country;
 }
 
@@ -282,29 +294,7 @@ void CountryDetailDialog::onSaveClicked() {
             emit self->statusMessage(QString("Successfully saved country: %1")
                 .arg(QString::fromStdString(country.alpha2_code)));
 
-            // Persist flag image - use pending selection or default to "no-flag"
-            if (self->imageCache_) {
-                std::string currentImageId =
-                    self->imageCache_->getCountryImageId(country.alpha2_code);
-                std::string targetImageId;
-
-                if (!self->pendingImageId_.isNull()) {
-                    targetImageId = self->pendingImageId_.toStdString();
-                } else if (currentImageId.empty()) {
-                    targetImageId = self->imageCache_->getNoFlagImageId();
-                }
-
-                if (!targetImageId.empty() && currentImageId != targetImageId) {
-                    BOOST_LOG_SEV(lg(), debug) << "Persisting flag for "
-                                               << country.alpha2_code << ": "
-                                               << targetImageId;
-                    self->imageCache_->setCountryImage(
-                        country.alpha2_code,
-                        targetImageId,
-                        self->username_.empty() ? "qt_user" : self->username_);
-                }
-                self->pendingImageId_.clear();
-            }
+            self->pendingImageId_.clear();
 
             self->isDirty_ = false;
             self->flagChanged_ = false;

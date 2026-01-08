@@ -34,6 +34,7 @@
 #include <QMetaObject>
 #include <QGroupBox>
 #include <QTimer>
+#include <boost/uuid/string_generator.hpp>
 #include "ui_CurrencyDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -260,6 +261,17 @@ risk::domain::currency CurrencyDetailDialog::getCurrency() const {
     currency.currency_type = ui_->currencyTypeEdit->text().toStdString();
     currency.recorded_by = username_.empty() ? "qt_user" : username_;
 
+    if (!pendingImageId_.isEmpty()) {
+        boost::uuids::string_generator gen;
+        currency.image_id = gen(pendingImageId_.toStdString());
+    } else if (imageCache_ && currency.iso_code.length() > 0) {
+        std::string existingId = imageCache_->getCurrencyImageId(currency.iso_code);
+        if (!existingId.empty()) {
+            boost::uuids::string_generator gen;
+            currency.image_id = gen(existingId);
+        }
+    }
+
     return currency;
 }
 
@@ -357,32 +369,7 @@ void CurrencyDetailDialog::onSaveClicked() {
             emit self->statusMessage(QString("Successfully saved currency: %1")
                 .arg(QString::fromStdString(currency.iso_code)));
 
-            // Persist flag image - use pending selection or default to "no-flag"
-            if (self->imageCache_) {
-                std::string currentImageId =
-                    self->imageCache_->getCurrencyImageId(currency.iso_code);
-                std::string targetImageId;
-
-                if (!self->pendingImageId_.isNull()) {
-                    // User explicitly selected a flag
-                    targetImageId = self->pendingImageId_.toStdString();
-                } else if (currentImageId.empty()) {
-                    // No flag selected and none currently assigned - use "no-flag"
-                    targetImageId = self->imageCache_->getNoFlagImageId();
-                }
-
-                // Only persist if there's a change to make
-                if (!targetImageId.empty() && currentImageId != targetImageId) {
-                    BOOST_LOG_SEV(lg(), debug) << "Persisting flag for "
-                                               << currency.iso_code << ": "
-                                               << targetImageId;
-                    self->imageCache_->setCurrencyImage(
-                        currency.iso_code,
-                        targetImageId,
-                        self->username_.empty() ? "qt_user" : self->username_);
-                }
-                self->pendingImageId_.clear();
-            }
+            self->pendingImageId_.clear();
 
             self->isDirty_ = false;
             self->flagChanged_ = false;

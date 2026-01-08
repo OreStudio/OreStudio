@@ -121,6 +121,20 @@ SUBSYSTEMS = {
         max_value=0x3FFF,
         org_id="E4D5F6A7-B8C9-0123-DEFA-234567890123"
     ),
+    "Assets": SubsystemInfo(
+        name="Assets",
+        component="ores.assets",
+        min_value=0x4000,
+        max_value=0x4FFF,
+        org_id="F5E6A7B8-C9D0-1234-EFAB-345678901234"
+    ),
+    "Telemetry": SubsystemInfo(
+        name="Telemetry",
+        component="ores.telemetry",
+        min_value=0x5000,
+        max_value=0x5FFF,
+        org_id="A6B7C8D9-E0F1-2345-ABCD-456789012345"
+    ),
 }
 
 # Main protocol index org-roam ID
@@ -168,9 +182,15 @@ def parse_message_types(filepath: Path) -> tuple[int, int, str, list[MessageType
             subsystem = get_subsystem(value)
             message_types.append(MessageType(name=name, value=value, subsystem=subsystem))
 
-    # Extract error codes
+    return version_major, version_minor, version_comment, message_types
+
+
+def parse_error_codes(filepath: Path) -> list[ErrorCode]:
+    """Parse error_code.hpp for error codes."""
+    content = filepath.read_text()
+
     error_codes = []
-    error_enum_match = re.search(r'enum class error_code\s*\{([^}]+)\}', content, re.DOTALL)
+    error_enum_match = re.search(r'enum class error_code\s*:\s*std::uint16_t\s*\{([^}]+)\}', content, re.DOTALL)
     if error_enum_match:
         enum_body = error_enum_match.group(1)
         for match in re.finditer(r'(\w+)\s*=\s*(0x[0-9A-Fa-f]+)', enum_body):
@@ -180,7 +200,7 @@ def parse_message_types(filepath: Path) -> tuple[int, int, str, list[MessageType
             value = int(match.group(2), 16)
             error_codes.append(ErrorCode(name=name, value=value))
 
-    return version_major, version_minor, version_comment, message_types, error_codes
+    return error_codes
 
 
 def parse_protocol_header(filepath: Path) -> dict[str, Message]:
@@ -463,7 +483,14 @@ def main():
 
     info = ProtocolInfo()
     (info.version_major, info.version_minor, info.version_comment,
-     info.message_types, info.error_codes) = parse_message_types(message_types_path)
+     info.message_types) = parse_message_types(message_types_path)
+
+    # Parse error codes from separate file
+    error_code_path = project_root / "projects/ores.utility/include/ores.utility/serialization/error_code.hpp"
+    if error_code_path.exists():
+        info.error_codes = parse_error_codes(error_code_path)
+    else:
+        print(f"Warning: {error_code_path} not found, error codes will be empty", file=sys.stderr)
 
     print(f"Parsed protocol version {info.version_major}.{info.version_minor}")
     print(f"Found {len(info.message_types)} message types")

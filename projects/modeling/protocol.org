@@ -112,6 +112,8 @@ The protocol is organized into subsystems, each with its own message range:
 | [[id:C2B3D4E5-F6A7-8901-BCDE-F12345678901][Risk]] | 0x1000-0x1FFF | ores.risk | 16 |
 | [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][Accounts]] | 0x2000-0x2FFF | ores.accounts | 52 |
 | [[id:E4D5F6A7-B8C9-0123-DEFA-234567890123][Variability]] | 0x3000-0x3FFF | ores.variability | 6 |
+| [[id:F5E6A7B8-C9D0-1234-EFAB-345678901234][Assets]] | 0x4000-0x4FFF | ores.assets | 4 |
+| [[id:A6B7C8D9-E0F1-2345-ABCD-456789012345][Telemetry]] | 0x5000-0x5FFF | ores.telemetry | 6 |
 
 * Session Lifecycle
 
@@ -157,6 +159,33 @@ Admin-only operations (lock/unlock account) use server-side session tracking:
 
 | Code | Name |
 |------+------|
+| 0x0000 | none |
+| 0x0001 | version_mismatch |
+| 0x0002 | crc_validation_failed |
+| 0x0003 | invalid_message_type |
+| 0x0004 | handshake_timeout |
+| 0x0005 | handshake_failed |
+| 0x0006 | payload_too_large |
+| 0x0007 | network_error |
+| 0x0008 | handler_error |
+| 0x0009 | database_error |
+| 0x000A | authentication_failed |
+| 0x000B | authorization_failed |
+| 0x000C | invalid_request |
+| 0x000D | bootstrap_mode_only |
+| 0x000E | bootstrap_mode_forbidden |
+| 0x000F | weak_password |
+| 0x0010 | not_localhost |
+| 0x0011 | database_unavailable |
+| 0x0012 | decompression_failed |
+| 0x0013 | unsupported_compression |
+| 0x0014 | compression_failed |
+| 0x0015 | signup_disabled |
+| 0x0016 | username_taken |
+| 0x0017 | email_taken |
+| 0x0018 | signup_requires_authorization |
+| 0x0019 | payload_incomplete |
+| 0x001A | limit_exceeded |
 
 * All Messages Quick Reference
 
@@ -248,13 +277,13 @@ Admin-only operations (lock/unlock account) use server-side session tracking:
 | 0x3003 | save_feature_flag_response | Variability |
 | 0x3004 | delete_feature_flag_request | Variability |
 | 0x3005 | delete_feature_flag_response | Variability |
-| 0x4002 | get_images_request | Unknown |
-| 0x4003 | get_images_response | Unknown |
-| 0x4004 | list_images_request | Unknown |
-| 0x4005 | list_images_response | Unknown |
-| 0x5000 | submit_log_records_request | Unknown |
-| 0x5001 | submit_telemetry_response | Unknown |
-| 0x5010 | get_telemetry_logs_request | Unknown |
-| 0x5011 | get_telemetry_logs_response | Unknown |
-| 0x5020 | get_telemetry_stats_request | Unknown |
-| 0x5021 | get_telemetry_stats_response | Unknown |
+| 0x4002 | get_images_request | Assets |
+| 0x4003 | get_images_response | Assets |
+| 0x4004 | list_images_request | Assets |
+| 0x4005 | list_images_response | Assets |
+| 0x5000 | submit_log_records_request | Telemetry |
+| 0x5001 | submit_telemetry_response | Telemetry |
+| 0x5010 | get_telemetry_logs_request | Telemetry |
+| 0x5011 | get_telemetry_logs_response | Telemetry |
+| 0x5020 | get_telemetry_stats_request | Telemetry |
+| 0x5021 | get_telemetry_stats_response | Telemetry |

@@ -25,6 +25,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QMessageBox>
 #include <QSortFilterProxyModel>
+#include "ores.qt/FeatureFlagItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
@@ -96,6 +97,7 @@ FeatureFlagMdiWindow(ClientManager* clientManager,
 
     proxyModel_->setSourceModel(featureFlagModel_.get());
     featureFlagTableView_->setModel(proxyModel_);
+    featureFlagTableView_->setItemDelegate(new FeatureFlagItemDelegate(this));
     featureFlagTableView_->setSortingEnabled(true);
     featureFlagTableView_->sortByColumn(0, Qt::AscendingOrder);
 

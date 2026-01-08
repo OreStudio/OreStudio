@@ -21,6 +21,7 @@
 
 #include <QPointer>
 #include "ores.qt/CountryMdiWindow.hpp"
+#include "ores.qt/CountryDetailDialog.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -177,19 +178,136 @@ void CountryController::closeAllWindows() {
 
 void CountryController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new country requested";
-    // TODO: Implement CountryDetailDialog for adding new countries
-    // For now, show a placeholder message
-    emit statusMessage("Add new country: feature coming soon");
+    const QColor iconColor(220, 220, 220);
+    risk::domain::country new_country;
+
+    auto* detailDialog = new CountryDetailDialog(mainWindow_);
+    if (clientManager_) {
+        detailDialog->setClientManager(clientManager_);
+        detailDialog->setUsername(username_.toStdString());
+    }
+    if (imageCache_) {
+        detailDialog->setImageCache(imageCache_);
+    }
+
+    connect(detailDialog, &CountryDetailDialog::statusMessage,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(detailDialog, &CountryDetailDialog::errorMessage,
+            this, [this](const QString& message) {
+        emit errorMessage(message);
+    });
+
+    detailDialog->setCountry(new_country);
+
+    auto* detailWindow = new DetachableMdiSubWindow();
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle("New Country");
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_globe_20_regular.svg", iconColor));
+
+    allDetachableWindows_.append(detailWindow);
+    QPointer<CountryController> self = this;
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, detailWindow]() {
+        if (self)
+            self->allDetachableWindows_.removeAll(detailWindow);
+    });
+
+    mdiArea_->addSubWindow(detailWindow);
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
+    detailWindow->adjustSize();
+
+    // If the parent country list window is detached, detach this window too
+    if (countryListWindow_ && countryListWindow_->isDetached()) {
+        detailWindow->show();
+        detailWindow->detach();
+
+        QPoint parentPos = countryListWindow_->pos();
+        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else {
+        detailWindow->show();
+    }
 }
 
 void CountryController::onShowCountryDetails(
     const risk::domain::country& country) {
     BOOST_LOG_SEV(lg(), info) << "Showing country details for: "
                              << country.alpha2_code;
-    // TODO: Implement CountryDetailDialog for editing countries
-    // For now, show a placeholder message
-    emit statusMessage(QString("Edit country %1: feature coming soon")
-        .arg(QString::fromStdString(country.alpha2_code)));
+
+    const QString alpha2Code = QString::fromStdString(country.alpha2_code);
+    const QString windowKey = build_window_key("details", alpha2Code);
+
+    // Try to reuse existing window
+    if (try_reuse_window(windowKey)) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing detail window for: "
+                                  << country.alpha2_code;
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Creating new detail window for: "
+                              << country.alpha2_code;
+    const QColor iconColor(220, 220, 220);
+
+    auto* detailDialog = new CountryDetailDialog(mainWindow_);
+    if (clientManager_) {
+        detailDialog->setClientManager(clientManager_);
+        detailDialog->setUsername(username_.toStdString());
+    }
+    if (imageCache_) {
+        detailDialog->setImageCache(imageCache_);
+    }
+
+    connect(detailDialog, &CountryDetailDialog::statusMessage,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(detailDialog, &CountryDetailDialog::errorMessage,
+            this, [this](const QString& message) {
+        emit errorMessage(message);
+    });
+
+    detailDialog->setCountry(country);
+
+    auto* detailWindow = new DetachableMdiSubWindow();
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(QString("Country Details: %1").arg(alpha2Code));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_globe_20_regular.svg", iconColor));
+
+    // Track this detail window
+    track_window(windowKey, detailWindow);
+
+    allDetachableWindows_.append(detailWindow);
+    QPointer<CountryController> self = this;
+    QPointer<DetachableMdiSubWindow> windowPtr = detailWindow;
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, windowPtr, windowKey]() {
+        if (self) {
+            self->allDetachableWindows_.removeAll(windowPtr.data());
+            self->untrack_window(windowKey);
+        }
+    });
+
+    mdiArea_->addSubWindow(detailWindow);
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
+    detailWindow->adjustSize();
+
+    // If the parent country list window is detached, detach this window too
+    if (countryListWindow_ && countryListWindow_->isDetached()) {
+        detailWindow->show();
+        detailWindow->detach();
+
+        QPoint parentPos = countryListWindow_->pos();
+        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else {
+        detailWindow->show();
+    }
 }
 
 void CountryController::onShowCountryHistory(const QString& alpha2Code) {
@@ -223,16 +341,27 @@ void CountryController::onNotificationReceived(
         }
     }
 
-    // Notify open detail/history dialogs for affected countries
-    // (will be implemented when CountryDetailDialog/CountryHistoryDialog exist)
+    // Notify open detail dialogs for affected countries
     for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
         const QString& key = it.key();
         auto* window = it.value();
         if (!window)
             continue;
 
-        // TODO: Handle detail and history dialogs when they are implemented
-        Q_UNUSED(key);
+        // Check if this is a detail window for an affected country
+        if (key.startsWith("details:")) {
+            QString windowAlpha2 = key.mid(8);  // Remove "details:" prefix
+            if (entityIds.isEmpty() || entityIds.contains(windowAlpha2)) {
+                // Mark detail dialog as stale
+                auto* detailDialog = qobject_cast<CountryDetailDialog*>(
+                    window->widget());
+                if (detailDialog) {
+                    detailDialog->markAsStale();
+                    BOOST_LOG_SEV(lg(), debug) << "Marked detail dialog as stale for: "
+                                               << windowAlpha2.toStdString();
+                }
+            }
+        }
     }
 }
 

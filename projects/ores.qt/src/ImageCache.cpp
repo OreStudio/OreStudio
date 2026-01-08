@@ -50,6 +50,7 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
       image_list_watcher_(new QFutureWatcher<ImageListResult>(this)),
       single_image_watcher_(new QFutureWatcher<SingleImageResult>(this)),
       set_currency_image_watcher_(new QFutureWatcher<SetCurrencyImageResult>(this)),
+      set_country_image_watcher_(new QFutureWatcher<SetCountryImageResult>(this)),
       all_available_watcher_(new QFutureWatcher<ImagesResult>(this)) {
 
     connect(mappings_watcher_, &QFutureWatcher<MappingsResult>::finished,
@@ -64,6 +65,8 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
         this, &ImageCache::onSingleImageLoaded);
     connect(set_currency_image_watcher_, &QFutureWatcher<SetCurrencyImageResult>::finished,
         this, &ImageCache::onCurrencyImageSet);
+    connect(set_country_image_watcher_, &QFutureWatcher<SetCountryImageResult>::finished,
+        this, &ImageCache::onCountryImageSet);
     connect(all_available_watcher_, &QFutureWatcher<ImagesResult>::finished,
         this, &ImageCache::onAllAvailableImagesLoaded);
 
@@ -1155,6 +1158,131 @@ void ImageCache::onNotificationReceived(const QString& eventType, const QDateTim
     // Reload mappings; onMappingsLoaded will selectively update only affected currencies
     load_images_after_mappings_ = true;
     loadCurrencyMappings();
+}
+
+std::string ImageCache::getCountryImageId(const std::string& alpha2_code) const {
+    auto it = country_to_image_id_.find(alpha2_code);
+    if (it != country_to_image_id_.end()) {
+        return it->second;
+    }
+    return {};
+}
+
+void ImageCache::setCountryImage(const std::string& alpha2_code,
+    const std::string& image_id, const std::string& assigned_by) {
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot set country image: not connected.";
+        emit countryImageSet(QString::fromStdString(alpha2_code), false,
+            tr("Not connected to server"));
+        return;
+    }
+
+    QPointer<ImageCache> self = this;
+    std::string req_alpha2_code = alpha2_code;
+    std::string req_image_id = image_id;
+    std::string req_assigned_by = assigned_by;
+
+    QFuture<SetCountryImageResult> future =
+        QtConcurrent::run([self, req_alpha2_code, req_image_id, req_assigned_by]() -> SetCountryImageResult {
+            BOOST_LOG_SEV(lg(), debug) << "Setting country image: " << req_alpha2_code
+                                       << " -> " << (req_image_id.empty() ? "(none)" : req_image_id);
+            if (!self) return {false, req_alpha2_code, "Widget destroyed"};
+
+            // Step 1: Fetch countries (protocol doesn't support filtering by alpha2_code)
+            risk::messaging::get_countries_request get_request;
+            get_request.offset = 0;
+            get_request.limit = 1000;
+            auto get_payload = get_request.serialize();
+
+            frame get_frame(message_type::get_countries_request, 0, std::move(get_payload));
+
+            auto get_response_result = self->clientManager_->sendRequest(std::move(get_frame));
+            if (!get_response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to fetch countries: "
+                                           << get_response_result.error();
+                return {false, req_alpha2_code, "Failed to fetch countries"};
+            }
+
+            auto get_payload_result = get_response_result->decompressed_payload();
+            if (!get_payload_result) {
+                return {false, req_alpha2_code, "Failed to decompress response"};
+            }
+
+            auto get_response =
+                risk::messaging::get_countries_response::deserialize(*get_payload_result);
+            if (!get_response) {
+                return {false, req_alpha2_code, "Invalid countries response"};
+            }
+
+            // Find the country with matching alpha2_code
+            auto it = std::find_if(get_response->countries.begin(), get_response->countries.end(),
+                [&req_alpha2_code](const auto& c) { return c.alpha2_code == req_alpha2_code; });
+
+            if (it == get_response->countries.end()) {
+                return {false, req_alpha2_code, "Country not found"};
+            }
+
+            // Step 2: Update the image_id
+            auto country = *it;
+            if (req_image_id.empty()) {
+                country.image_id = std::nullopt;
+            } else {
+                country.image_id = boost::lexical_cast<boost::uuids::uuid>(req_image_id);
+            }
+            country.recorded_by = req_assigned_by;
+
+            // Step 3: Save the updated country
+            risk::messaging::save_country_request save_request;
+            save_request.country = country;
+            auto save_payload = save_request.serialize();
+
+            frame save_frame(message_type::save_country_request, 0, std::move(save_payload));
+
+            auto save_response_result = self->clientManager_->sendRequest(std::move(save_frame));
+            if (!save_response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to save country: "
+                                           << save_response_result.error();
+                return {false, req_alpha2_code, "Failed to save country"};
+            }
+
+            auto save_payload_result = save_response_result->decompressed_payload();
+            if (!save_payload_result) {
+                return {false, req_alpha2_code, "Failed to decompress save response"};
+            }
+
+            auto save_response =
+                risk::messaging::save_country_response::deserialize(*save_payload_result);
+            if (!save_response) {
+                return {false, req_alpha2_code, "Invalid save response"};
+            }
+
+            if (save_response->success) {
+                BOOST_LOG_SEV(lg(), info) << "Country image updated: " << req_alpha2_code
+                                          << " -> " << (req_image_id.empty() ? "(none)" : req_image_id);
+            }
+
+            return {save_response->success, req_alpha2_code, save_response->message};
+        });
+
+    set_country_image_watcher_->setFuture(future);
+}
+
+void ImageCache::onCountryImageSet() {
+    auto result = set_country_image_watcher_->result();
+
+    if (result.success) {
+        BOOST_LOG_SEV(lg(), info) << "Country image set successfully for: "
+                                  << result.alpha2_code;
+        // Reload country mappings to get updated data
+        loadCountryMappings();
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Failed to set country image for "
+                                   << result.alpha2_code << ": " << result.message;
+    }
+
+    emit countryImageSet(QString::fromStdString(result.alpha2_code),
+        result.success, QString::fromStdString(result.message));
 }
 
 }

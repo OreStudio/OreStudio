@@ -132,6 +132,24 @@ public:
     bool hasCountryIcon(const std::string& alpha2_code) const;
 
     /**
+     * @brief Set or remove a country's image association.
+     *
+     * @param alpha2_code The country alpha-2 code
+     * @param image_id The image ID to assign (empty to remove)
+     * @param assigned_by Username performing the assignment
+     */
+    void setCountryImage(const std::string& alpha2_code, const std::string& image_id,
+        const std::string& assigned_by);
+
+    /**
+     * @brief Get the image ID assigned to a country.
+     *
+     * @param alpha2_code The country alpha-2 code
+     * @return The image ID, or empty string if no mapping
+     */
+    std::string getCountryImageId(const std::string& alpha2_code) const;
+
+    /**
      * @brief Get the number of cached currency icons.
      */
     std::size_t cachedIconCount() const { return currency_icons_.size(); }
@@ -264,6 +282,11 @@ signals:
      */
     void currencyImageSet(const QString& iso_code, bool success, const QString& message);
 
+    /**
+     * @brief Emitted when country image assignment is complete.
+     */
+    void countryImageSet(const QString& alpha2_code, bool success, const QString& message);
+
 private slots:
     void onMappingsLoaded();
     void onCountryMappingsLoaded();
@@ -271,6 +294,7 @@ private slots:
     void onImageListLoaded();
     void onSingleImageLoaded();
     void onCurrencyImageSet();
+    void onCountryImageSet();
     void onAllAvailableImagesLoaded();
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
                                 const QStringList& entityIds);
@@ -325,6 +349,12 @@ private:
         std::string message;
     };
 
+    struct SetCountryImageResult {
+        bool success;
+        std::string alpha2_code;
+        std::string message;
+    };
+
     ClientManager* clientManager_;
 
     // Currency ISO code -> image_id mapping
@@ -355,6 +385,7 @@ private:
     QFutureWatcher<ImageListResult>* image_list_watcher_;
     QFutureWatcher<SingleImageResult>* single_image_watcher_;
     QFutureWatcher<SetCurrencyImageResult>* set_currency_image_watcher_;
+    QFutureWatcher<SetCountryImageResult>* set_country_image_watcher_;
     QFutureWatcher<ImagesResult>* all_available_watcher_;
 
     // List of all available images (metadata only)

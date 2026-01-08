@@ -172,33 +172,71 @@ site_name(VORE_SITE)
 #
 # Handle build information
 #
+# CI builds set environment variables: ORES_BUILD_PROVIDER, ORES_BUILD_COMMIT,
+# ORES_BUILD_NUMBER, ORES_BUILD_TIMESTAMP. Local builds auto-detect from git.
+#
 set(WITH_BUILD_INFO ON)
 set(ORES_BUILD_INFO "")
 
-if (NOT DEFINED ENV{ORES_BUILD_PROVIDER})
-    set(WITH_BUILD_INFO OFF)
-endif()
-
-if (NOT DEFINED ENV{ORES_BUILD_COMMIT})
-    set(WITH_BUILD_INFO OFF)
-endif()
-
-if (NOT DEFINED ENV{ORES_BUILD_NUMBER})
-    set(WITH_BUILD_INFO OFF)
-endif()
-
-if (NOT DEFINED ENV{ORES_BUILD_TIMESTAMP})
-    set(WITH_BUILD_INFO OFF)
-endif()
-
-if (WITH_BUILD_INFO)
+if (DEFINED ENV{ORES_BUILD_PROVIDER} AND
+    DEFINED ENV{ORES_BUILD_COMMIT} AND
+    DEFINED ENV{ORES_BUILD_NUMBER} AND
+    DEFINED ENV{ORES_BUILD_TIMESTAMP})
+    # CI build - use environment variables
     set(ORES_BUILD_INFO "Build: Provider = '$ENV{ORES_BUILD_PROVIDER}'")
     set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Number = '$ENV{ORES_BUILD_NUMBER}'")
     set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Commit = '$ENV{ORES_BUILD_COMMIT}'")
     set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Timestamp = '$ENV{ORES_BUILD_TIMESTAMP}'")
+    message(STATUS "CI build detected - using environment variables for build info")
 else()
-    set(ORES_BUILD_INFO "Build: Provider = LOCAL")
-    message(STATUS "Not adding build info.")
+    # Local build - auto-detect from git
+    find_package(Git QUIET)
+    if (GIT_FOUND)
+        # Get short commit hash with dirty flag (no tag reference)
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_COMMIT_SHORT
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+            RESULT_VARIABLE GIT_COMMIT_RESULT
+        )
+
+        # Check if working directory is dirty
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} status --porcelain
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_STATUS
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+
+        # Get current timestamp
+        string(TIMESTAMP LOCAL_BUILD_TIMESTAMP "%Y/%m/%d %H:%M:%S")
+
+        if (GIT_COMMIT_RESULT EQUAL 0 AND NOT "${GIT_COMMIT_SHORT}" STREQUAL "")
+            # Add dirty suffix if there are uncommitted changes
+            if (NOT "${GIT_STATUS}" STREQUAL "")
+                set(GIT_COMMIT_SHORT "${GIT_COMMIT_SHORT}-dirty")
+            endif()
+            set(ORES_BUILD_INFO "Build: Provider = 'local'")
+            set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Version = '${OreStudio_VERSION}'")
+            set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Commit = '${GIT_COMMIT_SHORT}'")
+            set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Timestamp = '${LOCAL_BUILD_TIMESTAMP}'")
+            message(STATUS "Local build - version ${OreStudio_VERSION}, commit: ${GIT_COMMIT_SHORT}")
+        else()
+            set(ORES_BUILD_INFO "Build: Provider = 'local'")
+            set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Version = '${OreStudio_VERSION}'")
+            set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Timestamp = '${LOCAL_BUILD_TIMESTAMP}'")
+            message(STATUS "Local build - version ${OreStudio_VERSION}, git info not available")
+        endif()
+    else()
+        string(TIMESTAMP LOCAL_BUILD_TIMESTAMP "%Y/%m/%d %H:%M:%S")
+        set(ORES_BUILD_INFO "Build: Provider = 'local'")
+        set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Version = '${OreStudio_VERSION}'")
+        set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Timestamp = '${LOCAL_BUILD_TIMESTAMP}'")
+        message(STATUS "Local build - version ${OreStudio_VERSION}, git not found")
+    endif()
 endif()
 message(STATUS "${ORES_BUILD_INFO}")
 

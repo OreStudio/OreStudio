@@ -86,3 +86,21 @@ Do not output any content which is not provided from the image to ocr.
 
 Do you understand these instructions?
 #+end_quote
+
+* Spec for new feature
+
+#+begin_quote
+Consider this idea for a new feature:
+
+<story summary here>
+
+Interview me in detail using the AskUserQuestionTool about literally anything:
+technical implementation, UI & UX, concerns, tradeoffs, etc. but make sure the
+questions are not obvious
+
+be very in-depth and continue interviewing me continually until it's complete,
+then write a detailed user story with a specification to the current agile
+backlog as per skill doc/skills/agile-product-owner/skill.org. If you think the
+work is too large for a single story, break it into several stories, each of
+which will have it's own PR.
+#+end_quote

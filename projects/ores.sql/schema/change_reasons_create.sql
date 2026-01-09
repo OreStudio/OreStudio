@@ -47,6 +47,7 @@ create table if not exists "ores"."change_reasons" (
     "requires_commentary" boolean not null default false,
     "display_order" integer not null default 0,
     "modified_by" text not null,
+    "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (code, valid_from, valid_to),

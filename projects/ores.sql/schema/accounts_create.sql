@@ -31,6 +31,8 @@ create table if not exists "ores"."accounts" (
     "totp_secret" text not null,
     "email" text not null,
     "modified_by" text not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (id, valid_from, valid_to),

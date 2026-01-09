@@ -27,6 +27,7 @@
 #include <QMdiSubWindow>
 #include <QMetaObject>
 #include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ui_CountryDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -196,12 +197,9 @@ risk::domain::country CountryDetailDialog::getCountry() const {
     if (!pendingImageId_.isEmpty()) {
         boost::uuids::string_generator gen;
         country.image_id = gen(pendingImageId_.toStdString());
-    } else if (imageCache_ && country.alpha2_code.length() > 0) {
-        std::string existingId = imageCache_->getCountryImageId(country.alpha2_code);
-        if (!existingId.empty()) {
-            boost::uuids::string_generator gen;
-            country.image_id = gen(existingId);
-        }
+    } else if (currentCountry_.image_id) {
+        // Keep the existing image_id from the country being edited
+        country.image_id = currentCountry_.image_id;
     }
 
     return country;
@@ -538,8 +536,11 @@ void CountryDetailDialog::onSelectFlagClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Opening flag selector for: "
                                << currentCountry_.alpha2_code;
 
+    // Get current image ID - use pending if set, otherwise from the country
     QString currentImageId = pendingImageId_.isEmpty()
-        ? QString::fromStdString(imageCache_->getCountryImageId(currentCountry_.alpha2_code))
+        ? (currentCountry_.image_id
+            ? QString::fromStdString(boost::uuids::to_string(*currentCountry_.image_id))
+            : QString())
         : pendingImageId_;
 
     FlagSelectorDialog dialog(imageCache_, currentImageId, this);
@@ -611,18 +612,14 @@ void CountryDetailDialog::updateFlagDisplay() {
 
     if (flagChanged_) {
         imageIdToShow = pendingImageId_;
-    } else {
+    } else if (currentCountry_.image_id) {
+        // Get image_id from the country domain object
         imageIdToShow = QString::fromStdString(
-            imageCache_->getCountryImageId(currentCountry_.alpha2_code));
+            boost::uuids::to_string(*currentCountry_.image_id));
     }
 
     if (!imageIdToShow.isEmpty()) {
-        QIcon icon = imageCache_->getImageIcon(imageIdToShow.toStdString());
-
-        if (icon.isNull() && !flagChanged_) {
-            icon = imageCache_->getCountryIcon(currentCountry_.alpha2_code);
-        }
-
+        QIcon icon = imageCache_->getIcon(imageIdToShow.toStdString());
         if (!icon.isNull()) {
             flagButton_->setIcon(icon);
             return;

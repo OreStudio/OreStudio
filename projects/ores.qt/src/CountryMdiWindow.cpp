@@ -243,11 +243,6 @@ void CountryMdiWindow::reload() {
     emit statusChanged("Reloading countries...");
     clearStaleIndicator();
 
-    // Reload image cache mappings to pick up any flag changes
-    if (imageCache_) {
-        imageCache_->reloadCountryIcons();
-    }
-
     countryModel_->refresh();
 }
 

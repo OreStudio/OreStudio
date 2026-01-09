@@ -43,8 +43,8 @@ using namespace ores::telemetry::log;
 ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
     : QObject(parent),
       clientManager_(clientManager),
-      mappings_watcher_(new QFutureWatcher<MappingsResult>(this)),
-      country_mappings_watcher_(new QFutureWatcher<MappingsResult>(this)),
+      currency_ids_watcher_(new QFutureWatcher<ImageIdsResult>(this)),
+      country_ids_watcher_(new QFutureWatcher<ImageIdsResult>(this)),
       images_watcher_(new QFutureWatcher<ImagesResult>(this)),
       image_list_watcher_(new QFutureWatcher<ImageListResult>(this)),
       single_image_watcher_(new QFutureWatcher<SingleImageResult>(this)),
@@ -52,10 +52,10 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
       set_country_image_watcher_(new QFutureWatcher<SetCountryImageResult>(this)),
       all_available_watcher_(new QFutureWatcher<ImagesResult>(this)) {
 
-    connect(mappings_watcher_, &QFutureWatcher<MappingsResult>::finished,
-        this, &ImageCache::onMappingsLoaded);
-    connect(country_mappings_watcher_, &QFutureWatcher<MappingsResult>::finished,
-        this, &ImageCache::onCountryMappingsLoaded);
+    connect(currency_ids_watcher_, &QFutureWatcher<ImageIdsResult>::finished,
+        this, &ImageCache::onCurrencyImageIdsLoaded);
+    connect(country_ids_watcher_, &QFutureWatcher<ImageIdsResult>::finished,
+        this, &ImageCache::onCountryImageIdsLoaded);
     connect(images_watcher_, &QFutureWatcher<ImagesResult>::finished,
         this, &ImageCache::onImagesLoaded);
     connect(image_list_watcher_, &QFutureWatcher<ImageListResult>::finished,
@@ -70,58 +70,54 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
         this, &ImageCache::onAllAvailableImagesLoaded);
 }
 
-void ImageCache::loadCurrencyMappings() {
-    BOOST_LOG_SEV(lg(), debug) << "loadCurrencyMappings() called.";
+void ImageCache::loadAll() {
+    BOOST_LOG_SEV(lg(), debug) << "loadAll() called.";
 
-    if (is_loading_mappings_) {
-        BOOST_LOG_SEV(lg(), warn) << "Mappings load already in progress.";
+    if (load_all_in_progress_ || is_loading_images_) {
+        BOOST_LOG_SEV(lg(), warn) << "Load already in progress.";
         return;
     }
 
-    if (!clientManager_) {
-        BOOST_LOG_SEV(lg(), error) << "Cannot load mappings: clientManager_ is null.";
+    load_all_in_progress_ = true;
+    pending_image_ids_.clear();
+
+    // Start by loading currency image IDs
+    loadCurrencyImageIds();
+}
+
+void ImageCache::loadCurrencyImageIds() {
+    BOOST_LOG_SEV(lg(), debug) << "loadCurrencyImageIds() called.";
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load currency image IDs: not connected.";
+        load_all_in_progress_ = false;
         return;
     }
 
-    if (!clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot load mappings: not connected.";
-        return;
-    }
-
-    is_loading_mappings_ = true;
     QPointer<ImageCache> self = this;
 
-    BOOST_LOG_SEV(lg(), debug) << "Starting async currency mappings fetch.";
-
-    QFuture<MappingsResult> future =
-        QtConcurrent::run([self]() -> MappingsResult {
-            BOOST_LOG_SEV(lg(), debug) << "Fetching currencies to extract image_id mappings.";
+    QFuture<ImageIdsResult> future =
+        QtConcurrent::run([self]() -> ImageIdsResult {
+            BOOST_LOG_SEV(lg(), debug) << "Fetching currencies to extract image_ids.";
             if (!self) {
                 BOOST_LOG_SEV(lg(), error) << "ImageCache destroyed during async fetch.";
                 return {false, {}};
             }
 
-            // Fetch all currencies (we just need iso_code and image_id)
             risk::messaging::get_currencies_request request;
             request.offset = 0;
-            request.limit = 1000;  // Max allowed by server
+            request.limit = 1000;
             auto payload = request.serialize();
 
-            frame request_frame(message_type::get_currencies_request,
-                0, std::move(payload));
+            frame request_frame(message_type::get_currencies_request, 0, std::move(payload));
 
-            BOOST_LOG_SEV(lg(), debug) << "Sending get_currencies_request.";
-
-            auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
+            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
 
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send currencies request: "
                                            << response_result.error();
                 return {false, {}};
             }
-
-            BOOST_LOG_SEV(lg(), debug) << "Received currencies response, decompressing.";
 
             auto payload_result = response_result->decompressed_payload();
             if (!payload_result) {
@@ -130,201 +126,170 @@ void ImageCache::loadCurrencyMappings() {
                 return {false, {}};
             }
 
-            // Log payload size for debugging
-            BOOST_LOG_SEV(lg(), debug) << "Payload size: " << payload_result->size() << " bytes.";
-
-            auto response =
-                risk::messaging::get_currencies_response::deserialize(*payload_result);
-
+            auto response = risk::messaging::get_currencies_response::deserialize(*payload_result);
             if (!response) {
-                // Log first 64 bytes of payload as hex for debugging
-                std::ostringstream hex_dump;
-                hex_dump << std::hex << std::setfill('0');
-                for (std::size_t i = 0; i < std::min<std::size_t>(64, payload_result->size()); ++i) {
-                    hex_dump << std::setw(2) << static_cast<int>((*payload_result)[i]) << " ";
-                }
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize currencies response. "
-                                           << "First 64 bytes: " << hex_dump.str();
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize currencies response.";
                 return {false, {}};
             }
 
             BOOST_LOG_SEV(lg(), debug) << "Received " << response->currencies.size()
                                        << " currencies from server.";
 
-            // TEMP: Log first currency as JSON for debugging
-            if (!response->currencies.empty()) {
-                BOOST_LOG_SEV(lg(), debug) << "First currency JSON: "
-                                           << rfl::json::write(response->currencies[0]);
-            }
-
-            // Extract iso_code -> image_id mappings from currencies
-            std::unordered_map<std::string, std::string> mappings;
-            int currencies_with_image = 0;
-            int currencies_without_image = 0;
+            std::vector<std::string> image_ids;
             for (const auto& currency : response->currencies) {
                 if (currency.image_id) {
-                    std::string image_id_str = boost::uuids::to_string(*currency.image_id);
-                    mappings[currency.iso_code] = image_id_str;
-                    currencies_with_image++;
-                } else {
-                    currencies_without_image++;
+                    image_ids.push_back(boost::uuids::to_string(*currency.image_id));
                 }
             }
 
-            BOOST_LOG_SEV(lg(), debug) << "Extracted " << mappings.size()
-                                       << " currency-image mappings. "
-                                       << currencies_with_image << " currencies have image_id, "
-                                       << currencies_without_image << " do not.";
+            BOOST_LOG_SEV(lg(), debug) << "Extracted " << image_ids.size()
+                                       << " image IDs from currencies.";
 
-            return {true, std::move(mappings)};
+            return {true, std::move(image_ids)};
         });
 
-    mappings_watcher_->setFuture(future);
+    currency_ids_watcher_->setFuture(future);
 }
 
-void ImageCache::onMappingsLoaded() {
-    BOOST_LOG_SEV(lg(), debug) << "onMappingsLoaded() callback triggered.";
-    is_loading_mappings_ = false;
+void ImageCache::onCurrencyImageIdsLoaded() {
+    BOOST_LOG_SEV(lg(), debug) << "onCurrencyImageIdsLoaded() callback triggered.";
 
-    auto result = mappings_watcher_->result();
-    BOOST_LOG_SEV(lg(), debug) << "Mappings result: success=" << result.success
-                               << ", mappings count=" << result.mappings.size();
-
+    auto result = currency_ids_watcher_->result();
     if (result.success) {
-        // Store mappings (already in the right format)
-        currency_to_image_id_ = std::move(result.mappings);
-
-        BOOST_LOG_SEV(lg(), debug) << "Stored " << currency_to_image_id_.size()
-                                   << " currency-image mappings.";
-
-        emit currencyMappingsLoaded();
-
-        // If loadAll() was called, continue to load images
-        if (load_images_after_mappings_) {
-            load_images_after_mappings_ = false;
-
-            // Check if we're doing a selective refresh for specific currencies
-            if (!pending_refresh_iso_codes_.empty()) {
-                // Selective refresh: only update the affected currencies
-                std::vector<std::string> image_ids_to_fetch;
-                std::unordered_set<std::string> unique_ids;
-
-                for (const auto& iso_code : pending_refresh_iso_codes_) {
-                    auto it = currency_to_image_id_.find(iso_code);
-                    if (it != currency_to_image_id_.end() && !it->second.empty()) {
-                        // Only fetch if we don't have this image cached already
-                        if (image_svg_cache_.find(it->second) == image_svg_cache_.end() &&
-                            unique_ids.find(it->second) == unique_ids.end()) {
-                            image_ids_to_fetch.push_back(it->second);
-                            unique_ids.insert(it->second);
-                        }
-                    }
-                    // Remove old icon to force re-render
-                    currency_icons_.erase(iso_code);
-                }
-
-                BOOST_LOG_SEV(lg(), debug) << "Selective refresh: "
-                    << pending_refresh_iso_codes_.size() << " currencies, "
-                    << image_ids_to_fetch.size() << " new images to fetch.";
-
-                // Re-render icons for affected currencies (using cached images)
-                for (const auto& iso_code : pending_refresh_iso_codes_) {
-                    auto map_it = currency_to_image_id_.find(iso_code);
-                    if (map_it != currency_to_image_id_.end()) {
-                        auto svg_it = image_svg_cache_.find(map_it->second);
-                        if (svg_it != image_svg_cache_.end()) {
-                            QIcon icon = svgToIcon(svg_it->second);
-                            if (!icon.isNull()) {
-                                currency_icons_[iso_code] = icon;
-                            }
-                        }
-                    }
-                }
-
-                pending_refresh_iso_codes_.clear();
-
-                if (image_ids_to_fetch.empty()) {
-                    // All images were already cached, we're done
-                    emit imagesLoaded();
-                    emit allLoaded();
-                } else {
-                    // Fetch the new images
-                    is_loading_images_ = true;
-                    ClientManager* clientMgr = clientManager_;
-                    QFuture<ImagesResult> future =
-                        QtConcurrent::run([clientMgr, image_ids_to_fetch]() -> ImagesResult {
-                            return fetchImagesInBatches(clientMgr, image_ids_to_fetch);
-                        });
-                    images_watcher_->setFuture(future);
-                }
-            } else {
-                // Full refresh: load all images
-                loadImagesForCurrencies();
-            }
+        // Add to pending list (will deduplicate later)
+        for (const auto& id : result.image_ids) {
+            pending_image_ids_.push_back(id);
         }
+        BOOST_LOG_SEV(lg(), debug) << "Added " << result.image_ids.size()
+                                   << " currency image IDs. Total pending: "
+                                   << pending_image_ids_.size();
     } else {
-        pending_refresh_iso_codes_.clear();
-        BOOST_LOG_SEV(lg(), error) << "Failed to load currency mappings.";
-        emit loadError(tr("Failed to load currency-image mappings"));
+        BOOST_LOG_SEV(lg(), error) << "Failed to load currency image IDs.";
     }
+
+    // Continue to load country image IDs
+    loadCountryImageIds();
 }
 
-void ImageCache::loadImagesForCurrencies() {
-    BOOST_LOG_SEV(lg(), debug) << "loadImagesForCurrencies() called. "
-                               << "currency_to_image_id_ size: " << currency_to_image_id_.size();
-
-    if (is_loading_images_) {
-        BOOST_LOG_SEV(lg(), warn) << "Images load already in progress.";
-        return;
-    }
+void ImageCache::loadCountryImageIds() {
+    BOOST_LOG_SEV(lg(), debug) << "loadCountryImageIds() called.";
 
     if (!clientManager_ || !clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot load images: not connected.";
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load country image IDs: not connected.";
+        // Still try to load what we have from currencies
+        loadImagesByIds(pending_image_ids_);
         return;
     }
 
-    // Collect image IDs that we need to fetch (not already cached)
-    std::vector<std::string> image_ids_to_fetch;
-    std::unordered_set<std::string> unique_ids;
+    QPointer<ImageCache> self = this;
 
-    for (const auto& [iso_code, image_id] : currency_to_image_id_) {
-        if (image_svg_cache_.find(image_id) == image_svg_cache_.end() &&
-            unique_ids.find(image_id) == unique_ids.end()) {
-            image_ids_to_fetch.push_back(image_id);
-            unique_ids.insert(image_id);
+    QFuture<ImageIdsResult> future =
+        QtConcurrent::run([self]() -> ImageIdsResult {
+            BOOST_LOG_SEV(lg(), debug) << "Fetching countries to extract image_ids.";
+            if (!self) {
+                BOOST_LOG_SEV(lg(), error) << "ImageCache destroyed during async fetch.";
+                return {false, {}};
+            }
+
+            risk::messaging::get_countries_request request;
+            request.offset = 0;
+            request.limit = 1000;
+            auto payload = request.serialize();
+
+            frame request_frame(message_type::get_countries_request, 0, std::move(payload));
+
+            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send countries request: "
+                                           << response_result.error();
+                return {false, {}};
+            }
+
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
+                                           << payload_result.error();
+                return {false, {}};
+            }
+
+            auto response = risk::messaging::get_countries_response::deserialize(*payload_result);
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize countries response.";
+                return {false, {}};
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Received " << response->countries.size()
+                                       << " countries from server.";
+
+            std::vector<std::string> image_ids;
+            for (const auto& country : response->countries) {
+                if (country.image_id) {
+                    image_ids.push_back(boost::uuids::to_string(*country.image_id));
+                }
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Extracted " << image_ids.size()
+                                       << " image IDs from countries.";
+
+            return {true, std::move(image_ids)};
+        });
+
+    country_ids_watcher_->setFuture(future);
+}
+
+void ImageCache::onCountryImageIdsLoaded() {
+    BOOST_LOG_SEV(lg(), debug) << "onCountryImageIdsLoaded() callback triggered.";
+
+    auto result = country_ids_watcher_->result();
+    if (result.success) {
+        for (const auto& id : result.image_ids) {
+            pending_image_ids_.push_back(id);
+        }
+        BOOST_LOG_SEV(lg(), debug) << "Added " << result.image_ids.size()
+                                   << " country image IDs. Total pending: "
+                                   << pending_image_ids_.size();
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Failed to load country image IDs.";
+    }
+
+    // Now load all the images
+    loadImagesByIds(pending_image_ids_);
+}
+
+void ImageCache::loadImagesByIds(const std::vector<std::string>& image_ids) {
+    BOOST_LOG_SEV(lg(), debug) << "loadImagesByIds() called with "
+                               << image_ids.size() << " IDs.";
+
+    // Deduplicate and filter out already-cached images
+    std::vector<std::string> ids_to_fetch;
+    std::unordered_set<std::string> seen;
+
+    for (const auto& id : image_ids) {
+        if (seen.find(id) == seen.end() &&
+            image_svg_cache_.find(id) == image_svg_cache_.end()) {
+            ids_to_fetch.push_back(id);
+            seen.insert(id);
         }
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Need to fetch " << image_ids_to_fetch.size()
-                               << " images (cached: " << image_svg_cache_.size() << ").";
+    BOOST_LOG_SEV(lg(), debug) << "Need to fetch " << ids_to_fetch.size()
+                               << " images (already cached: " << image_svg_cache_.size() << ").";
 
-    if (image_ids_to_fetch.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "No new images to fetch, re-rendering icons.";
-
-        // Still need to re-render icons for updated mappings using cached SVG data
-        for (const auto& [iso_code, image_id] : currency_to_image_id_) {
-            auto svg_it = image_svg_cache_.find(image_id);
-            if (svg_it != image_svg_cache_.end()) {
-                QIcon icon = svgToIcon(svg_it->second);
-                if (!icon.isNull()) {
-                    currency_icons_[iso_code] = icon;
-                }
-            }
-        }
-
+    if (ids_to_fetch.empty()) {
+        BOOST_LOG_SEV(lg(), debug) << "All images already cached.";
+        load_all_in_progress_ = false;
         emit imagesLoaded();
         emit allLoaded();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Fetching " << image_ids_to_fetch.size() << " images.";
-
     is_loading_images_ = true;
     ClientManager* clientMgr = clientManager_;
 
     QFuture<ImagesResult> future =
-        QtConcurrent::run([clientMgr, image_ids_to_fetch]() -> ImagesResult {
-            return fetchImagesInBatches(clientMgr, image_ids_to_fetch);
+        QtConcurrent::run([clientMgr, ids_to_fetch]() -> ImagesResult {
+            return fetchImagesInBatches(clientMgr, ids_to_fetch);
         });
 
     images_watcher_->setFuture(future);
@@ -333,6 +298,8 @@ void ImageCache::loadImagesForCurrencies() {
 void ImageCache::onImagesLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "onImagesLoaded() callback triggered.";
     is_loading_images_ = false;
+    load_all_in_progress_ = false;
+    pending_image_ids_.clear();
 
     auto result = images_watcher_->result();
     BOOST_LOG_SEV(lg(), debug) << "Images result: success=" << result.success
@@ -343,92 +310,133 @@ void ImageCache::onImagesLoaded() {
         for (const auto& img : result.images) {
             const auto image_id_str = boost::uuids::to_string(img.image_id);
             image_svg_cache_[image_id_str] = img.svg_data;
-            // Log first 100 chars of SVG to verify content
-            std::string svg_preview = img.svg_data.substr(0, 100);
-            BOOST_LOG_SEV(lg(), debug) << "Cached SVG for image_id: " << image_id_str
-                                       << ", size: " << img.svg_data.size()
-                                       << ", preview: " << svg_preview;
-        }
 
-        BOOST_LOG_SEV(lg(), debug) << "Cached " << result.images.size() << " SVGs. "
-                                   << "Total in cache: " << image_svg_cache_.size();
-
-        // Render icons for all currencies
-        int rendered = 0;
-        int render_failed = 0;
-        int no_svg = 0;
-        BOOST_LOG_SEV(lg(), debug) << "Rendering icons for " << currency_to_image_id_.size()
-                                   << " currency-to-image mappings.";
-        for (const auto& [iso_code, image_id] : currency_to_image_id_) {
-            auto svg_it = image_svg_cache_.find(image_id);
-            if (svg_it != image_svg_cache_.end()) {
-                BOOST_LOG_SEV(lg(), trace) << "Rendering " << iso_code << " with image_id: "
-                                           << image_id << ", svg size: " << svg_it->second.size();
-                QIcon icon = svgToIcon(svg_it->second);
-                if (!icon.isNull()) {
-                    // Always update the icon to reflect the latest mapping
-                    currency_icons_[iso_code] = icon;
-                    rendered++;
-                } else {
-                    BOOST_LOG_SEV(lg(), warn) << "Failed to render icon for " << iso_code
-                                              << " (image_id: " << image_id
-                                              << ", svg size: " << svg_it->second.size() << ")";
-                    render_failed++;
-                }
-            } else {
-                BOOST_LOG_SEV(lg(), debug) << "No SVG cache for " << iso_code
-                                           << " (image_id: " << image_id << ")";
-                no_svg++;
+            QIcon icon = svgToIcon(img.svg_data);
+            if (!icon.isNull()) {
+                image_icons_[image_id_str] = icon;
             }
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Rendered " << rendered << " icons, "
-                                   << render_failed << " render failures, "
-                                   << no_svg << " missing SVGs.";
-
-        BOOST_LOG_SEV(lg(), debug) << "Total currency_icons_: " << currency_icons_.size();
+        BOOST_LOG_SEV(lg(), info) << "Cached " << result.images.size() << " images. "
+                                  << "Total icons: " << image_icons_.size();
 
         emit imagesLoaded();
-
-        // If doing a full load, continue with country mappings
-        if (load_all_in_progress_) {
-            BOOST_LOG_SEV(lg(), debug) << "Continuing loadAll() with country mappings.";
-            loadCountryMappings();
-        } else {
-            emit allLoaded();
-        }
+        emit allLoaded();
     } else {
-        load_all_in_progress_ = false;
         BOOST_LOG_SEV(lg(), error) << "Failed to load images.";
         emit loadError(tr("Failed to load images"));
     }
 }
 
-void ImageCache::loadAll() {
-    BOOST_LOG_SEV(lg(), debug) << "loadAll() called.";
-
-    if (is_loading_mappings_ || is_loading_images_ || is_loading_country_mappings_) {
-        BOOST_LOG_SEV(lg(), warn) << "Load already in progress.";
-        return;
+QIcon ImageCache::getIcon(const std::string& image_id) {
+    if (image_id.empty()) {
+        return getNoFlagIcon();
     }
 
-    load_images_after_mappings_ = true;
-    load_all_in_progress_ = true;
-    loadCurrencyMappings();
-}
-
-QIcon ImageCache::getCurrencyIcon(const std::string& iso_code) const {
-    auto it = currency_icons_.find(iso_code);
-    if (it != currency_icons_.end()) {
+    // Check if already cached
+    auto it = image_icons_.find(image_id);
+    if (it != image_icons_.end()) {
         return it->second;
     }
 
-    // Return the "no-flag" placeholder icon if available
+    // Not cached - trigger async load if not already loading
+    if (pending_image_requests_.find(image_id) == pending_image_requests_.end()) {
+        loadImageById(image_id);
+    }
+
+    // Return placeholder while loading
     return getNoFlagIcon();
 }
 
-bool ImageCache::hasCurrencyIcon(const std::string& iso_code) const {
-    return currency_icons_.find(iso_code) != currency_icons_.end();
+bool ImageCache::hasIcon(const std::string& image_id) const {
+    return image_icons_.find(image_id) != image_icons_.end();
+}
+
+void ImageCache::loadImageById(const std::string& image_id) {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load image: not connected.";
+        return;
+    }
+
+    // Check if already cached in SVG cache
+    auto svg_it = image_svg_cache_.find(image_id);
+    if (svg_it != image_svg_cache_.end()) {
+        QIcon icon = svgToIcon(svg_it->second);
+        if (!icon.isNull()) {
+            image_icons_[image_id] = icon;
+            emit imageLoaded(QString::fromStdString(image_id));
+        }
+        return;
+    }
+
+    // Skip if already being loaded
+    if (pending_image_requests_.find(image_id) != pending_image_requests_.end()) {
+        BOOST_LOG_SEV(lg(), debug) << "Image already pending: " << image_id;
+        return;
+    }
+
+    pending_image_requests_.insert(image_id);
+    QPointer<ImageCache> self = this;
+    std::string requested_id = image_id;
+
+    QFuture<SingleImageResult> future =
+        QtConcurrent::run([self, requested_id]() -> SingleImageResult {
+            BOOST_LOG_SEV(lg(), debug) << "Fetching single image: " << requested_id;
+            if (!self) return {false, requested_id, {}};
+
+            assets::messaging::get_images_request request;
+            request.image_ids = {requested_id};
+            auto payload = request.serialize();
+
+            frame request_frame(message_type::get_images_request, 0, std::move(payload));
+
+            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send get image request: "
+                                           << response_result.error();
+                return {false, requested_id, {}};
+            }
+
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
+                                           << payload_result.error();
+                return {false, requested_id, {}};
+            }
+
+            auto response = assets::messaging::get_images_response::deserialize(*payload_result);
+
+            if (!response || response->images.empty()) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to get image: " << requested_id;
+                return {false, requested_id, {}};
+            }
+
+            return {true, requested_id, std::move(response->images[0])};
+        });
+
+    single_image_watcher_->setFuture(future);
+}
+
+void ImageCache::onSingleImageLoaded() {
+    auto result = single_image_watcher_->result();
+
+    // Clear pending status
+    pending_image_requests_.erase(result.image_id);
+
+    if (result.success) {
+        // Cache SVG and render icon
+        image_svg_cache_[result.image_id] = result.image.svg_data;
+        QIcon icon = svgToIcon(result.image.svg_data);
+        if (!icon.isNull()) {
+            image_icons_[result.image_id] = icon;
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Loaded single image: " << result.image_id;
+        emit imageLoaded(QString::fromStdString(result.image_id));
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Failed to load image: " << result.image_id;
+    }
 }
 
 QIcon ImageCache::svgToIcon(const std::string& svg_data) {
@@ -449,7 +457,6 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
 
     std::vector<assets::domain::image> all_images;
 
-    // Batch into groups of MAX_IMAGES_PER_REQUEST
     constexpr std::size_t batch_size = assets::messaging::MAX_IMAGES_PER_REQUEST;
     int batch_num = 0;
     for (std::size_t i = 0; i < image_ids.size(); i += batch_size) {
@@ -483,8 +490,7 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
             continue;
         }
 
-        auto response =
-            assets::messaging::get_images_response::deserialize(*payload_result);
+        auto response = assets::messaging::get_images_response::deserialize(*payload_result);
 
         if (!response) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize images response (batch "
@@ -521,11 +527,9 @@ void ImageCache::loadImageList() {
             assets::messaging::list_images_request request;
             auto payload = request.serialize();
 
-            frame request_frame(message_type::list_images_request,
-                0, std::move(payload));
+            frame request_frame(message_type::list_images_request, 0, std::move(payload));
 
-            auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
+            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
 
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send list images request: "
@@ -540,8 +544,7 @@ void ImageCache::loadImageList() {
                 return {false, {}};
             }
 
-            auto response =
-                assets::messaging::list_images_response::deserialize(*payload_result);
+            auto response = assets::messaging::list_images_response::deserialize(*payload_result);
 
             if (!response) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to deserialize list images response.";
@@ -572,105 +575,99 @@ void ImageCache::onImageListLoaded() {
     }
 }
 
-void ImageCache::loadImageById(const std::string& image_id) {
+void ImageCache::loadAllAvailableImages() {
+    if (is_loading_all_available_) {
+        BOOST_LOG_SEV(lg(), warn) << "All available images load already in progress.";
+        return;
+    }
+
     if (!clientManager_ || !clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot load image: not connected.";
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load all images: not connected.";
         return;
     }
 
-    // Check if already cached
-    if (image_preview_cache_.find(image_id) != image_preview_cache_.end()) {
-        emit imageLoaded(QString::fromStdString(image_id));
+    if (available_images_.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No images in list to load.";
+        emit allAvailableImagesLoaded();
         return;
     }
 
-    // Also check in the main SVG cache
-    auto svg_it = image_svg_cache_.find(image_id);
-    if (svg_it != image_svg_cache_.end()) {
-        QIcon icon = svgToIcon(svg_it->second);
-        if (!icon.isNull()) {
-            image_preview_cache_[image_id] = icon;
-            emit imageLoaded(QString::fromStdString(image_id));
+    // Collect image IDs that we need to fetch (not already cached)
+    std::vector<std::string> image_ids_to_fetch;
+    for (const auto& img : available_images_) {
+        if (image_svg_cache_.find(img.image_id) == image_svg_cache_.end() &&
+            pending_image_requests_.find(img.image_id) == pending_image_requests_.end()) {
+            image_ids_to_fetch.push_back(img.image_id);
+            pending_image_requests_.insert(img.image_id);
         }
+    }
+
+    if (image_ids_to_fetch.empty()) {
+        BOOST_LOG_SEV(lg(), debug) << "All available images already cached.";
+        emit allAvailableImagesLoaded();
         return;
     }
 
-    // Skip if already being loaded
-    if (pending_image_requests_.find(image_id) != pending_image_requests_.end()) {
-        BOOST_LOG_SEV(lg(), debug) << "Image already pending: " << image_id;
-        return;
-    }
+    BOOST_LOG_SEV(lg(), debug) << "Loading " << image_ids_to_fetch.size()
+                               << " available images.";
 
-    pending_image_requests_.insert(image_id);
-    QPointer<ImageCache> self = this;
-    std::string requested_id = image_id;
+    is_loading_all_available_ = true;
+    ClientManager* clientMgr = clientManager_;
 
-    QFuture<SingleImageResult> future =
-        QtConcurrent::run([self, requested_id]() -> SingleImageResult {
-            BOOST_LOG_SEV(lg(), debug) << "Fetching single image: " << requested_id;
-            if (!self) return {false, requested_id, {}};
-
-            assets::messaging::get_images_request request;
-            request.image_ids = {requested_id};
-            auto payload = request.serialize();
-
-            frame request_frame(message_type::get_images_request,
-                0, std::move(payload));
-
-            auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
-
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send get image request: "
-                                           << response_result.error();
-                return {false, requested_id, {}};
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
-                                           << payload_result.error();
-                return {false, requested_id, {}};
-            }
-
-            auto response =
-                assets::messaging::get_images_response::deserialize(*payload_result);
-
-            if (!response || response->images.empty()) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to get image: " << requested_id;
-                return {false, requested_id, {}};
-            }
-
-            return {true, requested_id, std::move(response->images[0])};
+    QFuture<ImagesResult> future =
+        QtConcurrent::run([clientMgr, image_ids_to_fetch]() -> ImagesResult {
+            return fetchImagesInBatches(clientMgr, image_ids_to_fetch);
         });
 
-    single_image_watcher_->setFuture(future);
+    all_available_watcher_->setFuture(future);
 }
 
-void ImageCache::onSingleImageLoaded() {
-    auto result = single_image_watcher_->result();
+void ImageCache::onAllAvailableImagesLoaded() {
+    is_loading_all_available_ = false;
 
-    // Clear pending status
-    pending_image_requests_.erase(result.image_id);
-
+    auto result = all_available_watcher_->result();
     if (result.success) {
-        // Cache SVG and render icon
-        image_svg_cache_[result.image_id] = result.image.svg_data;
-        QIcon icon = svgToIcon(result.image.svg_data);
-        if (!icon.isNull()) {
-            image_preview_cache_[result.image_id] = icon;
+        // Cache SVG data and render icons
+        for (const auto& img : result.images) {
+            const auto image_id_str = boost::uuids::to_string(img.image_id);
+            pending_image_requests_.erase(image_id_str);
+            image_svg_cache_[image_id_str] = img.svg_data;
+            QIcon icon = svgToIcon(img.svg_data);
+            if (!icon.isNull()) {
+                image_icons_[image_id_str] = icon;
+            }
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Loaded single image: " << result.image_id;
-        emit imageLoaded(QString::fromStdString(result.image_id));
+        BOOST_LOG_SEV(lg(), info) << "Cached " << result.images.size()
+                                  << " available images.";
+
+        emit allAvailableImagesLoaded();
     } else {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load image: " << result.image_id;
+        for (const auto& img : available_images_) {
+            pending_image_requests_.erase(img.image_id);
+        }
+        BOOST_LOG_SEV(lg(), error) << "Failed to load all available images.";
+        emit loadError(tr("Failed to load available images"));
     }
 }
 
-QIcon ImageCache::getImageIcon(const std::string& image_id) const {
-    auto it = image_preview_cache_.find(image_id);
-    if (it != image_preview_cache_.end()) {
+std::string ImageCache::getNoFlagImageId() const {
+    for (const auto& img : available_images_) {
+        if (img.key == "no-flag") {
+            return img.image_id;
+        }
+    }
+    BOOST_LOG_SEV(lg(), warn) << "No 'no-flag' image found in available images.";
+    return {};
+}
+
+QIcon ImageCache::getNoFlagIcon() const {
+    std::string no_flag_id = getNoFlagImageId();
+    if (no_flag_id.empty()) {
+        return {};
+    }
+    auto it = image_icons_.find(no_flag_id);
+    if (it != image_icons_.end()) {
         return it->second;
     }
     return {};
@@ -697,10 +694,10 @@ void ImageCache::setCurrencyImage(const std::string& iso_code,
                                        << " -> " << (req_image_id.empty() ? "(none)" : req_image_id);
             if (!self) return {false, req_iso_code, "Widget destroyed"};
 
-            // Step 1: Fetch currencies (protocol doesn't support filtering by iso_code)
+            // Step 1: Fetch currencies
             risk::messaging::get_currencies_request get_request;
             get_request.offset = 0;
-            get_request.limit = 1000;  // Max allowed by server
+            get_request.limit = 1000;
             auto get_payload = get_request.serialize();
 
             frame get_frame(message_type::get_currencies_request, 0, std::move(get_payload));
@@ -782,9 +779,6 @@ void ImageCache::onCurrencyImageSet() {
     if (result.success) {
         BOOST_LOG_SEV(lg(), info) << "Currency image set successfully for: "
                                   << result.iso_code;
-        // Reload mappings and then images to get updated data
-        load_images_after_mappings_ = true;
-        loadCurrencyMappings();
     } else {
         BOOST_LOG_SEV(lg(), error) << "Failed to set currency image for "
                                    << result.iso_code << ": " << result.message;
@@ -792,412 +786,6 @@ void ImageCache::onCurrencyImageSet() {
 
     emit currencyImageSet(QString::fromStdString(result.iso_code),
         result.success, QString::fromStdString(result.message));
-}
-
-void ImageCache::loadAllAvailableImages() {
-    if (is_loading_all_available_) {
-        BOOST_LOG_SEV(lg(), warn) << "All available images load already in progress.";
-        return;
-    }
-
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot load all images: not connected.";
-        return;
-    }
-
-    if (available_images_.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "No images in list to load.";
-        emit allAvailableImagesLoaded();
-        return;
-    }
-
-    // Collect image IDs that we need to fetch (not already cached or pending)
-    std::vector<std::string> image_ids_to_fetch;
-    for (const auto& img : available_images_) {
-        if (image_preview_cache_.find(img.image_id) == image_preview_cache_.end() &&
-            image_svg_cache_.find(img.image_id) == image_svg_cache_.end() &&
-            pending_image_requests_.find(img.image_id) == pending_image_requests_.end()) {
-            image_ids_to_fetch.push_back(img.image_id);
-            pending_image_requests_.insert(img.image_id);
-        }
-    }
-
-    if (image_ids_to_fetch.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "All available images already cached.";
-        emit allAvailableImagesLoaded();
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Loading " << image_ids_to_fetch.size()
-                               << " available images.";
-
-    is_loading_all_available_ = true;
-    ClientManager* clientMgr = clientManager_;
-
-    QFuture<ImagesResult> future =
-        QtConcurrent::run([clientMgr, image_ids_to_fetch]() -> ImagesResult {
-            return fetchImagesInBatches(clientMgr, image_ids_to_fetch);
-        });
-
-    all_available_watcher_->setFuture(future);
-}
-
-void ImageCache::onAllAvailableImagesLoaded() {
-    is_loading_all_available_ = false;
-
-    auto result = all_available_watcher_->result();
-    if (result.success) {
-        // Cache SVG data and render icons, clear pending status
-        for (const auto& img : result.images) {
-            const auto image_id_str = boost::uuids::to_string(img.image_id);
-            pending_image_requests_.erase(image_id_str);
-            image_svg_cache_[image_id_str] = img.svg_data;
-            QIcon icon = svgToIcon(img.svg_data);
-            if (!icon.isNull()) {
-                image_preview_cache_[image_id_str] = icon;
-            }
-        }
-
-        BOOST_LOG_SEV(lg(), info) << "Cached " << result.images.size()
-                                  << " available images.";
-
-        emit allAvailableImagesLoaded();
-    } else {
-        // Clear pending status for all items that were attempted
-        for (const auto& img : available_images_) {
-            pending_image_requests_.erase(img.image_id);
-        }
-        BOOST_LOG_SEV(lg(), error) << "Failed to load all available images.";
-        emit loadError(tr("Failed to load available images"));
-    }
-}
-
-std::string ImageCache::getCurrencyImageId(const std::string& iso_code) const {
-    auto it = currency_to_image_id_.find(iso_code);
-    if (it != currency_to_image_id_.end()) {
-        return it->second;
-    }
-    return {};
-}
-
-std::string ImageCache::getNoFlagImageId() const {
-    for (const auto& img : available_images_) {
-        if (img.key == "no-flag") {
-            return img.image_id;
-        }
-    }
-    BOOST_LOG_SEV(lg(), warn) << "No 'no-flag' image found in available images.";
-    return {};
-}
-
-QIcon ImageCache::getNoFlagIcon() const {
-    std::string no_flag_id = getNoFlagImageId();
-    if (no_flag_id.empty()) {
-        return {};
-    }
-    return getImageIcon(no_flag_id);
-}
-
-void ImageCache::loadCountryMappings() {
-    BOOST_LOG_SEV(lg(), debug) << "loadCountryMappings() called.";
-
-    if (is_loading_country_mappings_) {
-        BOOST_LOG_SEV(lg(), warn) << "Country mappings load already in progress.";
-        return;
-    }
-
-    if (!clientManager_) {
-        BOOST_LOG_SEV(lg(), error) << "Cannot load country mappings: clientManager_ is null.";
-        return;
-    }
-
-    if (!clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot load country mappings: not connected.";
-        return;
-    }
-
-    is_loading_country_mappings_ = true;
-    QPointer<ImageCache> self = this;
-
-    BOOST_LOG_SEV(lg(), debug) << "Starting async country mappings fetch.";
-
-    QFuture<MappingsResult> future =
-        QtConcurrent::run([self]() -> MappingsResult {
-            BOOST_LOG_SEV(lg(), debug) << "Fetching countries to extract image_id mappings.";
-            if (!self) {
-                BOOST_LOG_SEV(lg(), error) << "ImageCache destroyed during async fetch.";
-                return {false, {}};
-            }
-
-            // Fetch all countries (we just need alpha2_code and image_id)
-            risk::messaging::get_countries_request request;
-            request.offset = 0;
-            request.limit = 1000;  // Max allowed by server
-            auto payload = request.serialize();
-
-            frame request_frame(message_type::get_countries_request,
-                0, std::move(payload));
-
-            BOOST_LOG_SEV(lg(), debug) << "Sending get_countries_request.";
-
-            auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
-
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send countries request: "
-                                           << response_result.error();
-                return {false, {}};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Received countries response, decompressing.";
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
-                                           << payload_result.error();
-                return {false, {}};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Payload size: " << payload_result->size() << " bytes.";
-
-            auto response =
-                risk::messaging::get_countries_response::deserialize(*payload_result);
-
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize countries response.";
-                return {false, {}};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Received " << response->countries.size()
-                                       << " countries from server.";
-
-            // Extract alpha2_code -> image_id mappings from countries
-            std::unordered_map<std::string, std::string> mappings;
-            int countries_with_image = 0;
-            int countries_without_image = 0;
-            for (const auto& country : response->countries) {
-                if (country.image_id) {
-                    std::string image_id_str = boost::uuids::to_string(*country.image_id);
-                    mappings[country.alpha2_code] = image_id_str;
-                    countries_with_image++;
-                } else {
-                    countries_without_image++;
-                }
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Extracted " << mappings.size()
-                                       << " country-image mappings. "
-                                       << countries_with_image << " countries have image_id, "
-                                       << countries_without_image << " do not.";
-
-            return {true, std::move(mappings)};
-        });
-
-    country_mappings_watcher_->setFuture(future);
-}
-
-void ImageCache::onCountryMappingsLoaded() {
-    BOOST_LOG_SEV(lg(), debug) << "onCountryMappingsLoaded() callback triggered.";
-    is_loading_country_mappings_ = false;
-
-    auto result = country_mappings_watcher_->result();
-    BOOST_LOG_SEV(lg(), debug) << "Country mappings result: success=" << result.success
-                               << ", mappings count=" << result.mappings.size();
-
-    if (result.success) {
-        country_to_image_id_ = std::move(result.mappings);
-
-        BOOST_LOG_SEV(lg(), debug) << "Stored " << country_to_image_id_.size()
-                                   << " country-image mappings.";
-
-        emit countryMappingsLoaded();
-
-        // If doing a full load, continue with country images
-        if (load_all_in_progress_) {
-            BOOST_LOG_SEV(lg(), debug) << "Continuing loadAll() with country images.";
-            loadImagesForCountries();
-        }
-
-        // Handle selective refresh from country change notifications
-        if (load_images_after_country_mappings_) {
-            load_images_after_country_mappings_ = false;
-
-            if (!pending_refresh_alpha2_codes_.empty()) {
-                std::vector<std::string> image_ids_to_fetch;
-                std::unordered_set<std::string> unique_ids;
-
-                for (const auto& alpha2_code : pending_refresh_alpha2_codes_) {
-                    auto it = country_to_image_id_.find(alpha2_code);
-                    if (it != country_to_image_id_.end() && !it->second.empty()) {
-                        if (image_svg_cache_.find(it->second) == image_svg_cache_.end() &&
-                            unique_ids.find(it->second) == unique_ids.end()) {
-                            image_ids_to_fetch.push_back(it->second);
-                            unique_ids.insert(it->second);
-                        }
-                    }
-                    country_icons_.erase(alpha2_code);
-                }
-
-                BOOST_LOG_SEV(lg(), debug) << "Selective refresh: "
-                    << pending_refresh_alpha2_codes_.size() << " countries, "
-                    << image_ids_to_fetch.size() << " new images to fetch.";
-
-                for (const auto& alpha2_code : pending_refresh_alpha2_codes_) {
-                    auto map_it = country_to_image_id_.find(alpha2_code);
-                    if (map_it != country_to_image_id_.end()) {
-                        auto svg_it = image_svg_cache_.find(map_it->second);
-                        if (svg_it != image_svg_cache_.end()) {
-                            QIcon icon = svgToIcon(svg_it->second);
-                            if (!icon.isNull()) {
-                                country_icons_[alpha2_code] = icon;
-                            }
-                        }
-                    }
-                }
-
-                pending_refresh_alpha2_codes_.clear();
-
-                if (image_ids_to_fetch.empty()) {
-                    emit imagesLoaded();
-                    emit allLoaded();
-                } else {
-                    is_loading_images_ = true;
-                    ClientManager* clientMgr = clientManager_;
-                    QFuture<ImagesResult> future =
-                        QtConcurrent::run([clientMgr, image_ids_to_fetch]() -> ImagesResult {
-                            return fetchImagesInBatches(clientMgr, image_ids_to_fetch);
-                        });
-                    images_watcher_->setFuture(future);
-                }
-            } else {
-                loadImagesForCountries();
-            }
-        }
-    } else {
-        load_all_in_progress_ = false;
-        load_images_after_country_mappings_ = false;
-        BOOST_LOG_SEV(lg(), error) << "Failed to load country mappings.";
-        emit loadError(tr("Failed to load country-image mappings"));
-    }
-}
-
-void ImageCache::loadImagesForCountries() {
-    BOOST_LOG_SEV(lg(), debug) << "loadImagesForCountries() called. "
-                               << "country_to_image_id_ size: " << country_to_image_id_.size();
-
-    if (!clientManager_ || !clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot load country images: not connected.";
-        return;
-    }
-
-    // Collect image IDs that we need to fetch (not already cached)
-    std::vector<std::string> image_ids_to_fetch;
-    std::unordered_set<std::string> unique_ids;
-
-    for (const auto& [alpha2_code, image_id] : country_to_image_id_) {
-        if (image_svg_cache_.find(image_id) == image_svg_cache_.end() &&
-            unique_ids.find(image_id) == unique_ids.end()) {
-            image_ids_to_fetch.push_back(image_id);
-            unique_ids.insert(image_id);
-        }
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Need to fetch " << image_ids_to_fetch.size()
-                               << " country images (cached: " << image_svg_cache_.size() << ").";
-
-    // First, render icons using any already-cached SVG data
-    int rendered = 0;
-    for (const auto& [alpha2_code, image_id] : country_to_image_id_) {
-        auto svg_it = image_svg_cache_.find(image_id);
-        if (svg_it != image_svg_cache_.end()) {
-            QIcon icon = svgToIcon(svg_it->second);
-            if (!icon.isNull()) {
-                country_icons_[alpha2_code] = icon;
-                rendered++;
-            }
-        }
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Rendered " << rendered << " country icons from cache.";
-
-    if (image_ids_to_fetch.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "No new country images to fetch.";
-        emit imagesLoaded();
-        if (load_all_in_progress_) {
-            load_all_in_progress_ = false;
-            BOOST_LOG_SEV(lg(), info) << "loadAll() complete. Cached " << currency_icons_.size()
-                                       << " currency icons and " << country_icons_.size()
-                                       << " country icons.";
-            emit allLoaded();
-        }
-        return;
-    }
-
-    // Fetch missing images synchronously in this call (countries list is small)
-    // and render icons immediately
-    BOOST_LOG_SEV(lg(), debug) << "Fetching " << image_ids_to_fetch.size() << " country images.";
-
-    ClientManager* clientMgr = clientManager_;
-    auto result = fetchImagesInBatches(clientMgr, image_ids_to_fetch);
-
-    if (result.success) {
-        // Cache SVG data and render icons
-        for (const auto& img : result.images) {
-            const auto image_id_str = boost::uuids::to_string(img.image_id);
-            image_svg_cache_[image_id_str] = img.svg_data;
-        }
-
-        // Render icons for all countries
-        for (const auto& [alpha2_code, image_id] : country_to_image_id_) {
-            if (country_icons_.find(alpha2_code) != country_icons_.end()) {
-                continue;  // Already rendered from cache above
-            }
-            auto svg_it = image_svg_cache_.find(image_id);
-            if (svg_it != image_svg_cache_.end()) {
-                QIcon icon = svgToIcon(svg_it->second);
-                if (!icon.isNull()) {
-                    country_icons_[alpha2_code] = icon;
-                }
-            }
-        }
-
-        BOOST_LOG_SEV(lg(), debug) << "Total country icons: " << country_icons_.size();
-        emit imagesLoaded();
-
-        if (load_all_in_progress_) {
-            load_all_in_progress_ = false;
-            BOOST_LOG_SEV(lg(), info) << "loadAll() complete. Cached " << currency_icons_.size()
-                                       << " currency icons and " << country_icons_.size()
-                                       << " country icons.";
-            emit allLoaded();
-        }
-    } else {
-        load_all_in_progress_ = false;
-        BOOST_LOG_SEV(lg(), error) << "Failed to load country images.";
-        emit loadError(tr("Failed to load country images"));
-    }
-}
-
-QIcon ImageCache::getCountryIcon(const std::string& alpha2_code) const {
-    auto it = country_icons_.find(alpha2_code);
-    if (it != country_icons_.end()) {
-        return it->second;
-    }
-
-    // Return the "no-flag" placeholder icon if available
-    return getNoFlagIcon();
-}
-
-bool ImageCache::hasCountryIcon(const std::string& alpha2_code) const {
-    return country_icons_.find(alpha2_code) != country_icons_.end();
-}
-
-std::string ImageCache::getCountryImageId(const std::string& alpha2_code) const {
-    auto it = country_to_image_id_.find(alpha2_code);
-    if (it != country_to_image_id_.end()) {
-        return it->second;
-    }
-    return {};
 }
 
 void ImageCache::setCountryImage(const std::string& alpha2_code,
@@ -1221,7 +809,7 @@ void ImageCache::setCountryImage(const std::string& alpha2_code,
                                        << " -> " << (req_image_id.empty() ? "(none)" : req_image_id);
             if (!self) return {false, req_alpha2_code, "Widget destroyed"};
 
-            // Step 1: Fetch countries (protocol doesn't support filtering by alpha2_code)
+            // Step 1: Fetch countries
             risk::messaging::get_countries_request get_request;
             get_request.offset = 0;
             get_request.limit = 1000;
@@ -1306,8 +894,6 @@ void ImageCache::onCountryImageSet() {
     if (result.success) {
         BOOST_LOG_SEV(lg(), info) << "Country image set successfully for: "
                                   << result.alpha2_code;
-        // Reload country mappings to get updated data
-        loadCountryMappings();
     } else {
         BOOST_LOG_SEV(lg(), error) << "Failed to set country image for "
                                    << result.alpha2_code << ": " << result.message;
@@ -1315,30 +901,6 @@ void ImageCache::onCountryImageSet() {
 
     emit countryImageSet(QString::fromStdString(result.alpha2_code),
         result.success, QString::fromStdString(result.message));
-}
-
-void ImageCache::reloadCurrencyIcons() {
-    BOOST_LOG_SEV(lg(), debug) << "reloadCurrencyIcons() called. Clearing "
-                               << currency_icons_.size() << " cached icons.";
-
-    // Clear cached icons so they will be re-rendered with updated mappings
-    currency_icons_.clear();
-
-    // Reload mappings from server and re-render icons
-    load_images_after_mappings_ = true;
-    loadCurrencyMappings();
-}
-
-void ImageCache::reloadCountryIcons() {
-    BOOST_LOG_SEV(lg(), debug) << "reloadCountryIcons() called. Clearing "
-                               << country_icons_.size() << " cached icons.";
-
-    // Clear cached icons so they will be re-rendered with updated mappings
-    country_icons_.clear();
-
-    // Reload mappings from server and re-render icons
-    load_images_after_country_mappings_ = true;
-    loadCountryMappings();
 }
 
 }

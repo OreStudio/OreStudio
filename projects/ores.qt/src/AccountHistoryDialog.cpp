@@ -61,6 +61,12 @@ AccountHistoryDialog::AccountHistoryDialog(QString username,
         onVersionSelected(currentRow);
     });
 
+    // Double-click opens the version in read-only mode
+    connect(ui_->versionListWidget, &QTableWidget::cellDoubleClicked,
+            this, [this](int, int) {
+        onOpenClicked();
+    });
+
     ui_->versionListWidget->setAlternatingRowColors(true);
     ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);

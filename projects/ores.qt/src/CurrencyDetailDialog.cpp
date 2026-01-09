@@ -35,6 +35,7 @@
 #include <QGroupBox>
 #include <QTimer>
 #include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ui_CurrencyDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -264,12 +265,9 @@ risk::domain::currency CurrencyDetailDialog::getCurrency() const {
     if (!pendingImageId_.isEmpty()) {
         boost::uuids::string_generator gen;
         currency.image_id = gen(pendingImageId_.toStdString());
-    } else if (imageCache_ && currency.iso_code.length() > 0) {
-        std::string existingId = imageCache_->getCurrencyImageId(currency.iso_code);
-        if (!existingId.empty()) {
-            boost::uuids::string_generator gen;
-            currency.image_id = gen(existingId);
-        }
+    } else if (currentCurrency_.image_id) {
+        // Keep the existing image_id from the currency being edited
+        currency.image_id = currentCurrency_.image_id;
     }
 
     return currency;
@@ -624,9 +622,11 @@ void CurrencyDetailDialog::onSelectFlagClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Opening flag selector for: "
                                << currentCurrency_.iso_code;
 
-    // Get current image ID - use pending if set, otherwise from cache
+    // Get current image ID - use pending if set, otherwise from the currency
     QString currentImageId = pendingImageId_.isEmpty()
-        ? QString::fromStdString(imageCache_->getCurrencyImageId(currentCurrency_.iso_code))
+        ? (currentCurrency_.image_id
+            ? QString::fromStdString(boost::uuids::to_string(*currentCurrency_.image_id))
+            : QString())
         : pendingImageId_;
 
     FlagSelectorDialog dialog(imageCache_, currentImageId, this);
@@ -705,22 +705,15 @@ void CurrencyDetailDialog::updateFlagDisplay() {
     if (flagChanged_) {
         // If changed, show pending ID (even if empty - meaning cleared)
         imageIdToShow = pendingImageId_;
-    } else {
-        // If not changed, show saved mapping
+    } else if (currentCurrency_.image_id) {
+        // Get image_id from the currency domain object
         imageIdToShow = QString::fromStdString(
-            imageCache_->getCurrencyImageId(currentCurrency_.iso_code));
+            boost::uuids::to_string(*currentCurrency_.image_id));
     }
 
     // If we have an ID, try to get the icon
     if (!imageIdToShow.isEmpty()) {
-        // First try the preview cache (used by flag selector)
-        QIcon icon = imageCache_->getImageIcon(imageIdToShow.toStdString());
-
-        // If not in preview cache, try the currency icon cache (populated after setCurrencyImage)
-        if (icon.isNull() && !flagChanged_) {
-            icon = imageCache_->getCurrencyIcon(currentCurrency_.iso_code);
-        }
-
+        QIcon icon = imageCache_->getIcon(imageIdToShow.toStdString());
         if (!icon.isNull()) {
             flagButton_->setIcon(icon);
             return;

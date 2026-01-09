@@ -64,6 +64,12 @@ CountryHistoryDialog::CountryHistoryDialog(QString alpha2_code,
         onVersionSelected(currentRow);
     });
 
+    // Double-click opens the version in read-only mode
+    connect(ui_->versionListWidget, &QTableWidget::cellDoubleClicked,
+            this, [this](int, int) {
+        onOpenClicked();
+    });
+
     ui_->versionListWidget->setAlternatingRowColors(true);
     ui_->versionListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
     ui_->versionListWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -291,7 +297,7 @@ void CountryHistoryDialog::displayChangesTab(int version_index) {
                     }
                 } else {
                     // Get the icon using the UUID string
-                    QIcon icon = imageCache_->getImageIcon(imageIdStr.toStdString());
+                    QIcon icon = imageCache_->getIcon(imageIdStr.toStdString());
                     if (!icon.isNull()) {
                         label->setPixmap(icon.pixmap(24, 24));
                     } else {

@@ -312,11 +312,6 @@ void CurrencyMdiWindow::reload() {
     emit statusChanged("Reloading currencies...");
     clearStaleIndicator();
 
-    // Reload image cache mappings to pick up any flag changes
-    if (imageCache_) {
-        imageCache_->reloadCurrencyIcons();
-    }
-
     currencyModel_->refresh();
 }
 

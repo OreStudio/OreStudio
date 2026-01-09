@@ -23,6 +23,7 @@
 #include <unordered_set>
 #include <QtConcurrent>
 #include <QColor>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -57,6 +58,15 @@ ClientCountryModel(ClientManager* clientManager, ImageCache* imageCache,
                     {Qt::DecorationRole});
             }
         });
+
+        // Also refresh when individual images load (on-demand loading)
+        connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
+            if (!countries_.empty()) {
+                emit dataChanged(index(0, Column::Flag),
+                    index(rowCount() - 1, Column::Flag),
+                    {Qt::DecorationRole});
+            }
+        });
     }
 }
 
@@ -84,8 +94,9 @@ QVariant ClientCountryModel::data(const QModelIndex& index, int role) const {
 
     // Handle DecorationRole for Flag column
     if (role == Qt::DecorationRole && index.column() == Column::Flag) {
-        if (imageCache_) {
-            return imageCache_->getCountryIcon(country.alpha2_code);
+        if (imageCache_ && country.image_id) {
+            const auto image_id_str = boost::uuids::to_string(*country.image_id);
+            return imageCache_->getIcon(image_id_str);
         }
         return {};
     }

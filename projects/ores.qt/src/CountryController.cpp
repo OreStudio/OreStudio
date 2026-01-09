@@ -347,6 +347,8 @@ void CountryController::onShowCountryHistory(const QString& alpha2Code) {
     });
     connect(historyDialog, &CountryHistoryDialog::revertVersionRequested,
             this, &CountryController::onRevertCountry);
+    connect(historyDialog, &CountryHistoryDialog::openVersionRequested,
+            this, &CountryController::onOpenCountryVersion);
 
     // Load history data
     historyDialog->loadHistory();
@@ -444,6 +446,88 @@ void CountryController::onNotificationReceived(
                 }
             }
         }
+    }
+}
+
+void CountryController::onOpenCountryVersion(
+    const risk::domain::country& country, int versionNumber) {
+    BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
+                              << " for country: " << country.alpha2_code;
+
+    const QString alpha2Code = QString::fromStdString(country.alpha2_code);
+    const QString windowKey = build_window_key("version", QString("%1_v%2")
+        .arg(alpha2Code).arg(versionNumber));
+
+    // Try to reuse existing window
+    if (try_reuse_window(windowKey)) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing version window";
+        return;
+    }
+
+    const QColor iconColor(220, 220, 220);
+
+    auto* detailDialog = new CountryDetailDialog(mainWindow_);
+    if (clientManager_) {
+        detailDialog->setClientManager(clientManager_);
+        detailDialog->setUsername(username_.toStdString());
+    }
+    if (imageCache_) {
+        detailDialog->setImageCache(imageCache_);
+    }
+
+    connect(detailDialog, &CountryDetailDialog::statusMessage,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(detailDialog, &CountryDetailDialog::errorMessage,
+            this, [this](const QString& message) {
+        emit errorMessage(message);
+    });
+
+    // Connect revert signal
+    connect(detailDialog, &CountryDetailDialog::revertRequested,
+            this, &CountryController::onRevertCountry);
+
+    detailDialog->setCountry(country);
+    detailDialog->setReadOnly(true, versionNumber);
+
+    auto* detailWindow = new DetachableMdiSubWindow();
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(QString("Country: %1 (Version %2 - Read Only)")
+        .arg(alpha2Code).arg(versionNumber));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_globe_20_regular.svg", iconColor));
+
+    // Track this version window
+    track_window(windowKey, detailWindow);
+
+    allDetachableWindows_.append(detailWindow);
+    QPointer<CountryController> self = this;
+    QPointer<DetachableMdiSubWindow> windowPtr = detailWindow;
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, windowPtr, windowKey]() {
+        if (self) {
+            self->allDetachableWindows_.removeAll(windowPtr.data());
+            self->untrack_window(windowKey);
+        }
+    });
+
+    mdiArea_->addSubWindow(detailWindow);
+    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
+    detailWindow->adjustSize();
+
+    // If the parent country list window is detached, detach this window too
+    if (countryListWindow_ && countryListWindow_->isDetached()) {
+        detailWindow->show();
+        detailWindow->detach();
+
+        QPoint parentPos = countryListWindow_->pos();
+        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else {
+        detailWindow->show();
     }
 }
 

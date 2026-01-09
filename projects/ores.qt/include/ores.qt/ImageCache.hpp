@@ -36,12 +36,18 @@ namespace ores::qt {
  * @brief Cache for dynamically loaded images (flags, icons) from the server.
  *
  * This class manages the fetching and caching of images from the server.
- * It provides a simple interface to get icons for currencies by their ISO code.
+ * Images are cached by their UUID (image_id) and can be retrieved for any
+ * entity that references them.
+ *
+ * Simplified design:
+ * - Single mapping: image_id -> SVG data and rendered QIcon
+ * - Entities (currencies, countries) have their own image_id field
+ * - Call getIcon(image_id) to get the icon for any image
+ * - On-demand loading: if image not cached, loads from server
  *
  * Typical usage:
- * 1. Call loadCurrencyMappings() to fetch currency->image mappings
- * 2. Call loadImagesForCurrencies() to fetch actual image data
- * 3. Use getCurrencyIcon() to retrieve cached icons
+ * 1. Call loadAll() to preload images for current entities
+ * 2. Use getIcon(image_id) to retrieve icons - loads on-demand if missing
  */
 class ImageCache final : public QObject {
     Q_OBJECT
@@ -60,104 +66,43 @@ public:
     ~ImageCache() override = default;
 
     /**
-     * @brief Load currency-image mappings from the server.
+     * @brief Preload images for current currencies and countries.
      *
-     * Fetches all currency->image_id mappings. After completion,
-     * currencyMappingsLoaded() signal is emitted.
-     */
-    void loadCurrencyMappings();
-
-    /**
-     * @brief Load images for all currencies that have mappings.
-     *
-     * Fetches image data for currencies that have mappings but whose
-     * images haven't been loaded yet. Images are fetched in batches.
-     * After completion, imagesLoaded() signal is emitted.
-     */
-    void loadImagesForCurrencies();
-
-    /**
-     * @brief Load all currency flags in one operation.
-     *
-     * Convenience method that loads mappings first, then loads images.
+     * Fetches current entities to discover their image_ids, then loads
+     * those images into the cache. After completion, allLoaded() signal
+     * is emitted.
      */
     void loadAll();
 
     /**
-     * @brief Get the icon for a currency.
+     * @brief Get icon for an image by its UUID.
      *
-     * @param iso_code The currency's ISO code (e.g., "USD", "EUR")
-     * @return QIcon for the currency's flag, or empty icon if not cached
+     * If the image is cached, returns it immediately.
+     * If not cached, triggers async load and returns placeholder icon.
+     * When the image loads, imageLoaded(image_id) signal is emitted.
+     *
+     * @param image_id The image UUID as a string
+     * @return QIcon for the image, or placeholder if not yet loaded
      */
-    QIcon getCurrencyIcon(const std::string& iso_code) const;
+    QIcon getIcon(const std::string& image_id);
 
     /**
-     * @brief Check if the cache has an icon for the given currency.
+     * @brief Check if an image is cached.
      *
-     * @param iso_code The currency's ISO code
+     * @param image_id The image UUID
      * @return true if icon is cached, false otherwise
      */
-    bool hasCurrencyIcon(const std::string& iso_code) const;
+    bool hasIcon(const std::string& image_id) const;
 
     /**
-     * @brief Load country-image mappings from the server.
-     *
-     * Fetches all country->image_id mappings. After completion,
-     * countryMappingsLoaded() signal is emitted.
+     * @brief Get the number of cached images.
      */
-    void loadCountryMappings();
-
-    /**
-     * @brief Load images for all countries that have mappings.
-     *
-     * Fetches image data for countries that have mappings but whose
-     * images haven't been loaded yet. Images are fetched in batches.
-     */
-    void loadImagesForCountries();
-
-    /**
-     * @brief Get the icon for a country.
-     *
-     * @param alpha2_code The country's ISO 3166-1 alpha-2 code (e.g., "US", "GB")
-     * @return QIcon for the country's flag, or empty icon if not cached
-     */
-    QIcon getCountryIcon(const std::string& alpha2_code) const;
-
-    /**
-     * @brief Check if the cache has an icon for the given country.
-     *
-     * @param alpha2_code The country's alpha-2 code
-     * @return true if icon is cached, false otherwise
-     */
-    bool hasCountryIcon(const std::string& alpha2_code) const;
-
-    /**
-     * @brief Set or remove a country's image association.
-     *
-     * @param alpha2_code The country alpha-2 code
-     * @param image_id The image ID to assign (empty to remove)
-     * @param assigned_by Username performing the assignment
-     */
-    void setCountryImage(const std::string& alpha2_code, const std::string& image_id,
-        const std::string& assigned_by);
-
-    /**
-     * @brief Get the image ID assigned to a country.
-     *
-     * @param alpha2_code The country alpha-2 code
-     * @return The image ID, or empty string if no mapping
-     */
-    std::string getCountryImageId(const std::string& alpha2_code) const;
-
-    /**
-     * @brief Get the number of cached currency icons.
-     */
-    std::size_t cachedIconCount() const { return currency_icons_.size(); }
+    std::size_t cachedIconCount() const { return image_icons_.size(); }
 
     /**
      * @brief Check if images are currently being loaded.
      */
-    bool isLoading() const { return is_loading_mappings_ || is_loading_images_; }
+    bool isLoading() const { return is_loading_images_; }
 
     /**
      * @brief Load list of all available images from the server.
@@ -182,27 +127,12 @@ public:
     bool hasImageList() const { return !available_images_.empty(); }
 
     /**
-     * @brief Load a specific image by ID for preview.
-     *
-     * @param image_id The image ID to load
-     */
-    void loadImageById(const std::string& image_id);
-
-    /**
      * @brief Load all available images from the image list.
      *
      * Fetches SVG data for all images in the available_images_ list.
      * After completion, allAvailableImagesLoaded() signal is emitted.
      */
     void loadAllAvailableImages();
-
-    /**
-     * @brief Get icon for an image ID (from preview cache).
-     *
-     * @param image_id The image ID
-     * @return QIcon for the image, or empty icon if not cached
-     */
-    QIcon getImageIcon(const std::string& image_id) const;
 
     /**
      * @brief Set or remove a currency's image association.
@@ -215,12 +145,14 @@ public:
         const std::string& assigned_by);
 
     /**
-     * @brief Get the image ID assigned to a currency.
+     * @brief Set or remove a country's image association.
      *
-     * @param iso_code The currency ISO code
-     * @return The image ID, or empty string if no mapping
+     * @param alpha2_code The country alpha-2 code
+     * @param image_id The image ID to assign (empty to remove)
+     * @param assigned_by Username performing the assignment
      */
-    std::string getCurrencyImageId(const std::string& iso_code) const;
+    void setCountryImage(const std::string& alpha2_code, const std::string& image_id,
+        const std::string& assigned_by);
 
     /**
      * @brief Get the image ID for the "no-flag" placeholder.
@@ -236,42 +168,14 @@ public:
      */
     QIcon getNoFlagIcon() const;
 
-    /**
-     * @brief Invalidate currency icon cache and reload mappings.
-     *
-     * Clears the cached currency icons and reloads currency-to-image mappings
-     * from the server. This should be called when the currency list is reloaded
-     * to ensure icons reflect any image changes.
-     */
-    void reloadCurrencyIcons();
-
-    /**
-     * @brief Invalidate country icon cache and reload mappings.
-     *
-     * Clears the cached country icons and reloads country-to-image mappings
-     * from the server. This should be called when the country list is reloaded
-     * to ensure icons reflect any image changes.
-     */
-    void reloadCountryIcons();
-
 signals:
-    /**
-     * @brief Emitted when currency mappings have been loaded.
-     */
-    void currencyMappingsLoaded();
-
-    /**
-     * @brief Emitted when country mappings have been loaded.
-     */
-    void countryMappingsLoaded();
-
     /**
      * @brief Emitted when images have been loaded.
      */
     void imagesLoaded();
 
     /**
-     * @brief Emitted when all data (mappings + images) has been loaded.
+     * @brief Emitted when all data has been loaded (after loadAll()).
      */
     void allLoaded();
 
@@ -286,7 +190,9 @@ signals:
     void imageListLoaded();
 
     /**
-     * @brief Emitted when a single image has been loaded for preview.
+     * @brief Emitted when a single image has been loaded.
+     *
+     * Connect to this signal to refresh UI when on-demand images finish loading.
      */
     void imageLoaded(const QString& image_id);
 
@@ -306,8 +212,8 @@ signals:
     void countryImageSet(const QString& alpha2_code, bool success, const QString& message);
 
 private slots:
-    void onMappingsLoaded();
-    void onCountryMappingsLoaded();
+    void onCurrencyImageIdsLoaded();
+    void onCountryImageIdsLoaded();
     void onImagesLoaded();
     void onImageListLoaded();
     void onSingleImageLoaded();
@@ -324,9 +230,31 @@ private:
      */
     static QIcon svgToIcon(const std::string& svg_data);
 
-    struct MappingsResult {
+    /**
+     * @brief Load a specific image by ID (internal use).
+     *
+     * @param image_id The image ID to load
+     */
+    void loadImageById(const std::string& image_id);
+
+    /**
+     * @brief Load currency image IDs for preloading.
+     */
+    void loadCurrencyImageIds();
+
+    /**
+     * @brief Load country image IDs for preloading.
+     */
+    void loadCountryImageIds();
+
+    /**
+     * @brief Load images by their IDs.
+     */
+    void loadImagesByIds(const std::vector<std::string>& image_ids);
+
+    struct ImageIdsResult {
         bool success;
-        std::unordered_map<std::string, std::string> mappings;  // iso_code -> image_id
+        std::vector<std::string> image_ids;
     };
 
     struct ImagesResult {
@@ -336,9 +264,6 @@ private:
 
     /**
      * @brief Fetch images in batches from the server.
-     *
-     * This is a helper method used by both loadImagesForCurrencies and
-     * loadAllAvailableImages to avoid code duplication.
      *
      * @param clientManager The client manager to use for requests
      * @param image_ids The list of image IDs to fetch
@@ -373,31 +298,22 @@ private:
 
     ClientManager* clientManager_;
 
-    // Currency ISO code -> image_id mapping
-    std::unordered_map<std::string, std::string> currency_to_image_id_;
-
-    // Country alpha-2 code -> image_id mapping
-    std::unordered_map<std::string, std::string> country_to_image_id_;
-
-    // image_id -> cached SVG data (for images we've fetched)
+    // image_id -> cached SVG data
     std::unordered_map<std::string, std::string> image_svg_cache_;
 
-    // Currency ISO code -> QIcon (final rendered icons)
-    std::unordered_map<std::string, QIcon> currency_icons_;
-
-    // Country alpha-2 code -> QIcon (final rendered icons)
-    std::unordered_map<std::string, QIcon> country_icons_;
+    // image_id -> QIcon (rendered from SVG)
+    std::unordered_map<std::string, QIcon> image_icons_;
 
     // Loading state
-    bool is_loading_mappings_{false};
-    bool is_loading_country_mappings_{false};
     bool is_loading_images_{false};
     bool is_loading_all_available_{false};
-    bool load_images_after_mappings_{false};
-    bool load_all_in_progress_{false};  // Track full loadAll() sequence
+    bool load_all_in_progress_{false};
 
-    QFutureWatcher<MappingsResult>* mappings_watcher_;
-    QFutureWatcher<MappingsResult>* country_mappings_watcher_;
+    // Image IDs collected during loadAll() for preloading
+    std::vector<std::string> pending_image_ids_;
+
+    QFutureWatcher<ImageIdsResult>* currency_ids_watcher_;
+    QFutureWatcher<ImageIdsResult>* country_ids_watcher_;
     QFutureWatcher<ImagesResult>* images_watcher_;
     QFutureWatcher<ImageListResult>* image_list_watcher_;
     QFutureWatcher<SingleImageResult>* single_image_watcher_;
@@ -408,20 +324,8 @@ private:
     // List of all available images (metadata only)
     std::vector<assets::messaging::image_info> available_images_;
 
-    // image_id -> QIcon cache for preview (loaded on demand)
-    std::unordered_map<std::string, QIcon> image_preview_cache_;
-
     // Track image IDs currently being loaded to prevent duplicate requests
     std::unordered_set<std::string> pending_image_requests_;
-
-    // ISO codes that need selective refresh (from notifications)
-    std::vector<std::string> pending_refresh_iso_codes_;
-
-    // Alpha2 codes that need selective refresh (from country change notifications)
-    std::vector<std::string> pending_refresh_alpha2_codes_;
-
-    // Flag to load images after country mappings are reloaded
-    bool load_images_after_country_mappings_{false};
 };
 
 }

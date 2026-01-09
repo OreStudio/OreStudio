@@ -504,8 +504,16 @@ void CurrencyController::onOpenCurrencyVersion(
     connect(detailDialog, &CurrencyDetailDialog::revertRequested,
             this, &CurrencyController::onRevertCurrency);
 
-    detailDialog->setCurrency(currency);
-    detailDialog->setReadOnly(true, versionNumber);
+    // Try to get history from the sender (history dialog) for version navigation
+    auto* historyDialog = qobject_cast<CurrencyHistoryDialog*>(sender());
+    if (historyDialog && !historyDialog->getHistory().versions.empty()) {
+        BOOST_LOG_SEV(lg(), debug) << "Using history from sender for version navigation";
+        detailDialog->setHistory(historyDialog->getHistory(), versionNumber);
+    } else {
+        // Fallback: just show single version without navigation
+        detailDialog->setCurrency(currency);
+        detailDialog->setReadOnly(true, versionNumber);
+    }
 
     auto* detailWindow = new DetachableMdiSubWindow();
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);

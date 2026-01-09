@@ -69,6 +69,7 @@ signals:
     void selectionChanged(int selection_count);
     void addNewRequested();
     void showFeatureFlagDetails(const variability::domain::feature_flags& flag);
+    void showHistoryRequested(const QString& name);
     void featureFlagDeleted(const QString& name);
 
 public slots:
@@ -76,6 +77,7 @@ public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
+    void showHistory();
 
     /**
      * @brief Mark the data as stale (changed on server).
@@ -116,6 +118,7 @@ private:
     QAction* addAction_;
     QAction* editAction_;
     QAction* deleteAction_;
+    QAction* historyAction_;
 
     std::unique_ptr<ClientFeatureFlagModel> featureFlagModel_;
     QSortFilterProxyModel* proxyModel_;

@@ -86,6 +86,13 @@ public:
      */
     [[nodiscard]] QString isoCode() const { return isoCode_; }
 
+    /**
+     * @brief Returns the loaded history for version navigation.
+     */
+    [[nodiscard]] const risk::domain::currency_version_history& getHistory() const {
+        return history_;
+    }
+
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);

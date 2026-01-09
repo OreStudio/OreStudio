@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_COUNTRY_HISTORY_DIALOG_HPP
-#define ORES_QT_COUNTRY_HISTORY_DIALOG_HPP
+#ifndef ORES_QT_FEATURE_FLAG_HISTORY_DIALOG_HPP
+#define ORES_QT_FEATURE_FLAG_HISTORY_DIALOG_HPP
 
 #include <memory>
 #include <QPair>
@@ -28,29 +28,28 @@
 #include <QToolBar>
 #include <QAction>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ImageCache.hpp"
-#include "ores.risk/domain/country.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ui_CountryHistoryDialog.h"
+#include "ores.variability/domain/feature_flags.hpp"
+#include "ores.telemetry/log/make_logger.hpp"
+#include "ui_FeatureFlagHistoryDialog.h"
 
 namespace Ui {
-class CountryHistoryDialog;
+class FeatureFlagHistoryDialog;
 }
 
 namespace ores::qt {
 
 /**
- * @brief Widget for displaying country version history.
+ * @brief Widget for displaying feature flag version history.
  */
-class CountryHistoryDialog : public QWidget {
+class FeatureFlagHistoryDialog : public QWidget {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.country_history_dialog";
+        "ores.qt.feature_flag_history_dialog";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
+        using namespace ores::telemetry::log;
         static auto instance = make_logger(logger_name);
         return instance;
     }
@@ -58,37 +57,32 @@ private:
     const QIcon& getHistoryIcon() const;
 
 public:
-    explicit CountryHistoryDialog(QString alpha2_code,
+    explicit FeatureFlagHistoryDialog(QString name,
         ClientManager* clientManager,
         QWidget* parent = nullptr);
-    ~CountryHistoryDialog() override;
+    ~FeatureFlagHistoryDialog() override;
 
     void loadHistory();
-
-    /**
-     * @brief Set the image cache for displaying country flags.
-     */
-    void setImageCache(ImageCache* imageCache);
 
     QSize sizeHint() const override;
 
     /**
      * @brief Mark the history data as stale and reload.
      *
-     * Called when a notification is received indicating this country has
+     * Called when a notification is received indicating this feature flag has
      * changed on the server. Automatically reloads the history data.
      */
     void markAsStale();
 
     /**
-     * @brief Returns the alpha-2 code of the country.
+     * @brief Returns the name of the feature flag.
      */
-    [[nodiscard]] QString alpha2Code() const { return alpha2Code_; }
+    [[nodiscard]] QString flagName() const { return flagName_; }
 
     /**
      * @brief Returns the loaded history vector for version navigation.
      */
-    [[nodiscard]] const std::vector<risk::domain::country>& getHistory() const {
+    [[nodiscard]] const std::vector<variability::domain::feature_flags>& getHistory() const {
         return history_;
     }
 
@@ -98,16 +92,16 @@ signals:
 
     /**
      * @brief Emitted when user requests to open a version in read-only mode.
-     * @param country The country data at the selected version.
+     * @param flag The feature flag data at the selected version.
      * @param versionNumber The version number being viewed.
      */
-    void openVersionRequested(const risk::domain::country& country, int versionNumber);
+    void openVersionRequested(const variability::domain::feature_flags& flag, int versionNumber);
 
     /**
      * @brief Emitted when user requests to revert to a selected version.
-     * @param country The country data to revert to.
+     * @param flag The feature flag data to revert to.
      */
-    void revertVersionRequested(const risk::domain::country& country);
+    void revertVersionRequested(const variability::domain::feature_flags& flag);
 
 private slots:
     void onVersionSelected(int index);
@@ -128,18 +122,17 @@ private:
      */
     using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
     DiffResult calculateDiff(
-        const risk::domain::country& current,
-        const risk::domain::country& previous);
+        const variability::domain::feature_flags& current,
+        const variability::domain::feature_flags& previous);
 
     void setupToolbar();
     void updateButtonStates();
     int selectedVersionIndex() const;
 
-    std::unique_ptr<Ui::CountryHistoryDialog> ui_;
+    std::unique_ptr<Ui::FeatureFlagHistoryDialog> ui_;
     ClientManager* clientManager_;
-    ImageCache* imageCache_;
-    QString alpha2Code_;
-    std::vector<risk::domain::country> history_;
+    QString flagName_;
+    std::vector<variability::domain::feature_flags> history_;
 
     QToolBar* toolBar_;
     QAction* reloadAction_;

@@ -43,7 +43,10 @@ using FutureResult = std::pair<bool, std::string>;
 
 FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::FeatureFlagDetailDialog), isDirty_(false),
-      isAddMode_(false), clientManager_(nullptr) {
+      isAddMode_(false), isReadOnly_(false), clientManager_(nullptr),
+      currentHistoryIndex_(0),
+      firstVersionAction_(nullptr), prevVersionAction_(nullptr),
+      nextVersionAction_(nullptr), lastVersionAction_(nullptr) {
 
     ui_->setupUi(this);
 
@@ -71,6 +74,55 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
     connect(deleteAction_, &QAction::triggered, this,
         &FeatureFlagDetailDialog::onDeleteClicked);
     toolBar_->addAction(deleteAction_);
+
+    toolBar_->addSeparator();
+
+    // Create Revert action (initially hidden)
+    revertAction_ = new QAction("Revert", this);
+    revertAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
+    revertAction_->setToolTip("Revert feature flag to this historical version");
+    toolBar_->addAction(revertAction_);
+    revertAction_->setVisible(false);
+
+    // Version navigation actions (initially hidden)
+    toolBar_->addSeparator();
+
+    firstVersionAction_ = new QAction("First", this);
+    firstVersionAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_previous_20_regular.svg", iconColor));
+    firstVersionAction_->setToolTip(tr("First version"));
+    connect(firstVersionAction_, &QAction::triggered, this,
+        &FeatureFlagDetailDialog::onFirstVersionClicked);
+    toolBar_->addAction(firstVersionAction_);
+    firstVersionAction_->setVisible(false);
+
+    prevVersionAction_ = new QAction("Previous", this);
+    prevVersionAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_left_20_regular.svg", iconColor));
+    prevVersionAction_->setToolTip(tr("Previous version"));
+    connect(prevVersionAction_, &QAction::triggered, this,
+        &FeatureFlagDetailDialog::onPrevVersionClicked);
+    toolBar_->addAction(prevVersionAction_);
+    prevVersionAction_->setVisible(false);
+
+    nextVersionAction_ = new QAction("Next", this);
+    nextVersionAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_right_20_regular.svg", iconColor));
+    nextVersionAction_->setToolTip(tr("Next version"));
+    connect(nextVersionAction_, &QAction::triggered, this,
+        &FeatureFlagDetailDialog::onNextVersionClicked);
+    toolBar_->addAction(nextVersionAction_);
+    nextVersionAction_->setVisible(false);
+
+    lastVersionAction_ = new QAction("Last", this);
+    lastVersionAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_next_20_regular.svg", iconColor));
+    lastVersionAction_->setToolTip(tr("Last version"));
+    connect(lastVersionAction_, &QAction::triggered, this,
+        &FeatureFlagDetailDialog::onLastVersionClicked);
+    toolBar_->addAction(lastVersionAction_);
+    lastVersionAction_->setVisible(false);
 
     // Add toolbar to the dialog's layout
     auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
@@ -370,6 +422,149 @@ void FeatureFlagDetailDialog::closeParentWindow() {
 
 QString FeatureFlagDetailDialog::featureFlagName() const {
     return QString::fromStdString(currentFlag_.name);
+}
+
+void FeatureFlagDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
+    isReadOnly_ = readOnly;
+
+    // Disable all editable controls in read-only mode
+    ui_->nameEdit->setReadOnly(readOnly);
+    ui_->enabledComboBox->setEnabled(!readOnly);
+    ui_->descriptionEdit->setReadOnly(readOnly);
+
+    // Hide toolbar actions in read-only mode
+    if (saveAction_)
+        saveAction_->setVisible(!readOnly);
+    if (deleteAction_)
+        deleteAction_->setVisible(!readOnly);
+    if (revertAction_)
+        revertAction_->setVisible(readOnly);
+
+    if (readOnly && versionNumber > 0) {
+        BOOST_LOG_SEV(lg(), debug) << "Set to read-only mode, viewing version "
+                                   << versionNumber;
+    }
+}
+
+void FeatureFlagDetailDialog::setHistory(
+    const std::vector<variability::domain::feature_flags>& history,
+    int versionNumber) {
+    BOOST_LOG_SEV(lg(), debug) << "Setting history with " << history.size()
+                               << " versions, viewing version " << versionNumber;
+
+    history_ = history;
+
+    // Find the index of the requested version (history is newest-first)
+    currentHistoryIndex_ = 0;
+    for (int i = 0; i < static_cast<int>(history_.size()); ++i) {
+        if (history_[i].version == versionNumber) {
+            currentHistoryIndex_ = i;
+            break;
+        }
+    }
+
+    // Set read-only mode
+    setReadOnly(true, versionNumber);
+
+    // Display the current version
+    displayCurrentVersion();
+    showVersionNavActions(true);
+}
+
+void FeatureFlagDetailDialog::showVersionNavActions(bool visible) {
+    if (firstVersionAction_)
+        firstVersionAction_->setVisible(visible);
+    if (prevVersionAction_)
+        prevVersionAction_->setVisible(visible);
+    if (nextVersionAction_)
+        nextVersionAction_->setVisible(visible);
+    if (lastVersionAction_)
+        lastVersionAction_->setVisible(visible);
+}
+
+void FeatureFlagDetailDialog::displayCurrentVersion() {
+    if (currentHistoryIndex_ < 0 ||
+        currentHistoryIndex_ >= static_cast<int>(history_.size())) {
+        return;
+    }
+
+    const auto& flag = history_[currentHistoryIndex_];
+
+    // Update UI with current version data
+    ui_->nameEdit->setText(QString::fromStdString(flag.name));
+    ui_->enabledComboBox->setCurrentIndex(flag.enabled ? 0 : 1);
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(flag.description));
+    ui_->versionEdit->setText(QString::number(flag.version));
+    ui_->recordedByEdit->setText(QString::fromStdString(flag.recorded_by));
+    ui_->recordedAtEdit->setText(relative_time_helper::format(flag.recorded_at));
+
+    updateVersionNavButtonStates();
+
+    // Update window title with short version format
+    QWidget* parent = parentWidget();
+    while (parent) {
+        if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
+            mdiSubWindow->setWindowTitle(QString("Feature Flag: %1 v%2")
+                .arg(QString::fromStdString(flag.name))
+                .arg(flag.version));
+            break;
+        }
+        parent = parent->parentWidget();
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Displaying version " << flag.version
+                               << " (index " << currentHistoryIndex_ << ")";
+}
+
+void FeatureFlagDetailDialog::updateVersionNavButtonStates() {
+    if (history_.empty()) {
+        if (firstVersionAction_) firstVersionAction_->setEnabled(false);
+        if (prevVersionAction_) prevVersionAction_->setEnabled(false);
+        if (nextVersionAction_) nextVersionAction_->setEnabled(false);
+        if (lastVersionAction_) lastVersionAction_->setEnabled(false);
+        return;
+    }
+
+    // History is newest-first: index 0 = latest, index size-1 = oldest
+    const bool atOldest = (currentHistoryIndex_ ==
+        static_cast<int>(history_.size()) - 1);
+    const bool atNewest = (currentHistoryIndex_ == 0);
+
+    // First/Prev go to older versions (higher index)
+    if (firstVersionAction_) firstVersionAction_->setEnabled(!atOldest);
+    if (prevVersionAction_) prevVersionAction_->setEnabled(!atOldest);
+
+    // Next/Last go to newer versions (lower index)
+    if (nextVersionAction_) nextVersionAction_->setEnabled(!atNewest);
+    if (lastVersionAction_) lastVersionAction_->setEnabled(!atNewest);
+}
+
+void FeatureFlagDetailDialog::onFirstVersionClicked() {
+    // Go to oldest (highest index)
+    currentHistoryIndex_ = static_cast<int>(history_.size()) - 1;
+    displayCurrentVersion();
+}
+
+void FeatureFlagDetailDialog::onPrevVersionClicked() {
+    // Go to older version (higher index)
+    if (currentHistoryIndex_ < static_cast<int>(history_.size()) - 1) {
+        currentHistoryIndex_++;
+        displayCurrentVersion();
+    }
+}
+
+void FeatureFlagDetailDialog::onNextVersionClicked() {
+    // Go to newer version (lower index)
+    if (currentHistoryIndex_ > 0) {
+        currentHistoryIndex_--;
+        displayCurrentVersion();
+    }
+}
+
+void FeatureFlagDetailDialog::onLastVersionClicked() {
+    // Go to latest (index 0)
+    currentHistoryIndex_ = 0;
+    displayCurrentVersion();
 }
 
 }

@@ -20,11 +20,15 @@
 #include "ores.qt/FeatureFlagController.hpp"
 
 #include <QMdiSubWindow>
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/FeatureFlagMdiWindow.hpp"
 #include "ores.qt/FeatureFlagDetailDialog.hpp"
+#include "ores.qt/FeatureFlagHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
+#include "ores.variability/messaging/feature_flags_protocol.hpp"
+#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -109,13 +113,18 @@ void FeatureFlagController::showListWindow() {
             this, &FeatureFlagController::onAddNewRequested);
     connect(listWindow_, &FeatureFlagMdiWindow::showFeatureFlagDetails,
             this, &FeatureFlagController::onShowDetails);
+    connect(listWindow_, &FeatureFlagMdiWindow::showHistoryRequested,
+            this, &FeatureFlagController::onShowHistory);
     connect(listWindow_, &FeatureFlagMdiWindow::featureFlagDeleted,
             this, &FeatureFlagController::onFeatureFlagDeleted);
 
     // Create MDI subwindow
+    const QColor iconColor(220, 220, 220);
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Feature Flags");
+    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -200,12 +209,15 @@ void FeatureFlagController::showDetailWindow(
             this, &FeatureFlagController::onFeatureFlagDeleted);
 
     // Create MDI subwindow
+    const QColor iconColor(220, 220, 220);
     auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
     subWindow->setWidget(detailDialog);
 
     const QString title = createMode ? "New Feature Flag" :
         QString("Feature Flag: %1").arg(QString::fromStdString(flag.name));
     subWindow->setWindowTitle(title);
+    subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
     subWindow->setAttribute(Qt::WA_DeleteOnClose);
     subWindow->resize(detailDialog->sizeHint());
 
@@ -263,6 +275,234 @@ void FeatureFlagController::onNotificationReceived(
     if (listWindow_) {
         listWindow_->markAsStale();
         BOOST_LOG_SEV(lg(), debug) << "Marked feature flag window as stale";
+    }
+
+    // Notify open history dialogs for affected feature flags
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        const QString& key = it.key();
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        // Check if this is a history window for an affected feature flag
+        if (key.startsWith("history:")) {
+            QString windowFlagName = key.mid(8);  // Remove "history:" prefix
+            if (entityIds.isEmpty() || entityIds.contains(windowFlagName)) {
+                // Mark history dialog as stale
+                auto* historyDialog = qobject_cast<FeatureFlagHistoryDialog*>(
+                    window->widget());
+                if (historyDialog) {
+                    historyDialog->markAsStale();
+                    BOOST_LOG_SEV(lg(), debug) << "Marked history dialog as stale for: "
+                                               << windowFlagName.toStdString();
+                }
+            }
+        }
+    }
+}
+
+void FeatureFlagController::onShowHistory(const QString& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << name.toStdString();
+    showHistoryWindow(name);
+}
+
+void FeatureFlagController::showHistoryWindow(const QString& name) {
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for feature flag: "
+                             << name.toStdString();
+
+    const QString windowKey = build_window_key("history", name);
+
+    // Try to reuse existing window
+    if (try_reuse_window(windowKey)) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
+                                  << name.toStdString();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
+                              << name.toStdString();
+    const QColor iconColor(220, 220, 220);
+
+    auto* historyDialog = new FeatureFlagHistoryDialog(name, clientManager_, mainWindow_);
+
+    connect(historyDialog, &FeatureFlagHistoryDialog::statusChanged,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(historyDialog, &FeatureFlagHistoryDialog::errorOccurred,
+            this, [this](const QString& message) {
+        emit errorMessage(message);
+    });
+    connect(historyDialog, &FeatureFlagHistoryDialog::revertVersionRequested,
+            this, &FeatureFlagController::onRevertFeatureFlag);
+    connect(historyDialog, &FeatureFlagHistoryDialog::openVersionRequested,
+            this, &FeatureFlagController::onOpenFeatureFlagVersion);
+
+    // Load history data
+    historyDialog->loadHistory();
+
+    auto* historyWindow = new DetachableMdiSubWindow();
+    historyWindow->setAttribute(Qt::WA_DeleteOnClose);
+    historyWindow->setWidget(historyDialog);
+    historyWindow->setWindowTitle(QString("Feature Flag History: %1").arg(name));
+    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+
+    // Track this history window
+    track_window(windowKey, historyWindow);
+
+    allDetachableWindows_.append(historyWindow);
+    QPointer<FeatureFlagController> self = this;
+    QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
+    connect(historyWindow, &QObject::destroyed, this,
+            [self, windowPtr, windowKey]() {
+        if (self) {
+            self->allDetachableWindows_.removeAll(windowPtr.data());
+            self->untrack_window(windowKey);
+        }
+    });
+
+    mdiArea_->addSubWindow(historyWindow);
+    historyWindow->adjustSize();
+
+    // If the parent list window is detached, detach this window too
+    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
+        historyWindow->show();
+        historyWindow->detach();
+
+        QPoint parentPos = listMdiSubWindow_->pos();
+        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else {
+        historyWindow->show();
+    }
+}
+
+void FeatureFlagController::onOpenFeatureFlagVersion(
+    const variability::domain::feature_flags& flag, int versionNumber) {
+    BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
+                              << " for feature flag: " << flag.name;
+
+    const QString flagName = QString::fromStdString(flag.name);
+    const QString windowKey = build_window_key("version", QString("%1_v%2")
+        .arg(flagName).arg(versionNumber));
+
+    // Try to reuse existing window
+    if (try_reuse_window(windowKey)) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing version window";
+        return;
+    }
+
+    const QColor iconColor(220, 220, 220);
+
+    auto* detailDialog = new FeatureFlagDetailDialog();
+    if (clientManager_) {
+        detailDialog->setClientManager(clientManager_);
+        detailDialog->setUsername(username_.toStdString());
+    }
+
+    connect(detailDialog, &FeatureFlagDetailDialog::statusMessage,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(detailDialog, &FeatureFlagDetailDialog::errorMessage,
+            this, [this](const QString& message) {
+        emit errorMessage(message);
+    });
+
+    // Try to get history from the sender (history dialog) for version navigation
+    auto* historyDialog = qobject_cast<FeatureFlagHistoryDialog*>(sender());
+    if (historyDialog && !historyDialog->getHistory().empty()) {
+        BOOST_LOG_SEV(lg(), debug) << "Using history from sender for version navigation";
+        detailDialog->setHistory(historyDialog->getHistory(), versionNumber);
+    } else {
+        // Fallback: just show single version without navigation
+        detailDialog->setFeatureFlag(flag);
+        detailDialog->setReadOnly(true, versionNumber);
+    }
+
+    auto* detailWindow = new DetachableMdiSubWindow();
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(QString("Feature Flag: %1 (Version %2 - Read Only)")
+        .arg(flagName).arg(versionNumber));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
+
+    // Track this version window
+    track_window(windowKey, detailWindow);
+
+    allDetachableWindows_.append(detailWindow);
+    QPointer<FeatureFlagController> self = this;
+    QPointer<DetachableMdiSubWindow> windowPtr = detailWindow;
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, windowPtr, windowKey]() {
+        if (self) {
+            self->allDetachableWindows_.removeAll(windowPtr.data());
+            self->untrack_window(windowKey);
+        }
+    });
+
+    mdiArea_->addSubWindow(detailWindow);
+    detailWindow->adjustSize();
+    detailWindow->show();
+}
+
+void FeatureFlagController::onRevertFeatureFlag(
+    const variability::domain::feature_flags& flag) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting feature flag: " << flag.name
+                              << " to version " << flag.version;
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        emit errorMessage("Cannot revert - not connected to server");
+        return;
+    }
+
+    // Save the flag (which creates a new version with the old data)
+    variability::messaging::save_feature_flag_request request;
+    request.flag = flag;
+    auto payload = request.serialize();
+
+    comms::messaging::frame request_frame(
+        comms::messaging::message_type::save_feature_flag_request,
+        0, std::move(payload)
+    );
+
+    auto response_result = clientManager_->sendRequest(std::move(request_frame));
+    if (!response_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to send revert request";
+        emit errorMessage("Failed to communicate with server");
+        return;
+    }
+
+    auto payload_result = response_result->decompressed_payload();
+    if (!payload_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+        emit errorMessage("Failed to decompress server response");
+        return;
+    }
+
+    auto response = variability::messaging::save_feature_flag_response::
+        deserialize(*payload_result);
+
+    if (!response) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+        emit errorMessage("Invalid server response");
+        return;
+    }
+
+    if (response->success) {
+        BOOST_LOG_SEV(lg(), info) << "Feature flag reverted successfully";
+        emit statusMessage(QString("Feature flag '%1' reverted successfully")
+            .arg(QString::fromStdString(flag.name)));
+
+        // Mark list and history windows as stale
+        if (listWindow_) {
+            listWindow_->markAsStale();
+        }
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Revert failed: " << response->error_message;
+        emit errorMessage(QString("Failed to revert feature flag: %1")
+            .arg(QString::fromStdString(response->error_message)));
     }
 }
 

@@ -108,6 +108,34 @@ struct delete_feature_flag_response final {
 
 std::ostream& operator<<(std::ostream& s, const delete_feature_flag_response& v);
 
+/**
+ * @brief Request to retrieve feature flag history by name.
+ */
+struct get_feature_flag_history_request final {
+    std::string name;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_feature_flag_history_request, ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_feature_flag_history_request& v);
+
+/**
+ * @brief Response containing feature flag history.
+ */
+struct get_feature_flag_history_response final {
+    bool success = false;
+    std::string message;
+    std::vector<domain::feature_flags> history;  // Ordered newest-first
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_feature_flag_history_response, ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_feature_flag_history_response& v);
+
 }
 
 namespace ores::comms::messaging {
@@ -143,6 +171,17 @@ struct message_traits<variability::messaging::delete_feature_flag_request> {
     using response_type = variability::messaging::delete_feature_flag_response;
     static constexpr message_type request_message_type =
         message_type::delete_feature_flag_request;
+};
+
+/**
+ * @brief Message traits specialization for get_feature_flag_history_request.
+ */
+template<>
+struct message_traits<variability::messaging::get_feature_flag_history_request> {
+    using request_type = variability::messaging::get_feature_flag_history_request;
+    using response_type = variability::messaging::get_feature_flag_history_response;
+    static constexpr message_type request_message_type =
+        message_type::get_feature_flag_history_request;
 };
 
 }

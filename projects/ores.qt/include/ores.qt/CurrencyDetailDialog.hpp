@@ -23,10 +23,11 @@
 #include <QWidget>
 #include <QToolBar>
 #include <QAction>
-#include <QLabel>
 #include <QPushButton>
 #include <memory>
+#include <vector>
 #include "ores.risk/domain/currency.hpp"
+#include "ores.risk/domain/currency_version_history.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -82,6 +83,19 @@ public:
     void setReadOnly(bool readOnly, int versionNumber = 0);
 
     /**
+     * @brief Sets the history for version navigation.
+     *
+     * When set, shows a navigation toolbar allowing the user to navigate
+     * between versions (first/prev/next/last). The flag is grayed out
+     * for non-latest versions.
+     *
+     * @param history All versions ordered newest-first (index 0 is latest)
+     * @param versionNumber The version number to initially display
+     */
+    void setHistory(const risk::domain::currency_version_history& history,
+        int versionNumber);
+
+    /**
      * @brief Mark the dialog data as stale.
      *
      * Called when a notification is received indicating this currency has
@@ -114,18 +128,28 @@ private slots:
     void onResetClicked();
     void onDeleteClicked();
     void onRevertClicked();
-    void onGenerateClicked();
     void onFieldChanged();
     void onSelectFlagClicked();
     void onCurrencyImageSet(const QString& iso_code, bool success, const QString& message);
+    void onGenerateClicked();
+
+    // Version navigation slots
+    void onFirstVersionClicked();
+    void onPrevVersionClicked();
+    void onNextVersionClicked();
+    void onLastVersionClicked();
+
     void onFeatureFlagNotification(const QString& eventType, const QDateTime& timestamp,
-                                    const QStringList& entityIds);
+        const QStringList& entityIds);
     void onConnectionEstablished();
 
 private:
     void updateSaveResetButtonState();
     void setFieldsReadOnly(bool readOnly);
     void updateFlagDisplay();
+    void displayCurrentVersion();
+    void updateVersionNavButtonStates();
+    void showVersionNavActions(bool visible);
     void setupGenerateAction();
     void updateGenerateActionVisibility();
 
@@ -150,6 +174,14 @@ private:
     risk::domain::currency currentCurrency_;
     QString pendingImageId_;
     static constexpr const char* max_timestamp = "9999-12-31 23:59:59";
+
+    // Version navigation members
+    risk::domain::currency_version_history history_;
+    int currentHistoryIndex_;
+    QAction* firstVersionAction_;
+    QAction* prevVersionAction_;
+    QAction* nextVersionAction_;
+    QAction* lastVersionAction_;
 };
 
 }

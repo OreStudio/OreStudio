@@ -20,6 +20,7 @@
 #ifndef ORES_QT_FEATURE_FLAG_DETAIL_DIALOG_HPP
 #define ORES_QT_FEATURE_FLAG_DETAIL_DIALOG_HPP
 
+#include <vector>
 #include <QWidget>
 #include <QAction>
 #include <QToolBar>
@@ -62,11 +63,15 @@ public:
     void setFeatureFlag(const variability::domain::feature_flags& flag);
     variability::domain::feature_flags getFeatureFlag() const;
     void setCreateMode(bool createMode);
+    void setReadOnly(bool readOnly, int versionNumber = 0);
+    void setHistory(const std::vector<variability::domain::feature_flags>& history,
+                    int versionNumber);
     void clearDialog();
     void save();
 
     QString featureFlagName() const;
     bool isDirty() const { return isDirty_; }
+    bool isReadOnly() const { return isReadOnly_; }
 
 signals:
     void statusMessage(const QString& message);
@@ -80,21 +85,40 @@ private slots:
     void onDeleteClicked();
     void onFieldChanged();
 
+    // Version navigation slots
+    void onFirstVersionClicked();
+    void onPrevVersionClicked();
+    void onNextVersionClicked();
+    void onLastVersionClicked();
+
 private:
     void updateSaveButtonState();
     void closeParentWindow();
+    void displayCurrentVersion();
+    void updateVersionNavButtonStates();
+    void showVersionNavActions(bool visible);
 
 private:
     Ui::FeatureFlagDetailDialog* ui_;
     QToolBar* toolBar_;
     QAction* saveAction_;
     QAction* deleteAction_;
+    QAction* revertAction_;
 
     variability::domain::feature_flags currentFlag_;
     bool isDirty_;
     bool isAddMode_;
+    bool isReadOnly_;
     std::string modifiedByUsername_;
     ClientManager* clientManager_;
+
+    // Version navigation members
+    std::vector<variability::domain::feature_flags> history_;
+    int currentHistoryIndex_;
+    QAction* firstVersionAction_;
+    QAction* prevVersionAction_;
+    QAction* nextVersionAction_;
+    QAction* lastVersionAction_;
 };
 
 }

@@ -149,8 +149,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 20.2 adds image_id field to currency version history serialization.
 // Previously the flag reference was missing from get_currency_history_response.
 // This is a breaking change affecting currency history wire format.
+//
+// Version 20.3 adds feature flag history messages for querying version history.
+// New messages: get_feature_flag_history_request (0x3006),
+// get_feature_flag_history_response (0x3007).
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 20;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 2;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 3;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -287,6 +291,8 @@ enum class message_type {
     save_feature_flag_response = 0x3003,
     delete_feature_flag_request = 0x3004,
     delete_feature_flag_response = 0x3005,
+    get_feature_flag_history_request = 0x3006,
+    get_feature_flag_history_response = 0x3007,
 
     // Assets subsystem messages (0x4000 - 0x4FFF)
     // Note: 0x4000-0x4001 and 0x4006-0x4007 removed in v17.0 (currency_image)

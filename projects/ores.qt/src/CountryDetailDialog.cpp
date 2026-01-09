@@ -48,7 +48,10 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::CountryDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), isStale_(false), flagChanged_(false),
       historicalVersion_(0), flagButton_(nullptr),
-      clientManager_(nullptr), imageCache_(nullptr) {
+      clientManager_(nullptr), imageCache_(nullptr),
+      currentHistoryIndex_(0),
+      firstVersionAction_(nullptr), prevVersionAction_(nullptr),
+      nextVersionAction_(nullptr), lastVersionAction_(nullptr) {
 
     ui_->setupUi(this);
 
@@ -81,14 +84,53 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     toolBar_->addSeparator();
 
     // Create Revert action (initially hidden)
-    revertAction_ = new QAction("Revert to this version", this);
+    revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
+        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
     revertAction_->setToolTip("Revert country to this historical version");
     connect(revertAction_, &QAction::triggered, this,
         &CountryDetailDialog::onRevertClicked);
     toolBar_->addAction(revertAction_);
     revertAction_->setVisible(false);
+
+    // Version navigation actions (initially hidden)
+    toolBar_->addSeparator();
+
+    firstVersionAction_ = new QAction("First", this);
+    firstVersionAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_previous_20_regular.svg", iconColor));
+    firstVersionAction_->setToolTip(tr("First version"));
+    connect(firstVersionAction_, &QAction::triggered, this,
+        &CountryDetailDialog::onFirstVersionClicked);
+    toolBar_->addAction(firstVersionAction_);
+    firstVersionAction_->setVisible(false);
+
+    prevVersionAction_ = new QAction("Previous", this);
+    prevVersionAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_left_20_regular.svg", iconColor));
+    prevVersionAction_->setToolTip(tr("Previous version"));
+    connect(prevVersionAction_, &QAction::triggered, this,
+        &CountryDetailDialog::onPrevVersionClicked);
+    toolBar_->addAction(prevVersionAction_);
+    prevVersionAction_->setVisible(false);
+
+    nextVersionAction_ = new QAction("Next", this);
+    nextVersionAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_right_20_regular.svg", iconColor));
+    nextVersionAction_->setToolTip(tr("Next version"));
+    connect(nextVersionAction_, &QAction::triggered, this,
+        &CountryDetailDialog::onNextVersionClicked);
+    toolBar_->addAction(nextVersionAction_);
+    nextVersionAction_->setVisible(false);
+
+    lastVersionAction_ = new QAction("Last", this);
+    lastVersionAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_next_20_regular.svg", iconColor));
+    lastVersionAction_->setToolTip(tr("Last version"));
+    connect(lastVersionAction_, &QAction::triggered, this,
+        &CountryDetailDialog::onLastVersionClicked);
+    toolBar_->addAction(lastVersionAction_);
+    lastVersionAction_->setVisible(false);
 
     // Add toolbar to the dialog's layout
     auto* mainLayout = qobject_cast<QVBoxLayout*>(layout());
@@ -640,6 +682,125 @@ void CountryDetailDialog::updateFlagDisplay() {
     if (!noFlagIcon.isNull()) {
         flagButton_->setIcon(noFlagIcon);
     }
+}
+
+void CountryDetailDialog::showVersionNavActions(bool visible) {
+    if (firstVersionAction_)
+        firstVersionAction_->setVisible(visible);
+    if (prevVersionAction_)
+        prevVersionAction_->setVisible(visible);
+    if (nextVersionAction_)
+        nextVersionAction_->setVisible(visible);
+    if (lastVersionAction_)
+        lastVersionAction_->setVisible(visible);
+}
+
+void CountryDetailDialog::setHistory(
+    const std::vector<risk::domain::country>& history, int versionNumber) {
+    BOOST_LOG_SEV(lg(), debug) << "Setting history with " << history.size()
+                               << " versions, displaying version " << versionNumber;
+
+    history_ = history;
+
+    // Find index of the requested version (history is newest-first)
+    currentHistoryIndex_ = 0;
+    for (size_t i = 0; i < history_.size(); ++i) {
+        if (history_[i].version == versionNumber) {
+            currentHistoryIndex_ = static_cast<int>(i);
+            break;
+        }
+    }
+
+    displayCurrentVersion();
+    showVersionNavActions(true);
+}
+
+void CountryDetailDialog::displayCurrentVersion() {
+    if (history_.empty() || currentHistoryIndex_ < 0 ||
+        currentHistoryIndex_ >= static_cast<int>(history_.size())) {
+        return;
+    }
+
+    const auto& country = history_[currentHistoryIndex_];
+
+    // Display the country data
+    setCountry(country);
+    setReadOnly(true, country.version);
+
+    // Update button states
+    updateVersionNavButtonStates();
+
+    // Gray out flag in history view - all versions are read-only
+    if (flagButton_) {
+        flagButton_->setEnabled(false);
+        flagButton_->setToolTip(tr("Historical version - flag display only"));
+    }
+
+    // Update window title with short version format
+    QWidget* parent = parentWidget();
+    while (parent) {
+        if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
+            mdiSubWindow->setWindowTitle(QString("Country: %1 v%2")
+                .arg(QString::fromStdString(country.alpha2_code))
+                .arg(country.version));
+            break;
+        }
+        parent = parent->parentWidget();
+    }
+}
+
+void CountryDetailDialog::updateVersionNavButtonStates() {
+    if (history_.empty()) {
+        if (firstVersionAction_) firstVersionAction_->setEnabled(false);
+        if (prevVersionAction_) prevVersionAction_->setEnabled(false);
+        if (nextVersionAction_) nextVersionAction_->setEnabled(false);
+        if (lastVersionAction_) lastVersionAction_->setEnabled(false);
+        return;
+    }
+
+    bool atOldest = (currentHistoryIndex_ == static_cast<int>(history_.size()) - 1);
+    bool atNewest = (currentHistoryIndex_ == 0);
+
+    if (firstVersionAction_) firstVersionAction_->setEnabled(!atOldest);  // Go to oldest
+    if (prevVersionAction_) prevVersionAction_->setEnabled(!atOldest);   // Go to older
+    if (nextVersionAction_) nextVersionAction_->setEnabled(!atNewest);   // Go to newer
+    if (lastVersionAction_) lastVersionAction_->setEnabled(!atNewest);   // Go to latest
+}
+
+void CountryDetailDialog::onFirstVersionClicked() {
+    if (history_.empty()) return;
+
+    BOOST_LOG_SEV(lg(), debug) << "Navigating to first (oldest) version";
+    currentHistoryIndex_ = static_cast<int>(history_.size()) - 1;
+    displayCurrentVersion();
+}
+
+void CountryDetailDialog::onPrevVersionClicked() {
+    if (history_.empty()) return;
+
+    if (currentHistoryIndex_ < static_cast<int>(history_.size()) - 1) {
+        BOOST_LOG_SEV(lg(), debug) << "Navigating to previous (older) version";
+        ++currentHistoryIndex_;
+        displayCurrentVersion();
+    }
+}
+
+void CountryDetailDialog::onNextVersionClicked() {
+    if (history_.empty()) return;
+
+    if (currentHistoryIndex_ > 0) {
+        BOOST_LOG_SEV(lg(), debug) << "Navigating to next (newer) version";
+        --currentHistoryIndex_;
+        displayCurrentVersion();
+    }
+}
+
+void CountryDetailDialog::onLastVersionClicked() {
+    if (history_.empty()) return;
+
+    BOOST_LOG_SEV(lg(), debug) << "Navigating to last (latest) version";
+    currentHistoryIndex_ = 0;
+    displayCurrentVersion();
 }
 
 }

@@ -49,6 +49,7 @@ FeatureFlagMdiWindow(ClientManager* clientManager,
       addAction_(new QAction("Add", this)),
       editAction_(new QAction("Edit", this)),
       deleteAction_(new QAction("Delete", this)),
+      historyAction_(new QAction("History", this)),
       featureFlagModel_(std::make_unique<ClientFeatureFlagModel>(clientManager)),
       proxyModel_(new QSortFilterProxyModel(this)),
       clientManager_(clientManager),
@@ -85,6 +86,15 @@ FeatureFlagMdiWindow(ClientManager* clientManager,
     connect(deleteAction_, &QAction::triggered, this,
         &FeatureFlagMdiWindow::deleteSelected);
     toolBar_->addAction(deleteAction_);
+
+    toolBar_->addSeparator();
+
+    historyAction_->setIcon(IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+    historyAction_->setToolTip("Show version history for selected feature flag");
+    connect(historyAction_, &QAction::triggered, this,
+        &FeatureFlagMdiWindow::showHistory);
+    toolBar_->addAction(historyAction_);
 
     verticalLayout_->addWidget(toolBar_);
     verticalLayout_->addWidget(featureFlagTableView_);
@@ -389,7 +399,7 @@ void FeatureFlagMdiWindow::deleteSelected() {
 }
 
 QSize FeatureFlagMdiWindow::sizeHint() const {
-    const int minimumWidth = 700;
+    const int minimumWidth = 850;
     const int minimumHeight = 400;
 
     QSize baseSize = QWidget::sizeHint();
@@ -406,6 +416,7 @@ void FeatureFlagMdiWindow::updateActionStates() {
 
     editAction_->setEnabled(hasSingleSelection);
     deleteAction_->setEnabled(hasSelection);
+    historyAction_->setEnabled(hasSingleSelection);
 }
 
 void FeatureFlagMdiWindow::setupReloadAction() {
@@ -460,6 +471,26 @@ void FeatureFlagMdiWindow::clearStaleIndicator() {
         reloadAction_->setToolTip("Reload feature flags from server");
         BOOST_LOG_SEV(lg(), debug) << "Stale indicator cleared";
     }
+}
+
+void FeatureFlagMdiWindow::showHistory() {
+    const auto selected = featureFlagTableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Show history requested but no row selected";
+        return;
+    }
+
+    const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
+    const auto* flag = featureFlagModel_->getFeatureFlag(sourceIndex.row());
+    if (!flag) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get feature flag for row: "
+                                  << sourceIndex.row();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Emitting showHistoryRequested for: "
+                               << flag->name;
+    emit showHistoryRequested(QString::fromStdString(flag->name));
 }
 
 }

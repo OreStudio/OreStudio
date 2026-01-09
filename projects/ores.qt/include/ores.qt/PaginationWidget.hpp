@@ -22,7 +22,8 @@
 
 #include <QWidget>
 #include <QLabel>
-#include <QPushButton>
+#include <QAction>
+#include <QToolBar>
 #include <QComboBox>
 #include <QHBoxLayout>
 #include "ores.logging/make_logger.hpp"
@@ -120,11 +121,12 @@ private slots:
 private:
     QLabel* info_label_;
     QComboBox* page_size_combo_;
-    QPushButton* first_button_;
-    QPushButton* prev_button_;
-    QPushButton* next_button_;
-    QPushButton* last_button_;
-    QPushButton* load_all_button_;
+    QAction* first_action_;
+    QAction* prev_action_;
+    QAction* next_action_;
+    QAction* last_action_;
+    QAction* load_all_action_;
+    QToolBar* nav_toolbar_;
     QHBoxLayout* layout_;
 
     std::uint32_t loaded_count_{0};

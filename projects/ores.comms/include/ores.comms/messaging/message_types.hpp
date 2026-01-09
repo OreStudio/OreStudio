@@ -162,8 +162,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // - Added change_reason_code and change_commentary fields to all entity serialization
 //   (currency, country, feature_flags, account, role, image) for audit trail support
 // This is a breaking change affecting multiple message types and wire formats.
+//
+// Version 21.1 adds change management messages for querying the catalog of valid
+// change reasons. New messages: get_change_reason_categories_request/response,
+// get_change_reasons_request/response, get_change_reasons_by_category_request/response.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 21;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -291,6 +295,14 @@ enum class message_type {
     get_session_statistics_response = 0x2043,
     get_active_sessions_request = 0x2044,
     get_active_sessions_response = 0x2045,
+
+    // Change management messages (0x2050 - 0x205F)
+    get_change_reason_categories_request = 0x2050,
+    get_change_reason_categories_response = 0x2051,
+    get_change_reasons_request = 0x2052,
+    get_change_reasons_response = 0x2053,
+    get_change_reasons_by_category_request = 0x2054,
+    get_change_reasons_by_category_response = 0x2055,
 
     // Variability subsystem messages (0x3000 - 0x3FFF)
     get_feature_flags_request = 0x3000,  // Renamed from list_feature_flags in v21.0

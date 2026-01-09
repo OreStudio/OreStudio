@@ -26,6 +26,7 @@
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/authorization_protocol.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
+#include "ores.iam/messaging/change_management_protocol.hpp"
 #include "ores.iam/service/signup_service.hpp"
 #include "ores.iam/service/session_converter.hpp"
 #include "ores.iam/domain/permission.hpp"
@@ -44,7 +45,8 @@ accounts_message_handler::accounts_message_handler(database::context ctx,
     : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)),
       sessions_(std::move(sessions)), auth_service_(auth_service),
       setup_service_(service_, auth_service_),
-      session_repo_(ctx), geo_service_(std::move(geo_service)) {}
+      session_repo_(ctx), geo_service_(std::move(geo_service)),
+      change_management_service_(ctx) {}
 
 accounts_message_handler::handler_result
 accounts_message_handler::handle_message(message_type type,
@@ -123,6 +125,13 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_get_account_roles_request(payload, remote_address);
     case message_type::get_account_permissions_request:
         co_return co_await handle_get_account_permissions_request(payload, remote_address);
+    // Change management messages
+    case message_type::get_change_reason_categories_request:
+        co_return co_await handle_get_change_reason_categories_request(payload, remote_address);
+    case message_type::get_change_reasons_request:
+        co_return co_await handle_get_change_reasons_request(payload, remote_address);
+    case message_type::get_change_reasons_by_category_request:
+        co_return co_await handle_get_change_reasons_by_category_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
@@ -1575,4 +1584,98 @@ handle_get_active_sessions_request(std::span<const std::byte> payload,
     co_return response.serialize();
 }
 
+// ============================================================================
+// Change Management Handlers
+// ============================================================================
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_change_reason_categories_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_change_reason_categories_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List change reason categories");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_change_reason_categories_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_change_reason_categories_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto categories = change_management_service_.list_categories();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << categories.size()
+                              << " change reason categories.";
+
+    get_change_reason_categories_response response{
+        .categories = std::move(categories)
+    };
+    co_return response.serialize();
 }
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_change_reasons_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_change_reasons_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List change reasons");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_change_reasons_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_change_reasons_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto reasons = change_management_service_.list_reasons();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << reasons.size()
+                              << " change reasons.";
+
+    get_change_reasons_response response{
+        .reasons = std::move(reasons)
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_change_reasons_by_category_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_change_reasons_by_category_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List change reasons by category");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_change_reasons_by_category_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_change_reasons_by_category_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Filtering by category: " << request.category_code;
+
+    auto reasons = change_management_service_.list_reasons_by_category(
+        request.category_code);
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << reasons.size()
+                              << " change reasons for category: "
+                              << request.category_code;
+
+    get_change_reasons_by_category_response response{
+        .reasons = std::move(reasons)
+    };
+    co_return response.serialize();
+}
+
+}
+

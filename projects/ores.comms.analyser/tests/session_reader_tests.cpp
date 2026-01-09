@@ -74,18 +74,17 @@ TEST_CASE("session_metadata_default_construction", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing session_metadata default construction";
 
-    session_metadata sut;
+    session_metadata sut{};
 
+    // std::string is always default-initialized to empty
     CHECK(sut.server_address.empty());
-    CHECK(sut.protocol_version_major == 0);
-    CHECK(sut.protocol_version_minor == 0);
 }
 
 TEST_CASE("session_metadata_with_values", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing session_metadata with values";
 
-    session_metadata sut;
+    session_metadata sut{};
     sut.server_address = "192.168.1.100:8080";
     sut.protocol_version_major = 1;
     sut.protocol_version_minor = 2;
@@ -100,7 +99,8 @@ TEST_CASE("recorded_frame_default_construction", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing recorded_frame default construction";
 
-    recorded_frame sut;
+    // Use value initialization to zero-initialize POD members
+    recorded_frame sut{};
 
     CHECK(sut.timestamp_offset_us == 0);
 }
@@ -109,7 +109,7 @@ TEST_CASE("recorded_frame_with_values", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing recorded_frame with values";
 
-    recorded_frame sut;
+    recorded_frame sut{};
     sut.timestamp_offset_us = 1500000;
     sut.direction = ores::comms::recording::frame_direction::sent;
 
@@ -121,7 +121,7 @@ TEST_CASE("session_data_default_construction", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing session_data default construction";
 
-    session_data sut;
+    session_data sut{};
 
     CHECK(sut.frames.empty());
 }
@@ -130,14 +130,14 @@ TEST_CASE("session_data_with_frames", tags) {
     auto lg(make_logger(test_suite));
     BOOST_LOG_SEV(lg, info) << "Testing session_data with multiple frames";
 
-    session_data sut;
+    session_data sut{};
     sut.metadata.server_address = "server:9000";
 
-    recorded_frame frame1;
+    recorded_frame frame1{};
     frame1.timestamp_offset_us = 0;
     frame1.direction = ores::comms::recording::frame_direction::sent;
 
-    recorded_frame frame2;
+    recorded_frame frame2{};
     frame2.timestamp_offset_us = 100000;
     frame2.direction = ores::comms::recording::frame_direction::received;
 

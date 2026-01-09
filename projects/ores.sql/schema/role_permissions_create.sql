@@ -41,12 +41,12 @@ create table if not exists "ores"."role_permissions" (
 -- Index for looking up permissions by role
 create index if not exists role_permissions_role_idx
 on "ores"."role_permissions" (role_id)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 -- Index for looking up roles by permission
 create index if not exists role_permissions_permission_idx
 on "ores"."role_permissions" (permission_id)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 create or replace function update_role_permissions()
 returns trigger as $$
@@ -56,11 +56,11 @@ begin
     set valid_to = current_timestamp
     where role_id = new.role_id
     and permission_id = new.permission_id
-    and valid_to = '9999-12-31 23:59:59'::timestamptz
+    and valid_to = ores.infinity_timestamp()
     and valid_from < current_timestamp;
 
     new.valid_from = current_timestamp;
-    new.valid_to = '9999-12-31 23:59:59'::timestamptz;
+    new.valid_to = ores.infinity_timestamp();
 
     return new;
 end;
@@ -80,4 +80,4 @@ do instead
   set valid_to = current_timestamp
   where role_id = old.role_id
   and permission_id = old.permission_id
-  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+  and valid_to = ores.infinity_timestamp();

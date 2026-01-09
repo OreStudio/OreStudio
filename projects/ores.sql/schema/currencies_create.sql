@@ -49,7 +49,7 @@ create table if not exists "ores"."currencies" (
 -- Unique constraint on version for current records ensures version uniqueness per entity
 create unique index if not exists currencies_version_unique_idx
 on "ores"."currencies" (iso_code, version)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 create or replace function update_currencies()
 returns trigger as $$
@@ -60,7 +60,7 @@ begin
     select version into current_version
     from "ores"."currencies"
     where iso_code = new.iso_code
-    and valid_to = '9999-12-31 23:59:59'::timestamptz;
+    and valid_to = ores.infinity_timestamp();
 
     if found then
         -- Existing record: check version for optimistic locking
@@ -77,7 +77,7 @@ begin
         update "ores"."currencies"
         set valid_to = current_timestamp
         where iso_code = new.iso_code
-        and valid_to = '9999-12-31 23:59:59'::timestamptz
+        and valid_to = ores.infinity_timestamp()
         and valid_from < current_timestamp;
     else
         -- New record: set initial version
@@ -85,7 +85,7 @@ begin
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = '9999-12-31 23:59:59'::timestamptz;
+    new.valid_to = ores.infinity_timestamp();
     -- Don't override modified_by if already set by application
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
@@ -108,4 +108,4 @@ do instead
   update "ores"."currencies"
   set valid_to = current_timestamp
   where iso_code = old.iso_code
-  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+  and valid_to = ores.infinity_timestamp();

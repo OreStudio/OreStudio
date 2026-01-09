@@ -36,4 +36,6 @@
 \ir ./drop/session_stats_drop.sql
 \ir ./drop/sessions_drop.sql
 \ir ./drop/login_info_drop.sql
+\ir ./drop/amendment_reasons_drop.sql
+\ir ./drop/reason_categories_drop.sql
 \ir ./drop/whimsical_names_drop.sql

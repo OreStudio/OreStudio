@@ -211,8 +211,8 @@ FROM (
         -- Supranational currency
         ('XDR', 'xdr')   -- Special Drawing Rights -> SDR globe icon
 ) AS v(currency_code, flag_key)
-JOIN images i ON i.key = v.flag_key AND i.valid_to = '9999-12-31 23:59:59'::timestamptz
-WHERE c.iso_code = v.currency_code AND c.valid_to = '9999-12-31 23:59:59'::timestamptz;
+JOIN images i ON i.key = v.flag_key AND i.valid_to = ores.infinity_timestamp()
+WHERE c.iso_code = v.currency_code AND c.valid_to = ores.infinity_timestamp();
 
 --
 -- Assign placeholder "no-flag" image to currencies without a specific flag
@@ -221,6 +221,6 @@ UPDATE currencies c
 SET image_id = i.image_id
 FROM images i
 WHERE i.key = 'no-flag'
-  AND i.valid_to = '9999-12-31 23:59:59'::timestamptz
-  AND c.valid_to = '9999-12-31 23:59:59'::timestamptz
+  AND i.valid_to = ores.infinity_timestamp()
+  AND c.valid_to = ores.infinity_timestamp()
   AND c.image_id IS NULL;

@@ -46,7 +46,7 @@ begin
     select exists(
         select 1 from ores.feature_flags
         where name = 'system.bootstrap_mode'
-          and valid_to = '9999-12-31 23:59:59'::timestamptz
+          and valid_to = ores.infinity_timestamp()
     ) into flag_exists;
 
     if not flag_exists then
@@ -55,8 +55,8 @@ begin
         from ores.account_roles ar
         join ores.roles r on ar.role_id = r.id
         where r.name = 'Admin'
-          and ar.valid_to = '9999-12-31 23:59:59'::timestamptz
-          and r.valid_to = '9999-12-31 23:59:59'::timestamptz;
+          and ar.valid_to = ores.infinity_timestamp()
+          and r.valid_to = ores.infinity_timestamp();
 
         -- Insert the flag with appropriate enabled state
         -- enabled=1 (true) if no admin accounts exist (bootstrap mode)
@@ -68,7 +68,7 @@ begin
             'Indicates whether the system is in bootstrap mode (waiting for initial admin account)',
             'system',
             current_timestamp,
-            '9999-12-31 23:59:59'::timestamptz
+            ores.infinity_timestamp()
         );
 
         raise notice 'Created bootstrap flag with enabled=%', case when admin_count = 0 then '1 (bootstrap mode)' else '0 (secure mode)' end;

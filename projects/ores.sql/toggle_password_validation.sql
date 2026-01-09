@@ -50,14 +50,14 @@ values (
     'When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.',
     current_user,
     current_timestamp,
-    '9999-12-31 23:59:59'::timestamptz
+    ores.infinity_timestamp()
 );
 
 -- Show the updated state
 select name, enabled, description, modified_by, valid_from
 from ores.feature_flags
 where name = 'system.disable_password_validation'
-  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+  and valid_to = ores.infinity_timestamp();
 
 \if :new_value
     \echo 'Password validation is now DISABLED (weak passwords allowed)'

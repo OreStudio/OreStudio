@@ -34,9 +34,9 @@ begin
     join ores.role_permissions rp on p.id = rp.permission_id
     join ores.account_roles ar on rp.role_id = ar.role_id
     where ar.account_id = p_account_id
-    and p.valid_to = '9999-12-31 23:59:59'::timestamptz
-    and rp.valid_to = '9999-12-31 23:59:59'::timestamptz
-    and ar.valid_to = '9999-12-31 23:59:59'::timestamptz
+    and p.valid_to = ores.infinity_timestamp()
+    and rp.valid_to = ores.infinity_timestamp()
+    and ar.valid_to = ores.infinity_timestamp()
     order by p.code;
 end;
 $$ language plpgsql stable;
@@ -50,8 +50,8 @@ begin
     select rp.role_id::text, p.code
     from ores.role_permissions rp
     join ores.permissions p on rp.permission_id = p.id
-    where rp.valid_to = '9999-12-31 23:59:59'::timestamptz
-    and p.valid_to = '9999-12-31 23:59:59'::timestamptz
+    where rp.valid_to = ores.infinity_timestamp()
+    and p.valid_to = ores.infinity_timestamp()
     order by rp.role_id, p.code;
 end;
 $$ language plpgsql stable;
@@ -66,8 +66,8 @@ begin
     from ores.role_permissions rp
     join ores.permissions p on rp.permission_id = p.id
     where rp.role_id = any(p_role_ids)
-    and rp.valid_to = '9999-12-31 23:59:59'::timestamptz
-    and p.valid_to = '9999-12-31 23:59:59'::timestamptz
+    and rp.valid_to = ores.infinity_timestamp()
+    and p.valid_to = ores.infinity_timestamp()
     order by rp.role_id, p.code;
 end;
 $$ language plpgsql stable;
@@ -87,7 +87,7 @@ begin
     select r.id, r.version, r.name, r.description, r.modified_by
     from ores.roles r
     where r.id = any(p_role_ids)
-    and r.valid_to = '9999-12-31 23:59:59'::timestamptz
+    and r.valid_to = ores.infinity_timestamp()
     order by r.name;
 end;
 $$ language plpgsql stable;
@@ -116,12 +116,12 @@ begin
     from ores.account_roles ar
     join ores.roles r on ar.role_id = r.id
     left join ores.role_permissions rp on r.id = rp.role_id
-        and rp.valid_to = '9999-12-31 23:59:59'::timestamptz
+        and rp.valid_to = ores.infinity_timestamp()
     left join ores.permissions p on rp.permission_id = p.id
-        and p.valid_to = '9999-12-31 23:59:59'::timestamptz
+        and p.valid_to = ores.infinity_timestamp()
     where ar.account_id = p_account_id
-    and ar.valid_to = '9999-12-31 23:59:59'::timestamptz
-    and r.valid_to = '9999-12-31 23:59:59'::timestamptz
+    and ar.valid_to = ores.infinity_timestamp()
+    and r.valid_to = ores.infinity_timestamp()
     group by r.id, r.version, r.name, r.description, r.modified_by
     order by r.name;
 end;
@@ -138,7 +138,7 @@ begin
     select id into v_account_id
     from ores.accounts
     where username = p_username
-    and valid_to = '9999-12-31 23:59:59'::timestamptz;
+    and valid_to = ores.infinity_timestamp();
 
     if v_account_id is null then
         return false;
@@ -152,9 +152,9 @@ begin
         join ores.permissions p on rp.permission_id = p.id
         where ar.account_id = v_account_id
         and p.code = p_permission_code
-        and ar.valid_to = '9999-12-31 23:59:59'::timestamptz
-        and rp.valid_to = '9999-12-31 23:59:59'::timestamptz
-        and p.valid_to = '9999-12-31 23:59:59'::timestamptz
+        and ar.valid_to = ores.infinity_timestamp()
+        and rp.valid_to = ores.infinity_timestamp()
+        and p.valid_to = ores.infinity_timestamp()
     );
 end;
 $$ language plpgsql stable;
@@ -171,9 +171,9 @@ begin
         join ores.permissions p on rp.permission_id = p.id
         where ar.account_id = p_account_id
         and p.code = p_permission_code
-        and ar.valid_to = '9999-12-31 23:59:59'::timestamptz
-        and rp.valid_to = '9999-12-31 23:59:59'::timestamptz
-        and p.valid_to = '9999-12-31 23:59:59'::timestamptz
+        and ar.valid_to = ores.infinity_timestamp()
+        and rp.valid_to = ores.infinity_timestamp()
+        and p.valid_to = ores.infinity_timestamp()
     );
 end;
 $$ language plpgsql stable;

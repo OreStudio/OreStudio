@@ -19,32 +19,23 @@
  */
 
 /**
- * Amendment Reasons Table
+ * Change Reason Categories Table
  *
- * Defines the reasons that can be selected when amending or deleting records.
- * Each reason belongs to a category and specifies which operations it applies to.
+ * Groups change reasons into logical categories for organizational purposes.
+ * Categories determine which reasons are applicable to which entity types.
  *
- * Reason codes use namespaced format: "category.reason_name"
  * Examples:
- * - system.new: Automatic reason for new record creation
- * - static_data.front_office_error: Correction of front office error
- * - static_data.operations_error: Correction of operations error
- * - static_data.touch: Touch/revalidate record without changes
- * - static_data.duplicate: Delete duplicate record
- * - static_data.other: Other reason (requires commentary)
+ * - static_data: For reference data entities (currencies, countries)
+ * - trade: For trade-related entities
+ * - market_data: For market data entities
  */
 
 set schema 'ores';
 
-create table if not exists "ores"."amendment_reasons" (
+create table if not exists "ores"."change_reason_categories" (
     "code" text not null,
     "version" integer not null,
     "description" text not null,
-    "category_code" text not null,
-    "applies_to_amend" boolean not null default true,
-    "applies_to_delete" boolean not null default true,
-    "requires_commentary" boolean not null default false,
-    "display_order" integer not null default 0,
     "modified_by" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
@@ -57,39 +48,23 @@ create table if not exists "ores"."amendment_reasons" (
 );
 
 -- Unique constraint on version for current records ensures version uniqueness per entity
-create unique index if not exists amendment_reasons_version_unique_idx
-on "ores"."amendment_reasons" (code, version)
+create unique index if not exists change_reason_categories_version_unique_idx
+on "ores"."change_reason_categories" (code, version)
 where valid_to = ores.infinity_timestamp();
 
 -- Unique constraint on code for current records to support FK references
-create unique index if not exists amendment_reasons_code_current_idx
-on "ores"."amendment_reasons" (code)
+create unique index if not exists change_reason_categories_code_current_idx
+on "ores"."change_reason_categories" (code)
 where valid_to = ores.infinity_timestamp();
 
--- Index for looking up reasons by category
-create index if not exists amendment_reasons_category_idx
-on "ores"."amendment_reasons" (category_code)
-where valid_to = ores.infinity_timestamp();
-
-create or replace function update_amendment_reasons()
+create or replace function update_change_reason_categories()
 returns trigger as $$
 declare
     current_version integer;
 begin
-    -- Validate that category_code exists in reason_categories
-    if not exists (
-        select 1 from "ores"."reason_categories"
-        where code = new.category_code
-        and valid_to = ores.infinity_timestamp()
-    ) then
-        raise exception 'Invalid category_code: %. Category must exist in reason_categories.',
-            new.category_code
-            using errcode = '23503';  -- foreign_key_violation
-    end if;
-
     -- Get the current version of the existing record (if any)
     select version into current_version
-    from "ores"."amendment_reasons"
+    from "ores"."change_reason_categories"
     where code = new.code
     and valid_to = ores.infinity_timestamp();
 
@@ -105,7 +80,7 @@ begin
         new.version = current_version + 1;
 
         -- Close the existing record
-        update "ores"."amendment_reasons"
+        update "ores"."change_reason_categories"
         set valid_to = current_timestamp
         where code = new.code
         and valid_to = ores.infinity_timestamp()
@@ -126,17 +101,17 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger update_amendment_reasons_trigger
-before insert on "ores"."amendment_reasons"
+create or replace trigger update_change_reason_categories_trigger
+before insert on "ores"."change_reason_categories"
 for each row
-execute function update_amendment_reasons();
+execute function update_change_reason_categories();
 
 -- Use a RULE instead of a trigger to avoid tuple modification conflicts
 -- Rules rewrite the query before execution, so there's no conflict with the DELETE
-create or replace rule delete_amendment_reasons_rule as
-on delete to "ores"."amendment_reasons"
+create or replace rule delete_change_reason_categories_rule as
+on delete to "ores"."change_reason_categories"
 do instead
-  update "ores"."amendment_reasons"
+  update "ores"."change_reason_categories"
   set valid_to = current_timestamp
   where code = old.code
   and valid_to = ores.infinity_timestamp();

@@ -43,9 +43,9 @@
 \echo '=== Starting System Population ==='
 \echo ''
 
--- Amendment Control (must be populated before entities that use reasons)
-\echo '--- Amendment Control ---'
-\ir amendment_reasons_populate.sql
+-- Change Control (must be populated before entities that use reasons)
+\echo '--- Change Control ---'
+\ir change_reasons_populate.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''
@@ -82,8 +82,8 @@
 \echo ''
 \echo '--- Summary ---'
 
-select 'Amendment Reasons' as entity, count(*) as count
-from ores.amendment_reasons where valid_to = ores.infinity_timestamp()
+select 'Change Reasons' as entity, count(*) as count
+from ores.change_reasons where valid_to = ores.infinity_timestamp()
 union all
 select 'Countries', count(*)
 from ores.countries where valid_to = ores.infinity_timestamp()
@@ -100,8 +100,8 @@ union all
 select 'Permissions', count(*)
 from ores.permissions where valid_to = ores.infinity_timestamp()
 union all
-select 'Reason Categories', count(*)
-from ores.reason_categories where valid_to = ores.infinity_timestamp()
+select 'Change Reason Categories', count(*)
+from ores.change_reason_categories where valid_to = ores.infinity_timestamp()
 union all
 select 'Roles', count(*)
 from ores.roles where valid_to = ores.infinity_timestamp()

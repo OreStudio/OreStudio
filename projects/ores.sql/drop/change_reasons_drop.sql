@@ -19,7 +19,7 @@
  */
 set schema 'ores';
 
-drop rule if exists delete_amendment_reasons_rule on "ores"."amendment_reasons";
-drop trigger if exists update_amendment_reasons_trigger on "ores"."amendment_reasons";
-drop function if exists update_amendment_reasons();
-drop table if exists "ores"."amendment_reasons";
+drop rule if exists delete_change_reasons_rule on "ores"."change_reasons";
+drop trigger if exists update_change_reasons_trigger on "ores"."change_reasons";
+drop function if exists update_change_reasons();
+drop table if exists "ores"."change_reasons";

@@ -44,7 +44,7 @@ std::shared_ptr<ores::variability::service::system_flags_service>
 make_system_flags(ores::database::context& ctx) {
     auto flags = std::make_shared<ores::variability::service::system_flags_service>(ctx);
     // Disable bootstrap mode so tests can proceed
-    flags->set_bootstrap_mode(false, "test");
+    flags->set_bootstrap_mode(false, "test", "system.new_record", "Test setup");
     return flags;
 }
 

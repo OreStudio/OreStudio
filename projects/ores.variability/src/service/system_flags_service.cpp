@@ -64,7 +64,9 @@ bool system_flags_service::is_enabled(domain::system_flag flag) const {
 }
 
 void system_flags_service::set_enabled(domain::system_flag flag, bool enabled,
-    std::string_view recorded_by) {
+    std::string_view recorded_by,
+    std::string_view change_reason_code,
+    std::string_view change_commentary) {
     const auto flag_name = domain::to_flag_name(flag);
     const auto& def = domain::get_definition(flag);
 
@@ -76,7 +78,9 @@ void system_flags_service::set_enabled(domain::system_flag flag, bool enabled,
         .enabled = enabled,
         .name = flag_name,
         .description = std::string(def.description),
-        .recorded_by = std::string(recorded_by)
+        .recorded_by = std::string(recorded_by),
+        .change_reason_code = std::string(change_reason_code),
+        .change_commentary = std::string(change_commentary)
     };
 
     feature_flags_service_.save_feature_flag(ff);
@@ -88,8 +92,11 @@ bool system_flags_service::is_bootstrap_mode_enabled() const {
 }
 
 void system_flags_service::set_bootstrap_mode(bool enabled,
-    std::string_view recorded_by) {
-    set_enabled(domain::system_flag::bootstrap_mode, enabled, recorded_by);
+    std::string_view recorded_by,
+    std::string_view change_reason_code,
+    std::string_view change_commentary) {
+    set_enabled(domain::system_flag::bootstrap_mode, enabled, recorded_by,
+        change_reason_code, change_commentary);
 }
 
 bool system_flags_service::is_user_signups_enabled() const {
@@ -97,8 +104,11 @@ bool system_flags_service::is_user_signups_enabled() const {
 }
 
 void system_flags_service::set_user_signups(bool enabled,
-    std::string_view recorded_by) {
-    set_enabled(domain::system_flag::user_signups, enabled, recorded_by);
+    std::string_view recorded_by,
+    std::string_view change_reason_code,
+    std::string_view change_commentary) {
+    set_enabled(domain::system_flag::user_signups, enabled, recorded_by,
+        change_reason_code, change_commentary);
 }
 
 bool system_flags_service::is_signup_requires_authorization_enabled() const {
@@ -106,9 +116,11 @@ bool system_flags_service::is_signup_requires_authorization_enabled() const {
 }
 
 void system_flags_service::set_signup_requires_authorization(bool enabled,
-    std::string_view recorded_by) {
+    std::string_view recorded_by,
+    std::string_view change_reason_code,
+    std::string_view change_commentary) {
     set_enabled(domain::system_flag::signup_requires_authorization, enabled,
-        recorded_by);
+        recorded_by, change_reason_code, change_commentary);
 }
 
 void system_flags_service::update_cache(domain::system_flag flag, bool enabled) {

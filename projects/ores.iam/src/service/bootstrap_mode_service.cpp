@@ -82,7 +82,8 @@ void bootstrap_mode_service::initialize_bootstrap_state() {
         BOOST_LOG_SEV(lg(), warn)
             << "Bootstrap flag is disabled but no admin accounts exist, "
             << "this is inconsistent. Enabling bootstrap mode";
-        system_flags_service_.set_bootstrap_mode(true, "system");
+        system_flags_service_.set_bootstrap_mode(true, "system",
+            "system.new_record", "Bootstrap mode enabled due to inconsistent state - no admin accounts exist");
     }
 }
 
@@ -94,7 +95,8 @@ void bootstrap_mode_service::exit_bootstrap_mode() {
         return;
     }
 
-    system_flags_service_.set_bootstrap_mode(false, "system");
+    system_flags_service_.set_bootstrap_mode(false, "system",
+        "system.new_record", "Bootstrap mode disabled - system now in secure mode");
     BOOST_LOG_SEV(lg(), info) << "Successfully exited bootstrap mode";
 }
 

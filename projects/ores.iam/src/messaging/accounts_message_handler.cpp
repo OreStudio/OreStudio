@@ -641,7 +641,8 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
         );
 
         // Exit bootstrap mode - updates database and shared cache
-        system_flags_->set_bootstrap_mode(false, "system");
+        system_flags_->set_bootstrap_mode(false, "system",
+            "system.new_record", "Bootstrap mode disabled after initial admin account created");
 
         BOOST_LOG_SEV(lg(), info)
             << "Created initial admin account with ID: " << account.id

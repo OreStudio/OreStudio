@@ -20,7 +20,7 @@
 #include "ores.comms.analyser/config/options.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -30,7 +30,7 @@ const std::string tags("[options]");
 }
 
 using namespace ores::comms::analyser::config;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("options_default_construction", tags) {
     auto lg(make_logger(test_suite));

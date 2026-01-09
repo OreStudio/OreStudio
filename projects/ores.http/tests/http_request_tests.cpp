@@ -20,7 +20,7 @@
 #include "ores.http/domain/http_request.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -30,7 +30,7 @@ const std::string tags("[http_request]");
 }
 
 using namespace ores::http::domain;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("http_request_get_header_returns_value", tags) {
     auto lg(make_logger(test_suite));

@@ -91,6 +91,26 @@ cmake --build --target test_ores.accounts.tests --preset linux-clang-debug
 
 Replace =ores.accounts.tests= with the desired component name.
 
+*** Configuring test logging
+
+Test logging is disabled by default for performance. To enable logging when debugging test failures, use environment variables:
+
+#+begin_src sh
+# Enable logging to files
+ORES_TEST_LOG_ENABLED=true cmake --build --target test_ores.accounts.tests --preset linux-clang-debug
+
+# Enable logging with console output
+ORES_TEST_LOG_ENABLED=true ORES_TEST_LOG_CONSOLE=true cmake --build --target test_ores.accounts.tests --preset linux-clang-debug
+
+# Change log level (default: trace, options: trace, debug, info, warn, error, fatal)
+ORES_TEST_LOG_ENABLED=true ORES_TEST_LOG_LEVEL=debug cmake --build --target test_ores.accounts.tests --preset linux-clang-debug
+#+end_src
+
+Available environment variables:
+- =ORES_TEST_LOG_ENABLED=: Enable/disable logging (default: =false=)
+- =ORES_TEST_LOG_LEVEL=: Log severity level (default: =trace=)
+- =ORES_TEST_LOG_CONSOLE=: Output logs to console (default: =false=)
+
 ** Deploying skills
 
 To deploy Claude Code skills:

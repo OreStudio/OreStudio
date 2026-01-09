@@ -282,6 +282,7 @@ handle_login_request(std::span<const std::byte> payload,
         auto sess = std::make_shared<domain::session>();
         sess->id = boost::uuids::random_generator()();
         sess->account_id = account.id;
+        sess->username = account.username;
         sess->start_time = std::chrono::system_clock::now();
         sess->client_ip = ip_address;
 

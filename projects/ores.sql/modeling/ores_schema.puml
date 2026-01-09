@@ -155,9 +155,9 @@ package "RBAC (Role-Based Access Control)" #FFF3E0 {
 }
 
 '
-' ==================== Assets Domain ====================
+' ==================== Assets & Reference Data Domain ====================
 '
-package "Assets (Images & Currencies)" #F3E5F5 {
+package "Assets & Reference Data" #F3E5F5 {
     entity images <<temporal>> #C6F0D8 {
         * image_id : uuid <<PK>>
         --
@@ -229,6 +229,26 @@ package "Assets (Images & Currencies)" #F3E5F5 {
     Includes formatting rules and
     optional flag image reference.
     end note
+
+    entity countries <<temporal>> #C6F0D8 {
+        * alpha2_code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        * alpha3_code : text
+        * numeric_code : text
+        * name : text
+        * official_name : text
+        image_id : uuid <<FK>>
+        * modified_by : text
+    }
+
+    note right of countries
+    ISO 3166-1 country definitions.
+    Includes alpha-2, alpha-3, and numeric codes.
+    Optional flag image reference.
+    end note
 }
 
 '
@@ -266,10 +286,11 @@ roles ||--o{ account_roles : "granted to"
 roles ||--o{ role_permissions : "has"
 permissions ||--o{ role_permissions : "included in"
 
-' Assets relationships
+' Assets & Reference Data relationships
 images ||--o{ image_tags : "tagged with"
 tags ||--o{ image_tags : "applied to"
 currencies }o--o| images : "displayed as"
+countries }o--o| images : "displayed as"
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores_schema.puml"

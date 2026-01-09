@@ -24,6 +24,7 @@
 #include <QtConcurrent>
 #include <QColor>
 #include <QDateTime>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -59,6 +60,15 @@ ClientCurrencyModel(ClientManager* clientManager, ImageCache* imageCache,
                     {Qt::DecorationRole});
             }
         });
+
+        // Also refresh when individual images load (on-demand loading)
+        connect(imageCache_, &ImageCache::imageLoaded, this, [this](const QString&) {
+            if (!currencies_.empty()) {
+                emit dataChanged(index(0, Column::Flag),
+                    index(rowCount() - 1, Column::Flag),
+                    {Qt::DecorationRole});
+            }
+        });
     }
 }
 
@@ -86,8 +96,9 @@ QVariant ClientCurrencyModel::data(const QModelIndex& index, int role) const {
 
     // Handle DecorationRole for Flag column
     if (role == Qt::DecorationRole && index.column() == Column::Flag) {
-        if (imageCache_) {
-            return imageCache_->getCurrencyIcon(currency.iso_code);
+        if (imageCache_ && currency.image_id) {
+            const auto image_id_str = boost::uuids::to_string(*currency.image_id);
+            return imageCache_->getIcon(image_id_str);
         }
         return {};
     }

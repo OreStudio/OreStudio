@@ -20,11 +20,13 @@
 #include "ores.qt/CurrencyHistoryDialog.hpp"
 
 #include <QIcon>
+#include <QLabel>
 #include <QDateTime>
 #include <QScrollBar>
 #include <QVBoxLayout>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -48,8 +50,7 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
       clientManager_(clientManager), imageCache_(nullptr),
       isoCode_(std::move(iso_code)),
       toolBar_(nullptr), reloadAction_(nullptr),
-      openAction_(nullptr), revertAction_(nullptr),
-      flagIconLabel_(nullptr) {
+      openAction_(nullptr), revertAction_(nullptr) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating currency history widget for: "
                               << isoCode_.toStdString();
@@ -61,6 +62,12 @@ CurrencyHistoryDialog::CurrencyHistoryDialog(QString iso_code,
     connect(ui_->versionListWidget, &QTableWidget::currentCellChanged,
             this, [this](int currentRow, int, int, int) {
         onVersionSelected(currentRow);
+    });
+
+    // Double-click opens the version in read-only mode
+    connect(ui_->versionListWidget, &QTableWidget::cellDoubleClicked,
+            this, [this](int, int) {
+        onOpenClicked();
     });
 
     ui_->versionListWidget->setAlternatingRowColors(true);
@@ -212,7 +219,6 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
     }
 
     updateButtonStates();
-    updateFlagDisplay();
 
     emit statusChanged(QString("Loaded %1 versions")
         .arg(history_.versions.size()));
@@ -273,12 +279,44 @@ void CurrencyHistoryDialog::displayChangesTab(int version_index) {
         const auto& [old_val, new_val] = values;
 
         auto* fieldItem = new QTableWidgetItem(field);
-        auto* oldItem = new QTableWidgetItem(old_val);
-        auto* newItem = new QTableWidgetItem(new_val);
-
         ui_->changesTableWidget->setItem(i, 0, fieldItem);
-        ui_->changesTableWidget->setItem(i, 1, oldItem);
-        ui_->changesTableWidget->setItem(i, 2, newItem);
+
+        // Special handling for Flag field - show SVG icons instead of UUIDs
+        if (field == "Flag" && imageCache_) {
+            // Create label widgets to show the flag icons
+            auto createFlagLabel = [this](const QString& imageIdStr) -> QWidget* {
+                auto* label = new QLabel();
+                label->setAlignment(Qt::AlignCenter);
+                label->setFixedSize(32, 32);
+
+                if (imageIdStr == "(none)") {
+                    QIcon noFlagIcon = imageCache_->getNoFlagIcon();
+                    if (!noFlagIcon.isNull()) {
+                        label->setPixmap(noFlagIcon.pixmap(24, 24));
+                    } else {
+                        label->setText("-");
+                    }
+                } else {
+                    // Get the icon using the UUID string
+                    QIcon icon = imageCache_->getIcon(imageIdStr.toStdString());
+                    if (!icon.isNull()) {
+                        label->setPixmap(icon.pixmap(24, 24));
+                    } else {
+                        label->setText("?");
+                        label->setToolTip(imageIdStr);
+                    }
+                }
+                return label;
+            };
+
+            ui_->changesTableWidget->setCellWidget(i, 1, createFlagLabel(old_val));
+            ui_->changesTableWidget->setCellWidget(i, 2, createFlagLabel(new_val));
+        } else {
+            auto* oldItem = new QTableWidgetItem(old_val);
+            auto* newItem = new QTableWidgetItem(new_val);
+            ui_->changesTableWidget->setItem(i, 1, oldItem);
+            ui_->changesTableWidget->setItem(i, 2, newItem);
+        }
     }
 }
 
@@ -336,6 +374,18 @@ calculateDiff(const risk::domain::currency_version& current,
     CHECK_DIFF_INT("Fractions Per Unit", fractions_per_unit);
     CHECK_DIFF_INT("Rounding Precision", rounding_precision);
 
+    // Compare image_id (flag)
+    if (current.data.image_id != previous.data.image_id) {
+        auto formatImageId = [](const std::optional<boost::uuids::uuid>& id) {
+            if (!id.has_value()) {
+                return QString("(none)");
+            }
+            return QString::fromStdString(boost::uuids::to_string(*id));
+        };
+        diffs.append({"Flag", {formatImageId(previous.data.image_id),
+                               formatImageId(current.data.image_id)}});
+    }
+
     return diffs;
 }
 
@@ -352,7 +402,7 @@ void CurrencyHistoryDialog::setupToolbar() {
     // Create Reload action
     reloadAction_ = new QAction("Reload", this);
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor));
+        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
     reloadAction_->setToolTip("Reload history from server");
     connect(reloadAction_, &QAction::triggered, this,
         &CurrencyHistoryDialog::onReloadClicked);
@@ -417,16 +467,31 @@ void CurrencyHistoryDialog::onRevertClicked() {
     if (index < 0 || index >= static_cast<int>(history_.versions.size()))
         return;
 
-    const auto& version = history_.versions[index];
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to currency version "
-                              << version.version_number;
+    // Get the selected version and the previous (older) version
+    const auto& current = history_.versions[index];
+
+    // If this is the oldest version, there's no previous version to revert to
+    if (index == static_cast<int>(history_.versions.size()) - 1) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot revert oldest version - no previous version exists";
+        MessageBoxHelper::information(this, "Cannot Revert",
+            "This is the oldest version. There is no previous version to revert to.");
+        return;
+    }
+
+    // The "previous" version is the one we want to revert TO (the "old" side in the diff)
+    const auto& previous = history_.versions[index + 1];
+
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert from version "
+                              << current.version_number << " to version "
+                              << previous.version_number;
 
     // Confirm with user
     auto reply = MessageBoxHelper::question(this, "Revert Currency",
-        QString("Are you sure you want to revert '%1' to version %2?\n\n"
-                "This will create a new version with the data from version %2.")
+        QString("Are you sure you want to revert '%1' from version %2 back to version %3?\n\n"
+                "This will create a new version with the data from version %3.")
             .arg(isoCode_)
-            .arg(version.version_number),
+            .arg(current.version_number)
+            .arg(previous.version_number),
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
@@ -434,7 +499,10 @@ void CurrencyHistoryDialog::onRevertClicked() {
         return;
     }
 
-    emit revertVersionRequested(version.data);
+    // Use the PREVIOUS version's data (the "old" side of the diff) with the latest version number
+    risk::domain::currency currency = previous.data;
+    currency.version = history_.versions[0].version_number;
+    emit revertVersionRequested(currency);
 }
 
 void CurrencyHistoryDialog::onReloadClicked() {
@@ -475,40 +543,6 @@ void CurrencyHistoryDialog::markAsStale() {
 
 void CurrencyHistoryDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
-    if (imageCache_) {
-        // Connect to imagesLoaded (not currencyMappingsLoaded) because:
-        // - currencyMappingsLoaded fires before icons are re-rendered
-        // - imagesLoaded fires after icons are ready in currency_icons_
-        connect(imageCache_, &ImageCache::imagesLoaded,
-            this, &CurrencyHistoryDialog::updateFlagDisplay);
-    }
-}
-
-void CurrencyHistoryDialog::updateFlagDisplay() {
-    if (!flagIconLabel_) {
-        // Create the flag icon label and add it to the toolbar
-        if (toolBar_) {
-            flagIconLabel_ = new QLabel(this);
-            flagIconLabel_->setFixedSize(24, 24);
-            flagIconLabel_->setAlignment(Qt::AlignCenter);
-            toolBar_->insertWidget(toolBar_->actions().first(), flagIconLabel_);
-        }
-    }
-
-    if (!flagIconLabel_)
-        return;
-
-    if (!imageCache_) {
-        flagIconLabel_->clear();
-        return;
-    }
-
-    QIcon icon = imageCache_->getCurrencyIcon(isoCode_.toStdString());
-    if (icon.isNull()) {
-        flagIconLabel_->clear();
-    } else {
-        flagIconLabel_->setPixmap(icon.pixmap(24, 24));
-    }
 }
 
 }

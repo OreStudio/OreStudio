@@ -44,6 +44,7 @@ namespace ores::qt {
 
 class DetachableMdiSubWindow;
 class CurrencyController;
+class CountryController;
 class AccountController;
 class RoleController;
 class FeatureFlagController;
@@ -254,6 +255,14 @@ private:
      * list, detail, and history windows.
      */
     std::unique_ptr<CurrencyController> currencyController_;
+
+    /**
+     * @brief Controller managing all country-related windows and operations.
+     *
+     * Created after successful login, destroyed on disconnect. Handles country
+     * list, detail, and history windows.
+     */
+    std::unique_ptr<CountryController> countryController_;
 
     /**
      * @brief Controller managing all account-related windows and operations.

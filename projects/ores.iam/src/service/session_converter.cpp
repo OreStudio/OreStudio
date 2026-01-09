@@ -73,6 +73,7 @@ session_converter::to_session_data(const domain::session& s) {
     d->bytes_received = s.bytes_received;
     d->country_code = s.country_code;
     d->protocol = to_comms_protocol(s.protocol);
+    d->username = s.username;
     return d;
 }
 
@@ -91,6 +92,7 @@ session_converter::from_session_data(const comms::service::session_data& d) {
     s.bytes_received = d.bytes_received;
     s.country_code = d.country_code;
     s.protocol = from_comms_protocol(d.protocol);
+    s.username = d.username;
     return s;
 }
 

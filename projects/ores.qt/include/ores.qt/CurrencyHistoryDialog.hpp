@@ -27,7 +27,6 @@
 #include <QVector>
 #include <QToolBar>
 #include <QAction>
-#include <QLabel>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.risk/domain/currency_version.hpp"
@@ -128,7 +127,6 @@ private:
 
     void setupToolbar();
     void updateButtonStates();
-    void updateFlagDisplay();
     int selectedVersionIndex() const;
 
     std::unique_ptr<Ui::CurrencyHistoryDialog> ui_;
@@ -141,7 +139,6 @@ private:
     QAction* reloadAction_;
     QAction* openAction_;
     QAction* revertAction_;
-    QLabel* flagIconLabel_;
 };
 
 }

@@ -17,43 +17,41 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-08 Thu 13:48], for Thursday, January 08, 2026.
-|       | <75>                                   |        |      |      |       |
-| Tags  | Headline                               | Time   |      |      |     % |
-|-------+----------------------------------------+--------+------+------+-------|
-|       | *Total time*                           | *5:32* |      |      | 100.0 |
-|-------+----------------------------------------+--------+------+------+-------|
-|       | Stories                                | 5:32   |      |      | 100.0 |
-|       | Active                                 |        | 5:32 |      | 100.0 |
-| agile | Sprint and product backlog refinement  |        |      | 0:33 |   9.9 |
-| code  | Assorted fixes to feature flags dialog |        |      | 2:52 |  51.8 |
-| code  | Assorted fixes to currencies dialog    |        |      | 2:07 |  38.3 |
+#+CAPTION: Clock summary at [2026-01-09 Fri 01:17], for Friday, January 09, 2026.
+|      | <75>                                |        |      |      |       |
+| Tags | Headline                            | Time   |      |      |     % |
+|------+-------------------------------------+--------+------+------+-------|
+|      | *Total time*                        | *1:16* |      |      | 100.0 |
+|------+-------------------------------------+--------+------+------+-------|
+|      | Stories                             | 1:16   |      |      | 100.0 |
+|      | Active                              |        | 1:16 |      | 100.0 |
+| code | Assorted fixes to currencies dialog |        |      | 1:16 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-08 Thu 13:48]
+#+CAPTION: Clock summary at [2026-01-09 Fri 01:17]
 |       | <75>                                        |         |       |       |       |
 | Tags  | Headline                                    | Time    |       |       |     % |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                | *48:13* |       |       | 100.0 |
+|       | *Total time*                                | *54:52* |       |       | 100.0 |
 |-------+---------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                     | 48:13   |       |       | 100.0 |
-|       | Active                                      |         | 48:13 |       | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       |  1:50 |   3.8 |
-| code  | Rerun SQL scripts from scratch              |         |       |  7:52 |  16.3 |
-| code  | Run qt client and validate all new features |         |       |  1:19 |   2.7 |
-| code  | Refactor options and parser                 |         |       |  0:27 |   0.9 |
-| code  | Check functionality in =ores.wt=            |         |       |  2:03 |   4.3 |
-| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       |  1:30 |   3.1 |
-| code  | Review HTTP service                         |         |       |  7:24 |  15.3 |
-| code  | Assorted fixes to currency dialog           |         |       |  4:19 |   9.0 |
-| code  | Add support for offsets in pagination       |         |       |  1:46 |   3.7 |
-| code  | Assorted fixes to feature flags dialog      |         |       |  2:52 |   5.9 |
-| code  | Assorted fixes to currencies dialog         |         |       |  4:36 |   9.5 |
-| code  | Add country support                         |         |       |  1:37 |   3.4 |
-| code  | Review comms analyser work                  |         |       |  0:27 |   0.9 |
-| code  | Review telemetry work                       |         |       | 10:11 |  21.1 |
+|       | Stories                                     | 54:52   |       |       | 100.0 |
+|       | Active                                      |         | 54:52 |       | 100.0 |
+| agile | Sprint and product backlog refinement       |         |       |  1:50 |   3.3 |
+| code  | Rerun SQL scripts from scratch              |         |       |  7:52 |  14.3 |
+| code  | Run qt client and validate all new features |         |       |  1:19 |   2.4 |
+| code  | Refactor options and parser                 |         |       |  0:27 |   0.8 |
+| code  | Check functionality in =ores.wt=            |         |       |  2:03 |   3.7 |
+| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       |  1:30 |   2.7 |
+| code  | Review HTTP service                         |         |       |  7:24 |  13.5 |
+| code  | Assorted fixes to currency dialog           |         |       |  4:19 |   7.9 |
+| code  | Add support for offsets in pagination       |         |       |  1:46 |   3.2 |
+| code  | Assorted fixes to feature flags dialog      |         |       |  2:52 |   5.2 |
+| code  | Add country support                         |         |       |  6:31 |  11.9 |
+| code  | Assorted fixes to currencies dialog         |         |       |  6:21 |  11.6 |
+| code  | Review comms analyser work                  |         |       |  0:27 |   0.8 |
+| code  | Review telemetry work                       |         |       | 10:11 |  18.6 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -589,45 +587,74 @@ Highlights:
   ImageCache component, streamlining log output.
 #+end_quote
 
-*** STARTED Assorted fixes to currencies dialog                        :code:
+*** COMPLETED Create a set of fake currencies                          :code:
+
+We need to create fake data so we can explore the problem domain. This is
+something to work on in the future. We can use LLMs to help with the fake data,
+where it makes sense.
+
+Example:
+
+| Country code | Country name | Currency Code | Currency Number | Currency           |
+|--------------+--------------+---------------+-----------------+--------------------|
+| AL           | Aerilon      | ALD           |           10001 | Aerilonian Dollar  |
+| AR           | Arcturia     | ARA           |           10002 | Arcturian Arct     |
+| BA           | Balthoria    | BAF           |           10003 | Balthorian Florin  |
+| BE           | Belloria     | BEB           |           10004 | Bellorian Bell     |
+| CA           | Calandria    | CAC           |           10005 | Calandrian Crown   |
+| CD           | Caledonia    | CDC           |           10006 | Caledonian Caled   |
+| DA           | Daeloria     | DAD           |           10007 | Daelorian Dinar    |
+| DE           | Delvadia     | DED           |           10008 | Delvadian Delv     |
+| ER           | Eriador      | ERE           |           10009 | Eriadoran Euro     |
+| ES           | Esteria      | ESE           |           10010 | Esterian Est       |
+| FE           | Feloria      | FEF           |           10011 | Felorian Franc     |
+| FN           | Fendaria     | FNF           |           10012 | Fendarian Fen      |
+| GA           | Galdoria     | GAG           |           10013 | Galdorian Galleon  |
+| GR           | Grendoria    | GRG           |           10014 | Grendorian Grend   |
+| HE           | Helvetia     | HEF           |           10015 | Helvetian Franc    |
+| HY           | Hydronia     | HYH           |           10016 | Hydronian Hyd      |
+| IR           | Iridia       | IRD           |           10017 | Iridian Dollar     |
+| IT           | Ithaca       | ITI           |           10018 | Ithacan Ith        |
+| JE           | Jethro       | JEJ           |           10019 | Jethronian Jet     |
+| JO           | Jorvik       | JOK           |           10020 | Jorvikian Krona    |
+| KA           | Kaelor       | KAK           |           10021 | Kaelorian Krown    |
+| KR           | Krynn        | KRK           |           10022 | Krynnish Krynn     |
+| LU           | Luminia      | LUL           |           10023 | Luminian Lum       |
+| LY           | Lysandria    | LYL           |           10024 | Lysandrian Lira    |
+| MA           | Maldoria     | MAM           |           10025 | Maldorian Mal      |
+| MR           | Mariposa     | MRP           |           10026 | Mariposan Peso     |
+| NE           | Nektonia     | NEN           |           10027 | Nektonian Nek      |
+| NT           | Netharia     | NTN           |           10028 | Netharian Naira    |
+| OR           | Orinoco      | ORB           |           10029 | Orinocan Bolivar   |
+| OL           | Orlanthia    | OLO           |           10030 | Orlanthian Orl     |
+| PA           | Paldoria     | PAP           |           10031 | Paldorian Peso     |
+| PY           | Pyrrhia      | PYP           |           10032 | Pyrrhian Pyr       |
+| QU           | Quentaria    | QUQ           |           10033 | Quentarian Quen    |
+| QN           | Quinaria     | QNQ           |           10034 | Quinarian Quetzal  |
+| RE           | Rendellia    | RER           |           10035 | Rendellian Rend    |
+| RI           | Rivenia      | RIR           |           10036 | Rivenian Ruble     |
+| SE           | Serendia     | SES           |           10037 | Serendian Shilling |
+| SI           | Sildoria     | SIS           |           10038 | Sildorian Sild     |
+| TA           | Tandor       | TAT           |           10039 | Tandorian Taka     |
+| TE           | Tenebria     | TET           |           10040 | Tenebrian Ten      |
+| UL           | Uldoria      | ULU           |           10041 | Uldorian Uld       |
+| UT           | Utopia       | UTU           |           10042 | Utopian Unit       |
+| VA           | Valoria      | VAV           |           10042 | Valorian Valt      |
+| VL           | Valtaria     | VLV           |           10043 | Valtarian Val      |
+| WI           | Wintervale   | WIW           |           10044 | Wintervalean Won   |
+| WY           | Wysteria     | WYW           |           10045 | Wysterian Wys      |
+| XA           | Xandria      | XAX           |           10046 | Xandrian Xan       |
+| XE           | Xenoria      | XEX           |           10047 | Xenorian Xen       |
+| YS           | Yslandia     | YSY           |           10048 | Yslandian Yen      |
+| ZE           | Zephyria     | ZEZ           |           10049 | Zephyrian Zephyr   |
+
+*** COMPLETED Add country support                                      :code:
     :LOGBOOK:
-    CLOCK: [2026-01-08 Thu 08:40]--[2026-01-08 Thu 09:58] =>  1:18
-    CLOCK: [2026-01-07 Wed 23:21]--[2026-01-08 Thu 00:49] =>  1:28
-    CLOCK: [2026-01-07 Wed 23:07]--[2026-01-07 Wed 23:20] =>  0:13
-    CLOCK: [2026-01-07 Wed 16:29]--[2026-01-07 Wed 18:06] =>  1:37
-    :END:
-
-- remove maximise button.
-- updating flag does not seem to update after reload.
-- can't see flag changes in history.
-- cannot revert to version in history. Get an error saying incorrect version.
-- on import, are we importing one currency at a time? should import the entire file.
-
-*** STARTED Assorted fixes to accounts dialog                          :code:
-
-- on my account, email saved successfully is not very visible. Instead, make
-  save button enabled after changes, once saved disable it. My account should be
-  a regular dialog, allowing you to keep it open and interact with rest of the app.
-- session history should not be maximisable.
-- sessions still have 0 bytes sent and received.
-- add any details such as instance id to session.
-- last login field does not fit the screen.
-- cannot reload account in account details. Need reload button.
-- remove "grant administrative privileges" from details screen.
-- old users remain online. Server should check sessions on start and update
-  table.
-- cannot tell who unlocked an account and when.
-- do not use "old" for accounts who never logged in. Maybe "unused"?
-- at present you can't tell if you asked for a password reset. We probably
-  should use Status to mean: locked, unlocked, reset. And maybe "Age" or "Last
-  Login" to mean: online, never, recent, old.
-- add right-click menu with the context options from the toolbar.
-- after reload, lock etc remember which line we were on and return to it.
-- email updated message is truncated.
-- user cannot lock it's own account.
-
-*** STARTED Add country support                                        :code:
-    :LOGBOOK:
+    CLOCK: [2026-01-08 Thu 21:30]--[2026-01-08 Thu 23:30] =>  2:00
+    CLOCK: [2026-01-08 Thu 20:20]--[2026-01-08 Thu 20:51] =>  0:31
+    CLOCK: [2026-01-08 Thu 18:10]--[2026-01-08 Thu 19:16] =>  1:06
+    CLOCK: [2026-01-08 Thu 15:33]--[2026-01-08 Thu 16:33] =>  1:00
+    CLOCK: [2026-01-08 Thu 13:49]--[2026-01-08 Thu 14:06] =>  0:17
     CLOCK: [2026-01-07 Wed 22:02]--[2026-01-07 Wed 23:06] =>  1:04
     CLOCK: [2026-01-07 Wed 19:01]--[2026-01-07 Wed 19:34] =>  0:33
     :END:
@@ -661,6 +688,49 @@ Highlights:
 #+end_quote
 
 Add standard ISO country codes.
+
+*** STARTED Assorted fixes to currencies dialog                        :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-09 Fri 00:59]--[2026-01-09 Fri 01:17] =>  0:18
+    CLOCK: [2026-01-08 Thu 23:31]--[2026-01-09 Fri 00:58] =>  1:27
+    CLOCK: [2026-01-08 Thu 08:40]--[2026-01-08 Thu 09:58] =>  1:18
+    CLOCK: [2026-01-07 Wed 23:21]--[2026-01-08 Thu 00:49] =>  1:28
+    CLOCK: [2026-01-07 Wed 23:07]--[2026-01-07 Wed 23:20] =>  0:13
+    CLOCK: [2026-01-07 Wed 16:29]--[2026-01-07 Wed 18:06] =>  1:37
+    :END:
+
+- updating flag does not seem to update after reload. Done.
+- can't see flag changes in history. Done.
+- cannot revert to version in history. Get an error saying incorrect version.
+  Done.
+- on import, are we importing one currency at a time? should import the entire
+  file.
+- should be possible to click on user and see user profile details. If the user
+  is admin, show all details; if not, show only key ones like email, etc.
+- remove maximise button.
+
+*** STARTED Assorted fixes to accounts dialog                          :code:
+
+- on my account, email saved successfully is not very visible. Instead, make
+  save button enabled after changes, once saved disable it. My account should be
+  a regular dialog, allowing you to keep it open and interact with rest of the app.
+- session history should not be maximisable.
+- sessions still have 0 bytes sent and received.
+- add any details such as instance id to session.
+- last login field does not fit the screen.
+- cannot reload account in account details. Need reload button.
+- remove "grant administrative privileges" from details screen.
+- old users remain online. Server should check sessions on start and update
+  table.
+- cannot tell who unlocked an account and when.
+- do not use "old" for accounts who never logged in. Maybe "unused"?
+- at present you can't tell if you asked for a password reset. We probably
+  should use Status to mean: locked, unlocked, reset. And maybe "Age" or "Last
+  Login" to mean: online, never, recent, old.
+- add right-click menu with the context options from the toolbar.
+- after reload, lock etc remember which line we were on and return to it.
+- email updated message is truncated.
+- user cannot lock it's own account.
 
 *** STARTED Review comms analyser work                                 :code:
     :LOGBOOK:
@@ -713,6 +783,71 @@ Ores.QT:
 - cannot add or remove permissions for a role, cannot add new permissions (which
   probably makes sense?)
 - cannot distinguish accounts created by user or by sign-up.
+- event viewer should have a ring buffer with the last N events. always captures
+  even when dialog is not switched on. We don't know when we want to see events
+  up front.
+- error events should be marked with an error so we can see them quickly.
+
+*** Non-classified observations                                    :analysis:
+
+next, can you explain the difference in window types between the main currency
+dialog and say currency history and currency details. we switched of minimise
+button on the currency history and currency details and that worked fine. we
+tried switching it off on the main currency window twice and that never seems to
+work. can we make all windows the same type? same as currency history / currency
+details.
+
+
+log telemetry still in code, need to remove it. we moved it to ores.log but
+seems like we created a backwards compatibility hack.
+
+
+generate button should only exist in new, not edit.
+
+no save button in currency list, need for generation
+
+would be nice to be able to "locally modify" entity and then press save for the
+batch.
+
+server should peridically house keep sessions. if not connected, just mark it as
+orphan. also when connection is dropped mark session as finished.
+
+the show latest version dialog should have < > etc buttons to allow one to go
+back and forwards in version space.
+
+shouldn't revert to version be a server side operation? e.g. current version,
+target version.
+
+in the history diff, add a "from version" combo which shows either latest or
+previous.
+
+*** Amend and delete reasons                                          :code:
+
+All entities need a reason for amends and deletes, and they should also support
+comments.
+
+Reasons for currencies, countries:
+
+- Front Office Error
+- Operations Error
+- Dummy Amend (we need a button for dummy amend and maybe a better name)
+- Duplicate (delete only)
+
+We need some kind of grouping for the reasons:
+
+- static data group
+- trade related
+- market data
+
+And the reason should say if its amend and/or delete.
+
+*** Accounts need to have a human or robot field                       :code:
+
+Look for correct terminology (actor type?).
+
+*** Add a flag for human readable time                                 :code:
+
+We should be able to use regular timestamps or human readable time.
 
 *** Currencies should have tags                                        :code:
 

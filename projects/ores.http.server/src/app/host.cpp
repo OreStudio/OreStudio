@@ -23,6 +23,7 @@
 #include <boost/exception/diagnostic_information.hpp>
 #include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/version/version.hpp"
 #include "ores.http.server/app/application.hpp"
 #include "ores.http.server/config/parser.hpp"
 
@@ -60,7 +61,8 @@ host::execute(const std::vector<std::string>& args, std::ostream& std_output,
     /*
      * Log the configuration and command line arguments.
      */
-    BOOST_LOG_SEV(lg(), info) << "ORES HTTP Server starting...";
+    BOOST_LOG_SEV(lg(), info) << "ORES HTTP Server v" << ORES_VERSION
+                              << " starting (" << ORES_BUILD_INFO << ")...";
     BOOST_LOG_SEV(lg(), info) << "Command line arguments: " << args;
     BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
 

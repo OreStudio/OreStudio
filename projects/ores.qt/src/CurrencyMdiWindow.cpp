@@ -20,6 +20,7 @@
 #include "ores.qt/CurrencyMdiWindow.hpp"
 
 #include <vector>
+#include "ores.qt/ImageCache.hpp"
 #include <filesystem>
 #include <QtCore/QVariant>
 #include <QtCore/QTimer>
@@ -310,6 +311,7 @@ void CurrencyMdiWindow::reload() {
     }
     emit statusChanged("Reloading currencies...");
     clearStaleIndicator();
+
     currencyModel_->refresh();
 }
 

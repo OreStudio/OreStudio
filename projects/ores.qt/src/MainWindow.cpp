@@ -44,6 +44,7 @@
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
 #include "ores.qt/CurrencyController.hpp"
+#include "ores.qt/CountryController.hpp"
 #include "ores.qt/AccountController.hpp"
 #include "ores.qt/RoleController.hpp"
 #include "ores.qt/FeatureFlagController.hpp"
@@ -109,6 +110,8 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_plug_disconnected_20_regular.svg", iconColor));
     ui_->CurrenciesAction->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
+    ui_->CountriesAction->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_globe_20_regular.svg", iconColor));
     ui_->ActionAbout->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_star_20_regular.svg", iconColor));
     ui_->ActionAccounts->setIcon(IconUtils::createRecoloredIcon(
@@ -260,6 +263,12 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->CurrenciesAction, &QAction::triggered, this, [this]() {
         if (currencyController_)
             currencyController_->showListWindow();
+    });
+
+    // Connect Countries action to controller
+    connect(ui_->CountriesAction, &QAction::triggered, this, [this]() {
+        if (countryController_)
+            countryController_->showListWindow();
     });
 
     // Connect Accounts action to controller (admin only)
@@ -464,6 +473,9 @@ void MainWindow::onLoginTriggered() {
         if (currencyController_) {
             currencyController_->setUsername(QString::fromStdString(username_));
         }
+        if (countryController_) {
+            countryController_->setUsername(QString::fromStdString(username_));
+        }
         if (accountController_) {
             accountController_->setUsername(QString::fromStdString(username_));
         }
@@ -489,6 +501,7 @@ void MainWindow::updateMenuState() {
 
     // Enable/disable menu actions based on connection state
     ui_->CurrenciesAction->setEnabled(isConnected);
+    ui_->CountriesAction->setEnabled(isConnected);
 
     // Enable/disable connect and disconnect actions
     ui_->ActionConnect->setEnabled(!isConnected);
@@ -535,6 +548,21 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
     connect(currencyController_.get(), &CurrencyController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create country controller
+    countryController_ = std::make_unique<CountryController>(
+        this, mdiArea_, clientManager_, imageCache_,
+        QString::fromStdString(username_), allDetachableWindows_, this);
+
+    // Connect country controller signals to status bar
+    connect(countryController_.get(), &CountryController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(countryController_.get(), &CountryController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });

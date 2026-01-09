@@ -21,6 +21,8 @@
 #include "ores.comms.shell/app/application.hpp"
 
 #include <iostream>
+#include "ores.utility/version/version.hpp"
+#include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
@@ -132,7 +134,10 @@ void check_bootstrap_status(client_session& session, std::ostream& out) {
 } // anonymous namespace
 
 void application::run() {
-    BOOST_LOG_SEV(lg(), info) << "Starting client REPL";
+    BOOST_LOG_SEV(lg(), info) << utility::version::format_startup_message(
+        "ORE Studio Shell",
+        comms::messaging::PROTOCOL_VERSION_MAJOR,
+        comms::messaging::PROTOCOL_VERSION_MINOR);
     if (telemetry_ctx_) {
         BOOST_LOG_SEV(lg(), debug)
             << "Telemetry context active - trace_id: "

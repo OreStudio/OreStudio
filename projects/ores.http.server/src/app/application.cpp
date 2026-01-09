@@ -39,6 +39,7 @@
 #include "ores.eventing/service/postgres_event_source.hpp"
 #include "ores.eventing/service/registrar.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
+#include "ores.utility/version/version.hpp"
 
 namespace ores::http_server::app {
 
@@ -48,7 +49,8 @@ namespace asio = boost::asio;
 boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     const config::options& cfg) {
 
-    BOOST_LOG_SEV(lg(), info) << "Starting HTTP server application...";
+    BOOST_LOG_SEV(lg(), info) << utility::version::format_startup_message(
+        "ORE Studio HTTP Server");
     BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
 
     // Initialize database context

@@ -14,7 +14,7 @@ To regenerate: =cmake --build --preset linux-clang-debug --target generate_proto
 
 * Protocol Version
 
-Current version: *12.0*
+Current version: *20.1*
 
 ** Version History
 
@@ -24,6 +24,11 @@ Current version: *12.0*
 - Version 7.1 adds subscription protocol messages (subscribe_request,
 - subscribe_response, unsubscribe_request, unsubscribe_response, notification)
 - for server-push event notifications.
+- Version 7.2 changes logout_request to have empty payload. Account ID is now
+- determined from session context to prevent clients from forging logout
+- requests for other users.
+- Version 7.3 adds database_status_notification message for server-push
+- database health status updates, and database_unavailable error code.
 - Version 8.0 removes requester_account_id from lock_account_request and
 - unlock_account_request. Authorization is now handled via server-side session
 - tracking instead of client-provided identity. This is a breaking change.
@@ -44,17 +49,71 @@ Current version: *12.0*
 - for admin-initiated password reset. Adds password_reset_required field to
 - login_response and list_login_info_response. This is a breaking change as
 - existing serialization formats are extended with new fields.
+- Version 13.0 adds role-based access control (RBAC) with full authorization
+- system. New domain types: permission, role, account_role, role_permission.
+- New RBAC messages: list_roles_request/response, list_permissions_request/response,
+- assign_role_request/response, revoke_role_request/response,
+- get_account_roles_request/response, get_account_permissions_request/response.
+- Adds authorization checks to all protected endpoints. This is a breaking change
+- as it introduces mandatory RBAC enforcement for administrative operations.
+- Version 13.1 adds user self-registration (signup) workflow. New messages:
+- signup_request/response for creating accounts without admin privileges.
+- New error codes: signup_disabled, username_taken, email_taken,
+- signup_requires_authorization. Signup is controlled by system.user_signups
+- feature flag.
+- Version 14.0 adds assets subsystem for dynamic image loading. New messages:
+- get_currency_images_request/response for retrieving currency-image mappings,
+- get_images_request/response for batched image retrieval (max 100 per request).
+- This enables the UI to display flag icons for currencies.
+- Version 15.0 adds session tracking and statistics. New messages:
+- list_sessions_request/response for querying session history by account,
+- get_session_statistics_request/response for aggregated session metrics.
+- Sessions now track bytes sent/received, client version, and geolocation.
+- Session data is stored in a TimescaleDB hypertable for time-series analysis.
+- Version 15.1 adds telemetry subsystem for log record streaming. New messages:
+- submit_log_records_request for fire-and-forget batched log record submission.
+- Clients can stream telemetry data to the server for centralized storage and
+- analysis. Controlled by telemetry.streaming.enabled feature flag.
+- Version 16.0 adds entity_ids field to notification_message. This allows
+- clients to identify which specific entities changed (e.g., currency ISO codes
+- or account IDs) rather than just knowing that some entity of a type changed.
+- This is a breaking change as the wire format for notifications is extended.
+- Version 16.1 adds list_images_request/response to list all available flag images,
+- and set_currency_image_request/response to assign or remove flags from currencies.
+- Version 16.2 adds server-side telemetry persistence. New messages:
+- submit_telemetry_response (0x5001) for acknowledging batch submissions.
+- get_telemetry_logs_request/response (0x5010/0x5011) for querying raw logs.
+- get_telemetry_stats_request/response (0x5020/0x5021) for querying aggregated stats.
+- Telemetry logs are stored in a TimescaleDB hypertable with 30-day retention.
+- Version 17.0 removes obsolete currency_image junction table messages. The
+- image_id field is now directly on the currency entity, so currency->image
+- mappings come from get_currencies_response. Flag changes appear in currency
+- version history. Removed messages: get_currency_images_request/response,
+- set_currency_image_request/response. Breaking change.
+- Version 18.0 uses 32-bit length prefix for svg_data in get_images_response.
+- Previously used 16-bit length which truncated SVGs larger than 65535 bytes.
+- This is a breaking change affecting image serialization.
+- Version 19.0 adds recorded_at field to list_feature_flags_response.
+- Previously the timestamp was not serialized. Breaking change.
+- Version 20.0 adds version field to list_feature_flags_response.
+- Breaking change.
+- Version 20.1 adds countries subsystem messages for CRUD operations on
+- ISO 3166-1 country reference data. New messages: get_countries_request/response,
+- save_country_request/response, delete_country_request/response,
+- get_country_history_request/response.
 
 * Subsystems
 
 The protocol is organized into subsystems, each with its own message range:
 
-| Subsystem   | Range         | Component        | Messages |
-|-------------+---------------+------------------+----------|
-| [[id:B1A2C3D4-E5F6-7890-ABCD-EF1234567890][Core]]        | 0x0000-0x0FFF | ores.comms       |       12 |
-| [[id:C2B3D4E5-F6A7-8901-BCDE-F12345678901][Risk]]        | 0x1000-0x1FFF | ores.risk        |        8 |
-| [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][IAM]]    | 0x2000-0x2FFF | ores.iam    |       28 |
-| [[id:E4D5F6A7-B8C9-0123-DEFA-234567890123][Variability]] | 0x3000-0x3FFF | ores.variability |        2 |
+| Subsystem | Range | Component | Messages |
+|-----------+-------+-----------+----------|
+| [[id:B1A2C3D4-E5F6-7890-ABCD-EF1234567890][Core]] | 0x0000-0x0FFF | ores.comms | 12 |
+| [[id:C2B3D4E5-F6A7-8901-BCDE-F12345678901][Risk]] | 0x1000-0x1FFF | ores.risk | 16 |
+| [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][Accounts]] | 0x2000-0x2FFF | ores.accounts | 52 |
+| [[id:E4D5F6A7-B8C9-0123-DEFA-234567890123][Variability]] | 0x3000-0x3FFF | ores.variability | 6 |
+| [[id:F5E6A7B8-C9D0-1234-EFAB-345678901234][Assets]] | 0x4000-0x4FFF | ores.assets | 4 |
+| [[id:A6B7C8D9-E0F1-2345-ABCD-456789012345][Telemetry]] | 0x5000-0x5FFF | ores.telemetry | 6 |
 
 * Session Lifecycle
 
@@ -117,6 +176,16 @@ Admin-only operations (lock/unlock account) use server-side session tracking:
 | 0x000E | bootstrap_mode_forbidden |
 | 0x000F | weak_password |
 | 0x0010 | not_localhost |
+| 0x0011 | database_unavailable |
+| 0x0012 | decompression_failed |
+| 0x0013 | unsupported_compression |
+| 0x0014 | compression_failed |
+| 0x0015 | signup_disabled |
+| 0x0016 | username_taken |
+| 0x0017 | email_taken |
+| 0x0018 | signup_requires_authorization |
+| 0x0019 | payload_incomplete |
+| 0x001A | limit_exceeded |
 
 * All Messages Quick Reference
 
@@ -142,35 +211,79 @@ Admin-only operations (lock/unlock account) use server-side session tracking:
 | 0x1006 | delete_currency_response | Risk |
 | 0x1007 | get_currency_history_request | Risk |
 | 0x1008 | get_currency_history_response | Risk |
-| 0x2001 | create_account_request | IAM |
-| 0x2002 | create_account_response | IAM |
-| 0x2003 | list_accounts_request | IAM |
-| 0x2004 | list_accounts_response | IAM |
-| 0x2005 | login_request | IAM |
-| 0x2006 | login_response | IAM |
-| 0x2007 | unlock_account_request | IAM |
-| 0x2008 | unlock_account_response | IAM |
-| 0x2009 | delete_account_request | IAM |
-| 0x200A | delete_account_response | IAM |
-| 0x200B | list_login_info_request | IAM |
-| 0x200C | list_login_info_response | IAM |
-| 0x200D | logout_request | IAM |
-| 0x200E | logout_response | IAM |
-| 0x200F | create_initial_admin_request | IAM |
-| 0x2010 | create_initial_admin_response | IAM |
-| 0x2011 | bootstrap_status_request | IAM |
-| 0x2012 | bootstrap_status_response | IAM |
-| 0x2013 | lock_account_request | IAM |
-| 0x2014 | lock_account_response | IAM |
-| 0x2015 | update_account_request | IAM |
-| 0x2016 | update_account_response | IAM |
-| 0x2017 | get_account_history_request | IAM |
-| 0x2018 | get_account_history_response | IAM |
-| 0x2019 | reset_password_request | IAM |
-| 0x201A | reset_password_response | IAM |
-| 0x201B | change_password_request | IAM |
-| 0x201C | change_password_response | IAM |
-| 0x201D | update_my_email_request | IAM |
-| 0x201E | update_my_email_response | IAM |
+| 0x1009 | get_countries_request | Risk |
+| 0x100A | get_countries_response | Risk |
+| 0x100B | save_country_request | Risk |
+| 0x100C | save_country_response | Risk |
+| 0x100D | delete_country_request | Risk |
+| 0x100E | delete_country_response | Risk |
+| 0x100F | get_country_history_request | Risk |
+| 0x1010 | get_country_history_response | Risk |
+| 0x2001 | create_account_request | Accounts |
+| 0x2002 | create_account_response | Accounts |
+| 0x2003 | list_accounts_request | Accounts |
+| 0x2004 | list_accounts_response | Accounts |
+| 0x2005 | login_request | Accounts |
+| 0x2006 | login_response | Accounts |
+| 0x2007 | unlock_account_request | Accounts |
+| 0x2008 | unlock_account_response | Accounts |
+| 0x2009 | delete_account_request | Accounts |
+| 0x200A | delete_account_response | Accounts |
+| 0x200B | list_login_info_request | Accounts |
+| 0x200C | list_login_info_response | Accounts |
+| 0x200D | logout_request | Accounts |
+| 0x200E | logout_response | Accounts |
+| 0x200F | create_initial_admin_request | Accounts |
+| 0x2010 | create_initial_admin_response | Accounts |
+| 0x2011 | bootstrap_status_request | Accounts |
+| 0x2012 | bootstrap_status_response | Accounts |
+| 0x2013 | lock_account_request | Accounts |
+| 0x2014 | lock_account_response | Accounts |
+| 0x2015 | update_account_request | Accounts |
+| 0x2016 | update_account_response | Accounts |
+| 0x2017 | get_account_history_request | Accounts |
+| 0x2018 | get_account_history_response | Accounts |
+| 0x2019 | reset_password_request | Accounts |
+| 0x201A | reset_password_response | Accounts |
+| 0x201B | change_password_request | Accounts |
+| 0x201C | change_password_response | Accounts |
+| 0x201D | update_my_email_request | Accounts |
+| 0x201E | update_my_email_response | Accounts |
+| 0x2020 | list_roles_request | Accounts |
+| 0x2021 | list_roles_response | Accounts |
+| 0x2022 | list_permissions_request | Accounts |
+| 0x2023 | list_permissions_response | Accounts |
+| 0x2024 | assign_role_request | Accounts |
+| 0x2025 | assign_role_response | Accounts |
+| 0x2026 | revoke_role_request | Accounts |
+| 0x2027 | revoke_role_response | Accounts |
+| 0x2028 | get_account_roles_request | Accounts |
+| 0x2029 | get_account_roles_response | Accounts |
+| 0x202A | get_account_permissions_request | Accounts |
+| 0x202B | get_account_permissions_response | Accounts |
+| 0x202C | get_role_request | Accounts |
+| 0x202D | get_role_response | Accounts |
+| 0x2030 | signup_request | Accounts |
+| 0x2031 | signup_response | Accounts |
+| 0x2040 | list_sessions_request | Accounts |
+| 0x2041 | list_sessions_response | Accounts |
+| 0x2042 | get_session_statistics_request | Accounts |
+| 0x2043 | get_session_statistics_response | Accounts |
+| 0x2044 | get_active_sessions_request | Accounts |
+| 0x2045 | get_active_sessions_response | Accounts |
 | 0x3000 | list_feature_flags_request | Variability |
 | 0x3001 | list_feature_flags_response | Variability |
+| 0x3002 | save_feature_flag_request | Variability |
+| 0x3003 | save_feature_flag_response | Variability |
+| 0x3004 | delete_feature_flag_request | Variability |
+| 0x3005 | delete_feature_flag_response | Variability |
+| 0x4002 | get_images_request | Assets |
+| 0x4003 | get_images_response | Assets |
+| 0x4004 | list_images_request | Assets |
+| 0x4005 | list_images_response | Assets |
+| 0x5000 | submit_log_records_request | Telemetry |
+| 0x5001 | submit_telemetry_response | Telemetry |
+| 0x5010 | get_telemetry_logs_request | Telemetry |
+| 0x5011 | get_telemetry_logs_response | Telemetry |
+| 0x5020 | get_telemetry_stats_request | Telemetry |
+| 0x5021 | get_telemetry_stats_response | Telemetry |

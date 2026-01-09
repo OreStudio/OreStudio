@@ -22,5 +22,6 @@
 
 #include "ores.risk/messaging/currency_protocol.hpp"
 #include "ores.risk/messaging/currency_history_protocol.hpp"
+#include "ores.risk/messaging/country_protocol.hpp"
 
 #endif

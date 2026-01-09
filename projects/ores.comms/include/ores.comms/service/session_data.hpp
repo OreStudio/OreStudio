@@ -128,6 +128,14 @@ struct session_data final {
     session_protocol protocol = session_protocol::binary;
 
     /**
+     * @brief Username of the account that owns this session.
+     *
+     * Cached here for efficient access without needing to look up the account.
+     * Set during login and immutable for the session lifetime.
+     */
+    std::string username;
+
+    /**
      * @brief Checks if the session is still active.
      */
     [[nodiscard]] bool is_active() const {

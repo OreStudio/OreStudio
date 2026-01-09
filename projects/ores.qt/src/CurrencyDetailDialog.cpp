@@ -34,6 +34,8 @@
 #include <QMetaObject>
 #include <QGroupBox>
 #include <QTimer>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ui_CurrencyDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -221,7 +223,20 @@ CurrencyDetailDialog::~CurrencyDetailDialog() {
 void CurrencyDetailDialog::setCurrency(const risk::domain::currency& currency) {
     currentCurrency_ = currency;
     isAddMode_ = currency.iso_code.empty();
-    pendingImageId_.clear();  // Clear any pending flag selection
+
+    if (currency.image_id) {
+        pendingImageId_ = QString::fromStdString(
+            boost::uuids::to_string(*currency.image_id));
+    } else if (imageCache_) {
+        std::string noFlagId = imageCache_->getNoFlagImageId();
+        if (!noFlagId.empty()) {
+            pendingImageId_ = QString::fromStdString(noFlagId);
+        } else {
+            pendingImageId_.clear();
+        }
+    } else {
+        pendingImageId_.clear();
+    }
 
     ui_->isoCodeEdit->setReadOnly(!isAddMode_);
     ui_->isoCodeEdit->setText(QString::fromStdString(currency.iso_code));
@@ -259,6 +274,11 @@ risk::domain::currency CurrencyDetailDialog::getCurrency() const {
     currency.format = ui_->formatEdit->text().toStdString();
     currency.currency_type = ui_->currencyTypeEdit->text().toStdString();
     currency.recorded_by = username_.empty() ? "qt_user" : username_;
+
+    if (!pendingImageId_.isEmpty()) {
+        boost::uuids::string_generator gen;
+        currency.image_id = gen(pendingImageId_.toStdString());
+    }
 
     return currency;
 }
@@ -357,58 +377,29 @@ void CurrencyDetailDialog::onSaveClicked() {
             emit self->statusMessage(QString("Successfully saved currency: %1")
                 .arg(QString::fromStdString(currency.iso_code)));
 
-            // Persist flag image - use pending selection or default to "no-flag"
-            if (self->imageCache_) {
-                std::string currentImageId =
-                    self->imageCache_->getCurrencyImageId(currency.iso_code);
-                std::string targetImageId;
-
-                if (!self->pendingImageId_.isNull()) {
-                    // User explicitly selected a flag
-                    targetImageId = self->pendingImageId_.toStdString();
-                } else if (currentImageId.empty()) {
-                    // No flag selected and none currently assigned - use "no-flag"
-                    targetImageId = self->imageCache_->getNoFlagImageId();
-                }
-
-                // Only persist if there's a change to make
-                if (!targetImageId.empty() && currentImageId != targetImageId) {
-                    BOOST_LOG_SEV(lg(), debug) << "Persisting flag for "
-                                               << currency.iso_code << ": "
-                                               << targetImageId;
-                    self->imageCache_->setCurrencyImage(
-                        currency.iso_code,
-                        targetImageId,
-                        self->username_.empty() ? "qt_user" : self->username_);
-                }
-                self->pendingImageId_.clear();
-            }
+            self->pendingImageId_.clear();
 
             self->isDirty_ = false;
             self->flagChanged_ = false;
             emit self->isDirtyChanged(false);
             self->updateSaveResetButtonState();
 
-            // Close window after successful creation of new currency
             if (self->isAddMode_) {
                 emit self->currencyCreated(
                     QString::fromStdString(currency.iso_code));
-
-                // Find the parent QMdiSubWindow and close it asynchronously
-                // to avoid race conditions with signal processing
-                QWidget* parent = self->parentWidget();
-                while (parent) {
-                    if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
-                        QMetaObject::invokeMethod(mdiSubWindow, "close",
-                            Qt::QueuedConnection);
-                        break;
-                    }
-                    parent = parent->parentWidget();
-                }
             } else {
-                self->currentCurrency_ = currency; // Update with modified currency
                 emit self->currencyUpdated(
                     QString::fromStdString(currency.iso_code));
+            }
+
+            QWidget* parent = self->parentWidget();
+            while (parent) {
+                if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
+                    QMetaObject::invokeMethod(mdiSubWindow, "close",
+                        Qt::QueuedConnection);
+                    break;
+                }
+                parent = parent->parentWidget();
             }
         } else {
             BOOST_LOG_SEV(lg(), error) << "Currency save failed: " << message;
@@ -641,9 +632,11 @@ void CurrencyDetailDialog::onSelectFlagClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Opening flag selector for: "
                                << currentCurrency_.iso_code;
 
-    // Get current image ID - use pending if set, otherwise from cache
+    // Get current image ID - use pending if set, otherwise from the currency
     QString currentImageId = pendingImageId_.isEmpty()
-        ? QString::fromStdString(imageCache_->getCurrencyImageId(currentCurrency_.iso_code))
+        ? (currentCurrency_.image_id
+            ? QString::fromStdString(boost::uuids::to_string(*currentCurrency_.image_id))
+            : QString())
         : pendingImageId_;
 
     FlagSelectorDialog dialog(imageCache_, currentImageId, this);
@@ -722,22 +715,15 @@ void CurrencyDetailDialog::updateFlagDisplay() {
     if (flagChanged_) {
         // If changed, show pending ID (even if empty - meaning cleared)
         imageIdToShow = pendingImageId_;
-    } else {
-        // If not changed, show saved mapping
+    } else if (currentCurrency_.image_id) {
+        // Get image_id from the currency domain object
         imageIdToShow = QString::fromStdString(
-            imageCache_->getCurrencyImageId(currentCurrency_.iso_code));
+            boost::uuids::to_string(*currentCurrency_.image_id));
     }
 
     // If we have an ID, try to get the icon
     if (!imageIdToShow.isEmpty()) {
-        // First try the preview cache (used by flag selector)
-        QIcon icon = imageCache_->getImageIcon(imageIdToShow.toStdString());
-
-        // If not in preview cache, try the currency icon cache (populated after setCurrencyImage)
-        if (icon.isNull() && !flagChanged_) {
-            icon = imageCache_->getCurrencyIcon(currentCurrency_.iso_code);
-        }
-
+        QIcon icon = imageCache_->getIcon(imageIdToShow.toStdString());
         if (!icon.isNull()) {
             flagButton_->setIcon(icon);
             return;

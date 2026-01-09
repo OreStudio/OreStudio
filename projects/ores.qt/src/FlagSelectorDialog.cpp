@@ -183,6 +183,7 @@ void FlagSelectorDialog::filterList(const QString& filter) {
 
 void FlagSelectorDialog::loadVisibleIcons() {
     // Load icons for the first few visible items
+    // getIcon() triggers on-demand loading if not cached
     int loaded = 0;
     for (int i = 0; i < listWidget_->count() && loaded < 20; ++i) {
         auto* item = listWidget_->item(i);
@@ -190,12 +191,9 @@ void FlagSelectorDialog::loadVisibleIcons() {
             continue;
 
         QString image_id = item->data(Qt::UserRole).toString();
-        QIcon icon = imageCache_->getImageIcon(image_id.toStdString());
+        QIcon icon = imageCache_->getIcon(image_id.toStdString());
 
-        if (icon.isNull()) {
-            // Request loading
-            imageCache_->loadImageById(image_id.toStdString());
-        } else {
+        if (!icon.isNull()) {
             item->setIcon(icon);
         }
         ++loaded;
@@ -207,7 +205,7 @@ void FlagSelectorDialog::onImageLoaded(const QString& image_id) {
     for (int i = 0; i < listWidget_->count(); ++i) {
         auto* item = listWidget_->item(i);
         if (item->data(Qt::UserRole).toString() == image_id) {
-            QIcon icon = imageCache_->getImageIcon(image_id.toStdString());
+            QIcon icon = imageCache_->getIcon(image_id.toStdString());
             if (!icon.isNull()) {
                 item->setIcon(icon);
             }
@@ -219,7 +217,7 @@ void FlagSelectorDialog::onImageLoaded(const QString& image_id) {
     auto selected = listWidget_->selectedItems();
     if (!selected.isEmpty() &&
         selected.first()->data(Qt::UserRole).toString() == image_id) {
-        QIcon icon = imageCache_->getImageIcon(image_id.toStdString());
+        QIcon icon = imageCache_->getIcon(image_id.toStdString());
         if (!icon.isNull()) {
             previewLabel_->setPixmap(icon.pixmap(64, 64));
         }
@@ -233,7 +231,7 @@ void FlagSelectorDialog::onAllImagesLoaded() {
     for (int i = 0; i < listWidget_->count(); ++i) {
         auto* item = listWidget_->item(i);
         QString image_id = item->data(Qt::UserRole).toString();
-        QIcon icon = imageCache_->getImageIcon(image_id.toStdString());
+        QIcon icon = imageCache_->getIcon(image_id.toStdString());
         if (!icon.isNull()) {
             item->setIcon(icon);
         }
@@ -243,7 +241,7 @@ void FlagSelectorDialog::onAllImagesLoaded() {
     auto selected = listWidget_->selectedItems();
     if (!selected.isEmpty()) {
         QString image_id = selected.first()->data(Qt::UserRole).toString();
-        QIcon icon = imageCache_->getImageIcon(image_id.toStdString());
+        QIcon icon = imageCache_->getIcon(image_id.toStdString());
         if (!icon.isNull()) {
             previewLabel_->setPixmap(icon.pixmap(64, 64));
         }
@@ -268,11 +266,10 @@ void FlagSelectorDialog::onItemSelectionChanged() {
     QString image_id = item->data(Qt::UserRole).toString();
     QString description = item->data(Qt::UserRole + 1).toString();
 
-    // Update preview
-    QIcon icon = imageCache_->getImageIcon(image_id.toStdString());
+    // Update preview - getIcon() triggers on-demand loading if not cached
+    QIcon icon = imageCache_->getIcon(image_id.toStdString());
     if (icon.isNull()) {
         previewLabel_->setText(tr("Loading..."));
-        imageCache_->loadImageById(image_id.toStdString());
     } else {
         previewLabel_->setPixmap(icon.pixmap(64, 64));
     }

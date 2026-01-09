@@ -39,8 +39,6 @@ inline static std::string_view logger_name = "ores.qt.main";
 
 using namespace ores::telemetry::log;
 
-const std::string product_version("Qt UI for ORE Studio v" ORES_VERSION);
-
 } // namespace
 
 int main(int argc, char *argv[]) {
@@ -55,7 +53,10 @@ int main(int argc, char *argv[]) {
 
     auto lg(make_logger(logger_name));
 
-    BOOST_LOG_SEV(lg, info) << "Started Qt UI " << product_version;
+    BOOST_LOG_SEV(lg, info) << ores::utility::version::format_startup_message(
+        "ORE Studio Qt",
+        ores::comms::messaging::PROTOCOL_VERSION_MAJOR,
+        ores::comms::messaging::PROTOCOL_VERSION_MINOR);
 
     // Set Fusion style for consistent cross-platform appearance.
     // This is especially important for WSL where Qt may detect a different
@@ -80,7 +81,7 @@ int main(int argc, char *argv[]) {
 
     // Start progress bar animation
     const int splashDuration = 2000; // in milliseconds
-    QString buildInfo = QString("v%1 Build %2 Protocol %3.%4")
+    QString buildInfo = QString("v%1 %2 Protocol %3.%4")
                             .arg(ORES_VERSION)
                             .arg(ORES_BUILD_INFO)
                             .arg(ores::comms::messaging::PROTOCOL_VERSION_MAJOR)

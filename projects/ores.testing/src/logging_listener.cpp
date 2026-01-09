@@ -30,9 +30,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.logging/logging_options.hpp"
+#include "ores.platform/environment/environment.hpp"
 
 using namespace ores::logging;
 using telemetry_lifecycle_manager = ores::telemetry::log::lifecycle_manager;
+using env = ores::platform::environment::environment;
 
 namespace {
 
@@ -49,6 +51,33 @@ inline std::string_view component_name = "catch2";
 
 // Global variable to store the test module name, set from main function
 std::string test_module_name = "ores.tests"; // default fallback
+
+/**
+ * @brief Returns true if test logging is enabled via environment variable.
+ *
+ * Controlled by ORES_TEST_LOG_ENABLED. Defaults to false (disabled).
+ */
+bool is_logging_enabled() {
+    return env::get_value_or_default("ORES_TEST_LOG_ENABLED", "false") == "true";
+}
+
+/**
+ * @brief Returns the log severity level from environment variable.
+ *
+ * Controlled by ORES_TEST_LOG_LEVEL. Defaults to "trace".
+ */
+std::string get_log_level() {
+    return env::get_value_or_default("ORES_TEST_LOG_LEVEL", "trace");
+}
+
+/**
+ * @brief Returns true if console output is enabled via environment variable.
+ *
+ * Controlled by ORES_TEST_LOG_CONSOLE. Defaults to false.
+ */
+bool is_console_output_enabled() {
+    return env::get_value_or_default("ORES_TEST_LOG_CONSOLE", "false") == "true";
+}
 
 /**
  * @brief Returns the logger for the current test case.
@@ -96,6 +125,13 @@ void logging_listener::set_test_module_name(const std::string& module_name) {
 }
 
 void logging_listener::testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/) {
+    // When logging is disabled, create lifecycle_manager with nullopt to
+    // globally disable all Boost.Log output via core.set_logging_enabled(false)
+    if (!is_logging_enabled()) {
+        lifecycle_manager_ = std::make_shared<telemetry_lifecycle_manager>(std::nullopt);
+        return;
+    }
+
     const std::string module = extract_module_name();
 
     // Build logging options for test suite level logging
@@ -104,8 +140,8 @@ void logging_listener::testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/
     logging_options cfg;
     cfg.output_directory = log_dir;
     cfg.filename = module;
-    cfg.severity = "trace";
-    cfg.output_to_console = false;
+    cfg.severity = get_log_level();
+    cfg.output_to_console = is_console_output_enabled();
     cfg.tag = "TestSuite";
 
     // Initialize logging lifecycle manager with options
@@ -119,6 +155,10 @@ void logging_listener::testRunEnded(Catch::TestRunStats const& testRunStats) {
 }
 
 void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
+    // Skip setup when logging is globally disabled
+    if (!is_logging_enabled())
+        return;
+
     const std::string module = extract_module_name();
     const std::string suite = extract_suite_name(testInfo);
     const std::string test_name = testInfo.name;
@@ -128,8 +168,8 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
     logging_options cfg;
     cfg.output_directory = log_dir;
     cfg.filename = test_name;
-    cfg.severity = "trace";
-    cfg.output_to_console = false;
+    cfg.severity = get_log_level();
+    cfg.output_to_console = is_console_output_enabled();
 
     // Initialize logging lifecycle manager with options
     current_test_context.lifecycle_mgr =

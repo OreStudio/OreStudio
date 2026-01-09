@@ -27,9 +27,22 @@
 #define ORES_VERSION_MINOR 0
 #define ORES_VERSION_PATCH 8
 #define ORES_VERSION "0.0.8"
-#define ORES_BUILD_INFO "local 3c1007ca-dirty 2026/01/08 22:46:21"
+#define ORES_BUILD_INFO "local d70ecd1b-dirty 2026/01/08 22:52:05"
 
 namespace ores::utility::version {
+
+/**
+ * @brief Formats a startup message with version and build info.
+ *
+ * @param service_name Name of the service (e.g., "ORE Studio Web")
+ * @return Formatted startup string
+ */
+inline std::string format_startup_message(const std::string& service_name) {
+    std::ostringstream ss;
+    ss << "Starting " << service_name << " v" << ORES_VERSION
+       << " (" << ORES_BUILD_INFO << ")";
+    return ss.str();
+}
 
 /**
  * @brief Formats a startup message with version, protocol, and build info.

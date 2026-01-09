@@ -399,7 +399,7 @@ void FeatureFlagMdiWindow::deleteSelected() {
 }
 
 QSize FeatureFlagMdiWindow::sizeHint() const {
-    const int minimumWidth = 700;
+    const int minimumWidth = 850;
     const int minimumHeight = 400;
 
     QSize baseSize = QWidget::sizeHint();

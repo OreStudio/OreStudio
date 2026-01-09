@@ -28,85 +28,91 @@ PaginationWidget::PaginationWidget(QWidget* parent)
     : QWidget(parent),
       info_label_(new QLabel(this)),
       page_size_combo_(new QComboBox(this)),
-      first_button_(new QPushButton(this)),
-      prev_button_(new QPushButton(this)),
-      next_button_(new QPushButton(this)),
-      last_button_(new QPushButton(this)),
-      load_all_button_(new QPushButton("Load All", this)),
+      first_action_(nullptr),
+      prev_action_(nullptr),
+      next_action_(nullptr),
+      last_action_(nullptr),
+      load_all_action_(nullptr),
+      nav_toolbar_(new QToolBar(this)),
       layout_(new QHBoxLayout(this)) {
 
     // Configure info label
-    info_label_->setText("Showing 0 of 0 records");
+    info_label_->setText("No records");
 
-    // Configure page size combo box
-    page_size_combo_->addItem("25 per page", 25);
-    page_size_combo_->addItem("50 per page", 50);
-    page_size_combo_->addItem("100 per page", 100);
-    page_size_combo_->addItem("200 per page", 200);
-    page_size_combo_->addItem("500 per page", 500);
+    // Configure page size combo box - just show the number
+    page_size_combo_->addItem("25", 25);
+    page_size_combo_->addItem("50", 50);
+    page_size_combo_->addItem("100", 100);
+    page_size_combo_->addItem("200", 200);
+    page_size_combo_->addItem("500", 500);
     page_size_combo_->setCurrentIndex(2); // Default to 100
 
-    // Configure navigation buttons with icons
+    // Create navigation toolbar - styling from QSS (icon size, text under icon, font)
+    nav_toolbar_->setMovable(false);
+    nav_toolbar_->setFloatable(false);
+
+    // Configure navigation actions - use addAction() so toolbar style applies
     const QColor iconColor(220, 220, 220);
 
-    first_button_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_previous_20_regular.svg", iconColor));
-    first_button_->setToolTip("First page");
+    auto* firstAction = nav_toolbar_->addAction(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_previous_20_regular.svg", iconColor),
+        "First");
+    firstAction->setToolTip("First page");
+    firstAction->setEnabled(false);
+    connect(firstAction, &QAction::triggered, this, &PaginationWidget::on_first_clicked);
 
-    prev_button_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_left_20_regular.svg", iconColor));
-    prev_button_->setToolTip("Previous page");
+    auto* prevAction = nav_toolbar_->addAction(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_left_20_regular.svg", iconColor),
+        "Previous");
+    prevAction->setToolTip("Previous page");
+    prevAction->setEnabled(false);
+    connect(prevAction, &QAction::triggered, this, &PaginationWidget::on_prev_clicked);
 
-    next_button_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_right_20_regular.svg", iconColor));
-    next_button_->setToolTip("Next page");
+    auto* nextAction = nav_toolbar_->addAction(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_right_20_regular.svg", iconColor),
+        "Next");
+    nextAction->setToolTip("Next page");
+    nextAction->setEnabled(false);
+    connect(nextAction, &QAction::triggered, this, &PaginationWidget::on_next_clicked);
 
-    last_button_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_next_20_regular.svg", iconColor));
-    last_button_->setToolTip("Last page");
+    auto* lastAction = nav_toolbar_->addAction(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_next_20_regular.svg", iconColor),
+        "Last");
+    lastAction->setToolTip("Last page");
+    lastAction->setEnabled(false);
+    connect(lastAction, &QAction::triggered, this, &PaginationWidget::on_last_clicked);
 
-    // Initially disabled until we know how many pages there are
-    first_button_->setEnabled(false);
-    prev_button_->setEnabled(false);
-    next_button_->setEnabled(false);
-    last_button_->setEnabled(false);
+    auto* loadAllAction = nav_toolbar_->addAction(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_download_20_regular.svg", iconColor),
+        "Load All");
+    loadAllAction->setToolTip("Load all remaining records (max 1000)");
+    loadAllAction->setEnabled(false);
+    connect(loadAllAction, &QAction::triggered, this, &PaginationWidget::on_load_all_clicked);
 
-    // Configure load all button
-    load_all_button_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_download_20_regular.svg", iconColor));
-    load_all_button_->setToolTip("Load all remaining records (max 1000)");
-    load_all_button_->setEnabled(false);
+    // Store actions for enabling/disabling
+    first_action_ = firstAction;
+    prev_action_ = prevAction;
+    next_action_ = nextAction;
+    last_action_ = lastAction;
+    load_all_action_ = loadAllAction;
 
-    // Setup layout
+    // Page size label
+    auto* pageSizeLabel = new QLabel("Page size:", this);
+
+    // Setup main layout
     layout_->addWidget(info_label_);
     layout_->addStretch();
-    layout_->addWidget(first_button_);
-    layout_->addWidget(prev_button_);
-    layout_->addWidget(next_button_);
-    layout_->addWidget(last_button_);
-    layout_->addWidget(new QLabel("  ", this)); // Spacer
-    layout_->addWidget(new QLabel("Page size:", this));
+    layout_->addWidget(nav_toolbar_);
+    layout_->addSpacing(15);
+    layout_->addWidget(pageSizeLabel);
     layout_->addWidget(page_size_combo_);
-    layout_->addWidget(load_all_button_);
     layout_->setContentsMargins(5, 5, 5, 5);
 
     setLayout(layout_);
 
-    // Connect signals
+    // Connect page size combo signal
     connect(page_size_combo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &PaginationWidget::on_page_size_changed);
-    connect(load_all_button_, &QPushButton::clicked,
-            this, &PaginationWidget::on_load_all_clicked);
-
-    // Connect navigation buttons
-    connect(first_button_, &QPushButton::clicked,
-            this, &PaginationWidget::on_first_clicked);
-    connect(prev_button_, &QPushButton::clicked,
-            this, &PaginationWidget::on_prev_clicked);
-    connect(next_button_, &QPushButton::clicked,
-            this, &PaginationWidget::on_next_clicked);
-    connect(last_button_, &QPushButton::clicked,
-            this, &PaginationWidget::on_last_clicked);
 }
 
 void PaginationWidget::update_state(std::uint32_t loaded_count,
@@ -122,9 +128,9 @@ void PaginationWidget::update_state(std::uint32_t loaded_count,
     if (total_count == 0) {
         info_text = "No records";
     } else if (pages <= 1) {
-        info_text = QString("Showing all %1 records").arg(total_count);
+        info_text = QString("Showing all records (%1)").arg(total_count);
     } else {
-        info_text = QString("Page %1 of %2 (%3 records)")
+        info_text = QString("Showing page %1 of %2 (%3 records)")
             .arg(current + 1)
             .arg(pages)
             .arg(total_count);
@@ -158,10 +164,10 @@ void PaginationWidget::on_load_all_clicked() {
 
 void PaginationWidget::set_load_all_enabled(bool enabled) {
     BOOST_LOG_SEV(lg(), debug) << "set_load_all_enabled(" << enabled
-                               << "), button_was_enabled=" << load_all_button_->isEnabled();
-    load_all_button_->setEnabled(enabled);
+                               << "), action_was_enabled=" << load_all_action_->isEnabled();
+    load_all_action_->setEnabled(enabled);
     BOOST_LOG_SEV(lg(), debug) << "After setEnabled(" << enabled
-                               << "): button_is_enabled=" << load_all_button_->isEnabled();
+                               << "): action_is_enabled=" << load_all_action_->isEnabled();
 }
 
 std::uint32_t PaginationWidget::total_pages() const {
@@ -182,10 +188,10 @@ void PaginationWidget::update_button_states() {
     const bool can_go_back = has_pages && current_page_ > 0;
     const bool can_go_forward = has_pages && current_page_ < (pages - 1);
 
-    first_button_->setEnabled(can_go_back);
-    prev_button_->setEnabled(can_go_back);
-    next_button_->setEnabled(can_go_forward);
-    last_button_->setEnabled(can_go_forward);
+    first_action_->setEnabled(can_go_back);
+    prev_action_->setEnabled(can_go_back);
+    next_action_->setEnabled(can_go_forward);
+    last_action_->setEnabled(can_go_forward);
 }
 
 void PaginationWidget::on_first_clicked() {

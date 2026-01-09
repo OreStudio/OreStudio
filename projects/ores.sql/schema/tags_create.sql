@@ -41,12 +41,12 @@ create table if not exists "ores"."tags" (
 -- Unique constraint on version for current records
 create unique index if not exists tags_version_unique_idx
 on "ores"."tags" (tag_id, version)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 -- Unique constraint on name for current records
 create unique index if not exists tags_name_unique_idx
 on "ores"."tags" (name)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 create or replace function update_tags()
 returns trigger as $$
@@ -57,7 +57,7 @@ begin
     select version into current_version
     from "ores"."tags"
     where tag_id = new.tag_id
-    and valid_to = '9999-12-31 23:59:59'::timestamptz;
+    and valid_to = ores.infinity_timestamp();
 
     if found then
         -- Existing record: check version for optimistic locking
@@ -74,7 +74,7 @@ begin
         update "ores"."tags"
         set valid_to = current_timestamp
         where tag_id = new.tag_id
-        and valid_to = '9999-12-31 23:59:59'::timestamptz
+        and valid_to = ores.infinity_timestamp()
         and valid_from < current_timestamp;
     else
         -- New record: set initial version
@@ -82,7 +82,7 @@ begin
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = '9999-12-31 23:59:59'::timestamptz;
+    new.valid_to = ores.infinity_timestamp();
     -- Don't override modified_by if already set by application
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
@@ -104,4 +104,4 @@ do instead
   update "ores"."tags"
   set valid_to = current_timestamp
   where tag_id = old.tag_id
-  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+  and valid_to = ores.infinity_timestamp();

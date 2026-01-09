@@ -41,12 +41,12 @@ create table if not exists "ores"."image_tags" (
 -- Index for lookups by image
 create index if not exists image_tags_image_idx
 on "ores"."image_tags" (image_id)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 -- Index for lookups by tag
 create index if not exists image_tags_tag_idx
 on "ores"."image_tags" (tag_id)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 create or replace function update_image_tags()
 returns trigger as $$
@@ -55,10 +55,10 @@ begin
     update "ores"."image_tags"
     set valid_to = current_timestamp
     where image_id = new.image_id and tag_id = new.tag_id
-    and valid_to = '9999-12-31 23:59:59'::timestamptz;
+    and valid_to = ores.infinity_timestamp();
 
     new.valid_from = current_timestamp;
-    new.valid_to = '9999-12-31 23:59:59'::timestamptz;
+    new.valid_to = ores.infinity_timestamp();
     new.assigned_at = current_timestamp;
     -- Don't override assigned_by if already set by application
     if new.assigned_by is null or new.assigned_by = '' then
@@ -82,4 +82,4 @@ do instead
   set valid_to = current_timestamp
   where image_id = old.image_id
   and tag_id = old.tag_id
-  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+  and valid_to = ores.infinity_timestamp();

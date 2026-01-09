@@ -49,6 +49,10 @@ grant create on schema ores to ores;
 -- NOTE: Whimsical names and database management functions are now in ores_admin.
 -- See admin/setup_admin.sql for cluster-level utilities.
 
+-- Amendment control tables (must be created before entities that reference them)
+\ir ../schema/reason_categories_create.sql
+\ir ../schema/amendment_reasons_create.sql
+
 -- Core tables
 \ir ../schema/currencies_create.sql
 \ir ../schema/currencies_notify_trigger.sql

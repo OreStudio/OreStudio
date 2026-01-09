@@ -37,8 +37,8 @@ UPDATE countries c
 SET image_id = i.image_id
 FROM images i
 WHERE i.key = lower(c.alpha2_code)
-  AND i.valid_to = '9999-12-31 23:59:59'::timestamptz
-  AND c.valid_to = '9999-12-31 23:59:59'::timestamptz;
+  AND i.valid_to = ores.infinity_timestamp()
+  AND c.valid_to = ores.infinity_timestamp();
 
 --
 -- Assign placeholder "no-flag" image to countries without a specific flag
@@ -47,6 +47,6 @@ UPDATE countries c
 SET image_id = i.image_id
 FROM images i
 WHERE i.key = 'no-flag'
-  AND i.valid_to = '9999-12-31 23:59:59'::timestamptz
-  AND c.valid_to = '9999-12-31 23:59:59'::timestamptz
+  AND i.valid_to = ores.infinity_timestamp()
+  AND c.valid_to = ores.infinity_timestamp()
   AND c.image_id IS NULL;

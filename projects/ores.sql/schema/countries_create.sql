@@ -44,17 +44,17 @@ create table if not exists "ores"."countries" (
 -- Unique constraint on version for current records ensures version uniqueness per entity
 create unique index if not exists countries_version_unique_idx
 on "ores"."countries" (alpha2_code, version)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 -- Index for alpha3_code lookups
 create index if not exists countries_alpha3_idx
 on "ores"."countries" (alpha3_code)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 -- Index for numeric_code lookups
 create index if not exists countries_numeric_idx
 on "ores"."countries" (numeric_code)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 create or replace function update_countries()
 returns trigger as $$
@@ -65,7 +65,7 @@ begin
     select version into current_version
     from "ores"."countries"
     where alpha2_code = new.alpha2_code
-    and valid_to = '9999-12-31 23:59:59'::timestamptz;
+    and valid_to = ores.infinity_timestamp();
 
     if found then
         -- Existing record: check version for optimistic locking
@@ -82,7 +82,7 @@ begin
         update "ores"."countries"
         set valid_to = current_timestamp
         where alpha2_code = new.alpha2_code
-        and valid_to = '9999-12-31 23:59:59'::timestamptz
+        and valid_to = ores.infinity_timestamp()
         and valid_from < current_timestamp;
     else
         -- New record: set initial version
@@ -90,7 +90,7 @@ begin
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = '9999-12-31 23:59:59'::timestamptz;
+    new.valid_to = ores.infinity_timestamp();
     -- Don't override modified_by if already set by application
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
@@ -113,4 +113,4 @@ do instead
   update "ores"."countries"
   set valid_to = current_timestamp
   where alpha2_code = old.alpha2_code
-  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+  and valid_to = ores.infinity_timestamp();

@@ -43,16 +43,16 @@ create table if not exists "ores"."accounts" (
 
 create unique index if not exists accounts_username_unique_idx
 on "ores"."accounts" (username)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 create unique index if not exists accounts_email_unique_idx
 on "ores"."accounts" (email)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 -- Unique constraint on version for current records ensures version uniqueness per entity
 create unique index if not exists accounts_version_unique_idx
 on "ores"."accounts" (id, version)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 create or replace function update_accounts()
 returns trigger as $$
@@ -63,7 +63,7 @@ begin
     select version into current_version
     from "ores"."accounts"
     where id = new.id
-    and valid_to = '9999-12-31 23:59:59'::timestamptz;
+    and valid_to = ores.infinity_timestamp();
 
     if found then
         -- Existing record: check version for optimistic locking
@@ -80,7 +80,7 @@ begin
         update "ores"."accounts"
         set valid_to = current_timestamp
         where id = new.id
-        and valid_to = '9999-12-31 23:59:59'::timestamptz
+        and valid_to = ores.infinity_timestamp()
         and valid_from < current_timestamp;
     else
         -- New record: set initial version
@@ -88,7 +88,7 @@ begin
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = '9999-12-31 23:59:59'::timestamptz;
+    new.valid_to = ores.infinity_timestamp();
     -- Don't override modified_by if already set by application
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;

@@ -43,7 +43,12 @@
 \echo '=== Starting System Population ==='
 \echo ''
 
+-- Amendment Control (must be populated before entities that use reasons)
+\echo '--- Amendment Control ---'
+\ir amendment_reasons_populate.sql
+
 -- RBAC (Role-Based Access Control)
+\echo ''
 \echo '--- RBAC Data ---'
 \ir permissions_populate.sql
 \ir roles_populate.sql
@@ -77,24 +82,30 @@
 \echo ''
 \echo '--- Summary ---'
 
-select 'Permissions' as entity, count(*) as count
-from ores.permissions where valid_to = ores.infinity_timestamp()
-union all
-select 'Roles', count(*)
-from ores.roles where valid_to = ores.infinity_timestamp()
-union all
-select 'System Flags', count(*)
-from ores.feature_flags where name like 'system.%' and valid_to = ores.infinity_timestamp()
-union all
-select 'Flag Images', count(*)
-from ores.images where valid_to = ores.infinity_timestamp()
-union all
-select 'Currencies with Flags', count(*)
-from ores.currencies where image_id is not null and valid_to = ores.infinity_timestamp()
+select 'Amendment Reasons' as entity, count(*) as count
+from ores.amendment_reasons where valid_to = ores.infinity_timestamp()
 union all
 select 'Countries', count(*)
 from ores.countries where valid_to = ores.infinity_timestamp()
 union all
 select 'Countries with Flags', count(*)
 from ores.countries where image_id is not null and valid_to = ores.infinity_timestamp()
+union all
+select 'Currencies with Flags', count(*)
+from ores.currencies where image_id is not null and valid_to = ores.infinity_timestamp()
+union all
+select 'Flag Images', count(*)
+from ores.images where valid_to = ores.infinity_timestamp()
+union all
+select 'Permissions', count(*)
+from ores.permissions where valid_to = ores.infinity_timestamp()
+union all
+select 'Reason Categories', count(*)
+from ores.reason_categories where valid_to = ores.infinity_timestamp()
+union all
+select 'Roles', count(*)
+from ores.roles where valid_to = ores.infinity_timestamp()
+union all
+select 'System Flags', count(*)
+from ores.feature_flags where name like 'system.%' and valid_to = ores.infinity_timestamp()
 order by entity;

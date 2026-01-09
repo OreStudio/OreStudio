@@ -40,7 +40,7 @@ create table if not exists "ores"."permissions" (
 -- Unique constraint on code for current records
 create unique index if not exists permissions_code_unique_idx
 on "ores"."permissions" (code)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 create or replace function update_permissions()
 returns trigger as $$
@@ -49,11 +49,11 @@ begin
     update "ores"."permissions"
     set valid_to = current_timestamp
     where id = new.id
-    and valid_to = '9999-12-31 23:59:59'::timestamptz
+    and valid_to = ores.infinity_timestamp()
     and valid_from < current_timestamp;
 
     new.valid_from = current_timestamp;
-    new.valid_to = '9999-12-31 23:59:59'::timestamptz;
+    new.valid_to = ores.infinity_timestamp();
 
     return new;
 end;
@@ -72,4 +72,4 @@ do instead
   update "ores"."permissions"
   set valid_to = current_timestamp
   where id = old.id
-  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+  and valid_to = ores.infinity_timestamp();

@@ -42,12 +42,12 @@ create table if not exists "ores"."images" (
 -- Unique constraint on version for current records
 create unique index if not exists images_version_unique_idx
 on "ores"."images" (image_id, version)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 -- Unique constraint on key for current records
 create unique index if not exists images_key_unique_idx
 on "ores"."images" (key)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 create or replace function update_images()
 returns trigger as $$
@@ -58,7 +58,7 @@ begin
     select version into current_version
     from "ores"."images"
     where image_id = new.image_id
-    and valid_to = '9999-12-31 23:59:59'::timestamptz;
+    and valid_to = ores.infinity_timestamp();
 
     if found then
         -- Existing record: check version for optimistic locking
@@ -75,7 +75,7 @@ begin
         update "ores"."images"
         set valid_to = current_timestamp
         where image_id = new.image_id
-        and valid_to = '9999-12-31 23:59:59'::timestamptz
+        and valid_to = ores.infinity_timestamp()
         and valid_from < current_timestamp;
     else
         -- New record: set initial version
@@ -83,7 +83,7 @@ begin
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = '9999-12-31 23:59:59'::timestamptz;
+    new.valid_to = ores.infinity_timestamp();
     -- Don't override modified_by if already set by application
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
@@ -105,4 +105,4 @@ do instead
   update "ores"."images"
   set valid_to = current_timestamp
   where image_id = old.image_id
-  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+  and valid_to = ores.infinity_timestamp();

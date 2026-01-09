@@ -43,12 +43,12 @@ create table if not exists "ores"."account_roles" (
 -- Index for looking up roles by account
 create index if not exists account_roles_account_idx
 on "ores"."account_roles" (account_id)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 -- Index for looking up accounts by role
 create index if not exists account_roles_role_idx
 on "ores"."account_roles" (role_id)
-where valid_to = '9999-12-31 23:59:59'::timestamptz;
+where valid_to = ores.infinity_timestamp();
 
 create or replace function update_account_roles()
 returns trigger as $$
@@ -58,11 +58,11 @@ begin
     set valid_to = current_timestamp
     where account_id = new.account_id
     and role_id = new.role_id
-    and valid_to = '9999-12-31 23:59:59'::timestamptz
+    and valid_to = ores.infinity_timestamp()
     and valid_from < current_timestamp;
 
     new.valid_from = current_timestamp;
-    new.valid_to = '9999-12-31 23:59:59'::timestamptz;
+    new.valid_to = ores.infinity_timestamp();
     new.assigned_at = current_timestamp;
     if new.assigned_by is null or new.assigned_by = '' then
         new.assigned_by = current_user;
@@ -86,4 +86,4 @@ do instead
   set valid_to = current_timestamp
   where account_id = old.account_id
   and role_id = old.role_id
-  and valid_to = '9999-12-31 23:59:59'::timestamptz;
+  and valid_to = ores.infinity_timestamp();

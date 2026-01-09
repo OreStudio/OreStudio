@@ -246,4 +246,106 @@ std::ostream& operator<<(std::ostream& s, const delete_feature_flag_response& v)
     return s;
 }
 
+std::vector<std::byte> get_feature_flag_history_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, name);
+    return buffer;
+}
+
+std::expected<get_feature_flag_history_request, ores::utility::serialization::error_code>
+get_feature_flag_history_request::deserialize(std::span<const std::byte> data) {
+    get_feature_flag_history_request request;
+
+    auto name_result = reader::read_string(data);
+    if (!name_result) return std::unexpected(name_result.error());
+    request.name = *name_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const get_feature_flag_history_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> get_feature_flag_history_response::serialize() const {
+    std::vector<std::byte> buffer;
+
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(history.size()));
+
+    for (const auto& ff : history) {
+        writer::write_string(buffer, ff.name);
+        writer::write_bool(buffer, ff.enabled);
+        writer::write_string(buffer, ff.description);
+        writer::write_uint32(buffer, static_cast<std::uint32_t>(ff.version));
+        writer::write_string(buffer, ff.recorded_by);
+        writer::write_string(buffer,
+            ores::platform::time::datetime::format_time_point(ff.recorded_at));
+    }
+
+    return buffer;
+}
+
+std::expected<get_feature_flag_history_response, ores::utility::serialization::error_code>
+get_feature_flag_history_response::deserialize(std::span<const std::byte> data) {
+    get_feature_flag_history_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    response.history.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        domain::feature_flags ff;
+
+        auto name_result = reader::read_string(data);
+        if (!name_result) return std::unexpected(name_result.error());
+        ff.name = *name_result;
+
+        auto enabled_result = reader::read_bool(data);
+        if (!enabled_result) return std::unexpected(enabled_result.error());
+        ff.enabled = *enabled_result;
+
+        auto description_result = reader::read_string(data);
+        if (!description_result) return std::unexpected(description_result.error());
+        ff.description = *description_result;
+
+        auto version_result = reader::read_uint32(data);
+        if (!version_result) return std::unexpected(version_result.error());
+        ff.version = static_cast<int>(*version_result);
+
+        auto recorded_by_result = reader::read_string(data);
+        if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
+        ff.recorded_by = *recorded_by_result;
+
+        auto recorded_at_result = reader::read_string(data);
+        if (!recorded_at_result) return std::unexpected(recorded_at_result.error());
+        try {
+            ff.recorded_at = ores::platform::time::datetime::parse_time_point(
+                *recorded_at_result);
+        } catch (const std::invalid_argument&) {
+            return std::unexpected(error_code::invalid_request);
+        }
+
+        response.history.push_back(std::move(ff));
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const get_feature_flag_history_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

@@ -89,6 +89,12 @@ private:
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_delete_feature_flag_request(std::span<const std::byte> payload);
 
+    /**
+     * @brief Handle get_feature_flag_history_request message.
+     */
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_feature_flag_history_request(std::span<const std::byte> payload);
+
     repository::feature_flags_repository feature_flags_repo_;
 };
 

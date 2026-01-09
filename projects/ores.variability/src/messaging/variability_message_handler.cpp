@@ -19,6 +19,8 @@
  */
 #include "ores.variability/messaging/variability_message_handler.hpp"
 
+#include <algorithm>
+
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 
 namespace ores::variability::messaging {
@@ -42,6 +44,8 @@ variability_message_handler::handle_message(comms::messaging::message_type type,
         co_return co_await handle_save_feature_flag_request(payload);
     case comms::messaging::message_type::delete_feature_flag_request:
         co_return co_await handle_delete_feature_flag_request(payload);
+    case comms::messaging::message_type::get_feature_flag_history_request:
+        co_return co_await handle_get_feature_flag_history_request(payload);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown variability message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
@@ -134,6 +138,44 @@ handle_delete_feature_flag_request(std::span<const std::byte> payload) {
         BOOST_LOG_SEV(lg(), error) << "Database error deleting feature flag: " << e.what();
         response.success = false;
         response.error_message = e.what();
+        co_return response.serialize();
+    }
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+                                     ores::utility::serialization::error_code>>
+variability_message_handler::
+handle_get_feature_flag_history_request(std::span<const std::byte> payload) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_feature_flag_history_request.";
+
+    // Deserialize request
+    auto request_result = get_feature_flag_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_feature_flag_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    get_feature_flag_history_response response;
+    try {
+        // Read all versions of this feature flag
+        auto history = feature_flags_repo_.read_all(request_result->name);
+
+        // Sort by version descending (newest first)
+        std::ranges::sort(history, [](const auto& a, const auto& b) {
+            return a.version > b.version;
+        });
+
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << history.size()
+                                  << " history records for feature flag: "
+                                  << request_result->name;
+
+        response.success = true;
+        response.history = std::move(history);
+        co_return response.serialize();
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Database error reading feature flag history: " << e.what();
+        response.success = false;
+        response.message = e.what();
         co_return response.serialize();
     }
 }

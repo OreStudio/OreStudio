@@ -20,6 +20,8 @@
 
 #include "ores.variability/service/feature_flags_service.hpp"
 
+#include <algorithm>
+
 namespace ores::variability::service {
 
 using namespace ores::telemetry::log;
@@ -63,6 +65,19 @@ void feature_flags_service::save_feature_flag(const domain::feature_flags& flag)
 void feature_flags_service::delete_feature_flag(const std::string& name) {
     BOOST_LOG_SEV(lg(), info) << "Deleting feature flag: " << name;
     repo_.remove(name);
+}
+
+std::vector<domain::feature_flags>
+feature_flags_service::get_feature_flag_history(const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting feature flag history for: " << name;
+    auto history = repo_.read_all(name);
+
+    // Sort by version descending (newest first)
+    std::ranges::sort(history, [](const auto& a, const auto& b) {
+        return a.version > b.version;
+    });
+
+    return history;
 }
 
 } // namespace ores::variability::service

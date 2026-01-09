@@ -92,6 +92,15 @@ public:
      */
     void delete_feature_flag(const std::string& name);
 
+    /**
+     * @brief Retrieves all historical versions of a feature flag.
+     *
+     * @param name The name of the feature flag.
+     * @return A vector of all versions, ordered newest-first.
+     */
+    [[nodiscard]] std::vector<domain::feature_flags> get_feature_flag_history(
+        const std::string& name);
+
 private:
     repository::feature_flags_repository repo_;
 };

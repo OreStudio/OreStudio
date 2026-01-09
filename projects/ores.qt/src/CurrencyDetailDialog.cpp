@@ -69,7 +69,10 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), isStale_(false),
       historicalVersion_(0), flagButton_(nullptr),
-      clientManager_(nullptr), imageCache_(nullptr) {
+      clientManager_(nullptr), imageCache_(nullptr),
+      currentHistoryIndex_(0),
+      firstVersionAction_(nullptr), prevVersionAction_(nullptr),
+      nextVersionAction_(nullptr), lastVersionAction_(nullptr) {
 
     ui_->setupUi(this);
 
@@ -102,7 +105,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     toolBar_->addSeparator();
 
     // Create Revert action (initially hidden)
-    revertAction_ = new QAction("Revert to this version", this);
+    revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
             ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
     revertAction_->setToolTip("Revert currency to this historical version");
@@ -110,6 +113,45 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
         &CurrencyDetailDialog::onRevertClicked);
     toolBar_->addAction(revertAction_);
     revertAction_->setVisible(false);
+
+    // Version navigation actions (initially hidden)
+    toolBar_->addSeparator();
+
+    firstVersionAction_ = new QAction("First", this);
+    firstVersionAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_previous_20_regular.svg", iconColor));
+    firstVersionAction_->setToolTip(tr("First version (oldest)"));
+    connect(firstVersionAction_, &QAction::triggered, this,
+        &CurrencyDetailDialog::onFirstVersionClicked);
+    toolBar_->addAction(firstVersionAction_);
+    firstVersionAction_->setVisible(false);
+
+    prevVersionAction_ = new QAction("Older", this);
+    prevVersionAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_left_20_regular.svg", iconColor));
+    prevVersionAction_->setToolTip(tr("Previous version (older)"));
+    connect(prevVersionAction_, &QAction::triggered, this,
+        &CurrencyDetailDialog::onPrevVersionClicked);
+    toolBar_->addAction(prevVersionAction_);
+    prevVersionAction_->setVisible(false);
+
+    nextVersionAction_ = new QAction("Newer", this);
+    nextVersionAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_right_20_regular.svg", iconColor));
+    nextVersionAction_->setToolTip(tr("Next version (newer)"));
+    connect(nextVersionAction_, &QAction::triggered, this,
+        &CurrencyDetailDialog::onNextVersionClicked);
+    toolBar_->addAction(nextVersionAction_);
+    nextVersionAction_->setVisible(false);
+
+    lastVersionAction_ = new QAction("Latest", this);
+    lastVersionAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_next_20_regular.svg", iconColor));
+    lastVersionAction_->setToolTip(tr("Latest version"));
+    connect(lastVersionAction_, &QAction::triggered, this,
+        &CurrencyDetailDialog::onLastVersionClicked);
+    toolBar_->addAction(lastVersionAction_);
+    lastVersionAction_->setVisible(false);
 
     // Create Generate action (visibility controlled by feature flag)
     setupGenerateAction();
@@ -861,6 +903,127 @@ void CurrencyDetailDialog::onFeatureFlagNotification(
 void CurrencyDetailDialog::onConnectionEstablished() {
     clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
     updateGenerateActionVisibility();
+}
+
+void CurrencyDetailDialog::showVersionNavActions(bool visible) {
+    if (firstVersionAction_)
+        firstVersionAction_->setVisible(visible);
+    if (prevVersionAction_)
+        prevVersionAction_->setVisible(visible);
+    if (nextVersionAction_)
+        nextVersionAction_->setVisible(visible);
+    if (lastVersionAction_)
+        lastVersionAction_->setVisible(visible);
+}
+
+void CurrencyDetailDialog::setHistory(
+    const risk::domain::currency_version_history& history, int versionNumber) {
+    BOOST_LOG_SEV(lg(), debug) << "Setting history with " << history.versions.size()
+                               << " versions, displaying version " << versionNumber;
+
+    history_ = history;
+
+    // Find index of the requested version (history is newest-first)
+    currentHistoryIndex_ = 0;
+    for (size_t i = 0; i < history_.versions.size(); ++i) {
+        if (history_.versions[i].version_number == versionNumber) {
+            currentHistoryIndex_ = static_cast<int>(i);
+            break;
+        }
+    }
+
+    displayCurrentVersion();
+    showVersionNavActions(true);
+}
+
+void CurrencyDetailDialog::displayCurrentVersion() {
+    if (history_.versions.empty() || currentHistoryIndex_ < 0 ||
+        currentHistoryIndex_ >= static_cast<int>(history_.versions.size())) {
+        return;
+    }
+
+    const auto& version = history_.versions[currentHistoryIndex_];
+
+    // Display the currency data
+    setCurrency(version.data);
+    setReadOnly(true, version.version_number);
+
+    // Update button states
+    updateVersionNavButtonStates();
+
+    // Gray out flag if not latest version (index 0 is latest)
+    if (flagButton_) {
+        flagButton_->setEnabled(currentHistoryIndex_ == 0);
+        if (currentHistoryIndex_ != 0) {
+            flagButton_->setToolTip(tr("Historical version - flag display only"));
+        }
+    }
+
+    // Update window title with short version format
+    QWidget* parent = parentWidget();
+    while (parent) {
+        if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
+            mdiSubWindow->setWindowTitle(QString("Currency: %1 v%2")
+                .arg(QString::fromStdString(version.data.iso_code))
+                .arg(version.version_number));
+            break;
+        }
+        parent = parent->parentWidget();
+    }
+}
+
+void CurrencyDetailDialog::updateVersionNavButtonStates() {
+    if (history_.versions.empty()) {
+        if (firstVersionAction_) firstVersionAction_->setEnabled(false);
+        if (prevVersionAction_) prevVersionAction_->setEnabled(false);
+        if (nextVersionAction_) nextVersionAction_->setEnabled(false);
+        if (lastVersionAction_) lastVersionAction_->setEnabled(false);
+        return;
+    }
+
+    bool atOldest = (currentHistoryIndex_ == static_cast<int>(history_.versions.size()) - 1);
+    bool atNewest = (currentHistoryIndex_ == 0);
+
+    if (firstVersionAction_) firstVersionAction_->setEnabled(!atOldest);  // Go to oldest
+    if (prevVersionAction_) prevVersionAction_->setEnabled(!atOldest);   // Go to older
+    if (nextVersionAction_) nextVersionAction_->setEnabled(!atNewest);   // Go to newer
+    if (lastVersionAction_) lastVersionAction_->setEnabled(!atNewest);   // Go to latest
+}
+
+void CurrencyDetailDialog::onFirstVersionClicked() {
+    if (history_.versions.empty()) return;
+
+    BOOST_LOG_SEV(lg(), debug) << "Navigating to first (oldest) version";
+    currentHistoryIndex_ = static_cast<int>(history_.versions.size()) - 1;
+    displayCurrentVersion();
+}
+
+void CurrencyDetailDialog::onPrevVersionClicked() {
+    if (history_.versions.empty()) return;
+
+    if (currentHistoryIndex_ < static_cast<int>(history_.versions.size()) - 1) {
+        BOOST_LOG_SEV(lg(), debug) << "Navigating to previous (older) version";
+        ++currentHistoryIndex_;
+        displayCurrentVersion();
+    }
+}
+
+void CurrencyDetailDialog::onNextVersionClicked() {
+    if (history_.versions.empty()) return;
+
+    if (currentHistoryIndex_ > 0) {
+        BOOST_LOG_SEV(lg(), debug) << "Navigating to next (newer) version";
+        --currentHistoryIndex_;
+        displayCurrentVersion();
+    }
+}
+
+void CurrencyDetailDialog::onLastVersionClicked() {
+    if (history_.versions.empty()) return;
+
+    BOOST_LOG_SEV(lg(), debug) << "Navigating to last (latest) version";
+    currentHistoryIndex_ = 0;
+    displayCurrentVersion();
 }
 
 }

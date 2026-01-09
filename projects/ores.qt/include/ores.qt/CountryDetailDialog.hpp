@@ -25,6 +25,7 @@
 #include <QAction>
 #include <QPushButton>
 #include <memory>
+#include <vector>
 #include "ores.risk/domain/country.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
@@ -80,6 +81,19 @@ public:
     void setReadOnly(bool readOnly, int versionNumber = 0);
 
     /**
+     * @brief Sets the history for version navigation.
+     *
+     * When set, shows a navigation toolbar allowing the user to navigate
+     * between versions (first/prev/next/last). The flag is grayed out
+     * for non-latest versions.
+     *
+     * @param history All versions ordered newest-first (index 0 is latest)
+     * @param versionNumber The version number to initially display
+     */
+    void setHistory(const std::vector<risk::domain::country>& history,
+        int versionNumber);
+
+    /**
      * @brief Mark the dialog data as stale.
      *
      * Called when a notification is received indicating this country has
@@ -116,10 +130,19 @@ private slots:
     void onSelectFlagClicked();
     void onCountryImageSet(const QString& alpha2_code, bool success, const QString& message);
 
+    // Version navigation slots
+    void onFirstVersionClicked();
+    void onPrevVersionClicked();
+    void onNextVersionClicked();
+    void onLastVersionClicked();
+
 private:
     void updateSaveResetButtonState();
     void setFieldsReadOnly(bool readOnly);
     void updateFlagDisplay();
+    void displayCurrentVersion();
+    void updateVersionNavButtonStates();
+    void showVersionNavActions(bool visible);
 
 private:
     std::unique_ptr<Ui::CountryDetailDialog> ui_;
@@ -140,6 +163,14 @@ private:
     ImageCache* imageCache_;
     risk::domain::country currentCountry_;
     QString pendingImageId_;
+
+    // Version navigation members
+    std::vector<risk::domain::country> history_;
+    int currentHistoryIndex_;
+    QAction* firstVersionAction_;
+    QAction* prevVersionAction_;
+    QAction* nextVersionAction_;
+    QAction* lastVersionAction_;
 };
 
 }

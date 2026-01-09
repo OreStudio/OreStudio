@@ -432,9 +432,9 @@ void FeatureFlagHistoryDialog::onRevertClicked() {
         return;
     }
 
-    // Use the PREVIOUS version's data (the "old" side of the diff) with the latest version number
+    // Use the PREVIOUS version's data (the "old" side of the diff) for the revert.
+    // Server handles versioning - we just send the data we want to restore.
     variability::domain::feature_flags flagToRevert = previous;
-    flagToRevert.version = history_[0].version;
     emit revertVersionRequested(flagToRevert);
 }
 

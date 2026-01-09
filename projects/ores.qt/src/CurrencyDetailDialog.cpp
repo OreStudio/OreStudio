@@ -216,6 +216,22 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
 void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
 
+    if (clientManager_) {
+        // Connect to feature flag notifications for generate action visibility
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &CurrencyDetailDialog::onFeatureFlagNotification);
+
+        // Subscribe to feature flag events when connected/reconnected
+        connect(clientManager_, &ClientManager::connected,
+                this, &CurrencyDetailDialog::onConnectionEstablished);
+        connect(clientManager_, &ClientManager::reconnected,
+                this, &CurrencyDetailDialog::onConnectionEstablished);
+
+        // If already connected, subscribe and check flag
+        if (clientManager_->isConnected()) {
+            onConnectionEstablished();
+        }
+    }
 }
 
 void CurrencyDetailDialog::setUsername(const std::string& username) {

@@ -27,11 +27,12 @@ using namespace ores::telemetry::log;
 
 void registrar::register_handlers(comms::net::server& server,
     database::context ctx,
-    std::shared_ptr<variability::service::system_flags_service> system_flags) {
+    std::shared_ptr<variability::service::system_flags_service> system_flags,
+    std::shared_ptr<comms::service::auth_session_service> sessions) {
     BOOST_LOG_SEV(lg(), info) << "Registering risk subsystem message handlers.";
 
     auto handler = std::make_shared<risk_message_handler>(
-        std::move(ctx), std::move(system_flags));
+        std::move(ctx), std::move(system_flags), std::move(sessions));
     comms::messaging::message_type_range risk_range{
         .min = comms::messaging::RISK_SUBSYSTEM_MIN,
         .max = comms::messaging::RISK_SUBSYSTEM_MAX

@@ -229,7 +229,8 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     auto geo_service = std::make_shared<geo::service::geolocation_service>(ctx);
 
     // Register subsystem handlers
-    ores::risk::messaging::registrar::register_handlers(*srv, ctx, system_flags);
+    ores::risk::messaging::registrar::register_handlers(*srv, ctx, system_flags,
+        srv->sessions());
     ores::iam::messaging::registrar::register_handlers(*srv, ctx, system_flags, auth_service,
         geo_service);
     ores::variability::messaging::registrar::register_handlers(*srv, ctx);

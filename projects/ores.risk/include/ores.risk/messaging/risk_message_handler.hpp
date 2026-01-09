@@ -22,6 +22,7 @@
 
 #include <memory>
 #include "ores.comms/messaging/message_handler.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
@@ -54,9 +55,11 @@ public:
      *
      * @param ctx Database context for repository access
      * @param system_flags Shared system flags service for flag access
+     * @param sessions Session service for authentication verification
      */
     risk_message_handler(database::context ctx,
-        std::shared_ptr<variability::service::system_flags_service> system_flags);
+        std::shared_ptr<variability::service::system_flags_service> system_flags,
+        std::shared_ptr<comms::service::auth_session_service> sessions);
 
     /**
      * @brief Handle a risk subsystem message.
@@ -86,7 +89,8 @@ private:
      * versioning automatically.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_save_currency_request(std::span<const std::byte> payload);
+    handle_save_currency_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle delete_currency_request message.
@@ -110,7 +114,8 @@ private:
      * @brief Handle save_country_request message (create or update).
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_save_country_request(std::span<const std::byte> payload);
+    handle_save_country_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 
     /**
      * @brief Handle delete_country_request message.
@@ -126,6 +131,7 @@ private:
 
     database::context ctx_;
     std::shared_ptr<variability::service::system_flags_service> system_flags_;
+    std::shared_ptr<comms::service::auth_session_service> sessions_;
     service::currency_service currency_service_;
     service::country_service country_service_;
 };

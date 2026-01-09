@@ -26,6 +26,7 @@
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.comms/service/auth_session_service.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.risk/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.risk/messaging/protocol.hpp"
@@ -47,6 +48,22 @@ make_system_flags(ores::database::context& ctx) {
     return flags;
 }
 
+const std::string test_remote_address = "127.0.0.1:12345";
+const std::string test_username = "test_user";
+
+std::shared_ptr<ores::comms::service::auth_session_service>
+make_sessions() {
+    auto sessions = std::make_shared<ores::comms::service::auth_session_service>();
+    // Create a test session with a known username
+    auto session = std::make_shared<ores::comms::service::session_data>();
+    session->id = boost::uuids::random_generator()();
+    session->account_id = boost::uuids::random_generator()();
+    session->username = test_username;
+    session->start_time = std::chrono::system_clock::now();
+    sessions->store_session_data(test_remote_address, session);
+    return sessions;
+}
+
 }
 
 using namespace ores;
@@ -61,7 +78,7 @@ TEST_CASE("handle_get_currencies_request_returns_currencies", tags) {
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    risk_message_handler handler(h.context(), system_flags);
+    risk_message_handler handler(h.context(), system_flags, make_sessions());
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -74,7 +91,7 @@ TEST_CASE("handle_get_currencies_request_returns_currencies", tags) {
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             comms::messaging::message_type::get_currencies_request,
-            payload, "127.0.0.1:12345");
+            payload, test_remote_address);
 
         REQUIRE(result.has_value());
         const auto response_result = get_currencies_response::deserialize(result.value());
@@ -101,7 +118,7 @@ TEST_CASE("handle_get_currencies_request_with_single_currency", tags) {
     BOOST_LOG_SEV(lg, debug) << "Created test currency: " << ccy;
 
     auto system_flags = make_system_flags(h.context());
-    risk_message_handler handler(h.context(), system_flags);
+    risk_message_handler handler(h.context(), system_flags, make_sessions());
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -114,7 +131,7 @@ TEST_CASE("handle_get_currencies_request_with_single_currency", tags) {
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             comms::messaging::message_type::get_currencies_request,
-            payload, "127.0.0.1:12345");
+            payload, test_remote_address);
 
         REQUIRE(result.has_value());
         const auto response_result = get_currencies_response::deserialize(result.value());
@@ -146,7 +163,7 @@ TEST_CASE("handle_get_currencies_request_with_multiple_currencies", tags) {
     repo.write(h.context(), currencies);
 
     auto system_flags = make_system_flags(h.context());
-    risk_message_handler handler(h.context(), system_flags);
+    risk_message_handler handler(h.context(), system_flags, make_sessions());
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -159,7 +176,7 @@ TEST_CASE("handle_get_currencies_request_with_multiple_currencies", tags) {
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             comms::messaging::message_type::get_currencies_request,
-            payload, "127.0.0.1:12345");
+            payload, test_remote_address);
 
         REQUIRE(result.has_value());
         const auto response_result = get_currencies_response::deserialize(result.value());
@@ -196,7 +213,7 @@ TEST_CASE("handle_get_currencies_request_with_faker", tags) {
     repo.write(h.context(), currencies);
 
     auto system_flags = make_system_flags(h.context());
-    risk_message_handler handler(h.context(), system_flags);
+    risk_message_handler handler(h.context(), system_flags, make_sessions());
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -209,7 +226,7 @@ TEST_CASE("handle_get_currencies_request_with_faker", tags) {
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             comms::messaging::message_type::get_currencies_request,
-            payload, "127.0.0.1:12345");
+            payload, test_remote_address);
 
         REQUIRE(result.has_value());
         const auto response_result = get_currencies_response::deserialize(result.value());
@@ -251,7 +268,7 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
     BOOST_LOG_SEV(lg, debug) << "Created test currency: " << original_ccy;
 
     auto system_flags = make_system_flags(h.context());
-    risk_message_handler handler(h.context(), system_flags);
+    risk_message_handler handler(h.context(), system_flags, make_sessions());
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -264,7 +281,7 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             comms::messaging::message_type::get_currencies_request,
-            payload, "127.0.0.1:12345");
+            payload, test_remote_address);
 
         REQUIRE(result.has_value());
         const auto response_result = get_currencies_response::deserialize(result.value());
@@ -322,7 +339,7 @@ TEST_CASE("handle_get_currencies_request_with_unicode_symbols", tags) {
     BOOST_LOG_SEV(lg, debug) << "Currencies written to db.";
 
     auto system_flags = make_system_flags(h.context());
-    risk_message_handler handler(h.context(), system_flags);
+    risk_message_handler handler(h.context(), system_flags, make_sessions());
 
     get_currencies_request req;
     BOOST_LOG_SEV(lg, debug) << "Request: " << req;
@@ -335,7 +352,7 @@ TEST_CASE("handle_get_currencies_request_with_unicode_symbols", tags) {
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             comms::messaging::message_type::get_currencies_request,
-            payload, "127.0.0.1:12345");
+            payload, test_remote_address);
 
         REQUIRE(result.has_value());
         const auto response_result = get_currencies_response::deserialize(result.value());
@@ -367,7 +384,7 @@ TEST_CASE("handle_invalid_message_type",
 
     scoped_database_helper h(database_table);
     auto system_flags = make_system_flags(h.context());
-    risk_message_handler handler(h.context(), system_flags);
+    risk_message_handler handler(h.context(), system_flags, make_sessions());
 
     std::vector<std::byte> empty_payload;
 
@@ -377,7 +394,7 @@ TEST_CASE("handle_invalid_message_type",
     boost::asio::co_spawn(io_context, [&]() -> boost::asio::awaitable<void> {
         auto result = co_await handler.handle_message(
             static_cast<comms::messaging::message_type>(0xFFFF),
-            empty_payload, "127.0.0.1:12345");
+            empty_payload, test_remote_address);
 
         CHECK(!result.has_value());
         CHECK(result.error() == ores::utility::serialization::error_code::invalid_message_type);

@@ -22,6 +22,7 @@
 
 #include <memory>
 #include "ores.comms/net/server.hpp"
+#include "ores.comms/service/auth_session_service.hpp"
 #include "ores.telemetry/log/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
@@ -37,6 +38,7 @@ namespace ores::risk::messaging {
  * @param server The server to register handlers with
  * @param ctx Database context for repository access
  * @param system_flags Shared system flags service for flag access
+ * @param sessions Session service for authentication verification
  */
 class registrar {
 private:
@@ -52,7 +54,8 @@ private:
 public:
     static void register_handlers(comms::net::server& server,
         database::context ctx,
-        std::shared_ptr<variability::service::system_flags_service> system_flags);
+        std::shared_ptr<variability::service::system_flags_service> system_flags,
+        std::shared_ptr<comms::service::auth_session_service> sessions);
 };
 
 }

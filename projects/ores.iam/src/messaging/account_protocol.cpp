@@ -194,6 +194,8 @@ std::vector<std::byte> get_accounts_response::serialize() const {
         writer::write_string(buffer, account.password_salt);
         writer::write_string(buffer, account.totp_secret);
         writer::write_string(buffer, account.email);
+        writer::write_string(buffer, account.change_reason_code);
+        writer::write_string(buffer, account.change_commentary);
     }
 
     return buffer;
@@ -257,6 +259,14 @@ get_accounts_response::deserialize(std::span<const std::byte> data) {
         auto email_result = reader::read_string(data);
         if (!email_result) return std::unexpected(email_result.error());
         account.email = *email_result;
+
+        auto change_reason_code_result = reader::read_string(data);
+        if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
+        account.change_reason_code = *change_reason_code_result;
+
+        auto change_commentary_result = reader::read_string(data);
+        if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
+        account.change_commentary = *change_commentary_result;
 
         response.accounts.push_back(std::move(account));
     }

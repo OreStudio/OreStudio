@@ -160,7 +160,7 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // - Merged create_account_* and update_account_* into save_account_* for consistency
 //   with save_currency, save_country, save_feature_flag patterns
 // - Added change_reason_code and change_commentary fields to all entity serialization
-//   (currency, country, feature_flags, account) for audit trail support
+//   (currency, country, feature_flags, account, role, image) for audit trail support
 // This is a breaking change affecting multiple message types and wire formats.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 21;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;

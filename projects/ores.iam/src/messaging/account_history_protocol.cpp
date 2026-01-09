@@ -63,6 +63,8 @@ void serialize_account_version(std::vector<std::byte>& buffer,
     writer::write_string(buffer, version.data.password_salt);
     writer::write_string(buffer, version.data.totp_secret);
     writer::write_string(buffer, version.data.email);
+    writer::write_string(buffer, version.data.change_reason_code);
+    writer::write_string(buffer, version.data.change_commentary);
 
     // Write version metadata
     writer::write_uint32(buffer, static_cast<std::uint32_t>(version.version_number));
@@ -111,6 +113,14 @@ deserialize_account_version(std::span<const std::byte>& data) {
     auto email = reader::read_string(data);
     if (!email) return std::unexpected(email.error());
     version.data.email = *email;
+
+    auto change_reason_code = reader::read_string(data);
+    if (!change_reason_code) return std::unexpected(change_reason_code.error());
+    version.data.change_reason_code = *change_reason_code;
+
+    auto change_commentary = reader::read_string(data);
+    if (!change_commentary) return std::unexpected(change_commentary.error());
+    version.data.change_commentary = *change_commentary;
 
     // Read version metadata
     auto version_number = reader::read_uint32(data);

@@ -644,7 +644,8 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
         iam::service::account_setup_service setup_service(account_service_, auth_service_);
         auto account = setup_service.create_account_with_role(
             admin_req->username, admin_req->email, admin_req->password,
-            "bootstrap", iam::domain::roles::admin);
+            "bootstrap", iam::domain::roles::admin,
+            "Initial admin account created during system bootstrap");
 
         // Exit bootstrap mode - updates database and shared cache
         system_flags_->set_bootstrap_mode(false, "system");

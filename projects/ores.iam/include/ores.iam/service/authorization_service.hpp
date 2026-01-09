@@ -152,10 +152,12 @@ public:
      * @param account_id The account to receive the role
      * @param role_id The role to assign
      * @param assigned_by Username of the person making the assignment
+     * @param change_commentary Optional commentary explaining the role assignment
      */
     void assign_role(const boost::uuids::uuid& account_id,
         const boost::uuids::uuid& role_id,
-        const std::string& assigned_by);
+        const std::string& assigned_by,
+        const std::string& change_commentary = "Role assigned to account");
 
     /**
      * @brief Revokes a role from an account.

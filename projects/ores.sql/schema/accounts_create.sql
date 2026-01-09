@@ -40,7 +40,8 @@ create table if not exists "ores"."accounts" (
         id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to")
+    check ("valid_from" < "valid_to"),
+    check ("change_reason_code" <> '')
 );
 
 create unique index if not exists accounts_username_unique_idx

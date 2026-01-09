@@ -38,6 +38,8 @@ domain::image image_mapper::map(const image_entity& v) {
     r.description = v.description;
     r.svg_data = v.svg_data;
     r.recorded_by = v.modified_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from.value());
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity.";
@@ -54,6 +56,8 @@ image_entity image_mapper::map(const domain::image& v) {
     r.description = v.description;
     r.svg_data = v.svg_data;
     r.modified_by = v.recorded_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
     // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

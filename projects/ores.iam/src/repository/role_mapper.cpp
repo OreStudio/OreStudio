@@ -38,6 +38,8 @@ domain::role role_mapper::map(const role_entity& v) {
     r.name = v.name;
     r.description = v.description;
     r.recorded_by = v.modified_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
     // Note: permission_codes must be populated separately via join query
 
@@ -54,6 +56,8 @@ role_entity role_mapper::map(const domain::role& v) {
     r.name = v.name;
     r.description = v.description;
     r.modified_by = v.recorded_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
     // Note: permission_codes are stored in role_permissions table
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

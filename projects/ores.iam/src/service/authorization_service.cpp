@@ -213,7 +213,8 @@ authorization_service::get_role_permissions(const boost::uuids::uuid& role_id) {
 void authorization_service::assign_role(
     const boost::uuids::uuid& account_id,
     const boost::uuids::uuid& role_id,
-    const std::string& assigned_by) {
+    const std::string& assigned_by,
+    const std::string& change_commentary) {
     BOOST_LOG_SEV(lg(), info) << "Assigning role " << role_id
                               << " to account " << account_id;
 
@@ -237,6 +238,8 @@ void authorization_service::assign_role(
     ar.account_id = account_id;
     ar.role_id = role_id;
     ar.assigned_by = assigned_by;
+    ar.change_reason_code = "system.new_record";
+    ar.change_commentary = change_commentary;
 
     account_role_repo_.write(ar);
 

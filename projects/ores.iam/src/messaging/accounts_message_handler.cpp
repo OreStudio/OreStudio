@@ -636,7 +636,8 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             request.email,
             request.password,
             "bootstrap",
-            domain::roles::admin
+            domain::roles::admin,
+            "Initial admin account created during system bootstrap"
         );
 
         // Exit bootstrap mode - updates database and shared cache

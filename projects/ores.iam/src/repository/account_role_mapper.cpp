@@ -35,6 +35,8 @@ domain::account_role account_role_mapper::map(const account_role_entity& v) {
     r.account_id = boost::lexical_cast<boost::uuids::uuid>(v.account_id);
     r.role_id = boost::lexical_cast<boost::uuids::uuid>(v.role_id);
     r.assigned_by = v.assigned_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
     r.assigned_at = timestamp_to_timepoint(v.assigned_at);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity.";
@@ -48,6 +50,8 @@ account_role_entity account_role_mapper::map(const domain::account_role& v) {
     r.account_id = boost::lexical_cast<std::string>(v.account_id);
     r.role_id = boost::lexical_cast<std::string>(v.role_id);
     r.assigned_by = v.assigned_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
     // Note: assigned_at is managed by the database
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

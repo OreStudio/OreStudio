@@ -76,11 +76,13 @@ public:
      * @param email The email address for the account
      * @param password The plaintext password (will be hashed)
      * @param recorded_by The username of the person creating the account
+     * @param change_commentary Optional commentary explaining account creation
      * @return The created account with computed fields
      */
     domain::account create_account(const std::string& username,
         const std::string& email, const std::string& password,
-        const std::string& recorded_by);
+        const std::string& recorded_by,
+        const std::string& change_commentary = "Account created");
 
     /**
      * @brief Gets a single account by its ID.

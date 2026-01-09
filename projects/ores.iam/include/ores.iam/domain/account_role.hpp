@@ -50,6 +50,18 @@ struct account_role final {
     std::string assigned_by;
 
     /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
      * @brief Timestamp when this role assignment was created.
      */
     std::chrono::system_clock::time_point assigned_at;

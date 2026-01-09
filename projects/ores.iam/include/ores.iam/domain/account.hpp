@@ -48,6 +48,17 @@ struct account final {
      */
     std::string recorded_by;
 
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
 
     /**
      * @brief Unique username for login purposes.

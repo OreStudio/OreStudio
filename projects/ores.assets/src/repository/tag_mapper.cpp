@@ -35,6 +35,8 @@ domain::tag tag_mapper::map(const tag_entity& v) {
     r.name = v.name;
     r.description = v.description;
     r.recorded_by = v.modified_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
     r.recorded_at = v.valid_from.value().str();
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity.";
@@ -50,6 +52,8 @@ tag_entity tag_mapper::map(const domain::tag& v) {
     r.name = v.name;
     r.description = v.description;
     r.modified_by = v.recorded_by;
+    r.change_reason_code = v.change_reason_code;
+    r.change_commentary = v.change_commentary;
     // Note: recorded_at is read-only; valid_from/valid_to are managed by database triggers
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;

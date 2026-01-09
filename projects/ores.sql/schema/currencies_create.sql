@@ -45,7 +45,8 @@ create table if not exists "ores"."currencies" (
         iso_code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to")
+    check ("valid_from" < "valid_to"),
+    check ("change_reason_code" <> '')
 );
 
 -- Unique constraint on version for current records ensures version uniqueness per entity

@@ -32,6 +32,9 @@
  *
  * Categories:
  * - system: Auto-assigned reasons (not user-selectable)
+ *   - initial_load: System bootstrap or migration
+ *   - new_record: Normal operational record creation (human or machine)
+ *   - external_data_import: External vendor/file import (requires data lineage)
  * - common: Universal data quality reasons (BCBS 239 / FRTB aligned)
  * - trade: Trade lifecycle reasons (FINRA / MiFID II aligned)
  *
@@ -127,12 +130,32 @@ select ores.upsert_change_reason_category(
 -- System reasons (auto-assigned, not user-selectable)
 select ores.upsert_change_reason(
     'system.initial_load',
-    'Initial record creation',
+    'Initial system bootstrap or migration',
     'system',
     false,  -- not for amend
     false,  -- not for delete
     false,  -- no commentary required
     0       -- display order
+);
+
+select ores.upsert_change_reason(
+    'system.new_record',
+    'New record created during normal operations',
+    'system',
+    false,  -- not for amend
+    false,  -- not for delete
+    false,  -- no commentary required
+    10      -- display order
+);
+
+select ores.upsert_change_reason(
+    'system.external_data_import',
+    'External data import (requires data lineage)',
+    'system',
+    true,   -- applies to amend (imports can update existing records)
+    false,  -- not for delete
+    true,   -- commentary REQUIRED (data lineage)
+    20      -- display order
 );
 
 -- =============================================================================

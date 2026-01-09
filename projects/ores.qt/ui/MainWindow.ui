@@ -113,6 +113,7 @@
    <addaction name="CurrenciesAction"/>
    <addaction name="CountriesAction"/>
    <addaction name="ActionAccounts"/>
+   <addaction name="ActionFeatureFlags"/>
   </widget>
   <action name="ExitAction">
    <property name="text">

@@ -119,9 +119,12 @@ void FeatureFlagController::showListWindow() {
             this, &FeatureFlagController::onFeatureFlagDeleted);
 
     // Create MDI subwindow
+    const QColor iconColor(220, 220, 220);
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Feature Flags");
+    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -206,12 +209,15 @@ void FeatureFlagController::showDetailWindow(
             this, &FeatureFlagController::onFeatureFlagDeleted);
 
     // Create MDI subwindow
+    const QColor iconColor(220, 220, 220);
     auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
     subWindow->setWidget(detailDialog);
 
     const QString title = createMode ? "New Feature Flag" :
         QString("Feature Flag: %1").arg(QString::fromStdString(flag.name));
     subWindow->setWindowTitle(title);
+    subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
     subWindow->setAttribute(Qt::WA_DeleteOnClose);
     subWindow->resize(detailDialog->sizeHint());
 

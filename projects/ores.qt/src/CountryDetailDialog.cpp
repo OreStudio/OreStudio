@@ -86,7 +86,7 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     // Create Revert action (initially hidden)
     revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
+        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
     revertAction_->setToolTip("Revert country to this historical version");
     connect(revertAction_, &QAction::triggered, this,
         &CountryDetailDialog::onRevertClicked);
@@ -99,34 +99,34 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     firstVersionAction_ = new QAction("First", this);
     firstVersionAction_->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_previous_20_regular.svg", iconColor));
-    firstVersionAction_->setToolTip(tr("First version (oldest)"));
+    firstVersionAction_->setToolTip(tr("First version"));
     connect(firstVersionAction_, &QAction::triggered, this,
         &CountryDetailDialog::onFirstVersionClicked);
     toolBar_->addAction(firstVersionAction_);
     firstVersionAction_->setVisible(false);
 
-    prevVersionAction_ = new QAction("Older", this);
+    prevVersionAction_ = new QAction("Previous", this);
     prevVersionAction_->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_left_20_regular.svg", iconColor));
-    prevVersionAction_->setToolTip(tr("Previous version (older)"));
+    prevVersionAction_->setToolTip(tr("Previous version"));
     connect(prevVersionAction_, &QAction::triggered, this,
         &CountryDetailDialog::onPrevVersionClicked);
     toolBar_->addAction(prevVersionAction_);
     prevVersionAction_->setVisible(false);
 
-    nextVersionAction_ = new QAction("Newer", this);
+    nextVersionAction_ = new QAction("Next", this);
     nextVersionAction_->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_right_20_regular.svg", iconColor));
-    nextVersionAction_->setToolTip(tr("Next version (newer)"));
+    nextVersionAction_->setToolTip(tr("Next version"));
     connect(nextVersionAction_, &QAction::triggered, this,
         &CountryDetailDialog::onNextVersionClicked);
     toolBar_->addAction(nextVersionAction_);
     nextVersionAction_->setVisible(false);
 
-    lastVersionAction_ = new QAction("Latest", this);
+    lastVersionAction_ = new QAction("Last", this);
     lastVersionAction_->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_next_20_regular.svg", iconColor));
-    lastVersionAction_->setToolTip(tr("Latest version"));
+    lastVersionAction_->setToolTip(tr("Last version"));
     connect(lastVersionAction_, &QAction::triggered, this,
         &CountryDetailDialog::onLastVersionClicked);
     toolBar_->addAction(lastVersionAction_);
@@ -730,12 +730,10 @@ void CountryDetailDialog::displayCurrentVersion() {
     // Update button states
     updateVersionNavButtonStates();
 
-    // Gray out flag if not latest version (index 0 is latest)
+    // Gray out flag in history view - all versions are read-only
     if (flagButton_) {
-        flagButton_->setEnabled(currentHistoryIndex_ == 0);
-        if (currentHistoryIndex_ != 0) {
-            flagButton_->setToolTip(tr("Historical version - flag display only"));
-        }
+        flagButton_->setEnabled(false);
+        flagButton_->setToolTip(tr("Historical version - flag display only"));
     }
 
     // Update window title with short version format

@@ -80,7 +80,7 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
     // Create Revert action (initially hidden)
     revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
+        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
     revertAction_->setToolTip("Revert feature flag to this historical version");
     toolBar_->addAction(revertAction_);
     revertAction_->setVisible(false);
@@ -91,34 +91,34 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
     firstVersionAction_ = new QAction("First", this);
     firstVersionAction_->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_previous_20_regular.svg", iconColor));
-    firstVersionAction_->setToolTip(tr("First version (oldest)"));
+    firstVersionAction_->setToolTip(tr("First version"));
     connect(firstVersionAction_, &QAction::triggered, this,
         &FeatureFlagDetailDialog::onFirstVersionClicked);
     toolBar_->addAction(firstVersionAction_);
     firstVersionAction_->setVisible(false);
 
-    prevVersionAction_ = new QAction("Older", this);
+    prevVersionAction_ = new QAction("Previous", this);
     prevVersionAction_->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_left_20_regular.svg", iconColor));
-    prevVersionAction_->setToolTip(tr("Previous version (older)"));
+    prevVersionAction_->setToolTip(tr("Previous version"));
     connect(prevVersionAction_, &QAction::triggered, this,
         &FeatureFlagDetailDialog::onPrevVersionClicked);
     toolBar_->addAction(prevVersionAction_);
     prevVersionAction_->setVisible(false);
 
-    nextVersionAction_ = new QAction("Newer", this);
+    nextVersionAction_ = new QAction("Next", this);
     nextVersionAction_->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_right_20_regular.svg", iconColor));
-    nextVersionAction_->setToolTip(tr("Next version (newer)"));
+    nextVersionAction_->setToolTip(tr("Next version"));
     connect(nextVersionAction_, &QAction::triggered, this,
         &FeatureFlagDetailDialog::onNextVersionClicked);
     toolBar_->addAction(nextVersionAction_);
     nextVersionAction_->setVisible(false);
 
-    lastVersionAction_ = new QAction("Latest", this);
+    lastVersionAction_ = new QAction("Last", this);
     lastVersionAction_->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_next_20_regular.svg", iconColor));
-    lastVersionAction_->setToolTip(tr("Latest version"));
+    lastVersionAction_->setToolTip(tr("Last version"));
     connect(lastVersionAction_, &QAction::triggered, this,
         &FeatureFlagDetailDialog::onLastVersionClicked);
     toolBar_->addAction(lastVersionAction_);

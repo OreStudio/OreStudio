@@ -128,13 +128,10 @@ private slots:
     void onResetClicked();
     void onDeleteClicked();
     void onRevertClicked();
-    void onGenerateClicked();
     void onFieldChanged();
     void onSelectFlagClicked();
     void onCurrencyImageSet(const QString& iso_code, bool success, const QString& message);
-    void onFeatureFlagNotification(const QString& eventType, const QDateTime& timestamp,
-                                    const QStringList& entityIds);
-    void onConnectionEstablished();
+    void onGenerateClicked();
 
     // Version navigation slots
     void onFirstVersionClicked();
@@ -142,15 +139,19 @@ private slots:
     void onNextVersionClicked();
     void onLastVersionClicked();
 
+    void onFeatureFlagNotification(const QString& eventType, const QDateTime& timestamp,
+        const QStringList& entityIds);
+    void onConnectionEstablished();
+
 private:
     void updateSaveResetButtonState();
     void setFieldsReadOnly(bool readOnly);
     void updateFlagDisplay();
-    void setupGenerateAction();
-    void updateGenerateActionVisibility();
     void displayCurrentVersion();
     void updateVersionNavButtonStates();
     void showVersionNavActions(bool visible);
+    void setupGenerateAction();
+    void updateGenerateActionVisibility();
 
 private:
     std::unique_ptr<Ui::CurrencyDetailDialog> ui_;

@@ -119,7 +119,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionRoles->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_lock_closed_20_regular.svg", iconColor));
     ui_->ActionFeatureFlags->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_checkmark_20_regular.svg", iconColor));
+        ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(

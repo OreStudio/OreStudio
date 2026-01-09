@@ -39,7 +39,7 @@
    # boost::log::v2s_mt_posix::sources::aux::get_severity_level()
    fun:_ZN5boost3log12v2s_mt_posix7sources3aux18get_severity_levelEv
    # boost::log::v2s_mt_posix::sources::aux::severity_level<ores::logging::boost_severity>::set_value(...)
-   fun:_ZN5boost3log12v2s_mt_posix7sources3aux14severity_levelIN4ores9telemetry3log14boost_severityEE9set_valueES8_
+   fun:_ZN5boost3log12v2s_mt_posix7sources3aux14severity_levelIN4ores7logging14boost_severityEE9set_valueES7_
    ...
 }
 {
@@ -105,7 +105,7 @@
    # boost::log::v2s_mt_posix::sources::aux::get_severity_level()
    fun:_ZN5boost3log12v2s_mt_posix7sources3aux18get_severity_levelEv
    # boost::log::v2s_mt_posix::sources::aux::severity_level<ores::logging::boost_severity>::set_value(...)
-   fun:_ZN5boost3log12v2s_mt_posix7sources3aux14severity_levelIN4ores9telemetry3log14boost_severityEE9set_valueES8_
+   fun:_ZN5boost3log12v2s_mt_posix7sources3aux14severity_levelIN4ores7logging14boost_severityEE9set_valueES7_
    ...
    fun:main
 }

@@ -793,7 +793,8 @@ Ores.QT:
 
 *** STARTED Amend and delete reasons                                   :code:
     :LOGBOOK:
-    CLOCK: [2026-01-09 Fri 15:07]
+    CLOCK: [2026-01-09 Fri 20:20]
+    CLOCK: [2026-01-09 Fri 15:07]--[2026-01-09 Fri 20:00] =>  4:53
     CLOCK: [2026-01-09 Fri 14:01]--[2026-01-09 Fri 15:06] =>  1:05
     :END:
 
@@ -837,7 +838,7 @@ Highlights:
 - [X] Create messaging protocol (get_change_reason_categories, get_change_reasons, get_change_reasons_by_category)
 - [X] Integrate handlers into accounts_message_handler
 - [X] Build and test (895 assertions, 227 test cases passed)
-- [ ] Create Qt UI for change management
+- [X] Create Qt UI for change management
 - [ ] Add protocol support for creating/updating/deleting reasons
 
 **** Modified files
@@ -856,6 +857,23 @@ Highlights:
 - =projects/ores.iam/src/messaging/change_management_protocol.cpp= - Protocol messages
 - =projects/ores.iam/src/messaging/accounts_message_handler.cpp= - Handler integration
 - =projects/ores.comms/include/ores.comms/messaging/message_types.hpp= - New message types (0x2050-0x2055)
+- =projects/ores.iam/include/ores.iam/eventing/change_reason_category_changed_event.hpp= - Category change event
+- =projects/ores.iam/include/ores.iam/eventing/change_reason_changed_event.hpp= - Reason change event
+- =projects/ores.qt/include/ores.qt/ClientChangeReasonCategoryModel.hpp= - Qt model for categories
+- =projects/ores.qt/src/ClientChangeReasonCategoryModel.cpp= - Qt model implementation
+- =projects/ores.qt/include/ores.qt/ChangeReasonCategoryMdiWindow.hpp= - Category list window
+- =projects/ores.qt/src/ChangeReasonCategoryMdiWindow.cpp= - Category list window implementation
+- =projects/ores.qt/include/ores.qt/ChangeReasonCategoryController.hpp= - Category controller
+- =projects/ores.qt/src/ChangeReasonCategoryController.cpp= - Category controller implementation
+- =projects/ores.qt/include/ores.qt/ClientChangeReasonModel.hpp= - Qt model for reasons
+- =projects/ores.qt/src/ClientChangeReasonModel.cpp= - Qt model implementation
+- =projects/ores.qt/include/ores.qt/ChangeReasonMdiWindow.hpp= - Reason list window
+- =projects/ores.qt/src/ChangeReasonMdiWindow.cpp= - Reason list window implementation
+- =projects/ores.qt/include/ores.qt/ChangeReasonController.hpp= - Reason controller
+- =projects/ores.qt/src/ChangeReasonController.cpp= - Reason controller implementation
+- =projects/ores.qt/ui/MainWindow.ui= - Added menu entries for change management
+- =projects/ores.qt/include/ores.qt/MainWindow.hpp= - Added controller declarations
+- =projects/ores.qt/src/MainWindow.cpp= - Integrated change management controllers
 
 Sketch analysis:
 

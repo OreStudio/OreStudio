@@ -48,6 +48,8 @@ class CountryController;
 class AccountController;
 class RoleController;
 class FeatureFlagController;
+class ChangeReasonCategoryController;
+class ChangeReasonController;
 class ImageCache;
 
 /**
@@ -287,6 +289,22 @@ private:
      * Only accessible to admin users.
      */
     std::unique_ptr<FeatureFlagController> featureFlagController_;
+
+    /**
+     * @brief Controller managing change reason category windows.
+     *
+     * Created after successful login, handles category list and detail windows.
+     * Only accessible to admin users.
+     */
+    std::unique_ptr<ChangeReasonCategoryController> changeReasonCategoryController_;
+
+    /**
+     * @brief Controller managing change reason windows.
+     *
+     * Created after successful login, handles reason list and detail windows.
+     * Only accessible to admin users.
+     */
+    std::unique_ptr<ChangeReasonController> changeReasonController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

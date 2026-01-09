@@ -475,7 +475,7 @@ void AccountDetailDialog::onSaveClicked() {
                     return {false, "Invalid server response"};
                 }
 
-                return {response->success, response->error_message};
+                return {response->success, response->message};
             });
 
         auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(self);

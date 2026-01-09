@@ -198,15 +198,6 @@ private:
         const std::string& remote_address);
 
     /**
-     * @brief Handle save_account_request message.
-     *
-     * Requires authentication. Only admin users can update accounts.
-     */
-    handler_result
-    handle_save_account_request(std::span<const std::byte> payload,
-        const std::string& remote_address);
-
-    /**
      * @brief Handle get_account_history_request message.
      *
      * Requires authentication. Returns all historical versions of an account.

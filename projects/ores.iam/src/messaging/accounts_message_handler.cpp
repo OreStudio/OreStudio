@@ -91,8 +91,6 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_create_initial_admin_request(payload, remote_address);
     case message_type::bootstrap_status_request:
         co_return co_await handle_bootstrap_status_request(payload);
-    case message_type::save_account_request:
-        co_return co_await handle_save_account_request(payload, remote_address);
     case message_type::get_account_history_request:
         co_return co_await handle_get_account_history_request(payload, remote_address);
     case message_type::reset_password_request:
@@ -137,12 +135,6 @@ handle_save_account_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing save_account_request from "
                                << remote_address;
 
-    auto auth_result = check_authorization(remote_address,
-        domain::permissions::accounts_create, "Create account");
-    if (!auth_result) {
-        co_return std::unexpected(auth_result.error());
-    }
-
     auto request_result = save_account_request::deserialize(payload);
     if (!request_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_account_request";
@@ -152,16 +144,74 @@ handle_save_account_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
-    domain::account account =
-        setup_service_.create_account(request.username, request.email,
-        request.password, request.recorded_by);
+    // Determine if this is a create or update based on account_id
+    const bool is_create = request.account_id.is_nil();
 
-    BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id
-                              << " for username: " << account.username
-                              << " with Viewer role assigned";
+    if (is_create) {
+        // Create new account - requires accounts:create permission
+        auto auth_result = check_authorization(remote_address,
+            domain::permissions::accounts_create, "Create account");
+        if (!auth_result) {
+            co_return std::unexpected(auth_result.error());
+        }
 
-    save_account_response response{account.id};
-    co_return response.serialize();
+        try {
+            domain::account account =
+                setup_service_.create_account(request.username, request.email,
+                request.password, request.recorded_by);
+
+            BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id
+                                      << " for username: " << account.username
+                                      << " with Viewer role assigned";
+
+            save_account_response response{
+                .success = true,
+                .message = "",
+                .account_id = account.id
+            };
+            co_return response.serialize();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to create account: " << e.what();
+            save_account_response response{
+                .success = false,
+                .message = std::string("Failed to create account: ") + e.what(),
+                .account_id = boost::uuids::nil_uuid()
+            };
+            co_return response.serialize();
+        }
+    } else {
+        // Update existing account - requires accounts:update permission
+        auto auth_result = check_authorization(remote_address,
+            domain::permissions::accounts_update, "Update account");
+        if (!auth_result) {
+            co_return std::unexpected(auth_result.error());
+        }
+
+        try {
+            bool success = service_.update_account(request.account_id,
+                request.email, request.recorded_by);
+
+            if (success) {
+                BOOST_LOG_SEV(lg(), info) << "Successfully updated account: "
+                                          << boost::uuids::to_string(request.account_id);
+            }
+
+            save_account_response response{
+                .success = success,
+                .message = success ? "" : "Failed to update account",
+                .account_id = request.account_id
+            };
+            co_return response.serialize();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to update account: " << e.what();
+            save_account_response response{
+                .success = false,
+                .message = std::string("Failed to update account: ") + e.what(),
+                .account_id = request.account_id
+            };
+            co_return response.serialize();
+        }
+    }
 }
 
 accounts_message_handler::handler_result
@@ -760,72 +810,6 @@ handle_logout_request(std::span<const std::byte> payload,
         logout_response response{
             .success = false,
             .message = e.what()
-        };
-        co_return response.serialize();
-    }
-}
-
-accounts_message_handler::handler_result accounts_message_handler::
-handle_save_account_request(std::span<const std::byte> payload,
-    const std::string& remote_address) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing save_account_request from "
-                               << remote_address;
-
-    auto request_result = save_account_request::deserialize(payload);
-    if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_account_request";
-        co_return std::unexpected(request_result.error());
-    }
-
-    const auto& request = *request_result;
-    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
-
-    // Get the requester's session from shared session service
-    auto session = sessions_->get_session(remote_address);
-    if (!session) {
-        BOOST_LOG_SEV(lg(), warn) << "Update account denied: no active session for "
-                                  << remote_address;
-        save_account_response response{
-            .success = false,
-            .error_message = "Authentication required to update accounts"
-        };
-        co_return response.serialize();
-    }
-
-    // Check if requester has permission to update accounts
-    if (!auth_service_->has_permission(session->account_id,
-            domain::permissions::accounts_update)) {
-        BOOST_LOG_SEV(lg(), warn) << "Update account denied: requester "
-                                  << boost::uuids::to_string(session->account_id)
-                                  << " lacks accounts:update permission";
-        save_account_response response{
-            .success = false,
-            .error_message = "Permission denied: accounts:update required"
-        };
-        co_return response.serialize();
-    }
-
-    try {
-        bool success = service_.update_account(request.account_id,
-            request.email, request.recorded_by);
-
-        if (success) {
-            BOOST_LOG_SEV(lg(), info) << "Successfully updated account: "
-                                      << boost::uuids::to_string(request.account_id);
-        }
-
-        save_account_response response{
-            .success = success,
-            .error_message = success ? "" : "Failed to update account"
-        };
-        co_return response.serialize();
-
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to update account: " << e.what();
-
-        save_account_response response{
-            .success = false,
-            .error_message = std::string("Failed to update account: ") + e.what()
         };
         co_return response.serialize();
     }

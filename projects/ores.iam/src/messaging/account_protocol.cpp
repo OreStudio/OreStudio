@@ -57,17 +57,24 @@ read_timepoint(std::span<const std::byte>& data) {
 
 std::vector<std::byte> save_account_request::serialize() const {
     std::vector<std::byte> buffer;
+    writer::write_uuid(buffer, account_id);
     writer::write_string(buffer, username);
     writer::write_string(buffer, password);
     writer::write_string(buffer, totp_secret);
     writer::write_string(buffer, email);
     writer::write_string(buffer, recorded_by);
+    writer::write_string(buffer, change_reason_code);
+    writer::write_string(buffer, change_commentary);
     return buffer;
 }
 
 std::expected<save_account_request, ores::utility::serialization::error_code>
 save_account_request::deserialize(std::span<const std::byte> data) {
     save_account_request request;
+
+    auto account_id_result = reader::read_uuid(data);
+    if (!account_id_result) return std::unexpected(account_id_result.error());
+    request.account_id = *account_id_result;
 
     auto username_result = reader::read_string(data);
     if (!username_result) return std::unexpected(username_result.error());
@@ -89,6 +96,14 @@ save_account_request::deserialize(std::span<const std::byte> data) {
     if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
     request.recorded_by = *recorded_by_result;
 
+    auto change_reason_code_result = reader::read_string(data);
+    if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
+    request.change_reason_code = *change_reason_code_result;
+
+    auto change_commentary_result = reader::read_string(data);
+    if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
+    request.change_commentary = *change_commentary_result;
+
     return request;
 }
 
@@ -100,6 +115,8 @@ std::ostream& operator<<(std::ostream& s, const save_account_request& v)
 
 std::vector<std::byte> save_account_response::serialize() const {
     std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     writer::write_uuid(buffer, account_id);
     return buffer;
 }
@@ -107,6 +124,14 @@ std::vector<std::byte> save_account_response::serialize() const {
 std::expected<save_account_response, ores::utility::serialization::error_code>
 save_account_response::deserialize(std::span<const std::byte> data) {
     save_account_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) return std::unexpected(account_id_result.error());
@@ -462,67 +487,6 @@ lock_account_response::deserialize(std::span<const std::byte> data) {
 }
 
 std::ostream& operator<<(std::ostream& s, const lock_account_response& v)
-{
-    rfl::json::write(v, s);
-    return s;
-}
-
-std::vector<std::byte> save_account_request::serialize() const {
-    std::vector<std::byte> buffer;
-    writer::write_uuid(buffer, account_id);
-    writer::write_string(buffer, email);
-    writer::write_string(buffer, recorded_by);
-    return buffer;
-}
-
-std::expected<save_account_request, ores::utility::serialization::error_code>
-save_account_request::deserialize(std::span<const std::byte> data) {
-    save_account_request request;
-
-    auto account_id_result = reader::read_uuid(data);
-    if (!account_id_result) return std::unexpected(account_id_result.error());
-    request.account_id = *account_id_result;
-
-    auto email_result = reader::read_string(data);
-    if (!email_result) return std::unexpected(email_result.error());
-    request.email = *email_result;
-
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    request.recorded_by = *recorded_by_result;
-
-    return request;
-}
-
-std::ostream& operator<<(std::ostream& s, const save_account_request& v)
-{
-    rfl::json::write(v, s);
-    return s;
-}
-
-std::vector<std::byte> save_account_response::serialize() const {
-    std::vector<std::byte> buffer;
-    writer::write_bool(buffer, success);
-    writer::write_string(buffer, error_message);
-    return buffer;
-}
-
-std::expected<save_account_response, ores::utility::serialization::error_code>
-save_account_response::deserialize(std::span<const std::byte> data) {
-    save_account_response response;
-
-    auto success_result = reader::read_bool(data);
-    if (!success_result) return std::unexpected(success_result.error());
-    response.success = *success_result;
-
-    auto error_message_result = reader::read_string(data);
-    if (!error_message_result) return std::unexpected(error_message_result.error());
-    response.error_message = *error_message_result;
-
-    return response;
-}
-
-std::ostream& operator<<(std::ostream& s, const save_account_response& v)
 {
     rfl::json::write(v, s);
     return s;

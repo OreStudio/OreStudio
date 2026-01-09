@@ -34,13 +34,14 @@ namespace ores::iam::messaging {
 /**
  * @brief Request to save an account (create or update).
  *
- * For new accounts, provide a password in plain text - it will be hashed
- * server-side. For updates, the password field is optional.
+ * For creates: leave account_id as nil UUID, provide username and password.
+ * For updates: set account_id to the existing account, password is optional.
  *
  * Note: Administrative privileges are managed through RBAC roles.
  * Use assign_role_request to grant roles after account creation.
  */
 struct save_account_request final {
+    boost::uuids::uuid account_id;  // Nil for create, valid UUID for update
     std::string username;
     std::string password;      // Plain text for new accounts, optional for updates
     std::string totp_secret;
@@ -53,6 +54,7 @@ struct save_account_request final {
      * @brief Serialize request to bytes.
      *
      * Format:
+     * - 16 bytes: account_id (UUID, nil for create)
      * - 2 bytes: username length
      * - N bytes: username (UTF-8)
      * - 2 bytes: password length

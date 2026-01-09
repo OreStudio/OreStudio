@@ -140,6 +140,22 @@ def find_log_directory(base_output_dir):
     return log_dir
 
 
+def find_test_suite_log_by_project_name(log_dir, project_name):
+    """Find the test suite log file based on the project name."""
+    # Construct the expected log file path
+    test_suite_log = os.path.join(log_dir, f"{project_name}.tests", f"{project_name}.tests.log")
+    if os.path.exists(test_suite_log):
+        return test_suite_log
+
+    # If the expected path doesn't exist, try to find any matching log file
+    for root, dirs, files in os.walk(log_dir):
+        for file in files:
+            if file.endswith('.log') and project_name in file:
+                return os.path.join(root, file)
+
+    return None
+
+
 def find_test_suite_log(log_dir, test_filename):
     """Find the test suite log file based on the test file path."""
     # Extract project name from the test filename
@@ -148,9 +164,8 @@ def find_test_suite_log(log_dir, test_filename):
     match = re.search(r'/projects/([^/]+)/tests/', test_filename)
     if match:
         project_name = match.group(1)
-        # Construct the expected log file path
-        test_suite_log = os.path.join(log_dir, f"{project_name}.tests", f"{project_name}.tests.log")
-        return test_suite_log
+        # Use the new function
+        return find_test_suite_log_by_project_name(log_dir, project_name)
 
     # If we can't determine the project name, try to find any matching log file
     for root, dirs, files in os.walk(log_dir):
@@ -282,14 +297,52 @@ def main():
 
     for xml_file in xml_files:
         print(f"\n{'='*80}")
-        print(f"Parsing: {os.path.basename(xml_file)}")
+        print(f"Processing: {os.path.basename(xml_file)}")
         print(f"{'='*80}")
 
         # Try to parse the XML file
         tree, root, success, error_msg = validate_and_parse_xml_file(xml_file)
 
+        # Extract project name from the XML filename to find the corresponding log
+        # Get the project name from the filename pattern: test-results-{project_name}.tests.xml
+        filename = os.path.basename(xml_file)
+        if filename.startswith("test-results-") and ".tests.xml" in filename:
+            project_name = filename.replace("test-results-", "").replace(".tests.xml", "")
+        else:
+            # Fallback: try to extract from path
+            project_name = extract_project_name_from_path(xml_file)
+
+        # Always check the test suite log regardless of XML parsing success
+        test_suite_log = find_test_suite_log_by_project_name(log_dir, project_name)
+        if test_suite_log:
+            print(f"\n  Test Suite Log: {test_suite_log}")
+            if not success:
+                # If XML parsing failed, dump the entire log file content
+                print("  XML parsing failed - dumping entire log file content:")
+                print("  " + "="*77)
+                try:
+                    with open(test_suite_log, 'r', encoding='utf-8', errors='ignore') as f:
+                        log_content = f.read()
+                        # Print the entire log content with proper indentation
+                        for line in log_content.split('\n'):
+                            print(f"    {line}")
+                except Exception as e:
+                    print(f"    Error reading log file: {str(e)}")
+                print("  " + "="*77)
+            else:
+                # XML parsing succeeded, proceed normally and check for WARN/ERROR
+                suite_log_matches = grep_log_file(test_suite_log)
+                if suite_log_matches:
+                    print("  Errors/Warnings in test suite log:")
+                    for match in suite_log_matches[:20]:  # Show first 20 matches for failed XML files
+                        print(f"    {match}")
+                    if len(suite_log_matches) > 20:
+                        print(f"    ... and {len(suite_log_matches) - 20} more")
+                else:
+                    print("  No errors/warnings found in test suite log")
+
         if not success:
-            print(f"Skipping file due to error: {error_msg}")
+            print(f"Skipping XML processing due to error: {error_msg}")
             continue
 
         valid_xml_count += 1
@@ -309,28 +362,6 @@ def main():
         print(f"Total Duration: {stats['total_duration']:.3f}s")
 
         failed_tests = parse_failed_tests(xml_file)
-
-        # Check for WARN/ERROR in test suite logs regardless of test results
-        # Extract project name from the first test case in the file (if any exist)
-        project_name = "unknown"
-        if root.findall(".//TestCase"):
-            first_test_case = root.findall(".//TestCase")[0]
-            project_name = extract_project_name_from_path(first_test_case.get('filename', ''))
-
-        # Find and parse test suite log for WARN/ERROR
-        if project_name != "unknown":
-            test_suite_log = find_test_suite_log(log_dir, f"/projects/{project_name}/tests/")
-            if test_suite_log:
-                print(f"\n  Test Suite Log: {test_suite_log}")
-                suite_log_matches = grep_log_file(test_suite_log)
-                if suite_log_matches:
-                    print("  Errors/Warnings in test suite log:")
-                    for match in suite_log_matches[:10]:  # Show first 10 matches
-                        print(f"    {match}")
-                    if len(suite_log_matches) > 10:
-                        print(f"    ... and {len(suite_log_matches) - 10} more")
-                else:
-                    print("  No errors/warnings found in test suite log")
 
         if not failed_tests:
             print("\nNo failed tests found in this file.")

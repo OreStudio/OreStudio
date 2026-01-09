@@ -67,6 +67,41 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Investigate claude-code-hook-templates
+
+#+begin_quote
+A comprehensive collection of production-ready hooks covering all 8 Claude Code
+lifecycle events. Includes safety guards, autonomous TDD workflows, PR approval
+gates, cost controls, and more.
+#+end_quote
+
+Links:
+
+- [[https://github.com/iamrajiv/claude-code-hook-templates][claude-code-hook-templates]]
+
+*** Investigate Agent-Native Architecture Audit
+
+#+begin_quote
+Conduct a comprehensive review of the codebase against agent-native architecture
+principles, launching parallel sub-agents for each principle and producing a
+scored report.
+
+Core Principles to Audit:
+
+- Action Parity - "Whatever the user can do, the agent can do"
+- Tools as Primitives - "Tools provide capability, not behavior"
+- Context Injection - "System prompt includes dynamic context about app state"
+- Shared Workspace - "Agent and user work in the same data space"
+- CRUD Completeness - "Every entity has full CRUD (Create, Read, Update, Delete)"
+- UI Integration - "Agent actions immediately reflected in UI"
+- Capability Discovery - "Users can discover what the agent can do"
+- Prompt-Native Features - "Features are prompts defining outcomes, not code"
+#+end_quote
+
+Links:
+
+- [[https://github.com/EveryInc/compound-engineering-plugin/blob/main/plugins/compound-engineering/commands/agent-native-audit.md][Agent-Native Architecture Audit]]
+
 *** Sign-up dialog should be disabled if feature is disabled           :code:
 
 At present you can click on sign up and fill in all details but then you get a
@@ -1828,67 +1863,6 @@ Links:
 - [[https://boinc.berkeley.edu/trac/wiki/ProjectMain][wiki: BOINC Project Main]]
 - [[https://www.reddit.com/r/BOINC/][BOINC reddit]]
 
-
-*** Create a set of fake currencies                                    :code:
-
-We need to create fake data so we can explore the problem domain. This is
-something to work on in the future. We can use LLMs to help with the fake data,
-where it makes sense.
-
-Example:
-
-| Country code | Country name | Currency Code | Currency Number | Currency           |
-|--------------+--------------+---------------+-----------------+--------------------|
-| AL           | Aerilon      | ALD           |           10001 | Aerilonian Dollar  |
-| AR           | Arcturia     | ARA           |           10002 | Arcturian Arct     |
-| BA           | Balthoria    | BAF           |           10003 | Balthorian Florin  |
-| BE           | Belloria     | BEB           |           10004 | Bellorian Bell     |
-| CA           | Calandria    | CAC           |           10005 | Calandrian Crown   |
-| CD           | Caledonia    | CDC           |           10006 | Caledonian Caled   |
-| DA           | Daeloria     | DAD           |           10007 | Daelorian Dinar    |
-| DE           | Delvadia     | DED           |           10008 | Delvadian Delv     |
-| ER           | Eriador      | ERE           |           10009 | Eriadoran Euro     |
-| ES           | Esteria      | ESE           |           10010 | Esterian Est       |
-| FE           | Feloria      | FEF           |           10011 | Felorian Franc     |
-| FN           | Fendaria     | FNF           |           10012 | Fendarian Fen      |
-| GA           | Galdoria     | GAG           |           10013 | Galdorian Galleon  |
-| GR           | Grendoria    | GRG           |           10014 | Grendorian Grend   |
-| HE           | Helvetia     | HEF           |           10015 | Helvetian Franc    |
-| HY           | Hydronia     | HYH           |           10016 | Hydronian Hyd      |
-| IR           | Iridia       | IRD           |           10017 | Iridian Dollar     |
-| IT           | Ithaca       | ITI           |           10018 | Ithacan Ith        |
-| JE           | Jethro       | JEJ           |           10019 | Jethronian Jet     |
-| JO           | Jorvik       | JOK           |           10020 | Jorvikian Krona    |
-| KA           | Kaelor       | KAK           |           10021 | Kaelorian Krown    |
-| KR           | Krynn        | KRK           |           10022 | Krynnish Krynn     |
-| LU           | Luminia      | LUL           |           10023 | Luminian Lum       |
-| LY           | Lysandria    | LYL           |           10024 | Lysandrian Lira    |
-| MA           | Maldoria     | MAM           |           10025 | Maldorian Mal      |
-| MR           | Mariposa     | MRP           |           10026 | Mariposan Peso     |
-| NE           | Nektonia     | NEN           |           10027 | Nektonian Nek      |
-| NT           | Netharia     | NTN           |           10028 | Netharian Naira    |
-| OR           | Orinoco      | ORB           |           10029 | Orinocan Bolivar   |
-| OL           | Orlanthia    | OLO           |           10030 | Orlanthian Orl     |
-| PA           | Paldoria     | PAP           |           10031 | Paldorian Peso     |
-| PY           | Pyrrhia      | PYP           |           10032 | Pyrrhian Pyr       |
-| QU           | Quentaria    | QUQ           |           10033 | Quentarian Quen    |
-| QN           | Quinaria     | QNQ           |           10034 | Quinarian Quetzal  |
-| RE           | Rendellia    | RER           |           10035 | Rendellian Rend    |
-| RI           | Rivenia      | RIR           |           10036 | Rivenian Ruble     |
-| SE           | Serendia     | SES           |           10037 | Serendian Shilling |
-| SI           | Sildoria     | SIS           |           10038 | Sildorian Sild     |
-| TA           | Tandor       | TAT           |           10039 | Tandorian Taka     |
-| TE           | Tenebria     | TET           |           10040 | Tenebrian Ten      |
-| UL           | Uldoria      | ULU           |           10041 | Uldorian Uld       |
-| UT           | Utopia       | UTU           |           10042 | Utopian Unit       |
-| VA           | Valoria      | VAV           |           10042 | Valorian Valt      |
-| VL           | Valtaria     | VLV           |           10043 | Valtarian Val      |
-| WI           | Wintervale   | WIW           |           10044 | Wintervalean Won   |
-| WY           | Wysteria     | WYW           |           10045 | Wysterian Wys      |
-| XA           | Xandria      | XAX           |           10046 | Xandrian Xan       |
-| XE           | Xenoria      | XEX           |           10047 | Xenorian Xen       |
-| YS           | Yslandia     | YSY           |           10048 | Yslandian Yen      |
-| ZE           | Zephyria     | ZEZ           |           10049 | Zephyrian Zephyr   |
 
 * Footer
 

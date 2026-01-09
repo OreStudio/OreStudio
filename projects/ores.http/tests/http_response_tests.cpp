@@ -62,7 +62,7 @@ TEST_CASE("http_response_error_creates_error_response", tags) {
 
     CHECK(sut.status == http_status::bad_request);
     CHECK(sut.content_type == "application/json");
-    CHECK(sut.body.find("Invalid input") != std::string::npos);
+    CHECK(sut.body == R"({"error":"Invalid input"})");
 }
 
 TEST_CASE("http_response_not_found_creates_404", tags) {
@@ -73,7 +73,7 @@ TEST_CASE("http_response_not_found_creates_404", tags) {
 
     CHECK(sut.status == http_status::not_found);
     CHECK(sut.content_type == "application/json");
-    CHECK(sut.body.find("Resource not found") != std::string::npos);
+    CHECK(sut.body == R"({"error":"Resource not found"})");
 }
 
 TEST_CASE("http_response_not_found_with_default_message", tags) {
@@ -83,7 +83,7 @@ TEST_CASE("http_response_not_found_with_default_message", tags) {
     auto sut = http_response::not_found();
 
     CHECK(sut.status == http_status::not_found);
-    CHECK(sut.body.find("Not Found") != std::string::npos);
+    CHECK(sut.body == R"({"error":"Not Found"})");
 }
 
 TEST_CASE("http_response_unauthorized_creates_401", tags) {
@@ -94,7 +94,7 @@ TEST_CASE("http_response_unauthorized_creates_401", tags) {
 
     CHECK(sut.status == http_status::unauthorized);
     CHECK(sut.content_type == "application/json");
-    CHECK(sut.body.find("Token expired") != std::string::npos);
+    CHECK(sut.body == R"({"error":"Token expired"})");
 }
 
 TEST_CASE("http_response_unauthorized_with_default_message", tags) {
@@ -104,7 +104,7 @@ TEST_CASE("http_response_unauthorized_with_default_message", tags) {
     auto sut = http_response::unauthorized();
 
     CHECK(sut.status == http_status::unauthorized);
-    CHECK(sut.body.find("Unauthorized") != std::string::npos);
+    CHECK(sut.body == R"({"error":"Unauthorized"})");
 }
 
 TEST_CASE("http_response_forbidden_creates_403", tags) {
@@ -115,7 +115,7 @@ TEST_CASE("http_response_forbidden_creates_403", tags) {
 
     CHECK(sut.status == http_status::forbidden);
     CHECK(sut.content_type == "application/json");
-    CHECK(sut.body.find("Access denied") != std::string::npos);
+    CHECK(sut.body == R"({"error":"Access denied"})");
 }
 
 TEST_CASE("http_response_forbidden_with_default_message", tags) {
@@ -125,7 +125,7 @@ TEST_CASE("http_response_forbidden_with_default_message", tags) {
     auto sut = http_response::forbidden();
 
     CHECK(sut.status == http_status::forbidden);
-    CHECK(sut.body.find("Forbidden") != std::string::npos);
+    CHECK(sut.body == R"({"error":"Forbidden"})");
 }
 
 TEST_CASE("http_response_bad_request_creates_400", tags) {
@@ -136,7 +136,7 @@ TEST_CASE("http_response_bad_request_creates_400", tags) {
 
     CHECK(sut.status == http_status::bad_request);
     CHECK(sut.content_type == "application/json");
-    CHECK(sut.body.find("Missing required field") != std::string::npos);
+    CHECK(sut.body == R"({"error":"Missing required field"})");
 }
 
 TEST_CASE("http_response_internal_error_creates_500", tags) {
@@ -147,7 +147,7 @@ TEST_CASE("http_response_internal_error_creates_500", tags) {
 
     CHECK(sut.status == http_status::internal_server_error);
     CHECK(sut.content_type == "application/json");
-    CHECK(sut.body.find("Database connection failed") != std::string::npos);
+    CHECK(sut.body == R"({"error":"Database connection failed"})");
 }
 
 TEST_CASE("http_response_set_header_adds_header", tags) {

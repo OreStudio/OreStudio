@@ -76,10 +76,13 @@ TEST_CASE("context_factory_configuration_streaming", tags) {
     BOOST_LOG_SEV(lg, debug) << "JSON output: " << json_output;
 
     CHECK(!json_output.empty());
-    CHECK(json_output.find("db.example.com") != std::string::npos);
-    CHECK(json_output.find("production") != std::string::npos);
-    CHECK(json_output.find("app_user") != std::string::npos);
-    CHECK(json_output.find("20") != std::string::npos);
+    // Check for specific key-value pairs to make the test more robust.
+    CHECK(json_output.find(R"("host":"db.example.com")") != std::string::npos);
+    CHECK(json_output.find(R"("database":"production")") != std::string::npos);
+    CHECK(json_output.find(R"("user":"app_user")") != std::string::npos);
+    CHECK(json_output.find(R"("pool_size":20)") != std::string::npos);
+    // Verify that the password is not serialized (rfl::Skip should exclude it).
+    CHECK(json_output.find("secret") == std::string::npos);
 }
 
 TEST_CASE("context_factory_configuration_default_values", tags) {
@@ -91,5 +94,8 @@ TEST_CASE("context_factory_configuration_default_values", tags) {
     CHECK(sut.pool_size == 0);
     CHECK(sut.num_attempts == 0);
     CHECK(sut.wait_time_in_seconds == 0);
-    CHECK(sut.database_options.host.empty());
+    CHECK(sut.database_options.host == "localhost");
+    CHECK(sut.database_options.port == 5432);
+    CHECK(sut.database_options.user.empty());
+    CHECK(sut.database_options.database.empty());
 }

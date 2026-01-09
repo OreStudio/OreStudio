@@ -236,6 +236,24 @@ public:
      */
     QIcon getNoFlagIcon() const;
 
+    /**
+     * @brief Invalidate currency icon cache and reload mappings.
+     *
+     * Clears the cached currency icons and reloads currency-to-image mappings
+     * from the server. This should be called when the currency list is reloaded
+     * to ensure icons reflect any image changes.
+     */
+    void reloadCurrencyIcons();
+
+    /**
+     * @brief Invalidate country icon cache and reload mappings.
+     *
+     * Clears the cached country icons and reloads country-to-image mappings
+     * from the server. This should be called when the country list is reloaded
+     * to ensure icons reflect any image changes.
+     */
+    void reloadCountryIcons();
+
 signals:
     /**
      * @brief Emitted when currency mappings have been loaded.
@@ -296,8 +314,6 @@ private slots:
     void onCurrencyImageSet();
     void onCountryImageSet();
     void onAllAvailableImagesLoaded();
-    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds);
 
 private:
     /**
@@ -400,6 +416,12 @@ private:
 
     // ISO codes that need selective refresh (from notifications)
     std::vector<std::string> pending_refresh_iso_codes_;
+
+    // Alpha2 codes that need selective refresh (from country change notifications)
+    std::vector<std::string> pending_refresh_alpha2_codes_;
+
+    // Flag to load images after country mappings are reloaded
+    bool load_images_after_country_mappings_{false};
 };
 
 }

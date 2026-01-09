@@ -33,7 +33,6 @@
 #include "ores.assets/messaging/assets_protocol.hpp"
 #include "ores.risk/messaging/currency_protocol.hpp"
 #include "ores.risk/messaging/country_protocol.hpp"
-#include "ores.risk/eventing/currency_changed_event.hpp"
 
 namespace ores::qt {
 
@@ -69,33 +68,6 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
         this, &ImageCache::onCountryImageSet);
     connect(all_available_watcher_, &QFutureWatcher<ImagesResult>::finished,
         this, &ImageCache::onAllAvailableImagesLoaded);
-
-    // Subscribe to currency change events to invalidate cache when flags change
-    const std::string event_name = std::string{
-        eventing::domain::event_traits<risk::eventing::currency_changed_event>::name};
-
-    connect(clientManager_, &ClientManager::notificationReceived,
-            this, &ImageCache::onNotificationReceived);
-
-    // Subscribe to events when connected
-    connect(clientManager_, &ClientManager::connected,
-            this, [this, event_name]() {
-        BOOST_LOG_SEV(lg(), info) << "Subscribing to currency change events for flag updates";
-        clientManager_->subscribeToEvent(event_name);
-    });
-
-    // Re-subscribe after reconnection
-    connect(clientManager_, &ClientManager::reconnected,
-            this, [this, event_name]() {
-        BOOST_LOG_SEV(lg(), info) << "Re-subscribing to currency change events after reconnect";
-        clientManager_->subscribeToEvent(event_name);
-    });
-
-    // If already connected, subscribe now
-    if (clientManager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to currency change events";
-        clientManager_->subscribeToEvent(event_name);
-    }
 }
 
 void ImageCache::loadCurrencyMappings() {
@@ -1045,8 +1017,65 @@ void ImageCache::onCountryMappingsLoaded() {
             BOOST_LOG_SEV(lg(), debug) << "Continuing loadAll() with country images.";
             loadImagesForCountries();
         }
+
+        // Handle selective refresh from country change notifications
+        if (load_images_after_country_mappings_) {
+            load_images_after_country_mappings_ = false;
+
+            if (!pending_refresh_alpha2_codes_.empty()) {
+                std::vector<std::string> image_ids_to_fetch;
+                std::unordered_set<std::string> unique_ids;
+
+                for (const auto& alpha2_code : pending_refresh_alpha2_codes_) {
+                    auto it = country_to_image_id_.find(alpha2_code);
+                    if (it != country_to_image_id_.end() && !it->second.empty()) {
+                        if (image_svg_cache_.find(it->second) == image_svg_cache_.end() &&
+                            unique_ids.find(it->second) == unique_ids.end()) {
+                            image_ids_to_fetch.push_back(it->second);
+                            unique_ids.insert(it->second);
+                        }
+                    }
+                    country_icons_.erase(alpha2_code);
+                }
+
+                BOOST_LOG_SEV(lg(), debug) << "Selective refresh: "
+                    << pending_refresh_alpha2_codes_.size() << " countries, "
+                    << image_ids_to_fetch.size() << " new images to fetch.";
+
+                for (const auto& alpha2_code : pending_refresh_alpha2_codes_) {
+                    auto map_it = country_to_image_id_.find(alpha2_code);
+                    if (map_it != country_to_image_id_.end()) {
+                        auto svg_it = image_svg_cache_.find(map_it->second);
+                        if (svg_it != image_svg_cache_.end()) {
+                            QIcon icon = svgToIcon(svg_it->second);
+                            if (!icon.isNull()) {
+                                country_icons_[alpha2_code] = icon;
+                            }
+                        }
+                    }
+                }
+
+                pending_refresh_alpha2_codes_.clear();
+
+                if (image_ids_to_fetch.empty()) {
+                    emit imagesLoaded();
+                    emit allLoaded();
+                } else {
+                    is_loading_images_ = true;
+                    ClientManager* clientMgr = clientManager_;
+                    QFuture<ImagesResult> future =
+                        QtConcurrent::run([clientMgr, image_ids_to_fetch]() -> ImagesResult {
+                            return fetchImagesInBatches(clientMgr, image_ids_to_fetch);
+                        });
+                    images_watcher_->setFuture(future);
+                }
+            } else {
+                loadImagesForCountries();
+            }
+        }
     } else {
         load_all_in_progress_ = false;
+        load_images_after_country_mappings_ = false;
         BOOST_LOG_SEV(lg(), error) << "Failed to load country mappings.";
         emit loadError(tr("Failed to load country-image mappings"));
     }
@@ -1161,35 +1190,6 @@ QIcon ImageCache::getCountryIcon(const std::string& alpha2_code) const {
 
 bool ImageCache::hasCountryIcon(const std::string& alpha2_code) const {
     return country_icons_.find(alpha2_code) != country_icons_.end();
-}
-
-void ImageCache::onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                         const QStringList& entityIds) {
-    static const std::string event_name = std::string{
-        eventing::domain::event_traits<risk::eventing::currency_changed_event>::name};
-    if (eventType.toStdString() != event_name) {
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Currency changed event received at "
-                              << timestamp.toString(Qt::ISODate).toStdString()
-                              << " for " << entityIds.size() << " currencies.";
-
-    if (entityIds.isEmpty()) {
-        // No specific currencies provided, reload everything
-        loadAll();
-        return;
-    }
-
-    // Store the ISO codes for selective refresh after mappings reload
-    pending_refresh_iso_codes_.clear();
-    for (const QString& id : entityIds) {
-        pending_refresh_iso_codes_.push_back(id.toStdString());
-    }
-
-    // Reload mappings; onMappingsLoaded will selectively update only affected currencies
-    load_images_after_mappings_ = true;
-    loadCurrencyMappings();
 }
 
 std::string ImageCache::getCountryImageId(const std::string& alpha2_code) const {
@@ -1315,6 +1315,30 @@ void ImageCache::onCountryImageSet() {
 
     emit countryImageSet(QString::fromStdString(result.alpha2_code),
         result.success, QString::fromStdString(result.message));
+}
+
+void ImageCache::reloadCurrencyIcons() {
+    BOOST_LOG_SEV(lg(), debug) << "reloadCurrencyIcons() called. Clearing "
+                               << currency_icons_.size() << " cached icons.";
+
+    // Clear cached icons so they will be re-rendered with updated mappings
+    currency_icons_.clear();
+
+    // Reload mappings from server and re-render icons
+    load_images_after_mappings_ = true;
+    loadCurrencyMappings();
+}
+
+void ImageCache::reloadCountryIcons() {
+    BOOST_LOG_SEV(lg(), debug) << "reloadCountryIcons() called. Clearing "
+                               << country_icons_.size() << " cached icons.";
+
+    // Clear cached icons so they will be re-rendered with updated mappings
+    country_icons_.clear();
+
+    // Reload mappings from server and re-render icons
+    load_images_after_country_mappings_ = true;
+    loadCountryMappings();
 }
 
 }

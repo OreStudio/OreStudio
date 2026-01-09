@@ -304,20 +304,19 @@ void CountryDetailDialog::onSaveClicked() {
             if (self->isAddMode_) {
                 emit self->countryCreated(
                     QString::fromStdString(country.alpha2_code));
-
-                QWidget* parent = self->parentWidget();
-                while (parent) {
-                    if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
-                        QMetaObject::invokeMethod(mdiSubWindow, "close",
-                            Qt::QueuedConnection);
-                        break;
-                    }
-                    parent = parent->parentWidget();
-                }
             } else {
-                self->currentCountry_ = country;
                 emit self->countryUpdated(
                     QString::fromStdString(country.alpha2_code));
+            }
+
+            QWidget* parent = self->parentWidget();
+            while (parent) {
+                if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
+                    QMetaObject::invokeMethod(mdiSubWindow, "close",
+                        Qt::QueuedConnection);
+                    break;
+                }
+                parent = parent->parentWidget();
             }
         } else {
             BOOST_LOG_SEV(lg(), error) << "Country save failed: " << message;

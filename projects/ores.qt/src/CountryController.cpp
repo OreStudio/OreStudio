@@ -20,6 +20,8 @@
 #include "ores.qt/CountryController.hpp"
 
 #include <QPointer>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 #include "ores.qt/CountryMdiWindow.hpp"
 #include "ores.qt/CountryDetailDialog.hpp"
 #include "ores.qt/CountryHistoryDialog.hpp"
@@ -27,6 +29,8 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.risk/eventing/country_changed_event.hpp"
+#include "ores.risk/messaging/protocol.hpp"
+#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -341,6 +345,8 @@ void CountryController::onShowCountryHistory(const QString& alpha2Code) {
             this, [this](const QString& message) {
         emit errorMessage(message);
     });
+    connect(historyDialog, &CountryHistoryDialog::revertVersionRequested,
+            this, &CountryController::onRevertCountry);
 
     // Load history data
     historyDialog->loadHistory();
@@ -439,6 +445,84 @@ void CountryController::onNotificationReceived(
             }
         }
     }
+}
+
+void CountryController::onRevertCountry(const risk::domain::country& country) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting country: " << country.alpha2_code;
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Revert requested but client not connected.";
+        emit errorMessage("Not connected to server. Please login.");
+        return;
+    }
+
+    risk::domain::country countryToSave = country;
+    countryToSave.recorded_by = username_.toStdString();
+
+    QPointer<CountryController> self = this;
+    QFuture<std::pair<bool, std::string>> future =
+        QtConcurrent::run([self, countryToSave]() -> std::pair<bool, std::string> {
+            if (!self) return {false, ""};
+
+            BOOST_LOG_SEV(lg(), debug) << "Sending save country request for revert: "
+                                       << countryToSave.alpha2_code;
+
+            using comms::messaging::frame;
+            using comms::messaging::message_type;
+            using risk::messaging::save_country_request;
+            using risk::messaging::save_country_response;
+
+            save_country_request request{countryToSave};
+            auto payload = request.serialize();
+            frame request_frame = frame(message_type::save_country_request,
+                0, std::move(payload));
+
+            auto response_result =
+                self->clientManager_->sendRequest(std::move(request_frame));
+
+            if (!response_result)
+                return {false, "Failed to communicate with server"};
+
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result)
+                return {false, "Failed to decompress server response"};
+
+            auto response = save_country_response::deserialize(*payload_result);
+
+            bool result = false;
+            std::string message = "Invalid server response";
+            if (response) {
+                result = response->success;
+                message = response->message;
+            }
+
+            return {result, message};
+        });
+
+    auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(self);
+    connect(watcher, &QFutureWatcher<std::pair<bool, std::string>>::finished, self,
+        [self, watcher, alpha2_code = country.alpha2_code]() {
+            if (!self) {
+                watcher->deleteLater();
+                return;
+            }
+
+            auto [success, message] = watcher->result();
+            watcher->deleteLater();
+
+            if (success) {
+                BOOST_LOG_SEV(lg(), info) << "Country reverted successfully: "
+                                          << alpha2_code;
+                emit self->statusMessage(QString("Successfully reverted country: %1")
+                    .arg(QString::fromStdString(alpha2_code)));
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Country revert failed: " << message;
+                emit self->errorMessage(QString("Failed to revert country: %1")
+                    .arg(QString::fromStdString(message)));
+            }
+        });
+
+    watcher->setFuture(future);
 }
 
 }

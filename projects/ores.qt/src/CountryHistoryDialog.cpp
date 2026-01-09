@@ -377,7 +377,7 @@ void CountryHistoryDialog::setupToolbar() {
     // Create Reload action
     reloadAction_ = new QAction("Reload", this);
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor));
+        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
     reloadAction_->setToolTip("Reload history from server");
     connect(reloadAction_, &QAction::triggered, this,
         &CountryHistoryDialog::onReloadClicked);
@@ -442,16 +442,31 @@ void CountryHistoryDialog::onRevertClicked() {
     if (index < 0 || index >= static_cast<int>(history_.size()))
         return;
 
-    const auto& country = history_[index];
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to country version "
-                              << country.version;
+    // Get the selected version and the previous (older) version
+    const auto& current = history_[index];
+
+    // If this is the oldest version, there's no previous version to revert to
+    if (index == static_cast<int>(history_.size()) - 1) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot revert oldest version - no previous version exists";
+        MessageBoxHelper::information(this, "Cannot Revert",
+            "This is the oldest version. There is no previous version to revert to.");
+        return;
+    }
+
+    // The "previous" version is the one we want to revert TO (the "old" side in the diff)
+    const auto& previous = history_[index + 1];
+
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert from version "
+                              << current.version << " to version "
+                              << previous.version;
 
     // Confirm with user
     auto reply = MessageBoxHelper::question(this, "Revert Country",
-        QString("Are you sure you want to revert '%1' to version %2?\n\n"
-                "This will create a new version with the data from version %2.")
+        QString("Are you sure you want to revert '%1' from version %2 back to version %3?\n\n"
+                "This will create a new version with the data from version %3.")
             .arg(alpha2Code_)
-            .arg(country.version),
+            .arg(current.version)
+            .arg(previous.version),
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
@@ -459,7 +474,10 @@ void CountryHistoryDialog::onRevertClicked() {
         return;
     }
 
-    emit revertVersionRequested(country);
+    // Use the PREVIOUS version's data (the "old" side of the diff) with the latest version number
+    risk::domain::country countryToRevert = previous;
+    countryToRevert.version = history_[0].version;
+    emit revertVersionRequested(countryToRevert);
 }
 
 void CountryHistoryDialog::onReloadClicked() {

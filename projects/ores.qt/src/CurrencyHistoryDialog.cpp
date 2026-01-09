@@ -396,7 +396,7 @@ void CurrencyHistoryDialog::setupToolbar() {
     // Create Reload action
     reloadAction_ = new QAction("Reload", this);
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor));
+        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
     reloadAction_->setToolTip("Reload history from server");
     connect(reloadAction_, &QAction::triggered, this,
         &CurrencyHistoryDialog::onReloadClicked);
@@ -461,16 +461,31 @@ void CurrencyHistoryDialog::onRevertClicked() {
     if (index < 0 || index >= static_cast<int>(history_.versions.size()))
         return;
 
-    const auto& version = history_.versions[index];
-    BOOST_LOG_SEV(lg(), info) << "Requesting revert to currency version "
-                              << version.version_number;
+    // Get the selected version and the previous (older) version
+    const auto& current = history_.versions[index];
+
+    // If this is the oldest version, there's no previous version to revert to
+    if (index == static_cast<int>(history_.versions.size()) - 1) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot revert oldest version - no previous version exists";
+        MessageBoxHelper::information(this, "Cannot Revert",
+            "This is the oldest version. There is no previous version to revert to.");
+        return;
+    }
+
+    // The "previous" version is the one we want to revert TO (the "old" side in the diff)
+    const auto& previous = history_.versions[index + 1];
+
+    BOOST_LOG_SEV(lg(), info) << "Requesting revert from version "
+                              << current.version_number << " to version "
+                              << previous.version_number;
 
     // Confirm with user
     auto reply = MessageBoxHelper::question(this, "Revert Currency",
-        QString("Are you sure you want to revert '%1' to version %2?\n\n"
-                "This will create a new version with the data from version %2.")
+        QString("Are you sure you want to revert '%1' from version %2 back to version %3?\n\n"
+                "This will create a new version with the data from version %3.")
             .arg(isoCode_)
-            .arg(version.version_number),
+            .arg(current.version_number)
+            .arg(previous.version_number),
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
@@ -478,7 +493,10 @@ void CurrencyHistoryDialog::onRevertClicked() {
         return;
     }
 
-    emit revertVersionRequested(version.data);
+    // Use the PREVIOUS version's data (the "old" side of the diff) with the latest version number
+    risk::domain::currency currency = previous.data;
+    currency.version = history_.versions[0].version_number;
+    emit revertVersionRequested(currency);
 }
 
 void CurrencyHistoryDialog::onReloadClicked() {

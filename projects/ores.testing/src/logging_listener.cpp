@@ -58,7 +58,9 @@ std::string test_module_name = "ores.tests"; // default fallback
  * Controlled by ORES_TEST_LOG_ENABLED. Defaults to false (disabled).
  */
 bool is_logging_enabled() {
-    return env::get_value_or_default("ORES_TEST_LOG_ENABLED", "false") == "true";
+    static const bool enabled =
+        env::get_value_or_default("ORES_TEST_LOG_ENABLED", "false") == "true";
+    return enabled;
 }
 
 /**
@@ -67,7 +69,9 @@ bool is_logging_enabled() {
  * Controlled by ORES_TEST_LOG_LEVEL. Defaults to "trace".
  */
 std::string get_log_level() {
-    return env::get_value_or_default("ORES_TEST_LOG_LEVEL", "trace");
+    static const std::string level =
+        env::get_value_or_default("ORES_TEST_LOG_LEVEL", "trace");
+    return level;
 }
 
 /**
@@ -76,7 +80,9 @@ std::string get_log_level() {
  * Controlled by ORES_TEST_LOG_CONSOLE. Defaults to false.
  */
 bool is_console_output_enabled() {
-    return env::get_value_or_default("ORES_TEST_LOG_CONSOLE", "false") == "true";
+    static const bool enabled =
+        env::get_value_or_default("ORES_TEST_LOG_CONSOLE", "false") == "true";
+    return enabled;
 }
 
 /**

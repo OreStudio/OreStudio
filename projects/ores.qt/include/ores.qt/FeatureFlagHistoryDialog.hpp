@@ -29,7 +29,7 @@
 #include <QAction>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ui_FeatureFlagHistoryDialog.h"
 
 namespace Ui {
@@ -49,7 +49,7 @@ private:
         "ores.qt.feature_flag_history_dialog";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

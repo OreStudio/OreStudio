@@ -36,7 +36,7 @@ namespace ores::qt {
 
 using comms::messaging::frame;
 using comms::messaging::message_type;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 const QIcon& FeatureFlagHistoryDialog::getHistoryIcon() const {
     static const QIcon historyIcon(":/icons/ic_fluent_history_20_regular.svg");

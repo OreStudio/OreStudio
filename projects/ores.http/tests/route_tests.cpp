@@ -21,7 +21,7 @@
 
 #include <regex>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -42,7 +42,7 @@ ores::http::domain::route make_route(const std::string& pattern,
 }
 
 using namespace ores::http::domain;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("route_match_simple_path", tags) {
     auto lg(make_logger(test_suite));

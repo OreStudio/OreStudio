@@ -26,7 +26,7 @@
 #include <sstream>
 #include <variant>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -36,7 +36,7 @@ const std::string tags("[add_options]");
 }
 
 using namespace ores::cli::config;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("add_currency_options_required_fields", tags) {
     auto lg(make_logger(test_suite));

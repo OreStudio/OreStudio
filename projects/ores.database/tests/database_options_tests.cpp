@@ -19,6 +19,7 @@
  */
 #include "ores.database/domain/database_options.hpp"
 
+#include <sstream>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 
@@ -51,4 +52,92 @@ TEST_CASE("database_options_to_credentials", tags) {
     REQUIRE(creds.password == "test_pass");
 
     BOOST_LOG_SEV(lg, info) << "Database options to credentials test passed";
+}
+
+TEST_CASE("database_options_default_values", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing database_options default values";
+
+    database_options sut;
+
+    CHECK(sut.host == "localhost");
+    CHECK(sut.port == 5432);
+    CHECK(sut.user.empty());
+    CHECK(sut.database.empty());
+}
+
+TEST_CASE("database_options_custom_values", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing database_options with custom values";
+
+    database_options sut;
+    sut.host = "db.production.example.com";
+    sut.port = 5433;
+    sut.database = "production_db";
+    sut.user = "app_user";
+    sut.password = "secret123";
+
+    CHECK(sut.host == "db.production.example.com");
+    CHECK(sut.port == 5433);
+    CHECK(sut.database == "production_db");
+    CHECK(sut.user == "app_user");
+}
+
+TEST_CASE("database_options_streaming", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing database_options streaming";
+
+    database_options sut;
+    sut.host = "test-host";
+    sut.port = 5432;
+    sut.database = "testdb";
+    sut.user = "testuser";
+    sut.password = "testpass";
+
+    std::ostringstream os;
+    os << sut;
+    const std::string output = os.str();
+
+    BOOST_LOG_SEV(lg, debug) << "Output: " << output;
+
+    CHECK(!output.empty());
+    CHECK(output.find("test-host") != std::string::npos);
+    CHECK(output.find("testdb") != std::string::npos);
+    CHECK(output.find("testuser") != std::string::npos);
+}
+
+TEST_CASE("database_options_to_credentials_with_defaults", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing to_credentials with default host/port";
+
+    database_options opts;
+    opts.database = "mydb";
+    opts.user = "myuser";
+    opts.password = "mypass";
+
+    auto creds = to_credentials(opts);
+
+    CHECK(creds.host == "localhost");
+    CHECK(creds.port == 5432);
+    CHECK(creds.dbname == "mydb");
+    CHECK(creds.user == "myuser");
+    CHECK(creds.password == "mypass");
+}
+
+TEST_CASE("database_options_to_credentials_different_port", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing to_credentials with non-standard port";
+
+    database_options opts;
+    opts.host = "remote-db.example.com";
+    opts.port = 5433;
+    opts.database = "remotedb";
+    opts.user = "remoteuser";
+    opts.password = "remotepass";
+
+    auto creds = to_credentials(opts);
+
+    CHECK(creds.host == "remote-db.example.com");
+    CHECK(creds.port == 5433);
+    CHECK(creds.dbname == "remotedb");
 }

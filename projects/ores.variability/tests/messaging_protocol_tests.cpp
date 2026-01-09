@@ -47,19 +47,19 @@ using namespace ores::variability::messaging;
 using ores::variability::domain::feature_flags;
 using namespace ores::logging;
 
-TEST_CASE("list_feature_flags_request_serialize_deserialize", tags) {
-    list_feature_flags_request e;
+TEST_CASE("get_feature_flags_request_serialize_deserialize", tags) {
+    get_feature_flags_request e;
 
     const auto serialized = e.serialize();
-    const auto r = list_feature_flags_request::deserialize(serialized);
+    const auto r = get_feature_flags_request::deserialize(serialized);
 
     REQUIRE(r.has_value());
 }
 
-TEST_CASE("list_feature_flags_request_empty_payload", tags) {
+TEST_CASE("get_feature_flags_request_empty_payload", tags) {
     auto lg(make_logger(test_suite));
 
-    list_feature_flags_request rq;
+    get_feature_flags_request rq;
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
     // Serialization should produce empty buffer (no fields in request)
@@ -67,19 +67,19 @@ TEST_CASE("list_feature_flags_request_empty_payload", tags) {
     CHECK(serialized.empty());
 }
 
-TEST_CASE("list_feature_flags_response_empty", tags) {
+TEST_CASE("get_feature_flags_response_empty", tags) {
     auto lg(make_logger(test_suite));
 
-    list_feature_flags_response rp;
+    get_feature_flags_response rp;
     BOOST_LOG_SEV(lg, info) << "Response with empty flags: " << rp;
 
     CHECK(rp.feature_flags.empty());
 }
 
-TEST_CASE("list_feature_flags_response_with_single_flag", tags) {
+TEST_CASE("get_feature_flags_response_with_single_flag", tags) {
     auto lg(make_logger(test_suite));
 
-    list_feature_flags_response rp;
+    get_feature_flags_response rp;
     rp.feature_flags.push_back(generate_feature_flag());
     BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
@@ -87,10 +87,10 @@ TEST_CASE("list_feature_flags_response_with_single_flag", tags) {
     CHECK(!rp.feature_flags[0].name.empty());
 }
 
-TEST_CASE("list_feature_flags_response_with_multiple_flags", tags) {
+TEST_CASE("get_feature_flags_response_with_multiple_flags", tags) {
     auto lg(make_logger(test_suite));
 
-    list_feature_flags_response rp;
+    get_feature_flags_response rp;
 
     const auto expected_size = 5;
     rp.feature_flags.reserve(expected_size);
@@ -102,14 +102,14 @@ TEST_CASE("list_feature_flags_response_with_multiple_flags", tags) {
     CHECK(rp.feature_flags.size() == expected_size);
 }
 
-TEST_CASE("list_feature_flags_response_serialize_deserialize_empty", tags) {
+TEST_CASE("get_feature_flags_response_serialize_deserialize_empty", tags) {
     auto lg(make_logger(test_suite));
 
-    list_feature_flags_response e;
+    get_feature_flags_response e;
     BOOST_LOG_SEV(lg, info) << "Expected (empty): " << e;
 
     const auto serialized = e.serialize();
-    const auto r = list_feature_flags_response::deserialize(serialized);
+    const auto r = get_feature_flags_response::deserialize(serialized);
 
     REQUIRE(r.has_value());
     const auto& a = r.value();
@@ -118,10 +118,10 @@ TEST_CASE("list_feature_flags_response_serialize_deserialize_empty", tags) {
     CHECK(a.feature_flags.empty());
 }
 
-TEST_CASE("list_feature_flags_response_serialize_deserialize_with_flags", tags) {
+TEST_CASE("get_feature_flags_response_serialize_deserialize_with_flags", tags) {
     auto lg(make_logger(test_suite));
 
-    list_feature_flags_response e;
+    get_feature_flags_response e;
 
     const auto expected_size = 3;
     e.feature_flags.reserve(expected_size);
@@ -138,7 +138,7 @@ TEST_CASE("list_feature_flags_response_serialize_deserialize_with_flags", tags) 
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
-    const auto r = list_feature_flags_response::deserialize(serialized);
+    const auto r = get_feature_flags_response::deserialize(serialized);
 
     REQUIRE(r.has_value());
     const auto& a = r.value();
@@ -158,10 +158,10 @@ TEST_CASE("list_feature_flags_response_serialize_deserialize_with_flags", tags) 
     }
 }
 
-TEST_CASE("list_feature_flags_response_serialize_deserialize_with_faker", tags) {
+TEST_CASE("get_feature_flags_response_serialize_deserialize_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    list_feature_flags_response e;
+    get_feature_flags_response e;
 
     const auto expected_size = 5;
     e.feature_flags.reserve(expected_size);
@@ -171,7 +171,7 @@ TEST_CASE("list_feature_flags_response_serialize_deserialize_with_faker", tags) 
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
-    const auto r = list_feature_flags_response::deserialize(serialized);
+    const auto r = get_feature_flags_response::deserialize(serialized);
 
     REQUIRE(r.has_value());
     const auto& a = r.value();
@@ -195,7 +195,7 @@ TEST_CASE("create_multiple_random_feature_flag_responses", tags) {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 3; ++i) {
-        list_feature_flags_response rp;
+        get_feature_flags_response rp;
 
         const int flag_count = faker::number::integer(1, 10);
         for (int j = 0; j < flag_count; ++j) {

@@ -35,10 +35,10 @@ using namespace ores::iam::messaging;
 using ores::iam::domain::account;
 using namespace ores::logging;
 
-TEST_CASE("create_account_request_with_valid_fields", tags) {
+TEST_CASE("save_account_request_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));
 
-    create_account_request rq;
+    save_account_request rq;
     rq.username = "testuser";
     rq.password = "test_password";
     rq.totp_secret = "JBSWY3DPEHPK3PXP";
@@ -53,16 +53,16 @@ TEST_CASE("create_account_request_with_valid_fields", tags) {
     CHECK(rq.recorded_by == "admin");
 }
 
-TEST_CASE("create_account_request_with_faker", tags) {
+TEST_CASE("save_account_request_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    create_account_request rq;
+    save_account_request rq;
     rq.username = std::string(faker::internet::username());
     rq.password = std::string(faker::internet::password());
     rq.totp_secret = faker::string::alphanumeric(16);
     rq.email = std::string(faker::internet::email());
     rq.recorded_by = std::string(faker::internet::username());
-    BOOST_LOG_SEV(lg, info) << "create_account_request: " << rq;
+    BOOST_LOG_SEV(lg, info) << "save_account_request: " << rq;
 
     CHECK(!rq.username.empty());
     CHECK(!rq.password.empty());
@@ -71,10 +71,10 @@ TEST_CASE("create_account_request_with_faker", tags) {
     CHECK(!rq.recorded_by.empty());
 }
 
-TEST_CASE("create_account_request_serialize_deserialize", tags) {
+TEST_CASE("save_account_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    create_account_request e;
+    save_account_request e;
     e.username = std::string(faker::internet::username());
     e.password = std::string(faker::internet::password());
     e.totp_secret = faker::string::alphanumeric(20);
@@ -83,7 +83,7 @@ TEST_CASE("create_account_request_serialize_deserialize", tags) {
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
-    const auto r = create_account_request::deserialize(serialized);
+    const auto r = save_account_request::deserialize(serialized);
 
     REQUIRE(r.has_value());
     const auto& a = r.value();
@@ -95,25 +95,25 @@ TEST_CASE("create_account_request_serialize_deserialize", tags) {
     CHECK(a.email == e.email);
 }
 
-TEST_CASE("create_account_response_with_valid_uuid", tags) {
+TEST_CASE("save_account_response_with_valid_uuid", tags) {
     auto lg(make_logger(test_suite));
 
-    create_account_response rp;
+    save_account_response rp;
     rp.account_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, info) << "Response: " << rp;
 
     CHECK(!rp.account_id.is_nil());
 }
 
-TEST_CASE("create_account_response_serialize_deserialize", tags) {
+TEST_CASE("save_account_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    create_account_response e;
+    save_account_response e;
     e.account_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
-    const auto r = create_account_response::deserialize(serialized);
+    const auto r = save_account_response::deserialize(serialized);
 
     REQUIRE(r.has_value());
     const auto& a = r.value();
@@ -122,24 +122,24 @@ TEST_CASE("create_account_response_serialize_deserialize", tags) {
     CHECK(a.account_id == e.account_id);
 }
 
-TEST_CASE("list_accounts_request_serialize_deserialize", tags) {
+TEST_CASE("get_accounts_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    list_accounts_request e;
+    get_accounts_request e;
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
-    const auto r = list_accounts_request::deserialize(serialized);
+    const auto r = get_accounts_request::deserialize(serialized);
 
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 }
 
-TEST_CASE("list_accounts_response_with_faker", tags) {
+TEST_CASE("get_accounts_response_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    list_accounts_response rp;
+    get_accounts_response rp;
 
     const auto expected_size = 3;
     rp.accounts.reserve(expected_size);
@@ -160,10 +160,10 @@ TEST_CASE("list_accounts_response_with_faker", tags) {
     CHECK(rp.accounts.size() == expected_size);
 }
 
-TEST_CASE("list_accounts_response_serialize_deserialize", tags) {
+TEST_CASE("get_accounts_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    list_accounts_response e;
+    get_accounts_response e;
 
     const auto expected_size = 2;
     e.accounts.reserve(expected_size);
@@ -182,7 +182,7 @@ TEST_CASE("list_accounts_response_serialize_deserialize", tags) {
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
-    const auto r = list_accounts_response::deserialize(serialized);
+    const auto r = get_accounts_response::deserialize(serialized);
 
     REQUIRE(r.has_value());
     const auto& a = r.value();
@@ -466,11 +466,11 @@ TEST_CASE("create_multiple_random_login_requests", tags) {
     }
 }
 
-TEST_CASE("create_multiple_random_create_account_requests", tags) {
+TEST_CASE("create_multiple_random_save_account_requests", tags) {
     auto lg(make_logger(test_suite));
 
     for (int i = 0; i < 3; ++i) {
-        create_account_request rq;
+        save_account_request rq;
         rq.username = std::string(faker::internet::username());
         rq.password = std::string(faker::internet::password());
         rq.totp_secret = faker::string::alphanumeric(16);

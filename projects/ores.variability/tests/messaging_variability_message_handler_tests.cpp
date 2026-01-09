@@ -72,7 +72,7 @@ using ores::utility::serialization::error_code;
 using ores::testing::scoped_database_helper;
 using ores::variability::repository::feature_flags_repository;
 
-TEST_CASE("handle_list_feature_flags_request_empty_database", tags) {
+TEST_CASE("handle_get_feature_flags_request_empty_database", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
@@ -80,7 +80,7 @@ TEST_CASE("handle_list_feature_flags_request_empty_database", tags) {
 
     // Database template contains schema only, no seeded data
     // Verify handler works correctly with an empty database
-    list_feature_flags_request rq;
+    get_feature_flags_request rq;
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
     const auto payload = rq.serialize();
@@ -88,12 +88,12 @@ TEST_CASE("handle_list_feature_flags_request_empty_database", tags) {
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
-            message_type::list_feature_flags_request,
+            message_type::get_feature_flags_request,
             payload, "127.0.0.1:12345");
 
         REQUIRE(r.has_value());
         const auto response_result =
-            list_feature_flags_response::deserialize(r.value());
+            get_feature_flags_response::deserialize(r.value());
         REQUIRE(response_result.has_value());
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
@@ -103,7 +103,7 @@ TEST_CASE("handle_list_feature_flags_request_empty_database", tags) {
     });
 }
 
-TEST_CASE("handle_list_feature_flags_request_with_additional_flags", tags) {
+TEST_CASE("handle_get_feature_flags_request_with_additional_flags", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
@@ -122,7 +122,7 @@ TEST_CASE("handle_list_feature_flags_request_with_additional_flags", tags) {
 
     variability_message_handler sut(h.context());
 
-    list_feature_flags_request rq;
+    get_feature_flags_request rq;
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
     const auto payload = rq.serialize();
@@ -130,12 +130,12 @@ TEST_CASE("handle_list_feature_flags_request_with_additional_flags", tags) {
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
-            message_type::list_feature_flags_request,
+            message_type::get_feature_flags_request,
             payload, "127.0.0.1:12345");
 
         REQUIRE(r.has_value());
         const auto response_result =
-            list_feature_flags_response::deserialize(r.value());
+            get_feature_flags_response::deserialize(r.value());
         REQUIRE(response_result.has_value());
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
@@ -144,7 +144,7 @@ TEST_CASE("handle_list_feature_flags_request_with_additional_flags", tags) {
     });
 }
 
-TEST_CASE("handle_list_feature_flags_request_multiple_times", tags) {
+TEST_CASE("handle_get_feature_flags_request_multiple_times", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
@@ -166,17 +166,17 @@ TEST_CASE("handle_list_feature_flags_request_multiple_times", tags) {
 
     // Call multiple times to ensure consistency
     for (int i = 0; i < 3; ++i) {
-        list_feature_flags_request rq;
+        get_feature_flags_request rq;
         const auto payload = rq.serialize();
 
         run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
             auto r = co_await sut.handle_message(
-                message_type::list_feature_flags_request,
+                message_type::get_feature_flags_request,
                 payload, "127.0.0.1:12345");
 
             REQUIRE(r.has_value());
             const auto response_result =
-                list_feature_flags_response::deserialize(r.value());
+                get_feature_flags_response::deserialize(r.value());
             REQUIRE(response_result.has_value());
             const auto& rp = response_result.value();
             BOOST_LOG_SEV(lg, info) << "Response " << i << ": "
@@ -206,7 +206,7 @@ TEST_CASE("handle_invalid_message_type", tags) {
     });
 }
 
-TEST_CASE("handle_list_feature_flags_request_verifies_content", tags) {
+TEST_CASE("handle_get_feature_flags_request_verifies_content", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
@@ -234,18 +234,18 @@ TEST_CASE("handle_list_feature_flags_request_verifies_content", tags) {
 
     variability_message_handler sut(h.context());
 
-    list_feature_flags_request rq;
+    get_feature_flags_request rq;
     const auto payload = rq.serialize();
 
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
-            message_type::list_feature_flags_request,
+            message_type::get_feature_flags_request,
             payload, "127.0.0.1:12345");
 
         REQUIRE(r.has_value());
         const auto response_result =
-            list_feature_flags_response::deserialize(r.value());
+            get_feature_flags_response::deserialize(r.value());
         REQUIRE(response_result.has_value());
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
@@ -273,7 +273,7 @@ TEST_CASE("handle_list_feature_flags_request_verifies_content", tags) {
     });
 }
 
-TEST_CASE("handle_list_feature_flags_request_with_many_flags", tags) {
+TEST_CASE("handle_get_feature_flags_request_with_many_flags", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
@@ -292,18 +292,18 @@ TEST_CASE("handle_list_feature_flags_request_with_many_flags", tags) {
 
     variability_message_handler sut(h.context());
 
-    list_feature_flags_request rq;
+    get_feature_flags_request rq;
     const auto payload = rq.serialize();
 
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
-            message_type::list_feature_flags_request,
+            message_type::get_feature_flags_request,
             payload, "127.0.0.1:12345");
 
         REQUIRE(r.has_value());
         const auto response_result =
-            list_feature_flags_response::deserialize(r.value());
+            get_feature_flags_response::deserialize(r.value());
         REQUIRE(response_result.has_value());
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response with " << rp.feature_flags.size()
@@ -313,7 +313,7 @@ TEST_CASE("handle_list_feature_flags_request_with_many_flags", tags) {
     });
 }
 
-TEST_CASE("handle_list_feature_flags_request_from_different_endpoints", tags) {
+TEST_CASE("handle_get_feature_flags_request_from_different_endpoints", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table);
@@ -331,7 +331,7 @@ TEST_CASE("handle_list_feature_flags_request_from_different_endpoints", tags) {
 
     variability_message_handler sut(h.context());
 
-    list_feature_flags_request rq;
+    get_feature_flags_request rq;
     const auto payload = rq.serialize();
 
     boost::asio::io_context io_ctx;
@@ -346,12 +346,12 @@ TEST_CASE("handle_list_feature_flags_request_from_different_endpoints", tags) {
     for (const auto& endpoint : endpoints) {
         run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
             auto r = co_await sut.handle_message(
-                message_type::list_feature_flags_request,
+                message_type::get_feature_flags_request,
                 payload, endpoint);
 
             REQUIRE(r.has_value());
             const auto response_result =
-                list_feature_flags_response::deserialize(r.value());
+                get_feature_flags_response::deserialize(r.value());
             REQUIRE(response_result.has_value());
             const auto& rp = response_result.value();
             BOOST_LOG_SEV(lg, info) << "Response from " << endpoint << ": "

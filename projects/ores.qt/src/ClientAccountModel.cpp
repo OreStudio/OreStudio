@@ -207,7 +207,7 @@ void ClientAccountModel::fetch_accounts(std::uint32_t offset, std::uint32_t limi
             if (!self) return {false, {}, {}, 0};
 
             // Fetch accounts using typed request
-            iam::messaging::list_accounts_request accounts_request;
+            iam::messaging::get_accounts_request accounts_request;
             accounts_request.offset = offset;
             accounts_request.limit = limit;
 

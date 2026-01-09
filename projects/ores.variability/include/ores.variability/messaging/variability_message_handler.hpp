@@ -34,7 +34,7 @@ namespace ores::variability::messaging {
  *
  * Currently handles:
  *
- * - list_feature_flags_request: Retrieves all feature flags from the repository
+ * - get_feature_flags_request: Retrieves all feature flags from the repository
  * - save_feature_flag_request: Creates or updates a feature flag
  * - delete_feature_flag_request: Deletes a feature flag by name
  */
@@ -72,10 +72,10 @@ public:
 
 private:
     /**
-     * @brief Handle list_feature_flags_request message.
+     * @brief Handle get_feature_flags_request message.
      */
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
-    handle_list_feature_flags_request(std::span<const std::byte> payload);
+    handle_get_feature_flags_request(std::span<const std::byte> payload);
 
     /**
      * @brief Handle save_feature_flag_request message.

@@ -71,10 +71,10 @@ accounts_message_handler::handle_message(message_type type,
     }
 
     switch (type) {
-    case message_type::create_account_request:
-        co_return co_await handle_create_account_request(payload, remote_address);
-    case message_type::list_accounts_request:
-        co_return co_await handle_list_accounts_request(payload, remote_address);
+    case message_type::save_account_request:
+        co_return co_await handle_save_account_request(payload, remote_address);
+    case message_type::get_accounts_request:
+        co_return co_await handle_get_accounts_request(payload, remote_address);
     case message_type::list_login_info_request:
         co_return co_await handle_list_login_info_request(payload, remote_address);
     case message_type::login_request:
@@ -91,8 +91,8 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_create_initial_admin_request(payload, remote_address);
     case message_type::bootstrap_status_request:
         co_return co_await handle_bootstrap_status_request(payload);
-    case message_type::update_account_request:
-        co_return co_await handle_update_account_request(payload, remote_address);
+    case message_type::save_account_request:
+        co_return co_await handle_save_account_request(payload, remote_address);
     case message_type::get_account_history_request:
         co_return co_await handle_get_account_history_request(payload, remote_address);
     case message_type::reset_password_request:
@@ -132,9 +132,9 @@ accounts_message_handler::handle_message(message_type type,
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_create_account_request(std::span<const std::byte> payload,
+handle_save_account_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing create_account_request from "
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_account_request from "
                                << remote_address;
 
     auto auth_result = check_authorization(remote_address,
@@ -143,9 +143,9 @@ handle_create_account_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
-    auto request_result = create_account_request::deserialize(payload);
+    auto request_result = save_account_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize create_account_request";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_account_request";
         co_return std::unexpected(request_result.error());
     }
 
@@ -160,15 +160,15 @@ handle_create_account_request(std::span<const std::byte> payload,
                               << " for username: " << account.username
                               << " with Viewer role assigned";
 
-    create_account_response response{account.id};
+    save_account_response response{account.id};
     co_return response.serialize();
 }
 
 accounts_message_handler::handler_result
 accounts_message_handler::
-handle_list_accounts_request(std::span<const std::byte> payload,
+handle_get_accounts_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing list_accounts_request from "
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_accounts_request from "
                                << remote_address;
 
     auto auth_result = check_authorization(remote_address,
@@ -177,9 +177,9 @@ handle_list_accounts_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
-    auto request_result = list_accounts_request::deserialize(payload);
+    auto request_result = get_accounts_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize list_accounts_request.";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_accounts_request.";
         co_return std::unexpected(request_result.error());
     }
 
@@ -203,7 +203,7 @@ handle_list_accounts_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << accounts.size()
                               << " accounts (total available: " << total_count << ").";
 
-    list_accounts_response response{
+    get_accounts_response response{
         .accounts = std::move(accounts),
         .total_available_count = total_count
     };
@@ -766,14 +766,14 @@ handle_logout_request(std::span<const std::byte> payload,
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_update_account_request(std::span<const std::byte> payload,
+handle_save_account_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing update_account_request from "
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_account_request from "
                                << remote_address;
 
-    auto request_result = update_account_request::deserialize(payload);
+    auto request_result = save_account_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize update_account_request";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_account_request";
         co_return std::unexpected(request_result.error());
     }
 
@@ -785,7 +785,7 @@ handle_update_account_request(std::span<const std::byte> payload,
     if (!session) {
         BOOST_LOG_SEV(lg(), warn) << "Update account denied: no active session for "
                                   << remote_address;
-        update_account_response response{
+        save_account_response response{
             .success = false,
             .error_message = "Authentication required to update accounts"
         };
@@ -798,7 +798,7 @@ handle_update_account_request(std::span<const std::byte> payload,
         BOOST_LOG_SEV(lg(), warn) << "Update account denied: requester "
                                   << boost::uuids::to_string(session->account_id)
                                   << " lacks accounts:update permission";
-        update_account_response response{
+        save_account_response response{
             .success = false,
             .error_message = "Permission denied: accounts:update required"
         };
@@ -814,7 +814,7 @@ handle_update_account_request(std::span<const std::byte> payload,
                                       << boost::uuids::to_string(request.account_id);
         }
 
-        update_account_response response{
+        save_account_response response{
             .success = success,
             .error_message = success ? "" : "Failed to update account"
         };
@@ -823,7 +823,7 @@ handle_update_account_request(std::span<const std::byte> payload,
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to update account: " << e.what();
 
-        update_account_response response{
+        save_account_response response{
             .success = false,
             .error_message = std::string("Failed to update account: ") + e.what()
         };

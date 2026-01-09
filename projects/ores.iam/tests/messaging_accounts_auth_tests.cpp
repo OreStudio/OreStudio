@@ -48,8 +48,8 @@ const std::string_view test_suite("ores.iam.tests");
 const std::string database_table("ores.accounts");
 const std::string tags("[messaging][handler][auth]");
 
-create_account_request to_create_account_request(const domain::account& a) {
-    create_account_request r;
+save_account_request to_save_account_request(const domain::account& a) {
+    save_account_request r;
     r.username = a.username;
     r.password = faker::internet::password();
     r.totp_secret = a.totp_secret;
@@ -134,7 +134,7 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
-    create_account_request ca_rq(to_create_account_request(account));
+    save_account_request ca_rq(to_save_account_request(account));
     BOOST_LOG_SEV(lg, info) << "Create account request: " << ca_rq;
 
     const auto create_payload = ca_rq.serialize();
@@ -142,7 +142,7 @@ TEST_CASE("handle_login_request_with_valid_password", tags) {
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
-            message_type::create_account_request,
+            message_type::save_account_request,
             create_payload, admin_endpoint);
         REQUIRE(r.has_value());
     });
@@ -189,7 +189,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
-    create_account_request ca_rq(to_create_account_request(account));
+    save_account_request ca_rq(to_save_account_request(account));
     BOOST_LOG_SEV(lg, info) << "Create account request: " << ca_rq;
 
     const auto create_payload = ca_rq.serialize();
@@ -197,7 +197,7 @@ TEST_CASE("handle_login_request_with_invalid_password", tags) {
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
-            message_type::create_account_request,
+            message_type::save_account_request,
             create_payload, admin_endpoint);
         REQUIRE(r.has_value());
     });
@@ -281,16 +281,16 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     // 1. Create an admin account (to be the requester for locking)
     auto admin_account = generate_synthetic_account();
 
-    create_account_request admin_rq(to_create_account_request(admin_account));
+    save_account_request admin_rq(to_save_account_request(admin_account));
 
     boost::uuids::uuid admin_id;
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
-            message_type::create_account_request,
+            message_type::save_account_request,
             admin_rq.serialize(), admin_endpoint);
         REQUIRE(r.has_value());
-        admin_id = create_account_response::deserialize(r.value()).value().account_id;
+        admin_id = save_account_response::deserialize(r.value()).value().account_id;
     });
 
     // Assign admin role to the newly created account
@@ -315,7 +315,7 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
-    create_account_request ca_rq(to_create_account_request(account));
+    save_account_request ca_rq(to_save_account_request(account));
     BOOST_LOG_SEV(lg, info) << "Create account request: " << ca_rq;
 
     const auto create_payload = ca_rq.serialize();
@@ -323,12 +323,12 @@ TEST_CASE("handle_login_request_locked_account", tags) {
     boost::uuids::uuid account_id;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
-            message_type::create_account_request,
+            message_type::save_account_request,
             create_payload, admin_endpoint);
         REQUIRE(r.has_value());
 
         const auto response_result =
-            create_account_response::deserialize(r.value());
+            save_account_response::deserialize(r.value());
         REQUIRE(response_result.has_value());
         account_id = response_result.value().account_id;
     });
@@ -396,17 +396,17 @@ TEST_CASE("handle_change_password_request_success", tags) {
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
-    create_account_request ca_rq(to_create_account_request(account));
+    save_account_request ca_rq(to_save_account_request(account));
     BOOST_LOG_SEV(lg, info) << "Create account request: " << ca_rq;
 
     boost::uuids::uuid account_id;
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
-            message_type::create_account_request,
+            message_type::save_account_request,
             ca_rq.serialize(), admin_endpoint);
         REQUIRE(r.has_value());
-        account_id = create_account_response::deserialize(r.value()).value().account_id;
+        account_id = save_account_response::deserialize(r.value()).value().account_id;
     });
 
     // Login to establish session
@@ -510,12 +510,12 @@ TEST_CASE("handle_change_password_request_weak_password", tags) {
 
     // Create a user account
     const auto account = generate_synthetic_account();
-    create_account_request ca_rq(to_create_account_request(account));
+    save_account_request ca_rq(to_save_account_request(account));
 
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
-            message_type::create_account_request,
+            message_type::save_account_request,
             ca_rq.serialize(), admin_endpoint);
         REQUIRE(r.has_value());
     });

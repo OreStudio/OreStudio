@@ -354,7 +354,7 @@ ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Initial admin account created successfully!
-  Account ID: 019b7c15-5f67-76a1-84be-9d74381b1c7f
+  Account ID: 019ba3a0-48bb-7924-96ae-686f0883cc9c
   You can now login with the credentials provided.
 ores-shell> Bye!
 #+end_example

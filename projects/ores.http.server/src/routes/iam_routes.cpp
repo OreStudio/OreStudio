@@ -128,7 +128,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .auth_required()
         .query_param("offset", "integer", "", false, "Pagination offset", "0")
         .query_param("limit", "integer", "", false, "Maximum number of results", "100")
-        .response<iam::messaging::list_accounts_response>()
+        .response<iam::messaging::get_accounts_response>()
         .handler([this](const http_request& req) { return handle_list_accounts(req); });
     router->add_route(list_accounts.build());
     registry->register_route(list_accounts.build());
@@ -139,8 +139,8 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"accounts"})
         .auth_required()
         .roles({"Admin"})
-        .body<iam::messaging::create_account_request>()
-        .response<iam::messaging::create_account_response>()
+        .body<iam::messaging::save_account_request>()
+        .response<iam::messaging::save_account_response>()
         .handler([this](const http_request& req) { return handle_create_account(req); });
     router->add_route(create_account.build());
     registry->register_route(create_account.build());
@@ -162,8 +162,8 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"accounts"})
         .auth_required()
         .roles({"Admin"})
-        .body<iam::messaging::update_account_request>()
-        .response<iam::messaging::update_account_response>()
+        .body<iam::messaging::save_account_request>()
+        .response<iam::messaging::save_account_response>()
         .handler([this](const http_request& req) { return handle_update_account(req); });
     router->add_route(update_account.build());
     registry->register_route(update_account.build());
@@ -687,7 +687,7 @@ asio::awaitable<http_response> iam_routes::handle_list_accounts(const http_reque
 
         auto accounts = account_service_.list_accounts(offset, limit);
 
-        iam::messaging::list_accounts_response resp;
+        iam::messaging::get_accounts_response resp;
         resp.accounts = accounts;
 
         co_return http_response::json(rfl::json::write(resp));
@@ -705,7 +705,7 @@ asio::awaitable<http_response> iam_routes::handle_create_account(const http_requ
         co_return auth.error();
     }
 
-    auto create_req = parse_body<iam::messaging::create_account_request>(req, "create_account");
+    auto create_req = parse_body<iam::messaging::save_account_request>(req, "create_account");
     if (!create_req) {
         co_return create_req.error();
     }
@@ -717,7 +717,7 @@ asio::awaitable<http_response> iam_routes::handle_create_account(const http_requ
             create_req->username, create_req->email,
             create_req->password, req.authenticated_user->username.value_or("system"));
 
-        iam::messaging::create_account_response resp;
+        iam::messaging::save_account_response resp;
         resp.account_id = account.id;
 
         co_return http_response::json(rfl::json::write(resp));
@@ -767,7 +767,7 @@ asio::awaitable<http_response> iam_routes::handle_update_account(const http_requ
         co_return http_response::bad_request("Account ID required");
     }
 
-    auto update_req = parse_body<iam::messaging::update_account_request>(req, "update_account");
+    auto update_req = parse_body<iam::messaging::save_account_request>(req, "update_account");
     if (!update_req) {
         co_return update_req.error();
     }
@@ -777,7 +777,7 @@ asio::awaitable<http_response> iam_routes::handle_update_account(const http_requ
         bool success = account_service_.update_account(uuid, update_req->email,
             req.authenticated_user->username.value_or("system"));
 
-        iam::messaging::update_account_response resp;
+        iam::messaging::save_account_response resp;
         resp.success = success;
 
         co_return http_response::json(rfl::json::write(resp));

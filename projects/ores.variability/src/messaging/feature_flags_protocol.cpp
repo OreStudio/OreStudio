@@ -35,25 +35,25 @@ using ores::utility::serialization::error_code;
 using ores::utility::serialization::reader;
 using ores::utility::serialization::writer;
 
-std::vector<std::byte> list_feature_flags_request::serialize() const {
+std::vector<std::byte> get_feature_flags_request::serialize() const {
     return {};
 }
 
-std::expected<list_feature_flags_request, ores::utility::serialization::error_code>
-list_feature_flags_request::deserialize(std::span<const std::byte> data) {
+std::expected<get_feature_flags_request, ores::utility::serialization::error_code>
+get_feature_flags_request::deserialize(std::span<const std::byte> data) {
     if (!data.empty()) {
         return std::unexpected(ores::utility::serialization::error_code::payload_too_large);
     }
-    return list_feature_flags_request{};
+    return get_feature_flags_request{};
 }
 
-std::ostream& operator<<(std::ostream& s, const list_feature_flags_request& v)
+std::ostream& operator<<(std::ostream& s, const get_feature_flags_request& v)
 {
     rfl::json::write(v, s);
     return s;
 }
 
-std::vector<std::byte> list_feature_flags_response::serialize() const {
+std::vector<std::byte> get_feature_flags_response::serialize() const {
     std::vector<std::byte> buffer;
 
     writer::write_uint32(buffer, static_cast<std::uint32_t>(feature_flags.size()));
@@ -71,9 +71,9 @@ std::vector<std::byte> list_feature_flags_response::serialize() const {
     return buffer;
 }
 
-std::expected<list_feature_flags_response, ores::utility::serialization::error_code>
-list_feature_flags_response::deserialize(std::span<const std::byte> data) {
-    list_feature_flags_response response;
+std::expected<get_feature_flags_response, ores::utility::serialization::error_code>
+get_feature_flags_response::deserialize(std::span<const std::byte> data) {
+    get_feature_flags_response response;
 
     auto count_result = reader::read_uint32(data);
     if (!count_result) {
@@ -120,7 +120,7 @@ list_feature_flags_response::deserialize(std::span<const std::byte> data) {
     return response;
 }
 
-std::ostream& operator<<(std::ostream& s, const list_feature_flags_response& v) {
+std::ostream& operator<<(std::ostream& s, const get_feature_flags_response& v) {
     rfl::json::write(v, s);
     return s;
 }

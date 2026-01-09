@@ -59,10 +59,10 @@ struct auth_result {
  * - POST /api/v1/auth/bootstrap - create_initial_admin_request
  *
  * Account Management:
- * - GET /api/v1/accounts - list_accounts_request
- * - POST /api/v1/accounts - create_account_request
+ * - GET /api/v1/accounts - get_accounts_request
+ * - POST /api/v1/accounts - save_account_request
  * - DELETE /api/v1/accounts/{id} - delete_account_request
- * - PUT /api/v1/accounts/{id} - update_account_request
+ * - PUT /api/v1/accounts/{id} - save_account_request
  * - GET /api/v1/accounts/{username}/history - get_account_history_request
  * - POST /api/v1/accounts/lock - lock_account_request
  * - POST /api/v1/accounts/unlock - unlock_account_request

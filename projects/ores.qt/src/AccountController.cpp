@@ -509,13 +509,13 @@ void AccountController::onRevertAccount(const iam::domain::account& account) {
             BOOST_LOG_SEV(lg(), debug) << "Sending update account request for revert: "
                                        << boost::uuids::to_string(account_id);
 
-            iam::messaging::update_account_request request;
+            iam::messaging::save_account_request request;
             request.account_id = account_id;
             request.email = email;
             request.recorded_by = recorded_by;
 
             auto payload = request.serialize();
-            frame request_frame(message_type::update_account_request,
+            frame request_frame(message_type::save_account_request,
                 0, std::move(payload));
 
             auto response_result =
@@ -528,7 +528,7 @@ void AccountController::onRevertAccount(const iam::domain::account& account) {
             if (!payload_result)
                 return {false, "Failed to decompress server response"};
 
-            auto response = iam::messaging::update_account_response::
+            auto response = iam::messaging::save_account_response::
                 deserialize(*payload_result);
 
             if (!response)

@@ -348,7 +348,7 @@ void AccountDetailDialog::onSaveClicked() {
                 BOOST_LOG_SEV(lg(), debug) << "Sending create account request for: "
                                            << username;
 
-                iam::messaging::create_account_request request;
+                iam::messaging::save_account_request request;
                 request.username = username;
                 request.password = password;
                 request.email = email;
@@ -356,7 +356,7 @@ void AccountDetailDialog::onSaveClicked() {
                 request.totp_secret = ""; // Not used yet
 
                 auto payload = request.serialize();
-                frame request_frame(message_type::create_account_request,
+                frame request_frame(message_type::save_account_request,
                     0, std::move(payload));
 
                 auto response_result =
@@ -371,7 +371,7 @@ void AccountDetailDialog::onSaveClicked() {
                     return {false, "Failed to decompress server response"};
                 }
 
-                auto response = iam::messaging::create_account_response::
+                auto response = iam::messaging::save_account_response::
                     deserialize(*payload_result);
 
                 if (!response) {
@@ -447,13 +447,13 @@ void AccountDetailDialog::onSaveClicked() {
                 BOOST_LOG_SEV(lg(), debug) << "Sending update account request for: "
                                            << boost::uuids::to_string(account_id);
 
-                iam::messaging::update_account_request request;
+                iam::messaging::save_account_request request;
                 request.account_id = account_id;
                 request.email = email;
                 request.recorded_by = recorded_by;
 
                 auto payload = request.serialize();
-                frame request_frame(message_type::update_account_request,
+                frame request_frame(message_type::save_account_request,
                     0, std::move(payload));
 
                 auto response_result =
@@ -468,7 +468,7 @@ void AccountDetailDialog::onSaveClicked() {
                     return {false, "Failed to decompress server response"};
                 }
 
-                auto response = iam::messaging::update_account_response::
+                auto response = iam::messaging::save_account_response::
                     deserialize(*payload_result);
 
                 if (!response) {

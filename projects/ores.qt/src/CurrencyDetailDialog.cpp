@@ -935,7 +935,7 @@ void CurrencyDetailDialog::updateGenerateActionVisibility() {
         if (!self || !self->clientManager_)
             return false;
 
-        variability::messaging::list_feature_flags_request request;
+        variability::messaging::get_feature_flags_request request;
         auto result = self->clientManager_->
             process_authenticated_request(std::move(request));
 

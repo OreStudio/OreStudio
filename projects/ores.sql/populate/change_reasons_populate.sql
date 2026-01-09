@@ -57,9 +57,15 @@ begin
         select 1 from ores.change_reason_categories
         where code = p_code and valid_to = ores.infinity_timestamp()
     ) then
-        insert into ores.change_reason_categories (code, description, modified_by, valid_from, valid_to)
-        values (p_code, p_description, 'system',
-                current_timestamp, ores.infinity_timestamp());
+        insert into ores.change_reason_categories (
+            code, description, modified_by, change_commentary,
+            valid_from, valid_to
+        )
+        values (
+            p_code, p_description, 'system',
+            'System seed data - standard regulatory taxonomy',
+            current_timestamp, ores.infinity_timestamp()
+        );
         raise notice 'Created change reason category: %', p_code;
     else
         raise notice 'Change reason category already exists: %', p_code;
@@ -85,12 +91,13 @@ begin
         insert into ores.change_reasons (
             code, description, category_code,
             applies_to_amend, applies_to_delete, requires_commentary, display_order,
-            modified_by, valid_from, valid_to
+            modified_by, change_commentary, valid_from, valid_to
         )
         values (
             p_code, p_description, p_category_code,
             p_applies_to_amend, p_applies_to_delete, p_requires_commentary, p_display_order,
-            'system', current_timestamp, ores.infinity_timestamp()
+            'system', 'System seed data - standard regulatory taxonomy',
+            current_timestamp, ores.infinity_timestamp()
         );
         raise notice 'Created change reason: %', p_code;
     else

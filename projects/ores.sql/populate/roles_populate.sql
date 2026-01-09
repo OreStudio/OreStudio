@@ -56,8 +56,10 @@ begin
     if v_id is null then
         v_id := gen_random_uuid();
         -- The update_roles trigger will set version and valid_from/valid_to
-        insert into ores.roles (id, version, name, description, modified_by, valid_from, valid_to)
+        insert into ores.roles (id, version, name, description, modified_by,
+            change_reason_code, change_commentary, valid_from, valid_to)
         values (v_id, 1, p_name, p_description, p_recorded_by,
+                'system.new_record', 'System seed data',
                 current_timestamp, ores.infinity_timestamp());
         raise notice 'Created role: %', p_name;
     else

@@ -27,7 +27,7 @@ namespace ores::comms::recording {
 
 using ores::utility::serialization::writer;
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 session_recorder::~session_recorder() {
     stop();

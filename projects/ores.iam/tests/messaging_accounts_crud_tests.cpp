@@ -27,7 +27,7 @@
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.testing/run_coroutine_test.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.utility/faker/internet.hpp"
 #include "ores.iam/domain/account_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam/generators/account_generator.hpp"
@@ -104,7 +104,7 @@ boost::uuids::uuid setup_admin_session(
 
 }
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::iam::generators;
 
 using ores::comms::messaging::message_type;
@@ -379,7 +379,7 @@ TEST_CASE("handle_delete_account_request_non_existent_account", tags) {
 }
 
 TEST_CASE("handle_invalid_message_type", tags) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table, true);

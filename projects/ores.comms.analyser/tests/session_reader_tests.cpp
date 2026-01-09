@@ -20,7 +20,7 @@
 #include "ores.comms.analyser/domain/session_reader.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -30,7 +30,7 @@ const std::string tags("[domain]");
 }
 
 using namespace ores::comms::analyser::domain;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("session_reader_nonexistent_file_returns_error", tags) {
     auto lg(make_logger(test_suite));

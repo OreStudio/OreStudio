@@ -25,7 +25,7 @@
 
 namespace ores::assets::repository {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::image_tag image_tag_mapper::map(const image_tag_entity& v) {

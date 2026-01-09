@@ -22,7 +22,7 @@
 
 namespace ores::comms::service {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 subscription_handler::subscription_handler(
     std::shared_ptr<subscription_manager> manager)

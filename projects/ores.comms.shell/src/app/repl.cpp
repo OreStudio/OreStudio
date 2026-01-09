@@ -37,7 +37,7 @@
 
 namespace ores::comms::shell::app {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 repl::repl(comms::net::client_session& session)
     : session_(session) {

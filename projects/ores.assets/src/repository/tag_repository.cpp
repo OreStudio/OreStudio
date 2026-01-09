@@ -30,7 +30,7 @@ namespace ores::assets::repository {
 
 using namespace sqlgen;
 using namespace sqlgen::literals;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::database::repository;
 
 std::string tag_repository::sql() {

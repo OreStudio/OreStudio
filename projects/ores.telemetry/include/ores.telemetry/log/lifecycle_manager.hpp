@@ -25,12 +25,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/log/sinks.hpp>
 #include "ores.logging/lifecycle_manager.hpp"
+#include "ores.logging/logging_options.hpp"
 #include "ores.telemetry/log/telemetry_sink_backend.hpp"
 #include "ores.telemetry/domain/resource.hpp"
 
 namespace ores::telemetry::log {
 
-// Import logging_options from ores.logging for backward compatibility
 using ores::logging::logging_options;
 
 /**

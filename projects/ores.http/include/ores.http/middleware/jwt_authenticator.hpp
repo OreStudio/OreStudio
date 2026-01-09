@@ -24,7 +24,7 @@
 #include <optional>
 #include <expected>
 #include "ores.http/domain/jwt_claims.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::http::middleware {
 
@@ -81,7 +81,7 @@ private:
     inline static std::string_view logger_name = "ores.http.middleware.jwt_authenticator";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

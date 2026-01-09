@@ -27,7 +27,7 @@
 #define ORES_VERSION_MINOR 0
 #define ORES_VERSION_PATCH 8
 #define ORES_VERSION "0.0.8"
-#define ORES_BUILD_INFO "local d70ecd1b-dirty 2026/01/08 22:52:05"
+#define ORES_BUILD_INFO "local 942e6e66-dirty 2026/01/09 09:10:46"
 
 namespace ores::utility::version {
 

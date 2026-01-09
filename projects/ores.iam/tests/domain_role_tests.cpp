@@ -25,7 +25,7 @@
 #include <sstream>
 #include <iomanip>
 #include <chrono>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/permission.hpp"
 
@@ -50,7 +50,7 @@ std::chrono::system_clock::time_point make_timepoint(int year, int month, int da
 using ores::iam::domain::role;
 using namespace ores::iam::domain::roles;
 using namespace ores::iam::domain::permissions;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("create_role_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));

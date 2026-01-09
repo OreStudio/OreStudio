@@ -30,7 +30,7 @@
 
 namespace ores::qt {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TelemetrySettingsDialog::TelemetrySettingsDialog(QWidget* parent)
     : QDialog(parent),
@@ -284,7 +284,7 @@ void TelemetrySettingsDialog::saveSettings() {
     settings.sync();
 }
 
-telemetry::log::logging_options TelemetrySettingsDialog::loadLoggingSettings() {
+logging::logging_options TelemetrySettingsDialog::loadLoggingSettings() {
     QSettings settings;
     settings.beginGroup(settingsPrefix());
     settings.beginGroup("logging");

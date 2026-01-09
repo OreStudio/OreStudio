@@ -30,7 +30,7 @@
 
 namespace ores::qt {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 AboutDialog::AboutDialog(QWidget* parent)
     : QDialog(parent) {

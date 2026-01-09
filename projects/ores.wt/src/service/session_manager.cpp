@@ -19,7 +19,7 @@
  */
 #include "ores.wt/service/session_manager.hpp"
 #include "ores.wt/service/application_context.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <boost/asio/ip/address.hpp>
 
 namespace {
@@ -27,7 +27,7 @@ namespace {
 const std::string logger_name = "ores.wt.service.session_manager";
 
 auto& lg() {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     static auto instance = make_logger(logger_name);
     return instance;
 }
@@ -41,7 +41,7 @@ session_manager::session_manager() = default;
 login_result session_manager::login(const std::string& username,
                                     const std::string& password,
                                     const std::string& client_ip) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
 
     login_result result;
 
@@ -89,7 +89,7 @@ login_result session_manager::login(const std::string& username,
 }
 
 void session_manager::logout() {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
 
     if (session_) {
         auto& ctx = application_context::instance();
@@ -124,7 +124,7 @@ login_result session_manager::create_bootstrap_admin(
     const std::string& username,
     const std::string& email,
     const std::string& password) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
 
     login_result result;
 

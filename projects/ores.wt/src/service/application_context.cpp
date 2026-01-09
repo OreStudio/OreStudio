@@ -24,14 +24,14 @@
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
 #include "ores.eventing/service/registrar.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
 const std::string logger_name = "ores.wt.service.application_context";
 
 auto& lg() {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     static auto instance = make_logger(logger_name);
     return instance;
 }
@@ -46,7 +46,7 @@ application_context& application_context::instance() {
 }
 
 void application_context::initialize(const database::database_options& db_opts) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
 
     if (initialized_) {
         BOOST_LOG_SEV(lg(), warn) << "Application context already initialized";
@@ -78,7 +78,7 @@ void application_context::initialize(const database::database_options& db_opts) 
 }
 
 void application_context::setup_services() {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
 
     BOOST_LOG_SEV(lg(), info) << "Setting up services";
 
@@ -109,7 +109,7 @@ void application_context::setup_services() {
 }
 
 void application_context::setup_eventing() {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
 
     BOOST_LOG_SEV(lg(), info) << "Setting up eventing infrastructure";
 
@@ -137,7 +137,7 @@ void application_context::setup_eventing() {
 }
 
 void application_context::start_eventing() {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
 
     if (event_source_) {
         BOOST_LOG_SEV(lg(), info) << "Starting event source";
@@ -146,7 +146,7 @@ void application_context::start_eventing() {
 }
 
 void application_context::stop_eventing() {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
 
     if (event_source_) {
         BOOST_LOG_SEV(lg(), info) << "Stopping event source";
@@ -155,7 +155,7 @@ void application_context::stop_eventing() {
 }
 
 void application_context::check_bootstrap_mode() {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
 
     iam::service::bootstrap_mode_service bootstrap_svc(
         *db_context_, authorization_service_);

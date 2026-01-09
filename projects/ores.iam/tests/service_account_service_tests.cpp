@@ -25,7 +25,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/internet.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.testing/scoped_database_helper.hpp"
@@ -41,7 +41,7 @@ const std::string tags("[service]");
 }
 
 using namespace ores::iam;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using ores::utility::faker::internet;
 using ores::testing::scoped_database_helper;
 using namespace ores::iam::generators;

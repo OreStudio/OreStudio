@@ -30,7 +30,7 @@
 
 namespace ores::iam::service {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 authorization_service::authorization_service(context ctx, event_bus* event_bus)
     : permission_repo_(ctx),

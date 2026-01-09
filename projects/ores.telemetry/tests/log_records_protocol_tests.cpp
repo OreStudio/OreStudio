@@ -21,7 +21,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.telemetry/domain/resource.hpp"
 #include "ores.telemetry/generators/trace_id_generator.hpp"
 #include "ores.telemetry/generators/span_id_generator.hpp"
@@ -35,7 +35,7 @@ const std::string tags("[messaging]");
 
 using namespace ores::telemetry::messaging;
 using namespace ores::telemetry::domain;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("submit_log_records_request_empty_batch", tags) {
     auto lg(make_logger(test_suite));

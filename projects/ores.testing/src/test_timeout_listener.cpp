@@ -25,7 +25,7 @@
 
 namespace ores::testing {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 void test_timeout_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
     // Check for environment variable override

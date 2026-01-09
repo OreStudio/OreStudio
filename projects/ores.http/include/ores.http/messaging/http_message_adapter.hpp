@@ -32,7 +32,7 @@
 #include "ores.http/domain/http_method.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.comms/messaging/message_types.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::http::messaging {
 
@@ -90,7 +90,7 @@ private:
         "ores.http.messaging.http_message_adapter";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

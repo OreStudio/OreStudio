@@ -24,7 +24,7 @@
 
 namespace ores::assets::messaging {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 assets_message_handler::assets_message_handler(database::context ctx)
     : ctx_(std::move(ctx)) {}

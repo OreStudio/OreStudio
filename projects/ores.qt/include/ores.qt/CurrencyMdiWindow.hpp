@@ -30,7 +30,7 @@
 #include <QCloseEvent>
 #include <memory>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientCurrencyModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 
@@ -49,7 +49,7 @@ private:
         "ores.qt.currency_mdi_window";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

@@ -22,7 +22,7 @@
 
 #include <memory>
 #include "ores.database/domain/context.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.iam/service/account_service.hpp"
@@ -70,7 +70,7 @@ namespace ores::iam::messaging {
 class accounts_message_handler final : public comms::messaging::message_handler {
 private:
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(
             "ores.iam.messaging.accounts_message_handler");
         return instance;

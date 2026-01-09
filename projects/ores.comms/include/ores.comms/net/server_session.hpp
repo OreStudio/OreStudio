@@ -29,7 +29,7 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/strand.hpp>
 #include "ores.comms/net/connection.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.comms/messaging/message_dispatcher.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 
@@ -48,7 +48,7 @@ private:
     inline static std::string_view logger_name = "ores.comms.net.server_session";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

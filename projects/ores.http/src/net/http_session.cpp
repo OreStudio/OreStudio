@@ -28,7 +28,7 @@
 
 namespace ores::http::net {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace asio = boost::asio;

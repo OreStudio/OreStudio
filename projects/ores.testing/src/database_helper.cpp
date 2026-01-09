@@ -26,7 +26,7 @@
 
 namespace ores::testing {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using ores::testing::test_database_manager;
 
 database_helper::database_helper()

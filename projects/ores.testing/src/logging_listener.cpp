@@ -27,11 +27,12 @@
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.telemetry/log/lifecycle_manager.hpp"
-#include "ores.telemetry/log/logging_options.hpp"
+#include "ores.logging/logging_options.hpp"
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
+using telemetry_lifecycle_manager = ores::telemetry::log::lifecycle_manager;
 
 namespace {
 
@@ -39,7 +40,7 @@ namespace {
  * @brief Thread-local storage for the current test logger and lifecycle manager.
  */
 struct test_logging_context {
-    std::unique_ptr<lifecycle_manager> lifecycle_mgr;
+    std::unique_ptr<telemetry_lifecycle_manager> lifecycle_mgr;
     std::optional<logger_t> logger;
 };
 
@@ -108,7 +109,7 @@ void logging_listener::testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/
     cfg.tag = "TestSuite";
 
     // Initialize logging lifecycle manager with options
-    lifecycle_manager_ = std::make_shared<lifecycle_manager>(
+    lifecycle_manager_ = std::make_shared<telemetry_lifecycle_manager>(
         std::optional<logging_options>{cfg});
 }
 
@@ -132,7 +133,7 @@ void logging_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo) {
 
     // Initialize logging lifecycle manager with options
     current_test_context.lifecycle_mgr =
-        std::make_unique<lifecycle_manager>(std::optional<logging_options>{cfg});
+        std::make_unique<telemetry_lifecycle_manager>(std::optional<logging_options>{cfg});
 
     // Create logger for this test
     current_test_context.logger.emplace(make_logger(component_name));

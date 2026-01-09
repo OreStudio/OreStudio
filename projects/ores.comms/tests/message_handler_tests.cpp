@@ -26,7 +26,7 @@
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 #include "ores.testing/run_coroutine_test.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.comms/messaging/message_dispatcher.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
@@ -177,7 +177,7 @@ private:
     inline static std::string_view logger_name = "ores.comms.tests.test_message_handler";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
@@ -188,7 +188,7 @@ public:
     handle_message(ores::comms::messaging::message_type type,
                    std::span<const std::byte> payload,
                    const std::string& remote_address) override {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         BOOST_LOG_SEV(lg(), debug) << "Handling message type "
                                    << static_cast<std::uint16_t>(type)
                                    << " from " << remote_address;
@@ -207,7 +207,7 @@ public:
 private:
     std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
     handle_test_request(std::span<const std::byte> payload) {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         BOOST_LOG_SEV(lg(), debug) << "Processing test_request";
 
         auto request_result = test_request::deserialize(payload);
@@ -230,7 +230,7 @@ private:
 
     std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
     handle_echo_request(std::span<const std::byte> payload) {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         BOOST_LOG_SEV(lg(), debug) << "Processing echo_request";
 
         auto request_result = echo_request::deserialize(payload);
@@ -248,7 +248,7 @@ private:
 
 }
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::comms::messaging;
 using ores::testing::run_coroutine_test;
 using ores::utility::serialization::error_code;

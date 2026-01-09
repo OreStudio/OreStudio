@@ -31,7 +31,7 @@
 
 namespace ores::qt {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 SignUpDialog::SignUpDialog(ClientManager* clientManager, QWidget* parent)
     : QDialog(parent),

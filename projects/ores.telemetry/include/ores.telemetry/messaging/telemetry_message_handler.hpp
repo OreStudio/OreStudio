@@ -23,7 +23,7 @@
 #include <memory>
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.telemetry/repository/telemetry_repository.hpp"
 
@@ -48,7 +48,7 @@ private:
         "ores.telemetry.messaging.telemetry_message_handler";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
@@ -119,7 +119,7 @@ private:
     /**
      * @brief Convert severity_level enum to string representation.
      */
-    static std::string severity_to_string(domain::severity_level level);
+    static std::string severity_to_string(logging::severity_level level);
 
     database::context ctx_;
     std::shared_ptr<comms::service::auth_session_service> sessions_;

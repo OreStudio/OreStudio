@@ -20,7 +20,7 @@
 #include "ores.http/middleware/jwt_authenticator.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -34,7 +34,7 @@ const std::string test_audience("test-audience");
 
 using namespace ores::http::middleware;
 using namespace ores::http::domain;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("jwt_authenticator_create_hs256_configured", tags) {
     auto lg(make_logger(test_suite));

@@ -26,11 +26,13 @@
 #include <string>
 #include "ores.telemetry/domain/trace_id.hpp"
 #include "ores.telemetry/domain/span_id.hpp"
-#include "ores.telemetry/domain/severity_level.hpp"
+#include "ores.logging/severity_level.hpp"
 #include "ores.telemetry/domain/attribute_value.hpp"
 #include "ores.telemetry/domain/resource.hpp"
 
 namespace ores::telemetry::domain {
+
+using logging::severity_level;
 
 /**
  * @brief A log record with trace correlation.

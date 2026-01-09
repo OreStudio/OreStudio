@@ -27,7 +27,7 @@ namespace ores::http::middleware {
 
 using json_traits = jwt::traits::boost_json;
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 jwt_authenticator jwt_authenticator::create_hs256(const std::string& secret,
     const std::string& issuer,

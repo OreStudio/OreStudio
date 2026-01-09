@@ -30,7 +30,7 @@
 
 namespace ores::iam::repository {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::database::repository;
 
 namespace {

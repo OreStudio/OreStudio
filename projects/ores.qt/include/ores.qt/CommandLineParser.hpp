@@ -26,7 +26,7 @@
 #include <QCommandLineParser>
 #include <QString>
 #include <QColor>
-#include "ores.telemetry/log/logging_options.hpp"
+#include "ores.logging/logging_options.hpp"
 
 namespace ores::qt {
 
@@ -57,7 +57,7 @@ public:
      *
      * @return Logging options configured from command line arguments
      */
-    [[nodiscard]] std::optional<telemetry::log::logging_options> loggingOptions() const;
+    [[nodiscard]] std::optional<logging::logging_options> loggingOptions() const;
 
     /**
      * @brief Check if logging is enabled.

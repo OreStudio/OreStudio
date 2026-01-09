@@ -48,7 +48,7 @@ The logging infrastructure is built on Boost.Log and provides:
 ** Basic Usage
 
 #+begin_src cpp
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
     const std::string logger_name("my_component");
@@ -366,7 +366,7 @@ allowing existing code to continue working without changes:
 
 #+begin_src cpp
 // These still work:
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.telemetry/log/lifecycle_manager.hpp"
 // They forward to ores.logging equivalents
 #+end_src

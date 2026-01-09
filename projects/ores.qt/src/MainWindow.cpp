@@ -60,7 +60,7 @@
 
 namespace ores::qt {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 MainWindow::MainWindow(QWidget* parent) :
     QMainWindow(parent), ui_(new Ui::MainWindow), mdiArea_(nullptr),

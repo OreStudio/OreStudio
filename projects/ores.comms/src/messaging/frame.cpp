@@ -59,7 +59,7 @@ bool is_valid_message_type(std::uint16_t type) {
 
 namespace ores::comms::messaging {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using ores::utility::serialization::error_code;
 
 frame::frame() : header_{}, payload_{} {

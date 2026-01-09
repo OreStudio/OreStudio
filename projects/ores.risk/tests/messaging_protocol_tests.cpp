@@ -20,7 +20,7 @@
 #include "ores.risk/messaging/protocol.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.platform/time/datetime.hpp"
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
@@ -33,7 +33,7 @@ const std::string tags("[messaging]");
 
 }
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::risk::messaging;
 using ores::risk::domain::currency;
 using namespace ores::risk::generators;
@@ -58,7 +58,7 @@ TEST_CASE("get_currencies_request_serialize_deserialize", tags) {
 }
 
 TEST_CASE("get_currencies_response_empty", tags) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
     get_currencies_response resp;
@@ -68,7 +68,7 @@ TEST_CASE("get_currencies_response_empty", tags) {
 }
 
 TEST_CASE("get_currencies_response_with_single_currency", tags) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
     get_currencies_response resp;
@@ -82,7 +82,7 @@ TEST_CASE("get_currencies_response_with_single_currency", tags) {
 }
 
 TEST_CASE("get_currencies_response_serialize_deserialize", tags) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
     get_currencies_response original;
@@ -124,7 +124,7 @@ TEST_CASE("get_currencies_response_serialize_deserialize", tags) {
 }
 
 TEST_CASE("get_currencies_response_large_dataset", tags) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
     get_currencies_response original;
@@ -150,7 +150,7 @@ TEST_CASE("get_currencies_response_large_dataset", tags) {
 }
 
 TEST_CASE("get_currencies_response_with_special_characters", tags) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
     get_currencies_response resp;
@@ -175,7 +175,7 @@ TEST_CASE("get_currencies_response_with_special_characters", tags) {
 }
 
 TEST_CASE("get_currencies_response_with_empty_fields", tags) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
     get_currencies_response resp;
@@ -212,7 +212,7 @@ TEST_CASE("get_currencies_response_with_empty_fields", tags) {
 }
 
 TEST_CASE("get_currency_history_response_serialize_deserialize", tags) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     using ores::risk::domain::currency_version;
     using ores::risk::domain::currency_version_history;
     auto lg(make_logger(test_suite));

@@ -25,7 +25,7 @@
 #include <expected>
 #include <boost/asio/ip/address.hpp>
 #include "ores.database/domain/context.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::geo::service {
 
@@ -89,7 +89,7 @@ private:
         "ores.geo.service.geolocation_service";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

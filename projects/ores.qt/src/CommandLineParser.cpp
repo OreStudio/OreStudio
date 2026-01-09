@@ -137,10 +137,10 @@ bool CommandLineParser::isLoggingEnabled() const {
     return parser_.isSet("log-enabled");
 }
 
-std::optional<telemetry::log::logging_options> CommandLineParser::loggingOptions() const {
+std::optional<logging::logging_options> CommandLineParser::loggingOptions() const {
     // Command line takes precedence over QSettings
     if (isLoggingEnabled()) {
-        telemetry::log::logging_options r;
+        logging::logging_options r;
         r.filename = parser_.value("log-filename").toStdString();
         r.output_to_console = parser_.isSet("log-to-console");
         r.output_directory = parser_.value("log-directory").toStdString();

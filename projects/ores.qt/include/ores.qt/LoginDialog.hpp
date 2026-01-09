@@ -42,7 +42,7 @@ private:
     inline static std::string_view logger_name = "ores.qt.login_dialog";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

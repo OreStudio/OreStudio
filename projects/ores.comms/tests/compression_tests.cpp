@@ -22,7 +22,7 @@
 #include <span>
 #include <cstdint>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -31,7 +31,7 @@ const std::string tags("[compression]");
 
 }
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using ores::comms::messaging::compression_type;
 using ores::comms::messaging::compress;
 using ores::comms::messaging::decompress;

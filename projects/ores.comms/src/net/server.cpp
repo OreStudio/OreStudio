@@ -32,7 +32,7 @@
 
 namespace ores::comms::net {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 server::server(server_options options,
     std::shared_ptr<service::subscription_manager> subscription_mgr)

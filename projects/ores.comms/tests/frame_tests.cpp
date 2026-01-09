@@ -22,7 +22,7 @@
 #include <span>
 #include <cstdint>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_optional.hpp" // IWYU pragma: keep
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep
 #include "ores.comms/messaging/message_types.hpp"
@@ -52,7 +52,7 @@ deserialize_frame(std::span<const std::byte> data) {
 
 }
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using ores::comms::messaging::message_type;
 
 TEST_CASE("test_frame_serialization", tags) {

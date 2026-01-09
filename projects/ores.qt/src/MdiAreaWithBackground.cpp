@@ -23,7 +23,7 @@
 
 namespace ores::qt {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 MdiAreaWithBackground::MdiAreaWithBackground(QWidget* parent)
     : QMdiArea(parent) {

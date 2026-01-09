@@ -24,7 +24,7 @@
 
 namespace ores::comms::service {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 remote_event_adapter::remote_event_adapter(std::shared_ptr<net::client> client)
     : client_(std::move(client)) {

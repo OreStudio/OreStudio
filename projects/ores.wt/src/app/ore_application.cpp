@@ -28,7 +28,7 @@
 #include "ores.iam/domain/login_info.hpp"
 #include "ores.risk/domain/currency.hpp"
 #include "ores.risk/domain/country.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <Wt/WBootstrap5Theme.h>
 #include <Wt/WNavigationBar.h>
 #include <Wt/WMenu.h>
@@ -52,7 +52,7 @@ constexpr std::uint32_t max_currencies_to_load = 1000;
 constexpr std::uint32_t max_countries_to_load = 1000;
 
 auto& lg() {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     static auto instance = make_logger(logger_name);
     return instance;
 }
@@ -336,7 +336,7 @@ void ore_application::load_currencies() {
         return;
     }
 
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     try {
         auto currencies = ctx.currency_service().list_currencies(0, max_currencies_to_load);
         std::vector<currency_row> rows;
@@ -351,7 +351,7 @@ void ore_application::load_currencies() {
 }
 
 void ore_application::show_add_currency_dialog() {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto dialog = addChild(
         std::make_unique<currency_dialog>(currency_dialog::mode::add));
 
@@ -382,7 +382,7 @@ void ore_application::show_add_currency_dialog() {
 }
 
 void ore_application::show_edit_currency_dialog(const std::string& iso_code) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto& ctx = service::application_context::instance();
     auto currency_opt = ctx.currency_service().get_currency(iso_code);
     if (!currency_opt) {
@@ -430,7 +430,7 @@ void ore_application::show_edit_currency_dialog(const std::string& iso_code) {
 }
 
 void ore_application::confirm_delete_currency(const std::string& iso_code) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto msg_box = addChild(std::make_unique<Wt::WMessageBox>(
         "Confirm Delete",
         "Are you sure you want to delete currency " + iso_code + "?",
@@ -480,7 +480,7 @@ void ore_application::load_countries() {
         return;
     }
 
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     try {
         auto countries = ctx.country_service().list_countries(0, max_countries_to_load);
         std::vector<country_row> rows;
@@ -495,7 +495,7 @@ void ore_application::load_countries() {
 }
 
 void ore_application::show_add_country_dialog() {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto dialog = addChild(
         std::make_unique<country_dialog>(country_dialog::mode::add));
 
@@ -526,7 +526,7 @@ void ore_application::show_add_country_dialog() {
 }
 
 void ore_application::show_edit_country_dialog(const std::string& alpha2_code) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto& ctx = service::application_context::instance();
     auto country_opt = ctx.country_service().get_country(alpha2_code);
     if (!country_opt) {
@@ -574,7 +574,7 @@ void ore_application::show_edit_country_dialog(const std::string& alpha2_code) {
 }
 
 void ore_application::confirm_delete_country(const std::string& alpha2_code) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto msg_box = addChild(std::make_unique<Wt::WMessageBox>(
         "Confirm Delete",
         "Are you sure you want to delete country " + alpha2_code + "?",
@@ -631,7 +631,7 @@ void ore_application::setup_account_handlers() {
 }
 
 void ore_application::load_accounts() {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto& ctx = service::application_context::instance();
     if (!ctx.is_initialized()) {
         return;

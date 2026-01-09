@@ -29,14 +29,14 @@ namespace ores::telemetry::exporting {
 
 namespace {
 
-std::string_view severity_to_string(domain::severity_level level) {
+std::string_view severity_to_string(logging::severity_level level) {
     switch (level) {
-    case domain::severity_level::trace: return "TRACE";
-    case domain::severity_level::debug: return "DEBUG";
-    case domain::severity_level::info:  return "INFO";
-    case domain::severity_level::warn:  return "WARN";
-    case domain::severity_level::error: return "ERROR";
-    case domain::severity_level::fatal: return "FATAL";
+    case logging::severity_level::trace: return "TRACE";
+    case logging::severity_level::debug: return "DEBUG";
+    case logging::severity_level::info:  return "INFO";
+    case logging::severity_level::warn:  return "WARN";
+    case logging::severity_level::error: return "ERROR";
+    case logging::severity_level::fatal: return "FATAL";
     default: return "UNKNOWN";
     }
 }

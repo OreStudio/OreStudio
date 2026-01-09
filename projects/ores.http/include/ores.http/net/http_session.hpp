@@ -31,7 +31,7 @@
 #include "ores.http/net/router.hpp"
 #include "ores.http/net/http_server_options.hpp"
 #include "ores.http/middleware/jwt_authenticator.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::http::net {
 
@@ -72,7 +72,7 @@ private:
     inline static std::string_view logger_name = "ores.http.net.http_session";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

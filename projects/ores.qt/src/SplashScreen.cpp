@@ -24,7 +24,7 @@
 
 namespace ores::qt {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 SplashScreen::SplashScreen(const QPixmap& pixmap)
     : QSplashScreen(pixmap) {

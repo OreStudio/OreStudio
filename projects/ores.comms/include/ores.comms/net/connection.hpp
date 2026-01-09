@@ -26,7 +26,7 @@
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/awaitable.hpp>
 #include "ores.comms/messaging/frame.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::comms::net {
 
@@ -40,7 +40,7 @@ private:
     inline static std::string_view logger_name = "ores.comms.net.connection";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

@@ -26,7 +26,7 @@
 
 namespace ores::risk::messaging {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 risk_message_handler::risk_message_handler(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,

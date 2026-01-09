@@ -47,7 +47,7 @@
 namespace ores::qt {
 
 using comms::messaging::message_type;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 AccountMdiWindow::
 AccountMdiWindow(ClientManager* clientManager,

@@ -22,7 +22,7 @@
 
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/log/attributes/constant.hpp>
-#include "ores.telemetry/log/boost_severity.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.telemetry/domain/telemetry_context.hpp"
 
 namespace ores::telemetry::log {
@@ -71,21 +71,7 @@ inline StreamT& operator<<(StreamT& strm, const trace_context_injector& injector
  * @param sev The severity level (trace, debug, info, warn, error).
  */
 #define TLOG_SEV(logger, ctx, sev) \
-    BOOST_LOG_SEV(logger, ::ores::telemetry::log::boost_severity::sev) \
-        << ::ores::telemetry::log::trace_context_injector(ctx)
-
-/**
- * @brief Log without telemetry context (backward compatible).
- *
- * This macro provides the same interface as BOOST_LOG_SEV but uses the
- * telemetry severity type. Use this when no telemetry context is available.
- *
- * Usage:
- * @code
- * ORES_LOG_SEV(lg(), info) << "Application starting";
- * @endcode
- */
-#define ORES_LOG_SEV(logger, sev) \
-    BOOST_LOG_SEV(logger, ::ores::telemetry::log::boost_severity::sev)
+    BOOST_LOG_SEV(logger, ::ores::logging::boost_severity::sev) \
+        << ::ores::logging::trace_context_injector(ctx)
 
 #endif

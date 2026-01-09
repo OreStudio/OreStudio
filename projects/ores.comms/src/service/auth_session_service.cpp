@@ -24,7 +24,7 @@
 
 namespace ores::comms::service {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 std::optional<session_info>
 auth_session_service::get_session(const std::string& remote_address) const {

@@ -21,7 +21,7 @@
 #define ORES_VARIABILITY_REPOSITORY_FEATURE_FLAGS_MAPPER_HPP
 
 #include <vector>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 #include "ores.variability/repository/feature_flags_entity.hpp"
 
@@ -36,7 +36,7 @@ private:
         "ores.variability.repository.feature_flags_mapper";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

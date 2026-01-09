@@ -28,7 +28,7 @@
 
 namespace ores::http::openapi {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 // OpenAPI spec structures for JSON serialization
 // Note: These need external linkage for rfl reflection to work properly

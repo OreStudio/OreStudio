@@ -28,7 +28,7 @@
 #include <functional>
 #include <unordered_map>
 #include <unordered_set>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::comms::service {
 
@@ -84,7 +84,7 @@ using session_id = std::string;
 class subscription_manager final {
 private:
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(
             "ores.comms.service.subscription_manager");
         return instance;

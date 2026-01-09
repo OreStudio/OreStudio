@@ -34,7 +34,7 @@
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::http_server::routes {
 
@@ -106,7 +106,7 @@ private:
     inline static std::string_view logger_name = "ores.http.server.routes.iam_routes";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
@@ -219,7 +219,7 @@ private:
     std::expected<T, http::domain::http_response> parse_body(
         const http::domain::http_request& req,
         std::string_view operation_name) {
-        using ores::telemetry::log::warn;
+        using ores::logging::warn;
         auto result = rfl::json::read<T>(req.body);
         if (!result) {
             BOOST_LOG_SEV(lg(), warn) << operation_name

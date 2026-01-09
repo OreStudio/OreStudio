@@ -28,7 +28,7 @@
 
 namespace ores::iam::service {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 void account_service::
 throw_if_empty(const std::string& name, const std::string& value)

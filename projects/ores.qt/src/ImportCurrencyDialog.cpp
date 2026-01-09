@@ -31,7 +31,7 @@
 
 namespace ores::qt {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 ImportCurrencyDialog::ImportCurrencyDialog(
     const std::vector<risk::domain::currency>& currencies,

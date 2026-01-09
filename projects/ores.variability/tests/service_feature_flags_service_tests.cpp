@@ -20,7 +20,7 @@
 #include "ores.variability/service/feature_flags_service.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <algorithm> // Added this include
 
@@ -32,7 +32,7 @@ const std::string table_name("ores.feature_flags");
 
 }
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::variability::service;
 using namespace ores::variability::domain;
 

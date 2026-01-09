@@ -19,7 +19,7 @@
  */
 #include <set>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.risk/domain/country.hpp" // IWYU pragma: keep.
 #include "ores.risk/domain/country_json_io.hpp" // IWYU pragma: keep.
@@ -33,7 +33,7 @@ const std::string tags("[generators]");
 }
 
 using namespace ores::risk::generators;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("generate_fictional_countries_returns_all_when_no_count", tags) {
     auto lg(make_logger(test_suite));

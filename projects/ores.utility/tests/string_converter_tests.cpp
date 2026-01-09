@@ -21,7 +21,7 @@
 
 #include <limits>
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.utility/string/conversion_error.hpp"
 
 namespace {
@@ -33,7 +33,7 @@ const std::string tags("[string]");
 
 using ores::utility::string::converter;
 using ores::utility::string::conversion_error;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("string_to_int_valid_decimal", tags) {
     auto lg(make_logger(test_suite));

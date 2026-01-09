@@ -25,7 +25,7 @@
 #include <boost/throw_exception.hpp>
 #include "ores.comms.shell/config/parser_exception.hpp"
 #include "ores.utility/version/version.hpp"
-#include "ores.telemetry/log/logging_configuration.hpp"
+#include "ores.logging/logging_configuration.hpp"
 #include "ores.telemetry/exporting/telemetry_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 
@@ -58,7 +58,7 @@ using ores::comms::shell::config::parser_exception;
  * @brief Creates the option descriptions.
  */
 options_description make_options_description() {
-    using ores::telemetry::log::logging_configuration;
+    using ores::logging::logging_configuration;
     using ores::telemetry::exporting::telemetry_configuration;
 
     options_description god("General");
@@ -186,7 +186,7 @@ read_login_configuration(const variables_map& vm) {
  */
 std::optional<options>
 parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
-    using ores::telemetry::log::logging_configuration;
+    using ores::logging::logging_configuration;
     using ores::telemetry::exporting::telemetry_configuration;
     using ores::utility::program_options::environment_mapper_factory;
 

@@ -23,7 +23,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/account.hpp"
 #include "ores.iam/domain/account_json_io.hpp" // IWYU pragma: keep.
@@ -38,7 +38,7 @@ const std::string tags("[repository]");
 
 }
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::iam::generators;
 
 using ores::testing::database_helper;

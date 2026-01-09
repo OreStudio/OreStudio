@@ -23,7 +23,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/awaitable.hpp>
 #include "ores.http.server/config/options.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::http_server::app {
 
@@ -42,7 +42,7 @@ private:
     inline static std::string_view logger_name = "ores.http.server.app.application";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

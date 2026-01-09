@@ -25,7 +25,7 @@
 
 namespace ores::iam::service {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 account_setup_service::account_setup_service(account_service& account_svc,
     std::shared_ptr<authorization_service> auth_svc)

@@ -23,7 +23,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/string_generator.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -52,7 +52,7 @@ std::chrono::system_clock::time_point make_timepoint(int year, int month, int da
 using namespace ores::assets::messaging;
 using namespace ores::assets::domain;
 using namespace ores::comms::messaging;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using ores::utility::serialization::error_code;
 
 // get_images_request tests

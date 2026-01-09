@@ -24,7 +24,7 @@
 #include <QDateTime>
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 
 namespace ores::qt {
@@ -46,7 +46,7 @@ private:
         "ores.qt.feature_flag_controller";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

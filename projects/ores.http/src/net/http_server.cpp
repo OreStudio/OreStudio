@@ -26,7 +26,7 @@
 
 namespace ores::http::net {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 namespace asio = boost::asio;
 using asio::ip::tcp;
 

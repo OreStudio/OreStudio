@@ -34,7 +34,7 @@
 
 namespace ores::iam::security {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using ores::utility::converter::base64_converter;
 using ores::platform::environment::environment;
 

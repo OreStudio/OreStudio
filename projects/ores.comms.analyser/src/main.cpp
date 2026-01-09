@@ -22,7 +22,7 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.telemetry/log/lifecycle_manager.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.comms.analyser/config/parser.hpp"
 #include "ores.comms.analyser/app/application.hpp"
 
@@ -38,8 +38,8 @@ int main(int argc, const char* argv[]) {
         // Initialize logging (disabled for this simple CLI tool)
         ores::telemetry::log::lifecycle_manager lm(std::nullopt);
 
-        auto lg(ores::telemetry::log::make_logger("ores.comms.analyser"));
-        BOOST_LOG_SEV(lg, ores::telemetry::log::info)
+        auto lg(ores::logging::make_logger("ores.comms.analyser"));
+        BOOST_LOG_SEV(lg, ores::logging::info)
             << ores::utility::version::format_startup_message(
                 "ORE Studio Analyser",
                 ores::comms::messaging::PROTOCOL_VERSION_MAJOR,

@@ -22,7 +22,7 @@
 
 namespace ores::comms::net {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 client_session::client_session() = default;
 

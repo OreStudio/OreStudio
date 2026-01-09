@@ -31,7 +31,7 @@
 #include <vector>
 #include <set>
 #include <boost/uuid/uuid.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -128,7 +128,7 @@ private:
         "ores.comms.net.client_session";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
@@ -285,7 +285,7 @@ public:
               messaging::message_type RequestMsgType>
     std::expected<ResponseType, session_error>
     process_request(RequestType request) {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
 
         if (!client_ || !client_->is_connected()) {
             BOOST_LOG_SEV(lg(), error) << "Not connected to server";
@@ -360,7 +360,7 @@ public:
               messaging::message_type RequestMsgType>
     std::expected<ResponseType, session_error>
     process_authenticated_request(RequestType request) {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         if (!is_logged_in()) {
             BOOST_LOG_SEV(lg(), warn) << "Attempted authenticated request while "
                                       << "not logged in";

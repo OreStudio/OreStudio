@@ -31,7 +31,7 @@
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/cancellation_signal.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.comms/net/server_options.hpp"
 #include "ores.comms/messaging/message_dispatcher.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
@@ -56,7 +56,7 @@ private:
         "ores.comms.net.server";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

@@ -24,7 +24,7 @@
 
 namespace ores::http::messaging {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 http_message_adapter::http_message_adapter() {
     BOOST_LOG_SEV(lg(), debug) << "HTTP message adapter created";

@@ -22,7 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -33,7 +33,7 @@ const std::string tags("[messaging]");
 
 using namespace ores::iam::messaging;
 using ores::iam::domain::account;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("create_account_request_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));

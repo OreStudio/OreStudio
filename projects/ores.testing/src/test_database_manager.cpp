@@ -41,7 +41,7 @@ const std::string prefix = "ORES_TEST_DB_";
 
 namespace ores::testing {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using ores::database::context;
 using ores::database::context_factory;
 using ores::platform::environment::environment;

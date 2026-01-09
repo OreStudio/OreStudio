@@ -31,7 +31,7 @@
 
 namespace ores::comms::shell::app {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using comms::net::client_session;
 using comms::net::client_session_info;
 

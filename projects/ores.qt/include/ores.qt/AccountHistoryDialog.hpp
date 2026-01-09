@@ -30,7 +30,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.iam/domain/account_version.hpp"
 #include "ores.iam/domain/account_version_history.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ui_AccountHistoryDialog.h"
 
 namespace Ui {
@@ -50,7 +50,7 @@ private:
         "ores.qt.account_history_dialog";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

@@ -20,7 +20,7 @@
 #ifndef ORES_COMMS_SHELL_APP_COMMANDS_VARIABILITY_COMMANDS_HPP
 #define ORES_COMMS_SHELL_APP_COMMANDS_VARIABILITY_COMMANDS_HPP
 
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.comms/net/client_session.hpp"
 
 namespace cli {
@@ -43,7 +43,7 @@ private:
         "ores.comms.shell.app.commands.variability";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

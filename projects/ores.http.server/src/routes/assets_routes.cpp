@@ -26,7 +26,7 @@
 
 namespace ores::http_server::routes {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::http::domain;
 namespace asio = boost::asio;
 

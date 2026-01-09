@@ -21,7 +21,7 @@
 #define ORES_TESTING_TEST_DATABASE_MANAGER_HPP
 
 #include <string>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/database_options.hpp"
 
@@ -43,7 +43,7 @@ private:
         "ores.testing.test_database_manager";
 
     static auto& lg() {
-        static auto instance = ores::telemetry::log::make_logger(logger_name);
+        static auto instance = ores::logging::make_logger(logger_name);
         return instance;
     }
 

@@ -22,7 +22,7 @@
 
 namespace ores::qt {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 PaginationWidget::PaginationWidget(QWidget* parent)
     : QWidget(parent),

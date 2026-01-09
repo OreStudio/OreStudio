@@ -28,7 +28,7 @@
 
 namespace ores::comms::analyser::app {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::comms::recording;
 using namespace ores::comms::messaging;
 

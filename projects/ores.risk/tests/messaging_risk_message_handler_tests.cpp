@@ -24,7 +24,7 @@
 #include <boost/asio/detached.hpp>
 #include <boost/asio/io_context.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -67,7 +67,7 @@ make_sessions() {
 }
 
 using namespace ores;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using ores::risk::domain::currency;
 using namespace ores::risk::messaging;
 using namespace ores::risk::generators;

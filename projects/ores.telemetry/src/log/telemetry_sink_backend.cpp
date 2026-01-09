@@ -21,7 +21,7 @@
 
 #include <boost/log/attributes/value_extraction.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include "ores.telemetry/log/boost_severity.hpp"
+#include "ores.logging/boost_severity.hpp"
 #include "ores.telemetry/domain/trace_id.hpp"
 #include "ores.telemetry/domain/span_id.hpp"
 
@@ -67,11 +67,11 @@ void telemetry_sink_backend::consume(const boost::log::record_view& rec) {
     }
 
     // Extract and convert severity
-    auto severity_val = boost::log::extract<boost_severity>("Severity", rec);
+    auto severity_val = boost::log::extract<logging::boost_severity>("Severity", rec);
     if (severity_val) {
-        telemetry_rec.severity = to_domain_severity(severity_val.get());
+        telemetry_rec.severity = logging::to_domain_severity(severity_val.get());
     } else {
-        telemetry_rec.severity = domain::severity_level::info;
+        telemetry_rec.severity = logging::severity_level::info;
     }
 
     // Extract message body

@@ -26,7 +26,7 @@
 
 namespace ores::comms::net {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 connection::connection(ssl_socket socket) : socket_(std::move(socket)) {}
 

@@ -44,7 +44,7 @@
 
 namespace ores::comms::net {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 std::ostream& operator<<(std::ostream& s, connection_state v) {
     switch (v) {

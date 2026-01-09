@@ -20,7 +20,7 @@
 #include "ores.geo/service/geolocation_service.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 
 namespace {
@@ -33,7 +33,7 @@ const std::string tags("[service]");
 using ores::geo::service::geolocation_service;
 using ores::geo::service::geolocation_error;
 using ores::geo::service::geolocation_result;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("geolocation_result_default_construction", tags) {
     auto lg(make_logger(test_suite));

@@ -26,7 +26,7 @@
 
 namespace ores::risk::repository {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::country country_mapper::map(const country_entity& v) {

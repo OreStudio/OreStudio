@@ -62,7 +62,7 @@
 namespace ores::qt {
 
 using comms::messaging::message_type;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 namespace {
     // Event type name for feature flag changes

@@ -24,7 +24,7 @@
 #include <QTextStream>
 #include <QTimer>
 #include "ores.utility/version/version.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.telemetry/log/lifecycle_manager.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/service/telemetry_streaming_service.hpp"
@@ -37,7 +37,7 @@ namespace {
 
 inline static std::string_view logger_name = "ores.qt.main";
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 } // namespace
 

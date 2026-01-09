@@ -21,7 +21,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 
 namespace {
@@ -45,7 +45,7 @@ ores::variability::domain::feature_flags generate_feature_flag() {
 
 using namespace ores::variability::messaging;
 using ores::variability::domain::feature_flags;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("list_feature_flags_request_serialize_deserialize", tags) {
     list_feature_flags_request e;

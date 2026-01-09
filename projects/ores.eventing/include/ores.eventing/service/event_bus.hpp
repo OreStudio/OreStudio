@@ -28,7 +28,7 @@
 #include <functional>
 #include <unordered_map>
 #include <boost/core/demangle.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::eventing::service {
 
@@ -119,7 +119,7 @@ private:
 class event_bus final {
 private:
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger("ores.eventing.service.event_bus");
         return instance;
     }
@@ -155,7 +155,7 @@ public:
      */
     template<typename Event>
     [[nodiscard]] subscription subscribe(std::function<void(const Event&)> handler) {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         std::lock_guard lock(mutex_);
 
         const auto type_idx = std::type_index(typeid(Event));
@@ -186,7 +186,7 @@ public:
      */
     template<typename Event>
     void publish(const Event& event) {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         std::vector<std::function<void(const Event&)>> handlers_copy;
         const auto type_idx = std::type_index(typeid(Event));
         const auto type_name = boost::core::demangle(type_idx.name());
@@ -259,7 +259,7 @@ public:
 private:
     void unsubscribe(std::type_index type_idx, subscriber_id id,
                      const std::string& type_name) {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         std::lock_guard lock(mutex_);
 
         auto it = subscribers_.find(type_idx);

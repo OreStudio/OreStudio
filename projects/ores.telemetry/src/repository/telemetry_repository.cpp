@@ -33,7 +33,7 @@ namespace ores::telemetry::repository {
 
 using namespace sqlgen;
 using namespace sqlgen::literals;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::database::repository;
 
 telemetry_repository::telemetry_repository(context ctx)

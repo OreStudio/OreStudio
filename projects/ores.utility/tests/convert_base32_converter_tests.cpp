@@ -20,7 +20,7 @@
 #include "ores.utility/convert/base32_converter.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -30,7 +30,7 @@ const std::string tags("[convert]");
 }
 
 using ores::utility::converter::base32_converter;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("base32_encode_empty_input", tags) {
     auto lg(make_logger(test_suite));

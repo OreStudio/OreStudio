@@ -24,7 +24,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <thread>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -52,7 +52,7 @@ std::shared_ptr<resource> create_test_resource() {
 
 }
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("telemetry_context_is_valid_when_properly_constructed", tags) {
     auto lg(make_logger(test_suite));

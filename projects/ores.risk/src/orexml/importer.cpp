@@ -29,7 +29,7 @@
 namespace ores::risk::orexml {
 
 using domain::currency;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 std::string importer::validate_currency(const currency& c) {
     std::ostringstream errors;

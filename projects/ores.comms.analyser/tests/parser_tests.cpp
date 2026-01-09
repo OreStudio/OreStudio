@@ -20,7 +20,7 @@
 #include "ores.comms.analyser/config/parser.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -30,7 +30,7 @@ const std::string tags("[parser]");
 }
 
 using namespace ores::comms::analyser::config;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("parser_help_returns_nullopt", tags) {
     auto lg(make_logger(test_suite));

@@ -31,7 +31,7 @@
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::iam::service {
 
@@ -65,7 +65,7 @@ private:
         "ores.iam.service.signup_service";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

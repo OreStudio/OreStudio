@@ -28,7 +28,7 @@
 
 namespace ores::comms::shell::app::commands {
 
-using namespace telemetry::log;
+using namespace logging;
 using comms::messaging::message_type;
 using comms::net::client_session;
 

@@ -470,7 +470,7 @@ namespace ores::logging #FAFAFA {
 }
 
 ores::telemetry::log::lifecycle_manager --|> ores::logging::lifecycle_manager
-ores::telemetry::log::logging_options --|> ores::logging::logging_options
+ores::logging::logging_options --|> ores::logging::logging_options
 
 ' Layout hints
 domain::telemetry_context -[hidden]down- generators::trace_id_generator

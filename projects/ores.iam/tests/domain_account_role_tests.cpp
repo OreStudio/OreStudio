@@ -26,7 +26,7 @@
 #include <sstream>
 #include <iomanip>
 #include <chrono>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -47,7 +47,7 @@ std::chrono::system_clock::time_point make_timepoint(int year, int month, int da
 }
 
 using ores::iam::domain::account_role;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("create_account_role_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));

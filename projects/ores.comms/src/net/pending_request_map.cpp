@@ -23,7 +23,7 @@
 
 namespace ores::comms::net {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 pending_request_map::pending_request_map(boost::asio::any_io_executor executor)
     : executor_(std::move(executor)) {

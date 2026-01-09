@@ -26,7 +26,7 @@
 
 namespace ores::telemetry::messaging {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 telemetry_message_handler::telemetry_message_handler(database::context ctx,
     std::shared_ptr<comms::service::auth_session_service> sessions)
@@ -230,19 +230,19 @@ handle_get_telemetry_stats_request(std::span<const std::byte> payload) {
     co_return response.serialize();
 }
 
-std::string telemetry_message_handler::severity_to_string(domain::severity_level level) {
+std::string telemetry_message_handler::severity_to_string(logging::severity_level level) {
     switch (level) {
-    case domain::severity_level::trace:
+    case logging::severity_level::trace:
         return "trace";
-    case domain::severity_level::debug:
+    case logging::severity_level::debug:
         return "debug";
-    case domain::severity_level::info:
+    case logging::severity_level::info:
         return "info";
-    case domain::severity_level::warn:
+    case logging::severity_level::warn:
         return "warn";
-    case domain::severity_level::error:
+    case logging::severity_level::error:
         return "error";
-    case domain::severity_level::fatal:
+    case logging::severity_level::fatal:
         return "error";  // Map fatal to error for database storage
     default:
         return "info";

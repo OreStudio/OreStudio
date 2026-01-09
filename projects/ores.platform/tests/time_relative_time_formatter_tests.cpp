@@ -20,7 +20,7 @@
 #include "ores.platform/time/relative_time_formatter.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -40,7 +40,7 @@ system_clock::time_point offset_from(system_clock::time_point ref, seconds offse
 
 }
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 // =============================================================================
 // Tests for format(value, unit) with automatic style

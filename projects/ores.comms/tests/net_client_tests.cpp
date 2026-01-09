@@ -29,7 +29,7 @@
 #include "ores.comms/net/client_options.hpp"
 #include "ores.comms/net/server_options.hpp"
 #include "ores.testing/run_coroutine_test.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -107,7 +107,7 @@ tSF6X2Tz8FU6Whed2zL17v8=
 TEST_CASE("test_client_server_connection", tags) {
     SKIP_WINDOWS_CLANG_COROUTINE_BUG();
 
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
     BOOST_LOG_SEV(lg, info) << "Starting test_client_server_connection";
@@ -132,7 +132,7 @@ TEST_CASE("test_client_server_connection", tags) {
         // Start server in background with callback
         boost::asio::co_spawn(co_await boost::asio::this_coro::executor,
             [server, &io_context, &server_port]() -> boost::asio::awaitable<void> {
-                auto lg = ores::telemetry::log::make_logger("ores.comms.tests.server_runner");
+                auto lg = ores::logging::make_logger("ores.comms.tests.server_runner");
                 BOOST_LOG_SEV(lg, info) << "Server starting run loop";
                 co_await server->run(io_context, [&](std::uint16_t port) {
                     server_port = port;
@@ -185,7 +185,7 @@ TEST_CASE("test_client_server_connection", tags) {
 TEST_CASE("test_session_cancellation_on_server_stop", tags) {
     SKIP_WINDOWS_CLANG_COROUTINE_BUG();
 
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
     BOOST_LOG_SEV(lg, info) << "Starting test_session_cancellation_on_server_stop";
@@ -210,7 +210,7 @@ TEST_CASE("test_session_cancellation_on_server_stop", tags) {
         // Start server
         boost::asio::co_spawn(co_await boost::asio::this_coro::executor,
             [server, &io_context, &server_port]() -> boost::asio::awaitable<void> {
-                auto lg = ores::telemetry::log::make_logger("ores.comms.tests.server_runner");
+                auto lg = ores::logging::make_logger("ores.comms.tests.server_runner");
                 BOOST_LOG_SEV(lg, info) << "Server starting run loop";
                 co_await server->run(io_context, [&](std::uint16_t port) {
                     server_port = port;
@@ -310,7 +310,7 @@ TEST_CASE("test_session_cancellation_on_server_stop", tags) {
 }
 
 TEST_CASE("test_heartbeat_configuration", tags) {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
     BOOST_LOG_SEV(lg, info) << "Starting test_heartbeat_configuration";
@@ -336,7 +336,7 @@ TEST_CASE("test_heartbeat_configuration", tags) {
 TEST_CASE("test_heartbeat_disconnect_detection", tags) {
     SKIP_WINDOWS_CLANG_COROUTINE_BUG();
 
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
     BOOST_LOG_SEV(lg, info) << "Starting test_heartbeat_disconnect_detection";
@@ -360,7 +360,7 @@ TEST_CASE("test_heartbeat_disconnect_detection", tags) {
         BOOST_LOG_SEV(lg, info) << "Spawning server";
         boost::asio::co_spawn(co_await boost::asio::this_coro::executor,
             [server, &io_context, &server_port]() -> boost::asio::awaitable<void> {
-                auto lg = ores::telemetry::log::make_logger("ores.comms.tests.server_runner");
+                auto lg = ores::logging::make_logger("ores.comms.tests.server_runner");
                 BOOST_LOG_SEV(lg, info) << "Server starting run loop";
                 co_await server->run(io_context, [&](std::uint16_t port) {
                     server_port = port;
@@ -430,7 +430,7 @@ TEST_CASE("test_heartbeat_disconnect_detection", tags) {
 TEST_CASE("test_heartbeat_disabled", tags) {
     SKIP_WINDOWS_CLANG_COROUTINE_BUG();
 
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     auto lg(make_logger(test_suite));
 
     BOOST_LOG_SEV(lg, info) << "Starting test_heartbeat_disabled";
@@ -454,7 +454,7 @@ TEST_CASE("test_heartbeat_disabled", tags) {
         BOOST_LOG_SEV(lg, info) << "Spawning server";
         boost::asio::co_spawn(co_await boost::asio::this_coro::executor,
             [server, &io_context, &server_port]() -> boost::asio::awaitable<void> {
-                auto lg = ores::telemetry::log::make_logger("ores.comms.tests.server_runner");
+                auto lg = ores::logging::make_logger("ores.comms.tests.server_runner");
                 BOOST_LOG_SEV(lg, info) << "Server starting run loop";
                 co_await server->run(io_context, [&](std::uint16_t port) {
                     server_port = port;

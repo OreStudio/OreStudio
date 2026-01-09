@@ -26,11 +26,11 @@
 #include <boost/lexical_cast.hpp>
 #include "sqlgen/Timestamp.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::telemetry::repository {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::database::repository;
 
 namespace {

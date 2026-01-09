@@ -20,7 +20,7 @@
 #include "ores.iam/security/password_manager.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -30,7 +30,7 @@ const std::string tags("[security]");
 }
 
 using ores::iam::security::password_manager;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("verify_password_hash_with_correct_password", tags) {
     auto lg(make_logger(test_suite));

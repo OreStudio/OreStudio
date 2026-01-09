@@ -69,7 +69,7 @@ namespace ores::cli::app {
 using ore_importer = risk::orexml::importer;
 using ore_exporter = risk::orexml::exporter;
 using csv_exporter = risk::csv::exporter;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using ores::risk::domain::currency;
 using risk::repository::currency_repository;
 using connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;

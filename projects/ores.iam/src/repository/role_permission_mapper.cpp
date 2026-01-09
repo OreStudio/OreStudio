@@ -25,7 +25,7 @@
 
 namespace ores::iam::repository {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::database::repository;
 
 domain::role_permission role_permission_mapper::map(const role_permission_entity& v) {

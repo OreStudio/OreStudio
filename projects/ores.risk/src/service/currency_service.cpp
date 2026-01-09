@@ -21,7 +21,7 @@
 
 namespace ores::risk::service {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 currency_service::currency_service(context ctx)
     : ctx_(std::move(ctx))

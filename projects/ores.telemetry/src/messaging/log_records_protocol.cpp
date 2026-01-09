@@ -151,7 +151,7 @@ submit_log_records_request::deserialize(std::span<const std::byte> data) {
         if (!sev_result) {
             return std::unexpected(sev_result.error());
         }
-        rec.severity = static_cast<domain::severity_level>(*sev_result);
+        rec.severity = static_cast<logging::severity_level>(*sev_result);
 
         /*
          * Body.

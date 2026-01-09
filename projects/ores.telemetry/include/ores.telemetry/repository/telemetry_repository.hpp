@@ -25,7 +25,7 @@
 #include <optional>
 #include <boost/uuid/uuid.hpp>
 #include <sqlgen/postgres.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.telemetry/domain/telemetry_log_entry.hpp"
 #include "ores.telemetry/domain/telemetry_query.hpp"
@@ -46,7 +46,7 @@ private:
         "ores.telemetry.repository.telemetry_repository";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

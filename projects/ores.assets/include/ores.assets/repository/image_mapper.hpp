@@ -21,7 +21,7 @@
 #define ORES_ASSETS_REPOSITORY_IMAGE_MAPPER_HPP
 
 #include <vector>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.assets/domain/image.hpp"
 #include "ores.assets/repository/image_entity.hpp"
 
@@ -36,7 +36,7 @@ private:
         "ores.assets.repository.image_mapper";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

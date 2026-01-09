@@ -24,7 +24,7 @@
 
 namespace ores::iam::messaging {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 void registrar::register_handlers(comms::net::server& server,
     database::context ctx,

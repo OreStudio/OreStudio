@@ -27,8 +27,8 @@
 #include <QSpinBox>
 #include <QPushButton>
 #include <QTabWidget>
-#include "ores.telemetry/log/make_logger.hpp"
-#include "ores.telemetry/log/logging_options.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.logging/logging_options.hpp"
 
 namespace ores::qt {
 
@@ -51,7 +51,7 @@ private:
     inline static std::string_view logger_name = "ores.qt.telemetry_settings_dialog";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
@@ -68,7 +68,7 @@ public:
      * @brief Load logging options from QSettings.
      * @return Logging options struct populated from settings.
      */
-    static telemetry::log::logging_options loadLoggingSettings();
+    static logging::logging_options loadLoggingSettings();
 
     /**
      * @brief Check if compression is enabled in QSettings.

@@ -26,13 +26,13 @@
 #include "ores.wt/service/application_context.hpp"
 #include "ores.wt/app/ore_application.hpp"
 #include "ores.telemetry/log/lifecycle_manager.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.platform/environment/environment.hpp"
 
 namespace {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using ores::platform::environment::environment;
 
 const std::string default_address = "0.0.0.0";

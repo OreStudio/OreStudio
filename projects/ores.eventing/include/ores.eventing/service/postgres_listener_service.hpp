@@ -29,7 +29,7 @@
 #include <functional>
 #include <condition_variable>
 #include <sqlgen/postgres.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.eventing/domain/entity_change_event.hpp"
 
@@ -49,7 +49,7 @@ namespace ores::eventing::service {
 class postgres_listener_service final {
 private:
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(
             "ores.eventing.service.postgres_listener_service");
         return instance;

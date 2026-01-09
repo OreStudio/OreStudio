@@ -43,7 +43,7 @@ std::string flagsToHex(Qt::WindowFlags flags) {
 
 namespace ores::qt {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 DetachableMdiSubWindow::DetachableMdiSubWindow(QWidget* parent)
     : QMdiSubWindow(parent), isDetached_(false),

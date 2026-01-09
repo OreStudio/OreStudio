@@ -25,7 +25,7 @@
 #include <optional>
 #include <functional>
 #include <boost/asio/awaitable.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 
 namespace ores::comms::net { class connection; }
@@ -57,7 +57,7 @@ private:
         "ores.comms.service.handshake_service";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

@@ -21,7 +21,7 @@
 
 namespace ores::assets::service {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 assets_service::assets_service(context ctx)
     : ctx_(std::move(ctx))

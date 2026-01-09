@@ -20,7 +20,7 @@
 #ifndef ORES_RISK_OREXML_CURRENCY_MAPPER_HPP
 #define ORES_RISK_OREXML_CURRENCY_MAPPER_HPP
 
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.risk/domain/currency.hpp"
 #include "ores.risk/orexml/CurrencyConfig.hpp"
 #include "ores.risk/orexml/CurrencyElement.hpp"
@@ -35,7 +35,7 @@ private:
     inline static std::string_view logger_name = "ores.risk.orexml.currency_mapper";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

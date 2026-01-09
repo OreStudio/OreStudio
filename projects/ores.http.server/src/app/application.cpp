@@ -43,7 +43,7 @@
 
 namespace ores::http_server::app {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 namespace asio = boost::asio;
 
 boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,

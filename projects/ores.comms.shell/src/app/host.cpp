@@ -33,7 +33,7 @@
 
 namespace ores::comms::shell::app {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using ores::comms::shell::config::parser;
 using ores::telemetry::log::lifecycle_manager;
 

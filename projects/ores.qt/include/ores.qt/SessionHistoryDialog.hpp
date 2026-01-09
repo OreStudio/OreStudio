@@ -28,7 +28,7 @@
 #include <memory>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/session.hpp"
 
 namespace ores::qt {
@@ -81,7 +81,7 @@ private:
         "ores.qt.session_history_dialog";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

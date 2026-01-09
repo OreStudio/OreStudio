@@ -27,7 +27,7 @@
 namespace ores::risk::orexml {
 
 using domain::currency;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 std::string
 exporter::export_currency_config(const std::vector<currency>& v) {

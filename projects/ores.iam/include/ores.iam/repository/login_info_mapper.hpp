@@ -21,7 +21,7 @@
 #define ORES_IAM_REPOSITORY_LOGIN_INFO_MAPPER_HPP
 
 #include <vector>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/login_info.hpp"
 #include "ores.iam/repository/login_info_entity.hpp"
 
@@ -36,7 +36,7 @@ private:
         "ores.iam.repository.login_info_mapper";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

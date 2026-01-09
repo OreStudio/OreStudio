@@ -25,7 +25,7 @@
 
 namespace ores::comms::analyser::domain {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using namespace ores::comms::recording;
 using ores::utility::serialization::reader;
 using ores::comms::messaging::compression_type;

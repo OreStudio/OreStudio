@@ -22,7 +22,7 @@
 
 namespace ores::variability::service {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 system_flags_service::system_flags_service(database::context ctx)
     : feature_flags_service_(std::move(ctx)) {}

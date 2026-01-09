@@ -20,7 +20,7 @@
 #include "ores.iam/security/password_policy_validator.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace {
 
@@ -30,7 +30,7 @@ const std::string tags("[security]");
 }
 
 using ores::iam::security::password_policy_validator;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("valid_password_passes_validation", tags) {
     auto lg(make_logger(test_suite));

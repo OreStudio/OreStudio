@@ -37,7 +37,7 @@
 #include "ores.comms/recording/session_recorder.hpp"
 #include "ores.comms/service/telemetry_streaming_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/session.hpp"
 
 namespace ores::qt {
@@ -83,7 +83,7 @@ private:
         "ores.qt.client_manager";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

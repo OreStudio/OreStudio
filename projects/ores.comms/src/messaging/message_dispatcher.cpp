@@ -21,7 +21,7 @@
 
 namespace ores::comms::messaging {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 using ores::utility::serialization::error_code;
 
 message_dispatcher::message_dispatcher(

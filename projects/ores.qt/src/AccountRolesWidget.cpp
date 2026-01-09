@@ -35,7 +35,7 @@
 
 namespace ores::qt {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 AccountRolesWidget::AccountRolesWidget(QWidget* parent)
     : QWidget(parent),

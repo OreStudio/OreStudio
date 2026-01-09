@@ -21,7 +21,7 @@
 
 namespace ores::eventing::service {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 postgres_event_source::postgres_event_source(
     database::context ctx, event_bus& bus)

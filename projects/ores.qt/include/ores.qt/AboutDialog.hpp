@@ -24,7 +24,7 @@
 #include <QDialog>
 #include "ui_AboutDialog.h"
 #include "ores.qt/LogoLabel.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace Ui {
 
@@ -51,7 +51,7 @@ private:
     inline static std::string_view logger_name = "ores.qt.about_dialog";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

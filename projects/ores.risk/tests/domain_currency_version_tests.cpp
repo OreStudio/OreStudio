@@ -23,7 +23,7 @@
 #include <chrono>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.risk/domain/currency_version_table.hpp"
 #include "ores.risk/domain/currency_version_history_table.hpp"
 
@@ -48,7 +48,7 @@ std::chrono::system_clock::time_point make_timepoint(int year, int month, int da
 using ores::risk::domain::currency;
 using ores::risk::domain::currency_version;
 using ores::risk::domain::currency_version_history;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 TEST_CASE("create_currency_version_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));

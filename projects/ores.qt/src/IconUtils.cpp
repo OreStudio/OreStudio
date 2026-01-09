@@ -27,7 +27,7 @@
 
 namespace ores::qt {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 QIcon IconUtils::createRecoloredIcon(const QString& svgPath, const QColor& color) {
     QIcon originalIcon(svgPath);

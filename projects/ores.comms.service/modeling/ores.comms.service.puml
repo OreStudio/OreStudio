@@ -98,7 +98,7 @@ namespace ores #F2F2F2 {
                 end note
 
                 class options #F7E5FF {
-                    +{field} logging : std::optional<ores::telemetry::log::logging_options>
+                    +{field} logging : std::optional<ores::logging::logging_options>
                     +{field} server : server_options
                     +{field} database : ores::database::database_options
                 }

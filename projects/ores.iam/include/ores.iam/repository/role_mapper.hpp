@@ -22,7 +22,7 @@
 
 #include "ores.iam/domain/role.hpp"
 #include "ores.iam/repository/role_entity.hpp"
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::iam::repository {
 
@@ -35,7 +35,7 @@ private:
         "ores.iam.repository.role_mapper";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

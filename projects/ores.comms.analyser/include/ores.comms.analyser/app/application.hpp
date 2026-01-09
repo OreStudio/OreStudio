@@ -20,7 +20,7 @@
 #ifndef ORES_COMMS_ANALYSER_APP_APPLICATION_HPP
 #define ORES_COMMS_ANALYSER_APP_APPLICATION_HPP
 
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.comms.analyser/config/options.hpp"
 #include "ores.comms.analyser/domain/session_reader.hpp"
 
@@ -34,7 +34,7 @@ private:
     inline static std::string_view logger_name = "ores.comms.analyser.app.application";
 
     static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

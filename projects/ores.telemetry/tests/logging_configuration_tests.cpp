@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.telemetry/log/logging_configuration.hpp"
+#include "ores.logging/logging_configuration.hpp"
 
 #include <vector>
 #include <catch2/catch_test_macros.hpp>
@@ -27,7 +27,7 @@ namespace {
 const std::string tags("[logging_configuration]");
 
 namespace po = boost::program_options;
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 po::variables_map parse_args(const po::options_description& desc,
                              const std::vector<const char*>& args) {

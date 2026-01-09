@@ -26,7 +26,7 @@
 #include <magic_enum/magic_enum.hpp>
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/program_options/common_configuration.hpp"
-#include "ores.telemetry/log/logging_configuration.hpp"
+#include "ores.logging/logging_configuration.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity_parsers/currencies_parser.hpp"
 #include "ores.cli/config/entity_parsers/accounts_parser.hpp"
@@ -76,7 +76,7 @@ namespace entity_parsers = ores::cli::config::entity_parsers;
  * end users.
  */
 options_description make_top_level_visible_options_description() {
-    using ores::telemetry::log::logging_configuration;
+    using ores::logging::logging_configuration;
     using ores::utility::program_options::common_configuration;
 
     const auto god(common_configuration::make_options_description());

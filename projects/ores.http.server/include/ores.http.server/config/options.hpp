@@ -22,7 +22,7 @@
 
 #include <iosfwd>
 #include <optional>
-#include "ores.telemetry/log/logging_options.hpp"
+#include "ores.logging/logging_options.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "ores.http/net/http_server_options.hpp"
 
@@ -35,7 +35,7 @@ struct options final {
     /**
      * @brief Configuration options related to logging, if any.
      */
-    std::optional<ores::telemetry::log::logging_options> logging;
+    std::optional<ores::logging::logging_options> logging;
 
     /**
      * @brief Configuration related to HTTP server operations.

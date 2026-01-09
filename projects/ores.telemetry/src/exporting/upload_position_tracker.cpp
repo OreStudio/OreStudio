@@ -20,14 +20,14 @@
 #include "ores.telemetry/exporting/upload_position_tracker.hpp"
 
 #include <fstream>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::telemetry::exporting {
 
 namespace {
 
 auto& lg() {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
     static auto instance = make_logger("ores.telemetry.exporting.upload_position_tracker");
     return instance;
 }
@@ -83,7 +83,7 @@ std::uint64_t upload_position_tracker::load_position_from_file() const {
 
 void upload_position_tracker::save_position_to_file(
     std::uint64_t position) const {
-    using namespace ores::telemetry::log;
+    using namespace ores::logging;
 
     std::ofstream file(marker_file_path_,
         std::ios::binary | std::ios::trunc);

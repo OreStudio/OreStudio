@@ -23,7 +23,7 @@
 #include <memory>
 #include <functional>
 #include <unordered_map>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.eventing/service/event_bus.hpp"
@@ -57,7 +57,7 @@ namespace ores::eventing::service {
 class postgres_event_source final {
 private:
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(
             "ores.eventing.service.postgres_event_source");
         return instance;
@@ -105,7 +105,7 @@ public:
     template<typename Event>
     void register_mapping(const std::string& entity_name,
                           const std::string& channel_name) {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         BOOST_LOG_SEV(lg(), info)
             << "Registering entity-to-event mapping: entity='" << entity_name
             << "', channel='" << channel_name << "'";
@@ -114,7 +114,7 @@ public:
             .channel_name = channel_name,
             .publisher = [this, entity_name](std::chrono::system_clock::time_point ts,
                                               const std::vector<std::string>& entity_ids) {
-                using namespace ores::telemetry::log;
+                using namespace ores::logging;
                 BOOST_LOG_SEV(lg(), info)
                     << "Publishing domain event for entity: " << entity_name
                     << " with " << entity_ids.size() << " entity IDs";

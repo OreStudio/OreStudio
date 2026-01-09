@@ -173,7 +173,7 @@ namespace ores #F2F2F2 {
             add_options o-- ores::cli::config::entity
 
             class options #F7E5FF {
-                +{field} logging std::optional<ores::telemetry::log::logging_options>
+                +{field} logging std::optional<ores::logging::logging_options>
                 +{field} importing std::optional<import_options>
                 +{field} exporting std::optional<export_options>
                 +{field} deleting std::optional<delete_options>

@@ -34,7 +34,7 @@
 
 namespace ores::qt {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 ClientAccountModel::
 ClientAccountModel(ClientManager* clientManager, QObject* parent)

@@ -21,7 +21,7 @@
 #define ORES_IAM_SECURITY_PASSWORD_MANAGER_HPP
 
 #include <string>
-#include "ores.telemetry/log/make_logger.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::iam::security {
 
@@ -39,7 +39,7 @@ private:
         "ores.iam.security.password_manager";
 
     [[nodiscard]] static auto& lg() {
-        using namespace ores::telemetry::log;
+        using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }

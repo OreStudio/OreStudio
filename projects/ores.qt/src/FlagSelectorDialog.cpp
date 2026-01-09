@@ -25,7 +25,7 @@
 
 namespace ores::qt {
 
-using namespace ores::telemetry::log;
+using namespace ores::logging;
 
 FlagSelectorDialog::FlagSelectorDialog(ImageCache* imageCache,
     const QString& currentImageId, QWidget* parent)

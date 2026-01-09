@@ -111,10 +111,10 @@ TEST_CASE("recorded_frame_with_values", tags) {
 
     recorded_frame sut;
     sut.timestamp_offset_us = 1500000;
-    sut.direction = ores::comms::recording::frame_direction::client_to_server;
+    sut.direction = ores::comms::recording::frame_direction::sent;
 
     CHECK(sut.timestamp_offset_us == 1500000);
-    CHECK(sut.direction == ores::comms::recording::frame_direction::client_to_server);
+    CHECK(sut.direction == ores::comms::recording::frame_direction::sent);
 }
 
 TEST_CASE("session_data_default_construction", tags) {
@@ -135,11 +135,11 @@ TEST_CASE("session_data_with_frames", tags) {
 
     recorded_frame frame1;
     frame1.timestamp_offset_us = 0;
-    frame1.direction = ores::comms::recording::frame_direction::client_to_server;
+    frame1.direction = ores::comms::recording::frame_direction::sent;
 
     recorded_frame frame2;
     frame2.timestamp_offset_us = 100000;
-    frame2.direction = ores::comms::recording::frame_direction::server_to_client;
+    frame2.direction = ores::comms::recording::frame_direction::received;
 
     sut.frames.push_back(frame1);
     sut.frames.push_back(frame2);

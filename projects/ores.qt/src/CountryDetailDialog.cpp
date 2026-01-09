@@ -165,7 +165,20 @@ CountryDetailDialog::~CountryDetailDialog() {
 void CountryDetailDialog::setCountry(const risk::domain::country& country) {
     currentCountry_ = country;
     isAddMode_ = country.alpha2_code.empty();
-    pendingImageId_.clear();
+
+    if (country.image_id) {
+        pendingImageId_ = QString::fromStdString(
+            boost::uuids::to_string(*country.image_id));
+    } else if (imageCache_) {
+        std::string noFlagId = imageCache_->getNoFlagImageId();
+        if (!noFlagId.empty()) {
+            pendingImageId_ = QString::fromStdString(noFlagId);
+        } else {
+            pendingImageId_.clear();
+        }
+    } else {
+        pendingImageId_.clear();
+    }
 
     ui_->alpha2CodeEdit->setReadOnly(!isAddMode_);
     ui_->alpha2CodeEdit->setText(QString::fromStdString(country.alpha2_code));
@@ -197,9 +210,6 @@ risk::domain::country CountryDetailDialog::getCountry() const {
     if (!pendingImageId_.isEmpty()) {
         boost::uuids::string_generator gen;
         country.image_id = gen(pendingImageId_.toStdString());
-    } else if (currentCountry_.image_id) {
-        // Keep the existing image_id from the country being edited
-        country.image_id = currentCountry_.image_id;
     }
 
     return country;

@@ -94,9 +94,12 @@ QVariant ClientCountryModel::data(const QModelIndex& index, int role) const {
 
     // Handle DecorationRole for Flag column
     if (role == Qt::DecorationRole && index.column() == Column::Flag) {
-        if (imageCache_ && country.image_id) {
-            const auto image_id_str = boost::uuids::to_string(*country.image_id);
-            return imageCache_->getIcon(image_id_str);
+        if (imageCache_) {
+            if (country.image_id) {
+                const auto image_id_str = boost::uuids::to_string(*country.image_id);
+                return imageCache_->getIcon(image_id_str);
+            }
+            return imageCache_->getNoFlagIcon();
         }
         return {};
     }

@@ -223,7 +223,20 @@ CurrencyDetailDialog::~CurrencyDetailDialog() {
 void CurrencyDetailDialog::setCurrency(const risk::domain::currency& currency) {
     currentCurrency_ = currency;
     isAddMode_ = currency.iso_code.empty();
-    pendingImageId_.clear();  // Clear any pending flag selection
+
+    if (currency.image_id) {
+        pendingImageId_ = QString::fromStdString(
+            boost::uuids::to_string(*currency.image_id));
+    } else if (imageCache_) {
+        std::string noFlagId = imageCache_->getNoFlagImageId();
+        if (!noFlagId.empty()) {
+            pendingImageId_ = QString::fromStdString(noFlagId);
+        } else {
+            pendingImageId_.clear();
+        }
+    } else {
+        pendingImageId_.clear();
+    }
 
     ui_->isoCodeEdit->setReadOnly(!isAddMode_);
     ui_->isoCodeEdit->setText(QString::fromStdString(currency.iso_code));
@@ -265,9 +278,6 @@ risk::domain::currency CurrencyDetailDialog::getCurrency() const {
     if (!pendingImageId_.isEmpty()) {
         boost::uuids::string_generator gen;
         currency.image_id = gen(pendingImageId_.toStdString());
-    } else if (currentCurrency_.image_id) {
-        // Keep the existing image_id from the currency being edited
-        currency.image_id = currentCurrency_.image_id;
     }
 
     return currency;

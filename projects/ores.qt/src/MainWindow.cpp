@@ -473,6 +473,9 @@ void MainWindow::onLoginTriggered() {
         if (currencyController_) {
             currencyController_->setUsername(QString::fromStdString(username_));
         }
+        if (countryController_) {
+            countryController_->setUsername(QString::fromStdString(username_));
+        }
         if (accountController_) {
             accountController_->setUsername(QString::fromStdString(username_));
         }

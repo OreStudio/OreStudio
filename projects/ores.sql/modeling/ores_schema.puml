@@ -26,7 +26,54 @@ ORES Database Schema
 All tables use temporal support with valid_from/valid_to
 for bitemporal data management. Junction tables enable
 soft deletes via validity period closure.
+
+Change tracking: Most entities include change_reason_code
+and change_commentary for audit trail support.
 end note
+
+'
+' ==================== Change Management Domain ====================
+'
+package "Change Management" #FFF8E1 {
+    entity change_reason_categories <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        * description : text
+        * modified_by : text
+        * change_commentary : text
+    }
+
+    note right of change_reason_categories
+    Groups change reasons into logical categories.
+    Examples: static_data, trade, market_data.
+    Determines which reasons apply to which entity types.
+    end note
+
+    entity change_reasons <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        * description : text
+        * category_code : text <<FK>>
+        * applies_to_amend : boolean
+        * applies_to_delete : boolean
+        * requires_commentary : boolean
+        * display_order : integer
+        * modified_by : text
+        * change_commentary : text
+    }
+
+    note right of change_reasons
+    Defines reasons for record changes.
+    Namespaced format: "category.reason_name"
+    Examples: system.new, static_data.front_office_error.
+    end note
+}
 
 '
 ' ==================== IAM Domain ====================
@@ -42,6 +89,8 @@ package "IAM (Identity & Access Management)" #E8F4FD {
         * totp_secret : text
         * email : text <<unique>>
         * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -103,6 +152,8 @@ package "RBAC (Role-Based Access Control)" #FFF3E0 {
         * name : text <<unique>>
         * description : text
         * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -123,7 +174,8 @@ package "RBAC (Role-Based Access Control)" #FFF3E0 {
 
     note right of permissions
     Fine-grained permission codes.
-    Seed data, rarely changes.
+    System-defined constants from bootstrap data.
+    No change tracking (not user-editable).
     end note
 
     entity account_roles <<junction>> #ECECEC {
@@ -133,6 +185,8 @@ package "RBAC (Role-Based Access Control)" #FFF3E0 {
         --
         * assigned_by : text
         * assigned_at : timestamptz
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
         * valid_to : timestamptz
     }
 
@@ -166,6 +220,8 @@ package "Assets & Reference Data" #F3E5F5 {
         * description : text
         * svg_data : text
         * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -182,6 +238,8 @@ package "Assets & Reference Data" #F3E5F5 {
         * name : text <<unique>>
         * description : text
         * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -220,6 +278,8 @@ package "Assets & Reference Data" #F3E5F5 {
         * currency_type : text
         image_id : uuid <<FK>>
         * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -242,6 +302,8 @@ package "Assets & Reference Data" #F3E5F5 {
         * official_name : text
         image_id : uuid <<FK>>
         * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
     }
 
     note right of countries
@@ -262,6 +324,8 @@ package "Variability (Feature Flags)" #E8F5E9 {
         * enabled : integer
         * description : text
         * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
         * valid_from : timestamptz
         * valid_to : timestamptz
     }
@@ -275,6 +339,9 @@ package "Variability (Feature Flags)" #E8F5E9 {
 '
 ' ==================== Relationships ====================
 '
+
+' Change Management relationships
+change_reason_categories ||--o{ change_reasons : "contains"
 
 ' IAM relationships
 accounts ||--o| login_info : "has"
@@ -291,6 +358,16 @@ images ||--o{ image_tags : "tagged with"
 tags ||--o{ image_tags : "applied to"
 currencies }o--o| images : "displayed as"
 countries }o--o| images : "displayed as"
+
+' Change tracking relationships (logical - not enforced FKs in all cases)
+change_reasons ||--o{ accounts : "reason for"
+change_reasons ||--o{ roles : "reason for"
+change_reasons ||--o{ currencies : "reason for"
+change_reasons ||--o{ countries : "reason for"
+change_reasons ||--o{ feature_flags : "reason for"
+change_reasons ||--o{ images : "reason for"
+change_reasons ||--o{ tags : "reason for"
+change_reasons ||--o{ account_roles : "reason for"
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores_schema.puml"

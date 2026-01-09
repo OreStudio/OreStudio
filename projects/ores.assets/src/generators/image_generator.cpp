@@ -42,6 +42,8 @@ domain::image generate_synthetic_image() {
                  "<rect fill=\"#" + faker::number::hexadecimal(6) + "\" width=\"100\" height=\"100\"/>"
                  "</svg>";
     r.recorded_by = std::string(faker::internet::username());
+    r.change_reason_code = "system.test";
+    r.change_commentary = "Synthetic test data";
     r.recorded_at = utility::faker::datetime::past_timepoint();
 
     return r;

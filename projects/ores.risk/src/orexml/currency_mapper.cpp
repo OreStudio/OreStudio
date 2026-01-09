@@ -39,6 +39,9 @@ domain::currency currency_mapper::map(const CurrencyElement& v) {
     r.rounding_precision = v.RoundingPrecision;
     r.format = v.Format;
     r.currency_type = v.CurrencyType ? *v.CurrencyType : "";
+    r.recorded_by = "ores";
+    r.change_reason_code = "system.import";
+    r.change_commentary = "Imported from ORE XML";
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
     return r;

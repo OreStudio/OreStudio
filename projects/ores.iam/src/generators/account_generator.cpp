@@ -32,6 +32,8 @@ domain::account generate_synthetic_account() {
     domain::account r;
     r.version = 1;
     r.recorded_by = faker::internet::username();
+    r.change_reason_code = "system.test";
+    r.change_commentary = "Synthetic test data";
 
     boost::uuids::string_generator gen;
     r.id = gen(faker::string::uuidV4());

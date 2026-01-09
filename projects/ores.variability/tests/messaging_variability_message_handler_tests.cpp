@@ -49,6 +49,8 @@ ores::variability::domain::feature_flags generate_feature_flag() {
     flag.enabled = faker::datatype::boolean();
     flag.description = std::string(faker::lorem::sentence());
     flag.recorded_by = std::string(faker::internet::username());
+    flag.change_reason_code = "system.test";
+    flag.change_commentary = "Synthetic test data";
     return flag;
 }
 
@@ -217,12 +219,16 @@ TEST_CASE("handle_list_feature_flags_request_verifies_content", tags) {
     flag1.enabled = true;
     flag1.description = "Alpha feature for testing";
     flag1.recorded_by = "test_user";
+    flag1.change_reason_code = "system.test";
+    flag1.change_commentary = "Test data";
 
     ores::variability::domain::feature_flags flag2;
     flag2.name = "test_feature_beta";
     flag2.enabled = false;
     flag2.description = "Beta feature for testing";
     flag2.recorded_by = "test_admin";
+    flag2.change_reason_code = "system.test";
+    flag2.change_commentary = "Test data";
 
     repo.write({flag1, flag2});
 

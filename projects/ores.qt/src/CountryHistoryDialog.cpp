@@ -199,12 +199,18 @@ void CountryHistoryDialog::onHistoryLoaded() {
             new QTableWidgetItem(relative_time_helper::format(country.recorded_at));
         auto* recordedByItem =
             new QTableWidgetItem(QString::fromStdString(country.recorded_by));
+        auto* changeReasonItem =
+            new QTableWidgetItem(QString::fromStdString(country.change_reason_code));
+        auto* commentaryItem =
+            new QTableWidgetItem(QString::fromStdString(country.change_commentary));
 
         versionItem->setIcon(cachedIcon);
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
         ui_->versionListWidget->setItem(i, 1, recordedAtItem);
         ui_->versionListWidget->setItem(i, 2, recordedByItem);
+        ui_->versionListWidget->setItem(i, 3, changeReasonItem);
+        ui_->versionListWidget->setItem(i, 4, commentaryItem);
     }
 
     if (!history_.empty())
@@ -333,6 +339,8 @@ void CountryHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->versionNumberValue->setText(QString::number(country.version));
     ui_->recordedByValue->setText(QString::fromStdString(country.recorded_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(country.recorded_at));
+    ui_->changeReasonValue->setText(QString::fromStdString(country.change_reason_code));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(country.change_commentary));
 }
 
 #define CHECK_DIFF_STRING(FIELD_NAME, FIELD) \
@@ -355,6 +363,10 @@ calculateDiff(const risk::domain::country& current,
     CHECK_DIFF_STRING("Numeric Code", numeric_code);
     CHECK_DIFF_STRING("Name", name);
     CHECK_DIFF_STRING("Official Name", official_name);
+
+    // Compare change management fields
+    CHECK_DIFF_STRING("Change Reason", change_reason_code);
+    CHECK_DIFF_STRING("Commentary", change_commentary);
 
     // Compare image_id (flag)
     if (current.image_id != previous.image_id) {

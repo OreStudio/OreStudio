@@ -32,7 +32,6 @@
 #include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
 
-
 namespace Ui {
 
 class CurrencyDetailDialog;
@@ -40,6 +39,8 @@ class CurrencyDetailDialog;
 }
 
 namespace ores::qt {
+
+class ChangeReasonCache;
 
 class CurrencyDetailDialog final : public QWidget {
     Q_OBJECT
@@ -61,6 +62,7 @@ public:
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
     void setImageCache(ImageCache* imageCache);
+    void setChangeReasonCache(ChangeReasonCache* changeReasonCache);
 
     void setCurrency(const risk::domain::currency& currency);
     [[nodiscard]] risk::domain::currency getCurrency() const;
@@ -171,6 +173,7 @@ private:
 
     ClientManager* clientManager_;
     ImageCache* imageCache_;
+    ChangeReasonCache* changeReasonCache_;
     risk::domain::currency currentCurrency_;
     QString pendingImageId_;
     static constexpr const char* max_timestamp = "9999-12-31 23:59:59";

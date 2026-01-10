@@ -51,6 +51,7 @@ class FeatureFlagController;
 class ChangeReasonCategoryController;
 class ChangeReasonController;
 class ImageCache;
+class ChangeReasonCache;
 
 /**
  * @brief Main application window providing the MDI interface and entity
@@ -314,6 +315,9 @@ private:
 
     /** @brief Cache for currency flag icons */
     ImageCache* imageCache_;
+
+    /** @brief Cache for change reasons used by entity dialogs */
+    ChangeReasonCache* changeReasonCache_;
 
     /** @brief Username of currently logged-in user */
     std::string username_;

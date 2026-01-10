@@ -26,6 +26,7 @@
 #include "ores.qt/CountryDetailDialog.hpp"
 #include "ores.qt/CountryHistoryDialog.hpp"
 #include "ores.qt/ImageCache.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.risk/eventing/country_changed_event.hpp"
@@ -47,12 +48,14 @@ CountryController::CountryController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     ImageCache* imageCache,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, parent),
       allDetachableWindows_(allDetachableWindows),
       imageCache_(imageCache),
+      changeReasonCache_(changeReasonCache),
       countryListWindow_(nullptr) {
     BOOST_LOG_SEV(lg(), debug) << "Country controller created";
 
@@ -194,6 +197,9 @@ void CountryController::onAddNewRequested() {
     if (imageCache_) {
         detailDialog->setImageCache(imageCache_);
     }
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
 
     connect(detailDialog, &CountryDetailDialog::statusMessage,
             this, [this](const QString& message) {
@@ -264,6 +270,9 @@ void CountryController::onShowCountryDetails(
     }
     if (imageCache_) {
         detailDialog->setImageCache(imageCache_);
+    }
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     }
 
     connect(detailDialog, &CountryDetailDialog::statusMessage,
@@ -473,6 +482,9 @@ void CountryController::onOpenCountryVersion(
     }
     if (imageCache_) {
         detailDialog->setImageCache(imageCache_);
+    }
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     }
 
     connect(detailDialog, &CountryDetailDialog::statusMessage,

@@ -31,6 +31,7 @@ namespace ores::qt {
 
 class DetachableMdiSubWindow;
 class ImageCache;
+class ChangeReasonCache;
 
 /**
  * @brief Controller managing all currency-related windows and operations.
@@ -71,6 +72,7 @@ public:
      * @param mdiArea MDI area where windows will be displayed
      * @param clientManager Client manager for network operations
      * @param imageCache Image cache for currency flag icons
+     * @param changeReasonCache Cache for change reasons
      * @param username Username of logged-in user (for audit trails)
      * @param allDetachableWindows Reference to MainWindow's window list
      * for detach/reattach operations
@@ -81,6 +83,7 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         ImageCache* imageCache,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);
@@ -193,6 +196,11 @@ private:
      * @brief Cache for currency flag icons.
      */
     ImageCache* imageCache_;
+
+    /**
+     * @brief Cache for change reasons.
+     */
+    ChangeReasonCache* changeReasonCache_;
 
     /**
      * @brief Weak pointer to the currency list window.

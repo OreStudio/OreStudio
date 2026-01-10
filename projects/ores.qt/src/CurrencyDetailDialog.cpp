@@ -41,6 +41,8 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/MdiUtils.hpp"
 #include "ores.qt/FlagSelectorDialog.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.risk/generators/currency_generator.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -69,7 +71,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::CurrencyDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), isStale_(false),
       historicalVersion_(0), flagButton_(nullptr),
-      clientManager_(nullptr), imageCache_(nullptr),
+      clientManager_(nullptr), imageCache_(nullptr), changeReasonCache_(nullptr),
       currentHistoryIndex_(0),
       firstVersionAction_(nullptr), prevVersionAction_(nullptr),
       nextVersionAction_(nullptr), lastVersionAction_(nullptr) {
@@ -251,6 +253,10 @@ void CurrencyDetailDialog::setImageCache(ImageCache* imageCache) {
     }
 }
 
+void CurrencyDetailDialog::setChangeReasonCache(ChangeReasonCache* changeReasonCache) {
+    changeReasonCache_ = changeReasonCache;
+}
+
 CurrencyDetailDialog::~CurrencyDetailDialog() {
     const auto watchers = findChildren<QFutureWatcherBase*>();
     for (auto* watcher : watchers) {
@@ -360,6 +366,37 @@ void CurrencyDetailDialog::onSaveClicked() {
                                << currentCurrency_.iso_code;
 
     risk::domain::currency currency = getCurrency();
+
+    // For updates (not creates), require change reason
+    if (!isAddMode_) {
+        if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
+            BOOST_LOG_SEV(lg(), warn) << "Change reasons not loaded, cannot save.";
+            emit errorMessage("Change reasons not loaded. Please try again.");
+            return;
+        }
+
+        // Get reasons for the "common" category that apply to amendments
+        auto reasons = changeReasonCache_->getReasonsForAmend("common");
+        if (reasons.empty()) {
+            BOOST_LOG_SEV(lg(), warn) << "No change reasons available for common category.";
+            emit errorMessage("No change reasons available. Please contact administrator.");
+            return;
+        }
+
+        ChangeReasonDialog dialog(reasons, ChangeReasonDialog::OperationType::Amend, this);
+        if (dialog.exec() != QDialog::Accepted) {
+            BOOST_LOG_SEV(lg(), debug) << "Save cancelled - change reason dialog rejected.";
+            return;
+        }
+
+        // Set the change reason on the currency
+        currency.change_reason_code = dialog.selectedReasonCode();
+        currency.change_commentary = dialog.commentary();
+
+        BOOST_LOG_SEV(lg(), debug) << "Change reason selected: "
+                                   << currency.change_reason_code
+                                   << ", commentary: " << currency.change_commentary;
+    }
 
     QPointer<CurrencyDetailDialog> self = this;
     QFuture<FutureResult> future =

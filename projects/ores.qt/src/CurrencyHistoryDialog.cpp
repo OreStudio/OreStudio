@@ -200,12 +200,18 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
             new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
         auto* recordedByItem =
             new QTableWidgetItem(QString::fromStdString(version.recorded_by));
+        auto* changeReasonItem =
+            new QTableWidgetItem(QString::fromStdString(version.data.change_reason_code));
+        auto* commentaryItem =
+            new QTableWidgetItem(QString::fromStdString(version.data.change_commentary));
 
         versionItem->setIcon(cachedIcon);
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
         ui_->versionListWidget->setItem(i, 1, recordedAtItem);
         ui_->versionListWidget->setItem(i, 2, recordedByItem);
+        ui_->versionListWidget->setItem(i, 3, changeReasonItem);
+        ui_->versionListWidget->setItem(i, 4, commentaryItem);
     }
 
     if (!history_.versions.empty())
@@ -336,6 +342,8 @@ void CurrencyHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->versionNumberValue->setText(QString::number(version.version_number));
     ui_->recordedByValue->setText(QString::fromStdString(version.recorded_by));
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
+    ui_->changeReasonValue->setText(QString::fromStdString(data.change_reason_code));
+    ui_->changeCommentaryValue->setText(QString::fromStdString(data.change_commentary));
 }
 
 #define CHECK_DIFF_STRING(FIELD_NAME, FIELD) \
@@ -373,6 +381,10 @@ calculateDiff(const risk::domain::currency_version& current,
     // Compare integer fields
     CHECK_DIFF_INT("Fractions Per Unit", fractions_per_unit);
     CHECK_DIFF_INT("Rounding Precision", rounding_precision);
+
+    // Compare change management fields
+    CHECK_DIFF_STRING("Change Reason", change_reason_code);
+    CHECK_DIFF_STRING("Commentary", change_commentary);
 
     // Compare image_id (flag)
     if (current.data.image_id != previous.data.image_id) {

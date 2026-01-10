@@ -50,6 +50,7 @@
 #include "ores.qt/FeatureFlagController.hpp"
 #include "ores.qt/ChangeReasonCategoryController.hpp"
 #include "ores.qt/ChangeReasonController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -69,6 +70,7 @@ MainWindow::MainWindow(QWidget* parent) :
     eventBus_(std::make_shared<eventing::service::event_bus>()),
     clientManager_(new ClientManager(eventBus_, this)),
     imageCache_(new ImageCache(clientManager_, this)),
+    changeReasonCache_(new ChangeReasonCache(clientManager_, this)),
     systemTrayIcon_(nullptr), trayContextMenu_(nullptr),
     instanceColorIndicator_(nullptr), eventViewerWindow_(nullptr) {
 
@@ -247,7 +249,7 @@ MainWindow::MainWindow(QWidget* parent) :
         ui_->statusbar->showMessage("Reconnected to server.", 5000);
     });
 
-    // Load image cache when connected
+    // Load caches when connected
     connect(clientManager_, &ClientManager::connected, this, [this]() {
         imageCache_->loadAll();
         // Preload all available images for the flag selector to avoid on-demand loading delay
@@ -256,6 +258,9 @@ MainWindow::MainWindow(QWidget* parent) :
         } else {
             imageCache_->loadAllAvailableImages();
         }
+
+        // Load change reasons for entity dialogs
+        changeReasonCache_->loadAll();
     });
 
     // When image list is loaded, automatically fetch the actual images
@@ -565,7 +570,7 @@ void MainWindow::createControllers() {
 
     // Create currency controller
     currencyController_ = std::make_unique<CurrencyController>(
-        this, mdiArea_, clientManager_, imageCache_,
+        this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
         QString::fromStdString(username_), allDetachableWindows_, this);
 
     // Connect controller signals to status bar
@@ -580,7 +585,7 @@ void MainWindow::createControllers() {
 
     // Create country controller
     countryController_ = std::make_unique<CountryController>(
-        this, mdiArea_, clientManager_, imageCache_,
+        this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
         QString::fromStdString(username_), allDetachableWindows_, this);
 
     // Connect country controller signals to status bar

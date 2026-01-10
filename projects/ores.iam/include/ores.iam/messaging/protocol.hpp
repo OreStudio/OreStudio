@@ -22,6 +22,7 @@
 
 #include "ores.iam/messaging/account_protocol.hpp"
 #include "ores.iam/messaging/account_history_protocol.hpp"
+#include "ores.iam/messaging/change_management_protocol.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 

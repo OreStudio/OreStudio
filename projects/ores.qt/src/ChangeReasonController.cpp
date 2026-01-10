@@ -24,6 +24,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ChangeReasonMdiWindow.hpp"
 #include "ores.qt/ChangeReasonDetailDialog.hpp"
+#include "ores.qt/ChangeReasonHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.iam/eventing/change_reason_changed_event.hpp"
@@ -170,11 +171,8 @@ void ChangeReasonController::onAddNewRequested() {
 }
 
 void ChangeReasonController::onShowHistory(const QString& code) {
-    BOOST_LOG_SEV(lg(), info) << "Show history for change reason: "
-                              << code.toStdString();
-    // History dialog will be implemented in Phase 4
-    QMessageBox::information(mainWindow_, "History",
-        QString("History for change reason '%1' - coming soon").arg(code));
+    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << code.toStdString();
+    showHistoryWindow(code);
 }
 
 void ChangeReasonController::showAddWindow() {
@@ -322,6 +320,203 @@ void ChangeReasonController::onNotificationReceived(
     if (listWindow_) {
         listWindow_->markAsStale();
         BOOST_LOG_SEV(lg(), debug) << "Marked reason list as stale";
+    }
+}
+
+void ChangeReasonController::showHistoryWindow(const QString& code) {
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for change reason: "
+                              << code.toStdString();
+
+    const QString windowKey = build_window_key("history", code);
+
+    // Try to reuse existing window
+    if (try_reuse_window(windowKey)) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
+                                  << code.toStdString();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
+                              << code.toStdString();
+    const QColor iconColor(220, 220, 220);
+
+    auto* historyDialog = new ChangeReasonHistoryDialog(code, clientManager_, mainWindow_);
+
+    connect(historyDialog, &ChangeReasonHistoryDialog::statusChanged,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(historyDialog, &ChangeReasonHistoryDialog::errorOccurred,
+            this, [this](const QString& message) {
+        emit errorMessage(message);
+    });
+    connect(historyDialog, &ChangeReasonHistoryDialog::revertVersionRequested,
+            this, &ChangeReasonController::onRevertVersion);
+    connect(historyDialog, &ChangeReasonHistoryDialog::openVersionRequested,
+            this, &ChangeReasonController::onOpenVersion);
+
+    // Load history data
+    historyDialog->loadHistory();
+
+    auto* historyWindow = new DetachableMdiSubWindow(mainWindow_);
+    historyWindow->setAttribute(Qt::WA_DeleteOnClose);
+    historyWindow->setWidget(historyDialog);
+    historyWindow->setWindowTitle(QString("Change Reason History: %1").arg(code));
+    historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+
+    // Track this history window
+    track_window(windowKey, historyWindow);
+
+    allDetachableWindows_.append(historyWindow);
+    QPointer<ChangeReasonController> self = this;
+    QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
+    connect(historyWindow, &QObject::destroyed, this,
+            [self, windowPtr, windowKey]() {
+        if (self) {
+            self->allDetachableWindows_.removeAll(windowPtr.data());
+            self->untrack_window(windowKey);
+        }
+    });
+
+    mdiArea_->addSubWindow(historyWindow);
+    historyWindow->adjustSize();
+
+    // If the parent list window is detached, detach this window too
+    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
+        historyWindow->show();
+        historyWindow->detach();
+
+        QPoint parentPos = listMdiSubWindow_->pos();
+        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else {
+        historyWindow->show();
+    }
+}
+
+void ChangeReasonController::onOpenVersion(
+    const iam::domain::change_reason& reason, int versionNumber) {
+    BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
+                              << " for change reason: " << reason.code;
+
+    const QString code = QString::fromStdString(reason.code);
+    const QString windowKey = build_window_key("version", QString("%1_v%2")
+        .arg(code).arg(versionNumber));
+
+    // Try to reuse existing window
+    if (try_reuse_window(windowKey)) {
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing version window";
+        return;
+    }
+
+    const QColor iconColor(220, 220, 220);
+
+    auto* detailDialog = new ChangeReasonDetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReason(reason);
+    detailDialog->setReadOnly(true);
+
+    connect(detailDialog, &ChangeReasonDetailDialog::statusMessage,
+            this, [this](const QString& message) {
+        emit statusMessage(message);
+    });
+    connect(detailDialog, &ChangeReasonDetailDialog::errorMessage,
+            this, [this](const QString& message) {
+        emit errorMessage(message);
+    });
+
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(QString("Change Reason: %1 (Version %2)")
+        .arg(code).arg(versionNumber));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+
+    track_window(windowKey, detailWindow);
+    allDetachableWindows_.append(detailWindow);
+
+    QPointer<ChangeReasonController> self = this;
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, detailWindow, windowKey]() {
+        if (self) {
+            self->untrack_window(windowKey);
+            self->allDetachableWindows_.removeAll(detailWindow);
+        }
+    });
+
+    mdiArea_->addSubWindow(detailWindow);
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
+    detailWindow->adjustSize();
+
+    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
+        detailWindow->show();
+        detailWindow->detach();
+        QPoint parentPos = listMdiSubWindow_->pos();
+        detailWindow->move(parentPos.x() + 60, parentPos.y() + 60);
+    } else {
+        detailWindow->show();
+    }
+}
+
+void ChangeReasonController::onRevertVersion(
+    const iam::domain::change_reason& reason) {
+    BOOST_LOG_SEV(lg(), info) << "Reverting change reason to version: "
+                              << reason.version;
+
+    // The history dialog already shows the confirmation and prepares the data.
+    // We just need to save it as a new version.
+    auto* detailDialog = new ChangeReasonDetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReason(reason);
+    detailDialog->setCreateMode(false);
+
+    connect(detailDialog, &ChangeReasonDetailDialog::statusMessage,
+            this, &ChangeReasonController::statusMessage);
+    connect(detailDialog, &ChangeReasonDetailDialog::errorMessage,
+            this, &ChangeReasonController::errorMessage);
+    connect(detailDialog, &ChangeReasonDetailDialog::changeReasonSaved,
+            this, [this](const QString& code) {
+        BOOST_LOG_SEV(lg(), info) << "Change reason reverted: " << code.toStdString();
+        emit statusMessage(QString("Change reason '%1' reverted successfully").arg(code));
+        if (listWindow_) {
+            listWindow_->reload();
+        }
+    });
+
+    const QColor iconColor(220, 220, 220);
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(QString("Revert Change Reason: %1")
+        .arg(QString::fromStdString(reason.code)));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
+
+    allDetachableWindows_.append(detailWindow);
+    QPointer<ChangeReasonController> self = this;
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, detailWindow]() {
+        if (self) {
+            self->allDetachableWindows_.removeAll(detailWindow);
+        }
+    });
+
+    mdiArea_->addSubWindow(detailWindow);
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
+    detailWindow->adjustSize();
+
+    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
+        detailWindow->show();
+        detailWindow->detach();
+        QPoint parentPos = listMdiSubWindow_->pos();
+        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else {
+        detailWindow->show();
     }
 }
 

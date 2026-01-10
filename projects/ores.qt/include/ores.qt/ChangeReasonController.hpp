@@ -69,10 +69,13 @@ private slots:
     void onShowHistory(const QString& code);
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
                                 const QStringList& entityIds);
+    void onOpenVersion(const iam::domain::change_reason& reason, int versionNumber);
+    void onRevertVersion(const iam::domain::change_reason& reason);
 
 private:
     void showDetailWindow(const iam::domain::change_reason& reason);
     void showAddWindow();
+    void showHistoryWindow(const QString& code);
 
 private:
     ChangeReasonMdiWindow* listWindow_;

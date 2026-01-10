@@ -19,7 +19,7 @@
  */
 set schema 'ores';
 
-drop rule if exists delete_reason_categories_rule on "ores"."reason_categories";
-drop trigger if exists update_reason_categories_trigger on "ores"."reason_categories";
-drop function if exists update_reason_categories();
-drop table if exists "ores"."reason_categories";
+drop rule if exists delete_change_reason_categories_rule on "ores"."change_reason_categories";
+drop trigger if exists update_change_reason_categories_trigger on "ores"."change_reason_categories";
+drop function if exists update_change_reason_categories();
+drop table if exists "ores"."change_reason_categories";

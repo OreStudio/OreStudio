@@ -55,6 +55,18 @@ struct feature_flags final {
     std::string recorded_by;
 
     /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
      * @brief Timestamp when this version of the record was recorded in the system.
      */
     std::chrono::system_clock::time_point recorded_at;

@@ -63,6 +63,8 @@ void serialize_role(std::vector<std::byte>& buffer, const domain::role& role) {
     writer::write_string(buffer, role.name);
     writer::write_string(buffer, role.description);
     writer::write_string(buffer, role.recorded_by);
+    writer::write_string(buffer, role.change_reason_code);
+    writer::write_string(buffer, role.change_commentary);
     write_timepoint(buffer, role.recorded_at);
     writer::write_uint32(buffer,
         static_cast<std::uint32_t>(role.permission_codes.size()));
@@ -94,6 +96,14 @@ deserialize_role(std::span<const std::byte>& data) {
     auto recorded_by_result = reader::read_string(data);
     if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
     role.recorded_by = *recorded_by_result;
+
+    auto change_reason_code_result = reader::read_string(data);
+    if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
+    role.change_reason_code = *change_reason_code_result;
+
+    auto change_commentary_result = reader::read_string(data);
+    if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
+    role.change_commentary = *change_commentary_result;
 
     auto recorded_at_result = read_timepoint(data);
     if (!recorded_at_result) return std::unexpected(recorded_at_result.error());

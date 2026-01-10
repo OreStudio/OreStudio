@@ -159,12 +159,12 @@ void accounts_commands::
 process_list_accounts(std::ostream& out, client_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list account request.";
 
-    using iam::messaging::list_accounts_request;
-    using iam::messaging::list_accounts_response;
-    auto result = session.process_authenticated_request<list_accounts_request,
-                                                        list_accounts_response,
-                                                        message_type::list_accounts_request>
-        (list_accounts_request{});
+    using iam::messaging::get_accounts_request;
+    using iam::messaging::get_accounts_response;
+    auto result = session.process_authenticated_request<get_accounts_request,
+                                                        get_accounts_response,
+                                                        message_type::get_accounts_request>
+        (get_accounts_request{});
 
     if (!result) {
         out << "✗ " << to_string(result.error()) << std::endl;
@@ -307,12 +307,12 @@ void accounts_commands::process_create_account(std::ostream& out,
     std::string password, std::string totp_secret, std::string email) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating create account request.";
 
-    using iam::messaging::create_account_request;
-    using iam::messaging::create_account_response;
-    auto result = session.process_authenticated_request<create_account_request,
-                                                        create_account_response,
-                                                        message_type::create_account_request>
-        (create_account_request {
+    using iam::messaging::save_account_request;
+    using iam::messaging::save_account_response;
+    auto result = session.process_authenticated_request<save_account_request,
+                                                        save_account_response,
+                                                        message_type::save_account_request>
+        (save_account_request {
             .username = std::move(username),
             .password = std::move(password),
             .totp_secret = std::move(totp_secret),

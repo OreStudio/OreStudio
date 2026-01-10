@@ -32,22 +32,29 @@
 namespace ores::iam::messaging {
 
 /**
- * @brief Request to create a new account.
+ * @brief Request to save an account (create or update).
+ *
+ * For creates: leave account_id as nil UUID, provide username and password.
+ * For updates: set account_id to the existing account, password is optional.
  *
  * Note: Administrative privileges are managed through RBAC roles.
  * Use assign_role_request to grant roles after account creation.
  */
-struct create_account_request final {
+struct save_account_request final {
+    boost::uuids::uuid account_id;  // Nil for create, valid UUID for update
     std::string username;
-    std::string password;
+    std::string password;      // Plain text for new accounts, optional for updates
     std::string totp_secret;
     std::string email;
     std::string recorded_by;
+    std::string change_reason_code;
+    std::string change_commentary;
 
     /**
      * @brief Serialize request to bytes.
      *
      * Format:
+     * - 16 bytes: account_id (UUID, nil for create)
      * - 2 bytes: username length
      * - N bytes: username (UTF-8)
      * - 2 bytes: password length
@@ -58,28 +65,37 @@ struct create_account_request final {
      * - N bytes: email (UTF-8)
      * - 2 bytes: recorded_by length
      * - N bytes: recorded_by (UTF-8)
+     * - 2 bytes: change_reason_code length
+     * - N bytes: change_reason_code (UTF-8)
+     * - 2 bytes: change_commentary length
+     * - N bytes: change_commentary (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<create_account_request, ores::utility::serialization::error_code>
+    static std::expected<save_account_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const create_account_request& v);
+std::ostream& operator<<(std::ostream& s, const save_account_request& v);
 
 /**
- * @brief Response containing the created account ID.
+ * @brief Response from saving an account.
  */
-struct create_account_response final {
-    boost::uuids::uuid account_id;
+struct save_account_response final {
+    bool success = false;
+    std::string message;
+    boost::uuids::uuid account_id;  // ID of created/updated account
 
     /**
      * @brief Serialize response to bytes.
      *
      * Format:
+     * - 1 byte: success (boolean)
+     * - 2 bytes: message length
+     * - N bytes: message (UTF-8)
      * - 16 bytes: account_id (UUID)
      */
     std::vector<std::byte> serialize() const;
@@ -87,18 +103,18 @@ struct create_account_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<create_account_response, ores::utility::serialization::error_code>
+    static std::expected<save_account_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const create_account_response& v);
+std::ostream& operator<<(std::ostream& s, const save_account_response& v);
 
 /**
  * @brief Request to retrieve accounts with pagination support.
  *
  * Supports pagination through offset and limit parameters.
  */
-struct list_accounts_request final {
+struct get_accounts_request final {
     /// Number of records to skip (0-based)
     std::uint32_t offset = 0;
     /// Maximum number of records to return
@@ -116,16 +132,16 @@ struct list_accounts_request final {
     /**
      * @brief Deserialize request from bytes.
      */
-    static std::expected<list_accounts_request, ores::utility::serialization::error_code>
+    static std::expected<get_accounts_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const list_accounts_request& v);
+std::ostream& operator<<(std::ostream& s, const get_accounts_request& v);
 
 /**
  * @brief Response containing accounts with pagination metadata.
  */
-struct list_accounts_response final {
+struct get_accounts_response final {
     std::vector<domain::account> accounts;
     /// Total number of accounts available (not just in this page)
     std::uint32_t total_available_count = 0;
@@ -140,6 +156,11 @@ struct list_accounts_response final {
      *   - 4 bytes: version
      *   - 2 bytes: recorded_by length
      *   - N bytes: recorded_by (UTF-8)
+     *   - 8 bytes: recorded_at (nanoseconds since epoch)
+     *   - 2 bytes: change_reason_code length
+     *   - N bytes: change_reason_code (UTF-8)
+     *   - 2 bytes: change_commentary length
+     *   - N bytes: change_commentary (UTF-8)
      *   - 16 bytes: id (UUID)
      *   - 2 bytes: username length
      *   - N bytes: username (UTF-8)
@@ -157,11 +178,11 @@ struct list_accounts_response final {
     /**
      * @brief Deserialize response from bytes.
      */
-    static std::expected<list_accounts_response, ores::utility::serialization::error_code>
+    static std::expected<get_accounts_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const list_accounts_response& v);
+std::ostream& operator<<(std::ostream& s, const get_accounts_response& v);
 
 /**
  * @brief Request to unlock one or more locked accounts.
@@ -355,67 +376,6 @@ struct lock_account_response final {
 std::ostream& operator<<(std::ostream& s, const lock_account_response& v);
 
 /**
- * @brief Request to update an existing account.
- *
- * Only email can be updated. Username cannot be changed.
- * Requires accounts:update permission.
- *
- * Note: Role assignments are managed separately via assign_role_request
- * and revoke_role_request.
- */
-struct update_account_request final {
-    boost::uuids::uuid account_id;
-    std::string email;
-    std::string recorded_by;
-
-    /**
-     * @brief Serialize request to bytes.
-     *
-     * Format:
-     * - 16 bytes: account_id (UUID)
-     * - 2 bytes: email length
-     * - N bytes: email (UTF-8)
-     * - 2 bytes: recorded_by length
-     * - N bytes: recorded_by (UTF-8)
-     */
-    std::vector<std::byte> serialize() const;
-
-    /**
-     * @brief Deserialize request from bytes.
-     */
-    static std::expected<update_account_request, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const update_account_request& v);
-
-/**
- * @brief Response indicating whether update operation succeeded.
- */
-struct update_account_response final {
-    bool success = false;
-    std::string error_message;
-
-    /**
-     * @brief Serialize response to bytes.
-     *
-     * Format:
-     * - 1 byte: success (boolean)
-     * - 2 bytes: error_message length
-     * - N bytes: error_message (UTF-8)
-     */
-    std::vector<std::byte> serialize() const;
-
-    /**
-     * @brief Deserialize response from bytes.
-     */
-    static std::expected<update_account_response, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const update_account_response& v);
-
-/**
  * @brief Request to reset password for one or more accounts.
  *
  * Sets the password_reset_required flag on the target accounts, forcing
@@ -597,25 +557,25 @@ std::ostream& operator<<(std::ostream& s, const update_my_email_response& v);
 namespace ores::comms::messaging {
 
 /**
- * @brief Message traits specialization for create_account_request.
+ * @brief Message traits specialization for save_account_request.
  */
 template<>
-struct message_traits<iam::messaging::create_account_request> {
-    using request_type = iam::messaging::create_account_request;
-    using response_type = iam::messaging::create_account_response;
+struct message_traits<iam::messaging::save_account_request> {
+    using request_type = iam::messaging::save_account_request;
+    using response_type = iam::messaging::save_account_response;
     static constexpr message_type request_message_type =
-        message_type::create_account_request;
+        message_type::save_account_request;
 };
 
 /**
- * @brief Message traits specialization for list_accounts_request.
+ * @brief Message traits specialization for get_accounts_request.
  */
 template<>
-struct message_traits<iam::messaging::list_accounts_request> {
-    using request_type = iam::messaging::list_accounts_request;
-    using response_type = iam::messaging::list_accounts_response;
+struct message_traits<iam::messaging::get_accounts_request> {
+    using request_type = iam::messaging::get_accounts_request;
+    using response_type = iam::messaging::get_accounts_response;
     static constexpr message_type request_message_type =
-        message_type::list_accounts_request;
+        message_type::get_accounts_request;
 };
 
 /**
@@ -649,17 +609,6 @@ struct message_traits<iam::messaging::lock_account_request> {
     using response_type = iam::messaging::lock_account_response;
     static constexpr message_type request_message_type =
         message_type::lock_account_request;
-};
-
-/**
- * @brief Message traits specialization for update_account_request.
- */
-template<>
-struct message_traits<iam::messaging::update_account_request> {
-    using request_type = iam::messaging::update_account_request;
-    using response_type = iam::messaging::update_account_response;
-    static constexpr message_type request_message_type =
-        message_type::update_account_request;
 };
 
 /**

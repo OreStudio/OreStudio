@@ -38,8 +38,8 @@ variability_message_handler::handle_message(comms::messaging::message_type type,
     BOOST_LOG_SEV(lg(), debug) << "Handling variability message type " << type;
 
     switch (type) {
-    case comms::messaging::message_type::list_feature_flags_request:
-        co_return co_await handle_list_feature_flags_request(payload);
+    case comms::messaging::message_type::get_feature_flags_request:
+        co_return co_await handle_get_feature_flags_request(payload);
     case comms::messaging::message_type::save_feature_flag_request:
         co_return co_await handle_save_feature_flag_request(payload);
     case comms::messaging::message_type::delete_feature_flag_request:
@@ -56,17 +56,17 @@ variability_message_handler::handle_message(comms::messaging::message_type type,
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
                                      ores::utility::serialization::error_code>>
 variability_message_handler::
-handle_list_feature_flags_request(std::span<const std::byte> payload) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing list_feature_flags_request.";
+handle_get_feature_flags_request(std::span<const std::byte> payload) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_feature_flags_request.";
 
     // Deserialize request
-    auto request_result = list_feature_flags_request::deserialize(payload);
+    auto request_result = get_feature_flags_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize list_feature_flags_request";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_feature_flags_request";
         co_return std::unexpected(request_result.error());
     }
 
-    list_feature_flags_response response;
+    get_feature_flags_response response;
     try {
         // Read latest feature flags from repository
         response.feature_flags = feature_flags_repo_.read_latest();

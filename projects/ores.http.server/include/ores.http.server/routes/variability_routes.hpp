@@ -37,7 +37,7 @@ namespace ores::http_server::routes {
  * Maps the following protocol messages to REST endpoints:
  *
  * Feature Flags:
- * - GET /api/v1/feature-flags - list_feature_flags_request
+ * - GET /api/v1/feature-flags - get_feature_flags_request
  */
 class variability_routes final {
 public:

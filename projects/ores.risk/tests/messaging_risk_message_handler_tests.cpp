@@ -44,7 +44,7 @@ std::shared_ptr<ores::variability::service::system_flags_service>
 make_system_flags(ores::database::context& ctx) {
     auto flags = std::make_shared<ores::variability::service::system_flags_service>(ctx);
     // Disable bootstrap mode so tests can proceed
-    flags->set_bootstrap_mode(false, "test");
+    flags->set_bootstrap_mode(false, "test", "system.new_record", "Test setup");
     return flags;
 }
 
@@ -261,6 +261,8 @@ TEST_CASE("handle_get_currencies_request_verify_serialization_roundtrip", tags) 
     original_ccy.format = "%3% %1$.8f";
     original_ccy.currency_type = "Cryptocurrency";
     original_ccy.recorded_by = "system";
+    original_ccy.change_reason_code = "system.test";
+    original_ccy.change_commentary = "Test data";
     original_ccy.recorded_at = {};
 
     risk::repository::currency_repository repo;

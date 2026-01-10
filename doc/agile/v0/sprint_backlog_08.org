@@ -691,6 +691,7 @@ Add standard ISO country codes.
 
 *** STARTED Assorted fixes to currencies dialog                        :code:
     :LOGBOOK:
+    CLOCK: [2026-01-09 Fri 08:45]--[2026-01-09 Fri 10:16] =>  1:31
     CLOCK: [2026-01-09 Fri 00:59]--[2026-01-09 Fri 01:17] =>  0:18
     CLOCK: [2026-01-08 Thu 23:31]--[2026-01-09 Fri 00:58] =>  1:27
     CLOCK: [2026-01-08 Thu 08:40]--[2026-01-08 Thu 09:58] =>  1:18
@@ -702,7 +703,6 @@ Add standard ISO country codes.
 - updating flag does not seem to update after reload. Done.
 - can't see flag changes in history. Done.
 - cannot revert to version in history. Get an error saying incorrect version.
-  Done.
 - on import, are we importing one currency at a time? should import the entire
   file.
 - should be possible to click on user and see user profile details. If the user
@@ -710,6 +710,9 @@ Add standard ISO country codes.
 - remove maximise button.
 
 *** STARTED Assorted fixes to accounts dialog                          :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-09 Fri 10:16]--[2026-01-09 Fri 11:26] =>  1:10
+    :END:
 
 - on my account, email saved successfully is not very visible. Instead, make
   save button enabled after changes, once saved disable it. My account should be
@@ -788,45 +791,97 @@ Ores.QT:
   up front.
 - error events should be marked with an error so we can see them quickly.
 
-*** Non-classified observations                                    :analysis:
+*** STARTED Amend and delete reasons                                   :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-09 Fri 20:20]
+    CLOCK: [2026-01-09 Fri 15:07]--[2026-01-09 Fri 20:00] =>  4:53
+    CLOCK: [2026-01-09 Fri 14:01]--[2026-01-09 Fri 15:06] =>  1:05
+    :END:
 
-next, can you explain the difference in window types between the main currency
-dialog and say currency history and currency details. we switched of minimise
-button on the currency history and currency details and that worked fine. we
-tried switching it off on the main currency window twice and that never seems to
-work. can we make all windows the same type? same as currency history / currency
-details.
+#+begin_quote
+This pull request significantly enhances the database's change tracking
+capabilities by introducing a comprehensive amendment control schema. The new
+tables and associated logic provide a structured way to record and categorize
+reasons for data modifications and deletions, which is crucial for maintaining
+data integrity and meeting stringent regulatory requirements. This foundational
+change enables a more auditable and compliant data management framework.
 
+Highlights:
 
-log telemetry still in code, need to remove it. we moved it to ores.log but
-seems like we created a backwards compatibility hack.
+- New Temporal Tables for Amendment Control: Introduced three new temporal
+  tables: reason_categories, amendment_reasons, and entity_reason_categories.
+  These tables are designed to track changes and provide historical context for
+  data amendments and deletions.
+- Regulatory-Compliant Taxonomy: Implemented a taxonomy for amendment reasons
+  that aligns with key financial regulatory standards, including BCBS 239, FRTB,
+  FINRA, and MiFID II, ensuring robust auditability and compliance.
+- Idempotent Data Population: Added idempotent population scripts that seed the
+  new tables with initial data, including 3 reason categories ('system',
+  'common', 'trade') and 17 specific amendment reasons. This ensures consistent
+  setup across environments.
+- Temporal Versioning and Soft Deletes: Each new table incorporates temporal
+  versioning via valid_from and valid_to columns, managed by BEFORE INSERT
+  triggers. Deletion is handled as a soft delete using INSTEAD OF DELETE rules,
+  preserving historical data.
+#+end_quote
 
+**** Tasks
 
-generate button should only exist in new, not edit.
+- [X] Create SQL schema for change_reason_categories and change_reasons tables
+- [X] Create C++ domain types (change_reason_category, change_reason)
+- [X] Create JSON I/O for both types
+- [X] Create Table I/O for both types
+- [X] Create generators for both types
+- [X] Create repository entities and mappers
+- [X] Create repositories with CRUD operations
+- [X] Create change_management_service
+- [X] Create messaging protocol (get_change_reason_categories, get_change_reasons, get_change_reasons_by_category)
+- [X] Integrate handlers into accounts_message_handler
+- [X] Build and test (895 assertions, 227 test cases passed)
+- [X] Create Qt UI for change management
+- [ ] Add protocol support for creating/updating/deleting reasons
 
-no save button in currency list, need for generation
+**** Modified files
 
-would be nice to be able to "locally modify" entity and then press save for the
-batch.
+- =projects/ores.iam/include/ores.iam/domain/change_reason_category.hpp= - Domain type
+- =projects/ores.iam/include/ores.iam/domain/change_reason.hpp= - Domain type
+- =projects/ores.iam/src/domain/change_reason_category_json_io.cpp= - JSON serialization
+- =projects/ores.iam/src/domain/change_reason_json_io.cpp= - JSON serialization
+- =projects/ores.iam/src/domain/change_reason_category_table*.cpp= - Table I/O
+- =projects/ores.iam/src/domain/change_reason_table*.cpp= - Table I/O
+- =projects/ores.iam/src/generators/change_reason_category_generator.cpp= - Test data generation
+- =projects/ores.iam/src/generators/change_reason_generator.cpp= - Test data generation
+- =projects/ores.iam/src/repository/change_reason_category_*.cpp= - Repository layer
+- =projects/ores.iam/src/repository/change_reason_*.cpp= - Repository layer
+- =projects/ores.iam/src/service/change_management_service.cpp= - Service layer
+- =projects/ores.iam/src/messaging/change_management_protocol.cpp= - Protocol messages
+- =projects/ores.iam/src/messaging/accounts_message_handler.cpp= - Handler integration
+- =projects/ores.comms/include/ores.comms/messaging/message_types.hpp= - New message types (0x2050-0x2055)
+- =projects/ores.iam/include/ores.iam/eventing/change_reason_category_changed_event.hpp= - Category change event
+- =projects/ores.iam/include/ores.iam/eventing/change_reason_changed_event.hpp= - Reason change event
+- =projects/ores.qt/include/ores.qt/ClientChangeReasonCategoryModel.hpp= - Qt model for categories
+- =projects/ores.qt/src/ClientChangeReasonCategoryModel.cpp= - Qt model implementation
+- =projects/ores.qt/include/ores.qt/ChangeReasonCategoryMdiWindow.hpp= - Category list window
+- =projects/ores.qt/src/ChangeReasonCategoryMdiWindow.cpp= - Category list window implementation
+- =projects/ores.qt/include/ores.qt/ChangeReasonCategoryController.hpp= - Category controller
+- =projects/ores.qt/src/ChangeReasonCategoryController.cpp= - Category controller implementation
+- =projects/ores.qt/include/ores.qt/ClientChangeReasonModel.hpp= - Qt model for reasons
+- =projects/ores.qt/src/ClientChangeReasonModel.cpp= - Qt model implementation
+- =projects/ores.qt/include/ores.qt/ChangeReasonMdiWindow.hpp= - Reason list window
+- =projects/ores.qt/src/ChangeReasonMdiWindow.cpp= - Reason list window implementation
+- =projects/ores.qt/include/ores.qt/ChangeReasonController.hpp= - Reason controller
+- =projects/ores.qt/src/ChangeReasonController.cpp= - Reason controller implementation
+- =projects/ores.qt/ui/MainWindow.ui= - Added menu entries for change management
+- =projects/ores.qt/include/ores.qt/MainWindow.hpp= - Added controller declarations
+- =projects/ores.qt/src/MainWindow.cpp= - Integrated change management controllers
 
-server should peridically house keep sessions. if not connected, just mark it as
-orphan. also when connection is dropped mark session as finished.
-
-the show latest version dialog should have < > etc buttons to allow one to go
-back and forwards in version space.
-
-shouldn't revert to version be a server side operation? e.g. current version,
-target version.
-
-in the history diff, add a "from version" combo which shows either latest or
-previous.
-
-*** Amend and delete reasons                                          :code:
+Sketch analysis:
 
 All entities need a reason for amends and deletes, and they should also support
 comments.
 
-Reasons for currencies, countries:
+Different entities will have different reasons. For example, reasons for
+currencies, countries:
 
 - Front Office Error
 - Operations Error
@@ -839,7 +894,41 @@ We need some kind of grouping for the reasons:
 - trade related
 - market data
 
-And the reason should say if its amend and/or delete.
+And the reason should say if is applicable to amend and/or delete.
+
+*** Non-classified observations                                    :analysis:
+
+Observations, snags and so forth that have not been analysed to form a proper
+story.
+
+- no generators for roles and permissions it seems.
+- we still have the legacy password salt field.
+- should role permission tables have change reasons?
+- missing ores.analyser from system model.
+- add flag "is iso compliant" or some such for currencies and countries which
+  are in the standard.
+- allow users displaying password in password boxes.
+- send and receive are empty in sessions.
+- next, can you explain the difference in window types between the main currency
+  dialog and say currency history and currency details. we switched of minimise
+  button on the currency history and currency details and that worked fine. we
+  tried switching it off on the main currency window twice and that never seems
+  to work. can we make all windows the same type? same as currency history /
+  currency details.
+- merge common functionality between entities in ores.qt.
+- updating email from my account does not raise an event.
+- fictional countries should also have X prefixes
+- generate button should only exist in new, not edit.
+- no save button in currency list, need for generation
+- would be nice to be able to "locally modify" entity and then press save for
+  the batch. in git we call this staging, what name should we use? and what
+  icon?
+- server should peridically house keep sessions. if not connected, just mark it
+  as orphan. also when connection is dropped mark session as finished.
+- shouldn't revert to version be a server side operation? e.g. current version,
+  target version.
+- in the history diff, add a "from version" combo which shows either latest or
+  previous.
 
 *** Accounts need to have a human or robot field                       :code:
 

@@ -78,7 +78,7 @@ TEST_CASE("system_flags_service_set_and_get", tags) {
         system_flags_service sut(db_helper.context());
 
         // Set to false (opposite of default)
-        sut.set_bootstrap_mode(false, "test_user");
+        sut.set_bootstrap_mode(false, "test_user", "system.new_record", "Test");
 
         const bool result = sut.is_bootstrap_mode_enabled();
         BOOST_LOG_SEV(lg, info) << "bootstrap_mode after set: " << result;
@@ -91,7 +91,7 @@ TEST_CASE("system_flags_service_set_and_get", tags) {
         system_flags_service sut(db_helper.context());
 
         // Set to true (opposite of default)
-        sut.set_user_signups(true, "admin");
+        sut.set_user_signups(true, "admin", "system.new_record", "Test");
 
         const bool result = sut.is_user_signups_enabled();
         BOOST_LOG_SEV(lg, info) << "user_signups after set: " << result;
@@ -103,8 +103,8 @@ TEST_CASE("system_flags_service_set_and_get", tags) {
         ores::testing::scoped_database_helper db_helper(table_name);
         system_flags_service sut(db_helper.context());
 
-        sut.set_enabled(system_flag::bootstrap_mode, false, "system");
-        sut.set_enabled(system_flag::user_signups, true, "system");
+        sut.set_enabled(system_flag::bootstrap_mode, false, "system", "system.new_record", "Test");
+        sut.set_enabled(system_flag::user_signups, true, "system", "system.new_record", "Test");
 
         CHECK(sut.is_enabled(system_flag::bootstrap_mode) == false);
         CHECK(sut.is_enabled(system_flag::user_signups) == true);
@@ -119,15 +119,15 @@ TEST_CASE("system_flags_service_update_existing", tags) {
         system_flags_service sut(db_helper.context());
 
         // Set initial value
-        sut.set_bootstrap_mode(true, "initial");
+        sut.set_bootstrap_mode(true, "initial", "system.new_record", "Test");
         CHECK(sut.is_bootstrap_mode_enabled() == true);
 
         // Update to opposite
-        sut.set_bootstrap_mode(false, "update");
+        sut.set_bootstrap_mode(false, "update", "system.new_record", "Test");
         CHECK(sut.is_bootstrap_mode_enabled() == false);
 
         // Update back
-        sut.set_bootstrap_mode(true, "revert");
+        sut.set_bootstrap_mode(true, "revert", "system.new_record", "Test");
         CHECK(sut.is_bootstrap_mode_enabled() == true);
     }
 
@@ -136,15 +136,15 @@ TEST_CASE("system_flags_service_update_existing", tags) {
         system_flags_service sut(db_helper.context());
 
         // Set initial value
-        sut.set_user_signups(false, "initial");
+        sut.set_user_signups(false, "initial", "system.new_record", "Test");
         CHECK(sut.is_user_signups_enabled() == false);
 
         // Update to opposite
-        sut.set_user_signups(true, "update");
+        sut.set_user_signups(true, "update", "system.new_record", "Test");
         CHECK(sut.is_user_signups_enabled() == true);
 
         // Update back
-        sut.set_user_signups(false, "revert");
+        sut.set_user_signups(false, "revert", "system.new_record", "Test");
         CHECK(sut.is_user_signups_enabled() == false);
     }
 }
@@ -157,14 +157,14 @@ TEST_CASE("system_flags_service_multiple_flags_independent", tags) {
         system_flags_service sut(db_helper.context());
 
         // Set bootstrap_mode to false
-        sut.set_bootstrap_mode(false, "test");
+        sut.set_bootstrap_mode(false, "test", "system.new_record", "Test");
 
         // user_signups should still return its default (false)
         CHECK(sut.is_bootstrap_mode_enabled() == false);
         CHECK(sut.is_user_signups_enabled() == false);
 
         // Now set user_signups to true
-        sut.set_user_signups(true, "test");
+        sut.set_user_signups(true, "test", "system.new_record", "Test");
 
         // bootstrap_mode should remain false
         CHECK(sut.is_bootstrap_mode_enabled() == false);
@@ -181,8 +181,8 @@ TEST_CASE("system_flags_service_refresh", tags) {
         // First service writes to database
         {
             system_flags_service writer(db_helper.context());
-            writer.set_bootstrap_mode(false, "writer");
-            writer.set_user_signups(true, "writer");
+            writer.set_bootstrap_mode(false, "writer", "system.new_record", "Test");
+            writer.set_user_signups(true, "writer", "system.new_record", "Test");
         }
 
         // Second service should see defaults initially, then DB values after refresh
@@ -207,8 +207,8 @@ TEST_CASE("system_flags_service_cache_accessor", tags) {
         system_flags_service sut(db_helper.context());
 
         // Set some values
-        sut.set_bootstrap_mode(false, "test");
-        sut.set_user_signups(true, "test");
+        sut.set_bootstrap_mode(false, "test", "system.new_record", "Test");
+        sut.set_user_signups(true, "test", "system.new_record", "Test");
 
         // Access via cache()
         const auto& cache = sut.cache();
@@ -222,7 +222,7 @@ TEST_CASE("system_flags_service_cache_accessor", tags) {
         // Write values with one service
         {
             system_flags_service writer(db_helper.context());
-            writer.set_bootstrap_mode(false, "writer");
+            writer.set_bootstrap_mode(false, "writer", "system.new_record", "Test");
         }
 
         // Read with another service

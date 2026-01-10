@@ -68,7 +68,7 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // in domain types (currency, account, feature_flags). This is a breaking change
 // affecting all entity serialization in the protocol.
 //
-// Version 10.1 adds update_account_request and update_account_response messages
+// Version 10.1 adds save_account_request and save_account_response messages
 // for editing existing account email and admin status.
 //
 // Version 11.0 changes lock_account_request and unlock_account_request to support
@@ -135,10 +135,10 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Previously used 16-bit length which truncated SVGs larger than 65535 bytes.
 // This is a breaking change affecting image serialization.
 //
-// Version 19.0 adds recorded_at field to list_feature_flags_response.
+// Version 19.0 adds recorded_at field to get_feature_flags_response.
 // Previously the timestamp was not serialized. Breaking change.
 //
-// Version 20.0 adds version field to list_feature_flags_response.
+// Version 20.0 adds version field to get_feature_flags_response.
 // Breaking change.
 //
 // Version 20.1 adds countries subsystem messages for CRUD operations on
@@ -153,8 +153,21 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 20.3 adds feature flag history messages for querying version history.
 // New messages: get_feature_flag_history_request (0x3006),
 // get_feature_flag_history_response (0x3007).
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 20;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 3;
+//
+// Version 21.0 standardizes naming and adds change tracking fields:
+// - Renamed list_accounts_* to get_accounts_* for consistency with other entities
+// - Renamed list_feature_flags_* to get_feature_flags_* for consistency
+// - Merged create_account_* and update_account_* into save_account_* for consistency
+//   with save_currency, save_country, save_feature_flag patterns
+// - Added change_reason_code and change_commentary fields to all entity serialization
+//   (currency, country, feature_flags, account, role, image) for audit trail support
+// This is a breaking change affecting multiple message types and wire formats.
+//
+// Version 21.1 adds change management messages for querying the catalog of valid
+// change reasons. New messages: get_change_reason_categories_request/response,
+// get_change_reasons_request/response, get_change_reasons_by_category_request/response.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 21;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -225,10 +238,9 @@ enum class message_type {
     get_country_history_response = 0x1010,
 
     // Accounts subsystem messages (0x2000 - 0x2FFF)
-    create_account_request = 0x2001,
-    create_account_response = 0x2002,
-    list_accounts_request = 0x2003,
-    list_accounts_response = 0x2004,
+    // Note: 0x2001-0x2002 deprecated in v21.0 (create_account merged into save_account)
+    get_accounts_request = 0x2003,  // Renamed from list_accounts in v21.0
+    get_accounts_response = 0x2004,
     login_request = 0x2005,
     login_response = 0x2006,
     unlock_account_request = 0x2007,
@@ -245,8 +257,8 @@ enum class message_type {
     bootstrap_status_response = 0x2012,
     lock_account_request = 0x2013,
     lock_account_response = 0x2014,
-    update_account_request = 0x2015,
-    update_account_response = 0x2016,
+    save_account_request = 0x2015,  // Merged create/update in v21.0
+    save_account_response = 0x2016,
     get_account_history_request = 0x2017,
     get_account_history_response = 0x2018,
     reset_password_request = 0x2019,
@@ -284,9 +296,17 @@ enum class message_type {
     get_active_sessions_request = 0x2044,
     get_active_sessions_response = 0x2045,
 
+    // Change management messages (0x2050 - 0x205F)
+    get_change_reason_categories_request = 0x2050,
+    get_change_reason_categories_response = 0x2051,
+    get_change_reasons_request = 0x2052,
+    get_change_reasons_response = 0x2053,
+    get_change_reasons_by_category_request = 0x2054,
+    get_change_reasons_by_category_response = 0x2055,
+
     // Variability subsystem messages (0x3000 - 0x3FFF)
-    list_feature_flags_request = 0x3000,
-    list_feature_flags_response = 0x3001,
+    get_feature_flags_request = 0x3000,  // Renamed from list_feature_flags in v21.0
+    get_feature_flags_response = 0x3001,
     save_feature_flag_request = 0x3002,
     save_feature_flag_response = 0x3003,
     delete_feature_flag_request = 0x3004,

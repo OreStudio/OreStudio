@@ -48,10 +48,12 @@ BEGIN
     -- Insert the image. The 'update_images' trigger handles versioning.
     INSERT INTO ores.images (
         image_id, version, key, description, svg_data,
-        modified_by, valid_from, valid_to
+        modified_by, change_reason_code, change_commentary,
+        valid_from, valid_to
     ) VALUES (
         v_image_id, 0, p_key, p_description, p_svg_data,
-        'system', CURRENT_TIMESTAMP, ores.infinity_timestamp()
+        'system', 'system.new_record', 'System seed data',
+        CURRENT_TIMESTAMP, ores.infinity_timestamp()
     );
 
     -- Link image to flag tag (skip if already linked)

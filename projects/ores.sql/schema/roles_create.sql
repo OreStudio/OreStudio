@@ -28,6 +28,8 @@ create table if not exists "ores"."roles" (
     "name" text not null,
     "description" text not null,
     "modified_by" text not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (id, valid_from, valid_to),
@@ -35,7 +37,8 @@ create table if not exists "ores"."roles" (
         id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to")
+    check ("valid_from" < "valid_to"),
+    check ("change_reason_code" <> '')
 );
 
 -- Unique constraint on name for current records

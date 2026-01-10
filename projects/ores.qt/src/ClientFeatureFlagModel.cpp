@@ -134,10 +134,10 @@ void ClientFeatureFlagModel::refresh() {
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
         if (!self) return {false, {}};
 
-        variability::messaging::list_feature_flags_request request;
+        variability::messaging::get_feature_flags_request request;
         auto payload = request.serialize();
 
-        frame request_frame(message_type::list_feature_flags_request,
+        frame request_frame(message_type::get_feature_flags_request,
             0, std::move(payload));
 
         auto response_result = self->clientManager_->sendRequest(
@@ -154,7 +154,7 @@ void ClientFeatureFlagModel::refresh() {
             return {false, {}};
         }
 
-        auto response = variability::messaging::list_feature_flags_response::
+        auto response = variability::messaging::get_feature_flags_response::
             deserialize(*payload_result);
 
         if (!response) {

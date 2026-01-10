@@ -48,6 +48,9 @@
 #include "ores.qt/AccountController.hpp"
 #include "ores.qt/RoleController.hpp"
 #include "ores.qt/FeatureFlagController.hpp"
+#include "ores.qt/ChangeReasonCategoryController.hpp"
+#include "ores.qt/ChangeReasonController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -67,6 +70,7 @@ MainWindow::MainWindow(QWidget* parent) :
     eventBus_(std::make_shared<eventing::service::event_bus>()),
     clientManager_(new ClientManager(eventBus_, this)),
     imageCache_(new ImageCache(clientManager_, this)),
+    changeReasonCache_(new ChangeReasonCache(clientManager_, this)),
     systemTrayIcon_(nullptr), trayContextMenu_(nullptr),
     instanceColorIndicator_(nullptr), eventViewerWindow_(nullptr) {
 
@@ -120,6 +124,10 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_lock_closed_20_regular.svg", iconColor));
     ui_->ActionFeatureFlags->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
+    ui_->ActionChangeReasonCategories->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
+    ui_->ActionChangeReasons->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_note_edit_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(
@@ -241,7 +249,7 @@ MainWindow::MainWindow(QWidget* parent) :
         ui_->statusbar->showMessage("Reconnected to server.", 5000);
     });
 
-    // Load image cache when connected
+    // Load caches when connected
     connect(clientManager_, &ClientManager::connected, this, [this]() {
         imageCache_->loadAll();
         // Preload all available images for the flag selector to avoid on-demand loading delay
@@ -250,6 +258,9 @@ MainWindow::MainWindow(QWidget* parent) :
         } else {
             imageCache_->loadAllAvailableImages();
         }
+
+        // Load change reasons for entity dialogs
+        changeReasonCache_->loadAll();
     });
 
     // When image list is loaded, automatically fetch the actual images
@@ -287,6 +298,18 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionFeatureFlags, &QAction::triggered, this, [this]() {
         if (featureFlagController_)
             featureFlagController_->showListWindow();
+    });
+
+    // Connect Change Reason Categories action to controller (admin only)
+    connect(ui_->ActionChangeReasonCategories, &QAction::triggered, this, [this]() {
+        if (changeReasonCategoryController_)
+            changeReasonCategoryController_->showListWindow();
+    });
+
+    // Connect Change Reasons action to controller (admin only)
+    connect(ui_->ActionChangeReasons, &QAction::triggered, this, [this]() {
+        if (changeReasonController_)
+            changeReasonController_->showListWindow();
     });
 
     // Initially disable data-related actions until logged in
@@ -485,6 +508,12 @@ void MainWindow::onLoginTriggered() {
         if (featureFlagController_) {
             featureFlagController_->setUsername(QString::fromStdString(username_));
         }
+        if (changeReasonCategoryController_) {
+            changeReasonCategoryController_->setUsername(QString::fromStdString(username_));
+        }
+        if (changeReasonController_) {
+            changeReasonController_->setUsername(QString::fromStdString(username_));
+        }
 
         // Update window title with username and server info
         updateWindowTitle();
@@ -512,6 +541,8 @@ void MainWindow::updateMenuState() {
     ui_->ActionAccounts->setEnabled(isConnected);
     ui_->ActionRoles->setEnabled(isConnected);
     ui_->ActionFeatureFlags->setEnabled(isConnected);
+    ui_->ActionChangeReasonCategories->setEnabled(isConnected);
+    ui_->ActionChangeReasons->setEnabled(isConnected);
 
     // My Account and My Sessions menu items are enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
@@ -539,7 +570,7 @@ void MainWindow::createControllers() {
 
     // Create currency controller
     currencyController_ = std::make_unique<CurrencyController>(
-        this, mdiArea_, clientManager_, imageCache_,
+        this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
         QString::fromStdString(username_), allDetachableWindows_, this);
 
     // Connect controller signals to status bar
@@ -554,7 +585,7 @@ void MainWindow::createControllers() {
 
     // Create country controller
     countryController_ = std::make_unique<CountryController>(
-        this, mdiArea_, clientManager_, imageCache_,
+        this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
         QString::fromStdString(username_), allDetachableWindows_, this);
 
     // Connect country controller signals to status bar
@@ -608,6 +639,36 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
     connect(featureFlagController_.get(), &FeatureFlagController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create change reason category controller (admin only functionality)
+    changeReasonCategoryController_ = std::make_unique<ChangeReasonCategoryController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect change reason category controller signals to status bar
+    connect(changeReasonCategoryController_.get(), &ChangeReasonCategoryController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(changeReasonCategoryController_.get(), &ChangeReasonCategoryController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create change reason controller (admin only functionality)
+    changeReasonController_ = std::make_unique<ChangeReasonController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect change reason controller signals to status bar
+    connect(changeReasonController_.get(), &ChangeReasonController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(changeReasonController_.get(), &ChangeReasonController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });

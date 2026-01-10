@@ -56,6 +56,9 @@
     <addaction name="ActionAccounts"/>
     <addaction name="ActionRoles"/>
     <addaction name="ActionFeatureFlags"/>
+    <addaction name="separator"/>
+    <addaction name="ActionChangeReasonCategories"/>
+    <addaction name="ActionChangeReasons"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -294,6 +297,30 @@
    </property>
    <property name="toolTip">
     <string>View domain events in real-time</string>
+   </property>
+  </action>
+  <action name="ActionChangeReasonCategories">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_folder_20_regular.svg</normaloff>:/icons/ic_fluent_folder_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Change Reason &amp;Categories</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage change reason categories</string>
+   </property>
+  </action>
+  <action name="ActionChangeReasons">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_note_edit_20_regular.svg</normaloff>:/icons/ic_fluent_note_edit_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Change &amp;Reasons</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage change reasons</string>
    </property>
   </action>
  </widget>

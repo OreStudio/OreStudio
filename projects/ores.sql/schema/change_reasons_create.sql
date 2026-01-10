@@ -19,10 +19,11 @@
  */
 
 /**
- * Amendment Reasons Table
+ * Change Reasons Table
  *
- * Defines the reasons that can be selected when amending or deleting records.
- * Each reason belongs to a category and specifies which operations it applies to.
+ * Defines the reasons that can be selected when creating, amending, or deleting
+ * records. Each reason belongs to a category and specifies which operations it
+ * applies to.
  *
  * Reason codes use namespaced format: "category.reason_name"
  * Examples:
@@ -36,7 +37,7 @@
 
 set schema 'ores';
 
-create table if not exists "ores"."amendment_reasons" (
+create table if not exists "ores"."change_reasons" (
     "code" text not null,
     "version" integer not null,
     "description" text not null,
@@ -46,6 +47,7 @@ create table if not exists "ores"."amendment_reasons" (
     "requires_commentary" boolean not null default false,
     "display_order" integer not null default 0,
     "modified_by" text not null,
+    "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (code, valid_from, valid_to),
@@ -57,39 +59,39 @@ create table if not exists "ores"."amendment_reasons" (
 );
 
 -- Unique constraint on version for current records ensures version uniqueness per entity
-create unique index if not exists amendment_reasons_version_unique_idx
-on "ores"."amendment_reasons" (code, version)
+create unique index if not exists change_reasons_version_unique_idx
+on "ores"."change_reasons" (code, version)
 where valid_to = ores.infinity_timestamp();
 
 -- Unique constraint on code for current records to support FK references
-create unique index if not exists amendment_reasons_code_current_idx
-on "ores"."amendment_reasons" (code)
+create unique index if not exists change_reasons_code_current_idx
+on "ores"."change_reasons" (code)
 where valid_to = ores.infinity_timestamp();
 
 -- Index for looking up reasons by category
-create index if not exists amendment_reasons_category_idx
-on "ores"."amendment_reasons" (category_code)
+create index if not exists change_reasons_category_idx
+on "ores"."change_reasons" (category_code)
 where valid_to = ores.infinity_timestamp();
 
-create or replace function update_amendment_reasons()
+create or replace function update_change_reasons()
 returns trigger as $$
 declare
     current_version integer;
 begin
-    -- Validate that category_code exists in reason_categories
+    -- Validate that category_code exists in change_reason_categories
     if not exists (
-        select 1 from "ores"."reason_categories"
+        select 1 from "ores"."change_reason_categories"
         where code = new.category_code
         and valid_to = ores.infinity_timestamp()
     ) then
-        raise exception 'Invalid category_code: %. Category must exist in reason_categories.',
+        raise exception 'Invalid category_code: %. Category must exist in change_reason_categories.',
             new.category_code
             using errcode = '23503';  -- foreign_key_violation
     end if;
 
     -- Get the current version of the existing record (if any)
     select version into current_version
-    from "ores"."amendment_reasons"
+    from "ores"."change_reasons"
     where code = new.code
     and valid_to = ores.infinity_timestamp();
 
@@ -105,7 +107,7 @@ begin
         new.version = current_version + 1;
 
         -- Close the existing record
-        update "ores"."amendment_reasons"
+        update "ores"."change_reasons"
         set valid_to = current_timestamp
         where code = new.code
         and valid_to = ores.infinity_timestamp()
@@ -126,17 +128,17 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger update_amendment_reasons_trigger
-before insert on "ores"."amendment_reasons"
+create or replace trigger update_change_reasons_trigger
+before insert on "ores"."change_reasons"
 for each row
-execute function update_amendment_reasons();
+execute function update_change_reasons();
 
 -- Use a RULE instead of a trigger to avoid tuple modification conflicts
 -- Rules rewrite the query before execution, so there's no conflict with the DELETE
-create or replace rule delete_amendment_reasons_rule as
-on delete to "ores"."amendment_reasons"
+create or replace rule delete_change_reasons_rule as
+on delete to "ores"."change_reasons"
 do instead
-  update "ores"."amendment_reasons"
+  update "ores"."change_reasons"
   set valid_to = current_timestamp
   where code = old.code
   and valid_to = ores.infinity_timestamp();

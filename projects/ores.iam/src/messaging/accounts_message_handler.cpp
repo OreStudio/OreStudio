@@ -22,19 +22,22 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/lexical_cast.hpp>
+#include "ores.iam/domain/change_reason_constants.hpp"
+#include "ores.iam/domain/permission.hpp"
+#include "ores.iam/domain/role.hpp"
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/authorization_protocol.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
+#include "ores.iam/messaging/change_management_protocol.hpp"
 #include "ores.iam/service/signup_service.hpp"
 #include "ores.iam/service/session_converter.hpp"
-#include "ores.iam/domain/permission.hpp"
-#include "ores.iam/domain/role.hpp"
 
 namespace ores::iam::messaging {
 
 using namespace ores::logging;
 using comms::messaging::message_type;
+namespace reason = domain::change_reason_constants;
 
 accounts_message_handler::accounts_message_handler(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
@@ -44,7 +47,8 @@ accounts_message_handler::accounts_message_handler(database::context ctx,
     : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)),
       sessions_(std::move(sessions)), auth_service_(auth_service),
       setup_service_(service_, auth_service_),
-      session_repo_(ctx), geo_service_(std::move(geo_service)) {}
+      session_repo_(ctx), geo_service_(std::move(geo_service)),
+      change_management_service_(ctx) {}
 
 accounts_message_handler::handler_result
 accounts_message_handler::handle_message(message_type type,
@@ -71,10 +75,10 @@ accounts_message_handler::handle_message(message_type type,
     }
 
     switch (type) {
-    case message_type::create_account_request:
-        co_return co_await handle_create_account_request(payload, remote_address);
-    case message_type::list_accounts_request:
-        co_return co_await handle_list_accounts_request(payload, remote_address);
+    case message_type::save_account_request:
+        co_return co_await handle_save_account_request(payload, remote_address);
+    case message_type::get_accounts_request:
+        co_return co_await handle_get_accounts_request(payload, remote_address);
     case message_type::list_login_info_request:
         co_return co_await handle_list_login_info_request(payload, remote_address);
     case message_type::login_request:
@@ -91,8 +95,6 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_create_initial_admin_request(payload, remote_address);
     case message_type::bootstrap_status_request:
         co_return co_await handle_bootstrap_status_request(payload);
-    case message_type::update_account_request:
-        co_return co_await handle_update_account_request(payload, remote_address);
     case message_type::get_account_history_request:
         co_return co_await handle_get_account_history_request(payload, remote_address);
     case message_type::reset_password_request:
@@ -125,6 +127,13 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_get_account_roles_request(payload, remote_address);
     case message_type::get_account_permissions_request:
         co_return co_await handle_get_account_permissions_request(payload, remote_address);
+    // Change management messages
+    case message_type::get_change_reason_categories_request:
+        co_return co_await handle_get_change_reason_categories_request(payload, remote_address);
+    case message_type::get_change_reasons_request:
+        co_return co_await handle_get_change_reasons_request(payload, remote_address);
+    case message_type::get_change_reasons_by_category_request:
+        co_return co_await handle_get_change_reasons_by_category_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
@@ -132,43 +141,96 @@ accounts_message_handler::handle_message(message_type type,
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
-handle_create_account_request(std::span<const std::byte> payload,
+handle_save_account_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing create_account_request from "
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_account_request from "
                                << remote_address;
 
-    auto auth_result = check_authorization(remote_address,
-        domain::permissions::accounts_create, "Create account");
-    if (!auth_result) {
-        co_return std::unexpected(auth_result.error());
-    }
-
-    auto request_result = create_account_request::deserialize(payload);
+    auto request_result = save_account_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize create_account_request";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_account_request";
         co_return std::unexpected(request_result.error());
     }
 
     const auto& request = *request_result;
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
-    domain::account account =
-        setup_service_.create_account(request.username, request.email,
-        request.password, request.recorded_by);
+    // Determine if this is a create or update based on account_id
+    const bool is_create = request.account_id.is_nil();
 
-    BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id
-                              << " for username: " << account.username
-                              << " with Viewer role assigned";
+    if (is_create) {
+        // Create new account - requires accounts:create permission
+        auto auth_result = check_authorization(remote_address,
+            domain::permissions::accounts_create, "Create account");
+        if (!auth_result) {
+            co_return std::unexpected(auth_result.error());
+        }
 
-    create_account_response response{account.id};
-    co_return response.serialize();
+        try {
+            domain::account account =
+                setup_service_.create_account(request.username, request.email,
+                request.password, request.recorded_by, request.change_commentary);
+
+            BOOST_LOG_SEV(lg(), info) << "Created account with ID: " << account.id
+                                      << " for username: " << account.username
+                                      << " with Viewer role assigned";
+
+            save_account_response response{
+                .success = true,
+                .message = "",
+                .account_id = account.id
+            };
+            co_return response.serialize();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to create account: " << e.what();
+            save_account_response response{
+                .success = false,
+                .message = std::string("Failed to create account: ") + e.what(),
+                .account_id = boost::uuids::nil_uuid()
+            };
+            co_return response.serialize();
+        }
+    } else {
+        // Update existing account - requires accounts:update permission
+        auto auth_result = check_authorization(remote_address,
+            domain::permissions::accounts_update, "Update account");
+        if (!auth_result) {
+            co_return std::unexpected(auth_result.error());
+        }
+
+        try {
+            bool success = service_.update_account(request.account_id,
+                request.email, request.recorded_by,
+                request.change_reason_code, request.change_commentary);
+
+            if (success) {
+                BOOST_LOG_SEV(lg(), info) << "Successfully updated account: "
+                                          << boost::uuids::to_string(request.account_id);
+            }
+
+            save_account_response response{
+                .success = success,
+                .message = success ? "" : "Failed to update account",
+                .account_id = request.account_id
+            };
+            co_return response.serialize();
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to update account: " << e.what();
+            save_account_response response{
+                .success = false,
+                .message = std::string("Failed to update account: ") + e.what(),
+                .account_id = request.account_id
+            };
+            co_return response.serialize();
+        }
+    }
 }
 
 accounts_message_handler::handler_result
 accounts_message_handler::
-handle_list_accounts_request(std::span<const std::byte> payload,
+handle_get_accounts_request(std::span<const std::byte> payload,
     const std::string& remote_address) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing list_accounts_request from "
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_accounts_request from "
                                << remote_address;
 
     auto auth_result = check_authorization(remote_address,
@@ -177,9 +239,9 @@ handle_list_accounts_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
-    auto request_result = list_accounts_request::deserialize(payload);
+    auto request_result = get_accounts_request::deserialize(payload);
     if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize list_accounts_request.";
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_accounts_request.";
         co_return std::unexpected(request_result.error());
     }
 
@@ -203,7 +265,7 @@ handle_list_accounts_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << accounts.size()
                               << " accounts (total available: " << total_count << ").";
 
-    list_accounts_response response{
+    get_accounts_response response{
         .accounts = std::move(accounts),
         .total_available_count = total_count
     };
@@ -636,11 +698,13 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             request.email,
             request.password,
             "bootstrap",
-            domain::roles::admin
+            domain::roles::admin,
+            "Initial admin account created during system bootstrap"
         );
 
         // Exit bootstrap mode - updates database and shared cache
-        system_flags_->set_bootstrap_mode(false, "system");
+        system_flags_->set_bootstrap_mode(false, "system",
+            std::string{reason::codes::new_record}, "Bootstrap mode disabled after initial admin account created");
 
         BOOST_LOG_SEV(lg(), info)
             << "Created initial admin account with ID: " << account.id
@@ -758,72 +822,6 @@ handle_logout_request(std::span<const std::byte> payload,
         logout_response response{
             .success = false,
             .message = e.what()
-        };
-        co_return response.serialize();
-    }
-}
-
-accounts_message_handler::handler_result accounts_message_handler::
-handle_update_account_request(std::span<const std::byte> payload,
-    const std::string& remote_address) {
-    BOOST_LOG_SEV(lg(), debug) << "Processing update_account_request from "
-                               << remote_address;
-
-    auto request_result = update_account_request::deserialize(payload);
-    if (!request_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize update_account_request";
-        co_return std::unexpected(request_result.error());
-    }
-
-    const auto& request = *request_result;
-    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
-
-    // Get the requester's session from shared session service
-    auto session = sessions_->get_session(remote_address);
-    if (!session) {
-        BOOST_LOG_SEV(lg(), warn) << "Update account denied: no active session for "
-                                  << remote_address;
-        update_account_response response{
-            .success = false,
-            .error_message = "Authentication required to update accounts"
-        };
-        co_return response.serialize();
-    }
-
-    // Check if requester has permission to update accounts
-    if (!auth_service_->has_permission(session->account_id,
-            domain::permissions::accounts_update)) {
-        BOOST_LOG_SEV(lg(), warn) << "Update account denied: requester "
-                                  << boost::uuids::to_string(session->account_id)
-                                  << " lacks accounts:update permission";
-        update_account_response response{
-            .success = false,
-            .error_message = "Permission denied: accounts:update required"
-        };
-        co_return response.serialize();
-    }
-
-    try {
-        bool success = service_.update_account(request.account_id,
-            request.email, request.recorded_by);
-
-        if (success) {
-            BOOST_LOG_SEV(lg(), info) << "Successfully updated account: "
-                                      << boost::uuids::to_string(request.account_id);
-        }
-
-        update_account_response response{
-            .success = success,
-            .error_message = success ? "" : "Failed to update account"
-        };
-        co_return response.serialize();
-
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to update account: " << e.what();
-
-        update_account_response response{
-            .success = false,
-            .error_message = std::string("Failed to update account: ") + e.what()
         };
         co_return response.serialize();
     }
@@ -1589,4 +1587,98 @@ handle_get_active_sessions_request(std::span<const std::byte> payload,
     co_return response.serialize();
 }
 
+// ============================================================================
+// Change Management Handlers
+// ============================================================================
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_change_reason_categories_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_change_reason_categories_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List change reason categories");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_change_reason_categories_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_change_reason_categories_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto categories = change_management_service_.list_categories();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << categories.size()
+                              << " change reason categories.";
+
+    get_change_reason_categories_response response{
+        .categories = std::move(categories)
+    };
+    co_return response.serialize();
 }
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_change_reasons_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_change_reasons_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List change reasons");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_change_reasons_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_change_reasons_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto reasons = change_management_service_.list_reasons();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << reasons.size()
+                              << " change reasons.";
+
+    get_change_reasons_response response{
+        .reasons = std::move(reasons)
+    };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_change_reasons_by_category_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_change_reasons_by_category_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List change reasons by category");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_change_reasons_by_category_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_change_reasons_by_category_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Filtering by category: " << request.category_code;
+
+    auto reasons = change_management_service_.list_reasons_by_category(
+        request.category_code);
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << reasons.size()
+                              << " change reasons for category: "
+                              << request.category_code;
+
+    get_change_reasons_by_category_response response{
+        .reasons = std::move(reasons)
+    };
+    co_return response.serialize();
+}
+
+}
+

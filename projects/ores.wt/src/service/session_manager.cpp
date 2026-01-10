@@ -141,12 +141,14 @@ login_result session_manager::create_bootstrap_admin(
 
     try {
         auto account = ctx.account_setup_service().create_account(
-            username, email, password, "bootstrap");
+            username, email, password, "bootstrap",
+            "Initial admin account created during system bootstrap");
 
         auto admin_role = ctx.authorization_service().find_role_by_name("Admin");
         if (admin_role) {
             ctx.authorization_service().assign_role(
-                account.id, admin_role->id, "bootstrap");
+                account.id, admin_role->id, "bootstrap",
+                "Admin role assigned during system bootstrap");
         }
 
         session_data session;

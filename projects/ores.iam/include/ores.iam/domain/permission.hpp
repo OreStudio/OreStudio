@@ -31,6 +31,12 @@ namespace ores::iam::domain {
  * Permissions follow a hierarchical naming convention using colons as
  * separators: "resource:action" (e.g., "accounts:create", "currencies:read").
  * The special code "*" represents all permissions (superuser).
+ *
+ * @note This type does not include change tracking fields (change_reason_code,
+ * change_commentary) because permissions are system-defined constants populated
+ * from bootstrap data. They are not user-editable and do not require audit
+ * trails. Roles, which reference permissions, are user-manageable and do have
+ * change tracking.
  */
 struct permission final {
     /**

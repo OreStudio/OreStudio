@@ -35,25 +35,25 @@ using ores::utility::serialization::error_code;
 using ores::utility::serialization::reader;
 using ores::utility::serialization::writer;
 
-std::vector<std::byte> list_feature_flags_request::serialize() const {
+std::vector<std::byte> get_feature_flags_request::serialize() const {
     return {};
 }
 
-std::expected<list_feature_flags_request, ores::utility::serialization::error_code>
-list_feature_flags_request::deserialize(std::span<const std::byte> data) {
+std::expected<get_feature_flags_request, ores::utility::serialization::error_code>
+get_feature_flags_request::deserialize(std::span<const std::byte> data) {
     if (!data.empty()) {
         return std::unexpected(ores::utility::serialization::error_code::payload_too_large);
     }
-    return list_feature_flags_request{};
+    return get_feature_flags_request{};
 }
 
-std::ostream& operator<<(std::ostream& s, const list_feature_flags_request& v)
+std::ostream& operator<<(std::ostream& s, const get_feature_flags_request& v)
 {
     rfl::json::write(v, s);
     return s;
 }
 
-std::vector<std::byte> list_feature_flags_response::serialize() const {
+std::vector<std::byte> get_feature_flags_response::serialize() const {
     std::vector<std::byte> buffer;
 
     writer::write_uint32(buffer, static_cast<std::uint32_t>(feature_flags.size()));
@@ -64,6 +64,8 @@ std::vector<std::byte> list_feature_flags_response::serialize() const {
         writer::write_string(buffer, ff.description);
         writer::write_uint32(buffer, static_cast<std::uint32_t>(ff.version));
         writer::write_string(buffer, ff.recorded_by);
+        writer::write_string(buffer, ff.change_reason_code);
+        writer::write_string(buffer, ff.change_commentary);
         writer::write_string(buffer,
             ores::platform::time::datetime::format_time_point(ff.recorded_at));
     }
@@ -71,9 +73,9 @@ std::vector<std::byte> list_feature_flags_response::serialize() const {
     return buffer;
 }
 
-std::expected<list_feature_flags_response, ores::utility::serialization::error_code>
-list_feature_flags_response::deserialize(std::span<const std::byte> data) {
-    list_feature_flags_response response;
+std::expected<get_feature_flags_response, ores::utility::serialization::error_code>
+get_feature_flags_response::deserialize(std::span<const std::byte> data) {
+    get_feature_flags_response response;
 
     auto count_result = reader::read_uint32(data);
     if (!count_result) {
@@ -105,6 +107,14 @@ list_feature_flags_response::deserialize(std::span<const std::byte> data) {
         if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
         ff.recorded_by = *recorded_by_result;
 
+        auto change_reason_code_result = reader::read_string(data);
+        if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
+        ff.change_reason_code = *change_reason_code_result;
+
+        auto change_commentary_result = reader::read_string(data);
+        if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
+        ff.change_commentary = *change_commentary_result;
+
         auto recorded_at_result = reader::read_string(data);
         if (!recorded_at_result) return std::unexpected(recorded_at_result.error());
         try {
@@ -120,7 +130,7 @@ list_feature_flags_response::deserialize(std::span<const std::byte> data) {
     return response;
 }
 
-std::ostream& operator<<(std::ostream& s, const list_feature_flags_response& v) {
+std::ostream& operator<<(std::ostream& s, const get_feature_flags_response& v) {
     rfl::json::write(v, s);
     return s;
 }
@@ -132,6 +142,8 @@ std::vector<std::byte> save_feature_flag_request::serialize() const {
     writer::write_bool(buffer, flag.enabled);
     writer::write_string(buffer, flag.description);
     writer::write_string(buffer, flag.recorded_by);
+    writer::write_string(buffer, flag.change_reason_code);
+    writer::write_string(buffer, flag.change_commentary);
 
     return buffer;
 }
@@ -155,6 +167,14 @@ save_feature_flag_request::deserialize(std::span<const std::byte> data) {
     auto recorded_by_result = reader::read_string(data);
     if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
     request.flag.recorded_by = *recorded_by_result;
+
+    auto change_reason_code_result = reader::read_string(data);
+    if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
+    request.flag.change_reason_code = *change_reason_code_result;
+
+    auto change_commentary_result = reader::read_string(data);
+    if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
+    request.flag.change_commentary = *change_commentary_result;
 
     return request;
 }
@@ -281,6 +301,8 @@ std::vector<std::byte> get_feature_flag_history_response::serialize() const {
         writer::write_string(buffer, ff.description);
         writer::write_uint32(buffer, static_cast<std::uint32_t>(ff.version));
         writer::write_string(buffer, ff.recorded_by);
+        writer::write_string(buffer, ff.change_reason_code);
+        writer::write_string(buffer, ff.change_commentary);
         writer::write_string(buffer,
             ores::platform::time::datetime::format_time_point(ff.recorded_at));
     }
@@ -327,6 +349,14 @@ get_feature_flag_history_response::deserialize(std::span<const std::byte> data) 
         auto recorded_by_result = reader::read_string(data);
         if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
         ff.recorded_by = *recorded_by_result;
+
+        auto change_reason_code_result = reader::read_string(data);
+        if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
+        ff.change_reason_code = *change_reason_code_result;
+
+        auto change_commentary_result = reader::read_string(data);
+        if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
+        ff.change_commentary = *change_commentary_result;
 
         auto recorded_at_result = reader::read_string(data);
         if (!recorded_at_result) return std::unexpected(recorded_at_result.error());

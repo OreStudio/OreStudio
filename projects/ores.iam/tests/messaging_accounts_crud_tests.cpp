@@ -49,8 +49,8 @@ const std::string_view test_suite("ores.iam.tests");
 const std::string database_table("ores.accounts");
 const std::string tags("[messaging][handler][crud]");
 
-create_account_request to_create_account_request(const domain::account& a) {
-    create_account_request r;
+save_account_request to_save_account_request(const domain::account& a) {
+    save_account_request r;
     r.username = a.username;
     r.password = faker::internet::password();
     r.totp_secret = a.totp_secret;
@@ -62,7 +62,7 @@ create_account_request to_create_account_request(const domain::account& a) {
 std::shared_ptr<ores::variability::service::system_flags_service>
 make_system_flags(ores::database::context& ctx) {
     auto flags = std::make_shared<ores::variability::service::system_flags_service>(ctx);
-    flags->set_bootstrap_mode(false, "test");
+    flags->set_bootstrap_mode(false, "test", "system.new_record", "Test setup");
     return flags;
 }
 
@@ -111,7 +111,7 @@ using ores::comms::messaging::message_type;
 using ores::utility::serialization::error_code;
 using ores::testing::scoped_database_helper;
 
-TEST_CASE("handle_single_create_account_request", tags) {
+TEST_CASE("handle_single_save_account_request", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table, true);
@@ -127,7 +127,7 @@ TEST_CASE("handle_single_create_account_request", tags) {
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Original account: " << account;
 
-    create_account_request rq(to_create_account_request(account));
+    save_account_request rq(to_save_account_request(account));
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
     const auto payload = rq.serialize();
@@ -135,12 +135,12 @@ TEST_CASE("handle_single_create_account_request", tags) {
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
-            message_type::create_account_request,
+            message_type::save_account_request,
             payload, test_endpoint);
 
         REQUIRE(r.has_value());
         const auto response_result =
-            create_account_response::deserialize(r.value());
+            save_account_response::deserialize(r.value());
         REQUIRE(response_result.has_value());
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
@@ -149,7 +149,7 @@ TEST_CASE("handle_single_create_account_request", tags) {
     });
 }
 
-TEST_CASE("handle_many_create_account_requests", tags) {
+TEST_CASE("handle_many_save_account_requests", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table, true);
@@ -168,18 +168,18 @@ TEST_CASE("handle_many_create_account_requests", tags) {
     for (const auto& a : accounts) {
         BOOST_LOG_SEV(lg, info) << "Original account: " << a;
 
-        create_account_request rq(to_create_account_request(a));
+        save_account_request rq(to_save_account_request(a));
         BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
         const auto payload = rq.serialize();
         run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
             auto r = co_await sut.handle_message(
-                message_type::create_account_request,
+                message_type::save_account_request,
                 payload, test_endpoint);
 
             REQUIRE(r.has_value());
             const auto response_result =
-                create_account_response::deserialize(r.value());
+                save_account_response::deserialize(r.value());
             REQUIRE(response_result.has_value());
             const auto& rp = response_result.value();
             BOOST_LOG_SEV(lg, info) << "Response " << ": " << rp;
@@ -189,7 +189,7 @@ TEST_CASE("handle_many_create_account_requests", tags) {
     }
 }
 
-TEST_CASE("handle_list_accounts_request_returns_accounts", tags) {
+TEST_CASE("handle_get_accounts_request_returns_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table, true);
@@ -202,7 +202,7 @@ TEST_CASE("handle_list_accounts_request_returns_accounts", tags) {
     const auto test_endpoint = internet::endpoint();
     setup_admin_session(sessions, auth_service, test_endpoint);
 
-    list_accounts_request rq;
+    get_accounts_request rq;
     BOOST_LOG_SEV(lg, info) << "Request: " << rq;
 
     const auto payload = rq.serialize();
@@ -210,12 +210,12 @@ TEST_CASE("handle_list_accounts_request_returns_accounts", tags) {
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
-            message_type::list_accounts_request,
+            message_type::get_accounts_request,
             payload, test_endpoint);
 
         REQUIRE(r.has_value());
         const auto response_result =
-            list_accounts_response::deserialize(r.value());
+            get_accounts_response::deserialize(r.value());
         REQUIRE(response_result.has_value());
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
@@ -226,7 +226,7 @@ TEST_CASE("handle_list_accounts_request_returns_accounts", tags) {
     });
 }
 
-TEST_CASE("handle_list_accounts_request_with_accounts", tags) {
+TEST_CASE("handle_get_accounts_request_with_accounts", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h(database_table, true);
@@ -252,30 +252,30 @@ TEST_CASE("handle_list_accounts_request_with_accounts", tags) {
     for (const auto& a : accounts) {
         BOOST_LOG_SEV(lg, info) << "Original account: " << a;
 
-        create_account_request ca_rq(to_create_account_request(a));
+        save_account_request ca_rq(to_save_account_request(a));
         BOOST_LOG_SEV(lg, info) << "Create request: " << ca_rq;
         const auto create_payload = ca_rq.serialize();
 
         run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
             auto r = co_await sut.handle_message(
-                message_type::create_account_request,
+                message_type::save_account_request,
                 create_payload, test_endpoint);
             REQUIRE(r.has_value());
         });
     }
 
-    list_accounts_request la_rq;
+    get_accounts_request la_rq;
     BOOST_LOG_SEV(lg, info) << "Request: " << la_rq;
 
     const auto payload = la_rq.serialize();
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
-            message_type::list_accounts_request,
+            message_type::get_accounts_request,
             payload, test_endpoint);
 
         REQUIRE(r.has_value());
         const auto response_result =
-            list_accounts_response::deserialize(r.value());
+            get_accounts_response::deserialize(r.value());
         REQUIRE(response_result.has_value());
         const auto& rp = response_result.value();
         BOOST_LOG_SEV(lg, info) << "Response: " << rp;
@@ -300,7 +300,7 @@ TEST_CASE("handle_delete_account_request_success", tags) {
     const auto account = generate_synthetic_account();
     BOOST_LOG_SEV(lg, info) << "Account: " << account;
 
-    create_account_request ca_rq(to_create_account_request(account));
+    save_account_request ca_rq(to_save_account_request(account));
     BOOST_LOG_SEV(lg, info) << "Request: " << ca_rq;
 
     const auto create_payload = ca_rq.serialize();
@@ -309,12 +309,12 @@ TEST_CASE("handle_delete_account_request_success", tags) {
     boost::asio::io_context io_ctx;
     run_coroutine_test(io_ctx, [&]() -> boost::asio::awaitable<void> {
         auto r = co_await sut.handle_message(
-            message_type::create_account_request,
+            message_type::save_account_request,
             create_payload, test_endpoint);
         REQUIRE(r.has_value());
 
         const auto response_result =
-            create_account_response::deserialize(r.value());
+            save_account_response::deserialize(r.value());
         REQUIRE(response_result.has_value());
         account_id = response_result.value().account_id;
     });

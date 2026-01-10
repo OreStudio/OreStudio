@@ -48,7 +48,10 @@ class CountryController;
 class AccountController;
 class RoleController;
 class FeatureFlagController;
+class ChangeReasonCategoryController;
+class ChangeReasonController;
 class ImageCache;
+class ChangeReasonCache;
 
 /**
  * @brief Main application window providing the MDI interface and entity
@@ -288,6 +291,22 @@ private:
      */
     std::unique_ptr<FeatureFlagController> featureFlagController_;
 
+    /**
+     * @brief Controller managing change reason category windows.
+     *
+     * Created after successful login, handles category list and detail windows.
+     * Only accessible to admin users.
+     */
+    std::unique_ptr<ChangeReasonCategoryController> changeReasonCategoryController_;
+
+    /**
+     * @brief Controller managing change reason windows.
+     *
+     * Created after successful login, handles reason list and detail windows.
+     * Only accessible to admin users.
+     */
+    std::unique_ptr<ChangeReasonController> changeReasonController_;
+
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;
 
@@ -296,6 +315,9 @@ private:
 
     /** @brief Cache for currency flag icons */
     ImageCache* imageCache_;
+
+    /** @brief Cache for change reasons used by entity dialogs */
+    ChangeReasonCache* changeReasonCache_;
 
     /** @brief Username of currently logged-in user */
     std::string username_;

@@ -200,12 +200,18 @@ void CurrencyHistoryDialog::onHistoryLoaded() {
             new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
         auto* recordedByItem =
             new QTableWidgetItem(QString::fromStdString(version.recorded_by));
+        auto* changeReasonItem =
+            new QTableWidgetItem(QString::fromStdString(version.data.change_reason_code));
+        auto* commentaryItem =
+            new QTableWidgetItem(QString::fromStdString(version.data.change_commentary));
 
         versionItem->setIcon(cachedIcon);
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
         ui_->versionListWidget->setItem(i, 1, recordedAtItem);
         ui_->versionListWidget->setItem(i, 2, recordedByItem);
+        ui_->versionListWidget->setItem(i, 3, changeReasonItem);
+        ui_->versionListWidget->setItem(i, 4, commentaryItem);
     }
 
     if (!history_.versions.empty())
@@ -338,41 +344,47 @@ void CurrencyHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->recordedAtValue->setText(relative_time_helper::format(version.recorded_at));
 }
 
-#define CHECK_DIFF_STRING(FIELD_NAME, FIELD) \
-    if (current.data.FIELD != previous.data.FIELD) { \
-        diffs.append({FIELD_NAME, { \
-            QString::fromStdString(previous.data.FIELD), \
-            QString::fromStdString(current.data.FIELD) \
-        }}); \
-    }
-
-#define CHECK_DIFF_INT(FIELD_NAME, FIELD) \
-    if (current.data.FIELD != previous.data.FIELD) { \
-        diffs.append({FIELD_NAME, { \
-            QString::number(previous.data.FIELD), \
-            QString::number(current.data.FIELD) \
-        }}); \
-    }
-
 CurrencyHistoryDialog::DiffResult CurrencyHistoryDialog::
 calculateDiff(const risk::domain::currency_version& current,
     const risk::domain::currency_version& previous) {
 
     DiffResult diffs;
 
+    // Helper to check string field differences
+    auto checkDiffString = [&diffs](const QString& fieldName,
+        const std::string& currentVal, const std::string& previousVal) {
+        if (currentVal != previousVal) {
+            diffs.append({fieldName, {QString::fromStdString(previousVal),
+                                      QString::fromStdString(currentVal)}});
+        }
+    };
+
+    // Helper to check integer field differences
+    auto checkDiffInt = [&diffs](const QString& fieldName,
+        int currentVal, int previousVal) {
+        if (currentVal != previousVal) {
+            diffs.append({fieldName, {QString::number(previousVal),
+                                      QString::number(currentVal)}});
+        }
+    };
+
     // Compare string fields
-    CHECK_DIFF_STRING("ISO Code", iso_code);
-    CHECK_DIFF_STRING("Name", name);
-    CHECK_DIFF_STRING("Numeric Code", numeric_code);
-    CHECK_DIFF_STRING("Symbol", symbol);
-    CHECK_DIFF_STRING("Fraction Symbol", fraction_symbol);
-    CHECK_DIFF_STRING("Rounding Type", rounding_type);
-    CHECK_DIFF_STRING("Format", format);
-    CHECK_DIFF_STRING("Currency Type", currency_type);
+    checkDiffString("ISO Code", current.data.iso_code, previous.data.iso_code);
+    checkDiffString("Name", current.data.name, previous.data.name);
+    checkDiffString("Numeric Code", current.data.numeric_code, previous.data.numeric_code);
+    checkDiffString("Symbol", current.data.symbol, previous.data.symbol);
+    checkDiffString("Fraction Symbol", current.data.fraction_symbol, previous.data.fraction_symbol);
+    checkDiffString("Rounding Type", current.data.rounding_type, previous.data.rounding_type);
+    checkDiffString("Format", current.data.format, previous.data.format);
+    checkDiffString("Currency Type", current.data.currency_type, previous.data.currency_type);
 
     // Compare integer fields
-    CHECK_DIFF_INT("Fractions Per Unit", fractions_per_unit);
-    CHECK_DIFF_INT("Rounding Precision", rounding_precision);
+    checkDiffInt("Fractions Per Unit", current.data.fractions_per_unit, previous.data.fractions_per_unit);
+    checkDiffInt("Rounding Precision", current.data.rounding_precision, previous.data.rounding_precision);
+
+    // Compare change management fields
+    checkDiffString("Change Reason", current.data.change_reason_code, previous.data.change_reason_code);
+    checkDiffString("Commentary", current.data.change_commentary, previous.data.change_commentary);
 
     // Compare image_id (flag)
     if (current.data.image_id != previous.data.image_id) {
@@ -388,9 +400,6 @@ calculateDiff(const risk::domain::currency_version& current,
 
     return diffs;
 }
-
-#undef CHECK_DIFF_STRING
-#undef CHECK_DIFF_INT
 
 void CurrencyHistoryDialog::setupToolbar() {
     toolBar_ = new QToolBar(this);

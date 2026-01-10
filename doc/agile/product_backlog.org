@@ -67,6 +67,63 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Make bootstrap operation atomic using SQL transactions              :code:
+
+The bootstrap operation is currently not atomic. If an exception is thrown after
+the admin account is created but before the bootstrap mode feature flag is
+disabled, the system is left in an inconsistent state where:
+
+- An admin account exists in the database.
+- Bootstrap mode is still enabled (allowing creation of additional admin
+  accounts).
+
+**** Current Flow
+
+The bootstrap process in =bootstrap_service.cpp= performs these operations:
+
+1. Create account via =account_service=.
+2. Create login_info via =login_info_service=.
+3. Assign admin role via =authorization_service=.
+4. Disable bootstrap mode via =system_flags_service=.
+
+Each operation auto-commits independently, creating windows for partial failures.
+
+**** Solution
+
+Use sqlgen's =Transaction= class to wrap all bootstrap operations in a single
+database transaction. The class provides RAII semantics with automatic rollback
+on destructor if =commit()= was not called.
+
+#+begin_src c++
+// sqlgen's Transaction class pattern:
+~Transaction() {
+    if (!transaction_ended_) {
+        rollback();  // Auto-rollback on exception
+    }
+}
+#+end_src
+
+**** Challenges
+
+- Current architecture creates separate =database::context= connections per
+  service.
+- Need to pass a shared connection/transaction across services.
+- May require refactoring services to accept an optional transaction parameter.
+
+**** Mitigation
+
+The existing self-healing mechanism in
+=bootstrap_mode_service::initialize_bootstrap_state()= detects when bootstrap
+mode was not properly disabled after account creation and auto-corrects the
+state on server startup. This provides defence in depth but is not a substitute
+for proper transactional integrity.
+
+**** Acceptance Criteria
+
+- Bootstrap operation completes fully or rolls back entirely.
+- No partial state if any step fails.
+- Self-healing mechanism remains as defence in depth.
+
 *** Investigate claude-code-hook-templates
 
 #+begin_quote

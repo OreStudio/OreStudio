@@ -28,6 +28,7 @@
 #include "ores.iam/service/account_service.hpp"
 #include "ores.iam/service/account_setup_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
+#include "ores.iam/service/change_management_service.hpp"
 #include "ores.iam/repository/session_repository.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
@@ -39,8 +40,8 @@ namespace ores::iam::messaging {
  *
  * Processes messages in the accounts subsystem range (0x2000-0x2FFF).
  * Currently handles:
- * - create_account_request: Creates a new account
- * - list_accounts_request: Retrieves all accounts from the repository
+ * - save_account_request: Creates a new account
+ * - get_accounts_request: Retrieves all accounts from the repository
  * - list_login_info_request: Retrieves all login info records
  * - login_request: Authenticates a user and updates login tracking
  * - logout_request: Logs out a user and marks them as offline
@@ -111,21 +112,21 @@ public:
 
 private:
     /**
-     * @brief Handle create_account_request message.
+     * @brief Handle save_account_request message.
      *
      * Requires authentication. Only admin users can create accounts.
      */
     handler_result
-    handle_create_account_request(std::span<const std::byte> payload,
+    handle_save_account_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     /**
-     * @brief Handle list_accounts_request message.
+     * @brief Handle get_accounts_request message.
      *
      * Requires authentication.
      */
     handler_result
-    handle_list_accounts_request(std::span<const std::byte> payload,
+    handle_get_accounts_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     /**
@@ -195,15 +196,6 @@ private:
      */
     handler_result
     handle_logout_request(std::span<const std::byte> payload,
-        const std::string& remote_address);
-
-    /**
-     * @brief Handle update_account_request message.
-     *
-     * Requires authentication. Only admin users can update accounts.
-     */
-    handler_result
-    handle_update_account_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     /**
@@ -397,6 +389,39 @@ private:
     handle_get_active_sessions_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    // =========================================================================
+    // Change Management Handlers
+    // =========================================================================
+
+    /**
+     * @brief Handle get_change_reason_categories_request message.
+     *
+     * Requires authentication. Returns all change reason categories.
+     */
+    handler_result
+    handle_get_change_reason_categories_request(
+        std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle get_change_reasons_request message.
+     *
+     * Requires authentication. Returns all change reasons.
+     */
+    handler_result
+    handle_get_change_reasons_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle get_change_reasons_by_category_request message.
+     *
+     * Requires authentication. Returns change reasons for a category.
+     */
+    handler_result
+    handle_get_change_reasons_by_category_request(
+        std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     service::account_service service_;
     database::context ctx_;
     std::shared_ptr<variability::service::system_flags_service> system_flags_;
@@ -405,6 +430,7 @@ private:
     service::account_setup_service setup_service_;
     repository::session_repository session_repo_;
     std::shared_ptr<geo::service::geolocation_service> geo_service_;
+    service::change_management_service change_management_service_;
 };
 
 }

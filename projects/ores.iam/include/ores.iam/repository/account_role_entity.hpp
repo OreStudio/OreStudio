@@ -39,6 +39,8 @@ struct account_role_entity {
     std::string account_id;
     std::string role_id;
     std::string assigned_by;
+    std::string change_reason_code;
+    std::string change_commentary;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> assigned_at = "9999-12-31 23:59:59";
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";

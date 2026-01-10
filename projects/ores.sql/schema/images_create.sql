@@ -29,6 +29,8 @@ create table if not exists "ores"."images" (
     "description" text not null,
     "svg_data" text not null,
     "modified_by" text not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (image_id, valid_from, valid_to),
@@ -36,7 +38,8 @@ create table if not exists "ores"."images" (
         image_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to")
+    check ("valid_from" < "valid_to"),
+    check ("change_reason_code" <> '')
 );
 
 -- Unique constraint on version for current records

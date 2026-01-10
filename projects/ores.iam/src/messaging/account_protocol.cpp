@@ -55,19 +55,26 @@ read_timepoint(std::span<const std::byte>& data) {
 
 }
 
-std::vector<std::byte> create_account_request::serialize() const {
+std::vector<std::byte> save_account_request::serialize() const {
     std::vector<std::byte> buffer;
+    writer::write_uuid(buffer, account_id);
     writer::write_string(buffer, username);
     writer::write_string(buffer, password);
     writer::write_string(buffer, totp_secret);
     writer::write_string(buffer, email);
     writer::write_string(buffer, recorded_by);
+    writer::write_string(buffer, change_reason_code);
+    writer::write_string(buffer, change_commentary);
     return buffer;
 }
 
-std::expected<create_account_request, ores::utility::serialization::error_code>
-create_account_request::deserialize(std::span<const std::byte> data) {
-    create_account_request request;
+std::expected<save_account_request, ores::utility::serialization::error_code>
+save_account_request::deserialize(std::span<const std::byte> data) {
+    save_account_request request;
+
+    auto account_id_result = reader::read_uuid(data);
+    if (!account_id_result) return std::unexpected(account_id_result.error());
+    request.account_id = *account_id_result;
 
     auto username_result = reader::read_string(data);
     if (!username_result) return std::unexpected(username_result.error());
@@ -89,24 +96,42 @@ create_account_request::deserialize(std::span<const std::byte> data) {
     if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
     request.recorded_by = *recorded_by_result;
 
+    auto change_reason_code_result = reader::read_string(data);
+    if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
+    request.change_reason_code = *change_reason_code_result;
+
+    auto change_commentary_result = reader::read_string(data);
+    if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
+    request.change_commentary = *change_commentary_result;
+
     return request;
 }
 
-std::ostream& operator<<(std::ostream& s, const create_account_request& v)
+std::ostream& operator<<(std::ostream& s, const save_account_request& v)
 {
     rfl::json::write(v, s);
     return s;
 }
 
-std::vector<std::byte> create_account_response::serialize() const {
+std::vector<std::byte> save_account_response::serialize() const {
     std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     writer::write_uuid(buffer, account_id);
     return buffer;
 }
 
-std::expected<create_account_response, ores::utility::serialization::error_code>
-create_account_response::deserialize(std::span<const std::byte> data) {
-    create_account_response response;
+std::expected<save_account_response, ores::utility::serialization::error_code>
+save_account_response::deserialize(std::span<const std::byte> data) {
+    save_account_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     auto account_id_result = reader::read_uuid(data);
     if (!account_id_result) return std::unexpected(account_id_result.error());
@@ -115,22 +140,22 @@ create_account_response::deserialize(std::span<const std::byte> data) {
     return response;
 }
 
-std::ostream& operator<<(std::ostream& s, const create_account_response& v)
+std::ostream& operator<<(std::ostream& s, const save_account_response& v)
 {
     rfl::json::write(v, s);
     return s;
 }
 
-std::vector<std::byte> list_accounts_request::serialize() const {
+std::vector<std::byte> get_accounts_request::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_uint32(buffer, offset);
     writer::write_uint32(buffer, limit);
     return buffer;
 }
 
-std::expected<list_accounts_request, ores::utility::serialization::error_code>
-list_accounts_request::deserialize(std::span<const std::byte> data) {
-    list_accounts_request request;
+std::expected<get_accounts_request, ores::utility::serialization::error_code>
+get_accounts_request::deserialize(std::span<const std::byte> data) {
+    get_accounts_request request;
 
     auto offset_result = reader::read_uint32(data);
     if (!offset_result) return std::unexpected(offset_result.error());
@@ -143,13 +168,13 @@ list_accounts_request::deserialize(std::span<const std::byte> data) {
     return request;
 }
 
-std::ostream& operator<<(std::ostream& s, const list_accounts_request& v)
+std::ostream& operator<<(std::ostream& s, const get_accounts_request& v)
 {
     rfl::json::write(v, s);
     return s;
 }
 
-std::vector<std::byte> list_accounts_response::serialize() const {
+std::vector<std::byte> get_accounts_response::serialize() const {
     std::vector<std::byte> buffer;
 
     // Write total available count
@@ -169,14 +194,16 @@ std::vector<std::byte> list_accounts_response::serialize() const {
         writer::write_string(buffer, account.password_salt);
         writer::write_string(buffer, account.totp_secret);
         writer::write_string(buffer, account.email);
+        writer::write_string(buffer, account.change_reason_code);
+        writer::write_string(buffer, account.change_commentary);
     }
 
     return buffer;
 }
 
-std::expected<list_accounts_response, ores::utility::serialization::error_code>
-list_accounts_response::deserialize(std::span<const std::byte> data) {
-    list_accounts_response response;
+std::expected<get_accounts_response, ores::utility::serialization::error_code>
+get_accounts_response::deserialize(std::span<const std::byte> data) {
+    get_accounts_response response;
 
     // Read total available count
     auto total_result = reader::read_uint32(data);
@@ -233,12 +260,20 @@ list_accounts_response::deserialize(std::span<const std::byte> data) {
         if (!email_result) return std::unexpected(email_result.error());
         account.email = *email_result;
 
+        auto change_reason_code_result = reader::read_string(data);
+        if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
+        account.change_reason_code = *change_reason_code_result;
+
+        auto change_commentary_result = reader::read_string(data);
+        if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
+        account.change_commentary = *change_commentary_result;
+
         response.accounts.push_back(std::move(account));
     }
 
     return response;
 }
-std::ostream& operator<<(std::ostream& s, const list_accounts_response& v)
+std::ostream& operator<<(std::ostream& s, const get_accounts_response& v)
 {
     rfl::json::write(v, s);
     return s;
@@ -462,67 +497,6 @@ lock_account_response::deserialize(std::span<const std::byte> data) {
 }
 
 std::ostream& operator<<(std::ostream& s, const lock_account_response& v)
-{
-    rfl::json::write(v, s);
-    return s;
-}
-
-std::vector<std::byte> update_account_request::serialize() const {
-    std::vector<std::byte> buffer;
-    writer::write_uuid(buffer, account_id);
-    writer::write_string(buffer, email);
-    writer::write_string(buffer, recorded_by);
-    return buffer;
-}
-
-std::expected<update_account_request, ores::utility::serialization::error_code>
-update_account_request::deserialize(std::span<const std::byte> data) {
-    update_account_request request;
-
-    auto account_id_result = reader::read_uuid(data);
-    if (!account_id_result) return std::unexpected(account_id_result.error());
-    request.account_id = *account_id_result;
-
-    auto email_result = reader::read_string(data);
-    if (!email_result) return std::unexpected(email_result.error());
-    request.email = *email_result;
-
-    auto recorded_by_result = reader::read_string(data);
-    if (!recorded_by_result) return std::unexpected(recorded_by_result.error());
-    request.recorded_by = *recorded_by_result;
-
-    return request;
-}
-
-std::ostream& operator<<(std::ostream& s, const update_account_request& v)
-{
-    rfl::json::write(v, s);
-    return s;
-}
-
-std::vector<std::byte> update_account_response::serialize() const {
-    std::vector<std::byte> buffer;
-    writer::write_bool(buffer, success);
-    writer::write_string(buffer, error_message);
-    return buffer;
-}
-
-std::expected<update_account_response, ores::utility::serialization::error_code>
-update_account_response::deserialize(std::span<const std::byte> data) {
-    update_account_response response;
-
-    auto success_result = reader::read_bool(data);
-    if (!success_result) return std::unexpected(success_result.error());
-    response.success = *success_result;
-
-    auto error_message_result = reader::read_string(data);
-    if (!error_message_result) return std::unexpected(error_message_result.error());
-    response.error_message = *error_message_result;
-
-    return response;
-}
-
-std::ostream& operator<<(std::ostream& s, const update_account_response& v)
 {
     rfl::json::write(v, s);
     return s;

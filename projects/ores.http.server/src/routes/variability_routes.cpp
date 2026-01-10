@@ -49,7 +49,7 @@ void variability_routes::register_routes(std::shared_ptr<http::net::router> rout
         .description("Retrieve all feature flags in the system")
         .tags({"feature-flags"})
         .auth_required()
-        .response<variability::messaging::list_feature_flags_response>()
+        .response<variability::messaging::get_feature_flags_response>()
         .handler([this](const http_request& req) { return handle_list_feature_flags(req); });
     router->add_route(list_flags.build());
     registry->register_route(list_flags.build());
@@ -63,7 +63,7 @@ asio::awaitable<http_response> variability_routes::handle_list_feature_flags(con
     try {
         auto flags = feature_flags_service_.get_all_feature_flags();
 
-        variability::messaging::list_feature_flags_response resp;
+        variability::messaging::get_feature_flags_response resp;
         resp.feature_flags = flags;
 
         co_return http_response::json(rfl::json::write(resp));

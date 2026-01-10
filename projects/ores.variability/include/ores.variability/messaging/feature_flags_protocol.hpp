@@ -33,29 +33,31 @@ namespace ores::variability::messaging {
 /**
  * @brief Request to retrieve all feature flags.
  */
-struct list_feature_flags_request final {
+struct get_feature_flags_request final {
     std::vector<std::byte> serialize() const;
-    static std::expected<list_feature_flags_request, ores::utility::serialization::error_code>
+    static std::expected<get_feature_flags_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const list_feature_flags_request& v);
+std::ostream& operator<<(std::ostream& s, const get_feature_flags_request& v);
 
 /**
  * @brief Response containing all feature flags.
  */
-struct list_feature_flags_response final {
+struct get_feature_flags_response final {
     std::vector<domain::feature_flags> feature_flags;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<list_feature_flags_response, ores::utility::serialization::error_code>
+    static std::expected<get_feature_flags_response, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const list_feature_flags_response& v);
+std::ostream& operator<<(std::ostream& s, const get_feature_flags_response& v);
 
 /**
  * @brief Request to save (create or update) a feature flag.
+ *
+ * Includes change tracking fields for audit trail.
  */
 struct save_feature_flag_request final {
     domain::feature_flags flag;
@@ -141,14 +143,14 @@ std::ostream& operator<<(std::ostream& s, const get_feature_flag_history_respons
 namespace ores::comms::messaging {
 
 /**
- * @brief Message traits specialization for list_feature_flags_request.
+ * @brief Message traits specialization for get_feature_flags_request.
  */
 template<>
-struct message_traits<variability::messaging::list_feature_flags_request> {
-    using request_type = variability::messaging::list_feature_flags_request;
-    using response_type = variability::messaging::list_feature_flags_response;
+struct message_traits<variability::messaging::get_feature_flags_request> {
+    using request_type = variability::messaging::get_feature_flags_request;
+    using response_type = variability::messaging::get_feature_flags_response;
     static constexpr message_type request_message_type =
-        message_type::list_feature_flags_request;
+        message_type::get_feature_flags_request;
 };
 
 /**

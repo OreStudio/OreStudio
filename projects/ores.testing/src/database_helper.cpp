@@ -70,8 +70,10 @@ void database_helper::seed_rbac() {
 
         // Create Admin role if not exists
         R"SQL(
-        INSERT INTO ores.roles (id, version, name, description, modified_by, valid_from, valid_to)
+        INSERT INTO ores.roles (id, version, name, description, modified_by,
+            change_reason_code, change_commentary, valid_from, valid_to)
         SELECT gen_random_uuid(), 1, 'Admin', 'Full administrative access', 'test',
+               'system.seed', 'Test RBAC seed data',
                current_timestamp, '9999-12-31 23:59:59'::timestamptz
         WHERE NOT EXISTS (
             SELECT 1 FROM ores.roles
@@ -80,8 +82,10 @@ void database_helper::seed_rbac() {
 
         // Create Viewer role if not exists (default role for new accounts)
         R"SQL(
-        INSERT INTO ores.roles (id, version, name, description, modified_by, valid_from, valid_to)
+        INSERT INTO ores.roles (id, version, name, description, modified_by,
+            change_reason_code, change_commentary, valid_from, valid_to)
         SELECT gen_random_uuid(), 1, 'Viewer', 'Default role for new accounts', 'test',
+               'system.seed', 'Test RBAC seed data',
                current_timestamp, '9999-12-31 23:59:59'::timestamptz
         WHERE NOT EXISTS (
             SELECT 1 FROM ores.roles

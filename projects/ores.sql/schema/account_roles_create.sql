@@ -29,6 +29,8 @@ create table if not exists "ores"."account_roles" (
     "role_id" uuid not null,
     "assigned_by" text not null,
     "assigned_at" timestamp with time zone not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (account_id, role_id, valid_from),
@@ -37,7 +39,8 @@ create table if not exists "ores"."account_roles" (
         role_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to")
+    check ("valid_from" < "valid_to"),
+    check ("change_reason_code" <> '')
 );
 
 -- Index for looking up roles by account

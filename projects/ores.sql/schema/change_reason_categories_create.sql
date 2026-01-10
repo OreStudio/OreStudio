@@ -19,9 +19,9 @@
  */
 
 /**
- * Reason Categories Table
+ * Change Reason Categories Table
  *
- * Groups amendment reasons into logical categories for organizational purposes.
+ * Groups change reasons into logical categories for organizational purposes.
  * Categories determine which reasons are applicable to which entity types.
  *
  * Examples:
@@ -32,11 +32,12 @@
 
 set schema 'ores';
 
-create table if not exists "ores"."reason_categories" (
+create table if not exists "ores"."change_reason_categories" (
     "code" text not null,
     "version" integer not null,
     "description" text not null,
     "modified_by" text not null,
+    "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (code, valid_from, valid_to),
@@ -48,23 +49,23 @@ create table if not exists "ores"."reason_categories" (
 );
 
 -- Unique constraint on version for current records ensures version uniqueness per entity
-create unique index if not exists reason_categories_version_unique_idx
-on "ores"."reason_categories" (code, version)
+create unique index if not exists change_reason_categories_version_unique_idx
+on "ores"."change_reason_categories" (code, version)
 where valid_to = ores.infinity_timestamp();
 
 -- Unique constraint on code for current records to support FK references
-create unique index if not exists reason_categories_code_current_idx
-on "ores"."reason_categories" (code)
+create unique index if not exists change_reason_categories_code_current_idx
+on "ores"."change_reason_categories" (code)
 where valid_to = ores.infinity_timestamp();
 
-create or replace function update_reason_categories()
+create or replace function update_change_reason_categories()
 returns trigger as $$
 declare
     current_version integer;
 begin
     -- Get the current version of the existing record (if any)
     select version into current_version
-    from "ores"."reason_categories"
+    from "ores"."change_reason_categories"
     where code = new.code
     and valid_to = ores.infinity_timestamp();
 
@@ -80,7 +81,7 @@ begin
         new.version = current_version + 1;
 
         -- Close the existing record
-        update "ores"."reason_categories"
+        update "ores"."change_reason_categories"
         set valid_to = current_timestamp
         where code = new.code
         and valid_to = ores.infinity_timestamp()
@@ -101,17 +102,17 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger update_reason_categories_trigger
-before insert on "ores"."reason_categories"
+create or replace trigger update_change_reason_categories_trigger
+before insert on "ores"."change_reason_categories"
 for each row
-execute function update_reason_categories();
+execute function update_change_reason_categories();
 
 -- Use a RULE instead of a trigger to avoid tuple modification conflicts
 -- Rules rewrite the query before execution, so there's no conflict with the DELETE
-create or replace rule delete_reason_categories_rule as
-on delete to "ores"."reason_categories"
+create or replace rule delete_change_reason_categories_rule as
+on delete to "ores"."change_reason_categories"
 do instead
-  update "ores"."reason_categories"
+  update "ores"."change_reason_categories"
   set valid_to = current_timestamp
   where code = old.code
   and valid_to = ores.infinity_timestamp();

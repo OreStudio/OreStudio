@@ -24,6 +24,7 @@
 #include <QFutureWatcher>
 #include "ores.qt/CurrencyMdiWindow.hpp"
 #include "ores.qt/ImageCache.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/CurrencyDetailDialog.hpp"
 #include "ores.qt/CurrencyHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
@@ -51,12 +52,14 @@ CurrencyController::CurrencyController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     ImageCache* imageCache,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, parent),
       allDetachableWindows_(allDetachableWindows),
       imageCache_(imageCache),
+      changeReasonCache_(changeReasonCache),
       currencyListWindow_(nullptr) {
     BOOST_LOG_SEV(lg(), debug) << "Currency controller created";
 
@@ -209,6 +212,9 @@ void CurrencyController::onAddNewRequested() {
     if (imageCache_) {
         detailDialog->setImageCache(imageCache_);
     }
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
+    }
 
     connect(detailDialog, &CurrencyDetailDialog::statusMessage,
             this, [this](const QString& message) {
@@ -281,6 +287,9 @@ void CurrencyController::onShowCurrencyDetails(
     }
     if (imageCache_) {
         detailDialog->setImageCache(imageCache_);
+    }
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     }
 
     connect(detailDialog, &CurrencyDetailDialog::statusMessage,
@@ -489,6 +498,9 @@ void CurrencyController::onOpenCurrencyVersion(
     }
     if (imageCache_) {
         detailDialog->setImageCache(imageCache_);
+    }
+    if (changeReasonCache_) {
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     }
 
     connect(detailDialog, &CurrencyDetailDialog::statusMessage,

@@ -199,12 +199,18 @@ void CountryHistoryDialog::onHistoryLoaded() {
             new QTableWidgetItem(relative_time_helper::format(country.recorded_at));
         auto* recordedByItem =
             new QTableWidgetItem(QString::fromStdString(country.recorded_by));
+        auto* changeReasonItem =
+            new QTableWidgetItem(QString::fromStdString(country.change_reason_code));
+        auto* commentaryItem =
+            new QTableWidgetItem(QString::fromStdString(country.change_commentary));
 
         versionItem->setIcon(cachedIcon);
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
         ui_->versionListWidget->setItem(i, 1, recordedAtItem);
         ui_->versionListWidget->setItem(i, 2, recordedByItem);
+        ui_->versionListWidget->setItem(i, 3, changeReasonItem);
+        ui_->versionListWidget->setItem(i, 4, commentaryItem);
     }
 
     if (!history_.empty())
@@ -335,26 +341,31 @@ void CountryHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->recordedAtValue->setText(relative_time_helper::format(country.recorded_at));
 }
 
-#define CHECK_DIFF_STRING(FIELD_NAME, FIELD) \
-    if (current.FIELD != previous.FIELD) { \
-        diffs.append({FIELD_NAME, { \
-            QString::fromStdString(previous.FIELD), \
-            QString::fromStdString(current.FIELD) \
-        }}); \
-    }
-
 CountryHistoryDialog::DiffResult CountryHistoryDialog::
 calculateDiff(const risk::domain::country& current,
     const risk::domain::country& previous) {
 
     DiffResult diffs;
 
+    // Helper to check string field differences
+    auto checkDiffString = [&diffs](const QString& fieldName,
+        const std::string& currentVal, const std::string& previousVal) {
+        if (currentVal != previousVal) {
+            diffs.append({fieldName, {QString::fromStdString(previousVal),
+                                      QString::fromStdString(currentVal)}});
+        }
+    };
+
     // Compare string fields
-    CHECK_DIFF_STRING("Alpha-2 Code", alpha2_code);
-    CHECK_DIFF_STRING("Alpha-3 Code", alpha3_code);
-    CHECK_DIFF_STRING("Numeric Code", numeric_code);
-    CHECK_DIFF_STRING("Name", name);
-    CHECK_DIFF_STRING("Official Name", official_name);
+    checkDiffString("Alpha-2 Code", current.alpha2_code, previous.alpha2_code);
+    checkDiffString("Alpha-3 Code", current.alpha3_code, previous.alpha3_code);
+    checkDiffString("Numeric Code", current.numeric_code, previous.numeric_code);
+    checkDiffString("Name", current.name, previous.name);
+    checkDiffString("Official Name", current.official_name, previous.official_name);
+
+    // Compare change management fields
+    checkDiffString("Change Reason", current.change_reason_code, previous.change_reason_code);
+    checkDiffString("Commentary", current.change_commentary, previous.change_commentary);
 
     // Compare image_id (flag)
     if (current.image_id != previous.image_id) {
@@ -370,8 +381,6 @@ calculateDiff(const risk::domain::country& current,
 
     return diffs;
 }
-
-#undef CHECK_DIFF_STRING
 
 void CountryHistoryDialog::setupToolbar() {
     toolBar_ = new QToolBar(this);

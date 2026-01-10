@@ -33,6 +33,9 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/MdiUtils.hpp"
 #include "ores.qt/FlagSelectorDialog.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.iam/domain/change_reason_constants.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.platform/time/datetime.hpp"
@@ -43,12 +46,13 @@ using comms::messaging::frame;
 using comms::messaging::message_type;
 using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
+namespace reason = iam::domain::change_reason_constants;
 
 CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     : QWidget(parent), ui_(new Ui::CountryDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), isStale_(false), flagChanged_(false),
       historicalVersion_(0), flagButton_(nullptr),
-      clientManager_(nullptr), imageCache_(nullptr),
+      clientManager_(nullptr), imageCache_(nullptr), changeReasonCache_(nullptr),
       currentHistoryIndex_(0),
       firstVersionAction_(nullptr), prevVersionAction_(nullptr),
       nextVersionAction_(nullptr), lastVersionAction_(nullptr) {
@@ -195,6 +199,10 @@ void CountryDetailDialog::setImageCache(ImageCache* imageCache) {
     }
 }
 
+void CountryDetailDialog::setChangeReasonCache(ChangeReasonCache* changeReasonCache) {
+    changeReasonCache_ = changeReasonCache;
+}
+
 CountryDetailDialog::~CountryDetailDialog() {
     const auto watchers = findChildren<QFutureWatcherBase*>();
     for (auto* watcher : watchers) {
@@ -232,6 +240,8 @@ void CountryDetailDialog::setCountry(const risk::domain::country& country) {
     ui_->recordedByEdit->setText(QString::fromStdString(country.recorded_by));
     ui_->recordedAtEdit->setText(QString::fromStdString(
         platform::time::datetime::format_time_point(country.recorded_at)));
+    ui_->changeReasonEdit->setText(QString::fromStdString(country.change_reason_code));
+    ui_->commentaryEdit->setText(QString::fromStdString(country.change_commentary));
 
     isDirty_ = false;
     flagChanged_ = false;
@@ -266,6 +276,8 @@ void CountryDetailDialog::clearDialog() {
     ui_->versionEdit->clear();
     ui_->recordedByEdit->clear();
     ui_->recordedAtEdit->clear();
+    ui_->changeReasonEdit->clear();
+    ui_->commentaryEdit->clear();
     pendingImageId_.clear();
 
     isDirty_ = false;
@@ -289,6 +301,39 @@ void CountryDetailDialog::onSaveClicked() {
                                << currentCountry_.alpha2_code;
 
     risk::domain::country country = getCountry();
+
+    // For updates (not creates), require change reason
+    if (!isAddMode_) {
+        if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
+            BOOST_LOG_SEV(lg(), warn) << "Change reasons not loaded, cannot save.";
+            emit errorMessage("Change reasons not loaded. Please try again.");
+            return;
+        }
+
+        // Get reasons for the "common" category that apply to amendments
+        auto reasons = changeReasonCache_->getReasonsForAmend(
+            std::string{reason::categories::common});
+        if (reasons.empty()) {
+            BOOST_LOG_SEV(lg(), warn) << "No change reasons available for common category.";
+            emit errorMessage("No change reasons available. Please contact administrator.");
+            return;
+        }
+
+        ChangeReasonDialog dialog(reasons, ChangeReasonDialog::OperationType::Amend,
+            isDirty_, this);
+        if (dialog.exec() != QDialog::Accepted) {
+            BOOST_LOG_SEV(lg(), debug) << "Save cancelled - change reason dialog rejected.";
+            return;
+        }
+
+        // Set the change reason on the country
+        country.change_reason_code = dialog.selectedReasonCode();
+        country.change_commentary = dialog.commentary();
+
+        BOOST_LOG_SEV(lg(), debug) << "Change reason selected: "
+                                   << country.change_reason_code
+                                   << ", commentary: " << country.change_commentary;
+    }
 
     QPointer<CountryDetailDialog> self = this;
     QFuture<FutureResult> future =
@@ -553,8 +598,10 @@ void CountryDetailDialog::updateSaveResetButtonState() {
         return;
     }
 
+    // In add mode, only enable save when dirty
+    // In edit mode, always enable save (for "touch" operations that update timestamp)
     if (saveAction_)
-        saveAction_->setEnabled(isDirty_);
+        saveAction_->setEnabled(isAddMode_ ? isDirty_ : true);
 
     if (deleteAction_)
         deleteAction_->setEnabled(!isAddMode_);

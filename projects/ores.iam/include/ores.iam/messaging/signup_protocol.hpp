@@ -34,7 +34,7 @@ namespace ores::iam::messaging {
  *
  * This message allows unauthenticated users to create their own accounts
  * when the system.user_signups feature flag is enabled. Unlike
- * create_account_request, this does not require admin privileges.
+ * save_account_request, this does not require admin privileges.
  *
  * The request will fail if:
  * - system.user_signups is disabled (signup_disabled error)

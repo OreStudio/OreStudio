@@ -25,6 +25,7 @@
 #include "ores.http/domain/jwt_claims.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/account_json.hpp"
+#include "ores.iam/domain/change_reason_constants.hpp"
 #include "ores.iam/domain/role_json.hpp"
 #include "ores.iam/domain/permission_json.hpp"
 #include "ores.iam/domain/permission.hpp"
@@ -47,6 +48,7 @@ namespace ores::http_server::routes {
 using namespace ores::logging;
 using namespace ores::http::domain;
 namespace asio = boost::asio;
+namespace reason = iam::domain::change_reason_constants;
 
 iam_routes::iam_routes(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
@@ -128,7 +130,7 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .auth_required()
         .query_param("offset", "integer", "", false, "Pagination offset", "0")
         .query_param("limit", "integer", "", false, "Maximum number of results", "100")
-        .response<iam::messaging::list_accounts_response>()
+        .response<iam::messaging::get_accounts_response>()
         .handler([this](const http_request& req) { return handle_list_accounts(req); });
     router->add_route(list_accounts.build());
     registry->register_route(list_accounts.build());
@@ -139,8 +141,8 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"accounts"})
         .auth_required()
         .roles({"Admin"})
-        .body<iam::messaging::create_account_request>()
-        .response<iam::messaging::create_account_response>()
+        .body<iam::messaging::save_account_request>()
+        .response<iam::messaging::save_account_response>()
         .handler([this](const http_request& req) { return handle_create_account(req); });
     router->add_route(create_account.build());
     registry->register_route(create_account.build());
@@ -162,8 +164,8 @@ void iam_routes::register_routes(std::shared_ptr<http::net::router> router,
         .tags({"accounts"})
         .auth_required()
         .roles({"Admin"})
-        .body<iam::messaging::update_account_request>()
-        .response<iam::messaging::update_account_response>()
+        .body<iam::messaging::save_account_request>()
+        .response<iam::messaging::save_account_response>()
         .handler([this](const http_request& req) { return handle_update_account(req); });
     router->add_route(update_account.build());
     registry->register_route(update_account.build());
@@ -644,10 +646,12 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
         iam::service::account_setup_service setup_service(account_service_, auth_service_);
         auto account = setup_service.create_account_with_role(
             admin_req->username, admin_req->email, admin_req->password,
-            "bootstrap", iam::domain::roles::admin);
+            "bootstrap", iam::domain::roles::admin,
+            "Initial admin account created during system bootstrap");
 
         // Exit bootstrap mode - updates database and shared cache
-        system_flags_->set_bootstrap_mode(false, "system");
+        system_flags_->set_bootstrap_mode(false, "system",
+            std::string{reason::codes::new_record}, "Bootstrap mode disabled after initial admin account created");
 
         BOOST_LOG_SEV(lg(), info)
             << "Created initial admin account with ID: " << account.id
@@ -685,7 +689,7 @@ asio::awaitable<http_response> iam_routes::handle_list_accounts(const http_reque
 
         auto accounts = account_service_.list_accounts(offset, limit);
 
-        iam::messaging::list_accounts_response resp;
+        iam::messaging::get_accounts_response resp;
         resp.accounts = accounts;
 
         co_return http_response::json(rfl::json::write(resp));
@@ -703,7 +707,7 @@ asio::awaitable<http_response> iam_routes::handle_create_account(const http_requ
         co_return auth.error();
     }
 
-    auto create_req = parse_body<iam::messaging::create_account_request>(req, "create_account");
+    auto create_req = parse_body<iam::messaging::save_account_request>(req, "create_account");
     if (!create_req) {
         co_return create_req.error();
     }
@@ -715,7 +719,7 @@ asio::awaitable<http_response> iam_routes::handle_create_account(const http_requ
             create_req->username, create_req->email,
             create_req->password, req.authenticated_user->username.value_or("system"));
 
-        iam::messaging::create_account_response resp;
+        iam::messaging::save_account_response resp;
         resp.account_id = account.id;
 
         co_return http_response::json(rfl::json::write(resp));
@@ -765,7 +769,7 @@ asio::awaitable<http_response> iam_routes::handle_update_account(const http_requ
         co_return http_response::bad_request("Account ID required");
     }
 
-    auto update_req = parse_body<iam::messaging::update_account_request>(req, "update_account");
+    auto update_req = parse_body<iam::messaging::save_account_request>(req, "update_account");
     if (!update_req) {
         co_return update_req.error();
     }
@@ -773,9 +777,11 @@ asio::awaitable<http_response> iam_routes::handle_update_account(const http_requ
     try {
         auto uuid = boost::uuids::string_generator()(account_id);
         bool success = account_service_.update_account(uuid, update_req->email,
-            req.authenticated_user->username.value_or("system"));
+            req.authenticated_user->username.value_or("system"),
+            update_req->change_reason_code,
+            update_req->change_commentary);
 
-        iam::messaging::update_account_response resp;
+        iam::messaging::save_account_response resp;
         resp.success = success;
 
         co_return http_response::json(rfl::json::write(resp));

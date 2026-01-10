@@ -50,8 +50,10 @@ begin
     ) then
         -- The update_feature_flags trigger will set version and valid_from/valid_to
         -- Cast boolean to integer for the enabled column
-        insert into ores.feature_flags (name, enabled, description, modified_by, valid_from, valid_to)
+        insert into ores.feature_flags (name, enabled, description, modified_by,
+            change_reason_code, change_commentary, valid_from, valid_to)
         values (p_name, p_enabled::int, p_description, 'system',
+                'system.new_record', 'System seed data',
                 current_timestamp, ores.infinity_timestamp());
         raise notice 'Created system flag: % (default: %)', p_name, p_enabled;
     else

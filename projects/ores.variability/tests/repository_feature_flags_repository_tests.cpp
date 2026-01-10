@@ -40,6 +40,8 @@ ores::variability::domain::feature_flags generate_feature_flag() {
     flag.enabled = faker::datatype::boolean();
     flag.description = std::string(faker::lorem::sentence());
     flag.recorded_by = std::string(faker::internet::username());
+    flag.change_reason_code = "system.test";
+    flag.change_commentary = "Synthetic test data";
     return flag;
 }
 

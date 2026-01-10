@@ -31,6 +31,7 @@ namespace ores::qt {
 
 class DetachableMdiSubWindow;
 class ImageCache;
+class ChangeReasonCache;
 
 /**
  * @brief Controller managing all country-related windows and operations.
@@ -54,6 +55,7 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         ImageCache* imageCache,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);
@@ -75,6 +77,7 @@ private slots:
 private:
     QList<DetachableMdiSubWindow*>& allDetachableWindows_;
     ImageCache* imageCache_;
+    ChangeReasonCache* changeReasonCache_;
     QPointer<DetachableMdiSubWindow> countryListWindow_;
 };
 

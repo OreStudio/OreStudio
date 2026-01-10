@@ -53,6 +53,8 @@ void serialize_currency(std::vector<std::byte>& buffer, const domain::currency& 
         writer::write_uuid(buffer, *currency.image_id);
     }
     writer::write_string(buffer, currency.recorded_by);
+    writer::write_string(buffer, currency.change_reason_code);
+    writer::write_string(buffer, currency.change_commentary);
     writer::write_string(buffer,
         ores::platform::time::datetime::format_time_point(currency.recorded_at));
 }
@@ -117,6 +119,14 @@ deserialize_currency(std::span<const std::byte>& data) {
     auto recorded_by = reader::read_string(data);
     if (!recorded_by) return std::unexpected(recorded_by.error());
     currency.recorded_by = *recorded_by;
+
+    auto change_reason_code = reader::read_string(data);
+    if (!change_reason_code) return std::unexpected(change_reason_code.error());
+    currency.change_reason_code = *change_reason_code;
+
+    auto change_commentary = reader::read_string(data);
+    if (!change_commentary) return std::unexpected(change_commentary.error());
+    currency.change_commentary = *change_commentary;
 
     auto recorded_at = reader::read_string(data);
     if (!recorded_at) return std::unexpected(recorded_at.error());

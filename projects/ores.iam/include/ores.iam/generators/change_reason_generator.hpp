@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,9 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+#ifndef ORES_IAM_GENERATORS_CHANGE_REASON_GENERATOR_HPP
+#define ORES_IAM_GENERATORS_CHANGE_REASON_GENERATOR_HPP
 
-drop rule if exists delete_amendment_reasons_rule on "ores"."amendment_reasons";
-drop trigger if exists update_amendment_reasons_trigger on "ores"."amendment_reasons";
-drop function if exists update_amendment_reasons();
-drop table if exists "ores"."amendment_reasons";
+#include <vector>
+#include "ores.iam/domain/change_reason.hpp"
+
+namespace ores::iam::generators {
+
+/**
+ * @brief Generates a synthetic change_reason.
+ */
+domain::change_reason generate_synthetic_change_reason();
+
+/**
+ * @brief Generates N synthetic change_reasons.
+ *
+ * @note c++ 23 generators are not supported on all compilers.
+ */
+std::vector<domain::change_reason>
+generate_synthetic_change_reasons(std::size_t n);
+
+}
+
+#endif

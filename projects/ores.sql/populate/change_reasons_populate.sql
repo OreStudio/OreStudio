@@ -19,9 +19,9 @@
  */
 
 /**
- * Amendment Reasons Population Script
+ * Change Reasons Population Script
  *
- * Seeds the database with reason categories and amendment reasons.
+ * Seeds the database with change reason categories and change reasons.
  * This script is idempotent.
  *
  * Taxonomy is aligned with regulatory standards:
@@ -32,6 +32,9 @@
  *
  * Categories:
  * - system: Auto-assigned reasons (not user-selectable)
+ *   - initial_load: System bootstrap or migration
+ *   - new_record: Normal operational record creation (human or machine)
+ *   - external_data_import: External vendor/file import (requires data lineage)
  * - common: Universal data quality reasons (BCBS 239 / FRTB aligned)
  * - trade: Trade lifecycle reasons (FINRA / MiFID II aligned)
  *
@@ -44,28 +47,34 @@ set schema 'ores';
 -- Helper Functions
 -- =============================================================================
 
--- Helper function to insert a reason category if it doesn't exist
-create or replace function ores.upsert_reason_category(
+-- Helper function to insert a change reason category if it doesn't exist
+create or replace function ores.upsert_change_reason_category(
     p_code text,
     p_description text
 ) returns void as $$
 begin
     if not exists (
-        select 1 from ores.reason_categories
+        select 1 from ores.change_reason_categories
         where code = p_code and valid_to = ores.infinity_timestamp()
     ) then
-        insert into ores.reason_categories (code, description, modified_by, valid_from, valid_to)
-        values (p_code, p_description, 'system',
-                current_timestamp, ores.infinity_timestamp());
-        raise notice 'Created reason category: %', p_code;
+        insert into ores.change_reason_categories (
+            code, description, modified_by, change_commentary,
+            valid_from, valid_to
+        )
+        values (
+            p_code, p_description, 'system',
+            'System seed data - standard regulatory taxonomy',
+            current_timestamp, ores.infinity_timestamp()
+        );
+        raise notice 'Created change reason category: %', p_code;
     else
-        raise notice 'Reason category already exists: %', p_code;
+        raise notice 'Change reason category already exists: %', p_code;
     end if;
 end;
 $$ language plpgsql;
 
--- Helper function to insert an amendment reason if it doesn't exist
-create or replace function ores.upsert_amendment_reason(
+-- Helper function to insert a change reason if it doesn't exist
+create or replace function ores.upsert_change_reason(
     p_code text,
     p_description text,
     p_category_code text,
@@ -76,58 +85,59 @@ create or replace function ores.upsert_amendment_reason(
 ) returns void as $$
 begin
     if not exists (
-        select 1 from ores.amendment_reasons
+        select 1 from ores.change_reasons
         where code = p_code and valid_to = ores.infinity_timestamp()
     ) then
-        insert into ores.amendment_reasons (
+        insert into ores.change_reasons (
             code, description, category_code,
             applies_to_amend, applies_to_delete, requires_commentary, display_order,
-            modified_by, valid_from, valid_to
+            modified_by, change_commentary, valid_from, valid_to
         )
         values (
             p_code, p_description, p_category_code,
             p_applies_to_amend, p_applies_to_delete, p_requires_commentary, p_display_order,
-            'system', current_timestamp, ores.infinity_timestamp()
+            'system', 'System seed data - standard regulatory taxonomy',
+            current_timestamp, ores.infinity_timestamp()
         );
-        raise notice 'Created amendment reason: %', p_code;
+        raise notice 'Created change reason: %', p_code;
     else
-        raise notice 'Amendment reason already exists: %', p_code;
+        raise notice 'Change reason already exists: %', p_code;
     end if;
 end;
 $$ language plpgsql;
 
 -- =============================================================================
--- Reason Categories
+-- Change Reason Categories
 -- =============================================================================
 
-\echo '--- Reason Categories ---'
+\echo '--- Change Reason Categories ---'
 
-select ores.upsert_reason_category(
+select ores.upsert_change_reason_category(
     'system',
     'System-generated reasons for automatic operations (not user-selectable)'
 );
 
-select ores.upsert_reason_category(
+select ores.upsert_change_reason_category(
     'common',
     'Universal data quality reasons aligned with BCBS 239 and FRTB standards'
 );
 
-select ores.upsert_reason_category(
+select ores.upsert_change_reason_category(
     'trade',
     'Trade lifecycle reasons aligned with FINRA and MiFID II standards'
 );
 
 -- =============================================================================
--- Amendment Reasons: System Category
+-- Change Reasons: System Category
 -- =============================================================================
 
 \echo ''
-\echo '--- Amendment Reasons: System ---'
+\echo '--- Change Reasons: System ---'
 
 -- System reasons (auto-assigned, not user-selectable)
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'system.initial_load',
-    'Initial record creation',
+    'Initial system bootstrap or migration',
     'system',
     false,  -- not for amend
     false,  -- not for delete
@@ -135,14 +145,34 @@ select ores.upsert_amendment_reason(
     0       -- display order
 );
 
+select ores.upsert_change_reason(
+    'system.new_record',
+    'New record created during normal operations',
+    'system',
+    false,  -- not for amend
+    false,  -- not for delete
+    false,  -- no commentary required
+    10      -- display order
+);
+
+select ores.upsert_change_reason(
+    'system.external_data_import',
+    'External data import (requires data lineage)',
+    'system',
+    true,   -- applies to amend (imports can update existing records)
+    false,  -- not for delete
+    true,   -- commentary REQUIRED (data lineage)
+    20      -- display order
+);
+
 -- =============================================================================
--- Amendment Reasons: Common Category (BCBS 239 / FRTB aligned)
+-- Change Reasons: Common Category (BCBS 239 / FRTB aligned)
 -- =============================================================================
 
 \echo ''
-\echo '--- Amendment Reasons: Common (BCBS 239 / FRTB) ---'
+\echo '--- Change Reasons: Common (BCBS 239 / FRTB) ---'
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'common.non_material_update',
     'Non-material update (Touch)',
     'common',
@@ -152,7 +182,7 @@ select ores.upsert_amendment_reason(
     10
 );
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'common.rectification',
     'User/Booking Error',
     'common',
@@ -162,7 +192,7 @@ select ores.upsert_amendment_reason(
     20
 );
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'common.duplicate',
     'Duplicate Record',
     'common',
@@ -172,7 +202,7 @@ select ores.upsert_amendment_reason(
     30
 );
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'common.stale_data',
     'Data not updated within required liquidity horizon',
     'common',
@@ -182,7 +212,7 @@ select ores.upsert_amendment_reason(
     40
 );
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'common.outlier_correction',
     'Manual override after plausibility check failure',
     'common',
@@ -192,7 +222,7 @@ select ores.upsert_amendment_reason(
     50
 );
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'common.feed_failure',
     'Upstream vendor/API data issue',
     'common',
@@ -202,7 +232,7 @@ select ores.upsert_amendment_reason(
     60
 );
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'common.mapping_error',
     'Incorrect ID translation (e.g., ISIN to FIGI)',
     'common',
@@ -212,7 +242,7 @@ select ores.upsert_amendment_reason(
     70
 );
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'common.judgmental_override',
     'Expert judgment when market prices unavailable',
     'common',
@@ -222,7 +252,7 @@ select ores.upsert_amendment_reason(
     80
 );
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'common.regulatory',
     'Mandatory compliance adjustment',
     'common',
@@ -232,7 +262,7 @@ select ores.upsert_amendment_reason(
     90
 );
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'common.other',
     'Exceptional (requires audit note)',
     'common',
@@ -243,13 +273,13 @@ select ores.upsert_amendment_reason(
 );
 
 -- =============================================================================
--- Amendment Reasons: Trade Category (FINRA / MiFID II aligned)
+-- Change Reasons: Trade Category (FINRA / MiFID II aligned)
 -- =============================================================================
 
 \echo ''
-\echo '--- Amendment Reasons: Trade (FINRA / MiFID II) ---'
+\echo '--- Change Reasons: Trade (FINRA / MiFID II) ---'
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'trade.fat_finger',
     'Erroneous execution (wrong quantity/price)',
     'trade',
@@ -259,7 +289,7 @@ select ores.upsert_amendment_reason(
     10
 );
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'trade.system_malfunction',
     'Technical glitch or algorithm issue',
     'trade',
@@ -269,7 +299,7 @@ select ores.upsert_amendment_reason(
     20
 );
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'trade.corporate_action',
     'Stock split, dividend, or merger adjustment',
     'trade',
@@ -279,7 +309,7 @@ select ores.upsert_amendment_reason(
     30
 );
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'trade.allocation_swap',
     'House to client sub-account reallocation',
     'trade',
@@ -289,7 +319,7 @@ select ores.upsert_amendment_reason(
     40
 );
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'trade.re_booking',
     'Wrong legal entity correction',
     'trade',
@@ -299,7 +329,7 @@ select ores.upsert_amendment_reason(
     50
 );
 
-select ores.upsert_amendment_reason(
+select ores.upsert_change_reason(
     'trade.other',
     'Exceptional (requires audit note)',
     'trade',
@@ -313,8 +343,8 @@ select ores.upsert_amendment_reason(
 -- Cleanup
 -- =============================================================================
 
-drop function ores.upsert_reason_category(text, text);
-drop function ores.upsert_amendment_reason(text, text, text, boolean, boolean, boolean, integer);
+drop function ores.upsert_change_reason_category(text, text);
+drop function ores.upsert_change_reason(text, text, text, boolean, boolean, boolean, integer);
 
 -- =============================================================================
 -- Summary
@@ -323,15 +353,15 @@ drop function ores.upsert_amendment_reason(text, text, text, boolean, boolean, b
 \echo ''
 \echo '--- Summary ---'
 
-select 'Reason Categories' as entity, count(*) as count
-from ores.reason_categories where valid_to = ores.infinity_timestamp()
+select 'Change Reason Categories' as entity, count(*) as count
+from ores.change_reason_categories where valid_to = ores.infinity_timestamp()
 union all
-select 'Amendment Reasons (system)', count(*)
-from ores.amendment_reasons where category_code = 'system' and valid_to = ores.infinity_timestamp()
+select 'Change Reasons (system)', count(*)
+from ores.change_reasons where category_code = 'system' and valid_to = ores.infinity_timestamp()
 union all
-select 'Amendment Reasons (common)', count(*)
-from ores.amendment_reasons where category_code = 'common' and valid_to = ores.infinity_timestamp()
+select 'Change Reasons (common)', count(*)
+from ores.change_reasons where category_code = 'common' and valid_to = ores.infinity_timestamp()
 union all
-select 'Amendment Reasons (trade)', count(*)
-from ores.amendment_reasons where category_code = 'trade' and valid_to = ores.infinity_timestamp()
+select 'Change Reasons (trade)', count(*)
+from ores.change_reasons where category_code = 'trade' and valid_to = ores.infinity_timestamp()
 order by entity;

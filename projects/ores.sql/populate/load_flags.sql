@@ -27,13 +27,16 @@
 
 -- Create the 'flag' tag if it doesn't exist
 -- This tag is used to categorize flag images loaded by flags_populate.sql
-INSERT INTO ores.tags (tag_id, version, name, description, modified_by, valid_from, valid_to)
+INSERT INTO ores.tags (tag_id, version, name, description, modified_by,
+    change_reason_code, change_commentary, valid_from, valid_to)
 SELECT
     gen_random_uuid(),
     0,
     'flag',
     'Country and region flag images',
     'system',
+    'system.new_record',
+    'System seed data',
     CURRENT_TIMESTAMP,
     ores.infinity_timestamp()
 WHERE NOT EXISTS (

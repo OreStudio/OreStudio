@@ -140,6 +140,26 @@ Start recording, capture session.
 
 *Usage*: Recording controls. Filled indicates actively recording.
 
+*** Reload
+Refresh data from server, reload content.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_clockwise_16_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_clockwise_16_filled.svg]]
+
+*Usage*: Reload buttons, refresh from server, update data. Use 16px size for
+toolbar buttons. Distinct from Sync (bidirectional) - Reload implies fetching
+fresh data from source.
+
+*** Redo
+Redo last undone action, restore previous state.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_clockwise_16_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_arrow_clockwise_16_filled.svg]]
+
+*Usage*: Redo buttons in edit contexts. Pairs with Undo
+(arrow_rotate_counterclockwise). Both Reload and Redo use the same icon; context
+determines meaning.
+
 ** Navigation
 
 Icons for directional movement and navigation controls.
@@ -429,6 +449,8 @@ Text validation, spell check, language processing.
 | Cancel/Close         | dismiss_20                 | Default | Active |
 | Favorite             | star_20                    | Off     | On     |
 | Generate             | wand_20                    | Default | Active |
+| Reload               | arrow_clockwise_16         | Default | Active |
+| Redo                 | arrow_clockwise_16         | Default | Active |
 | Back                 | arrow_left_20              | Default | Active |
 | Forward              | arrow_right_20             | Default | Active |
 | Download             | arrow_download_20          | Default | Active |

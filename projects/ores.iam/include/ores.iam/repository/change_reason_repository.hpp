@@ -91,6 +91,13 @@ public:
     std::uint32_t get_total_count();
 
     /**
+     * @brief Reads all historical versions of a change_reason by code.
+     * @param code The change reason code to look up
+     * @return Vector of all versions, ordered by version descending
+     */
+    std::vector<domain::change_reason> read_all(const std::string& code);
+
+    /**
      * @brief Deletes a change_reason by closing its temporal validity.
      */
     void remove(const std::string& code);

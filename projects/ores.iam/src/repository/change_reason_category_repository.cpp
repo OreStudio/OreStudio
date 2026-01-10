@@ -133,6 +133,23 @@ std::uint32_t change_reason_category_repository::get_total_count() {
     return count;
 }
 
+std::vector<domain::change_reason_category>
+change_reason_category_repository::read_all(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all change_reason_category versions. Code: "
+                               << code;
+
+    const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
+        where("code"_c == code) |
+        order_by("version"_c.desc());
+
+    return execute_read_query<change_reason_category_entity,
+                              domain::change_reason_category>(ctx_, query,
+        [](const auto& entities) {
+            return change_reason_category_mapper::map(entities);
+        },
+        lg(), "Reading all change_reason_category versions by code.");
+}
+
 void change_reason_category_repository::remove(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing change_reason_category from database: "
                                << code;

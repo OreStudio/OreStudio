@@ -70,6 +70,15 @@ signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void showReasonDetails(const iam::domain::change_reason& reason);
+    void addNewRequested();
+    void reasonDeleted(const QString& code);
+    void showReasonHistory(const QString& code);
+
+public slots:
+    void addNew();
+    void editSelected();
+    void deleteSelected();
+    void viewHistorySelected();
 
 private slots:
     void onDataLoaded();
@@ -83,6 +92,7 @@ private:
     void setupTable();
     void setupConnections();
     void startPulseAnimation();
+    void updateActionStates();
 
     ClientManager* clientManager_;
     QString username_;
@@ -94,7 +104,10 @@ private:
 
     // Toolbar actions
     QAction* reloadAction_;
-    QAction* viewDetailsAction_;
+    QAction* addAction_;
+    QAction* editAction_;
+    QAction* deleteAction_;
+    QAction* historyAction_;
 
     // Stale indicator
     QIcon normalReloadIcon_;

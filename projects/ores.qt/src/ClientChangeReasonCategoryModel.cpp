@@ -23,7 +23,7 @@
 #include <QBrush>
 #include "ores.iam/messaging/change_management_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
@@ -79,11 +79,8 @@ QVariant ClientChangeReasonCategoryModel::data(
             return category.version;
         case RecordedBy:
             return QString::fromStdString(category.recorded_by);
-        case RecordedAt: {
-            auto formatted = platform::time::datetime::format_time_point(
-                category.recorded_at);
-            return QString::fromStdString(formatted);
-        }
+        case RecordedAt:
+            return relative_time_helper::format(category.recorded_at);
         default:
             return {};
         }

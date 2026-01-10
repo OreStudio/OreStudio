@@ -23,6 +23,7 @@
 #include <QMessageBox>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ChangeReasonMdiWindow.hpp"
+#include "ores.qt/ChangeReasonDetailDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.iam/eventing/change_reason_changed_event.hpp"
@@ -108,6 +109,10 @@ void ChangeReasonController::showListWindow() {
             this, &ChangeReasonController::errorMessage);
     connect(listWindow_, &ChangeReasonMdiWindow::showReasonDetails,
             this, &ChangeReasonController::onShowDetails);
+    connect(listWindow_, &ChangeReasonMdiWindow::addNewRequested,
+            this, &ChangeReasonController::onAddNewRequested);
+    connect(listWindow_, &ChangeReasonMdiWindow::showReasonHistory,
+            this, &ChangeReasonController::onShowHistory);
 
     // Create MDI subwindow
     const QColor iconColor(220, 220, 220);
@@ -159,6 +164,72 @@ void ChangeReasonController::onShowDetails(
     showDetailWindow(reason);
 }
 
+void ChangeReasonController::onAddNewRequested() {
+    BOOST_LOG_SEV(lg(), info) << "Add new change reason requested";
+    showAddWindow();
+}
+
+void ChangeReasonController::onShowHistory(const QString& code) {
+    BOOST_LOG_SEV(lg(), info) << "Show history for change reason: "
+                              << code.toStdString();
+    // History dialog will be implemented in Phase 4
+    QMessageBox::information(mainWindow_, "History",
+        QString("History for change reason '%1' - coming soon").arg(code));
+}
+
+void ChangeReasonController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new change reason";
+
+    const QColor iconColor(220, 220, 220);
+
+    auto* detailDialog = new ChangeReasonDetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setCreateMode(true);
+
+    connect(detailDialog, &ChangeReasonDetailDialog::statusMessage,
+            this, &ChangeReasonController::statusMessage);
+    connect(detailDialog, &ChangeReasonDetailDialog::errorMessage,
+            this, &ChangeReasonController::errorMessage);
+    connect(detailDialog, &ChangeReasonDetailDialog::changeReasonSaved,
+            this, [this](const QString& code) {
+        BOOST_LOG_SEV(lg(), info) << "Change reason saved: " << code.toStdString();
+        if (listWindow_) {
+            listWindow_->reload();
+        }
+    });
+
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle("New Change Reason");
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_note_edit_20_regular.svg", iconColor));
+
+    allDetachableWindows_.append(detailWindow);
+    QPointer<ChangeReasonController> self = this;
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, detailWindow]() {
+        if (self)
+            self->allDetachableWindows_.removeAll(detailWindow);
+    });
+
+    mdiArea_->addSubWindow(detailWindow);
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
+    detailWindow->adjustSize();
+
+    // If parent list is detached, detach this too
+    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
+        detailWindow->show();
+        detailWindow->detach();
+        QPoint parentPos = listMdiSubWindow_->pos();
+        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else {
+        detailWindow->show();
+    }
+}
+
 void ChangeReasonController::showDetailWindow(
     const iam::domain::change_reason& reason) {
 
@@ -170,32 +241,69 @@ void ChangeReasonController::showDetailWindow(
         return;
     }
 
-    // For now, show a simple message box with reason details
-    // Full detail dialog can be added later
-    QString details = QString(
-        "<h3>Change Reason</h3>"
-        "<p><b>Code:</b> %1</p>"
-        "<p><b>Description:</b> %2</p>"
-        "<p><b>Category:</b> %3</p>"
-        "<p><b>Applies to Amend:</b> %4</p>"
-        "<p><b>Applies to Delete:</b> %5</p>"
-        "<p><b>Requires Commentary:</b> %6</p>"
-        "<p><b>Display Order:</b> %7</p>"
-        "<p><b>Version:</b> %8</p>"
-        "<p><b>Recorded By:</b> %9</p>"
-        "<p><b>Commentary:</b> %10</p>")
-        .arg(QString::fromStdString(reason.code))
-        .arg(QString::fromStdString(reason.description))
-        .arg(QString::fromStdString(reason.category_code))
-        .arg(reason.applies_to_amend ? "Yes" : "No")
-        .arg(reason.applies_to_delete ? "Yes" : "No")
-        .arg(reason.requires_commentary ? "Yes" : "No")
-        .arg(reason.display_order)
-        .arg(reason.version)
-        .arg(QString::fromStdString(reason.recorded_by))
-        .arg(QString::fromStdString(reason.change_commentary));
+    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << reason.code;
 
-    QMessageBox::information(mainWindow_, "Reason Details", details);
+    const QColor iconColor(220, 220, 220);
+
+    auto* detailDialog = new ChangeReasonDetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setCreateMode(false);
+    detailDialog->setChangeReason(reason);
+
+    connect(detailDialog, &ChangeReasonDetailDialog::statusMessage,
+            this, &ChangeReasonController::statusMessage);
+    connect(detailDialog, &ChangeReasonDetailDialog::errorMessage,
+            this, &ChangeReasonController::errorMessage);
+    connect(detailDialog, &ChangeReasonDetailDialog::changeReasonSaved,
+            this, [this](const QString& code) {
+        BOOST_LOG_SEV(lg(), info) << "Change reason saved: " << code.toStdString();
+        if (listWindow_) {
+            listWindow_->reload();
+        }
+    });
+    connect(detailDialog, &ChangeReasonDetailDialog::changeReasonDeleted,
+            this, [this, key](const QString& code) {
+        BOOST_LOG_SEV(lg(), info) << "Change reason deleted: " << code.toStdString();
+        if (listWindow_) {
+            listWindow_->reload();
+        }
+    });
+
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(QString("Change Reason: %1").arg(identifier));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_note_edit_20_regular.svg", iconColor));
+
+    // Track window
+    track_window(key, detailWindow);
+    allDetachableWindows_.append(detailWindow);
+
+    QPointer<ChangeReasonController> self = this;
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, detailWindow, key]() {
+        if (self) {
+            self->untrack_window(key);
+            self->allDetachableWindows_.removeAll(detailWindow);
+        }
+    });
+
+    mdiArea_->addSubWindow(detailWindow);
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
+    detailWindow->adjustSize();
+
+    // If parent list is detached, detach this too
+    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
+        detailWindow->show();
+        detailWindow->detach();
+        QPoint parentPos = listMdiSubWindow_->pos();
+        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else {
+        detailWindow->show();
+    }
 }
 
 void ChangeReasonController::onNotificationReceived(

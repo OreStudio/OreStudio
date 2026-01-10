@@ -57,7 +57,6 @@ public:
      */
     enum Column {
         Code,
-        Description,
         CategoryCode,
         AppliesToAmend,
         AppliesToDelete,

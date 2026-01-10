@@ -166,8 +166,13 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 21.1 adds change management messages for querying the catalog of valid
 // change reasons. New messages: get_change_reason_categories_request/response,
 // get_change_reasons_request/response, get_change_reasons_by_category_request/response.
+//
+// Version 21.2 adds CRUD and history operations for change reasons and categories.
+// New messages: save_change_reason_request/response, delete_change_reason_request/response,
+// get_change_reason_history_request/response, save_change_reason_category_request/response,
+// delete_change_reason_category_request/response, get_change_reason_category_history_request/response.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 21;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 2;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -296,13 +301,25 @@ enum class message_type {
     get_active_sessions_request = 0x2044,
     get_active_sessions_response = 0x2045,
 
-    // Change management messages (0x2050 - 0x205F)
+    // Change management messages (0x2050 - 0x206F)
     get_change_reason_categories_request = 0x2050,
     get_change_reason_categories_response = 0x2051,
     get_change_reasons_request = 0x2052,
     get_change_reasons_response = 0x2053,
     get_change_reasons_by_category_request = 0x2054,
     get_change_reasons_by_category_response = 0x2055,
+    save_change_reason_request = 0x2056,
+    save_change_reason_response = 0x2057,
+    delete_change_reason_request = 0x2058,
+    delete_change_reason_response = 0x2059,
+    get_change_reason_history_request = 0x205A,
+    get_change_reason_history_response = 0x205B,
+    save_change_reason_category_request = 0x205C,
+    save_change_reason_category_response = 0x205D,
+    delete_change_reason_category_request = 0x205E,
+    delete_change_reason_category_response = 0x205F,
+    get_change_reason_category_history_request = 0x2060,
+    get_change_reason_category_history_response = 0x2061,
 
     // Variability subsystem messages (0x3000 - 0x3FFF)
     get_feature_flags_request = 0x3000,  // Renamed from list_feature_flags in v21.0

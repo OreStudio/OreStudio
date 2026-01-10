@@ -23,6 +23,7 @@
 #include <QMessageBox>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ChangeReasonCategoryMdiWindow.hpp"
+#include "ores.qt/ChangeReasonCategoryDetailDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.iam/eventing/change_reason_category_changed_event.hpp"
@@ -108,6 +109,10 @@ void ChangeReasonCategoryController::showListWindow() {
             this, &ChangeReasonCategoryController::errorMessage);
     connect(listWindow_, &ChangeReasonCategoryMdiWindow::showCategoryDetails,
             this, &ChangeReasonCategoryController::onShowDetails);
+    connect(listWindow_, &ChangeReasonCategoryMdiWindow::addNewRequested,
+            this, &ChangeReasonCategoryController::onAddNewRequested);
+    connect(listWindow_, &ChangeReasonCategoryMdiWindow::showCategoryHistory,
+            this, &ChangeReasonCategoryController::onShowHistory);
 
     // Create MDI subwindow
     const QColor iconColor(220, 220, 220);
@@ -159,6 +164,72 @@ void ChangeReasonCategoryController::onShowDetails(
     showDetailWindow(category);
 }
 
+void ChangeReasonCategoryController::onAddNewRequested() {
+    BOOST_LOG_SEV(lg(), info) << "Add new category requested";
+    showAddWindow();
+}
+
+void ChangeReasonCategoryController::onShowHistory(const QString& code) {
+    BOOST_LOG_SEV(lg(), info) << "Show history for category: "
+                              << code.toStdString();
+    // History dialog will be implemented in Phase 4
+    QMessageBox::information(mainWindow_, "History",
+        QString("History for category '%1' - coming soon").arg(code));
+}
+
+void ChangeReasonCategoryController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new category";
+
+    const QColor iconColor(220, 220, 220);
+
+    auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setCreateMode(true);
+
+    connect(detailDialog, &ChangeReasonCategoryDetailDialog::statusMessage,
+            this, &ChangeReasonCategoryController::statusMessage);
+    connect(detailDialog, &ChangeReasonCategoryDetailDialog::errorMessage,
+            this, &ChangeReasonCategoryController::errorMessage);
+    connect(detailDialog, &ChangeReasonCategoryDetailDialog::categorySaved,
+            this, [this](const QString& code) {
+        BOOST_LOG_SEV(lg(), info) << "Category saved: " << code.toStdString();
+        if (listWindow_) {
+            listWindow_->reload();
+        }
+    });
+
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle("New Category");
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
+
+    allDetachableWindows_.append(detailWindow);
+    QPointer<ChangeReasonCategoryController> self = this;
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, detailWindow]() {
+        if (self)
+            self->allDetachableWindows_.removeAll(detailWindow);
+    });
+
+    mdiArea_->addSubWindow(detailWindow);
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
+    detailWindow->adjustSize();
+
+    // If parent list is detached, detach this too
+    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
+        detailWindow->show();
+        detailWindow->detach();
+        QPoint parentPos = listMdiSubWindow_->pos();
+        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else {
+        detailWindow->show();
+    }
+}
+
 void ChangeReasonCategoryController::showDetailWindow(
     const iam::domain::change_reason_category& category) {
 
@@ -170,22 +241,69 @@ void ChangeReasonCategoryController::showDetailWindow(
         return;
     }
 
-    // For now, show a simple message box with category details
-    // Full detail dialog can be added later
-    QString details = QString(
-        "<h3>Change Reason Category</h3>"
-        "<p><b>Code:</b> %1</p>"
-        "<p><b>Description:</b> %2</p>"
-        "<p><b>Version:</b> %3</p>"
-        "<p><b>Recorded By:</b> %4</p>"
-        "<p><b>Commentary:</b> %5</p>")
-        .arg(QString::fromStdString(category.code))
-        .arg(QString::fromStdString(category.description))
-        .arg(category.version)
-        .arg(QString::fromStdString(category.recorded_by))
-        .arg(QString::fromStdString(category.change_commentary));
+    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << category.code;
 
-    QMessageBox::information(mainWindow_, "Category Details", details);
+    const QColor iconColor(220, 220, 220);
+
+    auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setCreateMode(false);
+    detailDialog->setCategory(category);
+
+    connect(detailDialog, &ChangeReasonCategoryDetailDialog::statusMessage,
+            this, &ChangeReasonCategoryController::statusMessage);
+    connect(detailDialog, &ChangeReasonCategoryDetailDialog::errorMessage,
+            this, &ChangeReasonCategoryController::errorMessage);
+    connect(detailDialog, &ChangeReasonCategoryDetailDialog::categorySaved,
+            this, [this](const QString& code) {
+        BOOST_LOG_SEV(lg(), info) << "Category saved: " << code.toStdString();
+        if (listWindow_) {
+            listWindow_->reload();
+        }
+    });
+    connect(detailDialog, &ChangeReasonCategoryDetailDialog::categoryDeleted,
+            this, [this, key](const QString& code) {
+        BOOST_LOG_SEV(lg(), info) << "Category deleted: " << code.toStdString();
+        if (listWindow_) {
+            listWindow_->reload();
+        }
+    });
+
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(QString("Category: %1").arg(identifier));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
+
+    // Track window
+    track_window(key, detailWindow);
+    allDetachableWindows_.append(detailWindow);
+
+    QPointer<ChangeReasonCategoryController> self = this;
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, detailWindow, key]() {
+        if (self) {
+            self->untrack_window(key);
+            self->allDetachableWindows_.removeAll(detailWindow);
+        }
+    });
+
+    mdiArea_->addSubWindow(detailWindow);
+    detailWindow->setWindowFlags(detailWindow->windowFlags()
+        & ~Qt::WindowMaximizeButtonHint);
+    detailWindow->adjustSize();
+
+    // If parent list is detached, detach this too
+    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
+        detailWindow->show();
+        detailWindow->detach();
+        QPoint parentPos = listMdiSubWindow_->pos();
+        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
+    } else {
+        detailWindow->show();
+    }
 }
 
 void ChangeReasonCategoryController::onNotificationReceived(

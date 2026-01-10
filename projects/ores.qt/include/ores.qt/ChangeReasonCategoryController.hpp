@@ -65,11 +65,14 @@ public:
 
 private slots:
     void onShowDetails(const iam::domain::change_reason_category& category);
+    void onAddNewRequested();
+    void onShowHistory(const QString& code);
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
                                 const QStringList& entityIds);
 
 private:
     void showDetailWindow(const iam::domain::change_reason_category& category);
+    void showAddWindow();
 
 private:
     ChangeReasonCategoryMdiWindow* listWindow_;

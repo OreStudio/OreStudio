@@ -125,9 +125,9 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionFeatureFlags->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
     ui_->ActionChangeReasonCategories->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_folder_20_regular.svg", iconColor));
+        ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
     ui_->ActionChangeReasons->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_text_bullet_list_20_regular.svg", iconColor));
+        ":/icons/ic_fluent_note_edit_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(

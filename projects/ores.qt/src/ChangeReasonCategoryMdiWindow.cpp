@@ -68,15 +68,16 @@ void ChangeReasonCategoryMdiWindow::setupUi() {
 void ChangeReasonCategoryMdiWindow::setupToolbar() {
     toolbar_ = new QToolBar(this);
     toolbar_->setMovable(false);
+    toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     toolbar_->setIconSize(QSize(20, 20));
 
-    const QColor iconColor(200, 200, 200);
+    const QColor iconColor(220, 220, 220);
     const QColor staleColor(255, 165, 0);  // Orange for stale
 
     normalReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor);
+        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor);
     staleReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_sync_20_regular.svg", staleColor);
+        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", staleColor);
 
     reloadAction_ = toolbar_->addAction(normalReloadIcon_, tr("Reload"));
     reloadAction_->setToolTip(tr("Reload categories from server"));

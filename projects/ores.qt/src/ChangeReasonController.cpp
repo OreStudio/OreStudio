@@ -115,7 +115,7 @@ void ChangeReasonController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Change Reasons");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_text_bullet_list_20_regular.svg", iconColor));
+        ":/icons/ic_fluent_note_edit_20_regular.svg", iconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 

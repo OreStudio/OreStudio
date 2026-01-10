@@ -314,7 +314,7 @@
   <action name="ActionChangeReasons">
    <property name="icon">
     <iconset>
-     <normaloff>:/icons/ic_fluent_text_bullet_list_20_regular.svg</normaloff>:/icons/ic_fluent_text_bullet_list_20_regular.svg</iconset>
+     <normaloff>:/icons/ic_fluent_note_edit_20_regular.svg</normaloff>:/icons/ic_fluent_note_edit_20_regular.svg</iconset>
    </property>
    <property name="text">
     <string>Change &amp;Reasons</string>

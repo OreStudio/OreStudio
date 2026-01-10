@@ -64,11 +64,15 @@ public:
      *
      * @param reasons List of applicable change reasons
      * @param operation Type of operation (Amend or Delete)
+     * @param hasFieldChanges True if any entity fields have been modified. When false,
+     *        this is a "touch" operation and only "common.non_material_update" is valid.
+     *        When true, "common.non_material_update" is disabled.
      * @param parent Parent widget
      */
     explicit ChangeReasonDialog(
         const std::vector<iam::domain::change_reason>& reasons,
         OperationType operation,
+        bool hasFieldChanges,
         QWidget* parent = nullptr);
 
     ~ChangeReasonDialog() override = default;
@@ -98,6 +102,7 @@ private:
 
     std::vector<iam::domain::change_reason> reasons_;
     OperationType operation_;
+    bool hasFieldChanges_;
 
     QComboBox* reasonCombo_;
     QLabel* descriptionLabel_;

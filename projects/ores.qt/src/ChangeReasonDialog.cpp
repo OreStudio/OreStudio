@@ -23,22 +23,36 @@
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QGroupBox>
+#include <QStandardItemModel>
 
 namespace ores::qt {
 
 ChangeReasonDialog::ChangeReasonDialog(
     const std::vector<iam::domain::change_reason>& reasons,
     OperationType operation,
+    bool hasFieldChanges,
     QWidget* parent)
     : QDialog(parent),
       reasons_(reasons),
-      operation_(operation) {
+      operation_(operation),
+      hasFieldChanges_(hasFieldChanges) {
 
     setupUi();
 
-    // Initialize with first reason if available
+    // Initialize with first enabled reason if available
     if (!reasons_.empty()) {
-        onReasonChanged(0);
+        // Find first enabled item
+        for (int i = 0; i < reasonCombo_->count(); ++i) {
+            auto* model = qobject_cast<QStandardItemModel*>(reasonCombo_->model());
+            if (model) {
+                QStandardItem* item = model->item(i);
+                if (item && item->isEnabled()) {
+                    reasonCombo_->setCurrentIndex(i);
+                    onReasonChanged(i);
+                    break;
+                }
+            }
+        }
     }
 }
 
@@ -67,10 +81,39 @@ void ChangeReasonDialog::setupUi() {
     // Reason combo box
     reasonCombo_ = new QComboBox(this);
     reasonCombo_->setMinimumWidth(300);
-    for (const auto& reason : reasons_) {
-        // Show code and brief description in combo
+
+    // The touch reason code - only valid when no fields have changed
+    static const std::string touchReasonCode = "common.non_material_update";
+
+    for (std::size_t i = 0; i < reasons_.size(); ++i) {
+        const auto& reason = reasons_[i];
         QString displayText = QString::fromStdString(reason.code);
         reasonCombo_->addItem(displayText, QString::fromStdString(reason.code));
+
+        // Get the model to enable/disable items
+        auto* model = qobject_cast<QStandardItemModel*>(reasonCombo_->model());
+        if (model) {
+            QStandardItem* item = model->item(static_cast<int>(i));
+            if (item) {
+                bool isTouchReason = (reason.code == touchReasonCode);
+
+                // Touch reason is only valid when no fields changed
+                // Other reasons are only valid when fields have changed
+                if (hasFieldChanges_) {
+                    // Fields changed: disable touch, enable others
+                    item->setEnabled(!isTouchReason);
+                    if (isTouchReason) {
+                        item->setToolTip(tr("Not available when fields have been modified"));
+                    }
+                } else {
+                    // No fields changed (touch operation): only enable touch
+                    item->setEnabled(isTouchReason);
+                    if (!isTouchReason) {
+                        item->setToolTip(tr("Only available when fields have been modified"));
+                    }
+                }
+            }
+        }
     }
     formLayout->addRow(tr("Reason:"), reasonCombo_);
 
@@ -110,7 +153,7 @@ void ChangeReasonDialog::setupUi() {
         QDialogButtonBox::Save | QDialogButtonBox::Cancel, this);
     saveButton_ = buttonBox_->button(QDialogButtonBox::Save);
     saveButton_->setText(operation_ == OperationType::Amend
-        ? tr("Save Changes")
+        ? tr("Save")
         : tr("Confirm Delete"));
 
     mainLayout->addWidget(buttonBox_);

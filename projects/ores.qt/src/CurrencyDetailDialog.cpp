@@ -299,6 +299,8 @@ void CurrencyDetailDialog::setCurrency(const risk::domain::currency& currency) {
     ui_->recordedByEdit->setText(QString::fromStdString(currency.recorded_by));
     ui_->recordedAtEdit->setText(QString::fromStdString(
         platform::time::datetime::format_time_point(currency.recorded_at)));
+    ui_->changeReasonEdit->setText(QString::fromStdString(currency.change_reason_code));
+    ui_->commentaryEdit->setText(QString::fromStdString(currency.change_commentary));
 
     isDirty_ = false;
     flagChanged_ = false;
@@ -343,6 +345,8 @@ void CurrencyDetailDialog::clearDialog() {
     ui_->versionEdit->clear();
     ui_->recordedByEdit->clear();
     ui_->recordedAtEdit->clear();
+    ui_->changeReasonEdit->clear();
+    ui_->commentaryEdit->clear();
     pendingImageId_.clear();
 
     isDirty_ = false;
@@ -383,7 +387,8 @@ void CurrencyDetailDialog::onSaveClicked() {
             return;
         }
 
-        ChangeReasonDialog dialog(reasons, ChangeReasonDialog::OperationType::Amend, this);
+        ChangeReasonDialog dialog(reasons, ChangeReasonDialog::OperationType::Amend,
+            isDirty_, this);
         if (dialog.exec() != QDialog::Accepted) {
             BOOST_LOG_SEV(lg(), debug) << "Save cancelled - change reason dialog rejected.";
             return;
@@ -678,8 +683,10 @@ void CurrencyDetailDialog::updateSaveResetButtonState() {
         return;
     }
 
+    // In add mode, only enable save when dirty
+    // In edit mode, always enable save (for "touch" operations that update timestamp)
     if (saveAction_)
-        saveAction_->setEnabled(isDirty_);
+        saveAction_->setEnabled(isAddMode_ ? isDirty_ : true);
 
     if (deleteAction_)
         deleteAction_->setEnabled(!isAddMode_);

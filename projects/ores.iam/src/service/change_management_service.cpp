@@ -67,34 +67,29 @@ change_management_service::find_category(const std::string& code) {
 }
 
 domain::change_reason_category change_management_service::create_category(
-    const std::string& code,
-    const std::string& description,
-    const std::string& recorded_by,
-    const std::string& change_commentary) {
-    BOOST_LOG_SEV(lg(), info) << "Creating change reason category: " << code;
+    const domain::change_reason_category& category) {
+    BOOST_LOG_SEV(lg(), info) << "Creating change reason category: "
+                              << category.code;
 
-    if (code.empty()) {
+    if (category.code.empty()) {
         throw std::invalid_argument("Category code cannot be empty.");
     }
 
     // Check if category already exists
-    auto existing = find_category(code);
+    auto existing = find_category(category.code);
     if (existing) {
-        throw std::runtime_error("Category with code '" + code +
+        throw std::runtime_error("Category with code '" + category.code +
             "' already exists.");
     }
 
-    domain::change_reason_category category;
-    category.version = 0;
-    category.code = code;
-    category.description = description;
-    category.recorded_by = recorded_by;
-    category.change_commentary = change_commentary;
+    domain::change_reason_category new_category = category;
+    new_category.version = 0;
 
-    category_repo_.write(category);
+    category_repo_.write(new_category);
 
-    BOOST_LOG_SEV(lg(), info) << "Created change reason category: " << code;
-    return category;
+    BOOST_LOG_SEV(lg(), info) << "Created change reason category: "
+                              << category.code;
+    return new_category;
 }
 
 void change_management_service::update_category(
@@ -128,6 +123,12 @@ void change_management_service::remove_category(const std::string& code) {
     category_repo_.remove(code);
 
     BOOST_LOG_SEV(lg(), info) << "Removed change reason category: " << code;
+}
+
+std::vector<domain::change_reason_category>
+change_management_service::get_category_history(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting category history for: " << code;
+    return category_repo_.read_all(code);
 }
 
 // ============================================================================
@@ -235,6 +236,12 @@ void change_management_service::remove_reason(const std::string& code) {
     reason_repo_.remove(code);
 
     BOOST_LOG_SEV(lg(), info) << "Removed change reason: " << code;
+}
+
+std::vector<domain::change_reason>
+change_management_service::get_reason_history(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting reason history for: " << code;
+    return reason_repo_.read_all(code);
 }
 
 // ============================================================================

@@ -134,6 +134,18 @@ accounts_message_handler::handle_message(message_type type,
         co_return co_await handle_get_change_reasons_request(payload, remote_address);
     case message_type::get_change_reasons_by_category_request:
         co_return co_await handle_get_change_reasons_by_category_request(payload, remote_address);
+    case message_type::save_change_reason_request:
+        co_return co_await handle_save_change_reason_request(payload, remote_address);
+    case message_type::delete_change_reason_request:
+        co_return co_await handle_delete_change_reason_request(payload, remote_address);
+    case message_type::get_change_reason_history_request:
+        co_return co_await handle_get_change_reason_history_request(payload, remote_address);
+    case message_type::save_change_reason_category_request:
+        co_return co_await handle_save_change_reason_category_request(payload, remote_address);
+    case message_type::delete_change_reason_category_request:
+        co_return co_await handle_delete_change_reason_category_request(payload, remote_address);
+    case message_type::get_change_reason_category_history_request:
+        co_return co_await handle_get_change_reason_category_history_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown accounts message type " << type;
         co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
@@ -1677,6 +1689,252 @@ handle_get_change_reasons_by_category_request(std::span<const std::byte> payload
     get_change_reasons_by_category_response response{
         .reasons = std::move(reasons)
     };
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_save_change_reason_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_change_reason_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Save change reason");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = save_change_reason_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_change_reason_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    save_change_reason_response response;
+    try {
+        // Check if reason exists (update) or not (create)
+        auto existing = change_management_service_.find_reason(request.reason.code);
+        if (existing) {
+            change_management_service_.update_reason(request.reason);
+        } else {
+            change_management_service_.create_reason(request.reason);
+        }
+        response.success = true;
+        response.message = "Change reason saved successfully.";
+        BOOST_LOG_SEV(lg(), info) << "Saved change reason: " << request.reason.code;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to save change reason: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_delete_change_reason_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_change_reason_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Delete change reason");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = delete_change_reason_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_change_reason_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    delete_change_reason_response response;
+    for (const auto& code : request.codes) {
+        delete_change_reason_result result;
+        result.code = code;
+        try {
+            change_management_service_.remove_reason(code);
+            result.success = true;
+            result.message = "Deleted successfully.";
+            BOOST_LOG_SEV(lg(), info) << "Deleted change reason: " << code;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to delete change reason "
+                                       << code << ": " << e.what();
+            result.success = false;
+            result.message = e.what();
+        }
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_change_reason_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_change_reason_history_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Get change reason history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_change_reason_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_change_reason_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for reason: " << request.code;
+
+    get_change_reason_history_response response;
+    try {
+        response.versions = change_management_service_.get_reason_history(request.code);
+        response.success = true;
+        response.message = "";
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
+                                  << " versions for change reason: " << request.code;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get change reason history: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_save_change_reason_category_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_change_reason_category_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Save change reason category");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = save_change_reason_category_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_change_reason_category_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    save_change_reason_category_response response;
+    try {
+        // Check if category exists (update) or not (create)
+        auto existing = change_management_service_.find_category(request.category.code);
+        if (existing) {
+            change_management_service_.update_category(request.category);
+        } else {
+            change_management_service_.create_category(request.category);
+        }
+        response.success = true;
+        response.message = "Change reason category saved successfully.";
+        BOOST_LOG_SEV(lg(), info) << "Saved change reason category: "
+                                  << request.category.code;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to save change reason category: "
+                                   << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_delete_change_reason_category_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_change_reason_category_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Delete change reason category");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = delete_change_reason_category_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_change_reason_category_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
+
+    delete_change_reason_category_response response;
+    for (const auto& code : request.codes) {
+        delete_change_reason_category_result result;
+        result.code = code;
+        try {
+            change_management_service_.remove_category(code);
+            result.success = true;
+            result.message = "Deleted successfully.";
+            BOOST_LOG_SEV(lg(), info) << "Deleted change reason category: " << code;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to delete change reason category "
+                                       << code << ": " << e.what();
+            result.success = false;
+            result.message = e.what();
+        }
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+accounts_message_handler::handler_result accounts_message_handler::
+handle_get_change_reason_category_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_change_reason_category_history_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Get change reason category history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_change_reason_category_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_change_reason_category_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for category: " << request.code;
+
+    get_change_reason_category_history_response response;
+    try {
+        response.versions = change_management_service_.get_category_history(request.code);
+        response.success = true;
+        response.message = "";
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
+                                  << " versions for change reason category: "
+                                  << request.code;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get change reason category history: "
+                                   << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
     co_return response.serialize();
 }
 

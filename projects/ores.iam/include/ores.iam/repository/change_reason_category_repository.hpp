@@ -85,6 +85,13 @@ public:
     std::uint32_t get_total_count();
 
     /**
+     * @brief Reads all historical versions of a change_reason_category by code.
+     * @param code The category code to look up
+     * @return Vector of all versions, ordered by version descending
+     */
+    std::vector<domain::change_reason_category> read_all(const std::string& code);
+
+    /**
      * @brief Deletes a change_reason_category by closing its temporal validity.
      */
     void remove(const std::string& code);

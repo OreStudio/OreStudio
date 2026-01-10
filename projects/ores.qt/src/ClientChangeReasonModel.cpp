@@ -23,7 +23,7 @@
 #include <QBrush>
 #include "ores.iam/messaging/change_management_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
-#include "ores.platform/time/datetime.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
@@ -73,8 +73,6 @@ QVariant ClientChangeReasonModel::data(
         switch (index.column()) {
         case Code:
             return QString::fromStdString(reason.code);
-        case Description:
-            return QString::fromStdString(reason.description);
         case CategoryCode:
             return QString::fromStdString(reason.category_code);
         case AppliesToAmend:
@@ -89,11 +87,8 @@ QVariant ClientChangeReasonModel::data(
             return reason.version;
         case RecordedBy:
             return QString::fromStdString(reason.recorded_by);
-        case RecordedAt: {
-            auto formatted = platform::time::datetime::format_time_point(
-                reason.recorded_at);
-            return QString::fromStdString(formatted);
-        }
+        case RecordedAt:
+            return relative_time_helper::format(reason.recorded_at);
         default:
             return {};
         }
@@ -114,8 +109,6 @@ QVariant ClientChangeReasonModel::headerData(
     switch (section) {
     case Code:
         return tr("Code");
-    case Description:
-        return tr("Description");
     case CategoryCode:
         return tr("Category");
     case AppliesToAmend:

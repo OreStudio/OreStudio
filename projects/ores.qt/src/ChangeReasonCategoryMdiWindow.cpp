@@ -21,7 +21,14 @@
 
 #include <QVBoxLayout>
 #include <QHeaderView>
+#include <QMessageBox>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.iam/messaging/change_management_protocol.hpp"
+#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -39,7 +46,10 @@ ChangeReasonCategoryMdiWindow::ChangeReasonCategoryMdiWindow(
       model_(nullptr),
       proxyModel_(nullptr),
       reloadAction_(nullptr),
-      viewDetailsAction_(nullptr),
+      addAction_(nullptr),
+      editAction_(nullptr),
+      deleteAction_(nullptr),
+      historyAction_(nullptr),
       pulseTimer_(new QTimer(this)) {
 
     setupUi();
@@ -71,8 +81,8 @@ void ChangeReasonCategoryMdiWindow::setupToolbar() {
     toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     toolbar_->setIconSize(QSize(20, 20));
 
-    const QColor iconColor(220, 220, 220);
-    const QColor staleColor(255, 165, 0);  // Orange for stale
+    const auto& iconColor = color_constants::icon_color;
+    const auto& staleColor = color_constants::stale_indicator;
 
     normalReloadIcon_ = IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor);
@@ -86,21 +96,40 @@ void ChangeReasonCategoryMdiWindow::setupToolbar() {
 
     toolbar_->addSeparator();
 
-    viewDetailsAction_ = toolbar_->addAction(
+    addAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_info_20_regular.svg", iconColor),
-        tr("View Details"));
-    viewDetailsAction_->setToolTip(tr("View category details"));
-    viewDetailsAction_->setEnabled(false);
-    connect(viewDetailsAction_, &QAction::triggered, this, [this]() {
-        auto selected = tableView_->selectionModel()->selectedRows();
-        if (selected.isEmpty())
-            return;
-        auto sourceIndex = proxyModel_->mapToSource(selected.first());
-        if (auto* category = model_->getCategory(sourceIndex.row())) {
-            emit showCategoryDetails(*category);
-        }
-    });
+            ":/icons/ic_fluent_add_20_regular.svg", iconColor),
+        tr("Add"));
+    addAction_->setToolTip(tr("Add new category"));
+    connect(addAction_, &QAction::triggered, this,
+            &ChangeReasonCategoryMdiWindow::addNew);
+
+    editAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_edit_20_regular.svg", iconColor),
+        tr("Edit"));
+    editAction_->setToolTip(tr("Edit selected category"));
+    editAction_->setEnabled(false);
+    connect(editAction_, &QAction::triggered, this,
+            &ChangeReasonCategoryMdiWindow::editSelected);
+
+    deleteAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_delete_20_regular.svg", iconColor),
+        tr("Delete"));
+    deleteAction_->setToolTip(tr("Delete selected category"));
+    deleteAction_->setEnabled(false);
+    connect(deleteAction_, &QAction::triggered, this,
+            &ChangeReasonCategoryMdiWindow::deleteSelected);
+
+    historyAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_history_20_regular.svg", iconColor),
+        tr("History"));
+    historyAction_->setToolTip(tr("View category history"));
+    historyAction_->setEnabled(false);
+    connect(historyAction_, &QAction::triggered, this,
+            &ChangeReasonCategoryMdiWindow::viewHistorySelected);
 
     // Pulse timer for stale indicator
     pulseTimer_->setInterval(pulse_interval_ms_);
@@ -131,8 +160,8 @@ void ChangeReasonCategoryMdiWindow::setupTable() {
     tableView_->verticalHeader()->setVisible(false);
 
     // Set column widths
-    tableView_->setColumnWidth(ClientChangeReasonCategoryModel::Code, 120);
-    tableView_->setColumnWidth(ClientChangeReasonCategoryModel::Description, 250);
+    tableView_->setColumnWidth(ClientChangeReasonCategoryModel::Code, 200);
+    tableView_->setColumnWidth(ClientChangeReasonCategoryModel::Description, 300);
     tableView_->setColumnWidth(ClientChangeReasonCategoryModel::Version, 80);
     tableView_->setColumnWidth(ClientChangeReasonCategoryModel::RecordedBy, 120);
 }
@@ -166,8 +195,7 @@ void ChangeReasonCategoryMdiWindow::onLoadError(const QString& error_message) {
 }
 
 void ChangeReasonCategoryMdiWindow::onSelectionChanged() {
-    bool hasSelection = tableView_->selectionModel()->hasSelection();
-    viewDetailsAction_->setEnabled(hasSelection);
+    updateActionStates();
 }
 
 void ChangeReasonCategoryMdiWindow::onDoubleClicked(const QModelIndex& index) {
@@ -178,6 +206,203 @@ void ChangeReasonCategoryMdiWindow::onDoubleClicked(const QModelIndex& index) {
     if (auto* category = model_->getCategory(sourceIndex.row())) {
         emit showCategoryDetails(*category);
     }
+}
+
+void ChangeReasonCategoryMdiWindow::updateActionStates() {
+    const bool hasSelection = tableView_->selectionModel()->hasSelection();
+    editAction_->setEnabled(hasSelection);
+    deleteAction_->setEnabled(hasSelection);
+    historyAction_->setEnabled(hasSelection);
+}
+
+void ChangeReasonCategoryMdiWindow::addNew() {
+    BOOST_LOG_SEV(lg(), debug) << "Add new category requested";
+    emit addNewRequested();
+}
+
+void ChangeReasonCategoryMdiWindow::editSelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Edit requested but no row selected";
+        return;
+    }
+
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* category = model_->getCategory(sourceIndex.row())) {
+        emit showCategoryDetails(*category);
+    }
+}
+
+void ChangeReasonCategoryMdiWindow::viewHistorySelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "View history requested but no row selected";
+        return;
+    }
+
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    if (auto* category = model_->getCategory(sourceIndex.row())) {
+        BOOST_LOG_SEV(lg(), debug) << "Emitting showCategoryHistory for code: "
+                                   << category->code;
+        emit showCategoryHistory(QString::fromStdString(category->code));
+    }
+}
+
+void ChangeReasonCategoryMdiWindow::deleteSelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Delete requested but no row selected";
+        return;
+    }
+
+    if (!clientManager_->isConnected()) {
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot delete category while disconnected.");
+        return;
+    }
+
+    std::vector<std::string> codes;
+    for (const auto& index : selected) {
+        auto sourceIndex = proxyModel_->mapToSource(index);
+        if (auto* category = model_->getCategory(sourceIndex.row())) {
+            codes.push_back(category->code);
+        }
+    }
+
+    if (codes.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No valid categories to delete";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << codes.size()
+                               << " categories";
+
+    QString confirmMessage;
+    if (codes.size() == 1) {
+        confirmMessage = QString("Are you sure you want to delete category '%1'?")
+            .arg(QString::fromStdString(codes.front()));
+    } else {
+        confirmMessage = QString("Are you sure you want to delete %1 categories?")
+            .arg(codes.size());
+    }
+
+    auto reply = MessageBoxHelper::question(this, "Delete Category",
+        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
+        return;
+    }
+
+    QPointer<ChangeReasonCategoryMdiWindow> self = this;
+    using DeleteResult = std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
+
+    auto task = [self, codes]() -> DeleteResult {
+        DeleteResult results;
+        if (!self) return {};
+
+        BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
+                                   << codes.size() << " categories";
+
+        iam::messaging::delete_change_reason_category_request request;
+        request.codes = codes;
+        auto payload = request.serialize();
+
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::delete_change_reason_category_request,
+            0, std::move(payload)
+        );
+
+        auto response_result = self->clientManager_->sendRequest(
+            std::move(request_frame));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
+            for (const auto& code : codes) {
+                results.push_back({code, {false, "Failed to communicate with server"}});
+            }
+            return results;
+        }
+
+        auto payload_result = response_result->decompressed_payload();
+        if (!payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to decompress batch response";
+            for (const auto& code : codes) {
+                results.push_back({code, {false, "Failed to decompress server response"}});
+            }
+            return results;
+        }
+
+        auto response = iam::messaging::delete_change_reason_category_response::
+            deserialize(*payload_result);
+
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize batch response";
+            for (const auto& code : codes) {
+                results.push_back({code, {false, "Invalid server response"}});
+            }
+            return results;
+        }
+
+        for (const auto& result : response->results) {
+            results.push_back({result.code, {result.success, result.message}});
+        }
+
+        return results;
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
+            self, [self, watcher]() {
+        auto results = watcher->result();
+        watcher->deleteLater();
+
+        int success_count = 0;
+        int failure_count = 0;
+        QString first_error;
+
+        for (const auto& [code, result] : results) {
+            auto [success, message] = result;
+
+            if (success) {
+                BOOST_LOG_SEV(lg(), debug) << "Category deleted: " << code;
+                success_count++;
+                emit self->categoryDeleted(QString::fromStdString(code));
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "Category deletion failed: "
+                                           << code << " - " << message;
+                failure_count++;
+                if (first_error.isEmpty()) {
+                    first_error = QString::fromStdString(message);
+                }
+            }
+        }
+
+        self->model_->refresh();
+
+        if (failure_count == 0) {
+            QString msg = success_count == 1
+                ? "Successfully deleted 1 category"
+                : QString("Successfully deleted %1 categories").arg(success_count);
+            emit self->statusChanged(msg);
+        } else if (success_count == 0) {
+            QString msg = QString("Failed to delete %1 %2: %3")
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "category" : "categories")
+                .arg(first_error);
+            emit self->errorOccurred(msg);
+            MessageBoxHelper::critical(self, "Delete Failed", msg);
+        } else {
+            QString msg = QString("Deleted %1, failed to delete %2")
+                .arg(success_count)
+                .arg(failure_count);
+            emit self->statusChanged(msg);
+            MessageBoxHelper::warning(self, "Partial Success", msg);
+        }
+    });
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
 }
 
 void ChangeReasonCategoryMdiWindow::markAsStale() {

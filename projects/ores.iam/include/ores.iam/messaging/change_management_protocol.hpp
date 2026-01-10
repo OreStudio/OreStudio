@@ -117,6 +117,239 @@ struct get_change_reasons_by_category_response final {
 std::ostream& operator<<(std::ostream& s,
     const get_change_reasons_by_category_response& v);
 
+// ============================================================================
+// Change Reason CRUD Operations
+// ============================================================================
+
+/**
+ * @brief Request to save a change reason (create or update).
+ *
+ * Due to bitemporal storage, both create and update operations
+ * result in writing a new record. Database triggers handle temporal
+ * versioning automatically. The code field is the natural key.
+ */
+struct save_change_reason_request final {
+    domain::change_reason reason;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<save_change_reason_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const save_change_reason_request& v);
+
+/**
+ * @brief Response confirming change reason save operation.
+ */
+struct save_change_reason_response final {
+    bool success;
+    std::string message;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<save_change_reason_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const save_change_reason_response& v);
+
+/**
+ * @brief Result for a single change reason deletion.
+ */
+struct delete_change_reason_result final {
+    std::string code;
+    bool success;
+    std::string message;
+};
+
+std::ostream& operator<<(std::ostream& s, const delete_change_reason_result& v);
+
+/**
+ * @brief Request to delete one or more change reasons.
+ *
+ * Supports batch deletion by accepting a vector of codes.
+ * Each reason is processed independently - partial success is possible.
+ */
+struct delete_change_reason_request final {
+    std::vector<std::string> codes;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<delete_change_reason_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const delete_change_reason_request& v);
+
+/**
+ * @brief Response confirming change reason deletion(s).
+ *
+ * Contains one result per requested reason, indicating individual
+ * success or failure. Supports partial success in batch operations.
+ */
+struct delete_change_reason_response final {
+    std::vector<delete_change_reason_result> results;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<delete_change_reason_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const delete_change_reason_response& v);
+
+/**
+ * @brief Request to retrieve version history for a change reason.
+ */
+struct get_change_reason_history_request final {
+    std::string code;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_change_reason_history_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s,
+    const get_change_reason_history_request& v);
+
+/**
+ * @brief Response containing change reason version history.
+ */
+struct get_change_reason_history_response final {
+    bool success;
+    std::string message;
+    std::vector<domain::change_reason> versions;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_change_reason_history_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s,
+    const get_change_reason_history_response& v);
+
+// ============================================================================
+// Change Reason Category CRUD Operations
+// ============================================================================
+
+/**
+ * @brief Request to save a change reason category (create or update).
+ *
+ * Due to bitemporal storage, both create and update operations
+ * result in writing a new record. Database triggers handle temporal
+ * versioning automatically. The code field is the natural key.
+ */
+struct save_change_reason_category_request final {
+    domain::change_reason_category category;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<save_change_reason_category_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s,
+    const save_change_reason_category_request& v);
+
+/**
+ * @brief Response confirming change reason category save operation.
+ */
+struct save_change_reason_category_response final {
+    bool success;
+    std::string message;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<save_change_reason_category_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s,
+    const save_change_reason_category_response& v);
+
+/**
+ * @brief Result for a single change reason category deletion.
+ */
+struct delete_change_reason_category_result final {
+    std::string code;
+    bool success;
+    std::string message;
+};
+
+std::ostream& operator<<(std::ostream& s,
+    const delete_change_reason_category_result& v);
+
+/**
+ * @brief Request to delete one or more change reason categories.
+ *
+ * Supports batch deletion by accepting a vector of codes.
+ * Each category is processed independently - partial success is possible.
+ */
+struct delete_change_reason_category_request final {
+    std::vector<std::string> codes;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<delete_change_reason_category_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s,
+    const delete_change_reason_category_request& v);
+
+/**
+ * @brief Response confirming change reason category deletion(s).
+ *
+ * Contains one result per requested category, indicating individual
+ * success or failure. Supports partial success in batch operations.
+ */
+struct delete_change_reason_category_response final {
+    std::vector<delete_change_reason_category_result> results;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<delete_change_reason_category_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s,
+    const delete_change_reason_category_response& v);
+
+/**
+ * @brief Request to retrieve version history for a change reason category.
+ */
+struct get_change_reason_category_history_request final {
+    std::string code;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_change_reason_category_history_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s,
+    const get_change_reason_category_history_request& v);
+
+/**
+ * @brief Response containing change reason category version history.
+ */
+struct get_change_reason_category_history_response final {
+    bool success;
+    std::string message;
+    std::vector<domain::change_reason_category> versions;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_change_reason_category_history_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s,
+    const get_change_reason_category_history_response& v);
+
 }
 
 namespace ores::comms::messaging {
@@ -152,6 +385,72 @@ struct message_traits<iam::messaging::get_change_reasons_by_category_request> {
     using response_type = iam::messaging::get_change_reasons_by_category_response;
     static constexpr message_type request_message_type =
         message_type::get_change_reasons_by_category_request;
+};
+
+/**
+ * @brief Message traits specialization for save_change_reason_request.
+ */
+template<>
+struct message_traits<iam::messaging::save_change_reason_request> {
+    using request_type = iam::messaging::save_change_reason_request;
+    using response_type = iam::messaging::save_change_reason_response;
+    static constexpr message_type request_message_type =
+        message_type::save_change_reason_request;
+};
+
+/**
+ * @brief Message traits specialization for delete_change_reason_request.
+ */
+template<>
+struct message_traits<iam::messaging::delete_change_reason_request> {
+    using request_type = iam::messaging::delete_change_reason_request;
+    using response_type = iam::messaging::delete_change_reason_response;
+    static constexpr message_type request_message_type =
+        message_type::delete_change_reason_request;
+};
+
+/**
+ * @brief Message traits specialization for get_change_reason_history_request.
+ */
+template<>
+struct message_traits<iam::messaging::get_change_reason_history_request> {
+    using request_type = iam::messaging::get_change_reason_history_request;
+    using response_type = iam::messaging::get_change_reason_history_response;
+    static constexpr message_type request_message_type =
+        message_type::get_change_reason_history_request;
+};
+
+/**
+ * @brief Message traits specialization for save_change_reason_category_request.
+ */
+template<>
+struct message_traits<iam::messaging::save_change_reason_category_request> {
+    using request_type = iam::messaging::save_change_reason_category_request;
+    using response_type = iam::messaging::save_change_reason_category_response;
+    static constexpr message_type request_message_type =
+        message_type::save_change_reason_category_request;
+};
+
+/**
+ * @brief Message traits specialization for delete_change_reason_category_request.
+ */
+template<>
+struct message_traits<iam::messaging::delete_change_reason_category_request> {
+    using request_type = iam::messaging::delete_change_reason_category_request;
+    using response_type = iam::messaging::delete_change_reason_category_response;
+    static constexpr message_type request_message_type =
+        message_type::delete_change_reason_category_request;
+};
+
+/**
+ * @brief Message traits specialization for get_change_reason_category_history_request.
+ */
+template<>
+struct message_traits<iam::messaging::get_change_reason_category_history_request> {
+    using request_type = iam::messaging::get_change_reason_category_history_request;
+    using response_type = iam::messaging::get_change_reason_category_history_response;
+    static constexpr message_type request_message_type =
+        message_type::get_change_reason_category_history_request;
 };
 
 }

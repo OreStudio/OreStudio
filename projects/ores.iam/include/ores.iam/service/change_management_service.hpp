@@ -90,17 +90,13 @@ public:
     /**
      * @brief Creates a new change reason category.
      *
-     * @param code The category code (e.g., "static_data", "trade")
-     * @param description Human-readable description
-     * @param recorded_by Username of the person creating the category
-     * @param change_commentary Commentary explaining the creation
+     * @param category The category to create
      * @return The created category
+     * @throws std::invalid_argument if code is empty
+     * @throws std::runtime_error if category already exists
      */
     domain::change_reason_category create_category(
-        const std::string& code,
-        const std::string& description,
-        const std::string& recorded_by,
-        const std::string& change_commentary);
+        const domain::change_reason_category& category);
 
     /**
      * @brief Updates an existing change reason category.
@@ -115,6 +111,15 @@ public:
      * @param code The code of the category to remove
      */
     void remove_category(const std::string& code);
+
+    /**
+     * @brief Gets the version history for a category.
+     *
+     * @param code The category code
+     * @return Vector of all versions, newest first
+     */
+    std::vector<domain::change_reason_category>
+    get_category_history(const std::string& code);
 
     // ========================================================================
     // Reason Management
@@ -169,6 +174,14 @@ public:
      * @param code The code of the reason to remove
      */
     void remove_reason(const std::string& code);
+
+    /**
+     * @brief Gets the version history for a reason.
+     *
+     * @param code The reason code
+     * @return Vector of all versions, newest first
+     */
+    std::vector<domain::change_reason> get_reason_history(const std::string& code);
 
     // ========================================================================
     // Validation

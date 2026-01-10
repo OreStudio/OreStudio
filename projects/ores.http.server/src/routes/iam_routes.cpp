@@ -25,6 +25,7 @@
 #include "ores.http/domain/jwt_claims.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/account_json.hpp"
+#include "ores.iam/domain/change_reason_constants.hpp"
 #include "ores.iam/domain/role_json.hpp"
 #include "ores.iam/domain/permission_json.hpp"
 #include "ores.iam/domain/permission.hpp"
@@ -47,6 +48,7 @@ namespace ores::http_server::routes {
 using namespace ores::logging;
 using namespace ores::http::domain;
 namespace asio = boost::asio;
+namespace reason = iam::domain::change_reason_constants;
 
 iam_routes::iam_routes(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
@@ -649,7 +651,7 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
 
         // Exit bootstrap mode - updates database and shared cache
         system_flags_->set_bootstrap_mode(false, "system",
-            "system.new_record", "Bootstrap mode disabled after initial admin account created");
+            std::string{reason::codes::new_record}, "Bootstrap mode disabled after initial admin account created");
 
         BOOST_LOG_SEV(lg(), info)
             << "Created initial admin account with ID: " << account.id
@@ -775,7 +777,9 @@ asio::awaitable<http_response> iam_routes::handle_update_account(const http_requ
     try {
         auto uuid = boost::uuids::string_generator()(account_id);
         bool success = account_service_.update_account(uuid, update_req->email,
-            req.authenticated_user->username.value_or("system"));
+            req.authenticated_user->username.value_or("system"),
+            update_req->change_reason_code,
+            update_req->change_commentary);
 
         iam::messaging::save_account_response resp;
         resp.success = success;

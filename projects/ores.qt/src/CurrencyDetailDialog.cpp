@@ -43,6 +43,7 @@
 #include "ores.qt/FlagSelectorDialog.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.iam/domain/change_reason_constants.hpp"
 #include "ores.risk/messaging/protocol.hpp"
 #include "ores.risk/generators/currency_generator.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -57,6 +58,7 @@ using comms::messaging::frame;
 using comms::messaging::message_type;
 using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
+namespace reason = iam::domain::change_reason_constants;
 
 namespace {
     // Event type name for feature flag changes
@@ -380,7 +382,8 @@ void CurrencyDetailDialog::onSaveClicked() {
         }
 
         // Get reasons for the "common" category that apply to amendments
-        auto reasons = changeReasonCache_->getReasonsForAmend("common");
+        auto reasons = changeReasonCache_->getReasonsForAmend(
+            std::string{reason::categories::common});
         if (reasons.empty()) {
             BOOST_LOG_SEV(lg(), warn) << "No change reasons available for common category.";
             emit errorMessage("No change reasons available. Please contact administrator.");

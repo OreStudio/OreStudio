@@ -23,6 +23,7 @@
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
+#include "ores.iam/domain/change_reason_constants.hpp"
 #include "ores.iam/domain/permission.hpp"
 #include "ores.iam/eventing/role_assigned_event.hpp"
 #include "ores.iam/eventing/role_revoked_event.hpp"
@@ -31,6 +32,7 @@
 namespace ores::iam::service {
 
 using namespace ores::logging;
+namespace reason = domain::change_reason_constants;
 
 authorization_service::authorization_service(context ctx, event_bus* event_bus)
     : permission_repo_(ctx),
@@ -238,7 +240,7 @@ void authorization_service::assign_role(
     ar.account_id = account_id;
     ar.role_id = role_id;
     ar.assigned_by = assigned_by;
-    ar.change_reason_code = "system.new_record";
+    ar.change_reason_code = std::string{reason::codes::new_record};
     ar.change_commentary = change_commentary;
 
     account_role_repo_.write(ar);

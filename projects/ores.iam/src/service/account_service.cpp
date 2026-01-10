@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+#include "ores.iam/domain/change_reason_constants.hpp"
 #include "ores.iam/security/password_manager.hpp"
 #include "ores.iam/security/password_policy_validator.hpp"
 #include "ores.iam/security/email_validator.hpp"
@@ -29,6 +30,7 @@
 namespace ores::iam::service {
 
 using namespace ores::logging;
+namespace reason = domain::change_reason_constants;
 
 void account_service::
 throw_if_empty(const std::string& name, const std::string& value)
@@ -73,7 +75,7 @@ account_service::create_account(const std::string& username,
         .version = 0, // will be set by repository
         .id = id,
         .recorded_by = recorded_by,
-        .change_reason_code = "system.new_record",
+        .change_reason_code = std::string{reason::codes::new_record},
         .change_commentary = change_commentary,
         .username = username,
         .password_hash = password_hash,
@@ -316,7 +318,9 @@ void account_service::logout(const boost::uuids::uuid& account_id) {
 }
 
 bool account_service::update_account(const boost::uuids::uuid& account_id,
-    const std::string& email, const std::string& recorded_by) {
+    const std::string& email, const std::string& recorded_by,
+    const std::string& change_reason_code,
+    const std::string& change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Updating account: "
                                << boost::uuids::to_string(account_id);
 
@@ -332,8 +336,8 @@ bool account_service::update_account(const boost::uuids::uuid& account_id,
     auto account = accounts[0];
     account.email = email;
     account.recorded_by = recorded_by;
-    account.change_reason_code = "common.non_material_update";
-    account.change_commentary = "Account details updated";
+    account.change_reason_code = change_reason_code;
+    account.change_commentary = change_commentary;
     // Note: version is NOT incremented here - the database trigger handles it
     // The trigger uses optimistic locking: new.version must match current_version
 
@@ -436,7 +440,7 @@ std::string account_service::change_password(const boost::uuids::uuid& account_i
     // Update account with new password hash
     auto account = accounts[0];
     account.password_hash = password_hash;
-    account.change_reason_code = "common.non_material_update";
+    account.change_reason_code = std::string{reason::codes::non_material_update};
     account.change_commentary = "Password changed";
     // Note: version is NOT incremented here - the database trigger handles it
     // The trigger uses optimistic locking: new.version must match current_version
@@ -504,7 +508,7 @@ std::string account_service::update_my_email(const boost::uuids::uuid& account_i
     // Update account with new email
     auto account = accounts[0];
     account.email = new_email;
-    account.change_reason_code = "common.non_material_update";
+    account.change_reason_code = std::string{reason::codes::non_material_update};
     account.change_commentary = "Email address changed";
     // Note: version is NOT incremented here - the database trigger handles it
 

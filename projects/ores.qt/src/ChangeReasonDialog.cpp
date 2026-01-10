@@ -24,8 +24,11 @@
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QStandardItemModel>
+#include "ores.iam/domain/change_reason_constants.hpp"
 
 namespace ores::qt {
+
+namespace reason = iam::domain::change_reason_constants;
 
 ChangeReasonDialog::ChangeReasonDialog(
     const std::vector<iam::domain::change_reason>& reasons,
@@ -83,7 +86,7 @@ void ChangeReasonDialog::setupUi() {
     reasonCombo_->setMinimumWidth(300);
 
     // The touch reason code - only valid when no fields have changed
-    static const std::string touchReasonCode = "common.non_material_update";
+    static const std::string touchReasonCode{reason::codes::non_material_update};
 
     for (std::size_t i = 0; i < reasons_.size(); ++i) {
         const auto& reason = reasons_[i];

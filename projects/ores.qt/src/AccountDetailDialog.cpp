@@ -158,6 +158,8 @@ void AccountDetailDialog::setAccount(const iam::domain::account& account) {
     ui_->emailEdit->setText(QString::fromStdString(account.email));
     ui_->versionEdit->setText(QString::number(account.version));
     ui_->modifiedByEdit->setText(QString::fromStdString(account.recorded_by));
+    ui_->changeReasonEdit->setText(QString::fromStdString(account.change_reason_code));
+    ui_->changeCommentaryEdit->setPlainText(QString::fromStdString(account.change_commentary));
 
     // Clear password fields
     ui_->passwordEdit->clear();
@@ -209,6 +211,8 @@ void AccountDetailDialog::clearDialog() {
     ui_->confirmPasswordEdit->clear();
     ui_->versionEdit->clear();
     ui_->modifiedByEdit->clear();
+    ui_->changeReasonEdit->clear();
+    ui_->changeCommentaryEdit->clear();
 
     // Clear login status fields
     ui_->onlineEdit->clear();

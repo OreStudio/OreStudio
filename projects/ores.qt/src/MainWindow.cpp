@@ -661,7 +661,7 @@ void MainWindow::createControllers() {
     // Create change reason controller (admin only functionality)
     changeReasonController_ = std::make_unique<ChangeReasonController>(
         this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        changeReasonCache_, allDetachableWindows_, this);
 
     // Connect change reason controller signals to status bar
     connect(changeReasonController_.get(), &ChangeReasonController::statusMessage,

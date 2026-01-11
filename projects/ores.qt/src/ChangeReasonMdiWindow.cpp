@@ -22,6 +22,8 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QMenu>
+#include <QSettings>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/ChangeReasonItemDelegate.hpp"
@@ -66,8 +68,6 @@ QSize ChangeReasonMdiWindow::sizeHint() const {
 
 void ChangeReasonMdiWindow::setupUi() {
     auto* layout = new QVBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(0);
 
     setupToolbar();
     layout->addWidget(toolbar_);
@@ -172,6 +172,12 @@ void ChangeReasonMdiWindow::setupTable() {
     tableView_->setColumnWidth(ClientChangeReasonModel::DisplayOrder, 80);
     tableView_->setColumnWidth(ClientChangeReasonModel::Version, 80);
     tableView_->setColumnWidth(ClientChangeReasonModel::RecordedBy, 120);
+
+    // Setup column visibility with context menu
+    setupColumnVisibility();
+
+    // Restore saved settings (column visibility, window size)
+    restoreSettings();
 }
 
 void ChangeReasonMdiWindow::setupConnections() {
@@ -431,6 +437,81 @@ void ChangeReasonMdiWindow::startPulseAnimation() {
     pulseCount_ = 0;
     pulseState_ = false;
     pulseTimer_->start();
+}
+
+void ChangeReasonMdiWindow::setupColumnVisibility() {
+    QHeaderView* header = tableView_->horizontalHeader();
+
+    // Enable context menu on header for column visibility
+    header->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(header, &QHeaderView::customContextMenuRequested,
+            this, &ChangeReasonMdiWindow::showHeaderContextMenu);
+
+    // Save header state when sections are moved or resized
+    connect(header, &QHeaderView::sectionMoved, this,
+            &ChangeReasonMdiWindow::saveSettings);
+    connect(header, &QHeaderView::sectionResized, this,
+            &ChangeReasonMdiWindow::saveSettings);
+}
+
+void ChangeReasonMdiWindow::showHeaderContextMenu(const QPoint& pos) {
+    QHeaderView* header = tableView_->horizontalHeader();
+    QMenu menu(this);
+    menu.setTitle(tr("Columns"));
+
+    // Add action for each column
+    for (int col = 0; col < model_->columnCount(); ++col) {
+        QString columnName = model_->headerData(col, Qt::Horizontal,
+            Qt::DisplayRole).toString();
+
+        QAction* action = menu.addAction(columnName);
+        action->setCheckable(true);
+        action->setChecked(!header->isSectionHidden(col));
+
+        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
+            header->setSectionHidden(col, !visible);
+            saveSettings();
+            BOOST_LOG_SEV(lg(), debug) << "Column " << col
+                                       << " visibility changed to: " << visible;
+        });
+    }
+
+    menu.exec(header->mapToGlobal(pos));
+}
+
+void ChangeReasonMdiWindow::saveSettings() {
+    QSettings settings("OreStudio", "OreStudio");
+    settings.beginGroup("ChangeReasonListWindow");
+
+    // Save header state (includes column visibility, order, and widths)
+    QHeaderView* header = tableView_->horizontalHeader();
+    settings.setValue("headerState", header->saveState());
+
+    // Save window size
+    settings.setValue("windowSize", size());
+
+    settings.endGroup();
+}
+
+void ChangeReasonMdiWindow::restoreSettings() {
+    QSettings settings("OreStudio", "OreStudio");
+    settings.beginGroup("ChangeReasonListWindow");
+
+    QHeaderView* header = tableView_->horizontalHeader();
+
+    // Check if we have saved settings
+    if (settings.contains("headerState")) {
+        // Restore header state
+        header->restoreState(settings.value("headerState").toByteArray());
+        BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
+    }
+
+    // Restore window size if saved
+    if (settings.contains("windowSize")) {
+        resize(settings.value("windowSize").toSize());
+    }
+
+    settings.endGroup();
 }
 
 }

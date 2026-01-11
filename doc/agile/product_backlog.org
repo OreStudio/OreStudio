@@ -67,6 +67,16 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Modes of operation                                                 :code:
+
+We need to discuss this with Lau. Intuitively it seems that different users have
+different "views" on the functions of the system. If you are operations you
+probably want a specific set of screens and icons on the toolbar to go with it.
+Trading will have a different set. The administrator of the system also, and so
+on. There should be a way to create "profiles" which change the toolbar. These
+are distinct from user profiles which remember which screens to open and their
+positions.
+
 *** Make bootstrap operation atomic using SQL transactions              :code:
 
 The bootstrap operation is currently not atomic. If an exception is thrown after

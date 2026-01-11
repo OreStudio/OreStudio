@@ -26,6 +26,7 @@
 #include <QIcon>
 #include <QMdiSubWindow>
 #include <QMetaObject>
+#include <QInputDialog>
 #include "ui_ChangeReasonCategoryDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -160,6 +161,7 @@ void ChangeReasonCategoryDetailDialog::setCategory(
     ui_->versionEdit->setText(QString::number(category.version));
     ui_->recordedByEdit->setText(QString::fromStdString(category.recorded_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(category.recorded_at));
+    ui_->commentaryEdit->setText(QString::fromStdString(category.change_commentary));
 
     isDirty_ = false;
     emit isDirtyChanged(false);
@@ -180,7 +182,7 @@ void ChangeReasonCategoryDetailDialog::setCreateMode(bool createMode) {
     // Code is only editable in create mode
     ui_->codeEdit->setReadOnly(!createMode);
 
-    // Hide metadata section in create mode
+    // Hide metadata section in create mode (shows previous version info)
     ui_->metadataGroup->setVisible(!createMode);
 
     // Hide delete button in create mode
@@ -235,6 +237,7 @@ void ChangeReasonCategoryDetailDialog::clearDialog() {
     ui_->versionEdit->clear();
     ui_->recordedByEdit->clear();
     ui_->recordedAtEdit->clear();
+    ui_->commentaryEdit->clear();
 
     isDirty_ = false;
     emit isDirtyChanged(false);
@@ -344,11 +347,34 @@ void ChangeReasonCategoryDetailDialog::onSaveClicked() {
         return;
     }
 
+    // Show commentary dialog - commentary is mandatory
+    bool ok = false;
+    QString commentary = QInputDialog::getMultiLineText(
+        this,
+        tr("Commentary Required"),
+        tr("Please explain why you are making this change:"),
+        QString(),
+        &ok);
+
+    if (!ok) {
+        BOOST_LOG_SEV(lg(), debug) << "Save cancelled - commentary dialog rejected.";
+        return;
+    }
+
+    commentary = commentary.trimmed();
+    if (commentary.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Validation failed: commentary is empty";
+        MessageBoxHelper::warning(this, "Validation Error",
+            "Commentary is required when saving changes.");
+        return;
+    }
+
     BOOST_LOG_SEV(lg(), debug) << "Save clicked for category: "
                                << currentCategory_.code;
 
     QPointer<ChangeReasonCategoryDetailDialog> self = this;
-    const iam::domain::change_reason_category categoryToSave = getCategory();
+    iam::domain::change_reason_category categoryToSave = getCategory();
+    categoryToSave.change_commentary = commentary.toStdString();
 
     QFuture<FutureResult> future =
         QtConcurrent::run([self, categoryToSave]() -> FutureResult {

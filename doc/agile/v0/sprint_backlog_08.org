@@ -17,41 +17,44 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-09 Fri 01:17], for Friday, January 09, 2026.
-|      | <75>                                |        |      |      |       |
-| Tags | Headline                            | Time   |      |      |     % |
-|------+-------------------------------------+--------+------+------+-------|
-|      | *Total time*                        | *1:16* |      |      | 100.0 |
-|------+-------------------------------------+--------+------+------+-------|
-|      | Stories                             | 1:16   |      |      | 100.0 |
-|      | Active                              |        | 1:16 |      | 100.0 |
-| code | Assorted fixes to currencies dialog |        |      | 1:16 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-11 Sun 01:00], for Sunday, January 11, 2026.
+|      | <75>                    |        |      |      |       |
+| Tags | Headline                | Time   |      |      |     % |
+|------+-------------------------+--------+------+------+-------|
+|      | *Total time*            | *0:57* |      |      | 100.0 |
+|------+-------------------------+--------+------+------+-------|
+|      | Stories                 | 0:57   |      |      | 100.0 |
+|      | Active                  |        | 0:57 |      | 100.0 |
+| code | Change reasons UI fixes |        |      | 0:57 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-09 Fri 01:17]
-|       | <75>                                        |         |       |       |       |
-| Tags  | Headline                                    | Time    |       |       |     % |
-|-------+---------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                | *54:52* |       |       | 100.0 |
-|-------+---------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                     | 54:52   |       |       | 100.0 |
-|       | Active                                      |         | 54:52 |       | 100.0 |
-| agile | Sprint and product backlog refinement       |         |       |  1:50 |   3.3 |
-| code  | Rerun SQL scripts from scratch              |         |       |  7:52 |  14.3 |
-| code  | Run qt client and validate all new features |         |       |  1:19 |   2.4 |
-| code  | Refactor options and parser                 |         |       |  0:27 |   0.8 |
-| code  | Check functionality in =ores.wt=            |         |       |  2:03 |   3.7 |
-| code  | Rename =ores.shell= to =ores.comms.shell=   |         |       |  1:30 |   2.7 |
-| code  | Review HTTP service                         |         |       |  7:24 |  13.5 |
-| code  | Assorted fixes to currency dialog           |         |       |  4:19 |   7.9 |
-| code  | Add support for offsets in pagination       |         |       |  1:46 |   3.2 |
-| code  | Assorted fixes to feature flags dialog      |         |       |  2:52 |   5.2 |
-| code  | Add country support                         |         |       |  6:31 |  11.9 |
-| code  | Assorted fixes to currencies dialog         |         |       |  6:21 |  11.6 |
-| code  | Review comms analyser work                  |         |       |  0:27 |   0.8 |
-| code  | Review telemetry work                       |         |       | 10:11 |  18.6 |
+#+CAPTION: Clock summary at [2026-01-11 Sun 01:00]
+|       | <75>                                         |         |       |       |       |
+| Tags  | Headline                                     | Time    |       |       |     % |
+|-------+----------------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                                 | *67:05* |       |       | 100.0 |
+|-------+----------------------------------------------+---------+-------+-------+-------|
+|       | Stories                                      | 67:05   |       |       | 100.0 |
+|       | Active                                       |         | 67:05 |       | 100.0 |
+| agile | Sprint and product backlog refinement        |         |       |  1:50 |   2.7 |
+| code  | Rerun SQL scripts from scratch               |         |       |  7:52 |  11.7 |
+| code  | Run qt client and validate all new features  |         |       |  1:19 |   2.0 |
+| code  | Refactor options and parser                  |         |       |  0:27 |   0.7 |
+| code  | Check functionality in =ores.wt=             |         |       |  2:03 |   3.1 |
+| code  | Rename =ores.shell= to =ores.comms.shell=    |         |       |  1:30 |   2.2 |
+| code  | Review HTTP service                          |         |       |  7:24 |  11.0 |
+| code  | Assorted fixes to currency dialog            |         |       |  4:19 |   6.4 |
+| code  | Add support for offsets in pagination        |         |       |  1:46 |   2.6 |
+| code  | Assorted fixes to feature flags dialog       |         |       |  2:52 |   4.3 |
+| code  | Add country support                          |         |       |  6:31 |   9.7 |
+| code  | Amend and delete reasons base infrastructure |         |       |  5:58 |   8.9 |
+| code  | Change reasons UI fixes                      |         |       |  3:34 |   5.3 |
+| code  | Assorted fixes to currencies dialog          |         |       |  7:52 |  11.7 |
+| code  | Assorted fixes to accounts dialog            |         |       |  1:10 |   1.7 |
+| code  | Review comms analyser work                   |         |       |  0:27 |   0.7 |
+| code  | Review telemetry work                        |         |       | 10:11 |  15.2 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -689,111 +692,8 @@ Highlights:
 
 Add standard ISO country codes.
 
-*** STARTED Assorted fixes to currencies dialog                        :code:
+*** COMPLETED Amend and delete reasons base infrastructure             :code:
     :LOGBOOK:
-    CLOCK: [2026-01-09 Fri 08:45]--[2026-01-09 Fri 10:16] =>  1:31
-    CLOCK: [2026-01-09 Fri 00:59]--[2026-01-09 Fri 01:17] =>  0:18
-    CLOCK: [2026-01-08 Thu 23:31]--[2026-01-09 Fri 00:58] =>  1:27
-    CLOCK: [2026-01-08 Thu 08:40]--[2026-01-08 Thu 09:58] =>  1:18
-    CLOCK: [2026-01-07 Wed 23:21]--[2026-01-08 Thu 00:49] =>  1:28
-    CLOCK: [2026-01-07 Wed 23:07]--[2026-01-07 Wed 23:20] =>  0:13
-    CLOCK: [2026-01-07 Wed 16:29]--[2026-01-07 Wed 18:06] =>  1:37
-    :END:
-
-- updating flag does not seem to update after reload. Done.
-- can't see flag changes in history. Done.
-- cannot revert to version in history. Get an error saying incorrect version.
-- on import, are we importing one currency at a time? should import the entire
-  file.
-- should be possible to click on user and see user profile details. If the user
-  is admin, show all details; if not, show only key ones like email, etc.
-- remove maximise button.
-
-*** STARTED Assorted fixes to accounts dialog                          :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-09 Fri 10:16]--[2026-01-09 Fri 11:26] =>  1:10
-    :END:
-
-- on my account, email saved successfully is not very visible. Instead, make
-  save button enabled after changes, once saved disable it. My account should be
-  a regular dialog, allowing you to keep it open and interact with rest of the app.
-- session history should not be maximisable.
-- sessions still have 0 bytes sent and received.
-- add any details such as instance id to session.
-- last login field does not fit the screen.
-- cannot reload account in account details. Need reload button.
-- remove "grant administrative privileges" from details screen.
-- old users remain online. Server should check sessions on start and update
-  table.
-- cannot tell who unlocked an account and when.
-- do not use "old" for accounts who never logged in. Maybe "unused"?
-- at present you can't tell if you asked for a password reset. We probably
-  should use Status to mean: locked, unlocked, reset. And maybe "Age" or "Last
-  Login" to mean: online, never, recent, old.
-- add right-click menu with the context options from the toolbar.
-- after reload, lock etc remember which line we were on and return to it.
-- email updated message is truncated.
-- user cannot lock it's own account.
-
-*** STARTED Review comms analyser work                                 :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-06 Tue 11:48]--[2026-01-06 Tue 12:15] =>  0:27
-    :END:
-
-Need to check this works and add UI for it.
-
-*** STARTED Review telemetry work                                      :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-07 Wed 12:19]--[2026-01-07 Wed 13:40] =>  1:21
-    CLOCK: [2026-01-07 Wed 10:45]--[2026-01-07 Wed 12:18] =>  1:33
-    CLOCK: [2026-01-07 Wed 10:14]--[2026-01-07 Wed 10:44] =>  0:30
-    CLOCK: [2026-01-07 Wed 09:11]--[2026-01-07 Wed 10:13] =>  1:02
-    CLOCK: [2026-01-06 Tue 22:45]--[2026-01-06 Tue 23:40] =>  0:55
-    CLOCK: [2026-01-06 Tue 19:10]--[2026-01-06 Tue 20:00] =>  0:50
-    CLOCK: [2026-01-06 Tue 14:45]--[2026-01-06 Tue 18:45] =>  4:00
-    :END:
-
-It seems we did not add database support for telemetry.
-
-Ores.QT:
-
-- logging about telemetry generates telemetry events. Done.
-- unknown in telemetry. Done.
-
-#+begin_src logviewer
-2026-01-07 12:03:24.195664 [INFO] [ores.telemetry.messaging.telemetry_message_handler] Persisted 29 telemetry log entries from unknown
-#+end_src
-
-- event viewer is always on top
-- can't see timestamps properly in event viewer. can't see event type.
-- make accounts dialog bigger. do not allow resizing.
-- update flag does not update cache in currency dialog.
-
-*** STARTED Event viewer review                                        :code:
-
-- new events raise the dialog.
-- cannot see account created events but can see currencies created.
-- when a user logs in or out it does not generate an event, should it?
-- saving new flag does not save it in server side.
-- non admin users can see roles, update feature flags.
-- account is locked due to many failed attempts: just say account is locked.
-- remove check box in main feature flags table.
-- replace the blurb in feature flags with a simple combo for enabled/disabled.
-- enabling feature flag does not show events in event viewer on any ores.qt,
-  reload does not go yellow.
-- can't add, delete etc for roles. Make dialog bigger, do not allow maximising.
-  Probably has no eventing.
-- cannot add or remove permissions for a role, cannot add new permissions (which
-  probably makes sense?)
-- cannot distinguish accounts created by user or by sign-up.
-- event viewer should have a ring buffer with the last N events. always captures
-  even when dialog is not switched on. We don't know when we want to see events
-  up front.
-- error events should be marked with an error so we can see them quickly.
-
-*** STARTED Amend and delete reasons                                   :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-09 Fri 20:20]
     CLOCK: [2026-01-09 Fri 15:07]--[2026-01-09 Fri 20:00] =>  4:53
     CLOCK: [2026-01-09 Fri 14:01]--[2026-01-09 Fri 15:06] =>  1:05
     :END:
@@ -896,11 +796,193 @@ We need some kind of grouping for the reasons:
 
 And the reason should say if is applicable to amend and/or delete.
 
+*** COMPLETED Change reasons UI fixes                                  :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-10 Sat 23:12]--[2026-01-11 Sun 00:57] =>  1:45
+    CLOCK: [2026-01-10 Sat 07:41]--[2026-01-10 Sat 08:35] =>  0:54
+    CLOCK: [2026-01-09 Fri 20:20]--[2026-01-09 Fri 21:15] =>  0:55
+    :END:
+
+#+begin_quote
+This pull request significantly enhances the system's data integrity and
+auditability by introducing a robust change tracking mechanism. It establishes a
+structured framework for recording and categorizing reasons behind all entity
+modifications, crucial for regulatory compliance and transparent data
+management. This foundational change impacts both the database schema and the
+user interface, ensuring that every alteration is justified and documented.
+
+Highlights:
+
+- Change Tracking Infrastructure: Introduced 'change_reasons' and
+  'change_reason_categories' database tables for comprehensive entity
+  modification tracking.
+- Entity Integration: Integrated 'change_reason_code' and 'change_commentary'
+  fields into all temporal entities across the system for audit trails.
+- Qt User Interface for Management: Implemented a Qt UI for administrators to
+  manage change reason categories and individual reasons.
+- Mandatory Reason Selection: Added a 'ChangeReasonDialog' popup to enforce
+  mandatory reason selection when saving existing entities in the UI.
+- Client-Side Caching: Developed a 'ChangeReasonCache' for efficient client-side
+  caching and event-driven refresh of change reasons.
+- History Visibility: Enhanced entity history dialogs to display the associated
+  change reason and commentary.
+- Protocol Version Update: Updated the messaging protocol version to 21.1,
+  standardizing naming conventions (e.g., 'list' to 'get', 'create'/'update' to
+  'save') and incorporating change tracking fields.
+#+end_quote
+
+Review:
+
+- both: missing reason for change in change reasons. Done.
+- categories: does not ask for reason on save, no option to add comment. Done.
+- categories: remove description from main list, add header configuration so
+  users can add them if they want. Done
+- change reasons are not showing categories in combo box. would be nice if there
+  was a box to show the category details near the combo box. Done.
+- both: recorded at uses human readable time but no other dialog does. Done.
+- change reason: make description a bigger box. Done.
+- change reason cannot save. Done.
+- history: don't need change reason and commentary in full details, it's already
+  at the top. Done.
+- save dialog: rename "save changes" to just "save". Done.
+- details dialogs: should allow save even when no fields have changed, but then
+  it should be hard coded to touch. will be checked on the server side. Done.
+- save dialog: cannot be touch if any of the fields changed. will be checked on
+  the server side. Done.
+- details dialogs: meta-data missing change management fields. Done.
+- code: CHECK_DIFF_STRING: why not use a regular c++ function? avoid macros. Done.
+- both change management dialogs: should be possible to add, delete and edit. Done.
+- change reason: code column should be wider.
+- change reason: commentary column is too narrow.
+- both change management dialogs: remove description, will show in details dialog.
+- change reason: is grid following CSS with spacing, etc? Done.
+- both change management dialogs: recorded at should use human readable time. Done.
+- both change management dialogs: icons not following skill icon-guidelines. Done.
+- both change management dialogs: no history. Done.
+- both change management dialogs: details is not a standard details window like
+  all other details. Done.
+- change reason: use emblems like we do in accounts for yes and no, with yes in
+  green. Done.
+- both change management: menu icons for change are not very
+  informative. have a look at the icons for change reasons and change reason
+  categories: /home/marco/Development/fluentui-system-icons-mayin/assets. Done.
+- both change management dialogs: not using standard icons. see skill
+  icon-guidelines. Done.
+- refactor: have a common save dialog.
+
+*** COMPLETED Assorted fixes to currencies dialog                      :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-09 Fri 08:45]--[2026-01-09 Fri 10:16] =>  1:31
+    CLOCK: [2026-01-09 Fri 00:59]--[2026-01-09 Fri 01:17] =>  0:18
+    CLOCK: [2026-01-08 Thu 23:31]--[2026-01-09 Fri 00:58] =>  1:27
+    CLOCK: [2026-01-08 Thu 08:40]--[2026-01-08 Thu 09:58] =>  1:18
+    CLOCK: [2026-01-07 Wed 23:21]--[2026-01-08 Thu 00:49] =>  1:28
+    CLOCK: [2026-01-07 Wed 23:07]--[2026-01-07 Wed 23:20] =>  0:13
+    CLOCK: [2026-01-07 Wed 16:29]--[2026-01-07 Wed 18:06] =>  1:37
+    :END:
+
+- updating flag does not seem to update after reload. Done.
+- can't see flag changes in history. Done.
+- cannot revert to version in history. Get an error saying incorrect version.
+  Done.
+
+*** STARTED Assorted fixes to accounts dialog                          :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-09 Fri 10:16]--[2026-01-09 Fri 11:26] =>  1:10
+    :END:
+
+- on my account, email saved successfully is not very visible. Instead, make
+  save button enabled after changes, once saved disable it. My account should be
+  a regular dialog, allowing you to keep it open and interact with rest of the app.
+- session history should not be maximisable.
+- sessions still have 0 bytes sent and received.
+- add any details such as instance id to session.
+- last login field does not fit the screen.
+- cannot reload account in account details. Need reload button.
+- remove "grant administrative privileges" from details screen.
+- old users remain online. Server should check sessions on start and update
+  table.
+- cannot tell who unlocked an account and when.
+- do not use "old" for accounts who never logged in. Maybe "unused"?
+- at present you can't tell if you asked for a password reset. We probably
+  should use Status to mean: locked, unlocked, reset. And maybe "Age" or "Last
+  Login" to mean: online, never, recent, old.
+- add right-click menu with the context options from the toolbar.
+- after reload, lock etc remember which line we were on and return to it.
+- email updated message is truncated.
+- user cannot lock it's own account.
+
+*** STARTED Review comms analyser work                                 :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-06 Tue 11:48]--[2026-01-06 Tue 12:15] =>  0:27
+    :END:
+
+Need to check this works and add UI for it.
+
+*** STARTED Review telemetry work                                      :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-07 Wed 12:19]--[2026-01-07 Wed 13:40] =>  1:21
+    CLOCK: [2026-01-07 Wed 10:45]--[2026-01-07 Wed 12:18] =>  1:33
+    CLOCK: [2026-01-07 Wed 10:14]--[2026-01-07 Wed 10:44] =>  0:30
+    CLOCK: [2026-01-07 Wed 09:11]--[2026-01-07 Wed 10:13] =>  1:02
+    CLOCK: [2026-01-06 Tue 22:45]--[2026-01-06 Tue 23:40] =>  0:55
+    CLOCK: [2026-01-06 Tue 19:10]--[2026-01-06 Tue 20:00] =>  0:50
+    CLOCK: [2026-01-06 Tue 14:45]--[2026-01-06 Tue 18:45] =>  4:00
+    :END:
+
+It seems we did not add database support for telemetry.
+
+Ores.QT:
+
+- logging about telemetry generates telemetry events. Done.
+- unknown in telemetry. Done.
+
+#+begin_src logviewer
+2026-01-07 12:03:24.195664 [INFO] [ores.telemetry.messaging.telemetry_message_handler] Persisted 29 telemetry log entries from unknown
+#+end_src
+
+- event viewer is always on top
+- can't see timestamps properly in event viewer. can't see event type.
+- make accounts dialog bigger. do not allow resizing.
+- update flag does not update cache in currency dialog.
+
+*** STARTED Event viewer review                                        :code:
+
+- new events raise the dialog.
+- cannot see account created events but can see currencies created.
+- when a user logs in or out it does not generate an event, should it?
+- saving new flag does not save it in server side.
+- non admin users can see roles, update feature flags.
+- account is locked due to many failed attempts: just say account is locked.
+- remove check box in main feature flags table.
+- replace the blurb in feature flags with a simple combo for enabled/disabled.
+- enabling feature flag does not show events in event viewer on any ores.qt,
+  reload does not go yellow.
+- can't add, delete etc for roles. Make dialog bigger, do not allow maximising.
+  Probably has no eventing.
+- cannot add or remove permissions for a role, cannot add new permissions (which
+  probably makes sense?)
+- cannot distinguish accounts created by user or by sign-up.
+- event viewer should have a ring buffer with the last N events. always captures
+  even when dialog is not switched on. We don't know when we want to see events
+  up front.
+- error events should be marked with an error so we can see them quickly.
+
+*** Add support for staging                                            :code:
+
+- on import, are we importing one currency at a time? should import the entire
+  file.
+
 *** Non-classified observations                                    :analysis:
 
 Observations, snags and so forth that have not been analysed to form a proper
 story.
 
+- should be possible to click on user and see user profile details. If the user
+  is admin, show all details; if not, show only key ones like email, etc.
+- remove maximise button.
+- test suites need to log version at the start. info script needs to grep log
+  for version for all suites.
 - no generators for roles and permissions it seems.
 - we still have the legacy password salt field.
 - should role permission tables have change reasons?

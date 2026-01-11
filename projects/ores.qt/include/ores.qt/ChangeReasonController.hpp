@@ -26,10 +26,12 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/change_reason.hpp"
+#include "ores.iam/domain/change_reason_category.hpp"
 
 namespace ores::qt {
 
 class ChangeReasonMdiWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for change reason management windows.
@@ -55,6 +57,7 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
+        ChangeReasonCache* changeReasonCache,
         QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);
 
@@ -69,14 +72,18 @@ private slots:
     void onShowHistory(const QString& code);
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
                                 const QStringList& entityIds);
+    void onOpenVersion(const iam::domain::change_reason& reason, int versionNumber);
+    void onRevertVersion(const iam::domain::change_reason& reason);
 
 private:
     void showDetailWindow(const iam::domain::change_reason& reason);
     void showAddWindow();
+    void showHistoryWindow(const QString& code);
 
 private:
     ChangeReasonMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
+    ChangeReasonCache* changeReasonCache_;
     QList<DetachableMdiSubWindow*>& allDetachableWindows_;
 };
 

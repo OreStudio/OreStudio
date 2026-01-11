@@ -24,7 +24,9 @@
 #include <cli/cli.h>
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.risk/messaging/currency_protocol.hpp"
+#include "ores.risk/messaging/currency_history_protocol.hpp"
 #include "ores.risk/domain/currency_table_io.hpp" // IWYU pragma: keep.
+#include "ores.risk/domain/currency_version_table_io.hpp" // IWYU pragma: keep.
 
 namespace ores::comms::shell::app::commands {
 
@@ -50,6 +52,18 @@ register_commands(cli::Menu& root_menu, client_session& session) {
             std::move(numeric_code), std::move(symbol),
             std::move(fractions_per_unit));
     }, "Add a currency (iso_code name [numeric_code] [symbol] [fractions_per_unit])");
+
+    currencies_menu->Insert("delete", [&session](std::ostream& out,
+            std::string iso_code) {
+        process_delete_currency(std::ref(out), std::ref(session),
+            std::move(iso_code));
+    }, "Delete a currency by ISO code");
+
+    currencies_menu->Insert("history", [&session](std::ostream& out,
+            std::string iso_code) {
+        process_get_currency_history(std::ref(out), std::ref(session),
+            std::move(iso_code));
+    }, "Get version history for a currency by ISO code");
 
     root_menu.Insert(std::move(currencies_menu));
 }
@@ -136,6 +150,93 @@ process_add_currency(std::ostream& out, client_session& session,
                                   << response.message;
         out << "✗ Failed to add currency: " << response.message << std::endl;
     }
+}
+
+void currencies_commands::
+process_delete_currency(std::ostream& out, client_session& session,
+    std::string iso_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating delete currency request for: "
+                               << iso_code;
+
+    // Check if logged in
+    if (!session.session_info()) {
+        out << "✗ You must be logged in to delete a currency." << std::endl;
+        return;
+    }
+
+    using risk::messaging::delete_currency_request;
+    using risk::messaging::delete_currency_response;
+    auto result = session.process_authenticated_request<delete_currency_request,
+                                                        delete_currency_response,
+                                                        message_type::delete_currency_request>
+        (delete_currency_request{.iso_codes = {std::move(iso_code)}});
+
+    if (!result) {
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
+        return;
+    }
+
+    const auto& response = *result;
+    if (response.results.empty()) {
+        out << "✗ No results returned from server." << std::endl;
+        return;
+    }
+
+    const auto& delete_result = response.results[0];
+    if (delete_result.success) {
+        BOOST_LOG_SEV(lg(), info) << "Successfully deleted currency: "
+                                  << delete_result.iso_code;
+        out << "✓ Currency " << delete_result.iso_code
+            << " deleted successfully!" << std::endl;
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete currency: "
+                                  << delete_result.message;
+        out << "✗ Failed to delete currency: " << delete_result.message
+            << std::endl;
+    }
+}
+
+void currencies_commands::
+process_get_currency_history(std::ostream& out, client_session& session,
+    std::string iso_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get currency history for: "
+                               << iso_code;
+
+    // Check if logged in
+    if (!session.session_info()) {
+        out << "✗ You must be logged in to get currency history." << std::endl;
+        return;
+    }
+
+    using risk::messaging::get_currency_history_request;
+    using risk::messaging::get_currency_history_response;
+    auto result = session.process_authenticated_request<get_currency_history_request,
+                                                        get_currency_history_response,
+                                                        message_type::get_currency_history_request>
+        (get_currency_history_request{.iso_code = std::move(iso_code)});
+
+    if (!result) {
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
+        return;
+    }
+
+    const auto& response = *result;
+    if (!response.success) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get currency history: "
+                                  << response.message;
+        out << "✗ " << response.message << std::endl;
+        return;
+    }
+
+    if (response.history.versions.empty()) {
+        out << "No history found for this currency." << std::endl;
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                              << response.history.versions.size()
+                              << " history records.";
+    out << response.history.versions << std::endl;
 }
 
 }

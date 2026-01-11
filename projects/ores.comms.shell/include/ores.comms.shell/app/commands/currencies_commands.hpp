@@ -84,6 +84,32 @@ public:
         std::string iso_code, std::string name,
         std::string numeric_code, std::string symbol,
         std::string fractions_per_unit);
+
+    /**
+     * @brief Process a delete currency request.
+     *
+     * Deletes a currency by its ISO code. Requires authentication.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param iso_code ISO 4217 code of the currency to delete
+     */
+    static void process_delete_currency(std::ostream& out,
+        comms::net::client_session& session,
+        std::string iso_code);
+
+    /**
+     * @brief Process a get currency history request.
+     *
+     * Retrieves the version history for a currency by its ISO code.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param iso_code ISO 4217 code of the currency
+     */
+    static void process_get_currency_history(std::ostream& out,
+        comms::net::client_session& session,
+        std::string iso_code);
 };
 
 }

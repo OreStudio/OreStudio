@@ -22,7 +22,8 @@
 #include <ostream>
 #include <functional>
 #include <cli/cli.h>
-#include "ores.variability/messaging/protocol.hpp"
+#include "ores.comms/messaging/message_types.hpp"
+#include "ores.variability/messaging/feature_flags_protocol.hpp"
 #include "ores.variability/domain/feature_flags_table_io.hpp"  // IWYU pragma: keep.
 
 namespace ores::comms::shell::app::commands {
@@ -40,6 +41,26 @@ register_commands(cli::Menu& root_menu, client_session& session) {
         process_list_feature_flags(std::ref(out), std::ref(session));
     }, "Retrieve all feature flags from the server");
 
+    variability_menu->Insert("add-flag", [&session](std::ostream& out,
+            std::string name, std::string enabled, std::string description,
+            std::string change_reason_code, std::string change_commentary) {
+        process_add_feature_flag(std::ref(out), std::ref(session),
+            std::move(name), std::move(enabled), std::move(description),
+            std::move(change_reason_code), std::move(change_commentary));
+    }, "Add a feature flag (name enabled description reason_code \"commentary\")");
+
+    variability_menu->Insert("delete-flag", [&session](std::ostream& out,
+            std::string name) {
+        process_delete_feature_flag(std::ref(out), std::ref(session),
+            std::move(name));
+    }, "Delete a feature flag by name");
+
+    variability_menu->Insert("flag-history", [&session](std::ostream& out,
+            std::string name) {
+        process_get_feature_flag_history(std::ref(out), std::ref(session),
+            std::move(name));
+    }, "Get version history for a feature flag by name");
+
     root_menu.Insert(std::move(variability_menu));
 }
 
@@ -51,13 +72,145 @@ process_list_feature_flags(std::ostream& out, client_session& session) {
     auto result = session.process_request(get_feature_flags_request{});
 
     if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
                               << result->feature_flags.size() << " feature flags.";
     out << result->feature_flags << std::endl;
+}
+
+void variability_commands::
+process_add_feature_flag(std::ostream& out, client_session& session,
+    std::string name, std::string enabled, std::string description,
+    std::string change_reason_code, std::string change_commentary) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating add feature flag request for: "
+                               << name;
+
+    // Check if logged in
+    if (!session.session_info()) {
+        out << "✗ You must be logged in to add a feature flag." << std::endl;
+        return;
+    }
+    const auto& recorded_by = session.session_info()->username;
+
+    // Parse enabled flag
+    bool is_enabled = (enabled == "true" || enabled == "1" || enabled == "yes");
+
+    using variability::messaging::save_feature_flag_request;
+    using variability::messaging::save_feature_flag_response;
+    auto result = session.process_authenticated_request<save_feature_flag_request,
+                                                        save_feature_flag_response,
+                                                        message_type::save_feature_flag_request>
+        (save_feature_flag_request{
+            .flag = variability::domain::feature_flags{
+                .version = 0,
+                .enabled = is_enabled,
+                .name = std::move(name),
+                .description = std::move(description),
+                .recorded_by = recorded_by,
+                .change_reason_code = std::move(change_reason_code),
+                .change_commentary = std::move(change_commentary),
+                .recorded_at = std::chrono::system_clock::now()
+            }
+        });
+
+    if (!result) {
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
+        return;
+    }
+
+    const auto& response = *result;
+    if (response.success) {
+        BOOST_LOG_SEV(lg(), info) << "Successfully added feature flag.";
+        out << "✓ Feature flag added successfully!" << std::endl;
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to add feature flag: "
+                                  << response.error_message;
+        out << "✗ Failed to add feature flag: " << response.error_message
+            << std::endl;
+    }
+}
+
+void variability_commands::
+process_delete_feature_flag(std::ostream& out, client_session& session,
+    std::string name) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating delete feature flag request for: "
+                               << name;
+
+    // Check if logged in
+    if (!session.session_info()) {
+        out << "✗ You must be logged in to delete a feature flag." << std::endl;
+        return;
+    }
+
+    using variability::messaging::delete_feature_flag_request;
+    using variability::messaging::delete_feature_flag_response;
+    auto result = session.process_authenticated_request<delete_feature_flag_request,
+                                                        delete_feature_flag_response,
+                                                        message_type::delete_feature_flag_request>
+        (delete_feature_flag_request{.name = std::move(name)});
+
+    if (!result) {
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
+        return;
+    }
+
+    const auto& response = *result;
+    if (response.success) {
+        BOOST_LOG_SEV(lg(), info) << "Successfully deleted feature flag.";
+        out << "✓ Feature flag deleted successfully!" << std::endl;
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete feature flag: "
+                                  << response.error_message;
+        out << "✗ Failed to delete feature flag: " << response.error_message
+            << std::endl;
+    }
+}
+
+void variability_commands::
+process_get_feature_flag_history(std::ostream& out, client_session& session,
+    std::string name) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get feature flag history for: "
+                               << name;
+
+    // Check if logged in
+    if (!session.session_info()) {
+        out << "✗ You must be logged in to get feature flag history."
+            << std::endl;
+        return;
+    }
+
+    using variability::messaging::get_feature_flag_history_request;
+    using variability::messaging::get_feature_flag_history_response;
+    auto result = session.process_authenticated_request<
+        get_feature_flag_history_request,
+        get_feature_flag_history_response,
+        message_type::get_feature_flag_history_request>
+        (get_feature_flag_history_request{.name = std::move(name)});
+
+    if (!result) {
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
+        return;
+    }
+
+    const auto& response = *result;
+    if (!response.success) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get feature flag history: "
+                                  << response.message;
+        out << "✗ " << response.message << std::endl;
+        return;
+    }
+
+    if (response.history.empty()) {
+        out << "No history found for this feature flag." << std::endl;
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                              << response.history.size() << " history records.";
+    out << response.history << std::endl;
 }
 
 }

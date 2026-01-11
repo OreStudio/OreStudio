@@ -44,6 +44,8 @@ using the org-mode publishing system.
   ores.comms.shell including list, add, history, and other operations.
 - [[id:bdcc47d4-b050-409e-8c50-3d179843a274][HTTP Entity Creator]]: Create HTTP REST API endpoints for domain entities in
   ores.http.server including CRUD operations and history.
+- [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][CLI Entity Creator]]: Create CLI commands for domain entities in ores.cli
+  including import, export, list, delete, and add operations.
 - [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator]]: Create SQL table definitions, triggers, and population scripts.
 - [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer]]: Generate Catch2 unit tests following ORE Studio conventions.
 - [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Summary]]: Generate a title and summary for an open PR of the work in this

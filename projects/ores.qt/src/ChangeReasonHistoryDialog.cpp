@@ -192,12 +192,15 @@ void ChangeReasonHistoryDialog::onHistoryLoaded() {
             new QTableWidgetItem(relative_time_helper::format(version.recorded_at));
         auto* recordedByItem =
             new QTableWidgetItem(QString::fromStdString(version.recorded_by));
+        auto* commentaryItem =
+            new QTableWidgetItem(QString::fromStdString(version.change_commentary));
 
         versionItem->setIcon(cachedIcon);
 
         ui_->versionListWidget->setItem(i, 0, versionItem);
         ui_->versionListWidget->setItem(i, 1, recordedAtItem);
         ui_->versionListWidget->setItem(i, 2, recordedByItem);
+        ui_->versionListWidget->setItem(i, 3, commentaryItem);
     }
 
     if (!versions_.empty())

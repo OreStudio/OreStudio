@@ -66,6 +66,11 @@
         <string>Recorded By</string>
        </property>
       </column>
+      <column>
+       <property name="text">
+        <string>Commentary</string>
+       </property>
+      </column>
      </widget>
      <widget class="QWidget" name="detailWidget">
       <layout class="QVBoxLayout" name="detailLayout">

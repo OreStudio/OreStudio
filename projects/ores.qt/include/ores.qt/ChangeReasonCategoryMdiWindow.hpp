@@ -86,13 +86,19 @@ private slots:
     void onSelectionChanged();
     void onDoubleClicked(const QModelIndex& index);
 
+private slots:
+    void showHeaderContextMenu(const QPoint& pos);
+
 private:
     void setupUi();
     void setupToolbar();
     void setupTable();
+    void setupColumnVisibility();
     void setupConnections();
     void startPulseAnimation();
     void updateActionStates();
+    void saveSettings();
+    void restoreSettings();
 
     ClientManager* clientManager_;
     QString username_;

@@ -486,6 +486,12 @@ void ChangeReasonController::onRevertVersion(
     auto* detailDialog = new ChangeReasonDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+
+    // Load categories for the combo box
+    if (changeReasonCache_ && changeReasonCache_->isLoaded()) {
+        detailDialog->setCategories(changeReasonCache_->allCategories());
+    }
+
     detailDialog->setChangeReason(reason);
     detailDialog->setCreateMode(false);
 

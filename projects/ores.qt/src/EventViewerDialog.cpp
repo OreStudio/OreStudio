@@ -46,7 +46,7 @@
 #include "ores.iam/eventing/account_changed_event.hpp"
 #include "ores.iam/eventing/role_assigned_event.hpp"
 #include "ores.iam/eventing/role_revoked_event.hpp"
-#include "ores.iam/eventing/permissions_changed_event.hpp"
+#include "ores.iam/eventing/account_permissions_changed_event.hpp"
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
@@ -470,8 +470,8 @@ void EventViewerWindow::subscribeToEvents() {
             }));
 
     subscriptions_.push_back(
-        eventBus_->subscribe<iam::eventing::permissions_changed_event>(
-            [this](const iam::eventing::permissions_changed_event& e) {
+        eventBus_->subscribe<iam::eventing::account_permissions_changed_event>(
+            [this](const iam::eventing::account_permissions_changed_event& e) {
                 QJsonObject json;
                 json["timestamp"] = formatTimestamp(e.timestamp);
                 json["account_id"] = QString::fromStdString(
@@ -485,7 +485,7 @@ void EventViewerWindow::subscribeToEvents() {
                 EventRecord record{
                     toQDateTime(e.timestamp),
                     QString::fromUtf8(eventing::domain::event_traits<
-                        iam::eventing::permissions_changed_event>::name),
+                        iam::eventing::account_permissions_changed_event>::name),
                     "local",
                     QString("Permissions changed (%1 permission(s))")
                         .arg(e.permission_codes.size()),

@@ -242,13 +242,17 @@ boost::asio::awaitable<void> client::perform_connection() {
 
     // Start message loop in background (single reader for all responses)
     // Only needed when using correlation-based request/response or heartbeat
-    if (config_.heartbeat_enabled && !message_loop_running_) {
+    // Skip if shutdown was requested to avoid spawning new coroutines during disconnect
+    if (config_.heartbeat_enabled && !message_loop_running_ &&
+        !shutdown_requested_.load(std::memory_order_acquire)) {
         boost::asio::co_spawn(exec, run_message_loop(), boost::asio::detached);
         BOOST_LOG_SEV(lg(), debug) << "Message loop started";
     }
 
     // Start heartbeat in background (only if not already running)
-    if (config_.heartbeat_enabled && !heartbeat_loop_running_) {
+    // Skip if shutdown was requested
+    if (config_.heartbeat_enabled && !heartbeat_loop_running_ &&
+        !shutdown_requested_.load(std::memory_order_acquire)) {
         boost::asio::co_spawn(exec, run_heartbeat(), boost::asio::detached);
         BOOST_LOG_SEV(lg(), info) << "Heartbeat enabled with interval: "
                                    << config_.heartbeat_interval_seconds << "s";
@@ -437,6 +441,14 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
         co_return;
     }
 
+    // Exit immediately if shutdown was requested
+    if (shutdown_requested_.load(std::memory_order_acquire)) {
+        BOOST_LOG_SEV(lg(), debug) << "Reconnect loop exiting due to shutdown request";
+        reconnect_loop_running_ = false;
+        notify_shutdown_if_complete();
+        co_return;
+    }
+
     BOOST_LOG_SEV(lg(), info) << "Starting reconnection loop";
 
     const auto max_attempts = config_.retry.max_attempts;
@@ -444,9 +456,10 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
     boost::asio::steady_timer timer(exec);
 
     for (std::uint32_t attempt = 0; attempt < max_attempts; ++attempt) {
-        // Check if we should still try to reconnect
-        if (state_.load(std::memory_order_acquire) != connection_state::reconnecting) {
-            BOOST_LOG_SEV(lg(), debug) << "Reconnect cancelled, state changed";
+        // Check if we should still try to reconnect or if shutdown was requested
+        if (shutdown_requested_.load(std::memory_order_acquire) ||
+            state_.load(std::memory_order_acquire) != connection_state::reconnecting) {
+            BOOST_LOG_SEV(lg(), debug) << "Reconnect cancelled, state changed or shutdown requested";
             break;
         }
 
@@ -476,6 +489,7 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
                     }
                 }
                 reconnect_loop_running_ = false;
+                notify_shutdown_if_complete();
                 co_return;
             }
 
@@ -500,6 +514,7 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
             }
 
             reconnect_loop_running_ = false;
+            notify_shutdown_if_complete();
             co_return;
         } catch (const connection_error& e) {
             // Check if this was an intentional abort (user disconnect)
@@ -554,6 +569,7 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
         // User called disconnect() - this is an intentional cancellation, not a failure
         BOOST_LOG_SEV(lg(), info) << "Reconnection cancelled by user disconnect";
         reconnect_loop_running_ = false;
+        notify_shutdown_if_complete();
         co_return;
     }
 
@@ -584,12 +600,16 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
     }
 
     reconnect_loop_running_ = false;
+    notify_shutdown_if_complete();
 }
 
 void client::disconnect() {
     BOOST_LOG_SEV(lg(), debug) << "Disconnecting from server";
 
-    // First mark as disconnected to stop the message loop and reconnect loop
+    // Signal shutdown to all coroutines
+    shutdown_requested_.store(true, std::memory_order_release);
+
+    // Mark as disconnected to stop the message loop and reconnect loop
     state_.store(connection_state::disconnected, std::memory_order_release);
 
     // Close the connection (this will cancel pending async operations)
@@ -610,6 +630,41 @@ void client::disconnect() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Disconnected from server";
+}
+
+bool client::await_shutdown(std::chrono::milliseconds timeout) {
+    BOOST_LOG_SEV(lg(), debug) << "Waiting for coroutines to complete (timeout: "
+                               << timeout.count() << "ms)";
+
+    std::unique_lock lock{shutdown_mutex_};
+    bool completed = shutdown_cv_.wait_for(lock, timeout, [this]() {
+        return !message_loop_running_.load(std::memory_order_acquire) &&
+               !reconnect_loop_running_.load(std::memory_order_acquire) &&
+               !heartbeat_loop_running_.load(std::memory_order_acquire);
+    });
+
+    if (completed) {
+        BOOST_LOG_SEV(lg(), debug) << "All coroutines have stopped";
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Timeout waiting for coroutines to stop. "
+                                  << "message_loop=" << message_loop_running_.load()
+                                  << ", reconnect_loop=" << reconnect_loop_running_.load()
+                                  << ", heartbeat_loop=" << heartbeat_loop_running_.load();
+    }
+
+    return completed;
+}
+
+void client::notify_shutdown_if_complete() {
+    // Only notify if shutdown was requested and all loops have stopped
+    if (shutdown_requested_.load(std::memory_order_acquire)) {
+        if (!message_loop_running_.load(std::memory_order_acquire) &&
+            !reconnect_loop_running_.load(std::memory_order_acquire) &&
+            !heartbeat_loop_running_.load(std::memory_order_acquire)) {
+            BOOST_LOG_SEV(lg(), debug) << "All coroutines stopped, notifying shutdown waiters";
+            shutdown_cv_.notify_all();
+        }
+    }
 }
 
 bool client::is_connected() const {
@@ -698,6 +753,14 @@ boost::asio::awaitable<void> client::run_heartbeat() {
         co_return;
     }
 
+    // Exit immediately if shutdown was requested
+    if (shutdown_requested_.load(std::memory_order_acquire)) {
+        BOOST_LOG_SEV(lg(), debug) << "Heartbeat loop exiting due to shutdown request";
+        heartbeat_loop_running_ = false;
+        notify_shutdown_if_complete();
+        co_return;
+    }
+
     BOOST_LOG_SEV(lg(), debug) << "Starting heartbeat loop with interval: "
                                << config_.heartbeat_interval_seconds << "s";
 
@@ -705,7 +768,7 @@ boost::asio::awaitable<void> client::run_heartbeat() {
         auto exec = co_await boost::asio::this_coro::executor;
         boost::asio::steady_timer timer(exec);
 
-        while (is_connected()) {
+        while (is_connected() && !shutdown_requested_.load(std::memory_order_acquire)) {
             // Wait for the configured interval
             timer.expires_after(std::chrono::seconds(config_.heartbeat_interval_seconds));
             co_await timer.async_wait(boost::asio::use_awaitable);
@@ -772,6 +835,7 @@ boost::asio::awaitable<void> client::run_heartbeat() {
 
     heartbeat_loop_running_ = false;
     BOOST_LOG_SEV(lg(), debug) << "Heartbeat loop ended";
+    notify_shutdown_if_complete();
 }
 
 boost::asio::awaitable<std::expected<messaging::frame, ores::utility::serialization::error_code>>
@@ -955,10 +1019,18 @@ boost::asio::awaitable<void> client::run_message_loop() {
         co_return;
     }
 
+    // Exit immediately if shutdown was requested
+    if (shutdown_requested_.load(std::memory_order_acquire)) {
+        BOOST_LOG_SEV(lg(), debug) << "Message loop exiting due to shutdown request";
+        message_loop_running_ = false;
+        notify_shutdown_if_complete();
+        co_return;
+    }
+
     BOOST_LOG_SEV(lg(), debug) << "Starting message loop";
 
     try {
-        while (is_connected()) {
+        while (is_connected() && !shutdown_requested_.load(std::memory_order_acquire)) {
             // Safely get connection pointer under lock
             connection* conn_ptr = nullptr;
             {
@@ -1076,7 +1148,9 @@ boost::asio::awaitable<void> client::run_message_loop() {
     reconnecting_callback_t reconnecting_cb;
 
     // Only auto-reconnect if we were connected (not explicitly disconnected)
-    if (config_.retry.auto_reconnect && config_.retry.max_attempts > 0) {
+    // and shutdown was not requested
+    if (!shutdown_requested_.load(std::memory_order_acquire) &&
+        config_.retry.auto_reconnect && config_.retry.max_attempts > 0) {
         auto expected = connection_state::connected;
         if (state_.compare_exchange_strong(expected, connection_state::reconnecting,
                 std::memory_order_acq_rel)) {
@@ -1096,7 +1170,8 @@ boost::asio::awaitable<void> client::run_message_loop() {
             std::memory_order_acq_rel);
     }
 
-    if (should_reconnect) {
+    // Re-check shutdown before invoking callbacks or spawning coroutines
+    if (should_reconnect && !shutdown_requested_.load(std::memory_order_acquire)) {
         // Publish reconnecting event to event bus
         if (event_bus_) {
             event_bus_->publish(comms::eventing::reconnecting_event{
@@ -1112,6 +1187,9 @@ boost::asio::awaitable<void> client::run_message_loop() {
         // Spawn reconnect loop - it will invoke disconnect callback if all retries fail
         auto exec = co_await boost::asio::this_coro::executor;
         boost::asio::co_spawn(exec, run_reconnect_loop(), boost::asio::detached);
+    } else if (should_reconnect) {
+        // Shutdown was requested between check and here, just exit
+        BOOST_LOG_SEV(lg(), debug) << "Skipping reconnect due to shutdown request";
     } else {
         // Publish disconnected event to event bus
         if (event_bus_) {
@@ -1133,6 +1211,9 @@ boost::asio::awaitable<void> client::run_message_loop() {
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Message loop ended";
+
+    // Notify shutdown waiters if all coroutines have stopped
+    notify_shutdown_if_complete();
 }
 
 }

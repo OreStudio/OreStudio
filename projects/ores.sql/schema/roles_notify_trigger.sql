@@ -17,39 +17,37 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
-
--- Trigger function to send notifications on feature flag changes
-create or replace function ores.notify_feature_flags_changes()
+-- Trigger function to send notifications on role changes
+create or replace function ores.notify_role_changes()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.variability.feature_flag';
+    entity_name text := 'ores.iam.role';
     change_timestamp timestamptz := NOW();
-    changed_flag_name text;
+    changed_id text;
 begin
-    -- Get the name of the changed flag
+    -- Get the id of the changed role
     if TG_OP = 'DELETE' then
-        changed_flag_name := OLD.name;
+        changed_id := OLD.id::text;
     else
-        changed_flag_name := NEW.name;
+        changed_id := NEW.id::text;
     end if;
 
     -- Construct the JSON payload with entity_ids
     notification_payload := jsonb_build_object(
         'entity', entity_name,
         'timestamp', to_char(change_timestamp, 'YYYY-MM-DD HH24:MI:SS'),
-        'entity_ids', jsonb_build_array(changed_flag_name)
+        'entity_ids', jsonb_build_array(changed_id)
     );
 
-    -- Notify on the 'ores_feature_flags' channel
-    perform pg_notify('ores_feature_flags', notification_payload::text);
+    -- Notify on the 'ores_roles' channel
+    perform pg_notify('ores_roles', notification_payload::text);
 
     return null; -- AFTER triggers can return NULL
 end;
 $$ language plpgsql;
 
--- Trigger to fire after insert, update, or delete on the feature_flags table
-create or replace trigger feature_flags_change_notify_trigger
-after insert or update or delete on ores.feature_flags
-for each row execute function ores.notify_feature_flags_changes();
+-- Trigger to fire after insert, update, or delete on the roles table
+create or replace trigger role_change_notify_trigger
+after insert or update or delete on ores.roles
+for each row execute function ores.notify_role_changes();

@@ -171,8 +171,13 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // New messages: save_change_reason_request/response, delete_change_reason_request/response,
 // get_change_reason_history_request/response, save_change_reason_category_request/response,
 // delete_change_reason_category_request/response, get_change_reason_category_history_request/response.
+//
+// Version 21.3 adds event channel discovery. New messages:
+// list_event_channels_request/response (0x0015/0x0016) for querying available
+// event channels that clients can subscribe to. This replaces hardcoded channel
+// lists in clients with server-provided discovery.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 21;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 2;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 3;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -217,6 +222,8 @@ enum class message_type {
     unsubscribe_request = 0x0012,
     unsubscribe_response = 0x0013,
     notification = 0x0014,
+    list_event_channels_request = 0x0015,
+    list_event_channels_response = 0x0016,
 
     // System status notifications (0x0020 - 0x002F)
     database_status_notification = 0x0020,

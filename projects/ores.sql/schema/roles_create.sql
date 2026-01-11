@@ -89,6 +89,9 @@ begin
         new.modified_by = current_user;
     end if;
 
+    -- Validate and default change_reason_code
+    new.change_reason_code := ores.validate_and_default_change_reason(new.change_reason_code);
+
     return new;
 end;
 $$ language plpgsql;

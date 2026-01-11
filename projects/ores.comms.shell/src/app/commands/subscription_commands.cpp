@@ -19,12 +19,12 @@
  */
 #include "ores.comms.shell/app/commands/subscription_commands.hpp"
 
-#include <array>
 #include <ostream>
 #include <vector>
 #include <functional>
 #include <cli/cli.h>
 #include "ores.platform/time/datetime.hpp"
+#include "ores.comms/messaging/subscription_protocol.hpp"
 
 namespace ores::comms::shell::app::commands {
 
@@ -32,31 +32,12 @@ using namespace ores::logging;
 using comms::net::client_session;
 using platform::time::datetime;
 
-namespace {
-
-/**
- * @brief Known event channels available for subscription.
- *
- * These are the event types that can be subscribed to via the listen command.
- * Event types follow the pattern: ores.<module>.<event_name>
- */
-constexpr std::array known_channels = {
-    std::pair{"ores.risk.currency_changed", "Currency data modified"},
-    std::pair{"ores.iam.account_changed", "Account data modified"},
-    std::pair{"ores.iam.role_assigned", "Role assigned to account"},
-    std::pair{"ores.iam.role_revoked", "Role revoked from account"},
-    std::pair{"ores.iam.permissions_changed", "Account permissions modified"},
-    std::pair{"ores.variability.feature_flags_changed", "Feature flags modified"},
-};
-
-} // anonymous namespace
-
 void subscription_commands::
 register_commands(cli::Menu& root_menu, client_session& session) {
     auto events_menu = std::make_unique<cli::Menu>("events");
 
-    events_menu->Insert("channels", [](std::ostream& out) {
-        process_channels(out);
+    events_menu->Insert("channels", [&session](std::ostream& out) {
+        process_channels(std::ref(out), std::ref(session));
     }, "List available event channels");
 
     events_menu->Insert("listen", [&session](std::ostream& out,
@@ -83,10 +64,29 @@ register_commands(cli::Menu& root_menu, client_session& session) {
 }
 
 void subscription_commands::
-process_channels(std::ostream& out) {
+process_channels(std::ostream& out, client_session& session) {
+    if (!session.is_connected()) {
+        out << "Not connected to server." << std::endl;
+        return;
+    }
+
+    comms::messaging::list_event_channels_request request;
+    auto result = session.process_request(request);
+
+    if (!result) {
+        out << "Failed to retrieve event channels: "
+            << comms::net::to_string(result.error()) << std::endl;
+        return;
+    }
+
+    if (result->channels.empty()) {
+        out << "No event channels available." << std::endl;
+        return;
+    }
+
     out << "Available event channels:" << std::endl;
-    for (const auto& [channel, description] : known_channels) {
-        out << "  " << channel << " - " << description << std::endl;
+    for (const auto& channel : result->channels) {
+        out << "  " << channel.name << " - " << channel.description << std::endl;
     }
     out << std::endl;
     out << "Use 'listen <channel>' to subscribe, or 'listen *' for all." << std::endl;
@@ -109,17 +109,32 @@ process_listen(std::ostream& out, client_session& session,
     }
 
     if (event_type == "*") {
-        // Subscribe to all known channels
+        // Query server for available channels
+        comms::messaging::list_event_channels_request request;
+        auto result = session.process_request(request);
+
+        if (!result) {
+            out << "✗ Failed to retrieve event channels: "
+                << comms::net::to_string(result.error()) << std::endl;
+            return;
+        }
+
+        if (result->channels.empty()) {
+            out << "⚠ No event channels available on server." << std::endl;
+            return;
+        }
+
+        // Subscribe to all available channels
         std::size_t count = 0;
         std::vector<std::string> failed;
-        for (const auto& [channel, _] : known_channels) {
-            if (session.is_subscribed(channel)) {
+        for (const auto& channel : result->channels) {
+            if (session.is_subscribed(channel.name)) {
                 continue;  // Skip already subscribed
             }
-            if (session.subscribe(channel)) {
+            if (session.subscribe(channel.name)) {
                 ++count;
             } else {
-                failed.emplace_back(channel);
+                failed.emplace_back(channel.name);
             }
         }
         out << "✓ Subscribed to " << count << " channel(s)." << std::endl;

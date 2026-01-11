@@ -67,6 +67,1433 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Change reason and categories need permissions                      :code:
+
+We need some very specific permissions as these are reg-sensitive.
+
+*** Change reason not requested on delete                              :code:
+
+At present you can delete entities without providing a change reason.
+
+*** Remember dialog sizes and positions                                :code:
+
+At present we need to resize dialogs frequently. We should write this to
+QSettings.
+
+*** Add party scheme entity                                            :code:
+
+The following is the analysis for adding support to party schemes.
+
+List of schemes to seed in SQL:
+
+- party scheme: LEI
+- Name: Legal Entity Identifier
+- URI: http://www.fpml.org/coding-scheme/external/iso17442
+- Description: Legal Entity Identifier (ISO 17442, 20-char alphanumeric). Global
+  standard for legal entities.
+
+- party scheme: BIC
+- Name: Business Identifier Code
+- URI: http://www.fpml.org/coding-scheme/external/iso9362
+- Description: Business Identifier Code (SWIFT/BIC, ISO 9362). Used for banks
+  and financial institutions.
+
+- party scheme: MIC
+- Name: Market Identifier Code
+- URI: http://www.fpml.org/coding-scheme/external/iso10383
+- Description: Market Identifier Code (ISO 10383). Identifies trading venues
+  (e.g., XNYS, XLON). Note: Technically a venue, but often linked to party
+  context in trade reports.
+
+- party scheme: CEDB
+- Name: CFTC Entity Directory
+- URI: http://www.fpml.org/coding-scheme/external/cedb
+- Description: CFTC Entity Directory (US-specific). Used in CFTC swap data
+  reporting for non-LEI entities.
+
+- party scheme: Natural Person
+- Name: Natural Person
+- URI: http://www.fpml.org/coding-scheme/external/person-id
+- Description: Generic identifier for individuals (e.g., employee ID, trader
+  ID). Not standardized; value interpreted contextually.
+
+- party scheme: National ID
+- Name: National Identifier
+- URI: http://www.fpml.org/coding-scheme/extern/national-id
+- Description: National identifiers (e.g., passport number, tax ID, SIREN, ORI,
+  national ID card). Covers MiFID II “client identification” requirements.
+
+- party scheme: Internal
+- name: Internal
+- URI: http://www.fpml.org/coding-scheme/external/party-id-internal
+- Description: Proprietary/internal system identifiers (e.g., client ID in your
+  OMS, CRM, or clearing system).
+
+- party scheme: ACER Code
+- name: EU Agency for Energy Regulation
+- URI: http://www.fpml.org/coding-scheme/external/acer-code
+- Description: ACER (EU Agency for Energy Regulation) code. Required for REMIT
+  reporting by non-LEI energy market participants. Officially supported in FpML
+  energy extensions.
+
+- party scheme: DTCC Participant ID
+- Name: Depository Trust & Clearing Corporation Participant ID
+- URI:
+- Description: DTCC Participant ID: A unique numeric identifier (typically 4–6
+  digits) assigned by the Depository Trust & Clearing Corporation (DTCC) to
+  member firms authorized to participate in U.S. clearing and settlement
+  systems, including DTC, NSCC, and FICC. Used in post-trade processing, trade
+  reporting, and regulatory submissions in U.S. capital markets.
+
+- party scheme: AII / MPID
+- Name: Alternative Trading System (ATS) Identification Indicator / Market Participant ID
+- Description: Commonly referred to as MPID – Market Participant Identifier; AII
+  stands for ATS Identification Indicator, a term used in FINRA contexts. A
+  four-character alphanumeric code assigned by FINRA (Financial Industry
+  Regulatory Authority) to broker-dealers and alternative trading systems (ATSs)
+  operating in U.S. equities markets. Used to identify the originating or
+  executing firm in trade reports (e.g., in OATS, TRACE, or consolidated tape
+  reporting). MPIDs are required for all SEC-registered trading venues and
+  participants in U.S. equity and options markets.
+
+*** Add a organisation type scheme entity                              :code:
+
+Indicates a type of organization.
+
+- Obtained on 2016-06-13
+- Version 2-0
+- URL: http://www.fpml.org/coding-scheme/organization-type-2-0.xml
+
+- Code: MSP
+- Name: Major Swap Participant
+- Description: A significant participant in the swaps market, for example as
+  defined by the Dodd-Frank Act.
+
+- Code: NaturalPerson
+- Name: Natural Person
+- Description: A human being.
+
+- Code: non-SD/MSP
+- Name: Non Swap Dealer or Major Swap Participant
+- Description: A firm that is neither a swap dealer nor a major swaps participant under the Dodd-Frank Act.
+
+- Code: SD
+- Name: Swap Dealer
+- Description:   Registered swap dealer.
+
+*** Add party entity                                                   :code:
+
+Party analysis.
+
+| Field             | Type | Description                                | Foreign Key Reference      |
+|-------------------+------+--------------------------------------------+----------------------------|
+| party_id          | UUID | Primary key (globally unique identifier)   | —                          |
+| full_name         | TEXT | Legal or registered name                   | —                          |
+| short code        | TEXT | Short code for the party.                  |                            |
+| organization_type | INT  | Type of organization                       | → organization_type_scheme |
+| parent_party_id   | INT  | References parent party (self-referencing) | → party_id (nullable)      |
+
+*** Add party identifier entity                                        :code:
+
+Allows a party to have multiple external identifiers (e.g., LEI, BIC).
+
+| Field       | Type | Description                               | Foreign Key Reference |
+|-------------+------+-------------------------------------------+-----------------------|
+| party_id    | UUID | References party.party_id                 | → party               |
+| id_value    | TEXT | Identifier value, e.g., "549300..."       | —                     |
+| id_scheme   | TEXT | Scheme defining identifier type, e.g. LEI | → party_id_scheme     |
+| Description | TEXT | Additional information about the party    |                       |
+
+Primary key: composite (party_id, id_scheme)
+
+*** Add business centre scheme entity                                  :code:
+
+The following is the analysis for adding support to party schemes.
+
+Note: add a foreign key to the country table, which may be null in some cases.
+
+The coding-scheme accepts a 4 character code of the real geographical business
+calendar location or FpML format of the rate publication calendar. While the 4
+character codes of the business calendar location are implicitly locatable and
+used for identifying a bad business day for the purpose of payment and rate
+calculation day adjustments, the rate publication calendar codes are used in the
+context of the fixing day offsets. The 4 character codes are based on the
+business calendar location some of which based on the ISO country code or
+exchange code, or some other codes. Additional business day calendar location
+codes could be built according to the following rules: the first two characters
+represent the ISO 3166 country code [https://www.iso.org/obp/ui/#search/code/],
+the next two characters represent either a) the first two letters of the
+location, if the location name is one word, b) the first letter of the first
+word followed by the first letter of the second word, if the location name
+consists of at least two words. Note: for creating new city codes for US and
+Canada: the two-letter combinations used in postal US states
+(http://pe.usps.gov/text/pub28/28apb.htm ) and Canadian provinces
+(http://www.canadapost.ca/tools/pg/manual/PGaddress-e.asp) abbreviations cannot
+be utilized (e.g. the code for Denver, United States is USDN and not USDE,
+because of the DE is the abbreviation for Delaware state ). Exchange codes could
+be added based on the ISO 10383 MIC code
+[https://www.iso20022.org/sites/default/files/ISO10383_MIC/ISO10383_MIC.xls]
+according to the following rules: 1. it would be the acronym of the MIC. If
+acronym is not available, 2. it would be the MIC code. If the MIC code starts
+with an 'X', 3. the FpML AWG will compose the code. 'Publication Calendar Day',
+per 2021 ISDA Interest Rate Derivatives Definitions, means, in respect of a
+benchmark, any day on which the Administrator is due to publish the rate for
+such benchmark pursuant to its publication calendar, as updated from time to
+time. FpML format of the rate publication calendar. The construct: CCY-[short
+codes to identify the publisher], e.g. GBP-ICESWAP. The FpML XAPWG will compose
+the code.
+
+- Obtained on 2025-04-25
+- Version 9-4
+- URL: http://www.fpml.org/coding-scheme/business-center-9-4.xml
+
+- Code: The unique string/code identifying the business center, usually a
+  4-character code based on a 2-character ISO country code and a 2 character
+  code for the city, but with exceptions for special cases such as index
+  publication calendars, as described above.
+
+- Code: AEAB
+- Description: Abu Dhabi, Business Day (as defined in 2021 ISDA Definitions
+  Section 2.1.10 (ii))
+
+- Code: AEAD
+- Description: Abu Dhabi, Settlement Day (as defined in 2021 ISDA Definitions
+  Section 2.1.10 (i))
+
+- Code: AEDU
+- Description: Dubai, United Arab Emirates
+
+- Code: AMYE
+- Description: Yerevan, Armenia
+
+- Code: AOLU
+- Description: Luanda, Angola
+
+- Code: ARBA
+- Description: Buenos Aires, Argentina
+
+- Code: ATVI
+- Description: Vienna, Austria
+
+- Code: AUAD
+- Description: Adelaide, Australia
+
+- Code: AUBR
+- Description: Brisbane, Australia
+
+- Code: AUCA
+- Description: Canberra, Australia
+
+- Code: AUDA
+- Description: Darwin, Australia
+
+- Code: AUME
+- Description: Melbourne, Australia
+
+- Code: AUPE
+- Description: Perth, Australia
+
+- Code: AUSY
+- Description: Sydney, Australia
+
+- Code: AZBA
+- Description: Baku, Azerbaijan
+
+- Code: BBBR
+- Description: Bridgetown, Barbados
+
+- Code: BDDH
+- Description: Dhaka, Bangladesh
+
+- Code: BEBR
+- Description: Brussels, Belgium
+
+- Code: BGSO
+- Description: Sofia, Bulgaria
+
+- Code: BHMA
+- Description: Manama, Bahrain
+
+- Code: BMHA
+- Description: Hamilton, Bermuda
+
+- Code: BNBS
+- Description: Bandar Seri Begawan, Brunei
+
+- Code: BOLP
+- Description: La Paz, Bolivia
+
+- Code: BRBD
+- Description: Brazil Business Day. This means a business day in all of Sao
+  Paulo, Rio de Janeiro or Brasilia not otherwise declared as a financial market
+  holiday by the Bolsa de Mercadorias &amp; Futuros (BM&F). BRBD should not be
+  used for setting fixing time, instead the city centers (e.g. BRBR, BRRJ, BRSP)
+  should be used, because they are locatable places.
+
+- Code: BSNA
+- Description: Nassau, Bahamas
+
+- Code: BWGA
+- Description: Gaborone, Botswana
+
+- Code: BYMI
+- Description: Minsk, Belarus
+
+- Code: CACL
+- Description: Calgary, Canada
+
+- Code: Covers
+- Description: all New Brunswick province.
+
+- Code: CAFR
+- Description: Fredericton, Canada.
+
+- Code: CAMO
+- Description: Montreal, Canada
+
+- Code: CAOT
+- Description: Ottawa, Canada
+
+- Code: CATO
+- Description: Toronto, Canada
+
+- Code: CAVA
+- Description: Vancouver, Canada
+
+- Code: CAWI
+- Description: Winnipeg, Canada
+
+- Code: CHBA
+- Description: Basel, Switzerland
+
+- Code: CHGE
+- Description: Geneva, Switzerland
+
+- Code: CHZU
+- Description: Zurich, Switzerland
+
+- Code: CIAB
+- Description: Abidjan, Cote d'Ivoire
+
+- Code: CLSA
+- Description: Santiago, Chile
+
+- Code: CMYA
+- Description: Yaounde, Cameroon
+
+- Code: CNBE
+- Description: Beijing, China
+
+- Code: CNSH
+- Description: Shanghai, China
+
+- Code: COBO
+- Description: Bogota, Colombia
+
+- Code: CRSJ
+- Description: San Jose, Costa Rica
+
+- Code: CWWI
+- Description: Willemstad, Curacao
+
+- Code: CYNI
+- Description: Nicosia, Cyprus
+
+- Code: CZPR
+- Description: Prague, Czech Republic
+
+- Code: DECO
+- Description: Cologne, Germany
+
+- Code: DEDU
+- Description: Dusseldorf, Germany
+
+- Code: DEFR
+- Description: Frankfurt, Germany
+
+- Code: DEHA
+- Description: Hannover, Germany
+
+- Code: DEHH
+- Description: Hamburg, Germany
+
+- Code: DELE
+- Description: Leipzig, Germany
+
+- Code: DEMA
+- Description: Mainz, Germany
+
+- Code: DEMU
+- Description: Munich, Germany
+
+- Code: DEST
+- Description: Stuttgart, Germany
+
+- Code: DKCO
+- Description: Copenhagen, Denmark
+
+- Code: DOSD
+- Description: Santo Domingo, Dominican Republic
+
+- Code: DZAL
+- Description: Algiers, Algeria
+
+- Code: ECGU
+- Description: Guayaquil, Ecuador
+
+- Code: EETA
+- Description: Tallinn, Estonia
+
+- Code: EGCA
+- Description: Cairo, Egypt
+
+- Code: ESAS
+- Description: ESAS Settlement Day (as defined in 2006 ISDA Definitions Section
+  7.1 and Supplement Number 15 to the 2000 ISDA Definitions)
+
+- Code: ESBA
+- Description: Barcelona, Spain
+
+- Code: ESMA
+- Description: Madrid, Spain
+
+- Code: ESSS
+- Description: San Sebastian, Spain
+
+- Code: ETAA
+- Description: Addis Ababa, Ethiopia
+
+- Code: EUR
+- Description: -ICESWAP Publication dates for ICE Swap rates based on
+  EUR-EURIBOR rates
+
+- Code: EUTA
+- Description: TARGET Settlement Day
+
+- Code: FIHE
+- Description: Helsinki, Finland
+
+- Code: FRPA
+- Description: Paris, France
+
+- Code: GBED
+- Description: Edinburgh, Scotland
+
+- Code: GBLO
+- Description: London, United Kingdom
+
+- Code: GBP
+- Description: -ICESWAP Publication dates for GBP ICE Swap rates
+
+- Code: GETB
+- Description: Tbilisi, Georgia
+
+- Code: GGSP
+- Description: Saint Peter Port, Guernsey
+
+- Code: GHAC
+- Description: Accra, Ghana
+
+- Code: GIGI
+- Description: Gibraltar, Gibraltar
+
+- Code: GMBA
+- Description: Banjul, Gambia
+
+- Code: GNCO
+- Description: Conakry, Guinea
+
+- Code: GRAT
+- Description: Athens, Greece
+
+- Code: GTGC
+- Description: Guatemala City, Guatemala
+
+- Code: HKHK
+- Description: Hong Kong, Hong Kong
+
+- Code: HNTE
+- Description: Tegucigalpa, Honduras
+
+- Code: HRZA
+- Description: Zagreb, Republic of Croatia
+
+- Code: HUBU
+- Description: Budapest, Hungary
+
+- Code: IDJA
+- Description: Jakarta, Indonesia
+
+- Code: IEDU
+- Description: Dublin, Ireland
+
+- Code: ILJE
+- Description: Jerusalem, Israel
+
+- Code: ILS
+- Description: -SHIR Publication dates of the ILS-SHIR index.
+
+- Code: ILS
+- Description: -TELBOR Publication dates of the ILS-TELBOR index.
+
+- Code: ILTA
+- Description: Tel Aviv, Israel
+
+- Code: INAH
+- Description: Ahmedabad, India
+
+- Code: INBA
+- Description: Bangalore, India
+
+- Code: INCH
+- Description: Chennai, India
+
+- Code: INHY
+- Description: Hyderabad, India
+
+- Code: INKO
+- Description: Kolkata, India
+
+- Code: INMU
+- Description: Mumbai, India
+
+- Code: INND
+- Description: New Delhi, India
+
+- Code: IQBA
+- Description: Baghdad, Iraq
+
+- Code: IRTE
+- Description: Teheran, Iran
+
+- Code: ISRE
+- Description: Reykjavik, Iceland
+
+- Code: ITMI
+- Description: Milan, Italy
+
+- Code: ITRO
+- Description: Rome, Italy
+
+- Code: ITTU
+- Description: Turin, Italy
+
+- Code: JESH
+- Description: St. Helier, Channel Islands, Jersey
+
+- Code: JMKI
+- Description: Kingston, Jamaica
+
+- Code: JOAM
+- Description: Amman, Jordan
+
+- Code: JPTO
+- Description: Tokyo, Japan
+
+- Code: KENA
+- Description: Nairobi, Kenya
+
+- Code: KHPP
+- Description: Phnom Penh, Cambodia
+
+- Code: KRSE
+- Description: Seoul, Republic of Korea
+
+- Code: KWKC
+- Description: Kuwait City, Kuwait
+
+- Code: KYGE
+- Description: George Town, Cayman Islands
+
+- Code: KZAL
+- Description: Almaty, Kazakhstan
+
+- Code: LAVI
+- Description: Vientiane, Laos
+
+- Code: LBBE
+- Description: Beirut, Lebanon
+
+- Code: LKCO
+- Description: Colombo, Sri Lanka
+
+- Code: LULU
+- Description: Luxembourg, Luxembourg
+
+- Code: LVRI
+- Description: Riga, Latvia
+
+- Code: MACA
+- Description: Casablanca, Morocco
+
+- Code: MARA
+- Description: Rabat, Morocco
+
+- Code: MCMO
+- Description: Monaco, Monaco
+
+- Code: MNUB
+- Description: Ulan Bator, Mongolia
+
+- Code: MOMA
+- Description: Macau, Macao
+
+- Code: MTVA
+- Description: Valletta, Malta
+
+- Code: MUPL
+- Description: Port Louis, Mauritius
+
+- Code: MVMA
+- Description: Male, Maldives
+
+- Code: MWLI
+- Description: Lilongwe, Malawi
+
+- Code: MXMC
+- Description: Mexico City, Mexico
+
+- Code: MYKL
+- Description: Kuala Lumpur, Malaysia
+
+- Code: MYLA
+- Description: Labuan, Malaysia
+
+- Code: MZMA
+- Description: Maputo, Mozambique
+
+- Code: NAWI
+- Description: Windhoek, Namibia
+
+- Code: NGAB
+- Description: Abuja, Nigeria
+
+- Code: NGLA
+- Description: Lagos, Nigeria
+
+- Code: NLAM
+- Description: Amsterdam, Netherlands
+
+- Code: NLRO
+- Description: Rotterdam, Netherlands
+
+- Code: NOOS
+- Description: Oslo, Norway
+
+- Code: NPKA
+- Description: Kathmandu, Nepal
+
+- Code: NYFD
+- Description: New York Fed Business Day (as defined in 2006 ISDA Definitions
+  Section 1.9, 2000 ISDA Definitions Section 1.9, and 2021 ISDA Definitions
+  Section 2.1.7)
+
+- Code: NYSE
+- Description: New York Stock Exchange Business Day (as defined in 2006 ISDA
+  Definitions Section 1.10, 2000 ISDA Definitions Section 1.10, and 2021 ISDA
+  Definitions Section 2.1.8)
+
+- Code: NZAU
+- Description: Auckland, New Zealand
+
+- Code: New
+- Description: Zealand Business Day (proposed effective date: 2025-10-06)
+
+- Code: NZBD
+- Description: New Zealand Business Day (proposed effective date: 2025-10-06)
+
+- Code: NZWE
+- Description: Wellington, New Zealand
+
+- Code: OMMU
+- Description: Muscat, Oman
+
+- Code: PAPC
+- Description: Panama City, Panama
+
+- Code: PELI
+- Description: Lima, Peru
+
+- Code: PHMA
+- Description: Manila, Philippines
+
+- Code: PHMK
+- Description: Makati, Philippines
+
+- Code: PKKA
+- Description: Karachi, Pakistan
+
+- Code: PLWA
+- Description: Warsaw, Poland
+
+- Code: PRSJ
+- Description: San Juan, Puerto Rico
+
+- Code: PTLI
+- Description: Lisbon, Portugal
+
+- Code: QADO
+- Description: Doha, Qatar
+
+- Code: ROBU
+- Description: Bucharest, Romania
+
+- Code: RSBE
+- Description: Belgrade, Serbia
+
+- Code: RUMO
+- Description: Moscow, Russian Federation
+
+- Code: SAAB
+- Description: Abha, Saudi Arabia
+
+- Code: SAJE
+- Description: Jeddah, Saudi Arabia
+
+- Code: SARI
+- Description: Riyadh, Saudi Arabia
+
+- Code: SEST
+- Description: Stockholm, Sweden
+
+- Code: SGSI
+- Description: Singapore, Singapore
+
+- Code: SILJ
+- Description: Ljubljana, Slovenia
+
+- Code: SKBR
+- Description: Bratislava, Slovakia
+
+- Code: SLFR
+- Description: Freetown, Sierra Leone
+
+- Code: SNDA
+- Description: Dakar, Senegal
+
+- Code: SVSS
+- Description: San Salvador, El Salvador
+
+- Code: THBA
+- Description: Bangkok, Thailand
+
+- Code: TNTU
+- Description: Tunis, Tunisia
+
+- Code: TRAN
+- Description: Ankara, Turkey
+
+- Code: TRIS
+- Description: Istanbul, Turkey
+
+- Code: TTPS
+- Description: Port of Spain, Trinidad and Tobago
+
+- Code: TWTA
+- Description: Taipei, Taiwan
+
+- Code: TZDA
+- Description: Dar es Salaam, Tanzania
+
+- Code: TZDO
+- Description: Dodoma, Tanzania
+
+- Code: UAKI
+- Description: Kiev, Ukraine
+
+- Code: UGKA
+- Description: Kampala, Uganda
+
+- Code: USBO
+- Description: Boston, Massachusetts, United States
+
+- Code: USCH
+- Description: Chicago, United States
+
+- Code: USCR
+- Description: Charlotte, North Carolina, United States
+
+- Code: USDC
+- Description: Washington, District of Columbia, United States
+
+- Code: USD
+- Description: -ICESWAP Publication dates for ICE Swap rates based on USD-LIBOR
+  rates
+
+- Code: USD
+- Description: -MUNI Publication dates for the USD-Municipal Swap Index
+
+- Code: USDN
+- Description: Denver, United States
+
+- Code: USDT
+- Description: Detroit, Michigan, United States
+
+- Code: USGS
+- Description: U.S. Government Securities Business Day (as defined in 2006 ISDA
+  Definitions Section 1.11 and 2000 ISDA Definitions Section 1.11)
+
+- Code: USHL
+- Description: Honolulu, Hawaii, United States
+
+- Code: USHO
+- Description: Houston, United States
+
+- Code: USLA
+- Description: Los Angeles, United States
+
+- Code: USMB
+- Description: Mobile, Alabama, United States
+
+- Code: USMN
+- Description: Minneapolis, United States
+
+- Code: USNY
+- Description: New York, United States
+
+- Code: USPO
+- Description: Portland, Oregon, United States
+
+- Code: USSA
+- Description: Sacramento, California, United States
+
+- Code: USSE
+- Description: Seattle, United States
+
+- Code: USSF
+- Description: San Francisco, United States
+
+- Code: USWT
+- Description: Wichita, United States
+
+- Code: UYMO
+- Description: Montevideo, Uruguay
+
+- Code: UZTA
+- Description: Tashkent, Uzbekistan
+
+- Code: VECA
+- Description: Caracas, Venezuela
+
+- Code: VGRT
+- Description: Road Town, Virgin Islands (British)
+
+- Code: VNHA
+- Description: Hanoi, Vietnam
+
+- Code: VNHC
+- Description: Ho Chi Minh (formerly Saigon), Vietnam
+
+- Code: YEAD
+- Description: Aden, Yemen
+
+- Code: ZAJO
+- Description: Johannesburg, South Africa
+
+- Code: ZMLU
+- Description: Lusaka, Zambia
+
+- Code: ZWHA
+- Description: Harare, Zimbabwe
+
+
+*** Business unit entity                                               :code:
+
+Represents internal organizational units (e.g., desks, departments, branches).
+Supports hierarchical structure.
+
+| Field                   | Type | Description                                   | Foreign Key Reference              |
+|-------------------------+------+-----------------------------------------------+------------------------------------|
+| unit_id                 | INT  | Primary key                                   | —                                  |
+| party_id                | UUID | Top-level legal entity this unit belongs to   | → party                            |
+| parent_business_unit_id | INT  | References parent unit (self-referencing)     | → business_unit.unit_id (nullable) |
+| unit_name               | TEXT | Human-readable name (e.g., "FX Options Desk") | —                                  |
+| unit_id_code            | TEXT | Optional internal code or alias               | —                                  |
+| business_centre         | TEXT | Business centre for the unit                  | → business centre scheme           |
+
+business_centre may be null (for example, we may want to have global desk and
+then London desk.
+
+*** Contact information entity                                         :code:
+
+Contact Information is a container that groups various ways to reach an entity.
+
+Contact Information can be associated with either a Party (at the legal entity
+level) or a BusinessUnit (at the desk/operational level). To build a robust
+trading system, your database should support a polymorphic or flexible link to
+handle this.
+
+The Logic of the Link:
+
+- Link to Party: Used for Legal and Regulatory contact details. This is the
+  "Head Office" address, the legal service of process address, or the general
+  firm-wide contact for the LEI.
+- Link to Business Unit: Used for Execution and Operational contact details.
+  This is where your "Machine" or "Human" actually lives. It links the trader or
+  algo to a specific desk's phone number, email, and—most importantly—its
+  Business Center (Holiday Calendar).
+
+**** Type: Contact Information
+
+This is the main container for how to reach a party or person.
+
+- address (Complex): The physical location.
+- phone (String): Multiple entries allowed (Work, Mobile, Fax).
+- email (String): Electronic mail addresses.
+- webPage (String): The entity's URL.
+
+**** Type: Address
+
+The physical street address structure.
+
+- streetAddress (Complex): Usually a list of strings (Line 1, Line 2, etc.).
+- city (String): The city or municipality.
+- state (String): The state, province, or region.
+- country (Scheme): An ISO 3166 2-letter country code (e.g., US, GB).
+- postalCode (String): The ZIP or Postcode.
+
+*** Book and Portfolio entities                                        :code:
+
+Support a single, unified hierarchical tree for risk aggregation and reporting
+(Portfolios) while maintaining operational accountability and legal/bookkeeping
+boundaries at the leaf level (Books).
+
+**** Portfolio
+
+Logical Aggregation Nodes. Represents organizational, risk, or reporting
+groupings. Never holds trades directly.
+
+| Field               | Type      | Description                                                                           |
+|---------------------+-----------+---------------------------------------------------------------------------------------|
+| portfolio_id (PK)   | UUID      | Globally unique identifier.                                                           |
+| parent_portfolio_id | UUID (FK) | Self-referencing FK. NULL = root node.                                                |
+| name                | TEXT      | Human-readable name (e.g., "Global Rates", "APAC Credit").                            |
+| owner_unit_id       | INT (FK)  | Business unit (desk/branch) responsible for management.                               |
+| purpose_type        | ENUM      | 'Risk', 'Regulatory', 'ClientReporting', 'Internal'.                                  |
+| aggregation_ccy     | CHAR(3)   | Currency for P&L/risk aggregation at this node (ISO 4217).                            |
+| is_virtual          | BOOLEAN   | If true, node is purely for on-demand reporting (not persisted in trade attribution). |
+| created_at          | TIMESTAMP | Audit trail.                                                                          |
+
+Note: Portfolios do not have a legal_entity_id. Legal context is derived from
+descendant Books.
+
+**** Book
+
+Operational Ledger Leaves. The only entity that holds trades. Serves as the
+basis for accounting, ownership, and regulatory capital treatment.
+
+| Field               | Type      | Description                                                                         |
+|---------------------+-----------+-------------------------------------------------------------------------------------|
+| book_id (PK)        | UUID      | Globally unique identifier.                                                         |
+| parent_portfolio_id | UUID (FK) | Mandatory: Links to exactly one portfolio.                                          |
+| name                | TEXT      | Must be unique within legal entity (e.g., "FXO_EUR_VOL_01").                        |
+| legal_entity_id     | UUID (FK) | Mandatory: References party.party_id (must be an LEI-mapped legal entity).          |
+| ledger_ccy          | CHAR(3)   | Functional/accounting currency (ISO 4217).                                          |
+| gl_account_ref      | TEXT      | Reference to external GL (e.g., "GL-10150-FXO"). May be nullable if not integrated. |
+| cost_center         | TEXT      | Internal finance code for P&L attribution.                                          |
+| book_status         | ENUM      | 'Active', 'Closed', 'Frozen'.                                                       |
+| is_trading_book     | BOOLEAN   | Critical for Basel III/IV: distinguishes Trading vs. Banking Book.                  |
+| created_at          | TIMESTAMP | For audit.                                                                          |
+| closed_at           | TIMESTAMP | When book_status = 'Closed'.                                                        |
+
+Objectives:
+
+- Strict separation: Portfolios = logical; Books = operational
+- Legal ownership at Book level → critical for regulatory capital, legal netting, tax
+- Hierarchy via parent_portfolio_id
+- Trading vs. Banking book flag → Basel requirement
+
+Hierarchy Integrity Constraints:
+
+- Rule: A Portfolio must not directly contain another Portfolio and a Book at
+  the same level if that violates business policy.
+  - Enforce via application logic or DB constraint (e.g., CHECK that a Portfolio
+    is either "container-only" or "leaf-container", but typically Portfolios can
+    contain both sub-Portfolios and Books—this is normal).
+- Cycle Prevention: Ensure no circular references (parent → child → parent). Use
+  triggers or application validation.
+
+- Multi-Legal Entity Support: Your model allows Books under the same Portfolio
+  to belong to different legal entities. Is this intentional?
+  - Allowed in some firms (for consolidated risk views).
+  - Forbidden in others (e.g., regulatory ring-fencing).
+  - Recommendation: Add a validation rule (application-level): If a Portfolio
+    contains any Books, all descendant Books must belong to the same
+    legal_entity_id.” Or, if mixed entities are allowed, flag the Portfolio as
+    'MultiEntity' in purpose_type.
+
+- Trade Ownership: Explicitly state: Every trade must have a book_id (FK). No
+  trade exists outside a Book. This is implied but should be documented as a
+  core invariant.
+
+- Lifecycle & Governance: Add version or valid_from/valid_to if Books/Portfolios
+  evolve over time (e.g., name changes, reorgs).
+  - Especially important for audit and historical P&L.
+
+- Consider owner_person_id (trader or book manager) for Books.
+
+- Naming & Uniqueness:
+  Enforce: (legal_entity_id, name) must be unique for Books.
+  - Prevents ambiguous book names like "RatesDesk" used by two entities.
+
+- Book Closure Policy: When a Book is Closed, should existing trades remain?
+  - Yes (typical). But no new trades allowed.
+  - Your book_status covers this
+
+Combined Hierarchy Rules (Refined):
+
+| Rule                | Description                                                                                                   |
+|---------------------+---------------------------------------------------------------------------------------------------------------|
+| Leaf Invariant      | Only Books may hold trades. Portfolios are purely aggregators.                                                |
+| Single Parent       | Every Book and non-root Portfolio has exactly one parent.                                                     |
+| Legal Entity Scope  | A Book declares its legal owner. A Portfolio’s legal scope is the union of its Books’ entities.               |
+| Permissioning       | Trade permission → granted on book_id. View/Analyze permission → granted on portfolio_id (includes subtree)   |
+| Accounting Boundary | P&L, capital, and ledger entries are computed per Book, then rolled up through Portfolios in aggregation_ccy. |
+
+*** Add support for staging                                            :code:
+
+- on import, are we importing one currency at a time? should import the entire
+  file.
+
+*** Non-classified observations                                    :analysis:
+
+Observations, snags and so forth that have not been analysed to form a proper
+story.
+
+- it is possible to create a country without a name. likely a currency too.
+- should be possible to click on user and see user profile details. If the user
+  is admin, show all details; if not, show only key ones like email, etc.
+- remove maximise button.
+- test suites need to log version at the start. info script needs to grep log
+  for version for all suites.
+- no generators for roles and permissions it seems.
+- we still have the legacy password salt field.
+- should role permission tables have change reasons?
+- missing ores.analyser from system model.
+- add flag "is iso compliant" or some such for currencies and countries which
+  are in the standard.
+- allow users displaying password in password boxes.
+- send and receive are empty in sessions.
+- next, can you explain the difference in window types between the main currency
+  dialog and say currency history and currency details. we switched of minimise
+  button on the currency history and currency details and that worked fine. we
+  tried switching it off on the main currency window twice and that never seems
+  to work. can we make all windows the same type? same as currency history /
+  currency details.
+- merge common functionality between entities in ores.qt.
+- updating email from my account does not raise an event.
+- fictional countries should also have X prefixes
+- generate button should only exist in new, not edit.
+- no save button in currency list, need for generation
+- would be nice to be able to "locally modify" entity and then press save for
+  the batch. in git we call this staging, what name should we use? and what
+  icon?
+- server should peridically house keep sessions. if not connected, just mark it
+  as orphan. also when connection is dropped mark session as finished.
+- shouldn't revert to version be a server side operation? e.g. current version,
+  target version.
+- in the history diff, add a "from version" combo which shows either latest or
+  previous.
+
+*** Accounts need to have a human or robot field                       :code:
+
+Look for correct terminology (actor type?).
+
+*** Add a flag for human readable time                                 :code:
+
+We should be able to use regular timestamps or human readable time.
+
+*** Currencies should have tags                                        :code:
+
+Examples:
+
+- metals, emerging markets
+- continent as a tag
+- crypto
+
+*** Retrieve NAT'ed IP address from local IP                           :code:
+
+It would be nice to be able to resolve to the NAT'ed IP address. Gemini:
+
+#+begin_src cpp
+#include <iostream>
+#include <string>
+#include <boost/asio.hpp>
+
+using boost::asio::ip::tcp;
+
+std::string get_public_ip() { try { boost::asio::io_context io_context;
+
+    // 1. Resolve the address for api.ipify.org
+    tcp::resolver resolver(io_context);
+    tcp::resolver::results_type endpoints = resolver.resolve("api.ipify.org", "http");
+
+    // 2. Connect to the server
+    tcp::socket socket(io_context);
+    boost::asio::connect(socket, endpoints);
+
+    // 3. Formulate the HTTP GET request
+    std::string request =
+        "GET / HTTP/1.1\r\n"
+        "Host: api.ipify.org\r\n"
+        "Connection: close\r\n\r\n";
+
+    // 4. Send the request
+    boost::asio::write(socket, boost::asio::buffer(request));
+
+    // 5. Read the response
+    boost::asio::streambuf response;
+    boost::asio::read_until(socket, response, "\r\n");
+
+    // Check the status line (optional but recommended)
+    std::istream response_stream(&response);
+    std::string http_version;
+    unsigned int status_code;
+    response_stream >> http_version >> status_code;
+
+    if (status_code != 200) {
+        return "Error: HTTP Status " + std::to_string(status_code);
+    }
+
+    // Skip the HTTP headers
+    boost::asio::read_until(socket, response, "\r\n\r\n");
+
+    // The remaining data in the buffer (and what's left to read) is the IP
+    std::string public_ip;
+    while (boost::asio::read(socket, response, boost::asio::transfer_at_least(1), boost::system::error_code())) {
+        // Keep reading until EOF
+    }
+
+    // Convert the body content to a string
+    std::stringstream ss;
+    ss << &response;
+    public_ip = ss.str();
+
+    // api.ipify.org returns only the IP as plain text in the body
+    return public_ip;
+
+} catch (std::exception& e) {
+    return std::string("Exception: ") + e.what();
+}
+}
+
+int main() {
+        stdout::cout << "Fetching public IP..." << std::endl;
+        std::string ip = get_public_ip();
+        std::cout << "Your Public IP is: " << ip << std::endl;
+        return 0;
+}
+#+end_src
+
+
+*** Users should be able to add picture to profile                     :code:
+
+It would be useful to have avatars. We can then display those in other places.
+
+*** Add support for protocol debugging in Qt                           :code:
+
+We should add a view of all messages sent and received like the comms champ
+tools. It should be possible to record a session to file (maybe all the
+requests?) and then replay that session. You should be able to do it from the
+UI.
+
+Links:
+
+- [[https://github.com/commschamp/cc_tools_qt][GH: cc_tools_qt]]: "This project contains tool application(s), which can be used
+  to develop, monitor and debug custom binary communication protocols, that were
+  developed using the COMMS Library. All the applications are plug-in based,
+  i.e. plug-ins are used to define I/O socket, data filters, and the custom
+  protocol itself. The tools use Qt framework for GUI interfaces as well as
+  loading and managing plug-ins."
+- [[https://github.com/commschamp/cc_tools_qt/wiki/How-to-Use-CommsChampion-Tools][How to Use CommsChampion Tools]]: screenshots of the UI to explore the protocol.
+
+*** History should have a revert button                                :code:
+
+It should be possible to choose a given version and ask the system to revert the
+currency to that version. It just makes an update with a new version to look
+like that version. It should also be possible to open at version. It shows the
+edit dialog in "read only mode" with the entity at that version. The tool bar
+should indicate this. It should also have a revert in that dialog.
+
+*** Assorted UI polish work                                            :code:
+
+Break these down into their own stories:
+
+- icons for CRUD are not enabling when on detached mode.
+- no status bar in dettached mode.
+- should we just have toolbars at the detached window level?
+- application should exit when main window is closed.
+- is it possible to dock windows like visual studio?
+- add a detach current window that just detaches that window.
+- disabled menu options are not properly greyed out. Done.
+
+*** Instrument components with telemetry context                       :code:
+
+Now that logging has been integrated with telemetry, the next step is to
+instrument key components with the =TLOG_SEV= macro to enable trace correlation.
+
+Tasks:
+
+- Instrument =server_session= with root span on connection, child spans per
+  request.
+- Instrument =client_session= with spans for outgoing requests.
+- Pass =telemetry_context= through message handlers in ores.iam, ores.risk, etc.
+- Add spans for database operations in ores.database.
+
+*** Add widget to manage assets                                        :code:
+
+We can't upload flags etc.
+
+*** Missing session properties                                         :code:
+
+- disconnect type: orphaned, client disconnect.
+- add version, commit, etc.
+
+*** Update currency details to use tabs                                :code:
+
+We need a main tab with the currency related properties, then a "system" tab
+with temporal data which is read-only even on edit and a "image" tab with the
+image used to represent the currency. It could also contain some description or
+notes.
+
+
+*** Locking an account should log user out                             :code:
+
+At present if you lock an account the user will remain logged in.
+
+*** Review of Wt                                                       :code:
+
+Problems:
+
+- no icons in website for the tab.
+- no flags in currencies in wt.
+- no way of knowing about reload (eventing) in wt. we should make the reload
+  button change colour?
+- currency edit window in wt is too large, can't see bottom of screen.
+- cannot edit account in wt.
+- iso code field too small, numeric code field too small
+- adding new account crashes wt. saving new currency crashes wt.
+
+#+begin_src
+[2026-Jan-07 12:16:08.080] 1050920 - [access] "wthttp: 127.0.0.1   POST /?wtd=kh0IzYWIDev5vqgQ HTTP/1.1 200 271"
+[2026-Jan-07 12:16:08.080] 1050920 - [info] "WebRequest: took 0.969 ms"
+#+end_src
+
+#+begin_src logviewer
+2026-01-07 12:16:15.578713 [TRACE] [ores.iam.repository.account_mapper] Mapping db entity: {"id":"019b9856-215c-7fd4-b139-11821e39d80a","version":1,"username":"newuser3","password_hash":"$scrypt$ln=14,r=8,p=1$wcZS3a7UEPEz8RBhIuOWIA==$vFYxagrQLQ1FXzMhP1u1D4xMJF2G4HMMsmoOxpRsdwYjSChBIsGiuA92cD8dPODlSYoG9uiX6SohLcUaZNUUUg==","password_salt":"","totp_secret":"","email":"newuser3@example.com","modified_by":"bootstrap","valid_from":"2026-01-07 12:02:20","valid_to":"9999-12-31 23:59:59"}
+2026-01-07 12:16:15.578787 [TRACE] [ores.iam.repository.account_mapper] Mapped db entity. Result: {"version":1,"id":"019b9856-215c-7fd4-b139-11821e39d80a","recorded_by":"bootstrap","username":"newuser3","password_hash":"$scrypt$ln=14,r=8,p=1$wcZS3a7UEPEz8RBhIuOWIA==$vFYxagrQLQ1FXzMhP1u1D4xMJF2G4HMMsmoOxpRsdwYjSChBIsGiuA92cD8dPODlSYoG9uiX6SohLcUaZNUUUg==","password_salt":"","totp_secret":"","email":"newuser3@example.com","recorded_at":"2026-01-07 12:02:20.000000000Z"}
+2026-01-07 12:16:15.578866 [DEBUG] [ores.iam.repository.account_mapper] Mapped db entities.
+2026-01-07 12:16:15.578895 [DEBUG] [ores.iam.repository.login_info_repository] Reading all login_info.
+2026-01-07 12:16:15.579395 [DEBUG] [ores.iam.repository.login_info_repository] Read all login_info. Total: 1
+2026-01-07 12:16:15.579436 [DEBUG] [ores.iam.repository.login_info_mapper] Mapping db entities. Total: 1
+2026-01-07 12:16:15.579465 [TRACE] [ores.iam.repository.login_info_mapper] Mapping db entity: {"account_id":"019b9856-215c-7fd4-b139-11821e39d80a","last_ip":"127.0.0.1","last_attempt_ip":"127.0.0.1","failed_logins":0,"locked":0,"last_login":"2026-01-07 12:14:01","online":1,"password_reset_required":0}
+2026-01-07 12:16:15.579519 [TRACE] [ores.iam.repository.login_info_mapper] Mapped db entity. Result: {"last_login":"2026-01-07 12:14:01.000000000Z","account_id":"019b9856-215c-7fd4-b139-11821e39d80a","failed_logins":0,"locked":false,"online":true,"password_reset_required":false,"last_ip":"127.0.0.1","last_attempt_ip":"127.0.0.1"}
+2026-01-07 12:16:15.579585 [DEBUG] [ores.iam.repository.login_info_mapper] Mapped db entities.
+#+end_src
+
+*** Disconnect shows reconnect message                                 :code:
+
+When you click disconnect the status bar says "Reconnecting to server".
+
+We can see but not edit. Also, test permissions to make sure they are being
+enforced.
+
+*** Add a dashboard for users                                          :code:
+
+As per screenshots:
+
+[[./user_dashboard_core_ui.png]]
+
+[[./dashboard_ideas.png]]
+
+[[./dashboard_ideas_II.png]]
+
+Notes:
+
+- add command to shell to list sessions.
+
+*** Add sign-up approval workflow                                      :code:
+
+Should also handle invite codes, etc.
+
+We did most of the work except invite codes.
+
+*** Listen for events in details dialog                                :code:
+
+At present we are only listening for details in the main dialogs (accounts,
+currencies). It would be nice to be able to listen to events in the details
+dialogs. however, it needs to listen to events only for that specific entity
+(e.g. currency pair, account etc). Not sure we are setup for this.
+
+*** Implement entity history in shell                                  :code:
+
+We need to add a command in shell to show entity history.
+
+Notes:
+
+- for the history diff we could use a simple unified diff format.
+
+*** Consider adding an "entity waterfall"                              :code:
+
+It would be nice to be able to see what entities have been added, deleted,
+modified, etc. This would work as a running commentary.
+
+*** Notification of deletes                                            :code:
+
+At present it is easy to see new rows or modified rows in an entity dialog. It
+is not possible to see deleted rows. One way to do this is to preserve state
+from before reload by key. Any entities which are not present after reload can
+be shown as red. History then allows users to re-instate deleted entities.
+
+*** Add REPL to Qt                                                     :code:
+
+Users should be able to interact with the system directly via the REPL. Add a
+simple widget for this.
+
+*** Add entity messages should not set modified by                     :code:
+
+At present you can supply any modified by you want in the protocol messages. It
+makes more sense to say the message must have the modified by as the user logged
+in from the session.
+
+*** Add heat map of user sessions                                      :code:
+
+Things to measure:
+
+- duration of sessions (once we have session table).
+- bytes sent/received per session (possibly 3-D plot?). Also good for anomaly
+  detection.
+- mine github for ideas.
+
+*** Add currencies update command to shell                             :code:
+
+At present we can only add new currencies. We also need to be able to update.
+Also, adding currencies requires supplying all parameters.
+
+*** Subscribe on reconnect fails                                       :code:
+
+Logs:
+
+#+begin_src logview
+2025-12-13 01:14:35.108648 [DEBUG] [ores.comms.messaging.frame] Successfully deserialized frame subscribe_request (0x10)
+2025-12-13 01:14:35.108680 [DEBUG] [ores.comms.net.connection] Successfully deserialized frame, type: subscribe_request (0x10) total size: 60
+2025-12-13 01:14:35.108708 [DEBUG] [ores.comms.net.server_session] Received message type subscribe_request (0x10)
+2025-12-13 01:14:35.108750 [DEBUG] [ores.comms.messaging.message_dispatcher] Dispatching message type subscribe_request (0x10)
+2025-12-13 01:14:35.108811 [WARN] [ores.comms.service.auth_session_service] Authorization failed for subscribe_request (0x10) from 127.0.0.1:45498: not authenticated
+2025-12-13 01:14:35.108842 [WARN] [ores.comms.messaging.message_dispatcher] Authorization denied for subscribe_request (0x10) from 127.0.0.1:45498
+2025-12-13 01:14:35.108875 [ERROR] [ores.comms.net.server_session] Message dispatch failed: 10
+#+end_src
+
+*** Unsubscribe before logout                                          :code:
+
+On logout we see the following:
+
+#+begin_src logview
+2025-12-11 22:45:54.559906 [INFO] [ores.accounts.messaging.accounts_message_handler] Successfully logged out account: 019a5e49-476c-70ce-9909-3887cae700e9
+2025-12-11 22:45:54.559940 [DEBUG] [ores.comms.messaging.message_dispatcher] Successfully dispatched message, response type logout_response (0x200e) correlation_id=763
+2025-12-11 22:45:54.559978 [DEBUG] [ores.comms.messaging.frame] Serialised frame logout_response (0x200e), size: 58
+2025-12-11 22:45:54.560005 [DEBUG] [ores.comms.net.connection] Writing frame of size 58 type: logout_response (0x200e) sequence: 767
+2025-12-11 22:45:54.560083 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
+2025-12-11 22:45:54.560113 [DEBUG] [ores.comms.net.session] Sent response for message type logout_request (0x200d)
+2025-12-11 22:45:54.560137 [INFO] [ores.comms.net.session] Logout completed, closing connection
+2025-12-11 22:45:54.560200 [ERROR] [ores.comms.net.session] Exception in notification writer: co_await: Operation canceled [system:125]
+2025-12-11 22:45:54.560233 [DEBUG] [ores.comms.net.session] Notification writer coroutine ended
+2025-12-11 22:45:54.560281 [INFO] [ores.comms.net.session] Unregistering session '127.0.0.1:38366' from subscription manager
+#+end_src
+
+We should probably unsubscribe before we logout.
+
+*** Use events in comms and accounts                                   :code:
+
+Now we have an event bus, we should create events for:
+
+- connect, disconnect, retry
+- login, logout
+
+*** Data in login info looks spurious                                  :code:
+
+We see stuff like this:
+
+#+begin_src
+oresdb=> select * from login_info;
+              account_id              |     last_ip     | last_attempt_ip | failed_logins | locked |       last_login       | online
+--------------------------------------+-----------------+-----------------+---------------+--------+------------------------+--------
+ 019a4439-be9e-798e-bf2f-927ca236f84c | 0.0.0.0         | 0.0.0.0         |             0 |      0 | 1969-12-31 23:00:00+01 |      0
+ 019a3ba6-bd11-709b-b93d-fea9403d3d39 | 127.0.0.1       | 127.0.0.1       |             0 |      0 | 2025-10-31 19:03:48+00 |      1
+ 019a4431-98f8-79ae-9fc8-f6a6e77a0490 | 192.168.1.100   | 192.168.1.100   |             0 |      0 | 2025-11-02 10:51:32+00 |      1
+ 019a4431-9a7d-7b3d-a1cb-b9e02d44c804 | 0.0.0.0         | 192.168.1.100   |             1 |      0 | 1969-12-31 23:00:00+01 |      0
+
+#+end_src
+
+Also, we need a login timestamp and a logout timestamp so we can measure session
+duration.
+
+*** Currencies displays when not connected                             :code:
+
+At present we can display currencies even before we connect. This is probably ok
+but we should at least state we are not connected. Alternatively it should be
+disabled.
+
+*** Add a delete all button which deletes all currencies               :code:
+
+It is useful especially in test environments to be able to delete all entities
+before a re-import.
+
+Notes:
+
+- purge button.
+
+
+*** Add screen in qt to exit bootstrap mode                            :code:
+
+As per claude:
+
+The create_initial_admin_request message type serves several important purposes
+that differentiate it from the CLI and REPL approaches:
+
+Why We Need create_initial_admin_request
+
+  1. Network-accessible bootstrap flow
+  - Allows remote initial setup from localhost without requiring shell/CLI access
+  to the server
+  - Enables a web-based "first-run" setup experience (like many web applications)
+  - The Qt client can provide a proper UI for initial admin account creation
+
+  2. Localhost-only security enforcement
+  - The endpoint enforces that it can only be called from localhost (127.0.0.1 or
+  ::1) at line
+  projects/ores.accounts/src/messaging/accounts_message_handler.cpp:320
+  - Provides network-accessible bootstrap with security guarantees
+  - Prevents remote bootstrap attacks
+
+  3. Atomic mode transition
+  - The endpoint both creates the admin AND exits bootstrap mode in a single atomic
+   operation (lines 362-367 in accounts_message_handler.cpp)
+  - Guarantees consistency - can't create admin without exiting bootstrap mode
+
+  4. Service-layer validation
+  - Goes through full service layer with password validation and business logic
+  - The CLI is essentially an "administrative backdoor" that bypasses the service
+  layer and writes directly to the database
+
+  5. Protocol-compliant workflow
+  - Clients speaking the binary protocol need a proper bootstrap endpoint
+  - REPL create_account_request is blocked in bootstrap mode (by enforcement logic)
+  - create_initial_admin_request is the only endpoint that works in bootstrap mode
+
+  The Distinction
+
+  - CLI approach: Administrative backdoor, direct database access, bypasses all
+  service logic
+  - create_initial_admin_request: Proper network-accessible bootstrap flow with
+  localhost restriction and atomic mode transition
+  - REPL create_account_request: Normal account creation, blocked in bootstrap mode
+
+  The create_initial_admin_request enables a proper "first-run experience" for
+  clients connecting via the network protocol, while maintaining security through
+  localhost-only access.
+
+
 *** Add party role scheme entity                                       :code:
 
 The following is the analysis for adding support to party schemes.

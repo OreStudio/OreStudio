@@ -21,6 +21,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/asio/io_context.hpp>
 #include "ores.testing/run_coroutine_test.hpp"
+#include "ores.eventing/service/event_channel_registry.hpp"
 #include "ores.comms/messaging/subscription_protocol.hpp"
 #include "ores.comms/service/subscription_manager.hpp"
 #include "ores.comms/service/subscription_handler.hpp"
@@ -199,6 +200,89 @@ TEST_CASE("notification_message stream operator", tags) {
 }
 
 // ============================================================================
+// list_event_channels_request tests
+// ============================================================================
+
+TEST_CASE("list_event_channels_request roundtrip serialization", tags) {
+    list_event_channels_request original;
+
+    auto bytes = original.serialize();
+    auto result = list_event_channels_request::deserialize(bytes);
+
+    REQUIRE(result.has_value());
+}
+
+TEST_CASE("list_event_channels_request deserialize handles empty data", tags) {
+    std::span<const std::byte> empty;
+    auto result = list_event_channels_request::deserialize(empty);
+
+    // Empty data is valid for this request (no fields)
+    REQUIRE(result.has_value());
+}
+
+TEST_CASE("list_event_channels_request stream operator", tags) {
+    list_event_channels_request req;
+
+    std::ostringstream oss;
+    oss << req;
+
+    REQUIRE(oss.str().find("list_event_channels_request") != std::string::npos);
+}
+
+// ============================================================================
+// list_event_channels_response tests
+// ============================================================================
+
+TEST_CASE("list_event_channels_response roundtrip serialization with channels", tags) {
+    list_event_channels_response original;
+    original.channels = {
+        {.name = "ores.risk.currency_changed", .description = "Currency data modified"},
+        {.name = "ores.iam.account_changed", .description = "Account data modified"},
+    };
+
+    auto bytes = original.serialize();
+    auto result = list_event_channels_response::deserialize(bytes);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->channels.size() == 2);
+    REQUIRE(result->channels[0].name == "ores.risk.currency_changed");
+    REQUIRE(result->channels[0].description == "Currency data modified");
+    REQUIRE(result->channels[1].name == "ores.iam.account_changed");
+    REQUIRE(result->channels[1].description == "Account data modified");
+}
+
+TEST_CASE("list_event_channels_response roundtrip serialization empty channels", tags) {
+    list_event_channels_response original;
+    original.channels = {};
+
+    auto bytes = original.serialize();
+    auto result = list_event_channels_response::deserialize(bytes);
+
+    REQUIRE(result.has_value());
+    REQUIRE(result->channels.empty());
+}
+
+TEST_CASE("list_event_channels_response deserialize fails on empty data", tags) {
+    std::span<const std::byte> empty;
+    auto result = list_event_channels_response::deserialize(empty);
+
+    REQUIRE_FALSE(result.has_value());
+}
+
+TEST_CASE("list_event_channels_response stream operator", tags) {
+    list_event_channels_response resp;
+    resp.channels = {
+        {.name = "test.channel", .description = "A test channel"},
+    };
+
+    std::ostringstream oss;
+    oss << resp;
+
+    REQUIRE(oss.str().find("test.channel") != std::string::npos);
+    REQUIRE(oss.str().find("A test channel") != std::string::npos);
+}
+
+// ============================================================================
 // subscription_handler tests
 // ============================================================================
 
@@ -207,7 +291,8 @@ TEST_CASE("subscription_handler handles subscribe request for registered session
     ores::testing::run_coroutine_test(io_ctx, []()
         -> boost::asio::awaitable<void> {
         auto mgr = std::make_shared<ores::comms::service::subscription_manager>();
-        ores::comms::service::subscription_handler handler(mgr);
+        auto registry = std::make_shared<ores::eventing::service::event_channel_registry>();
+        ores::comms::service::subscription_handler handler(mgr, registry);
 
         // Register the session first
         mgr->register_session("192.168.1.1:12345",
@@ -240,7 +325,8 @@ TEST_CASE("subscription_handler handles subscribe request for unregistered sessi
     ores::testing::run_coroutine_test(io_ctx, []()
         -> boost::asio::awaitable<void> {
         auto mgr = std::make_shared<ores::comms::service::subscription_manager>();
-        ores::comms::service::subscription_handler handler(mgr);
+        auto registry = std::make_shared<ores::eventing::service::event_channel_registry>();
+        ores::comms::service::subscription_handler handler(mgr, registry);
 
         // Don't register the session
 
@@ -267,7 +353,8 @@ TEST_CASE("subscription_handler handles unsubscribe request", tags) {
     ores::testing::run_coroutine_test(io_ctx, []()
         -> boost::asio::awaitable<void> {
         auto mgr = std::make_shared<ores::comms::service::subscription_manager>();
-        ores::comms::service::subscription_handler handler(mgr);
+        auto registry = std::make_shared<ores::eventing::service::event_channel_registry>();
+        ores::comms::service::subscription_handler handler(mgr, registry);
 
         // Register and subscribe
         mgr->register_session("192.168.1.1:12345",
@@ -300,7 +387,8 @@ TEST_CASE("subscription_handler returns error for unknown message type", tags) {
     ores::testing::run_coroutine_test(io_ctx, []()
         -> boost::asio::awaitable<void> {
         auto mgr = std::make_shared<ores::comms::service::subscription_manager>();
-        ores::comms::service::subscription_handler handler(mgr);
+        auto registry = std::make_shared<ores::eventing::service::event_channel_registry>();
+        ores::comms::service::subscription_handler handler(mgr, registry);
 
         std::vector<std::byte> payload;
 
@@ -311,6 +399,62 @@ TEST_CASE("subscription_handler returns error for unknown message type", tags) {
 
         REQUIRE_FALSE(result.has_value());
         REQUIRE(result.error() == error_code::invalid_message_type);
+    });
+}
+
+TEST_CASE("subscription_handler handles list_event_channels request", tags) {
+    boost::asio::io_context io_ctx;
+    ores::testing::run_coroutine_test(io_ctx, []()
+        -> boost::asio::awaitable<void> {
+        auto mgr = std::make_shared<ores::comms::service::subscription_manager>();
+        auto registry = std::make_shared<ores::eventing::service::event_channel_registry>();
+        registry->register_channel("test.channel.one", "First test channel");
+        registry->register_channel("test.channel.two", "Second test channel");
+        ores::comms::service::subscription_handler handler(mgr, registry);
+
+        list_event_channels_request req;
+        auto payload = req.serialize();
+
+        auto result = co_await handler.handle_message(
+            message_type::list_event_channels_request,
+            payload,
+            "127.0.0.1:12345");
+
+        REQUIRE(result.has_value());
+
+        auto resp = list_event_channels_response::deserialize(*result);
+        REQUIRE(resp.has_value());
+        REQUIRE(resp->channels.size() == 2);
+        // Channels are sorted by name
+        REQUIRE(resp->channels[0].name == "test.channel.one");
+        REQUIRE(resp->channels[0].description == "First test channel");
+        REQUIRE(resp->channels[1].name == "test.channel.two");
+        REQUIRE(resp->channels[1].description == "Second test channel");
+    });
+}
+
+TEST_CASE("subscription_handler handles list_event_channels request with empty registry", tags) {
+    boost::asio::io_context io_ctx;
+    ores::testing::run_coroutine_test(io_ctx, []()
+        -> boost::asio::awaitable<void> {
+        auto mgr = std::make_shared<ores::comms::service::subscription_manager>();
+        auto registry = std::make_shared<ores::eventing::service::event_channel_registry>();
+        // Don't register any channels
+        ores::comms::service::subscription_handler handler(mgr, registry);
+
+        list_event_channels_request req;
+        auto payload = req.serialize();
+
+        auto result = co_await handler.handle_message(
+            message_type::list_event_channels_request,
+            payload,
+            "127.0.0.1:12345");
+
+        REQUIRE(result.has_value());
+
+        auto resp = list_event_channels_response::deserialize(*result);
+        REQUIRE(resp.has_value());
+        REQUIRE(resp->channels.empty());
     });
 }
 

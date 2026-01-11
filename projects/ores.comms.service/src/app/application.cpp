@@ -31,6 +31,10 @@
 #include "ores.risk/eventing/country_changed_event.hpp"
 #include "ores.iam/messaging/registrar.hpp"
 #include "ores.iam/eventing/account_changed_event.hpp"
+#include "ores.iam/eventing/change_reason_changed_event.hpp"
+#include "ores.iam/eventing/change_reason_category_changed_event.hpp"
+#include "ores.iam/eventing/role_changed_event.hpp"
+#include "ores.iam/eventing/permission_changed_event.hpp"
 #include "ores.assets/eventing/assets_changed_event.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
 #include "ores.iam/service/authorization_service.hpp"
@@ -40,6 +44,7 @@
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
+#include "ores.eventing/service/event_channel_registry.hpp"
 #include "ores.eventing/service/postgres_event_source.hpp"
 #include "ores.eventing/service/registrar.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
@@ -145,26 +150,48 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         BOOST_LOG_SEV(lg(), info) << "Authentication and authorization enforcement enabled";
     }
 
-    // Initialize the event bus and event sources
+    // Initialize the event bus, channel registry, and event sources
     eventing::service::event_bus event_bus;
+    auto channel_registry = std::make_shared<eventing::service::event_channel_registry>();
     eventing::service::postgres_event_source event_source(ctx, event_bus);
 
     // Register entity-to-event mappings for each component
     eventing::service::registrar::register_mapping<
         risk::eventing::currency_changed_event>(
-        event_source, "ores.risk.currency", "ores_currencies");
+        event_source, "ores.risk.currency", "ores_currencies",
+        *channel_registry, "Currency data modified");
     eventing::service::registrar::register_mapping<
         risk::eventing::country_changed_event>(
-        event_source, "ores.risk.country", "ores_countries");
+        event_source, "ores.risk.country", "ores_countries",
+        *channel_registry, "Country data modified");
     eventing::service::registrar::register_mapping<
         iam::eventing::account_changed_event>(
-        event_source, "ores.iam.account", "ores_accounts");
+        event_source, "ores.iam.account", "ores_accounts",
+        *channel_registry, "Account data modified");
+    eventing::service::registrar::register_mapping<
+        iam::eventing::change_reason_changed_event>(
+        event_source, "ores.iam.change_reason", "ores_change_reasons",
+        *channel_registry, "Change reason data modified");
+    eventing::service::registrar::register_mapping<
+        iam::eventing::change_reason_category_changed_event>(
+        event_source, "ores.iam.change_reason_category", "ores_change_reason_categories",
+        *channel_registry, "Change reason category data modified");
+    eventing::service::registrar::register_mapping<
+        iam::eventing::role_changed_event>(
+        event_source, "ores.iam.role", "ores_roles",
+        *channel_registry, "Role data modified");
+    eventing::service::registrar::register_mapping<
+        iam::eventing::permission_changed_event>(
+        event_source, "ores.iam.permission", "ores_permissions",
+        *channel_registry, "Permission data modified");
     eventing::service::registrar::register_mapping<
         assets::eventing::assets_changed_event>(
-        event_source, "ores.assets.currency_image", "ores_currency_images");
+        event_source, "ores.assets.currency_image", "ores_currency_images",
+        *channel_registry, "Currency image assets modified");
     eventing::service::registrar::register_mapping<
         variability::eventing::feature_flags_changed_event>(
-        event_source, "ores.variability.feature_flag", "ores_feature_flags");
+        event_source, "ores.variability.feature_flag", "ores_feature_flags",
+        *channel_registry, "Feature flags modified");
 
     // Start the event source to begin listening for database notifications
     event_source.start();
@@ -206,6 +233,38 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                                      e.iso_codes);
         });
 
+    auto change_reason_sub = event_bus.subscribe<iam::eventing::change_reason_changed_event>(
+        [&subscription_mgr](const iam::eventing::change_reason_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                iam::eventing::change_reason_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.reason_codes);
+        });
+
+    auto change_reason_category_sub = event_bus.subscribe<iam::eventing::change_reason_category_changed_event>(
+        [&subscription_mgr](const iam::eventing::change_reason_category_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                iam::eventing::change_reason_category_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.category_codes);
+        });
+
+    auto role_sub = event_bus.subscribe<iam::eventing::role_changed_event>(
+        [&subscription_mgr](const iam::eventing::role_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                iam::eventing::role_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.role_ids);
+        });
+
+    auto permission_sub = event_bus.subscribe<iam::eventing::permission_changed_event>(
+        [&subscription_mgr](const iam::eventing::permission_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                iam::eventing::permission_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.permission_ids);
+        });
+
     // Subscribe to feature flag changes to refresh system_flags cache.
     // This handles cross-service cache invalidation (e.g., HTTP server changes a flag,
     // this service gets notified via PostgreSQL NOTIFY and refreshes its cache).
@@ -237,9 +296,9 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     ores::assets::messaging::registrar::register_handlers(*srv, ctx);
     ores::telemetry::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
 
-    // Register subscription handler for subscribe/unsubscribe messages
+    // Register subscription handler for subscribe/unsubscribe/list_event_channels messages
     auto subscription_handler =
-        std::make_shared<comms::service::subscription_handler>(subscription_mgr);
+        std::make_shared<comms::service::subscription_handler>(subscription_mgr, channel_registry);
     srv->register_handler(
         {comms::messaging::CORE_SUBSYSTEM_MIN, comms::messaging::CORE_SUBSYSTEM_MAX},
         subscription_handler);

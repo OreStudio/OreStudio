@@ -29,6 +29,7 @@
 #include <string>
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
+#include "ores.eventing/domain/event_channel_info.hpp"
 
 namespace ores::comms::messaging {
 
@@ -237,6 +238,60 @@ struct database_status_message final {
 std::ostream& operator<<(std::ostream& s, const database_status_message& v);
 
 /**
+ * @brief Request to list available event channels.
+ *
+ * This is a discovery mechanism that allows clients to query the server
+ * for all event types that can be subscribed to.
+ */
+struct list_event_channels_request final {
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format: Empty payload (no fields).
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<list_event_channels_request, ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const list_event_channels_request& v);
+
+/**
+ * @brief Response containing available event channels.
+ */
+struct list_event_channels_response final {
+    /**
+     * @brief List of available event channels.
+     */
+    std::vector<eventing::domain::event_channel_info> channels;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 4 bytes: channel count
+     * - For each channel:
+     *   - 2 bytes: name length
+     *   - N bytes: name (UTF-8)
+     *   - 2 bytes: description length
+     *   - N bytes: description (UTF-8)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<list_event_channels_response, ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const list_event_channels_response& v);
+
+/**
  * @brief Message traits specialization for subscribe_request.
  */
 template<>
@@ -256,6 +311,17 @@ struct message_traits<unsubscribe_request> {
     using response_type = unsubscribe_response;
     static constexpr message_type request_message_type =
         message_type::unsubscribe_request;
+};
+
+/**
+ * @brief Message traits specialization for list_event_channels_request.
+ */
+template<>
+struct message_traits<list_event_channels_request> {
+    using request_type = list_event_channels_request;
+    using response_type = list_event_channels_response;
+    static constexpr message_type request_message_type =
+        message_type::list_event_channels_request;
 };
 
 }

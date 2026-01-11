@@ -24,7 +24,9 @@
 \ir ./drop/rbac_functions_drop.sql
 \ir ./drop/account_roles_drop.sql
 \ir ./drop/role_permissions_drop.sql
+\ir ./drop/roles_notify_trigger_drop.sql
 \ir ./drop/roles_drop.sql
+\ir ./drop/permissions_notify_trigger_drop.sql
 \ir ./drop/permissions_drop.sql
 \ir ./drop/currencies_notify_trigger_drop.sql
 \ir ./drop/currencies_drop.sql
@@ -36,6 +38,9 @@
 \ir ./drop/session_stats_drop.sql
 \ir ./drop/sessions_drop.sql
 \ir ./drop/login_info_drop.sql
+\ir ./drop/change_reasons_notify_trigger_drop.sql
+\ir ./drop/change_reason_functions_drop.sql
 \ir ./drop/change_reasons_drop.sql
+\ir ./drop/change_reason_categories_notify_trigger_drop.sql
 \ir ./drop/change_reason_categories_drop.sql
 \ir ./drop/whimsical_names_drop.sql

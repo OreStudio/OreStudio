@@ -358,7 +358,7 @@ ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Initial admin account created successfully!
-  Account ID: 019ba3a0-48bb-7924-96ae-686f0883cc9c
+  Account ID: 019baeff-c69f-7571-8e0d-761e1cd3156c
   You can now login with the credentials provided.
 ores-shell> Bye!
 #+end_example
@@ -446,8 +446,8 @@ EOF
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Account created with ID: 019bae63-e953-727c-bb2c-e765d462f1f0
-ores-shell> ✓ Account created with ID: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
+ores-shell> ✓ Account created with ID: 019baed4-fb93-74e1-b143-3677befb0c19
+ores-shell> ✓ Account created with ID: 019baed4-fc08-71a3-b9a3-7c75ae40d6d8
 ores-shell> Bye!
 #+end_example
 
@@ -1547,11 +1547,14 @@ ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> Available event channels:
-  ores.risk.currency_changed - Currency data modified
+  ores.assets.assets_changed - Currency image assets modified
   ores.iam.account_changed - Account data modified
-  ores.iam.role_assigned - Role assigned to account
-  ores.iam.role_revoked - Role revoked from account
-  ores.iam.permissions_changed - Account permissions modified
+  ores.iam.change_reason_category_changed - Change reason category data modified
+  ores.iam.change_reason_changed - Change reason data modified
+  ores.iam.permission_changed - Permission data modified
+  ores.iam.role_changed - Role data modified
+  ores.risk.country_changed - Country data modified
+  ores.risk.currency_changed - Currency data modified
   ores.variability.feature_flags_changed - Feature flags modified
 
 Use 'listen <channel>' to subscribe, or 'listen *' for all.

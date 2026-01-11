@@ -21,7 +21,9 @@
 #define ORES_EVENTING_SERVICE_REGISTRAR_HPP
 
 #include "ores.logging/make_logger.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
 #include "ores.eventing/service/postgres_event_source.hpp"
+#include "ores.eventing/service/event_channel_registry.hpp"
 
 namespace ores::eventing::service {
 
@@ -63,6 +65,32 @@ public:
             << "Registering event mapping: " << entity_name
             << " -> " << channel_name;
         source.register_mapping<Event>(entity_name, channel_name);
+    }
+
+    /**
+     * @brief Register a single entity-to-event mapping with channel registry.
+     *
+     * This overload also registers the event channel with the provided registry,
+     * enabling clients to discover available event channels.
+     *
+     * @tparam Event The domain event type to publish (must have event_traits).
+     * @param source The postgres event source to configure.
+     * @param entity_name The fully qualified entity name.
+     * @param channel_name The PostgreSQL channel to listen on.
+     * @param registry The event channel registry to populate.
+     * @param description Human-readable description of the event channel.
+     */
+    template<domain::has_event_traits Event>
+    static void register_mapping(postgres_event_source& source,
+                                 const std::string& entity_name,
+                                 const std::string& channel_name,
+                                 event_channel_registry& registry,
+                                 const std::string& description) {
+        BOOST_LOG_SEV(lg(), logging::info)
+            << "Registering event mapping: " << entity_name
+            << " -> " << channel_name;
+        source.register_mapping<Event>(entity_name, channel_name);
+        registry.register_channel<Event>(description);
     }
 };
 

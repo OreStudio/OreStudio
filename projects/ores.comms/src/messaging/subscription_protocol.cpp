@@ -234,4 +234,73 @@ std::ostream& operator<<(std::ostream& s, const database_status_message& v) {
              << ", timestamp=" << ms << "ms}";
 }
 
+// list_event_channels_request
+
+std::vector<std::byte> list_event_channels_request::serialize() const {
+    // Empty payload - no fields to serialize
+    return {};
+}
+
+std::expected<list_event_channels_request, ores::utility::serialization::error_code>
+list_event_channels_request::deserialize(std::span<const std::byte> /*data*/) {
+    // Empty payload - nothing to deserialize
+    return list_event_channels_request{};
+}
+
+std::ostream& operator<<(std::ostream& s, const list_event_channels_request& /*v*/) {
+    return s << "list_event_channels_request{}";
+}
+
+// list_event_channels_response
+
+std::vector<std::byte> list_event_channels_response::serialize() const {
+    std::vector<std::byte> buffer;
+
+    // Serialize channel count
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(channels.size()));
+
+    // Serialize each channel
+    for (const auto& channel : channels) {
+        writer::write_string(buffer, channel.name);
+        writer::write_string(buffer, channel.description);
+    }
+
+    return buffer;
+}
+
+std::expected<list_event_channels_response, ores::utility::serialization::error_code>
+list_event_channels_response::deserialize(std::span<const std::byte> data) {
+    list_event_channels_response resp;
+
+    auto count = reader::read_uint32(data);
+    if (!count) return std::unexpected(count.error());
+
+    resp.channels.reserve(*count);
+    for (std::uint32_t i = 0; i < *count; ++i) {
+        eventing::domain::event_channel_info channel;
+
+        auto name = reader::read_string(data);
+        if (!name) return std::unexpected(name.error());
+        channel.name = *name;
+
+        auto description = reader::read_string(data);
+        if (!description) return std::unexpected(description.error());
+        channel.description = *description;
+
+        resp.channels.push_back(std::move(channel));
+    }
+
+    return resp;
+}
+
+std::ostream& operator<<(std::ostream& s, const list_event_channels_response& v) {
+    s << "list_event_channels_response{channels=[";
+    for (std::size_t i = 0; i < v.channels.size(); ++i) {
+        if (i > 0) s << ", ";
+        s << "{name=" << v.channels[i].name
+          << ", description=" << v.channels[i].description << "}";
+    }
+    return s << "]}";
+}
+
 }

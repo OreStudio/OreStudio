@@ -30,6 +30,7 @@
 #include <expected>
 #include <functional>
 #include <string_view>
+#include <condition_variable>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/strand.hpp>
@@ -176,6 +177,14 @@ private:
     std::chrono::milliseconds calculate_backoff(std::uint32_t attempt) const;
 
     /**
+     * @brief Check if all coroutines have stopped and notify waiters.
+     *
+     * Called by each coroutine when it exits to potentially wake up
+     * await_shutdown() callers.
+     */
+    void notify_shutdown_if_complete();
+
+    /**
      * @brief Write a frame through the write strand.
      *
      * Serializes all writes to prevent interleaving.
@@ -257,8 +266,24 @@ public:
 
     /**
      * @brief Disconnect from server.
+     *
+     * Signals all running coroutines to stop and closes the connection.
+     * Does not wait for coroutines to complete - call await_shutdown()
+     * after disconnect() to wait for safe cleanup.
      */
     void disconnect();
+
+    /**
+     * @brief Wait for all coroutines to complete after disconnect.
+     *
+     * Blocks until message loop, reconnect loop, and heartbeat loop have
+     * all exited. Must be called after disconnect() before destroying the
+     * client to avoid use-after-free crashes.
+     *
+     * @param timeout Maximum time to wait (default 5 seconds)
+     * @return true if all coroutines stopped, false if timeout expired
+     */
+    bool await_shutdown(std::chrono::milliseconds timeout = std::chrono::milliseconds{5000});
 
     /**
      * @brief Check if client is connected.
@@ -519,6 +544,9 @@ private:
     std::atomic<bool> message_loop_running_{false};
     std::atomic<bool> reconnect_loop_running_{false};
     std::atomic<bool> heartbeat_loop_running_{false};
+    std::atomic<bool> shutdown_requested_{false};
+    std::condition_variable shutdown_cv_;
+    std::mutex shutdown_mutex_;
     std::unique_ptr<std::thread> io_thread_; // Background thread for io_context
     std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> work_guard_;
 

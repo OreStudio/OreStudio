@@ -27,7 +27,7 @@
 #include "ores.iam/domain/permission.hpp"
 #include "ores.iam/eventing/role_assigned_event.hpp"
 #include "ores.iam/eventing/role_revoked_event.hpp"
-#include "ores.iam/eventing/permissions_changed_event.hpp"
+#include "ores.iam/eventing/account_permissions_changed_event.hpp"
 
 namespace ores::iam::service {
 
@@ -256,7 +256,7 @@ void authorization_service::assign_role(
         event.timestamp = std::chrono::system_clock::now();
         event_bus_->publish(event);
 
-        publish_permissions_changed(account_id);
+        publish_account_permissions_changed(account_id);
     }
 }
 
@@ -279,7 +279,7 @@ void authorization_service::revoke_role(
         event.timestamp = std::chrono::system_clock::now();
         event_bus_->publish(event);
 
-        publish_permissions_changed(account_id);
+        publish_account_permissions_changed(account_id);
     }
 }
 
@@ -333,7 +333,7 @@ bool authorization_service::check_permission(
                               required_permission);
 }
 
-void authorization_service::publish_permissions_changed(
+void authorization_service::publish_account_permissions_changed(
     const boost::uuids::uuid& account_id) {
     if (!event_bus_) {
         return;
@@ -341,7 +341,7 @@ void authorization_service::publish_permissions_changed(
 
     auto permissions = get_effective_permissions(account_id);
 
-    eventing::permissions_changed_event event;
+    eventing::account_permissions_changed_event event;
     event.account_id = account_id;
     event.permission_codes = std::move(permissions);
     event.timestamp = std::chrono::system_clock::now();

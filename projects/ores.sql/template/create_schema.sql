@@ -51,7 +51,10 @@ grant create on schema ores to ores;
 
 -- Change control tables (must be created before entities that reference them)
 \ir ../schema/change_reason_categories_create.sql
+\ir ../schema/change_reason_categories_notify_trigger.sql
 \ir ../schema/change_reasons_create.sql
+\ir ../schema/change_reasons_notify_trigger.sql
+\ir ../schema/change_reason_functions_create.sql
 
 -- Core tables
 \ir ../schema/currencies_create.sql
@@ -72,7 +75,9 @@ grant create on schema ores to ores;
 
 -- RBAC tables
 \ir ../schema/permissions_create.sql
+\ir ../schema/permissions_notify_trigger.sql
 \ir ../schema/roles_create.sql
+\ir ../schema/roles_notify_trigger.sql
 \ir ../schema/role_permissions_create.sql
 \ir ../schema/account_roles_create.sql
 \ir ../schema/rbac_functions_create.sql

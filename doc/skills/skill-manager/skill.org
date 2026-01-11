@@ -129,6 +129,22 @@ To update an existing skill:
 - Inform the user the update has been performed and that skills need to be
   regenerated.
 
+** Testing skills
+
+After creating or updating a skill, run both CMake targets to verify the changes
+don't break any builds:
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug --target deploy_skills
+cmake --build --preset linux-clang-debug --target deploy_site
+#+end_src
+
+The =deploy_skills= target generates the Claude Code skills under =.claude/skills=.
+The =deploy_site= target generates the documentation website and can break if
+there are issues with org-mode links or formatting in skill files.
+
+Both must complete successfully before committing skill changes.
+
 * Artefacts                                                        :noexport:
 
 ** Licence

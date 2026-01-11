@@ -377,9 +377,9 @@ handle_get_<entity>(const http_request& req) {
 
     try {
         // Extract path parameter
-        auto <entity>_id = req.get_path_param("<identifier>");
+        auto <entity>_id = req.get_path_param("<entity>_id");
         if (<entity>_id.empty()) {
-            co_return http_response::bad_request("Missing <entity> identifier");
+            co_return http_response::bad_request("Missing <entity> ID");
         }
 
         // Call service layer
@@ -578,9 +578,9 @@ Add version history retrieval.
 *** Route registration
 
 #+begin_src cpp
-    // GET /api/v1/<entities>/{id}/history - Get <entity> history
+    // GET /api/v1/<entities>/{<entity>_id}/history - Get <entity> history
     {
-        auto route_builder = router->get("/api/v1/<entities>/{<identifier>}/history")
+        auto route_builder = router->get("/api/v1/<entities>/{<entity>_id}/history")
             .summary("Get <entity> history")
             .description("Retrieve version history for a <entity>")
             .tags({"<entities>"})
@@ -603,9 +603,9 @@ handle_get_<entity>_history(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "Handling get <entity> history request";
 
     try {
-        auto <entity>_id = req.get_path_param("<identifier>");
+        auto <entity>_id = req.get_path_param("<entity>_id");
         if (<entity>_id.empty()) {
-            co_return http_response::bad_request("Missing <entity> identifier");
+            co_return http_response::bad_request("Missing <entity> ID");
         }
 
         <domain>::service::<entity>_service service(ctx_);
@@ -629,7 +629,7 @@ handle_get_<entity>_history(const http_request& req) {
 #+begin_example
 [http] Add <entity> history endpoint
 
-Implement version history retrieval by <entity> identifier.
+Implement version history retrieval by <entity> ID.
 #+end_example
 
 
@@ -648,7 +648,7 @@ At this point:
 ## Summary
 
 - DELETE /api/v1/<entities> - Batch delete with per-item results
-- GET /api/v1/<entities>/{id}/history - Version history retrieval
+- GET /api/v1/<entities>/{<entity>_id}/history - Version history retrieval
 #+end_example
 
 Wait for review feedback and merge before continuing to Phase 3.
@@ -730,7 +730,7 @@ Get version history for a <entity>.
 
 #+name: <entities>-history
 #+begin_src sh :var jwt_token="" :results output :wrap example
-curl -s -X GET "${base_url}/api/v1/<entities>/<entity_id>/history" \
+curl -s -X GET "${base_url}/api/v1/<entities>/<entity>_id/history" \
   -H "Authorization: Bearer ${jwt_token}" \
   -H "Content-Type: application/json" | jq .
 #+end_src
@@ -810,8 +810,8 @@ At this point:
 | Pattern                           | Use Case                              |
 |-----------------------------------+---------------------------------------|
 | =/api/v1/<entities>=              | List (GET), Create (POST), Delete     |
-| =/api/v1/<entities>/{id}=         | Get single, Update, Delete single     |
-| =/api/v1/<entities>/{id}/history= | Version history                       |
+| =/api/v1/<entities>/{<entity>_id}=         | Get single, Update, Delete single     |
+| =/api/v1/<entities>/{<entity>_id}/history= | Version history                       |
 
 
 ** Related skills

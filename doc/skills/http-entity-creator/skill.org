@@ -316,6 +316,12 @@ handle_get_<entities>(const http_request& req) {
         BOOST_LOG_SEV(lg(), info) << "Retrieved " << <entities>.size()
                                   << " <entities>";
         co_return http_response::json(rfl::json::write(resp));
+    } catch (const std::invalid_argument& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid pagination parameter: " << e.what();
+        co_return http_response::bad_request("Invalid pagination parameter");
+    } catch (const std::out_of_range& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Pagination parameter out of range: " << e.what();
+        co_return http_response::bad_request("Pagination parameter out of range");
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Get <entities> error: " << e.what();
         co_return http_response::internal_error(e.what());

@@ -198,6 +198,19 @@ public:
     static void process_session_stats(std::ostream& out,
         comms::net::client_session& session,
         int days = 30);
+
+    /**
+     * @brief Process a get account history request.
+     *
+     * Retrieves the version history for an account by username.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param username Username of the account
+     */
+    static void process_get_account_history(std::ostream& out,
+        comms::net::client_session& session,
+        std::string username);
 };
 
 }

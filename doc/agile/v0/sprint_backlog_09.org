@@ -34,6 +34,9 @@
 #+end:
 
 *** Sprint and product backlog refinement                             :agile:
+    :LOGBOOK:
+    CLOCK: [2026-01-11 Sun 23:38]
+    :END:
 
 Updates to sprint and product backlog.
 
@@ -43,14 +46,14 @@ Updates to sprint and product backlog.
 #+end_src
 
 #+name: pie-stories-chart
-#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_09_stories_pie_sorted.png :width 1920 :height 1080
+#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_09_stories_pie_sorted.png :width 1920 :height 1080
 library(conflicted)
 library(ggplot2)
 library(tidyverse)
 library(tibble)
 
-# Remove unnecessary rows (Total time, Stories, Active)
-clean_sprint_summary <- tail(sprint_summary, -4)
+# Filter to only rows with actual story data (non-empty Tags column)
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(!is.na(Tags) & nzchar(Tags))
 stories <- unlist(clean_sprint_summary[2])
 percent_values <- as.numeric(unlist(clean_sprint_summary[6]))
 
@@ -109,14 +112,14 @@ print(p)
 [[file:sprint_backlog_09_stories_pie_sorted.png]]
 
 #+name: stories-chart
-#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_09_stories.png :width 1200 :height 650
+#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_09_stories.png :width 1200 :height 650
 library(conflicted)
 library(grid)
 library(tidyverse)
 library(tibble)
 
-# Remove unnecessary rows.
-clean_sprint_summary <- tail(sprint_summary, -4)
+# Filter to only rows with actual story data (non-empty Tags column)
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(Tags != "")
 names <- unlist(clean_sprint_summary[2])
 values <- as.numeric(unlist(clean_sprint_summary[6]))
 
@@ -144,23 +147,27 @@ print(p)
 [[file:sprint_backlog_09_stories.png]]
 
 #+name: tags-chart
-#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_09_tags.png :width 600 :height 400
+#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_09_tags.png :width 600 :height 400
 library(conflicted)
 library(grid)
 library(tidyverse)
 library(tibble)
 
-clean_sprint_summary <- tail(sprint_summary, -4)
+# Filter to only rows with actual story data (non-empty Tags column)
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(Tags != "")
 names <- unlist(clean_sprint_summary[1])
 values <- as.numeric(unlist(clean_sprint_summary[6]))
 
+# Create a data frame.
 df <- data.frame(
   cost = values,
   tags = names,
   y = seq(length(names)) * 0.9
 )
+# factor(names, levels = names[order(values, decreasing = FALSE)])
 
-df2 <- setNames(aggregate(df$cost, by = list(df$tags), FUN = sum), c("cost", "tags"))
+df2 <- setNames(aggregate(df$cost, by = list(df$tags), FUN = sum),  c("cost", "tags"))
+# Setup the colors
 
 blue <- "#076fa2"
 

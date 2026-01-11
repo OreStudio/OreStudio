@@ -27,6 +27,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.iam/messaging/protocol.hpp"
+#include "ores.comms.shell/app/commands/countries_commands.hpp"
 #include "ores.comms.shell/app/commands/currencies_commands.hpp"
 #include "ores.comms.shell/app/commands/connection_commands.hpp"
 #include "ores.comms.shell/app/commands/accounts_commands.hpp"
@@ -64,6 +65,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
 
     using namespace commands;
     connection_commands::register_commands(*root, session_);
+    countries_commands::register_commands(*root, session_);
     currencies_commands::register_commands(*root, session_);
     accounts_commands::register_commands(*root, session_);
     variability_commands::register_commands(*root, session_);

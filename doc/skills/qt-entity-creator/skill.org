@@ -1221,12 +1221,12 @@ void <Entity>Controller::onNotificationReceived(
         // Check if this window is affected
         if (entityIds.isEmpty()) {
             // All entities changed
-            MdiUtils::markWindowAsStale(window);
+            MdiUtils::markParentWindowAsStale(window);
         } else {
             // Check specific IDs
             for (const QString& id : entityIds) {
                 if (key.contains(id)) {
-                    MdiUtils::markWindowAsStale(window);
+                    MdiUtils::markParentWindowAsStale(window);
                     break;
                 }
             }

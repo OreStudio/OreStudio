@@ -16,6 +16,8 @@ using the org-mode publishing system.
 - [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][Skill Manager]]: Skill to create new skills.
 - [[id:44d7a328-f69c-4ee9-83a5-74bd3634ad69][Skill Review]]: Review skills for consistency, conflicts, duplication, and
   alignment with codebase.
+- [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]]: Manage feature branches across multi-phase
+  implementations with clean git history.
 
 ** Documentation
 
@@ -33,6 +35,8 @@ using the org-mode publishing system.
 
 - [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]]: Run CMake targets.
 - [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]]: Create a new domain type with all of it's basic services.
+- [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][Qt Entity Creator]]: Create Qt UI components for domain entities including list
+  windows, detail dialogs, history dialogs, and controllers.
 - [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator]]: Create SQL table definitions, triggers, and population scripts.
 - [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer]]: Generate Catch2 unit tests following ORE Studio conventions.
 - [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Summary]]: Generate a title and summary for an open PR of the work in this

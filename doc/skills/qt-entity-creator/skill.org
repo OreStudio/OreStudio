@@ -1,0 +1,1454 @@
+:PROPERTIES:
+:ID: c6adac80-f4e6-44e8-9525-3760cb98c41d
+:END:
+#+title: Qt Entity Creator
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: qt-entity-creator
+description: Create Qt UI components for domain entities including list windows, detail dialogs, history dialogs, and controllers.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When you need to add a new entity to the Qt UI layer in ORE Studio. This skill
+guides you through creating all the necessary Qt components to display, edit,
+and manage a domain entity, following established patterns in the codebase.
+
+Prerequisites:
+- The domain type must already exist (see =domain-type-creator= skill)
+- The messaging protocol for CRUD operations must exist (see =binary-protocol-developer= skill)
+- The server-side handlers must be implemented
+
+
+* How to use this skill
+
+1. Gather entity requirements (name, fields, features needed).
+2. Follow the detailed instructions to create components in order.
+3. Each phase ends with a PR checkpoint - raise PR, wait for review, merge.
+4. Create a fresh branch from main for the next phase (see =feature-branch-manager=).
+5. Build and test after each step within a phase.
+
+
+* PR Strategy
+
+This skill is structured into *four phases*, each resulting in a separate PR.
+This keeps PRs reviewable and allows incremental integration.
+
+| Phase | Steps | PR Title Template |
+|-------+-------+-------------------|
+| 1 | Steps 1-2 | =[qt] Add <Entity> model and list window= |
+| 2 | Steps 3-4 | =[qt] Add <Entity> detail dialog= |
+| 3 | Steps 5-6 | =[qt] Add <Entity> history dialog= |
+| 4 | Steps 7-9 | =[qt] Integrate <Entity> controller and update diagrams= |
+
+After each PR is merged, use the [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] skill to transition to
+the next phase. This ensures clean git history by creating fresh branches from
+main rather than rebasing.
+
+
+* Detailed instructions
+
+The following sections describe the step-by-step process for creating a complete
+Qt entity.
+
+
+** Gather Requirements
+
+Before starting, gather the following information:
+
+- *Entity name*: The name of the entity (e.g., =currency=, =country=, =account=).
+- *Component location*: Which domain the entity belongs to (e.g., =ores.risk=, =ores.iam=).
+- *Display fields*: Which fields to show in the list view table.
+- *Editable fields*: Which fields can be edited in the detail dialog.
+- *Primary key*: The unique identifier field (e.g., =iso_code=, =id=, =alpha2_code=).
+- *Entity icon*: Select an appropriate icon using the =icon-guidelines= skill.
+- *Features needed*:
+  - [ ] List view with pagination (for large datasets)
+  - [ ] Detail dialog (create/edit/view)
+  - [ ] History dialog (version tracking)
+  - [ ] Server notifications (real-time updates)
+  - [ ] Image/flag support
+  - [ ] Change reason tracking
+
+
+* Phase 1: Model and List Window
+
+This phase creates the data model and main list view. After completing Steps 1-2,
+raise a PR.
+
+*Suggested PR title:* =[qt] Add <Entity> model and list window=
+
+
+** Step 1: Create Client Model
+
+Create the model that fetches and stores entity data from the server.
+
+*** File locations
+
+- Header: =projects/ores.qt/include/ores.qt/Client<Entity>Model.hpp=
+- Implementation: =projects/ores.qt/src/Client<Entity>Model.cpp=
+
+*** Header structure
+
+#+begin_src cpp
+#ifndef ORES_QT_CLIENT_<ENTITY>_MODEL_HPP
+#define ORES_QT_CLIENT_<ENTITY>_MODEL_HPP
+
+#include <vector>
+#include <QFutureWatcher>
+#include <QAbstractTableModel>
+#include "ores.qt/ClientManager.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "<component>/domain/<entity>.hpp"
+
+namespace ores::qt {
+
+class Client<Entity>Model final : public QAbstractTableModel {
+    Q_OBJECT
+
+private:
+    inline static std::string_view logger_name = "ores.qt.client_<entity>_model";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    enum Column {
+        // Define columns matching display fields
+        // Example: IsoCode, Name, Symbol, ..., ColumnCount
+        ColumnCount
+    };
+
+    explicit Client<Entity>Model(ClientManager* clientManager,
+                                  QObject* parent = nullptr);
+    ~Client<Entity>Model() override = default;
+
+    // QAbstractTableModel interface
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation,
+                        int role = Qt::DisplayRole) const override;
+
+    // Data access
+    const <component>::domain::<entity>* get<Entity>(int row) const;
+    void refresh();
+    void clear();
+
+    // Pagination (if needed)
+    std::uint32_t page_size() const { return page_size_; }
+    void set_page_size(std::uint32_t size);
+    std::uint64_t total_available_count() const { return total_available_count_; }
+    void load_page(std::uint32_t offset, std::uint32_t limit);
+
+signals:
+    void dataLoaded();
+    void loadError(const QString& error_message);
+
+private slots:
+    void onDataLoaded();
+
+private:
+    struct FetchResult {
+        bool success;
+        std::vector<<component>::domain::<entity>> entries;
+        std::uint64_t total_count;
+    };
+
+    void fetch_data();
+
+    ClientManager* clientManager_;
+    std::vector<<component>::domain::<entity>> entries_;
+    QFutureWatcher<FetchResult>* watcher_;
+
+    std::uint32_t page_size_{100};
+    std::uint32_t current_offset_{0};
+    std::uint64_t total_available_count_{0};
+    bool is_fetching_{false};
+};
+
+}
+
+#endif
+#+end_src
+
+*** Implementation patterns
+
+The implementation should:
+
+1. Use =QtConcurrent::run= for async data fetching.
+2. Use =QPointer<Client<Entity>Model>= in lambdas for safety.
+3. Use =beginResetModel()= / =endResetModel()= when replacing data.
+4. Log operations at appropriate levels (debug for start, info for success, error for failures).
+
+*** Commit message
+
+#+begin_example
+[qt] Add Client<Entity>Model for <entity> data fetching
+
+Create Qt model for fetching and displaying <entity> data from the
+server with async loading and pagination support.
+#+end_example
+
+
+** Step 2: Create MDI Window (List View)
+
+Create the main list window showing entities in a table.
+
+*** Icon selection
+
+Use the =icon-guidelines= skill to select an appropriate icon for the entity.
+Common patterns:
+- Data entities: Use semantic icons (globe for countries, currency symbols for currencies)
+- System entities: Use system-related icons (lock for roles, flag for feature flags)
+
+*** File locations
+
+- Header: =projects/ores.qt/include/ores.qt/<Entity>MdiWindow.hpp=
+- Implementation: =projects/ores.qt/src/<Entity>MdiWindow.cpp=
+
+*** Header structure
+
+#+begin_src cpp
+#ifndef ORES_QT_<ENTITY>_MDI_WINDOW_HPP
+#define ORES_QT_<ENTITY>_MDI_WINDOW_HPP
+
+#include <QWidget>
+#include <QTableView>
+#include <QVBoxLayout>
+#include <QToolBar>
+#include <QTimer>
+#include <QSortFilterProxyModel>
+#include <memory>
+#include "ores.qt/ClientManager.hpp"
+#include "ores.qt/Client<Entity>Model.hpp"
+#include "ores.qt/PaginationWidget.hpp"  // If pagination needed
+#include "ores.logging/make_logger.hpp"
+#include "<component>/domain/<entity>.hpp"
+
+namespace ores::qt {
+
+class <Entity>MdiWindow : public QWidget {
+    Q_OBJECT
+
+private:
+    inline static std::string_view logger_name = "ores.qt.<entity>_mdi_window";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    explicit <Entity>MdiWindow(ClientManager* clientManager,
+                                const QString& username,
+                                QWidget* parent = nullptr);
+    ~<Entity>MdiWindow() override;
+
+    Client<Entity>Model* model() const { return model_.get(); }
+    QSize sizeHint() const override;
+
+signals:
+    void statusChanged(const QString& message);
+    void errorOccurred(const QString& error_message);
+    void selectionChanged(int selection_count);
+    void addNewRequested();
+    void show<Entity>Details(const <component>::domain::<entity>& entity);
+    void <entity>Deleted(const QString& id);
+    void show<Entity>History(const QString& id);
+
+public slots:
+    void reload();
+    void markAsStale();
+    void clearStaleIndicator();
+
+private slots:
+    void onDataLoaded();
+    void onLoadError(const QString& error);
+    void onSelectionChanged();
+    void onRowDoubleClicked(const QModelIndex& index);
+    void onConnectionStateChanged();
+    void addNew();
+    void editSelected();
+    void deleteSelected();
+    void showHistory();
+
+private:
+    void setupUi();
+    void setupToolbar();
+    void setupReloadAction();
+    void startPulseAnimation();
+    void stopPulseAnimation();
+    void updateActionStates();
+
+    // Layout
+    QVBoxLayout* verticalLayout_;
+    QTableView* tableView_;
+    QToolBar* toolBar_;
+    PaginationWidget* paginationWidget_;  // If pagination needed
+
+    // Stale indicator
+    QAction* reloadAction_;
+    QIcon normalReloadIcon_;
+    QIcon staleReloadIcon_;
+    QTimer* pulseTimer_;
+    bool pulseState_{false};
+    int pulseCount_{0};
+
+    // Standard actions
+    QAction* addAction_;
+    QAction* editAction_;
+    QAction* deleteAction_;
+    QAction* historyAction_;
+
+    // Model
+    std::unique_ptr<Client<Entity>Model> model_;
+    QSortFilterProxyModel* proxyModel_;
+    ClientManager* clientManager_;
+    QString username_;
+    bool isStale_{false};
+};
+
+}
+
+#endif
+#+end_src
+
+*** Implementation patterns
+
+**** Constructor setup sequence
+
+1. Initialize member variables.
+2. Create toolbar with =setupToolbar()=.
+3. Setup reload action with stale indicator.
+4. Add standard actions (Add, Edit, Delete, History).
+5. Create table view with standard configuration.
+6. Setup proxy model for sorting/filtering.
+7. Connect model signals.
+8. Connect pagination signals (if applicable).
+9. Connect connection state signals.
+10. Update action states.
+11. Load initial data if connected.
+
+**** Standard table configuration
+
+#+begin_src cpp
+tableView_->setAlternatingRowColors(true);
+tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
+tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
+tableView_->setWordWrap(false);
+tableView_->setSortingEnabled(true);
+tableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+tableView_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+#+end_src
+
+**** Stale indicator pattern
+
+#+begin_src cpp
+void <Entity>MdiWindow::setupReloadAction() {
+    normalReloadIcon_ = IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg",
+        color_constants::icon_color);
+    staleReloadIcon_ = IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg",
+        color_constants::stale_indicator);
+
+    reloadAction_ = new QAction(normalReloadIcon_, tr("Reload"), this);
+    reloadAction_->setToolTip(tr("Reload data from server"));
+    connect(reloadAction_, &QAction::triggered, this, &<Entity>MdiWindow::reload);
+
+    pulseTimer_ = new QTimer(this);
+    pulseTimer_->setInterval(500);
+    connect(pulseTimer_, &QTimer::timeout, this, [this]() {
+        pulseState_ = !pulseState_;
+        reloadAction_->setIcon(pulseState_ ? staleReloadIcon_ : normalReloadIcon_);
+        if (++pulseCount_ >= 6) {
+            stopPulseAnimation();
+            reloadAction_->setIcon(staleReloadIcon_);
+        }
+    });
+}
+
+void <Entity>MdiWindow::markAsStale() {
+    isStale_ = true;
+    startPulseAnimation();
+    emit statusChanged(tr("Data changed on server - click Reload"));
+}
+
+void <Entity>MdiWindow::clearStaleIndicator() {
+    isStale_ = false;
+    stopPulseAnimation();
+    reloadAction_->setIcon(normalReloadIcon_);
+}
+#+end_src
+
+**** Deletion pattern
+
+#+begin_src cpp
+void <Entity>MdiWindow::deleteSelected() {
+    auto selection = tableView_->selectionModel()->selectedRows();
+    if (selection.isEmpty()) return;
+
+    // Collect identifiers
+    QStringList ids;
+    for (const auto& proxyIndex : selection) {
+        auto sourceIndex = proxyModel_->mapToSource(proxyIndex);
+        if (auto* entity = model_->get<Entity>(sourceIndex.row())) {
+            ids << QString::fromStdString(entity->identifier());
+        }
+    }
+
+    // Confirm deletion
+    auto result = MessageBoxHelper::question(this, tr("Confirm Deletion"),
+        tr("Delete %1 selected item(s)?").arg(ids.size()));
+    if (result != QMessageBox::Yes) return;
+
+    // Async delete operation...
+}
+#+end_src
+
+*** Commit message
+
+#+begin_example
+[qt] Add <Entity>MdiWindow for <entity> list view
+
+Create MDI window with table view, toolbar actions (add, edit, delete,
+history), stale indicator, and pagination support.
+#+end_example
+
+
+** Phase 1 Checkpoint: Raise PR
+
+At this point:
+1. Build and verify: =cmake --build --preset linux-clang-debug=
+2. Test manually that the model compiles and list window displays correctly.
+3. Commit all changes.
+4. Push branch and raise PR.
+
+*PR Title:* =[qt] Add <Entity> model and list window=
+
+*PR Description:*
+#+begin_example
+## Summary
+
+- Add Client<Entity>Model for async data fetching with pagination
+- Add <Entity>MdiWindow with table view, toolbar, and stale indicator
+
+## Test Plan
+
+- [ ] Build succeeds
+- [ ] List window displays entity data
+- [ ] Reload action refreshes data
+- [ ] Selection enables/disables toolbar actions appropriately
+#+end_example
+
+Wait for review feedback and merge before continuing to Phase 2.
+
+
+* Phase 2: Detail Dialog
+
+After Phase 1 PR is merged, use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 2.
+
+*Suggested PR title:* =[qt] Add <Entity> detail dialog=
+
+
+** Step 3: Create Detail Dialog
+
+Create the dialog for creating, editing, and viewing entity details.
+
+*** File locations
+
+- Header: =projects/ores.qt/include/ores.qt/<Entity>DetailDialog.hpp=
+- Implementation: =projects/ores.qt/src/<Entity>DetailDialog.cpp=
+- UI file: =projects/ores.qt/ui/<Entity>DetailDialog.ui=
+
+*** Header structure
+
+#+begin_src cpp
+#ifndef ORES_QT_<ENTITY>_DETAIL_DIALOG_HPP
+#define ORES_QT_<ENTITY>_DETAIL_DIALOG_HPP
+
+#include <QWidget>
+#include <QToolBar>
+#include <memory>
+#include "ores.qt/ClientManager.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "<component>/domain/<entity>.hpp"
+
+namespace Ui { class <Entity>DetailDialog; }
+
+namespace ores::qt {
+
+class <Entity>DetailDialog : public QWidget {
+    Q_OBJECT
+
+private:
+    inline static std::string_view logger_name = "ores.qt.<entity>_detail_dialog";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    explicit <Entity>DetailDialog(QWidget* parent = nullptr);
+    ~<Entity>DetailDialog() override;
+
+    void setClientManager(ClientManager* clientManager);
+    void setUsername(const std::string& username);
+    void set<Entity>(const <component>::domain::<entity>& entity);
+    <component>::domain::<entity> get<Entity>() const;
+    void clearDialog();
+
+    void setReadOnly(bool readOnly, int versionNumber = 0);
+    void setCreateMode(bool createMode);
+    [[nodiscard]] QString identifier() const;
+
+    // Version navigation (if history support)
+    void setHistory(const std::vector<<component>::domain::<entity>>& history);
+    void showVersionNavActions(bool visible);
+
+signals:
+    void statusMessage(const QString& message);
+    void errorMessage(const QString& message);
+    void isDirtyChanged(bool isDirty);
+    void <entity>Created(const QString& id);
+    void <entity>Updated(const QString& id);
+    void <entity>Deleted(const QString& id);
+    void revertRequested(const <component>::domain::<entity>& entity);
+
+public slots:
+    void save();
+    void markAsStale();
+
+private slots:
+    void onSaveClicked();
+    void onDeleteClicked();
+    void onRevertClicked();
+    void onFieldChanged();
+    void onFirstVersionClicked();
+    void onPrevVersionClicked();
+    void onNextVersionClicked();
+    void onLastVersionClicked();
+
+private:
+    void setupToolbar();
+    void setFieldsReadOnly(bool readOnly);
+    void updateSaveResetButtonState();
+    void displayCurrentVersion();
+    void updateVersionNavButtonStates();
+
+    std::unique_ptr<Ui::<Entity>DetailDialog> ui_;
+    QToolBar* toolBar_;
+
+    // Toolbar actions
+    QAction* saveAction_;
+    QAction* deleteAction_;
+    QAction* revertAction_;
+    QAction* firstVersionAction_;
+    QAction* prevVersionAction_;
+    QAction* nextVersionAction_;
+    QAction* lastVersionAction_;
+
+    // State
+    bool isDirty_{false};
+    bool isAddMode_{false};
+    bool isReadOnly_{false};
+    bool isStale_{false};
+
+    // Data
+    ClientManager* clientManager_{nullptr};
+    std::string username_;
+    <component>::domain::<entity> current<Entity>_;
+    std::vector<<component>::domain::<entity>> history_;
+    int currentHistoryIndex_{0};
+};
+
+}
+
+#endif
+#+end_src
+
+*** UI file structure
+
+Create a Qt Designer =.ui= file with:
+
+1. Main vertical layout.
+2. Form layout for entity fields.
+3. Metadata group box (version, recorded by, recorded at) - hidden in create mode.
+4. Appropriate input widgets for each field type:
+   - =QLineEdit= for text fields
+   - =QSpinBox= / =QDoubleSpinBox= for numbers
+   - =QCheckBox= for booleans
+   - =QComboBox= for enums or foreign keys
+   - =QDateTimeEdit= for timestamps
+
+*** Implementation patterns
+
+**** Mode handling
+
+#+begin_src cpp
+void <Entity>DetailDialog::setCreateMode(bool createMode) {
+    isAddMode_ = createMode;
+
+    // Primary key editable only in create mode
+    ui_->identifierEdit->setReadOnly(!createMode);
+
+    // Metadata hidden in create mode
+    ui_->metadataGroup->setVisible(!createMode);
+
+    // Delete disabled in create mode
+    deleteAction_->setEnabled(!createMode);
+
+    updateSaveResetButtonState();
+}
+
+void <Entity>DetailDialog::setReadOnly(bool readOnly, int versionNumber) {
+    isReadOnly_ = readOnly;
+    setFieldsReadOnly(readOnly);
+
+    saveAction_->setVisible(!readOnly);
+    deleteAction_->setVisible(!readOnly);
+    revertAction_->setVisible(readOnly);
+
+    if (readOnly && versionNumber > 0) {
+        // Show version info in title or status
+    }
+}
+#+end_src
+
+**** Field change tracking
+
+#+begin_src cpp
+void <Entity>DetailDialog::onFieldChanged() {
+    if (isReadOnly_) return;
+
+    isDirty_ = true;
+    emit isDirtyChanged(true);
+    updateSaveResetButtonState();
+}
+#+end_src
+
+**** Async save pattern
+
+#+begin_src cpp
+// Define a result struct for the async operation
+struct SaveResult {
+    bool success;
+    std::string message;
+};
+
+void <Entity>DetailDialog::onSaveClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        emit errorMessage(tr("Not connected to server"));
+        return;
+    }
+
+    auto entity = get<Entity>();
+
+    QPointer<<Entity>DetailDialog> self = this;
+    QFuture<SaveResult> future = QtConcurrent::run([self, entity]() -> SaveResult {
+        if (!self) return {false, "Dialog closed"};
+
+        // Build and send request...
+        return {response->success, response->message};
+    });
+
+    auto* watcher = new QFutureWatcher<SaveResult>(self);
+    connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
+        auto [success, message] = watcher->result();
+        watcher->deleteLater();
+
+        if (success) {
+            self->isDirty_ = false;
+            emit self->isDirtyChanged(false);
+
+            if (self->isAddMode_) {
+                emit self-><entity>Created(self->identifier());
+            } else {
+                emit self-><entity>Updated(self->identifier());
+            }
+
+            // Close parent MDI window
+            // ...
+        } else {
+            emit self->errorMessage(tr("Save failed: %1").arg(QString::fromStdString(message)));
+        }
+    });
+
+    watcher->setFuture(future);
+}
+#+end_src
+
+*** Commit message
+
+#+begin_example
+[qt] Add <Entity>DetailDialog for <entity> editing
+
+Create detail dialog with create/edit/view-only modes, version
+navigation, and async save/delete operations.
+#+end_example
+
+
+** Step 4: Wire Detail Dialog to List Window
+
+Update the MDI window to open detail dialogs.
+
+*** Update MDI Window
+
+Add temporary direct handling (will be moved to controller in Phase 4):
+
+#+begin_src cpp
+void <Entity>MdiWindow::onRowDoubleClicked(const QModelIndex& index) {
+    auto sourceIndex = proxyModel_->mapToSource(index);
+    if (auto* entity = model_->get<Entity>(sourceIndex.row())) {
+        emit show<Entity>Details(*entity);
+    }
+}
+#+end_src
+
+*** Commit message
+
+#+begin_example
+[qt] Wire <Entity>DetailDialog to list window
+
+Connect double-click and edit action to emit show details signal.
+#+end_example
+
+
+** Phase 2 Checkpoint: Raise PR
+
+At this point:
+1. Build and verify: =cmake --build --preset linux-clang-debug=
+2. Test that detail dialog opens and displays entity data.
+3. Test create/edit/view-only modes.
+4. Test save and delete operations.
+5. Commit all changes.
+6. Push branch and raise PR.
+
+*PR Title:* =[qt] Add <Entity> detail dialog=
+
+*PR Description:*
+#+begin_example
+## Summary
+
+- Add <Entity>DetailDialog with create/edit/view-only modes
+- Add toolbar with save/delete/revert actions
+- Add version navigation for historical viewing
+- Wire detail dialog to list window double-click
+
+## Test Plan
+
+- [ ] Build succeeds
+- [ ] Detail dialog opens from list view
+- [ ] Create mode allows new entity creation
+- [ ] Edit mode saves changes
+- [ ] View-only mode disables editing
+#+end_example
+
+Wait for review feedback and merge before continuing to Phase 3.
+
+
+* Phase 3: History Dialog
+
+After Phase 2 PR is merged, use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 3.
+
+*Suggested PR title:* =[qt] Add <Entity> history dialog=
+
+
+** Step 5: Create History Dialog
+
+Create the dialog for viewing entity version history.
+
+*** File locations
+
+- Header: =projects/ores.qt/include/ores.qt/<Entity>HistoryDialog.hpp=
+- Implementation: =projects/ores.qt/src/<Entity>HistoryDialog.cpp=
+- UI file: =projects/ores.qt/ui/<Entity>HistoryDialog.ui=
+
+*** Header structure
+
+#+begin_src cpp
+#ifndef ORES_QT_<ENTITY>_HISTORY_DIALOG_HPP
+#define ORES_QT_<ENTITY>_HISTORY_DIALOG_HPP
+
+#include <QWidget>
+#include <QToolBar>
+#include <memory>
+#include "ores.qt/ClientManager.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "<component>/domain/<entity>.hpp"
+
+namespace Ui { class <Entity>HistoryDialog; }
+
+namespace ores::qt {
+
+class <Entity>HistoryDialog : public QWidget {
+    Q_OBJECT
+
+private:
+    inline static std::string_view logger_name = "ores.qt.<entity>_history_dialog";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    explicit <Entity>HistoryDialog(const QString& identifier,
+                                    ClientManager* clientManager,
+                                    QWidget* parent = nullptr);
+    ~<Entity>HistoryDialog() override;
+
+    void loadHistory();
+    void markAsStale();
+    QSize sizeHint() const override;
+
+    [[nodiscard]] const QString& identifier() const { return identifier_; }
+
+signals:
+    void statusChanged(const QString& message);
+    void errorOccurred(const QString& error_message);
+    void openVersionRequested(const <component>::domain::<entity>& entity, int versionNumber);
+    void revertVersionRequested(const <component>::domain::<entity>& entity);
+
+private slots:
+    void onVersionSelected(int row);
+    void onHistoryLoaded();
+    void onHistoryLoadError(const QString& error);
+    void onOpenClicked();
+    void onRevertClicked();
+    void onReloadClicked();
+
+private:
+    using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
+
+    void setupToolbar();
+    void displayChangesTab(int versionIndex);
+    void displayFullDetailsTab(int versionIndex);
+    DiffResult calculateDiff(const <component>::domain::<entity>& current,
+                             const <component>::domain::<entity>& previous);
+    void updateButtonStates();
+    int selectedVersionIndex() const;
+    const QIcon& getHistoryIcon() const;
+
+    std::unique_ptr<Ui::<Entity>HistoryDialog> ui_;
+    QToolBar* toolBar_;
+
+    QAction* reloadAction_;
+    QAction* openAction_;
+    QAction* revertAction_;
+
+    ClientManager* clientManager_;
+    QString identifier_;
+    std::vector<<component>::domain::<entity>> history_;
+};
+
+}
+
+#endif
+#+end_src
+
+*** UI file structure
+
+Create a Qt Designer =.ui= file with:
+
+1. Toolbar area at top.
+2. Splitter with:
+   - Left: Version list table (version number, timestamp, recorded by).
+   - Right: Tab widget with:
+     - "Changes" tab: Table showing field/old value/new value.
+     - "Full Details" tab: Complete entity fields for selected version.
+
+*** Implementation patterns
+
+**** Diff calculation
+
+#+begin_src cpp
+<Entity>HistoryDialog::DiffResult
+<Entity>HistoryDialog::calculateDiff(
+    const <component>::domain::<entity>& current,
+    const <component>::domain::<entity>& previous) {
+
+    DiffResult result;
+
+#define CHECK_DIFF_STRING(FIELD_NAME, FIELD) \
+    if (current.FIELD != previous.FIELD) { \
+        result.append({FIELD_NAME, \
+            {QString::fromStdString(previous.FIELD), \
+             QString::fromStdString(current.FIELD)}}); \
+    }
+
+#define CHECK_DIFF_BOOL(FIELD_NAME, FIELD) \
+    if (current.FIELD != previous.FIELD) { \
+        result.append({FIELD_NAME, \
+            {previous.FIELD ? "Yes" : "No", \
+             current.FIELD ? "Yes" : "No"}}); \
+    }
+
+    // Apply macros for each field
+    CHECK_DIFF_STRING("Name", name);
+    CHECK_DIFF_BOOL("Active", is_active);
+    // ... etc
+
+#undef CHECK_DIFF_STRING
+#undef CHECK_DIFF_BOOL
+
+    return result;
+}
+#+end_src
+
+**** Async history loading
+
+#+begin_src cpp
+// Define a result struct for consistency with other async patterns
+struct HistoryResult {
+    bool success;
+    std::string error_message;
+    std::vector<<component>::domain::<entity>> entries;
+};
+
+void <Entity>HistoryDialog::loadHistory() {
+    QPointer<<Entity>HistoryDialog> self = this;
+
+    QFuture<HistoryResult> future = QtConcurrent::run([self]() -> HistoryResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed or no client", {}};
+        }
+
+        // Build and send history request...
+        return {true, "", history_entries};
+    });
+
+    auto* watcher = new QFutureWatcher<HistoryResult>(self);
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            self->history_ = std::move(result.entries);
+            self->onHistoryLoaded();
+        } else {
+            self->onHistoryLoadError(QString::fromStdString(result.error_message));
+        }
+    });
+
+    watcher->setFuture(future);
+}
+#+end_src
+
+*** Commit message
+
+#+begin_example
+[qt] Add <Entity>HistoryDialog for <entity> version history
+
+Create history dialog with version list, changes diff view, full
+details tab, and revert functionality.
+#+end_example
+
+
+** Step 6: Wire History Dialog to List Window
+
+Update the MDI window to open history dialogs.
+
+*** Update MDI Window
+
+#+begin_src cpp
+void <Entity>MdiWindow::showHistory() {
+    auto selection = tableView_->selectionModel()->selectedRows();
+    if (selection.size() != 1) return;
+
+    auto sourceIndex = proxyModel_->mapToSource(selection.first());
+    if (auto* entity = model_->get<Entity>(sourceIndex.row())) {
+        emit show<Entity>History(QString::fromStdString(entity->identifier()));
+    }
+}
+#+end_src
+
+*** Commit message
+
+#+begin_example
+[qt] Wire <Entity>HistoryDialog to list window
+
+Connect history action to emit show history signal.
+#+end_example
+
+
+** Phase 3 Checkpoint: Raise PR
+
+At this point:
+1. Build and verify: =cmake --build --preset linux-clang-debug=
+2. Test that history dialog opens and shows version list.
+3. Test version selection shows diff and full details.
+4. Test open and revert functionality.
+5. Commit all changes.
+6. Push branch and raise PR.
+
+*PR Title:* =[qt] Add <Entity> history dialog=
+
+*PR Description:*
+#+begin_example
+## Summary
+
+- Add <Entity>HistoryDialog with version list and diff view
+- Add toolbar with reload/open/revert actions
+- Add changes tab showing field differences between versions
+- Add full details tab showing complete entity state
+- Wire history dialog to list window
+
+## Test Plan
+
+- [ ] Build succeeds
+- [ ] History dialog opens from list view
+- [ ] Version list shows all versions
+- [ ] Changes tab shows differences correctly
+- [ ] Full details tab shows complete entity
+- [ ] Revert creates new version with old data
+#+end_example
+
+Wait for review feedback and merge before continuing to Phase 4.
+
+
+* Phase 4: Controller and Integration
+
+After Phase 3 PR is merged, use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 4.
+
+*Suggested PR title:* =[qt] Integrate <Entity> controller and update diagrams=
+
+
+** Step 7: Create Controller
+
+Create the controller that coordinates windows and handles events.
+
+*** File locations
+
+- Header: =projects/ores.qt/include/ores.qt/<Entity>Controller.hpp=
+- Implementation: =projects/ores.qt/src/<Entity>Controller.cpp=
+
+*** Header structure
+
+#+begin_src cpp
+#ifndef ORES_QT_<ENTITY>_CONTROLLER_HPP
+#define ORES_QT_<ENTITY>_CONTROLLER_HPP
+
+#include <QPointer>
+#include "ores.qt/EntityController.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "<component>/domain/<entity>.hpp"
+
+namespace ores::qt {
+
+class <Entity>MdiWindow;
+
+class <Entity>Controller : public EntityController {
+    Q_OBJECT
+
+private:
+    inline static std::string_view logger_name = "ores.qt.<entity>_controller";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    <Entity>Controller(
+        QMainWindow* mainWindow,
+        QMdiArea* mdiArea,
+        ClientManager* clientManager,
+        const QString& username,
+        QList<DetachableMdiSubWindow*>& allDetachableWindows,
+        QObject* parent = nullptr);
+
+    ~<Entity>Controller() override;
+
+    void showListWindow() override;
+    void closeAllWindows() override;
+
+signals:
+    void statusMessage(const QString& message);
+    void errorMessage(const QString& message);
+
+private slots:
+    void onAddNewRequested();
+    void onShow<Entity>Details(const <component>::domain::<entity>& entity);
+    void onShow<Entity>History(const QString& id);
+    void on<Entity>Deleted(const QString& id);
+    void onOpenHistoryVersion(const <component>::domain::<entity>& entity, int versionNumber);
+    void onRevert<Entity>(const <component>::domain::<entity>& entity);
+    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
+                                const QStringList& entityIds);
+
+private:
+    void showDetailWindow(const <component>::domain::<entity>* entity,
+                          bool createMode, bool readOnly = false,
+                          int versionNumber = 0);
+
+    QList<DetachableMdiSubWindow*>& allDetachableWindows_;
+    QPointer<DetachableMdiSubWindow> listWindow_;
+    QPointer<<Entity>MdiWindow> listWidget_;
+};
+
+}
+
+#endif
+#+end_src
+
+*** Implementation patterns
+
+**** Constructor - event subscription
+
+#+begin_src cpp
+<Entity>Controller::<Entity>Controller(/* params */)
+    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+      allDetachableWindows_(allDetachableWindows) {
+
+    BOOST_LOG_SEV(lg(), debug) << "<Entity> controller created";
+
+    // Subscribe to server notifications
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &<Entity>Controller::onNotificationReceived);
+
+        connect(clientManager_, &ClientManager::connected, this, [this]() {
+            clientManager_->subscribeToEvent(std::string{event_name});
+        });
+
+        connect(clientManager_, &ClientManager::reconnected, this, [this]() {
+            clientManager_->subscribeToEvent(std::string{event_name});
+        });
+
+        if (clientManager_->isConnected()) {
+            clientManager_->subscribeToEvent(std::string{event_name});
+        }
+    }
+}
+#+end_src
+
+**** Show list window
+
+#+begin_src cpp
+void <Entity>Controller::showListWindow() {
+    // Reuse existing window if available
+    if (listWindow_) {
+        bring_window_to_front(listWindow_);
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Creating new <entity> MDI window";
+
+    // Create widget
+    auto* widget = new <Entity>MdiWindow(clientManager_, username_, nullptr);
+    listWidget_ = widget;
+
+    // Connect signals
+    connect(widget, &<Entity>MdiWindow::statusChanged,
+            this, [this](const QString& msg) { emit statusMessage(msg); });
+    connect(widget, &<Entity>MdiWindow::errorOccurred,
+            this, [this](const QString& err) { emit errorMessage(err); });
+    connect(widget, &<Entity>MdiWindow::addNewRequested,
+            this, &<Entity>Controller::onAddNewRequested);
+    connect(widget, &<Entity>MdiWindow::show<Entity>Details,
+            this, &<Entity>Controller::onShow<Entity>Details);
+    connect(widget, &<Entity>MdiWindow::show<Entity>History,
+            this, &<Entity>Controller::onShow<Entity>History);
+    connect(widget, &<Entity>MdiWindow::<entity>Deleted,
+            this, &<Entity>Controller::on<Entity>Deleted);
+
+    // Wrap in MDI sub-window
+    listWindow_ = new DetachableMdiSubWindow();
+    listWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    listWindow_->setWidget(widget);
+    listWindow_->setWindowTitle(tr("<Entity>s"));
+    listWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_<icon>_20_regular.svg", color_constants::icon_color));
+
+    // Track destruction
+    connect(listWindow_, &QObject::destroyed, this, [this]() {
+        listWindow_ = nullptr;
+        listWidget_ = nullptr;
+    });
+
+    mdiArea_->addSubWindow(listWindow_);
+    allDetachableWindows_.append(listWindow_);
+    listWindow_->show();
+
+    widget->reload();
+}
+#+end_src
+
+**** Notification handling
+
+#+begin_src cpp
+void <Entity>Controller::onNotificationReceived(
+    const QString& eventType,
+    const QDateTime& timestamp,
+    const QStringList& entityIds) {
+
+    Q_UNUSED(timestamp);
+
+    if (eventType != QString::fromStdString(std::string{event_name})) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "<Entity> change notification received";
+
+    // Mark list as stale
+    if (listWidget_) {
+        listWidget_->markAsStale();
+    }
+
+    // Mark affected detail/history windows as stale
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        const QString& key = it.key();
+        auto* window = it.value();
+
+        // Check if this window is affected
+        if (entityIds.isEmpty()) {
+            // All entities changed
+            MdiUtils::markParentWindowAsStale(window);
+        } else {
+            // Check specific IDs
+            for (const QString& id : entityIds) {
+                if (key.contains(id)) {
+                    MdiUtils::markParentWindowAsStale(window);
+                    break;
+                }
+            }
+        }
+    }
+}
+#+end_src
+
+*** Commit message
+
+#+begin_example
+[qt] Add <Entity>Controller for <entity> window management
+
+Create controller with list window, detail dialogs, history dialogs,
+and server notification handling.
+#+end_example
+
+
+** Step 8: MainWindow Integration
+
+Integrate the controller into the main window.
+
+*** Files to modify
+
+- =projects/ores.qt/include/ores.qt/MainWindow.hpp=
+- =projects/ores.qt/src/MainWindow.cpp=
+- =projects/ores.qt/ui/MainWindow.ui=
+
+*** Header changes
+
+Add to =MainWindow.hpp=:
+
+#+begin_src cpp
+// Forward declaration
+class <Entity>Controller;
+
+// Member variable
+<Entity>Controller* <entity>Controller_;
+#+end_src
+
+*** UI changes
+
+Add to =MainWindow.ui=:
+- Menu action: =Action<Entity>s=
+- Set appropriate icon (following =icon-guidelines= skill)
+- Set keyboard shortcut if appropriate
+
+*** Implementation changes
+
+In =MainWindow.cpp= constructor:
+
+#+begin_src cpp
+// Create controller
+<entity>Controller_ = new <Entity>Controller(
+    this, mdiArea_, clientManager_, username_,
+    allDetachableWindows_, this);
+
+// Connect signals
+connect(<entity>Controller_, &<Entity>Controller::statusMessage,
+        this, [this](const QString& msg) {
+            ui_->statusbar->showMessage(msg, 5000);
+        });
+connect(<entity>Controller_, &<Entity>Controller::errorMessage,
+        this, [this](const QString& err) {
+            ui_->statusbar->showMessage(err, 5000);
+        });
+
+// Connect menu action
+connect(ui_->Action<Entity>s, &QAction::triggered,
+        <entity>Controller_, &<Entity>Controller::showListWindow);
+
+// Set menu icon (using icon-guidelines skill for selection)
+ui_->Action<Entity>s->setIcon(IconUtils::createRecoloredIcon(
+    ":/icons/ic_fluent_<icon>_20_regular.svg", iconColor));
+
+// Enable/disable based on connection state
+ui_->Action<Entity>s->setEnabled(isConnected);
+#+end_src
+
+*** Commit message
+
+#+begin_example
+[qt] Integrate <Entity>Controller into MainWindow
+
+Add menu action and controller for <entity> management in main window.
+#+end_example
+
+
+** Step 9: Update UML Diagrams
+
+Use the =plantuml-class-modeler= skill to update the =ores.qt= component diagrams.
+
+*** Files to update
+
+- =projects/ores.qt/modeling/ores_qt_classes.puml= (or similar)
+
+*** Classes to add
+
+Add the following classes to the diagram:
+
+1. =Client<Entity>Model= - inherits from =QAbstractTableModel=
+2. =<Entity>MdiWindow= - inherits from =QWidget=
+3. =<Entity>DetailDialog= - inherits from =QWidget=
+4. =<Entity>HistoryDialog= - inherits from =QWidget=
+5. =<Entity>Controller= - inherits from =EntityController=
+
+*** Relationships to show
+
+- Controller creates/manages MdiWindow, DetailDialog, HistoryDialog
+- MdiWindow uses Client<Entity>Model
+- All dialogs use ClientManager
+
+*** Commit message
+
+#+begin_example
+[qt] Update UML diagrams for <Entity> components
+
+Add class diagrams for Client<Entity>Model, <Entity>MdiWindow,
+<Entity>DetailDialog, <Entity>HistoryDialog, and <Entity>Controller.
+#+end_example
+
+
+** Phase 4 Checkpoint: Raise PR
+
+At this point:
+1. Build and verify: =cmake --build --preset linux-clang-debug=
+2. Run full end-to-end test of the entity.
+3. Verify UML diagrams generate correctly.
+4. Commit all changes.
+5. Push branch and raise PR.
+
+*PR Title:* =[qt] Integrate <Entity> controller and update diagrams=
+
+*PR Description:*
+#+begin_example
+## Summary
+
+- Add <Entity>Controller coordinating all windows
+- Integrate controller into MainWindow with menu action
+- Add server notification handling for real-time updates
+- Update UML class diagrams for ores.qt component
+
+## Test Plan
+
+- [ ] Build succeeds
+- [ ] Menu action opens entity list window
+- [ ] All CRUD operations work end-to-end
+- [ ] Server notifications trigger stale indicators
+- [ ] UML diagrams generate correctly
+#+end_example
+
+
+* Common patterns reference
+
+
+** Icon paths by entity type
+
+Use the =icon-guidelines= skill for icon selection. Common patterns:
+
+| Entity Type | Icon Path |
+|-------------+-----------|
+| Currency | =ic_fluent_currency_dollar_euro_20_regular.svg= |
+| Country | =ic_fluent_globe_20_regular.svg= |
+| Account | =ic_fluent_person_accounts_20_regular.svg= |
+| Role | =ic_fluent_lock_closed_20_regular.svg= |
+| ChangeReason | =ic_fluent_note_edit_20_regular.svg= |
+| ChangeReasonCategory | =ic_fluent_tag_20_regular.svg= |
+| FeatureFlag | =ic_fluent_flag_20_regular.svg= |
+| History | =ic_fluent_history_20_regular.svg= |
+| Reload | =ic_fluent_arrow_clockwise_16_regular.svg= |
+| Add | =ic_fluent_add_20_regular.svg= |
+| Edit | =ic_fluent_edit_20_regular.svg= |
+| Delete | =ic_fluent_delete_20_regular.svg= |
+| Save | =ic_fluent_save_20_regular.svg= |
+| Revert | =ic_fluent_arrow_rotate_counterclockwise_20_regular.svg= |
+
+
+** Window size hints
+
+| Window Type | Size |
+|-------------+------|
+| List (standard) | 900x600 |
+| List (large) | 1000x600 |
+| List (small) | 700x400 |
+| Detail dialog | 600x500 |
+| History dialog | 900x600 |
+
+
+** Color constants
+
+Use =color_constants= from =ColorConstants.hpp=:
+
+- =icon_color= - Light gray (220, 220, 220) for toolbar icons
+- =stale_indicator= - Orange (255, 165, 0) for stale data indicator
+
+
+** Related skills
+
+- [[id:2A167638-8B5A-4691-90CB-4A6B55785108][Icon Guidelines]] - For selecting appropriate icons
+- [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]] - For updating UML class diagrams
+- [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] - For transitioning between phases
+- [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] - For creating the underlying domain type
+- [[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][Binary Protocol Developer]] - For creating messaging protocol
+
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

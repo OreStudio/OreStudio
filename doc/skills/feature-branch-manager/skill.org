@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: 6DAFFC2F-7F94-403B-87D0-2A56C4669B7F
+:END:
+#+title: Feature Branch Manager
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: feature-branch-manager
+description: Manage feature branches across multi-phase implementations with clean git history.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When working on multi-phase implementations that require multiple PRs. Use this
+skill to transition between phases while maintaining a clean git history.
+
+Typical scenarios:
+- A PR for the current phase has been merged to main.
+- You need to start work on the next phase of an implementation.
+- You want to clean up old feature branches after merge.
+
+* How to use this skill
+
+1. Confirm the current PR has been merged to main.
+2. Follow the phase transition procedure to create a fresh branch.
+3. Continue with the next phase of work.
+
+* Detailed instructions
+
+** Branch naming conventions
+
+Feature branches should follow this naming pattern:
+
+#+begin_example
+feature/<entity>_<phase_description>
+#+end_example
+
+Examples:
+- =feature/currency_domain_type= - Phase 1: Domain class and I/O
+- =feature/currency_generator= - Phase 2: Test data generator
+- =feature/currency_repository= - Phase 3: Repository support
+- =feature/currency_tests= - Phase 4: Tests and documentation
+
+For Qt entity implementations:
+- =feature/session_model_window= - Phase 1: Model and list window
+- =feature/session_detail_dialog= - Phase 2: Detail dialog
+- =feature/session_history_dialog= - Phase 3: History dialog
+- =feature/session_controller= - Phase 4: Controller and integration
+
+** Phase transition procedure
+
+When the user confirms a PR has been merged, execute the following steps:
+
+*** Step 1: Note the current branch name
+
+#+begin_src sh
+git branch --show-current
+#+end_src
+
+Store this for cleanup in Step 4.
+
+*** Step 2: Fetch latest main
+
+#+begin_src sh
+git fetch origin main
+#+end_src
+
+*** Step 3: Create new feature branch
+
+Create a new branch from the updated main for the next phase:
+
+#+begin_src sh
+git checkout -b feature/<entity>_<next_phase> origin/main
+#+end_src
+
+*** Step 4: Delete old local branch
+
+#+begin_src sh
+git branch -d <old_branch_name>
+#+end_src
+
+Use =-D= (force delete) only if the branch wasn't fully merged (rare).
+
+*** Step 5: Delete old remote branch
+
+#+begin_src sh
+git push origin --delete <old_branch_name>
+#+end_src
+
+This keeps the remote repository clean.
+
+** Complete example
+
+Transitioning from Phase 1 (domain type) to Phase 2 (generator) for currency:
+
+#+begin_src sh
+# Note current branch
+git branch --show-current
+# Output: feature/currency_domain_type
+
+# Fetch latest main (includes the merged PR)
+git fetch origin main
+
+# Create new branch for Phase 2
+git checkout -b feature/currency_generator origin/main
+
+# Delete old local branch
+git branch -d feature/currency_domain_type
+
+# Delete old remote branch
+git push origin --delete feature/currency_domain_type
+#+end_src
+
+** Important notes
+
+- *Never rebase and force push* - This creates confusing history and can cause
+  issues for reviewers.
+- *Always start from fresh main* - Each phase gets a clean branch from the
+  latest main, which includes all previously merged work.
+- *Delete branches after merge* - Keeps both local and remote repositories clean.
+- *Use descriptive branch names* - Makes it easy to identify what phase/work the
+  branch represents.
+
+** Handling work in progress
+
+If you have uncommitted changes when transitioning:
+
+1. Stash the changes: =git stash=
+2. Complete the phase transition
+3. Apply stashed changes: =git stash pop=
+
+However, it's better to commit all work before transitioning phases.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

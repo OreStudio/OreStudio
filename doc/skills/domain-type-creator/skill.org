@@ -26,6 +26,39 @@ with CRUD operations.
 1. Gather information about the domain type (name, fields, project location).
 2. Follow the detailed instructions to create all required artefacts in order.
 3. Build and test the new domain type.
+4. Raise PRs at designated checkpoints and wait for review before proceeding.
+
+* Related skills
+
+- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]]: For building and testing the component.
+- [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator]]: If the domain type requires new database tables.
+- [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][PlantUML ER Modeler]]: Update database ER diagrams after adding repository support.
+- [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]]: Update class diagrams for the component.
+- [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]]: Manage branch transitions between phases.
+
+* PR strategy
+
+Creating a complete domain type involves significant work across multiple files. To
+keep PRs reviewable, the implementation is split into phases with designated
+checkpoints.
+
+| Phase | Steps   | Focus                        | PR Title Template                            |
+|-------+---------+------------------------------+----------------------------------------------|
+|     1 | 1-3     | Domain class and I/O support | [COMPONENT] Add <Entity> domain type         |
+|     2 | 4       | Test data generator          | [COMPONENT] Add <Entity> generator           |
+|     3 | 5-6     | Repository and persistence   | [COMPONENT] Add <Entity> repository          |
+|     4 | 7-10    | Tests and documentation      | [COMPONENT] Add <Entity> tests and diagrams  |
+
+** Phase checkpoints
+
+After completing each phase:
+
+1. Build and verify there are no errors.
+2. Commit all changes with an appropriate message.
+3. Push the branch and raise a PR with the suggested title.
+4. Wait for review feedback and address any comments.
+5. Once approved, the user merges the PR to main.
+6. Use the [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] skill to transition to the next phase.
 
 * Detailed instructions
 
@@ -40,7 +73,9 @@ Before starting, gather the following information from the user:
   =ores.risk=, =ores.accounts=).
 - *Fields*: list of fields with their types and descriptions.
 
-** Step 1: Create the domain class definition
+** Phase 1: Domain class and I/O support
+
+*** Step 1: Create the domain class definition
 
 Create the header file under =projects/COMPONENT/include/COMPONENT/domain/TYPE_NAME.hpp=.
 
@@ -77,7 +112,7 @@ struct TYPE_NAME final {
 }
 #+end_src
 
-** Step 2: Create JSON I/O support
+*** Step 2: Create JSON I/O support
 
 Create two files for JSON serialization:
 
@@ -107,7 +142,7 @@ The implementation should:
 - Use =rfl::json::write()= for serialization
 - Follow the pattern in =projects/ores.accounts/src/domain/account_json_io.cpp=
 
-** Step 3: Create table I/O support
+*** Step 3: Create table I/O support
 
 Create two files for table output:
 
@@ -145,7 +180,19 @@ The implementation should:
 - End each row with =fort::endr=
 - Follow the pattern in =projects/ores.accounts/src/domain/account_table_io.cpp=
 
-** Step 4: Create generator support
+*** Phase 1 checkpoint
+
+At this point you have a complete domain type with JSON and table I/O support.
+
+1. Build the component library to verify there are no errors.
+2. Commit with message: =[COMPONENT] Add <Entity> domain type=
+3. Push and raise PR: =[COMPONENT] Add <Entity> domain type=
+4. Wait for review and merge before continuing.
+5. Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 2.
+
+** Phase 2: Test data generator
+
+*** Step 4: Create generator support
 
 Create two files for test data generation:
 
@@ -160,7 +207,19 @@ The generator class should:
 - Use =ores.utility/uuid/uuid_v7_generator= for generating UUIDs
 - Follow the pattern in =projects/ores.accounts/src/generators/account_generator.cpp=
 
-** Step 5: Create repository entity and mapper
+*** Phase 2 checkpoint
+
+At this point you have a test data generator for the domain type.
+
+1. Build the component library to verify there are no errors.
+2. Commit with message: =[COMPONENT] Add <Entity> generator=
+3. Push and raise PR: =[COMPONENT] Add <Entity> generator=
+4. Wait for review and merge before continuing.
+5. Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 3.
+
+** Phase 3: Repository and persistence
+
+*** Step 5: Create repository entity and mapper
 
 Create the database entity and mapper for ORM support:
 
@@ -186,7 +245,7 @@ The mapper should:
 - Handle type conversions (e.g., UUID to string, timestamp conversions)
 - Follow the pattern in =projects/ores.accounts/src/repository/account_mapper.cpp=
 
-** Step 6: Create repository with CRUD operations
+*** Step 6: Create repository with CRUD operations
 
 Create the repository class:
 
@@ -216,7 +275,19 @@ Implementation details:
 - Include logging using =BOOST_LOG_SEV=
 - Follow the pattern in =projects/ores.accounts/src/repository/account_repository.cpp=
 
-** Step 7: Update CMakeLists.txt
+*** Phase 3 checkpoint
+
+At this point you have full repository support for the domain type.
+
+1. Build the component library to verify there are no errors.
+2. Commit with message: =[COMPONENT] Add <Entity> repository=
+3. Push and raise PR: =[COMPONENT] Add <Entity> repository=
+4. Wait for review and merge before continuing.
+5. Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 4.
+
+** Phase 4: Tests and documentation
+
+*** Step 7: Update CMakeLists.txt
 
 The CMakeLists.txt in =projects/COMPONENT/src/CMakeLists.txt= will use
 =GLOB_RECURSE= to pick up all =*.cpp= files automatically so do not add new
@@ -230,7 +301,7 @@ Ensure the following dependencies are linked:
 - =sqlgen::sqlgen= for repository
 - =Boost::boost= for various Boost libraries
 
-** Step 8: Create tests
+*** Step 8: Create tests
 
 Create comprehensive tests for the new domain type under =projects/COMPONENT.tests/=:
 
@@ -240,13 +311,35 @@ Create comprehensive tests for the new domain type under =projects/COMPONENT.tes
 
 Follow the test patterns in =projects/ores.accounts.tests/=.
 
-** Step 9: Build and verify
+*** Step 9: Build and verify
 
 Using the [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]] skill:
 
 1. Configure the project (reconfigure to pick up new files).
 2. Build the component library (=COMPONENT.lib= target).
 3. Build and run the component tests (=test_COMPONENT.tests= target).
+
+*** Step 10: Update UML diagrams
+
+Update the component's UML diagrams to include the new domain type:
+
+1. Use the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]] skill to update class diagrams showing the
+   new domain type and its relationships.
+2. If repository support was added, use the [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][PlantUML ER Modeler]] skill to update
+   the database ER diagram with the new table.
+3. Build the diagrams using the appropriate CMake targets.
+
+*** Phase 4 checkpoint
+
+This is the final phase. At this point you have complete domain type support with
+tests and documentation.
+
+1. Build and run all tests to verify everything works.
+2. Commit with message: =[COMPONENT] Add <Entity> tests and diagrams=
+3. Push and raise PR: =[COMPONENT] Add <Entity> tests and diagrams=
+4. Wait for review and merge.
+
+The domain type implementation is now complete.
 
 * Common patterns and conventions
 

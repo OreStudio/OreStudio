@@ -34,6 +34,7 @@ with CRUD operations.
 - [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator]]: If the domain type requires new database tables.
 - [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][PlantUML ER Modeler]]: Update database ER diagrams after adding repository support.
 - [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]]: Update class diagrams for the component.
+- [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]]: Manage branch transitions between phases.
 
 * PR strategy
 
@@ -57,7 +58,7 @@ After completing each phase:
 3. Push the branch and raise a PR with the suggested title.
 4. Wait for review feedback and address any comments.
 5. Once approved, the user merges the PR to main.
-6. Rebase your branch onto =origin/main= before starting the next phase.
+6. Use the [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] skill to transition to the next phase.
 
 * Detailed instructions
 
@@ -187,7 +188,7 @@ At this point you have a complete domain type with JSON and table I/O support.
 2. Commit with message: =[COMPONENT] Add <Entity> domain type=
 3. Push and raise PR: =[COMPONENT] Add <Entity> domain type=
 4. Wait for review and merge before continuing.
-5. Rebase onto =origin/main= after merge.
+5. Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 2.
 
 ** Phase 2: Test data generator
 
@@ -214,7 +215,7 @@ At this point you have a test data generator for the domain type.
 2. Commit with message: =[COMPONENT] Add <Entity> generator=
 3. Push and raise PR: =[COMPONENT] Add <Entity> generator=
 4. Wait for review and merge before continuing.
-5. Rebase onto =origin/main= after merge.
+5. Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 3.
 
 ** Phase 3: Repository and persistence
 
@@ -282,7 +283,7 @@ At this point you have full repository support for the domain type.
 2. Commit with message: =[COMPONENT] Add <Entity> repository=
 3. Push and raise PR: =[COMPONENT] Add <Entity> repository=
 4. Wait for review and merge before continuing.
-5. Rebase onto =origin/main= after merge.
+5. Use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 4.
 
 ** Phase 4: Tests and documentation
 

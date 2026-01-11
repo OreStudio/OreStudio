@@ -48,10 +48,9 @@ This keeps PRs reviewable and allows incremental integration.
 | 3 | Steps 5-6 | =[qt] Add <Entity> history dialog= |
 | 4 | Steps 7-9 | =[qt] Integrate <Entity> controller and update diagrams= |
 
-After each PR is merged:
-1. Switch to main branch: =git checkout main && git pull=
-2. Create new feature branch: =git checkout -b feature/<entity>_qt_phase_N=
-3. Continue with next phase
+After each PR is merged, use the [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] skill to transition to
+the next phase. This ensures clean git history by creating fresh branches from
+main rather than rebasing.
 
 
 * Detailed instructions
@@ -459,12 +458,7 @@ Wait for review feedback and merge before continuing to Phase 2.
 
 * Phase 2: Detail Dialog
 
-After Phase 1 PR is merged, rebase from main and create a new branch for Phase 2.
-
-#+begin_src shell
-git checkout main && git pull
-git checkout -b feature/<entity>_qt_phase_2
-#+end_src
+After Phase 1 PR is merged, use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 2.
 
 *Suggested PR title:* =[qt] Add <Entity> detail dialog=
 
@@ -763,12 +757,7 @@ Wait for review feedback and merge before continuing to Phase 3.
 
 * Phase 3: History Dialog
 
-After Phase 2 PR is merged, rebase from main and create a new branch for Phase 3.
-
-#+begin_src shell
-git checkout main && git pull
-git checkout -b feature/<entity>_qt_phase_3
-#+end_src
+After Phase 2 PR is merged, use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 3.
 
 *Suggested PR title:* =[qt] Add <Entity> history dialog=
 
@@ -1022,12 +1011,7 @@ Wait for review feedback and merge before continuing to Phase 4.
 
 * Phase 4: Controller and Integration
 
-After Phase 3 PR is merged, rebase from main and create a new branch for Phase 4.
-
-#+begin_src shell
-git checkout main && git pull
-git checkout -b feature/<entity>_qt_phase_4
-#+end_src
+After Phase 3 PR is merged, use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to Phase 4.
 
 *Suggested PR title:* =[qt] Integrate <Entity> controller and update diagrams=
 
@@ -1428,10 +1412,11 @@ Use =color_constants= from =ColorConstants.hpp=:
 
 ** Related skills
 
-- =icon-guidelines= - For selecting appropriate icons
-- =plantuml-class-modeler= - For updating UML class diagrams
-- =domain-type-creator= - For creating the underlying domain type
-- =binary-protocol-developer= - For creating messaging protocol
+- [[id:2A167638-8B5A-4691-90CB-4A6B55785108][Icon Guidelines]] - For selecting appropriate icons
+- [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]] - For updating UML class diagrams
+- [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] - For transitioning between phases
+- [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] - For creating the underlying domain type
+- [[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][Binary Protocol Developer]] - For creating messaging protocol
 
 
 * Artefacts                                                        :noexport:

@@ -16,6 +16,8 @@ using the org-mode publishing system.
 - [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][Skill Manager]]: Skill to create new skills.
 - [[id:44d7a328-f69c-4ee9-83a5-74bd3634ad69][Skill Review]]: Review skills for consistency, conflicts, duplication, and
   alignment with codebase.
+- [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]]: Manage feature branches across multi-phase
+  implementations with clean git history.
 
 ** Documentation
 

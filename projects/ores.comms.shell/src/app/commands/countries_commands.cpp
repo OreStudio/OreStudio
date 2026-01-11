@@ -53,6 +53,18 @@ register_commands(cli::Menu& root_menu, client_session& session) {
             std::move(change_commentary));
     }, "Add a country (alpha2 alpha3 numeric name official_name reason_code \"commentary\")");
 
+    countries_menu->Insert("delete", [&session](std::ostream& out,
+            std::string alpha2_code) {
+        process_delete_country(std::ref(out), std::ref(session),
+            std::move(alpha2_code));
+    }, "Delete a country by alpha-2 code");
+
+    countries_menu->Insert("history", [&session](std::ostream& out,
+            std::string alpha2_code) {
+        process_get_country_history(std::ref(out), std::ref(session),
+            std::move(alpha2_code));
+    }, "Get version history for a country by alpha-2 code");
+
     root_menu.Insert(std::move(countries_menu));
 }
 
@@ -125,6 +137,86 @@ process_add_country(std::ostream& out, client_session& session,
                                   << response.message;
         out << "✗ Failed to add country: " << response.message << std::endl;
     }
+}
+
+void countries_commands::
+process_delete_country(std::ostream& out, client_session& session,
+    std::string alpha2_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating delete country request for: "
+                               << alpha2_code;
+
+    // Check if logged in
+    if (!session.session_info()) {
+        out << "✗ You must be logged in to delete a country." << std::endl;
+        return;
+    }
+
+    using risk::messaging::delete_country_request;
+    using risk::messaging::delete_country_response;
+    auto result = session.process_authenticated_request<delete_country_request,
+                                                        delete_country_response,
+                                                        message_type::delete_country_request>
+        (delete_country_request{.alpha2_codes = {std::move(alpha2_code)}});
+
+    if (!result) {
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
+        return;
+    }
+
+    const auto& response = *result;
+    if (response.results.empty()) {
+        out << "✗ No results returned from server." << std::endl;
+        return;
+    }
+
+    const auto& delete_result = response.results[0];
+    if (delete_result.success) {
+        BOOST_LOG_SEV(lg(), info) << "Successfully deleted country: "
+                                  << delete_result.alpha2_code;
+        out << "✓ Country " << delete_result.alpha2_code
+            << " deleted successfully!" << std::endl;
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete country: "
+                                  << delete_result.message;
+        out << "✗ Failed to delete country: " << delete_result.message
+            << std::endl;
+    }
+}
+
+void countries_commands::
+process_get_country_history(std::ostream& out, client_session& session,
+    std::string alpha2_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get country history for: "
+                               << alpha2_code;
+
+    using risk::messaging::get_country_history_request;
+    using risk::messaging::get_country_history_response;
+    auto result = session.process_authenticated_request<get_country_history_request,
+                                                        get_country_history_response,
+                                                        message_type::get_country_history_request>
+        (get_country_history_request{.alpha2_code = std::move(alpha2_code)});
+
+    if (!result) {
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
+        return;
+    }
+
+    const auto& response = *result;
+    if (!response.success) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get country history: "
+                                  << response.message;
+        out << "✗ " << response.message << std::endl;
+        return;
+    }
+
+    if (response.history.empty()) {
+        out << "No history found for this country." << std::endl;
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                              << response.history.size() << " history records.";
+    out << response.history << std::endl;
 }
 
 }

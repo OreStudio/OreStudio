@@ -87,6 +87,32 @@ public:
         std::string numeric_code, std::string name,
         std::string official_name, std::string change_reason_code,
         std::string change_commentary);
+
+    /**
+     * @brief Process a delete country request.
+     *
+     * Deletes a country by its alpha-2 code. Requires authentication.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param alpha2_code ISO 3166-1 alpha-2 code of the country to delete
+     */
+    static void process_delete_country(std::ostream& out,
+        comms::net::client_session& session,
+        std::string alpha2_code);
+
+    /**
+     * @brief Process a get country history request.
+     *
+     * Retrieves the version history for a country by its alpha-2 code.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param alpha2_code ISO 3166-1 alpha-2 code of the country
+     */
+    static void process_get_country_history(std::ostream& out,
+        comms::net::client_session& session,
+        std::string alpha2_code);
 };
 
 }

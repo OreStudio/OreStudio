@@ -185,13 +185,6 @@ void ClientTelemetryLogModel::fetch_logs() {
 
     is_fetching_ = true;
 
-    // Clear existing data
-    if (!entries_.empty()) {
-        beginResetModel();
-        entries_.clear();
-        endResetModel();
-    }
-
     QPointer<ClientTelemetryLogModel> self = this;
     auto session_id = current_session_id_;
     auto start = start_time_;
@@ -248,14 +241,10 @@ void ClientTelemetryLogModel::onLogsLoaded() {
 
     auto result = watcher_->result();
     if (result.success) {
+        beginResetModel();
         total_available_count_ = result.total_count;
-
-        const int new_count = static_cast<int>(result.entries.size());
-        if (new_count > 0) {
-            beginInsertRows(QModelIndex(), 0, new_count - 1);
-            entries_ = std::move(result.entries);
-            endInsertRows();
-        }
+        entries_ = std::move(result.entries);
+        endResetModel();
 
         BOOST_LOG_SEV(lg(), info) << "Loaded " << entries_.size()
                                   << " log entries. Total available: "

@@ -90,7 +90,7 @@ public:
         comms::net::client_session& session);
 
     /**
-     * @brief Process a show role request.
+     * @brief Process a get role request.
      *
      * Retrieves a specific role by name or ID and displays its details
      * including all assigned permissions.
@@ -99,7 +99,7 @@ public:
      * @param session Client session for connectivity.
      * @param role_identifier Role name or UUID
      */
-    static void process_show_role(std::ostream& out,
+    static void process_get_role(std::ostream& out,
         comms::net::client_session& session,
         std::string role_identifier);
 

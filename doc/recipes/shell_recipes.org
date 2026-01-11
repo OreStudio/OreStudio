@@ -957,6 +957,24 @@ export ORES_COMMS_SHELL_LOGIN_PASSWORD
 EOF
 #+END_SRC
 
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++-----------------------+---------+----------------------------------------------------------------------------------------+---------+-------------------+-------------+-------------------------------+
+| Name                  | Version | Description                                                                            | Enabled | Change Reason     | Recorded By | Recorded At                   |
++-----------------------+---------+----------------------------------------------------------------------------------------+---------+-------------------+-------------+-------------------------------+
+| system.bootstrap_mode | 1       | Indicates whether the system is in bootstrap mode (waiting for initial admin account). | 0       | system.new_record | system      | 2026-01-09 16:39:09.000000000 |
++-----------------------+---------+----------------------------------------------------------------------------------------+---------+-------------------+-------------+-------------------------------+
+
+
+ores-shell> Bye!
+#+end_example
+
 
 ** Currencies
    :PROPERTIES:
@@ -999,6 +1017,10 @@ ores-shell> currencies> Commands available:
 	Retrieve all currencies from the server
  - add <string> <string> <string> <string> <string>
 	Add a currency (iso_code name [numeric_code] [symbol] [fractions_per_unit])
+ - delete <string>
+	Delete a currency by ISO code
+ - history <string>
+	Get version history for a currency by ISO code
  - ores-shell
 	(menu)
 currencies> Bye!
@@ -1030,110 +1052,110 @@ Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
 
-+----------+---------+-----------------------------------------+--------+------+----------------+-----------+-------------+-------------------------------+
-| ISO Code | Version | Name                                    | Symbol | Type | Fractions/Unit | Precision | Recorded By | Recorded At                   |
-+----------+---------+-----------------------------------------+--------+------+----------------+-----------+-------------+-------------------------------+
-| USD      | 1       | US Dollar                               | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| CAD      | 1       | Canadian Dollar                         | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MXN      | 1       | Mexican Peso                            | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BRL      | 1       | Brazilian Real                          | R$     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| ARS      | 1       | Argentine Peso                          | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| CLP      | 1       | Chilean Peso                            | $      | fiat | 0              | 0         | system      | 2026-01-01 23:51:55.000000000 |
-| COP      | 1       | Colombian Peso                          | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| PEN      | 1       | Peruvian Sol                            | S/     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| UYU      | 1       | Uruguayan Peso                          | $U     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| PYG      | 1       | Paraguayan Guarani                      | ₲    | fiat | 0              | 0         | system      | 2026-01-01 23:51:55.000000000 |
-| BOB      | 1       | Bolivian Boliviano                      | Bs     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| VES      | 1       | Venezuelan Bolivar                      | Bs     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| CRC      | 1       | Costa Rican Colon                       | ₡    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| PAB      | 1       | Panamanian Balboa                       | B/.    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| GTQ      | 1       | Guatemalan Quetzal                      | Q      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| HNL      | 1       | Honduran Lempira                        | L      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| NIO      | 1       | Nicaraguan Cordoba                      | C$     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| DOP      | 1       | Dominican Peso                          | RD$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| CUP      | 1       | Cuban Peso                              | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| JMD      | 1       | Jamaican Dollar                         | J$     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| TTD      | 1       | Trinidad and Tobago Dollar              | TT$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BBD      | 1       | Barbadian Dollar                        | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BSD      | 1       | Bahamian Dollar                         | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| HTG      | 1       | Haitian Gourde                          | G      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| SRD      | 1       | Surinamese Dollar                       | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| GYD      | 1       | Guyanese Dollar                         | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BZD      | 1       | Belize Dollar                           | BZ$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| AWG      | 1       | Aruban Florin                           | ƒ     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| ANG      | 1       | Netherlands Antillean Guilder           | ƒ     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| XCD      | 1       | East Caribbean Dollar                   | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| KYD      | 1       | Cayman Islands Dollar                   | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BMD      | 1       | Bermudian Dollar                        | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| FKP      | 1       | Falkland Islands Pound                  | £     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| EUR      | 1       | Euro                                    | €    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| GBP      | 1       | British Pound Sterling                  | £     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| CHF      | 1       | Swiss Franc                             | CHF    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| NOK      | 1       | Norwegian Krone                         | kr     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| SEK      | 1       | Swedish Krona                           | kr     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| DKK      | 1       | Danish Krone                            | kr     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| ISK      | 1       | Icelandic Krona                         | kr     | fiat | 0              | 0         | system      | 2026-01-01 23:51:55.000000000 |
-| PLN      | 1       | Polish Zloty                            | zł    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| CZK      | 1       | Czech Koruna                            | Kč    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| HUF      | 1       | Hungarian Forint                        | Ft     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| RON      | 1       | Romanian Leu                            | lei    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BGN      | 1       | Bulgarian Lev                           | лв   | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| HRK      | 1       | Croatian Kuna                           | kn     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| RSD      | 1       | Serbian Dinar                           | дин | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BAM      | 1       | Bosnia and Herzegovina Convertible Mark | KM     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MKD      | 1       | Macedonian Denar                        | ден | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| ALL      | 1       | Albanian Lek                            | L      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MDL      | 1       | Moldovan Leu                            | L      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| UAH      | 1       | Ukrainian Hryvnia                       | ₴    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BYN      | 1       | Belarusian Ruble                        | Br     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| RUB      | 1       | Russian Ruble                           | ₽    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| GEL      | 1       | Georgian Lari                           | ₾    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| AMD      | 1       | Armenian Dram                           | ֏     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| AZN      | 1       | Azerbaijani Manat                       | ₼    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| TRY      | 1       | Turkish Lira                            | ₺    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| GIP      | 1       | Gibraltar Pound                         | £     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| JPY      | 1       | Japanese Yen                            | ¥     | fiat | 0              | 0         | system      | 2026-01-01 23:51:55.000000000 |
-| CNY      | 1       | Chinese Yuan                            | ¥     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| HKD      | 1       | Hong Kong Dollar                        | HK$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| TWD      | 1       | New Taiwan Dollar                       | NT$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| KRW      | 1       | South Korean Won                        | ₩    | fiat | 0              | 0         | system      | 2026-01-01 23:51:55.000000000 |
-| KPW      | 1       | North Korean Won                        | ₩    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| SGD      | 1       | Singapore Dollar                        | S$     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MYR      | 1       | Malaysian Ringgit                       | RM     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| IDR      | 1       | Indonesian Rupiah                       | Rp     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| THB      | 1       | Thai Baht                               | ฿    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| VND      | 1       | Vietnamese Dong                         | ₫    | fiat | 0              | 0         | system      | 2026-01-01 23:51:55.000000000 |
-| PHP      | 1       | Philippine Peso                         | ₱    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| INR      | 1       | Indian Rupee                            | ₹    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| PKR      | 1       | Pakistani Rupee                         | Rs     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BDT      | 1       | Bangladeshi Taka                        | ৳    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| LKR      | 1       | Sri Lankan Rupee                        | Rs     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| NPR      | 1       | Nepalese Rupee                          | Rs     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MMK      | 1       | Myanmar Kyat                            | K      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| KHR      | 1       | Cambodian Riel                          | ៛    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| LAK      | 1       | Lao Kip                                 | ₭    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MNT      | 1       | Mongolian Tugrik                        | ₮    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| KZT      | 1       | Kazakhstani Tenge                       | ₸    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| UZS      | 1       | Uzbekistani Som                         | сўм | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| KGS      | 1       | Kyrgyzstani Som                         | с     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| TJS      | 1       | Tajikistani Somoni                      | ЅМ   | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| TMT      | 1       | Turkmenistani Manat                     | m      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| AFN      | 1       | Afghan Afghani                          | ؋     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| AUD      | 1       | Australian Dollar                       | A$     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| NZD      | 1       | New Zealand Dollar                      | NZ$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| FJD      | 1       | Fijian Dollar                           | FJ$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| PGK      | 1       | Papua New Guinean Kina                  | K      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| SBD      | 1       | Solomon Islands Dollar                  | SI$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| VUV      | 1       | Vanuatu Vatu                            | VT     | fiat | 0              | 0         | system      | 2026-01-01 23:51:55.000000000 |
-| WST      | 1       | Samoan Tala                             | WS$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| TOP      | 1       | Tongan Paanga                           | T$     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MOP      | 1       | Macanese Pataca                         | MOP$   | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BND      | 1       | Brunei Dollar                           | B$     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BTN      | 1       | Bhutanese Ngultrum                      | Nu.    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MVR      | 1       | Maldivian Rufiyaa                       | Rf     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| SAR      | 1       | Saudi Riyal                             | ﷼    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| AED      | 1       | UAE Dirham                              | د.إ  | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-+----------+---------+-----------------------------------------+--------+------+----------------+-----------+-------------+-------------------------------+
++----------+---------+-----------------------------------------+--------+------+----------------+-----------+----------------------------+-------------+-------------------------------+
+| ISO Code | Version | Name                                    | Symbol | Type | Fractions/Unit | Precision | Change Reason              | Recorded By | Recorded At                   |
++----------+---------+-----------------------------------------+--------+------+----------------+-----------+----------------------------+-------------+-------------------------------+
+| USD      | 2       | US Dollar                               | $      | fiat | 100            | 1         | common.non_material_update | newuser3    | 2026-01-09 21:05:44.000000000 |
+| CAD      | 1       | Canadian Dollar                         | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MXN      | 1       | Mexican Peso                            | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BRL      | 1       | Brazilian Real                          | R$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| ARS      | 1       | Argentine Peso                          | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| CLP      | 1       | Chilean Peso                            | $      | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| COP      | 1       | Colombian Peso                          | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| PEN      | 1       | Peruvian Sol                            | S/     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| UYU      | 1       | Uruguayan Peso                          | $U     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| PYG      | 1       | Paraguayan Guarani                      | ₲    | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BOB      | 1       | Bolivian Boliviano                      | Bs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| VES      | 1       | Venezuelan Bolivar                      | Bs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| CRC      | 1       | Costa Rican Colon                       | ₡    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| PAB      | 1       | Panamanian Balboa                       | B/.    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| GTQ      | 1       | Guatemalan Quetzal                      | Q      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| HNL      | 1       | Honduran Lempira                        | L      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| NIO      | 1       | Nicaraguan Cordoba                      | C$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| DOP      | 1       | Dominican Peso                          | RD$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| CUP      | 1       | Cuban Peso                              | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| JMD      | 1       | Jamaican Dollar                         | J$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| TTD      | 1       | Trinidad and Tobago Dollar              | TT$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BBD      | 1       | Barbadian Dollar                        | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BSD      | 1       | Bahamian Dollar                         | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| HTG      | 1       | Haitian Gourde                          | G      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| SRD      | 1       | Surinamese Dollar                       | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| GYD      | 1       | Guyanese Dollar                         | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BZD      | 1       | Belize Dollar                           | BZ$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| AWG      | 1       | Aruban Florin                           | ƒ     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| ANG      | 1       | Netherlands Antillean Guilder           | ƒ     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| KYD      | 1       | Cayman Islands Dollar                   | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BMD      | 1       | Bermudian Dollar                        | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| FKP      | 1       | Falkland Islands Pound                  | £     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| XCD      | 1       | East Caribbean Dollar                   | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| EUR      | 1       | Euro                                    | €    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| GBP      | 1       | British Pound Sterling                  | £     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| CHF      | 1       | Swiss Franc                             | CHF    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| NOK      | 1       | Norwegian Krone                         | kr     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| SEK      | 1       | Swedish Krona                           | kr     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| DKK      | 1       | Danish Krone                            | kr     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| ISK      | 1       | Icelandic Krona                         | kr     | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| PLN      | 1       | Polish Zloty                            | zł    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| CZK      | 1       | Czech Koruna                            | Kč    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| HUF      | 1       | Hungarian Forint                        | Ft     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| RON      | 1       | Romanian Leu                            | lei    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BGN      | 1       | Bulgarian Lev                           | лв   | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| HRK      | 1       | Croatian Kuna                           | kn     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| RSD      | 1       | Serbian Dinar                           | дин | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BAM      | 1       | Bosnia and Herzegovina Convertible Mark | KM     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MKD      | 1       | Macedonian Denar                        | ден | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| ALL      | 1       | Albanian Lek                            | L      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MDL      | 1       | Moldovan Leu                            | L      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| UAH      | 1       | Ukrainian Hryvnia                       | ₴    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BYN      | 1       | Belarusian Ruble                        | Br     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| RUB      | 1       | Russian Ruble                           | ₽    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| GEL      | 1       | Georgian Lari                           | ₾    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| AMD      | 1       | Armenian Dram                           | ֏     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| AZN      | 1       | Azerbaijani Manat                       | ₼    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| TRY      | 1       | Turkish Lira                            | ₺    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| GIP      | 1       | Gibraltar Pound                         | £     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| JPY      | 1       | Japanese Yen                            | ¥     | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| CNY      | 1       | Chinese Yuan                            | ¥     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| HKD      | 1       | Hong Kong Dollar                        | HK$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| TWD      | 1       | New Taiwan Dollar                       | NT$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| KRW      | 1       | South Korean Won                        | ₩    | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| KPW      | 1       | North Korean Won                        | ₩    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| SGD      | 1       | Singapore Dollar                        | S$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MYR      | 1       | Malaysian Ringgit                       | RM     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| IDR      | 1       | Indonesian Rupiah                       | Rp     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| THB      | 1       | Thai Baht                               | ฿    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| VND      | 1       | Vietnamese Dong                         | ₫    | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| PHP      | 1       | Philippine Peso                         | ₱    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| INR      | 1       | Indian Rupee                            | ₹    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| PKR      | 1       | Pakistani Rupee                         | Rs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BDT      | 1       | Bangladeshi Taka                        | ৳    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| LKR      | 1       | Sri Lankan Rupee                        | Rs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| NPR      | 1       | Nepalese Rupee                          | Rs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MMK      | 1       | Myanmar Kyat                            | K      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| KHR      | 1       | Cambodian Riel                          | ៛    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| LAK      | 1       | Lao Kip                                 | ₭    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MNT      | 1       | Mongolian Tugrik                        | ₮    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| KZT      | 1       | Kazakhstani Tenge                       | ₸    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| UZS      | 1       | Uzbekistani Som                         | сўм | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| KGS      | 1       | Kyrgyzstani Som                         | с     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| TJS      | 1       | Tajikistani Somoni                      | ЅМ   | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| TMT      | 1       | Turkmenistani Manat                     | m      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| AFN      | 1       | Afghan Afghani                          | ؋     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| AUD      | 1       | Australian Dollar                       | A$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| NZD      | 1       | New Zealand Dollar                      | NZ$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| FJD      | 1       | Fijian Dollar                           | FJ$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| PGK      | 1       | Papua New Guinean Kina                  | K      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| SBD      | 1       | Solomon Islands Dollar                  | SI$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| VUV      | 1       | Vanuatu Vatu                            | VT     | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| WST      | 1       | Samoan Tala                             | WS$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| TOP      | 1       | Tongan Paanga                           | T$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MOP      | 1       | Macanese Pataca                         | MOP$   | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BND      | 1       | Brunei Dollar                           | B$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BTN      | 1       | Bhutanese Ngultrum                      | Nu.    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MVR      | 1       | Maldivian Rufiyaa                       | Rf     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| SAR      | 1       | Saudi Riyal                             | ﷼    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| AED      | 1       | UAE Dirham                              | د.إ  | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
++----------+---------+-----------------------------------------+--------+------+----------------+-----------+----------------------------+-------------+-------------------------------+
 
 
 
@@ -1146,7 +1168,7 @@ Add a new currency.
 
 #+name: currencies-add
 #+begin_src ores-shell :exports none
-currencies add TEST700 Test700 700 A 100 initial_setup "Adding test currency"
+currencies add TEST700 Test700 700 A 100
 exit
 #+end_src
 
@@ -1164,7 +1186,9 @@ EOF
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Currency added successfully!
+ores-shell> ✗ Failed to add currency: Failed to save currency: Repository error: Executing INSERT failed: ERROR:  new row for relation "currencies" violates check constraint "currencies_change_reason_code_check"
+DETAIL:  Failing row contains (TEST700, 1, Test700, 700, A, , 100, Nearest, 2, , fiat, null, newuser3, , , 2026-01-11 18:59:25.874112+00, 9999-12-31 23:59:59+00).
+
 ores-shell> Bye!
 #+end_example
 
@@ -1201,6 +1225,25 @@ export ORES_COMMS_SHELL_LOGIN_PASSWORD
 <<currencies-history>>
 EOF
 #+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++---------+----------+-----------+-------------+-------------------------------+----------------+
+| Version | ISO Code | Name      | Recorded By | Recorded At                   | Change Summary |
++---------+----------+-----------+-------------+-------------------------------+----------------+
+| 2       | USD      | US Dollar | newuser3    | 2026-01-09 21:05:44.000000000 | Version 2      |
+| 1       | USD      | US Dollar | system      | 2026-01-09 16:37:39.000000000 | Version 1      |
++---------+----------+-----------+-------------+-------------------------------+----------------+
+
+
+ores-shell> Bye!
+#+end_example
 
 
 ** RBAC
@@ -1313,30 +1356,30 @@ ores-shell>
 +--------------------------------------+-------------------------+---------------------------------------+
 | ID (UUID)                            | Code                    | Description                           |
 +--------------------------------------+-------------------------+---------------------------------------+
-| 8f827c95-2af4-4d78-9ccb-22f5d9f4df99 | *                       | Full access to all operations         |
-| 9e337a58-2ee6-4de4-8946-76015de6e928 | accounts:create         | Create new user accounts              |
-| 7151df18-e4c9-4522-bb65-c1055a3e97c1 | accounts:delete         | Delete user accounts                  |
-| c225162e-2b04-4685-b1be-0bacbe367e45 | accounts:lock           | Lock user accounts                    |
-| 4956001c-5ece-4dc8-b437-c834045c25eb | accounts:read           | View user account details             |
-| 5f5f8909-3820-411f-a9f2-d5efb5ad351a | accounts:reset_password | Force password reset on user accounts |
-| fc5587f3-72ad-4706-a1ac-ca735af5a919 | accounts:unlock         | Unlock user accounts                  |
-| cf4ac1a8-b39e-4faa-b6d3-f9ed3d1ef41a | accounts:update         | Modify user account settings          |
-| 43ce84fb-b14a-490a-92d1-4eade25eda37 | currencies:create       | Create new currencies                 |
-| 7fb3f2e6-9b0d-4996-9c02-14e39a732acd | currencies:delete       | Delete currencies                     |
-| 5472a25a-40cf-4bac-9c95-dda2589f12f7 | currencies:history      | View currency version history         |
-| 17f8d400-47fa-4648-8b47-48ab3c1ec82b | currencies:read         | View currency details                 |
-| e1bca8df-8133-4c08-9365-160baf99125e | currencies:update       | Modify currency settings              |
-| 62e6e9ea-5258-41d2-9107-0602512801e6 | flags:create            | Create new feature flags              |
-| 8e42e330-5467-48c2-9a26-5af5b5fcb10e | flags:delete            | Delete feature flags                  |
-| 3b26954f-6368-4c12-b2e2-67797d442714 | flags:read              | View feature flag status              |
-| 5f72cfef-c8a9-4926-a1a3-f51c955595f7 | flags:update            | Modify feature flag settings          |
-| 12e8300a-e76c-4cd6-a439-2098e45393a2 | login_info:read         | View login history and info           |
-| 95d69095-1223-4dbb-970e-8042d90d61de | roles:assign            | Assign roles to accounts              |
-| 2301fe57-f568-4930-b3ec-4a9fba903932 | roles:create            | Create new roles                      |
-| e12a56d4-64a8-436d-8ad8-1909b2439369 | roles:delete            | Delete roles                          |
-| eba37c8c-79e2-4193-9a54-ceb555b1cdda | roles:read              | View role details                     |
-| cd69a420-e93b-4e41-9bab-ee8d6dcd0b7a | roles:revoke            | Revoke roles from accounts            |
-| af5743da-3042-469d-8487-ed859b9de7f5 | roles:update            | Modify role permissions               |
+| 963e09c4-9e79-4999-8328-6d75d2f07357 | *                       | Full access to all operations         |
+| ee6134aa-51da-463f-aef7-151ada8f1ef0 | accounts:create         | Create new user accounts              |
+| da55dfdd-5cc9-44fa-a180-a7b6a63f2c8b | accounts:delete         | Delete user accounts                  |
+| 2931b81c-54b4-416e-ac6a-ab16abaa83b0 | accounts:lock           | Lock user accounts                    |
+| 1bb87ab9-97b5-4da3-a630-247278e01b32 | accounts:read           | View user account details             |
+| 45763784-6d33-4404-9159-085afa320a74 | accounts:reset_password | Force password reset on user accounts |
+| 3051b7f0-26ef-48d6-89a0-0628f83ef8d4 | accounts:unlock         | Unlock user accounts                  |
+| 8526dcf5-e1d3-4b61-8060-74d464be79a1 | accounts:update         | Modify user account settings          |
+| 70302a28-b2c3-4a11-8f89-f5bb96ecaa36 | currencies:create       | Create new currencies                 |
+| 0ac3bdba-73c9-4519-87a7-338820adee11 | currencies:delete       | Delete currencies                     |
+| c2fb104f-140b-4c85-8853-81a92757bb68 | currencies:history      | View currency version history         |
+| d78c18f5-6705-408b-9512-5c7ac643796b | currencies:read         | View currency details                 |
+| 0ce6311e-7239-415f-818c-992ed784bf98 | currencies:update       | Modify currency settings              |
+| 106b9e3e-2ece-433d-8997-215c73e3de3a | flags:create            | Create new feature flags              |
+| 9206160e-3897-4277-bbae-d5c30d25b2fe | flags:delete            | Delete feature flags                  |
+| 58ea2c77-ca88-4d32-9022-bc92802910bc | flags:read              | View feature flag status              |
+| f846d3e5-6f63-4358-bfcc-cae3def9beb6 | flags:update            | Modify feature flag settings          |
+| 9cf7a227-a474-4bc7-9d4a-fc154d14f9b8 | login_info:read         | View login history and info           |
+| 2f503f67-77c2-49a7-aa7d-cf12afef08a3 | roles:assign            | Assign roles to accounts              |
+| c6c02365-8124-480e-b7e9-9a0474385723 | roles:create            | Create new roles                      |
+| 0154a24e-e857-4a63-abf4-346cf42c77ef | roles:delete            | Delete roles                          |
+| e2c6661e-9cd5-4979-a8df-2373d3526fd2 | roles:read              | View role details                     |
+| 2ff0ea13-c8b9-47be-97c1-dd4467a2df47 | roles:revoke            | Revoke roles from accounts            |
+| 1bbc70ed-b41b-46e0-b991-b1e81d5138b2 | roles:update            | Modify role permissions               |
 +--------------------------------------+-------------------------+---------------------------------------+
 
 
@@ -1371,32 +1414,32 @@ ores-shell>
 +--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
 | ID (UUID)                            | Name       | Description                                                   | Permissions                                                   | Recorded By | Version |
 +--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
-| dd2ecaec-138b-453c-a110-77441a60583e | Admin      | Full administrative access to all system functions            | *                                                             | system      | 1       |
-| b898350f-f704-4e97-b8ec-36c3481af052 | Operations | Operations - currency management and account viewing          | accounts:read, currencies:create, currencies:delete (+4 more) | system      | 1       |
-| d48b608d-c894-4346-887d-228e342d36c6 | Sales      | Sales operations - read-only currency access                  | currencies:read, flags:read                                   | system      | 1       |
-| d533c93f-bf3c-4d1f-bba8-4e949b976a8a | Support    | Support - read-only access to all resources and admin screens | accounts:read, currencies:history, currencies:read (+3 more)  | system      | 1       |
-| a74f8a4e-f331-4179-aecb-cda61e472805 | Trading    | Trading operations - currency read access                     | currencies:history, currencies:read, flags:read               | system      | 1       |
-| 6e4ee358-1970-400f-a3cb-fbcfe8296f52 | Viewer     | Viewer - basic read-only access to domain data                | currencies:read, flags:read                                   | system      | 1       |
+| f60d8103-0283-4d46-aa4c-aa6bb50934d9 | Admin      | Full administrative access to all system functions            | *                                                             | system      | 1       |
+| d6ac9d9f-91c3-40d2-998d-0e18604a8687 | Operations | Operations - currency management and account viewing          | accounts:read, currencies:create, currencies:delete (+4 more) | system      | 1       |
+| 82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b | Sales      | Sales operations - read-only currency access                  | currencies:read, flags:read                                   | system      | 1       |
+| 1bc4ce25-7f72-4ac1-b42a-6c11dd350906 | Support    | Support - read-only access to all resources and admin screens | accounts:read, currencies:history, currencies:read (+3 more)  | system      | 1       |
+| a6eb024f-0c0c-4e0e-93a4-8fb5df41b2e2 | Trading    | Trading operations - currency read access                     | currencies:history, currencies:read, flags:read               | system      | 1       |
+| 0810cd81-1d89-455f-9eb7-90e126c4a241 | Viewer     | Viewer - basic read-only access to domain data                | currencies:read, flags:read                                   | system      | 1       |
 +--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
 
 
 ores-shell> Bye!
 #+end_example
 
-*** Show Role
+*** Get Role
 
-Show details for a specific role.
+Get details for a specific role.
 
-#+name: show-role
+#+name: get-role
 #+begin_src ores-shell :exports none
-roles show Admin
+roles get Admin
 exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
 ./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
-<<show-role>>
+<<get-role>>
 EOF
 #+end_src
 
@@ -1410,7 +1453,7 @@ Type 'help' for available commands, 'exit' to quit.
 ores-shell>
 Role Details
 ============
-ID:          dd2ecaec-138b-453c-a110-77441a60583e
+ID:          f60d8103-0283-4d46-aa4c-aa6bb50934d9
 Name:        Admin
 Description: Full administrative access to all system functions
 Version:     1

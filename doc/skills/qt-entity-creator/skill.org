@@ -914,16 +914,23 @@ Create a Qt Designer =.ui= file with:
 **** Async history loading
 
 #+begin_src cpp
+// Define a result struct for consistency with other async patterns
+struct HistoryResult {
+    bool success;
+    std::string error_message;
+    std::vector<<component>::domain::<entity>> entries;
+};
+
 void <Entity>HistoryDialog::loadHistory() {
     QPointer<<Entity>HistoryDialog> self = this;
 
     QFuture<HistoryResult> future = QtConcurrent::run([self]() -> HistoryResult {
         if (!self || !self->clientManager_) {
-            return std::unexpected("Dialog closed or no client");
+            return {false, "Dialog closed or no client", {}};
         }
 
         // Build and send history request...
-        return history_entries;
+        return {true, "", history_entries};
     });
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
@@ -931,11 +938,11 @@ void <Entity>HistoryDialog::loadHistory() {
         auto result = watcher->result();
         watcher->deleteLater();
 
-        if (result.has_value()) {
-            self->history_ = std::move(*result);
+        if (result.success) {
+            self->history_ = std::move(result.entries);
             self->onHistoryLoaded();
         } else {
-            self->onHistoryLoadError(QString::fromStdString(result.error()));
+            self->onHistoryLoadError(QString::fromStdString(result.error_message));
         }
     });
 

@@ -11,6 +11,11 @@ using the org-mode publishing system.
 
 * Skill Catalog
 
+To understand how the skills relate to each other, please see the component
+diagram:
+
+[[./modeling/skill_dependencies.png]]
+
 ** Meta-Skills
 
 - [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][Skill Manager]]: Skill to create new skills.

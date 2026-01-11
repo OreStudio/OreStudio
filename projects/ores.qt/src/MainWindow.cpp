@@ -239,6 +239,10 @@ MainWindow::MainWindow(QWidget* parent) :
         telemetryViewerWindow_->setAttribute(Qt::WA_DeleteOnClose);
         telemetryViewerWindow_->resize(1200, 700);
 
+        const QColor iconColor(220, 220, 220);
+        telemetryViewerWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_document_table_20_regular.svg", iconColor));
+
         // Track window destruction
         connect(telemetryViewerWindow_, &QObject::destroyed, this, [this]() {
             telemetryViewerWindow_ = nullptr;

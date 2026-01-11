@@ -798,7 +798,7 @@ After Phase 2 PR is merged, use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][featu
 
 ** Step 8: Add CLI Recipes
 
-Add all new commands to CLI recipes using the [[id:A962DF8E-783D-4DCF-BD60-9FEFAA2E1FBF][ores-cli-recipes]] skill. This
+Add all new commands to CLI recipes following the [[id:A962DF8E-783D-4DCF-BD60-9FEFAA2E1FBF][ores-cli-recipes]] skill. This
 ensures every command is documented with runnable examples.
 
 *** File to modify
@@ -810,86 +810,86 @@ ensures every command is documented with runnable examples.
 Create recipes that test *every command* added for the entity:
 
 1. *Help recipe*: Show the entity command help output
-2. *List recipe*: Demonstrate listing all entities
+2. *List recipe*: Demonstrate listing all entities (JSON and table formats)
 3. *Add recipe*: Demonstrate creating a new entity
 4. *Delete recipe*: Demonstrate deleting an entity
 
 *** Recipe section structure
 
-Add a new section for the entity following this pattern:
+Add a new section for the entity following the existing pattern in =cli_recipes.org=:
 
 #+begin_src fundamental
 ** <Entities>
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
 
-This section demonstrates <entity> management commands.
+<Entity> management operations from the ORE Studio <Component> Component.
 
+*** Help
 
-*** <Entities> Help
+Show available operations for <entities>.
 
-Display all available <entity> commands.
-
-#+name: <entities>-help
-#+begin_src sh :exports none
+#+begin_src sh :wrap src text
 ./ores.cli <entities> --help
 #+end_src
 
-#+begin_src sh :noweb yes :results output :wrap example
-<<db_env_vars>>
-<<<entities>-help>>
+*** List
+
+List all <entities> in table format.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli <entities> list ${db_args} ${log_args} --format table
 #+end_src
 
+*** List as JSON
 
-*** List All <Entities>
+List all <entities> in JSON format.
 
-Retrieve all <entities> from the database.
-
-#+name: <entities>-list
-#+begin_src sh :exports none
-./ores.cli <entities> list --format table
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli <entities> list ${db_args} ${log_args} --format json
 #+end_src
 
-#+begin_src sh :noweb yes :results output :wrap example
-<<db_env_vars>>
-<<<entities>-list>>
-#+end_src
-
-
-*** Add <Entity>
+*** Add
 
 Create a new <entity>.
 
-#+name: <entities>-add
-#+begin_src sh :exports none
-./ores.cli <entities> add --<key-field> test_value --modified-by admin
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli <entities> add ${db_args} ${log_args} \
+  --<key-field> test_value \
+  --modified-by admin
 #+end_src
 
-#+begin_src sh :noweb yes :results output :wrap example
-<<db_env_vars>>
-<<<entities>-add>>
-#+end_src
-
-
-*** Delete <Entity>
+*** Delete
 
 Delete a <entity> by key.
 
-#+name: <entities>-delete
-#+begin_src sh :exports none
-./ores.cli <entities> delete --key test_value --modified-by admin
-#+end_src
-
-#+begin_src sh :noweb yes :results output :wrap example
-<<db_env_vars>>
-<<<entities>-delete>>
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli <entities> delete ${db_args} ${log_args} --key test_value
 #+end_src
 #+end_src
 
 *** Recipe conventions
 
-- Use =:exports none= on the command blocks (they are included via noweb)
-- Use =<<db_env_vars>>= to include database environment variables
-- Use =:wrap example= to format output
-- Name blocks with pattern =<entities>-<action>=
+- Set =:header-args+: :wrap src json= at section level for default JSON output
+- Use =:wrap src text= override for help and table output
+- Include =export ORES_CLI_DB_PASSWORD= before commands needing DB access
+- Use =${db_args}= and =${log_args}= variables (defined in file header)
+- Add descriptive paragraph before each recipe explaining what it demonstrates
+- Link to the component's org-mode documentation using =[[id:...][...]]=
+
+*** Updating ores-cli-recipes entity table
+
+After adding recipes, update the entity operations table in the [[id:A962DF8E-783D-4DCF-BD60-9FEFAA2E1FBF][ores-cli-recipes]]
+skill (=doc/skills/ores-cli-recipes/skill.org=) to include the new entity:
+
+#+begin_src fundamental
+| <entities>    | list, delete, add                       |
+#+end_src
 
 *** Commit message
 

@@ -1,0 +1,398 @@
+* Entity Dialog Refactoring Analysis
+
+** Overview
+
+This document summarizes the analysis of entity dialogs in =ores.qt= and provides
+recommendations for reducing code duplication while maintaining clarity and
+avoiding over-engineering.
+
+** Entities Analyzed
+
+- Currency
+- Country
+- Account
+- Role
+- ChangeReason
+- ChangeReasonCategory
+- FeatureFlag
+
+** Components Per Entity
+
+Each entity typically has:
+- =*MdiWindow= - List view with table, toolbar, pagination
+- =*DetailDialog= - Create/edit/view form
+- =*HistoryDialog= - Version history viewer
+- =*Controller= - Coordinates windows and handles events
+
+** Summary of Findings
+
+*** 1. High Consistency
+
+The codebase demonstrates excellent consistency in patterns:
+- All controllers inherit from =EntityController=
+- All windows use the same toolbar/table/pagination layout
+- All dialogs follow create/edit/view-only mode patterns
+- All async operations use =QtConcurrent::run= with =QFutureWatcher=
+
+*** 2. Duplicated Constants
+
+**** Icon Color (Currently Hardcoded in ~20+ Locations)
+
+#+begin_src cpp
+const QColor iconColor(220, 220, 220);  // Light gray
+#+end_src
+
+*Status:* Already exists in =ColorConstants.hpp= as =color_constants::icon_color=
+but not consistently used.
+
+**** Stale Indicator Color
+
+#+begin_src cpp
+const QColor staleColor(255, 165, 0);  // Orange
+#+end_src
+
+*Status:* Already exists in =ColorConstants.hpp= as =color_constants::stale_indicator=
+but not consistently used.
+
+**** Window Size Hints
+
+| Entity                | Size Hint |
+|-----------------------+-----------|
+| Currency              | 1000x600  |
+| Country               | 900x600   |
+| Account               | 800x500   |
+| Role                  | 700x400   |
+| FeatureFlag           | 850x400   |
+| ChangeReason          | 1000x500  |
+| ChangeReasonCategory  | 800x400   |
+| History Dialogs       | 900x600   |
+
+**** Table Configuration Constants
+
+#+begin_src cpp
+setAlternatingRowColors(true);
+setSelectionBehavior(QAbstractItemView::SelectRows);
+setWordWrap(false);
+setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+#+end_src
+
+**** Changes Table Column Widths (History Dialogs)
+
+#+begin_src cpp
+setColumnWidth(0, 200);  // Field name
+setColumnWidth(1, 200);  // Old value
+// Column 2 stretches
+#+end_src
+
+*** 3. Duplicated Code Patterns
+
+**** Stale Indicator Pattern (All MDI Windows)
+
+Every MDI window has identical code for:
+- =normalReloadIcon_=, =staleReloadIcon_= members
+- =pulseTimer_=, =pulseState_=, =pulseCount_= members
+- =startPulseAnimation()=, =stopPulseAnimation()= methods
+- =markAsStale()=, =clearStaleIndicator()= methods
+- Pulse interval: 500ms, max cycles: 6
+
+**** Async Operation Pattern
+
+#+begin_src cpp
+QPointer<ThisClass> self = this;
+QFuture<ResultType> future = QtConcurrent::run([self, ...params...]() -> ResultType {
+    if (!self) return {false, ""};
+    // ... operation ...
+});
+auto* watcher = new QFutureWatcher<ResultType>(self);
+connect(watcher, &QFutureWatcher<ResultType>::finished, self, [self, watcher]() {
+    auto result = watcher->result();
+    watcher->deleteLater();
+    // ... handle result ...
+});
+watcher->setFuture(future);
+#+end_src
+
+**** Toolbar Setup Pattern (All Windows)
+
+#+begin_src cpp
+toolBar_->setMovable(false);
+toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+// or Qt::ToolButtonIconOnly for detail dialogs
+#+end_src
+
+**** Connection State Handler (All MDI Windows)
+
+#+begin_src cpp
+void onConnectionStateChanged() {
+    const bool connected = clientManager_ && clientManager_->isConnected();
+    toolBar_->setEnabled(connected);
+    // status message
+}
+#+end_src
+
+**** Event Subscription Pattern (All Controllers)
+
+#+begin_src cpp
+connect(clientManager_, &ClientManager::connected, this, [this]() {
+    clientManager_->subscribeToEvent(std::string{event_name});
+});
+connect(clientManager_, &ClientManager::reconnected, this, [this]() {
+    clientManager_->subscribeToEvent(std::string{event_name});
+});
+if (clientManager_->isConnected()) {
+    clientManager_->subscribeToEvent(std::string{event_name});
+}
+#+end_src
+
+**** QFutureWatcher Cleanup (All Dialogs with Async)
+
+#+begin_src cpp
+~Dialog() {
+    const auto watchers = findChildren<QFutureWatcherBase*>();
+    for (auto* watcher : watchers) {
+        disconnect(watcher, nullptr, this, nullptr);
+        watcher->cancel();
+        watcher->waitForFinished();
+    }
+}
+#+end_src
+
+**** Diff Calculation Pattern (History Dialogs)
+
+ChangeReason and ChangeReasonCategory use macros for cleaner diff calculation:
+#+begin_src cpp
+#define CHECK_DIFF_STRING(FIELD_NAME, FIELD) \
+    if (current.FIELD != previous.FIELD) { \
+        result.append({FIELD_NAME, {QString::fromStdString(previous.FIELD), \
+            QString::fromStdString(current.FIELD)}}); \
+    }
+#+end_src
+
+** Refactoring Recommendations
+
+*** Priority 1: Easy Wins (Low Risk)
+
+**** 1.1 Consolidate Icon Color Usage
+
+Replace all hardcoded =QColor(220, 220, 220)= with =color_constants::icon_color=.
+
+Files to update: ~25 files
+Effort: Low
+Risk: None
+
+**** 1.2 Consolidate Stale Color Usage
+
+Replace all =QColor(255, 165, 0)= with =color_constants::stale_indicator=.
+
+Files to update: ~8 files
+Effort: Low
+Risk: None
+
+**** 1.3 Add Window Size Constants
+
+Add to =ColorConstants.hpp= or new =UiConstants.hpp=:
+
+#+begin_src cpp
+struct ui_constants {
+    // MDI window sizes
+    static constexpr QSize currency_list_size{1000, 600};
+    static constexpr QSize country_list_size{900, 600};
+    static constexpr QSize account_list_size{800, 500};
+    // ... etc
+
+    // History dialog sizes
+    static constexpr QSize history_dialog_size{900, 600};
+    static constexpr QSize history_dialog_small{800, 500};
+
+    // Changes table column widths
+    static constexpr int changes_field_column_width{200};
+    static constexpr int changes_value_column_width{200};
+};
+#+end_src
+
+*** Priority 2: Moderate Refactoring (Medium Risk)
+
+**** 2.1 Extract Stale Indicator Mixin/Helper
+
+Create =StaleIndicatorHelper= class that can be composed into any widget:
+
+#+begin_src cpp
+class StaleIndicatorHelper : public QObject {
+    Q_OBJECT
+public:
+    explicit StaleIndicatorHelper(QAction* reloadAction, QObject* parent);
+
+    void setNormalIcon(const QIcon& icon);
+    void setStaleIcon(const QIcon& icon);
+    void markAsStale();
+    void clearStale();
+
+signals:
+    void staleStateChanged(bool isStale);
+
+private:
+    QAction* reloadAction_;
+    QIcon normalIcon_;
+    QIcon staleIcon_;
+    QTimer* pulseTimer_;
+    bool pulseState_{false};
+    int pulseCount_{0};
+    bool isStale_{false};
+};
+#+end_src
+
+Benefits:
+- Removes ~50 lines of duplicate code per MDI window
+- Single place to modify animation behavior
+- Testable in isolation
+
+**** 2.2 Extract Async Helper Template
+
+Create helper for common async pattern:
+
+#+begin_src cpp
+template<typename ResultType>
+class AsyncOperationHelper {
+public:
+    using Operation = std::function<ResultType()>;
+    using Handler = std::function<void(const ResultType&)>;
+
+    static void run(QObject* context, Operation op, Handler onComplete);
+};
+#+end_src
+
+**** 2.3 Add Table Configuration Helper
+
+#+begin_src cpp
+namespace TableConfig {
+    void applyStandardListConfig(QTableView* table);
+    void applyHistoryChangesConfig(QTableWidget* table);
+}
+#+end_src
+
+*** Priority 3: Consider for Future (Higher Risk)
+
+**** 3.1 Base MDI Window Class
+
+Could create =BaseMdiWindow= with:
+- Stale indicator infrastructure
+- Toolbar setup
+- Connection state handling
+- Standard signals
+
+However, this risks:
+- Over-abstraction
+- Harder to understand individual windows
+- May not fit all variations cleanly
+
+*Recommendation:* Leave for future if patterns stabilize further.
+
+**** 3.2 Base Detail Dialog Class
+
+Could extract:
+- Mode management (create/edit/view-only)
+- Toolbar with save/delete/revert
+- Version navigation
+- Dirty state tracking
+
+Similar risks as above.
+
+*Recommendation:* Leave for future.
+
+**** 3.3 Base History Dialog Class
+
+Most history dialogs are very similar. Could potentially create:
+- Base class with version list, changes table, full details tab
+- Abstract methods for entity-specific diff calculation
+- Template for async loading
+
+*Recommendation:* Could be beneficial but evaluate after Priority 1 & 2.
+
+** What NOT to Refactor
+
+*** 1. Entity-Specific Logic
+
+Each entity has unique:
+- Field layouts in detail dialogs
+- Column configurations
+- Validation rules
+- Business logic
+
+These should remain entity-specific.
+
+*** 2. Controller Window Management
+
+The =EntityController= base class already provides good infrastructure.
+Further abstraction may reduce flexibility.
+
+*** 3. Existing Working Patterns
+
+The current patterns work well. Don't refactor just for the sake of
+refactoring - only address clear duplication.
+
+** Implementation Plan
+
+*** Phase 1: Constants (This PR)
+
+1. Add window size constants to =ColorConstants.hpp= or new file
+2. Replace hardcoded icon colors with =color_constants::icon_color=
+3. Replace hardcoded stale colors with =color_constants::stale_indicator=
+
+*** Phase 2: Helpers (Future PR)
+
+1. Create =StaleIndicatorHelper= class
+2. Create =TableConfig= helper functions
+3. Migrate MDI windows to use helpers
+
+*** Phase 3: Evaluate Base Classes (Future)
+
+After Phase 1 & 2, evaluate if base classes would provide additional benefit.
+
+** Files Involved
+
+*** MDI Windows (7 files)
+- CurrencyMdiWindow.hpp/cpp
+- CountryMdiWindow.hpp/cpp
+- AccountMdiWindow.hpp/cpp
+- RoleMdiWindow.hpp/cpp
+- ChangeReasonMdiWindow.hpp/cpp
+- ChangeReasonCategoryMdiWindow.hpp/cpp
+- FeatureFlagMdiWindow.hpp/cpp
+
+*** Detail Dialogs (7 files)
+- CurrencyDetailDialog.hpp/cpp
+- CountryDetailDialog.hpp/cpp
+- AccountDetailDialog.hpp/cpp
+- RoleDetailDialog.hpp/cpp
+- ChangeReasonDetailDialog.hpp/cpp
+- ChangeReasonCategoryDetailDialog.hpp/cpp
+- FeatureFlagDetailDialog.hpp/cpp
+
+*** History Dialogs (6 files)
+- CurrencyHistoryDialog.hpp/cpp
+- CountryHistoryDialog.hpp/cpp
+- AccountHistoryDialog.hpp/cpp
+- ChangeReasonHistoryDialog.hpp/cpp
+- ChangeReasonCategoryHistoryDialog.hpp/cpp
+- FeatureFlagHistoryDialog.hpp/cpp
+
+*** Controllers (8 files)
+- EntityController.hpp/cpp (base)
+- CurrencyController.hpp/cpp
+- CountryController.hpp/cpp
+- AccountController.hpp/cpp
+- RoleController.hpp/cpp
+- ChangeReasonController.hpp/cpp
+- ChangeReasonCategoryController.hpp/cpp
+- FeatureFlagController.hpp/cpp
+
+** Conclusion
+
+The codebase demonstrates strong consistency. The recommended approach is:
+
+1. *Do Now:* Consolidate constants (icon colors, window sizes)
+2. *Do Soon:* Extract helper classes for stale indicator and table config
+3. *Evaluate Later:* Base classes only if clear benefit emerges
+
+This balances reducing duplication with maintaining code clarity and avoiding
+over-engineering.

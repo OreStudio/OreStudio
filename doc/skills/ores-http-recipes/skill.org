@@ -45,7 +45,7 @@ Routes are implemented in the following files:
 - =projects/ores.http.server/src/routes/iam_routes.cpp=: Authentication, accounts, RBAC, sessions
 - =projects/ores.http.server/src/routes/risk_routes.cpp=: Currencies
 - =projects/ores.http.server/src/routes/variability_routes.cpp=: Feature flags
-- =projects/ores.http.server/src/routes/assets_routes.cpp=: Currency images and assets
+- =projects/ores.http.server/src/routes/assets_routes.cpp=: Get images by ID
 
 New entity routes should be added following the [[id:bdcc47d4-b050-409e-8c50-3d179843a274][http-entity-creator]] skill.
 
@@ -88,7 +88,7 @@ Recipes are organized into sections:
 - *Sessions*: List sessions, statistics, active sessions
 - *Currencies*: List, save, delete, history
 - *Feature Flags*: List feature flags
-- *Assets*: Currency images, get images
+- *Assets*: Get images by ID
 
 ** Verifying routes
 

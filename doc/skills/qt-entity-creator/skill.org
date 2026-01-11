@@ -32,7 +32,7 @@ Prerequisites:
 1. Gather entity requirements (name, fields, features needed).
 2. Follow the detailed instructions to create components in order.
 3. Each phase ends with a PR checkpoint - raise PR, wait for review, merge.
-4. Rebase from main before starting the next phase.
+4. Create a fresh branch from main for the next phase (see =feature-branch-manager=).
 5. Build and test after each step within a phase.
 
 
@@ -644,6 +644,12 @@ void <Entity>DetailDialog::onFieldChanged() {
 **** Async save pattern
 
 #+begin_src cpp
+// Define a result struct for the async operation
+struct SaveResult {
+    bool success;
+    std::string message;
+};
+
 void <Entity>DetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         emit errorMessage(tr("Not connected to server"));

@@ -750,6 +750,27 @@ ores-shell> V Role revoked successfully!
 ores-shell> Bye!
 #+end_example
 
+*** History
+    :PROPERTIES:
+    :header-args+: :var login_args="--login-username newuser3"
+    :END:
+
+Get version history for an account.
+
+#+name: account-history
+#+begin_src ores-shell :exports none
+accounts history newuser3
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<account-history>>
+EOF
+#+END_SRC
+
+
 ** Variability
    :PROPERTIES:
    :header-args+: :var login_args="--login-username newuser3"
@@ -834,6 +855,58 @@ ores-shell>
 
 ores-shell> Bye!
 #+end_example
+
+
+*** Add Feature Flag
+
+Add a new feature flag.
+
+#+name: add-feature-flag
+#+begin_src ores-shell :exports none
+variability add-flag test.feature.flag "Test feature flag for recipes" false
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+<<add-feature-flag>>
+EOF
+#+END_SRC
+
+*** Delete Feature Flag
+
+Delete a feature flag by name.
+
+#+name: delete-feature-flag
+#+begin_src ores-shell :exports none
+variability delete-flag test.feature.flag
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+<<delete-feature-flag>>
+EOF
+#+END_SRC
+
+*** Feature Flag History
+
+Get version history for a feature flag.
+
+#+name: feature-flag-history
+#+begin_src ores-shell :exports none
+variability flag-history system.bootstrap_mode
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+<<feature-flag-history>>
+EOF
+#+END_SRC
 
 
 ** Currencies
@@ -1045,6 +1118,40 @@ Type 'help' for available commands, 'exit' to quit.
 ores-shell> ✓ Currency added successfully!
 ores-shell> Bye!
 #+end_example
+
+*** Delete
+
+Delete a currency by ISO code.
+
+#+name: currencies-delete
+#+begin_src ores-shell :exports none
+currencies delete TEST700
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<currencies-delete>>
+EOF
+#+end_src
+
+*** History
+
+Get version history for a currency.
+
+#+name: currencies-history
+#+begin_src ores-shell :exports none
+currencies history USD
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<currencies-history>>
+EOF
+#+end_src
 
 
 ** RBAC
@@ -1586,6 +1693,237 @@ Setting takes effect on next connection.
 ores-shell> Compression: on (zlib)
 ores-shell> Bye!
 #+end_example
+
+** Countries
+   :PROPERTIES:
+   :header-args+: :var login_args="--login-username newuser3"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :END:
+
+Functionality related to the countries domain entity.
+
+*** Get
+
+Get all countries in the system.
+
+#+name: countries-get
+#+begin_src ores-shell :exports none
+countries get
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<countries-get>>
+EOF
+#+end_src
+
+*** Add
+
+Add a new country.
+
+#+name: countries-add
+#+begin_src ores-shell :exports none
+countries add XYZ Xyzland
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<countries-add>>
+EOF
+#+end_src
+
+*** Delete
+
+Delete a country by ISO code.
+
+#+name: countries-delete
+#+begin_src ores-shell :exports none
+countries delete XYZ
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<countries-delete>>
+EOF
+#+end_src
+
+*** History
+
+Get version history for a country.
+
+#+name: countries-history
+#+begin_src ores-shell :exports none
+countries history USA
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<countries-history>>
+EOF
+#+end_src
+
+
+** Change Reasons
+   :PROPERTIES:
+   :header-args+: :var login_args="--login-username newuser3"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :END:
+
+Functionality related to the change reasons domain entity.
+
+*** Get
+
+Get all change reasons in the system.
+
+#+name: change-reasons-get
+#+begin_src ores-shell :exports none
+change-reasons get
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reasons-get>>
+EOF
+#+end_src
+
+*** Add
+
+Add a new change reason.
+
+#+name: change-reasons-add
+#+begin_src ores-shell :exports none
+change-reasons add test_reason "Test reason for recipes" TEST_CATEGORY
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reasons-add>>
+EOF
+#+end_src
+
+*** Delete
+
+Delete a change reason by code.
+
+#+name: change-reasons-delete
+#+begin_src ores-shell :exports none
+change-reasons delete test_reason
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reasons-delete>>
+EOF
+#+end_src
+
+*** History
+
+Get version history for a change reason.
+
+#+name: change-reasons-history
+#+begin_src ores-shell :exports none
+change-reasons history initial_setup
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reasons-history>>
+EOF
+#+end_src
+
+
+** Change Reason Categories
+   :PROPERTIES:
+   :header-args+: :var login_args="--login-username newuser3"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :END:
+
+Functionality related to the change reason categories domain entity.
+
+*** Get
+
+Get all change reason categories in the system.
+
+#+name: change-reason-categories-get
+#+begin_src ores-shell :exports none
+change-reason-categories get
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reason-categories-get>>
+EOF
+#+end_src
+
+*** Add
+
+Add a new change reason category.
+
+#+name: change-reason-categories-add
+#+begin_src ores-shell :exports none
+change-reason-categories add TEST_CATEGORY "Test category for recipes"
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reason-categories-add>>
+EOF
+#+end_src
+
+*** Delete
+
+Delete a change reason category by code.
+
+#+name: change-reason-categories-delete
+#+begin_src ores-shell :exports none
+change-reason-categories delete TEST_CATEGORY
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reason-categories-delete>>
+EOF
+#+end_src
+
+*** History
+
+Get version history for a change reason category.
+
+#+name: change-reason-categories-history
+#+begin_src ores-shell :exports none
+change-reason-categories history system
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reason-categories-history>>
+EOF
+#+end_src
+
 
 * Footer
 

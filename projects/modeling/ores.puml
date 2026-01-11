@@ -100,6 +100,18 @@ package "Foundation Layer" #F2F2F2 {
     Used primarily for session tracking to record login countries.
     Organized into: service (geolocation_service) namespace.
     end note
+
+    component [ores.logging] as logging #F7E5FF
+
+    note right of logging
+    Core logging infrastructure for ORE Studio:
+    - Logger Factory: Creates named loggers via make_logger()
+    - Severity Levels: OpenTelemetry-compatible severity levels
+    - Lifecycle Management: Console and file sink configuration
+    - CLI Options: Command-line parsing for logging configuration
+    Extended by ores.telemetry for OTLP export and trace correlation.
+    Organized into: logging namespace.
+    end note
 }
 
 ' Infrastructure Layer
@@ -157,6 +169,18 @@ package "Infrastructure Layer" #F2F2F2 {
     - Generators: Test data generation for images and tags
     Provides centralized asset storage and retrieval for UI components.
     Organized into: domain, repository, messaging, generators namespaces.
+    end note
+
+    component [ores.http] as http #F7E5FF
+
+    note right of http
+    HTTP infrastructure for RESTful API support:
+    - JWT: JSON Web Token parsing and validation
+    - Claims: Extraction of user identity and permissions from tokens
+    - Error Handling: HTTP-specific error codes and responses
+    - Authentication: Token-based authentication middleware support
+    Provides HTTP/REST primitives used by ores.http.server.
+    Organized into: http namespace.
     end note
 }
 
@@ -250,10 +274,50 @@ package "Application Layer" #F2F2F2 {
     - Asynchronous I/O: Built on Boost.Asio coroutines for scalable async operations
     Organized into: config (option parsing and configuration), app (application hosting) namespaces.
     end note
+
+    component [ores.http.server] as httpserver #F7E5FF
+
+    note right of httpserver
+    RESTful HTTP API server for ORE Studio:
+    - REST API: HTTP endpoints for all ORE Studio operations
+    - JWT Authentication: Token-based security using ores.http
+    - Domain Integration: Access to IAM, Risk, Assets, and other domains
+    - Async I/O: Built on Boost.Beast for high-performance HTTP handling
+    - Configuration: CLI options for server, database, and logging
+    Alternative to binary protocol for web clients and integrations.
+    Organized into: config, app namespaces.
+    end note
+
+    component [ores.wt] as wt #F7E5FF
+
+    note right of wt
+    Web application built with Wt framework for browser-based access:
+    - Account Management: Create, edit, and manage user accounts
+    - Currency Operations: View and manage currency data
+    - Feature Flags: Toggle system features through web UI
+    - Session Management: Web-based authentication and session handling
+    - Responsive UI: Widget-based interface compatible with modern browsers
+    Alternative to Qt desktop client for web-based access.
+    Organized into: widget, dialog, model namespaces.
+    end note
+
+    component [ores.comms.analyser] as analyser #F7E5FF
+
+    note right of analyser
+    Communication session analyzer for debugging protocol issues:
+    - Session Reading: Parse and decode recorded binary protocol sessions
+    - Message Inspection: Detailed view of frame headers and payloads
+    - Debugging Support: Aids in troubleshooting protocol issues
+    - CLI Tool: Command-line interface for analyzing session files
+    Used for development and debugging of the comms protocol.
+    Organized into: config, app, domain namespaces.
+    end note
 }
 
 ' Dependencies - Foundation Layer (utility is the base)
 platform --> utility
+logging --> platform
+telemetry --> logging
 telemetry --> platform
 database --> telemetry
 variability --> database
@@ -269,6 +333,9 @@ testing --> platform
 testing --> database
 assets --> telemetry
 assets --> database
+http --> comms
+http --> telemetry
+http --> utility
 
 ' Dependencies - Domain to Foundation/Infrastructure
 risk --> telemetry
@@ -307,6 +374,26 @@ service --> comms
 service --> eventing
 service --> assets
 service --> geo
+
+httpserver --> http
+httpserver --> iam
+httpserver --> risk
+httpserver --> assets
+httpserver --> variability
+httpserver --> geo
+httpserver --> telemetry
+httpserver --> database
+httpserver --> comms
+
+wt --> database
+wt --> iam
+wt --> risk
+wt --> variability
+wt --> telemetry
+wt --> platform
+
+analyser --> comms
+analyser --> utility
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.puml"

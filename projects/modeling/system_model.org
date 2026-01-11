@@ -37,20 +37,20 @@ The system is organised into four architectural layers:
   faker utilities. No ores dependencies.
 - [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]]: Filesystem utilities, environment variables, network info,
   cross-platform time utilities. Depends on: utility.
-- [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]]: Logging infrastructure (Boost.Log integration), distributed
-  tracing (trace_id, span_id), log record export, severity levels. Depends on:
-  platform.
+- ores.logging: Core logging infrastructure with Boost.Log integration, logger
+  factory, severity levels. Depends on: platform.
+- [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]]: Extends logging with distributed tracing (trace_id, span_id),
+  OpenTelemetry integration, log record export. Depends on: logging, platform.
 - [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]]: PostgreSQL connectivity, connection pooling, health monitoring,
   repository helpers. Depends on: telemetry, utility.
 - [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]]: Feature flags and runtime configuration management.
 - [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C][ores.geo]]: IP-to-location geolocation using MaxMind GeoLite2-City database.
   Provides country, city, and coordinate lookups for session tracking.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]]: Postgres Database setup.
-- Dependency order: utility → platform → telemetry → database.
+- Dependency order: utility → platform → logging → telemetry → database.
 
 ** Infrastructure Layer
 
-- Components: ores.assets.
 - [[id:361A6093-D24C-9BC4-0543-6540461EDBB6][ores.comms]]: Binary protocol over SSL/TLS for client-server messaging.
   Publishes connection lifecycle events (connected, disconnected, reconnecting,
   reconnected) to event bus.
@@ -62,6 +62,8 @@ The system is organised into four architectural layers:
 - [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets]]: Asset management for images and visual resources. Binary image
   storage, hierarchical tagging, currency-to-image linking, messaging handlers
   (0x4000-0x4FFF).
+- ores.http: HTTP infrastructure for RESTful API support. JWT token parsing,
+  claims extraction, authentication middleware support.
 - Depends on: Foundation (telemetry, database).
 
 ** Domain Layer
@@ -72,13 +74,18 @@ The system is organised into four architectural layers:
 
 ** Application Layer
 
-- Components:
 - [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.comms.shell]]: REPL client. Exercises the service layer via the binary
   comms protocol.
-- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]],: Command-line import/export of entities in multiple formats,
+- [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]]: Command-line import/export of entities in multiple formats,
   exercises the database layer directly.
-- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]: Desktop GUI with MDI interface for visual data management
-- [[id:7141E32C-80E2-6B74-F273-C80DAA42D727][ores.comms.service]]: Multi-client server hosting all backend services
+- [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]: Desktop GUI with MDI interface for visual data management.
+- [[id:7141E32C-80E2-6B74-F273-C80DAA42D727][ores.comms.service]]: Multi-client server hosting all backend services.
+- ores.http.server: RESTful HTTP API server for ORE Studio. Alternative to
+  binary protocol for web clients and integrations.
+- ores.wt: Web application built with Wt framework for browser-based access.
+  Account management, currency operations, feature flags via web UI.
+- ores.comms.analyser: Communication session analyzer for debugging protocol
+  issues. Parse and decode recorded binary protocol sessions.
 - Depends on: All layers
 
 * Useful Pages

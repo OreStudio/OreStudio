@@ -189,6 +189,12 @@ process_get_country_history(std::ostream& out, client_session& session,
     BOOST_LOG_SEV(lg(), debug) << "Initiating get country history for: "
                                << alpha2_code;
 
+    // Check if logged in
+    if (!session.session_info()) {
+        out << "✗ You must be logged in to get country history." << std::endl;
+        return;
+    }
+
     using risk::messaging::get_country_history_request;
     using risk::messaging::get_country_history_response;
     auto result = session.process_authenticated_request<get_country_history_request,

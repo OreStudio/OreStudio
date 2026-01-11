@@ -39,6 +39,7 @@
 \ir ./drop/sessions_drop.sql
 \ir ./drop/login_info_drop.sql
 \ir ./drop/change_reasons_notify_trigger_drop.sql
+\ir ./drop/change_reason_functions_drop.sql
 \ir ./drop/change_reasons_drop.sql
 \ir ./drop/change_reason_categories_notify_trigger_drop.sql
 \ir ./drop/change_reason_categories_drop.sql

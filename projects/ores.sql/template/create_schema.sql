@@ -54,6 +54,7 @@ grant create on schema ores to ores;
 \ir ../schema/change_reason_categories_notify_trigger.sql
 \ir ../schema/change_reasons_create.sql
 \ir ../schema/change_reasons_notify_trigger.sql
+\ir ../schema/change_reason_functions_create.sql
 
 -- Core tables
 \ir ../schema/currencies_create.sql

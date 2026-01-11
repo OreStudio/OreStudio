@@ -48,6 +48,8 @@ Commands are implemented in the following files:
 - =projects/ores.comms.shell/src/app/commands/compression_commands.cpp=: Compression settings
 - =projects/ores.comms.shell/src/app/commands/connection_commands.cpp=: Server connectivity
 
+New entity commands should be added following the [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][shell-entity-creator]] skill.
+
 ** Recipe format
 
 Each recipe follows this pattern:

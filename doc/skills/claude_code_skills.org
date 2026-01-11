@@ -37,6 +37,8 @@ using the org-mode publishing system.
 - [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]]: Create a new domain type with all of it's basic services.
 - [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][Qt Entity Creator]]: Create Qt UI components for domain entities including list
   windows, detail dialogs, history dialogs, and controllers.
+- [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][Shell Entity Creator]]: Create shell commands for domain entities in
+  ores.comms.shell including list, add, history, and other operations.
 - [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator]]: Create SQL table definitions, triggers, and population scripts.
 - [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer]]: Generate Catch2 unit tests following ORE Studio conventions.
 - [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Summary]]: Generate a title and summary for an open PR of the work in this

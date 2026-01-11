@@ -19,28 +19,13 @@
  */
 #include "ores.qt/TelemetryLogDelegate.hpp"
 #include "ores.qt/ClientTelemetryLogModel.hpp"
+#include "ores.qt/ColorConstants.hpp"
 
 #include <QPainter>
 #include <QApplication>
 #include <QStyleOptionViewItem>
 
 namespace ores::qt {
-
-namespace {
-
-// Level badge colors
-const QColor level_trace_bg(107, 114, 128);     // Gray
-const QColor level_trace_text(255, 255, 255);
-const QColor level_debug_bg(59, 130, 246);      // Blue
-const QColor level_debug_text(255, 255, 255);
-const QColor level_info_bg(34, 197, 94);        // Green
-const QColor level_info_text(255, 255, 255);
-const QColor level_warn_bg(234, 179, 8);        // Amber
-const QColor level_warn_text(255, 255, 255);
-const QColor level_error_bg(239, 68, 68);       // Red
-const QColor level_error_text(255, 255, 255);
-
-}
 
 TelemetryLogDelegate::TelemetryLogDelegate(QObject* parent)
     : QStyledItemDelegate(parent) {
@@ -68,28 +53,28 @@ void TelemetryLogDelegate::paint(QPainter* painter,
         QString badgeText;
 
         if (level == "trace") {
-            bgColor = level_trace_bg;
-            textColor = level_trace_text;
+            bgColor = color_constants::level_trace;
+            textColor = color_constants::level_text;
             badgeText = "TRACE";
         } else if (level == "debug") {
-            bgColor = level_debug_bg;
-            textColor = level_debug_text;
+            bgColor = color_constants::level_debug;
+            textColor = color_constants::level_text;
             badgeText = "DEBUG";
         } else if (level == "info") {
-            bgColor = level_info_bg;
-            textColor = level_info_text;
+            bgColor = color_constants::level_info;
+            textColor = color_constants::level_text;
             badgeText = "INFO";
         } else if (level == "warn" || level == "warning") {
-            bgColor = level_warn_bg;
-            textColor = level_warn_text;
+            bgColor = color_constants::level_warn;
+            textColor = color_constants::level_text;
             badgeText = "WARN";
         } else if (level == "error") {
-            bgColor = level_error_bg;
-            textColor = level_error_text;
+            bgColor = color_constants::level_error;
+            textColor = color_constants::level_text;
             badgeText = "ERROR";
         } else {
-            bgColor = level_trace_bg;
-            textColor = level_trace_text;
+            bgColor = color_constants::level_trace;
+            textColor = color_constants::level_text;
             badgeText = level.toUpper();
         }
 

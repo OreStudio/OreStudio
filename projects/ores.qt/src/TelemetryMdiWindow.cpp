@@ -174,11 +174,11 @@ void TelemetryMdiWindow::setupLevelFilters() {
         return btn;
     };
 
-    filterTraceBtn_ = createFilterBtn("TRACE", showTrace_, QColor(107, 114, 128));
-    filterDebugBtn_ = createFilterBtn("DEBUG", showDebug_, QColor(59, 130, 246));
-    filterInfoBtn_ = createFilterBtn("INFO", showInfo_, QColor(34, 197, 94));
-    filterWarnBtn_ = createFilterBtn("WARN", showWarn_, QColor(234, 179, 8));
-    filterErrorBtn_ = createFilterBtn("ERROR", showError_, QColor(239, 68, 68));
+    filterTraceBtn_ = createFilterBtn("TRACE", showTrace_, color_constants::level_trace);
+    filterDebugBtn_ = createFilterBtn("DEBUG", showDebug_, color_constants::level_debug);
+    filterInfoBtn_ = createFilterBtn("INFO", showInfo_, color_constants::level_info);
+    filterWarnBtn_ = createFilterBtn("WARN", showWarn_, color_constants::level_warn);
+    filterErrorBtn_ = createFilterBtn("ERROR", showError_, color_constants::level_error);
 
     toolBar_->addWidget(filterTraceBtn_);
     toolBar_->addWidget(filterDebugBtn_);
@@ -407,7 +407,7 @@ populateSessionTree(const std::vector<iam::domain::session>& sessions) {
 
                 // Add visual indicator for active sessions
                 if (session->is_active()) {
-                    sessionItem->setForeground(0, QBrush(QColor(34, 197, 94)));  // Green
+                    sessionItem->setForeground(0, QBrush(color_constants::active_session));
                 }
             }
         }

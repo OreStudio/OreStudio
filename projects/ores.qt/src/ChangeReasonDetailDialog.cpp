@@ -27,6 +27,7 @@
 #include <QComboBox>
 #include <QMdiSubWindow>
 #include <QMetaObject>
+#include <QInputDialog>
 #include "ui_ChangeReasonDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -134,8 +135,6 @@ ChangeReasonDetailDialog::ChangeReasonDetailDialog(QWidget* parent)
         &ChangeReasonDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
         &ChangeReasonDetailDialog::onFieldChanged);
-    connect(ui_->changeCommentaryEdit, &QPlainTextEdit::textChanged, this,
-        &ChangeReasonDetailDialog::onFieldChanged);
     connect(ui_->categoryCodeComboBox, &QComboBox::currentIndexChanged, this,
         &ChangeReasonDetailDialog::onFieldChanged);
     connect(ui_->displayOrderSpinBox, &QSpinBox::valueChanged, this,
@@ -200,10 +199,7 @@ void ChangeReasonDetailDialog::setChangeReason(
     ui_->versionEdit->setText(QString::number(reason.version));
     ui_->recordedByEdit->setText(QString::fromStdString(reason.recorded_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(reason.recorded_at));
-    ui_->prevCommentaryEdit->setPlainText(QString::fromStdString(reason.change_commentary));
-
-    // Clear the new change commentary field for entering new commentary
-    ui_->changeCommentaryEdit->clear();
+    ui_->commentaryEdit->setText(QString::fromStdString(reason.change_commentary));
 
     isDirty_ = false;
     emit isDirtyChanged(false);
@@ -220,7 +216,7 @@ iam::domain::change_reason ChangeReasonDetailDialog::getChangeReason() const {
     reason.applies_to_delete = ui_->appliesToDeleteCheckBox->isChecked();
     reason.requires_commentary = ui_->requiresCommentaryCheckBox->isChecked();
     reason.recorded_by = modifiedByUsername_;
-    reason.change_commentary = ui_->changeCommentaryEdit->toPlainText().trimmed().toStdString();
+    // change_commentary is set via the save dialog, not from the UI
     return reason;
 }
 
@@ -232,9 +228,6 @@ void ChangeReasonDetailDialog::setCreateMode(bool createMode) {
 
     // Hide metadata section in create mode (shows previous version info)
     ui_->metadataGroup->setVisible(!createMode);
-
-    // Change info group is always visible (for entering new commentary)
-    ui_->changeInfoGroup->setVisible(true);
 
     // Hide delete button in create mode
     deleteAction_->setVisible(!createMode);
@@ -256,10 +249,6 @@ void ChangeReasonDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     ui_->appliesToAmendCheckBox->setEnabled(!readOnly);
     ui_->appliesToDeleteCheckBox->setEnabled(!readOnly);
     ui_->requiresCommentaryCheckBox->setEnabled(!readOnly);
-    ui_->changeCommentaryEdit->setReadOnly(readOnly);
-
-    // Hide change info group in read-only mode (historical view)
-    ui_->changeInfoGroup->setVisible(!readOnly);
 
     saveAction_->setVisible(!readOnly);
     deleteAction_->setVisible(!readOnly);
@@ -301,11 +290,10 @@ void ChangeReasonDetailDialog::clearDialog() {
     ui_->appliesToDeleteCheckBox->setChecked(false);
     ui_->requiresCommentaryCheckBox->setChecked(false);
 
-    ui_->changeCommentaryEdit->clear();
     ui_->versionEdit->clear();
     ui_->recordedByEdit->clear();
     ui_->recordedAtEdit->clear();
-    ui_->prevCommentaryEdit->clear();
+    ui_->commentaryEdit->clear();
 
     isDirty_ = false;
     emit isDirtyChanged(false);
@@ -424,11 +412,34 @@ void ChangeReasonDetailDialog::onSaveClicked() {
         return;
     }
 
+    // Show commentary dialog - commentary is mandatory
+    bool ok = false;
+    QString commentary = QInputDialog::getMultiLineText(
+        this,
+        tr("Commentary Required"),
+        tr("Please explain why you are making this change:"),
+        QString(),
+        &ok);
+
+    if (!ok) {
+        BOOST_LOG_SEV(lg(), debug) << "Save cancelled - commentary dialog rejected.";
+        return;
+    }
+
+    commentary = commentary.trimmed();
+    if (commentary.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Validation failed: commentary is empty";
+        MessageBoxHelper::warning(this, "Validation Error",
+            "Commentary is required when saving changes.");
+        return;
+    }
+
     BOOST_LOG_SEV(lg(), debug) << "Save clicked for change reason: "
                                << currentReason_.code;
 
     QPointer<ChangeReasonDetailDialog> self = this;
-    const iam::domain::change_reason reasonToSave = getChangeReason();
+    iam::domain::change_reason reasonToSave = getChangeReason();
+    reasonToSave.change_commentary = commentary.toStdString();
 
     QFuture<FutureResult> future =
         QtConcurrent::run([self, reasonToSave]() -> FutureResult {

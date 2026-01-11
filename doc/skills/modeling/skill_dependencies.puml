@@ -71,6 +71,7 @@ package "Utilities" {
     [plantuml-class-modeler] <<utility>> as puml
     [cmake-runner] <<utility>> as cmake
     [unit-test-writer] <<utility>> as utw
+    [component-model-creator] <<utility>> as cmc
 }
 
 ' =============================================================================
@@ -129,6 +130,9 @@ ohr --> http
 
 ' Workflow dependencies
 apo --> ns
+
+' Utility dependencies
+cmc --> puml
 
 @enduml
 

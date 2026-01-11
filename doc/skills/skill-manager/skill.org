@@ -119,6 +119,49 @@ MA 02110-1301, USA.
     - Update the file =doc/skills/claude_code_skills.org= in section "Available
       Skills" with a link to new skill, following the pattern of the previous
       skills.
+    - Update the skill dependencies diagram
+      =doc/skills/modeling/skill_dependencies.puml= to add the new skill and its
+      dependencies on other skills. See [[*Skill dependencies diagram][Skill dependencies diagram]] for details.
+
+** Skill dependencies diagram
+
+The skill dependencies diagram shows how skills reference each other. When
+creating a new skill, add it to the appropriate package and define its
+dependencies.
+
+Location: =doc/skills/modeling/skill_dependencies.puml=
+
+*** Packages
+
+Skills are grouped into packages by category:
+
+| Package         | Stereotype       | Color   | Description                          |
+|-----------------+------------------+---------+--------------------------------------|
+| Foundation      | =<<foundation>>= | #E8F5E9 | Core skills used by many others      |
+| Entity Creators | =<<entity>>=     | #E3F2FD | Skills for entity support            |
+| Recipes         | =<<recipe>>=     | #FFF3E0 | Executable documentation maintenance |
+| Utilities       | =<<utility>>=    | #F3E5F5 | Supporting skills for specific tasks |
+| Workflow        | =<<workflow>>=   | #FFEBEE | Development workflow and process     |
+
+*** Adding a new skill
+
+1. Add the skill component to the appropriate package:
+
+#+begin_src plantuml
+[skill-name] <<stereotype>> as alias
+#+end_src
+
+2. Add dependencies (arrows show "references" relationship):
+
+#+begin_src plantuml
+alias --> other_skill
+#+end_src
+
+3. Regenerate the diagram:
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug --target generate_skill_dependencies_diagram
+#+end_src
 
 ** Updating existing skills
 

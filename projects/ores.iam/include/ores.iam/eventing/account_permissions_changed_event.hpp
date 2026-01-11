@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_EVENTING_PERMISSIONS_CHANGED_EVENT_HPP
-#define ORES_IAM_EVENTING_PERMISSIONS_CHANGED_EVENT_HPP
+#ifndef ORES_IAM_EVENTING_ACCOUNT_PERMISSIONS_CHANGED_EVENT_HPP
+#define ORES_IAM_EVENTING_ACCOUNT_PERMISSIONS_CHANGED_EVENT_HPP
 
 #include <chrono>
 #include <vector>
@@ -35,8 +35,11 @@ namespace ores::iam::eventing {
  * This event is published when the effective permissions of an account
  * change due to role assignment, revocation, or modification of role
  * permissions. It can be used to update session caches or notify clients.
+ *
+ * Note: This is distinct from permission_changed_event which signals
+ * changes to the permissions table itself.
  */
-struct permissions_changed_event final {
+struct account_permissions_changed_event final {
     /**
      * @brief The account whose permissions changed.
      */
@@ -61,11 +64,11 @@ struct permissions_changed_event final {
 namespace ores::eventing::domain {
 
 /**
- * @brief Event traits specialization for permissions_changed_event.
+ * @brief Event traits specialization for account_permissions_changed_event.
  */
 template<>
-struct event_traits<ores::iam::eventing::permissions_changed_event> {
-    static constexpr std::string_view name = "ores.iam.permissions_changed";
+struct event_traits<ores::iam::eventing::account_permissions_changed_event> {
+    static constexpr std::string_view name = "ores.iam.account_permissions_changed";
 };
 
 }

@@ -33,6 +33,8 @@
 #include "ores.iam/eventing/account_changed_event.hpp"
 #include "ores.iam/eventing/change_reason_changed_event.hpp"
 #include "ores.iam/eventing/change_reason_category_changed_event.hpp"
+#include "ores.iam/eventing/role_changed_event.hpp"
+#include "ores.iam/eventing/permission_changed_event.hpp"
 #include "ores.assets/eventing/assets_changed_event.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
 #include "ores.iam/service/authorization_service.hpp"
@@ -175,6 +177,14 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         event_source, "ores.iam.change_reason_category", "ores_change_reason_categories",
         *channel_registry, "Change reason category data modified");
     eventing::service::registrar::register_mapping<
+        iam::eventing::role_changed_event>(
+        event_source, "ores.iam.role", "ores_roles",
+        *channel_registry, "Role data modified");
+    eventing::service::registrar::register_mapping<
+        iam::eventing::permission_changed_event>(
+        event_source, "ores.iam.permission", "ores_permissions",
+        *channel_registry, "Permission data modified");
+    eventing::service::registrar::register_mapping<
         assets::eventing::assets_changed_event>(
         event_source, "ores.assets.currency_image", "ores_currency_images",
         *channel_registry, "Currency image assets modified");
@@ -237,6 +247,22 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                 iam::eventing::change_reason_category_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
                                      e.category_codes);
+        });
+
+    auto role_sub = event_bus.subscribe<iam::eventing::role_changed_event>(
+        [&subscription_mgr](const iam::eventing::role_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                iam::eventing::role_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.role_ids);
+        });
+
+    auto permission_sub = event_bus.subscribe<iam::eventing::permission_changed_event>(
+        [&subscription_mgr](const iam::eventing::permission_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                iam::eventing::permission_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.permission_ids);
         });
 
     // Subscribe to feature flag changes to refresh system_flags cache.

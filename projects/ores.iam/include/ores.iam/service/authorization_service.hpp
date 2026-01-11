@@ -146,7 +146,7 @@ public:
     /**
      * @brief Assigns a role to an account.
      *
-     * Publishes a role_assigned_event and permissions_changed_event if
+     * Publishes a role_assigned_event and account_permissions_changed_event if
      * an event bus is configured.
      *
      * @param account_id The account to receive the role
@@ -162,7 +162,7 @@ public:
     /**
      * @brief Revokes a role from an account.
      *
-     * Publishes a role_revoked_event and permissions_changed_event if
+     * Publishes a role_revoked_event and account_permissions_changed_event if
      * an event bus is configured.
      *
      * @param account_id The account to remove the role from
@@ -218,9 +218,9 @@ public:
 
 private:
     /**
-     * @brief Publishes a permissions_changed_event for the given account.
+     * @brief Publishes an account_permissions_changed_event for the given account.
      */
-    void publish_permissions_changed(const boost::uuids::uuid& account_id);
+    void publish_account_permissions_changed(const boost::uuids::uuid& account_id);
 
     repository::permission_repository permission_repo_;
     repository::role_repository role_repo_;

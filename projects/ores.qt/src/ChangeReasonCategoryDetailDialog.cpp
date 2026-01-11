@@ -133,6 +133,8 @@ ChangeReasonCategoryDetailDialog::ChangeReasonCategoryDetailDialog(QWidget* pare
         &ChangeReasonCategoryDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QTextEdit::textChanged, this,
         &ChangeReasonCategoryDetailDialog::onFieldChanged);
+    connect(ui_->changeCommentaryEdit, &QPlainTextEdit::textChanged, this,
+        &ChangeReasonCategoryDetailDialog::onFieldChanged);
 
     // Initially disable save button
     updateSaveButtonState();
@@ -160,6 +162,10 @@ void ChangeReasonCategoryDetailDialog::setCategory(
     ui_->versionEdit->setText(QString::number(category.version));
     ui_->recordedByEdit->setText(QString::fromStdString(category.recorded_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(category.recorded_at));
+    ui_->prevCommentaryEdit->setPlainText(QString::fromStdString(category.change_commentary));
+
+    // Clear the new change commentary field for entering new commentary
+    ui_->changeCommentaryEdit->clear();
 
     isDirty_ = false;
     emit isDirtyChanged(false);
@@ -171,6 +177,7 @@ iam::domain::change_reason_category ChangeReasonCategoryDetailDialog::getCategor
     category.code = ui_->codeEdit->text().trimmed().toStdString();
     category.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     category.recorded_by = modifiedByUsername_;
+    category.change_commentary = ui_->changeCommentaryEdit->toPlainText().trimmed().toStdString();
     return category;
 }
 
@@ -180,8 +187,11 @@ void ChangeReasonCategoryDetailDialog::setCreateMode(bool createMode) {
     // Code is only editable in create mode
     ui_->codeEdit->setReadOnly(!createMode);
 
-    // Hide metadata section in create mode
+    // Hide metadata section in create mode (shows previous version info)
     ui_->metadataGroup->setVisible(!createMode);
+
+    // Change info group is always visible (for entering new commentary)
+    ui_->changeInfoGroup->setVisible(true);
 
     // Hide delete button in create mode
     deleteAction_->setVisible(!createMode);
@@ -198,6 +208,10 @@ void ChangeReasonCategoryDetailDialog::setReadOnly(bool readOnly, int versionNum
 
     ui_->codeEdit->setReadOnly(true);
     ui_->descriptionEdit->setReadOnly(readOnly);
+    ui_->changeCommentaryEdit->setReadOnly(readOnly);
+
+    // Hide change info group in read-only mode (historical view)
+    ui_->changeInfoGroup->setVisible(!readOnly);
 
     saveAction_->setVisible(!readOnly);
     deleteAction_->setVisible(!readOnly);
@@ -232,9 +246,11 @@ void ChangeReasonCategoryDetailDialog::clearDialog() {
     ui_->codeEdit->clear();
     ui_->descriptionEdit->clear();
 
+    ui_->changeCommentaryEdit->clear();
     ui_->versionEdit->clear();
     ui_->recordedByEdit->clear();
     ui_->recordedAtEdit->clear();
+    ui_->prevCommentaryEdit->clear();
 
     isDirty_ = false;
     emit isDirtyChanged(false);

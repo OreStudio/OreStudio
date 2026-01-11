@@ -132,7 +132,9 @@ ChangeReasonDetailDialog::ChangeReasonDetailDialog(QWidget* parent)
     // Connect signals for editable fields to detect changes
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
         &ChangeReasonDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+        &ChangeReasonDetailDialog::onFieldChanged);
+    connect(ui_->changeCommentaryEdit, &QPlainTextEdit::textChanged, this,
         &ChangeReasonDetailDialog::onFieldChanged);
     connect(ui_->categoryCodeComboBox, &QComboBox::currentIndexChanged, this,
         &ChangeReasonDetailDialog::onFieldChanged);
@@ -181,7 +183,7 @@ void ChangeReasonDetailDialog::setChangeReason(
     currentReason_ = reason;
 
     ui_->codeEdit->setText(QString::fromStdString(reason.code));
-    ui_->descriptionEdit->setText(QString::fromStdString(reason.description));
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(reason.description));
 
     // Set category in combo box
     int index = ui_->categoryCodeComboBox->findData(
@@ -198,6 +200,10 @@ void ChangeReasonDetailDialog::setChangeReason(
     ui_->versionEdit->setText(QString::number(reason.version));
     ui_->recordedByEdit->setText(QString::fromStdString(reason.recorded_by));
     ui_->recordedAtEdit->setText(relative_time_helper::format(reason.recorded_at));
+    ui_->prevCommentaryEdit->setPlainText(QString::fromStdString(reason.change_commentary));
+
+    // Clear the new change commentary field for entering new commentary
+    ui_->changeCommentaryEdit->clear();
 
     isDirty_ = false;
     emit isDirtyChanged(false);
@@ -207,13 +213,14 @@ void ChangeReasonDetailDialog::setChangeReason(
 iam::domain::change_reason ChangeReasonDetailDialog::getChangeReason() const {
     iam::domain::change_reason reason = currentReason_;
     reason.code = ui_->codeEdit->text().trimmed().toStdString();
-    reason.description = ui_->descriptionEdit->text().trimmed().toStdString();
+    reason.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     reason.category_code = ui_->categoryCodeComboBox->currentData().toString().toStdString();
     reason.display_order = ui_->displayOrderSpinBox->value();
     reason.applies_to_amend = ui_->appliesToAmendCheckBox->isChecked();
     reason.applies_to_delete = ui_->appliesToDeleteCheckBox->isChecked();
     reason.requires_commentary = ui_->requiresCommentaryCheckBox->isChecked();
     reason.recorded_by = modifiedByUsername_;
+    reason.change_commentary = ui_->changeCommentaryEdit->toPlainText().trimmed().toStdString();
     return reason;
 }
 
@@ -223,8 +230,11 @@ void ChangeReasonDetailDialog::setCreateMode(bool createMode) {
     // Code is only editable in create mode
     ui_->codeEdit->setReadOnly(!createMode);
 
-    // Hide metadata section in create mode
+    // Hide metadata section in create mode (shows previous version info)
     ui_->metadataGroup->setVisible(!createMode);
+
+    // Change info group is always visible (for entering new commentary)
+    ui_->changeInfoGroup->setVisible(true);
 
     // Hide delete button in create mode
     deleteAction_->setVisible(!createMode);
@@ -246,6 +256,10 @@ void ChangeReasonDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     ui_->appliesToAmendCheckBox->setEnabled(!readOnly);
     ui_->appliesToDeleteCheckBox->setEnabled(!readOnly);
     ui_->requiresCommentaryCheckBox->setEnabled(!readOnly);
+    ui_->changeCommentaryEdit->setReadOnly(readOnly);
+
+    // Hide change info group in read-only mode (historical view)
+    ui_->changeInfoGroup->setVisible(!readOnly);
 
     saveAction_->setVisible(!readOnly);
     deleteAction_->setVisible(!readOnly);
@@ -287,9 +301,11 @@ void ChangeReasonDetailDialog::clearDialog() {
     ui_->appliesToDeleteCheckBox->setChecked(false);
     ui_->requiresCommentaryCheckBox->setChecked(false);
 
+    ui_->changeCommentaryEdit->clear();
     ui_->versionEdit->clear();
     ui_->recordedByEdit->clear();
     ui_->recordedAtEdit->clear();
+    ui_->prevCommentaryEdit->clear();
 
     isDirty_ = false;
     emit isDirtyChanged(false);

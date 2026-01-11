@@ -25,6 +25,7 @@
 #include "ores.qt/ChangeReasonMdiWindow.hpp"
 #include "ores.qt/ChangeReasonDetailDialog.hpp"
 #include "ores.qt/ChangeReasonHistoryDialog.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.iam/eventing/change_reason_changed_event.hpp"
@@ -45,11 +46,13 @@ ChangeReasonController::ChangeReasonController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
+    ChangeReasonCache* changeReasonCache,
     QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr),
+      changeReasonCache_(changeReasonCache),
       allDetachableWindows_(allDetachableWindows) {
 
     BOOST_LOG_SEV(lg(), debug) << "ChangeReasonController created";
@@ -183,6 +186,12 @@ void ChangeReasonController::showAddWindow() {
     auto* detailDialog = new ChangeReasonDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+
+    // Load categories for the combo box
+    if (changeReasonCache_ && changeReasonCache_->isLoaded()) {
+        detailDialog->setCategories(changeReasonCache_->allCategories());
+    }
+
     detailDialog->setCreateMode(true);
 
     connect(detailDialog, &ChangeReasonDetailDialog::statusMessage,
@@ -246,6 +255,12 @@ void ChangeReasonController::showDetailWindow(
     auto* detailDialog = new ChangeReasonDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+
+    // Load categories for the combo box
+    if (changeReasonCache_ && changeReasonCache_->isLoaded()) {
+        detailDialog->setCategories(changeReasonCache_->allCategories());
+    }
+
     detailDialog->setCreateMode(false);
     detailDialog->setChangeReason(reason);
 

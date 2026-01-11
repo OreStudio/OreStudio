@@ -17,44 +17,46 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-11 Sun 01:00], for Sunday, January 11, 2026.
+#+CAPTION: Clock summary at [2026-01-11 Sun 02:34], for Sunday, January 11, 2026.
 |      | <75>                    |        |      |      |       |
 | Tags | Headline                | Time   |      |      |     % |
 |------+-------------------------+--------+------+------+-------|
-|      | *Total time*            | *0:57* |      |      | 100.0 |
+|      | *Total time*            | *2:32* |      |      | 100.0 |
 |------+-------------------------+--------+------+------+-------|
-|      | Stories                 | 0:57   |      |      | 100.0 |
-|      | Active                  |        | 0:57 |      | 100.0 |
-| code | Change reasons UI fixes |        |      | 0:57 | 100.0 |
+|      | Stories                 | 2:32   |      |      | 100.0 |
+|      | Active                  |        | 2:32 |      | 100.0 |
+| code | Change reasons UI fixes |        |      | 0:57 |  37.5 |
+| code | Add UI for log viewing  |        |      | 1:35 |  62.5 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-11 Sun 01:00]
+#+CAPTION: Clock summary at [2026-01-11 Sun 02:34]
 |       | <75>                                         |         |       |       |       |
 | Tags  | Headline                                     | Time    |       |       |     % |
 |-------+----------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                 | *67:05* |       |       | 100.0 |
+|       | *Total time*                                 | *68:40* |       |       | 100.0 |
 |-------+----------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                      | 67:05   |       |       | 100.0 |
-|       | Active                                       |         | 67:05 |       | 100.0 |
+|       | Stories                                      | 68:40   |       |       | 100.0 |
+|       | Active                                       |         | 68:40 |       | 100.0 |
 | agile | Sprint and product backlog refinement        |         |       |  1:50 |   2.7 |
-| code  | Rerun SQL scripts from scratch               |         |       |  7:52 |  11.7 |
-| code  | Run qt client and validate all new features  |         |       |  1:19 |   2.0 |
+| code  | Rerun SQL scripts from scratch               |         |       |  7:52 |  11.5 |
+| code  | Run qt client and validate all new features  |         |       |  1:19 |   1.9 |
 | code  | Refactor options and parser                  |         |       |  0:27 |   0.7 |
-| code  | Check functionality in =ores.wt=             |         |       |  2:03 |   3.1 |
+| code  | Check functionality in =ores.wt=             |         |       |  2:03 |   3.0 |
 | code  | Rename =ores.shell= to =ores.comms.shell=    |         |       |  1:30 |   2.2 |
-| code  | Review HTTP service                          |         |       |  7:24 |  11.0 |
-| code  | Assorted fixes to currency dialog            |         |       |  4:19 |   6.4 |
+| code  | Review HTTP service                          |         |       |  7:24 |  10.8 |
+| code  | Assorted fixes to currency dialog            |         |       |  4:19 |   6.3 |
 | code  | Add support for offsets in pagination        |         |       |  1:46 |   2.6 |
-| code  | Assorted fixes to feature flags dialog       |         |       |  2:52 |   4.3 |
-| code  | Add country support                          |         |       |  6:31 |   9.7 |
-| code  | Amend and delete reasons base infrastructure |         |       |  5:58 |   8.9 |
-| code  | Change reasons UI fixes                      |         |       |  3:34 |   5.3 |
-| code  | Assorted fixes to currencies dialog          |         |       |  7:52 |  11.7 |
+| code  | Assorted fixes to feature flags dialog       |         |       |  2:52 |   4.2 |
+| code  | Add country support                          |         |       |  6:31 |   9.5 |
+| code  | Amend and delete reasons base infrastructure |         |       |  5:58 |   8.7 |
+| code  | Change reasons UI fixes                      |         |       |  3:34 |   5.2 |
+| code  | Assorted fixes to currencies dialog          |         |       |  7:52 |  11.5 |
+| code  | Add UI for log viewing                       |         |       |  1:35 |   2.3 |
 | code  | Assorted fixes to accounts dialog            |         |       |  1:10 |   1.7 |
 | code  | Review comms analyser work                   |         |       |  0:27 |   0.7 |
-| code  | Review telemetry work                        |         |       | 10:11 |  15.2 |
+| code  | Review telemetry work                        |         |       | 10:11 |  14.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -886,6 +888,22 @@ Review:
 - cannot revert to version in history. Get an error saying incorrect version.
   Done.
 
+*** COMPLETED Add UI for log viewing                                   :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-11 Sun 00:58]--[2026-01-11 Sun 02:33] =>  1:35
+    :END:
+
+We should be able to see the log from qt.
+
+Notes:
+
+- it should be possible to change the log level from the UI for both the Qt app
+  and the service.
+
+Links:
+
+- [[https://github.com/Dingola/Qt-LogViewer/tree/main][GH: Qt-LogViewer]]
+
 *** STARTED Assorted fixes to accounts dialog                          :code:
     :LOGBOOK:
     CLOCK: [2026-01-09 Fri 10:16]--[2026-01-09 Fri 11:26] =>  1:10
@@ -1161,20 +1179,10 @@ Tasks:
 
 We can't upload flags etc.
 
-*** Add UI for log viewing                                             :code:
+*** Missing session properties                                         :code:
 
-We should be able to see the log from qt.
-
-Notes:
-
-- it should be possible to change the log level from the UI for both the Qt app
-  and the service.
-
-Links:
-
-- [[https://github.com/Dingola/Qt-LogViewer/tree/main][GH: Qt-LogViewer]]
-
-
+- disconnect type: orphaned, client disconnect.
+- add version, commit, etc.
 
 *** Update currency details to use tabs                                :code:
 

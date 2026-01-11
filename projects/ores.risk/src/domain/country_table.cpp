@@ -19,45 +19,45 @@
  */
 #include "ores.risk/domain/country_table.hpp"
 
-#include <sstream>
 #include <fort.hpp>
 
 namespace ores::risk::domain {
 
-std::string convert_to_table(const country& c) {
+namespace {
+
+fort::char_table make_country_table() {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
-
     table << fort::header << "Alpha-2" << "Alpha-3" << "Numeric" << "Version"
           << "Name" << "Official Name" << "Recorded By"
           << "Recorded At" << fort::endr;
+    return table;
+}
 
+void add_country_row(fort::char_table& table, const country& c) {
     table << c.alpha2_code << c.alpha3_code << c.numeric_code << c.version
           << c.name << c.official_name << c.recorded_by
           << c.recorded_at << fort::endr;
+}
 
-    std::ostringstream ss;
-    ss << std::endl << table.to_string() << std::endl;
-    return ss.str();
+std::string format_table(fort::char_table& table) {
+    return table.to_string();
+}
+
+}
+
+std::string convert_to_table(const country& c) {
+    auto table = make_country_table();
+    add_country_row(table, c);
+    return format_table(table);
 }
 
 std::string convert_to_table(const std::vector<country>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header << "Alpha-2" << "Alpha-3" << "Numeric" << "Version"
-          << "Name" << "Official Name" << "Recorded By"
-          << "Recorded At" << fort::endr;
-
+    auto table = make_country_table();
     for (const auto& c : v) {
-        table << c.alpha2_code << c.alpha3_code << c.numeric_code << c.version
-              << c.name << c.official_name << c.recorded_by
-              << c.recorded_at << fort::endr;
+        add_country_row(table, c);
     }
-
-    std::ostringstream ss;
-    ss << std::endl << table.to_string() << std::endl;
-    return ss.str();
+    return format_table(table);
 }
 
 }

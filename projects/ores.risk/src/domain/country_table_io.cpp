@@ -25,7 +25,7 @@
 namespace ores::risk::domain {
 
 void print_country_table(std::ostream& s, const std::vector<country>& v) {
-    s << std::endl << convert_to_table(v) << std::endl;
+    s << convert_to_table(v);
 }
 
 std::ostream& operator<<(std::ostream& s, const std::vector<country>& v) {

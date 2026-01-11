@@ -55,7 +55,7 @@ For Qt entity implementations:
 
 ** Phase transition procedure
 
-When the user confirms a PR has been merged, execute the following steps:
+Execute the following steps to transition between phases:
 
 *** Step 1: Note the current branch name
 
@@ -63,15 +63,52 @@ When the user confirms a PR has been merged, execute the following steps:
 git branch --show-current
 #+end_src
 
-Store this for cleanup in Step 4.
+Store this for cleanup in later steps.
 
-*** Step 2: Fetch latest main
+*** Step 2: Check if current branch PR has been merged
+
+Use the GitHub CLI to check if the PR for the current branch has been merged:
+
+#+begin_src sh
+gh pr view --json state,mergedAt
+#+end_src
+
+If the PR is merged, you'll see =state: MERGED= and a =mergedAt= timestamp.
+
+Alternative using git (if gh is not available):
+
+#+begin_src sh
+git fetch origin main
+git branch --contains $(git rev-parse HEAD) -r | grep origin/main
+#+end_src
+
+If the current branch's HEAD commit is contained in =origin/main=, the PR has
+been merged.
+
+*Important*: Only proceed if the PR has been merged. If not merged, inform the
+user and stop.
+
+*** Step 3: Stash uncommitted changes (if any)
+
+Check for uncommitted changes and stash them:
+
+#+begin_src sh
+git status --short
+#+end_src
+
+If there are changes:
+
+#+begin_src sh
+git stash push -m "WIP: Transitioning to next phase"
+#+end_src
+
+*** Step 4: Fetch latest main
 
 #+begin_src sh
 git fetch origin main
 #+end_src
 
-*** Step 3: Create new feature branch
+*** Step 5: Create new feature branch
 
 Create a new branch from the updated main for the next phase:
 
@@ -79,7 +116,15 @@ Create a new branch from the updated main for the next phase:
 git checkout -b feature/<entity>_<next_phase> origin/main
 #+end_src
 
-*** Step 4: Delete old local branch
+*** Step 6: Restore stashed changes (if any)
+
+If changes were stashed in Step 3:
+
+#+begin_src sh
+git stash pop
+#+end_src
+
+*** Step 7: Delete old local branch
 
 #+begin_src sh
 git branch -d <old_branch_name>
@@ -87,7 +132,7 @@ git branch -d <old_branch_name>
 
 Use =-D= (force delete) only if the branch wasn't fully merged (rare).
 
-*** Step 5: Delete old remote branch
+*** Step 8: Delete old remote branch
 
 #+begin_src sh
 git push origin --delete <old_branch_name>
@@ -100,20 +145,32 @@ This keeps the remote repository clean.
 Transitioning from Phase 1 (domain type) to Phase 2 (generator) for currency:
 
 #+begin_src sh
-# Note current branch
+# Step 1: Note current branch
 git branch --show-current
 # Output: feature/currency_domain_type
 
-# Fetch latest main (includes the merged PR)
+# Step 2: Check if PR has been merged
+gh pr view --json state,mergedAt
+# Output: {"mergedAt":"2025-01-10T14:30:00Z","state":"MERGED"}
+
+# Step 3: Stash any uncommitted changes
+git status --short
+# Output: M doc/agile/v0/sprint_backlog_08.org
+git stash push -m "WIP: Transitioning to next phase"
+
+# Step 4: Fetch latest main (includes the merged PR)
 git fetch origin main
 
-# Create new branch for Phase 2
+# Step 5: Create new branch for Phase 2
 git checkout -b feature/currency_generator origin/main
 
-# Delete old local branch
+# Step 6: Restore stashed changes
+git stash pop
+
+# Step 7: Delete old local branch
 git branch -d feature/currency_domain_type
 
-# Delete old remote branch
+# Step 8: Delete old remote branch
 git push origin --delete feature/currency_domain_type
 #+end_src
 
@@ -126,16 +183,8 @@ git push origin --delete feature/currency_domain_type
 - *Delete branches after merge* - Keeps both local and remote repositories clean.
 - *Use descriptive branch names* - Makes it easy to identify what phase/work the
   branch represents.
-
-** Handling work in progress
-
-If you have uncommitted changes when transitioning:
-
-1. Stash the changes: =git stash=
-2. Complete the phase transition
-3. Apply stashed changes: =git stash pop=
-
-However, it's better to commit all work before transitioning phases.
+- *Stash handling is automatic* - Uncommitted changes are preserved across phase
+  transitions.
 
 * Artefacts                                                        :noexport:
 

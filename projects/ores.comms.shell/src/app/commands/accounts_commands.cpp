@@ -31,8 +31,10 @@
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
+#include "ores.iam/messaging/account_history_protocol.hpp"
 #include "ores.iam/domain/account_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.iam/domain/login_info_table_io.hpp"  // IWYU pragma: keep.
+#include "ores.iam/domain/account_version_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.comms.shell/app/commands/rbac_commands.hpp"
 
 namespace ores::comms::shell::app::commands {
@@ -133,6 +135,12 @@ register_commands(cli::Menu& root_menu, client_session& session) {
     accounts_menu->Insert("session-stats-days", [&session](std::ostream& out, int days) {
         process_session_stats(std::ref(out), std::ref(session), days);
     }, "Show session statistics for the specified number of days");
+
+    accounts_menu->Insert("history", [&session](std::ostream& out,
+            std::string username) {
+        process_get_account_history(std::ref(out), std::ref(session),
+            std::move(username));
+    }, "Get version history for an account by username");
 
     root_menu.Insert(std::move(accounts_menu));
 
@@ -634,6 +642,49 @@ process_session_stats(std::ostream& out, client_session& session, int days) {
         }
         out << std::endl;
     }
+}
+
+void accounts_commands::
+process_get_account_history(std::ostream& out, client_session& session,
+    std::string username) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get account history for: "
+                               << username;
+
+    // Check if logged in
+    if (!session.session_info()) {
+        out << "✗ You must be logged in to get account history." << std::endl;
+        return;
+    }
+
+    using iam::messaging::get_account_history_request;
+    using iam::messaging::get_account_history_response;
+    auto result = session.process_authenticated_request<get_account_history_request,
+                                                        get_account_history_response,
+                                                        message_type::get_account_history_request>
+        (get_account_history_request{.username = std::move(username)});
+
+    if (!result) {
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
+        return;
+    }
+
+    const auto& response = *result;
+    if (!response.success) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get account history: "
+                                  << response.message;
+        out << "✗ " << response.message << std::endl;
+        return;
+    }
+
+    if (response.history.versions.empty()) {
+        out << "No history found for this account." << std::endl;
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                              << response.history.versions.size()
+                              << " history records.";
+    out << response.history.versions << std::endl;
 }
 
 }

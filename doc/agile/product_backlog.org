@@ -67,6 +67,250 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Add party role scheme entity                                       :code:
+
+The following is the analysis for adding support to party schemes.
+
+Contains a code representing a related party role. This can be extended to
+provide custom roles.
+
+- Obtained on 2025-11-10.
+- Version 4-1.
+- URL: http://www.fpml.org/coding-scheme/party-role-4-1.xml
+
+Code
+Description
+
+- Code: Accountant
+- Description: Organization responsible for preparing the accounting for the
+  trade.
+
+- Code: Allocation
+- Description: Agent The organization responsible for supplying the allocations
+  for a trade to be allocated to multiple accounts/organizations.
+
+- Code: Arranging
+- Description: Broker The organization that arranged the trade, i.e. brought
+  together the counterparties. Synonyms/Alternatives: Inter-dealer broker,
+  agent.
+
+- Code: Beneficiary
+- Description: Organization that suffers the economic benefit of the trade. The
+  beneficiary may be distinct from the principal/counterparty - an example
+  occurs when a hedge fund trades via a prime broker; in this case the principal
+  is the prime broker, but the beneficiary is the hedge fund. This can be
+  represented as a payer/receiver account in the name of the hedge fund, but it
+  is also possible to add the party role of "Beneficiary" at the
+  partyTradeInformation level.
+
+- Code: Booking
+- Description: Party The entity for which the organization supporting the
+  trade's processing has booked/recorded the trade. This is used in
+  non-reporting workflows situations in which the trade doesn't need to be
+  reported but a firm still wants to specify their own side.
+
+- Code: Buyer
+- Description: Acquirer of the legal title to the financial instrument. In the
+  case of an option, the buyer is the holder of the option. In the case of a
+  swap or forward, the buyer will be determined by industry best practice. This
+  does not refer to an investor or investment manager or other organization on
+  what is typically called the "Buy side"; for that, see the "Client" role.
+  Corresponds to "Buyer" as defined in certain regulations such as ESMA MiFID
+  II/MIFIR RTS 22 field 9.
+
+- Code: Buyer
+- Description: DecisionMaker The party or person who, having legal authority to
+  act on behalf of the trade counterparty acting as Buyer as defined in this
+  coding scheme, made the decision to acquire the financial instrument.
+  Corresponds to "buyer decision maker" as defined in ESMA's MIFIR RTS 23
+  report. This does not refer to the decision maker for what is traditionally
+  called the "Buy side"; for that, see the "Client Decision Maker" role.
+
+- Code: Clearing
+- Description: Client An organization that clears trades through a clearing
+  house, via a clearing broker (member of the clearing house) who acts as an
+  agent on its behalf. The term "client" refers to the organization's role in
+  the clearing process in relation to its clearing broker, and not whether it is
+  a price maker or taker in the execution process.
+
+- Code: Clearing
+- Description: ExceptionParty A party to the trade that claims a clearing
+  exception, such as an end-user exception under Dodd-Frank Act provisions.
+
+- Code: Clearing
+- Description: Firm Organization that submits the trade to a clearing house on
+  behalf of the principal. Synonyms/alternates: Futures Commission Merchant
+  (FCM), Clearing Broker, Clearing Member Firm. Some implementations use
+  "Clearing Broker" as synonym.
+
+- Code: Clearing
+- Description: Organization The organization that acts as a central counterparty
+  to clear a derivatives contract. This is used to represent the role of Central
+  Counterparties (CCPs) or Derivative Clearing Organizations (DCOs). Sometimes
+  called "ClearingService". Some implementations also use the term "Clearer".
+
+- Code: Client
+- Description: Client as defined under ESMA MIFIR. This is generally the
+  investor or other client of an investment firm, and is synonymous with the
+  Beneficiary in many circumstances.
+
+- Code: Client
+- Description: DecisionMaker The party or person who, having legal authority to
+  act on behalf of a trade counterparty, made the decision to acquire or sell
+  the financial instrument.
+
+- Code: Confirmation
+- Description: Platform Organization serving as a financial intermediary for the
+  purposes of electronic confirmation or providing services for post-processing
+  of transactional data.
+
+- Code: Contractual
+- Description: Party A party to a contractual document. If the intended usage
+  relates to the context of the trade lifecycle, more specific annotations have
+  been defined which might be more appropriate.
+
+- Code: Counterparty
+- Description: An economic counterparty to the trade. Synonym: principal.
+
+- Code: Counter
+- Description: PartyAffiliate Organization offiially attached to the
+  counterparty. e.g. partner, branch, subsidiary.
+
+- Code: Counter
+- Description: PartyUltimateParent The topmost entity or organization, within
+  the corporate hierarchy, responsible for the reporting party.
+
+- Code: Credit
+- Description: SupportProvider Organization that enhances the credit of another
+  organization (similar to guarantor, but may not fully guarantee the
+  obligation).
+
+- Code: Custodian
+- Description: Organization that maintains custody of the asset represented by
+  the trade on behalf of the owner/principal.
+
+- Code: Data
+- Description: Submitter Entity submitting the transaction report to the
+  competent authority.
+
+- Code: Disputing
+- Description: Party Organization that is disputing the trade or transaction.
+
+- Code: Document
+- Description: Repository A marketplace organization which purpose is to
+  maintain document records. If the intended usage relates to the context of the
+  trade lifecycle, more specific annotations have been defined which might be
+  more appropriate.
+
+- Code: Executing
+- Description: Broker The (generally sell-side) organization that executed the
+  trade; the price-making party.
+
+- Code: Executing
+- Description: Entity Entity executing the transaction. If the transaction is
+  executed directly by the reporting party, it will be the reporting party. If
+  it is executed by an execution agent or an affiliated party on behalf of the
+  reporting party, it will be that affiliate or agent.
+
+- Code: Execution
+- Description: Agent The (generally buy-side) organization that acts to execute
+  trades on behalf of an investor. Typically this is an investment manager or
+  asset manager, and also makes the investment decisions for the investor. If
+  required, a separate InvestmentDecision role can be specified to distinguish
+  that the party making the investment decision is different.
+
+- Code: Execution
+- Description: Facility The facility, exchange, or market where the trade was
+  executed. Synonym: Swap Execution Facility, Designated Contract Market,
+  Execution Venue.
+
+- Code: Guarantor
+- Description: Organization that backs (guarantees) the credit risk of the
+  trade.
+
+- Code: Margin
+- Description: Affiliate Margin affiliate as defined by U.S. margin and capital
+  rules §23.151.
+
+- Code: Order
+- Description: Transmitter The entity transmitting the order to the reporting
+  firm. Synonym: Transmitting Firm.
+
+- Code: Prime
+- Description: Broker The organization that takes on or took on the credit risk
+  for this trade by stepping in between the two economic parties (without a
+  central counterparty clearing mechanism).
+
+- Code: Prior
+- Description: TradeRepository The trade repository at which the trade was
+  reported previous to the current trade repository.
+
+- Code: PTRR
+- Description: CompressionProvider A party providing a post trade risk reduction
+  service in the form of compression.
+
+- Code: PTRR
+- Description: RebalancingProvider A party providing a post trade risk reduction
+  service in the form of portfolio rebalancing.
+
+- Code: Publication
+- Description: Venue The reporting service (whether trade repository, market
+  data service, or exchange/facility/venue data distribution service) that
+  published the report of this trade.
+
+- Code: Reporting
+- Description: Party The party with the regulatory responsibility to report this
+  trade.
+
+- Code: Reporting
+- Description: PartyAffiliate Organization offiially attached to the reporting
+  party e.g. partner, branch, subsidiary.
+
+- Code: Reporting
+- Description: PartyUltimateParent The topmost entity or organization, within
+  the corporate hierarchy, responsible for the reporting party.
+
+- Code: Seller
+- Description: A counterparty in a trade, which performs in one of the following
+  capacities: 1) it transfers or agrees to transfer in the future an instrument
+  or title to that instrument in exchange for payment, 2) it writes a
+  derivatives instrument such as an option or a swap in which it provides risk
+  protection to the buyer. This does not refer to the broker/dealer or other
+  organization on what is typically called the "Sell side"; for that, see the
+  "Executing Broker" role. Corresponds to "Seller" as defined in certain
+  regulations such as ESMA MiFID II/MIFIR RTS 22 field 16.
+
+- Code: Seller
+- Description: DecisionMaker The party or person who, having legal authority to
+  act on behalf of the trade counterparty acting as Seller as defined in this
+  coding scheme, made the decision to sell the financial instrument. Corresponds
+  to "seller decision maker" as defined in ESMA's MIFIR RTS 23 report. This does
+  not refer to the decision maker for what is traditionally called the "Sell
+  side"; for that, see the "Trader" person role.
+
+- Code: Settlement
+- Description: Agent The organization that makes or receives payments on behalf
+  of the given principal party.
+
+- Code: Trade
+- Description: Repository An organization that maintains records of the trade
+  for regulatory reporting purposes.
+
+- Code: Trade
+- Description: Source The organization that originally supplied the record of
+  the trade. In the context of regulatory reporting, it is the submitter of the
+  trade record to a regulator or TR.
+
+- Code: Trading
+- Description: Manager The entity responsible for managing the
+  assets/investments of this party. Synonnym: Asset Manager, Investment Manager,
+  Trading Advisory.
+
+- Code: Trading
+- Description: Partner An entity with which this party trades from time to time,
+  ie. with which it acts as a counterparty on some transactions. This role is
+  used for static reference data, not individual transactions.
+
 *** Modes of operation                                                 :code:
 
 We need to discuss this with Lau. Intuitively it seems that different users have
@@ -77,7 +321,7 @@ on. There should be a way to create "profiles" which change the toolbar. These
 are distinct from user profiles which remember which screens to open and their
 positions.
 
-*** Make bootstrap operation atomic using SQL transactions              :code:
+*** Make bootstrap operation atomic using SQL transactions             :code:
 
 The bootstrap operation is currently not atomic. If an exception is thrown after
 the admin account is created but before the bootstrap mode feature flag is
@@ -134,7 +378,7 @@ for proper transactional integrity.
 - No partial state if any step fails.
 - Self-healing mechanism remains as defence in depth.
 
-*** Investigate claude-code-hook-templates
+*** Investigate claude-code-hook-templates                             :code:
 
 #+begin_quote
 A comprehensive collection of production-ready hooks covering all 8 Claude Code
@@ -146,7 +390,7 @@ Links:
 
 - [[https://github.com/iamrajiv/claude-code-hook-templates][claude-code-hook-templates]]
 
-*** Investigate Agent-Native Architecture Audit
+*** Investigate Agent-Native Architecture Audit                        :code:
 
 #+begin_quote
 Conduct a comprehensive review of the codebase against agent-native architecture

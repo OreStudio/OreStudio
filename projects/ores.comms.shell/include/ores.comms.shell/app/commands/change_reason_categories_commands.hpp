@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_SHELL_APP_COMMANDS_COUNTRIES_COMMANDS_HPP
-#define ORES_COMMS_SHELL_APP_COMMANDS_COUNTRIES_COMMANDS_HPP
+#ifndef ORES_COMMS_SHELL_APP_COMMANDS_CHANGE_REASON_CATEGORIES_COMMANDS_HPP
+#define ORES_COMMS_SHELL_APP_COMMANDS_CHANGE_REASON_CATEGORIES_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.comms/net/client_session.hpp"
@@ -32,12 +32,12 @@ class Menu;
 namespace ores::comms::shell::app::commands {
 
 /**
- * @brief Manages commands related to countries.
+ * @brief Manages commands related to change reason categories.
  */
-class countries_commands {
+class change_reason_categories_commands {
 private:
     inline static std::string_view logger_name =
-        "ores.comms.shell.app.commands.countries_commands";
+        "ores.comms.shell.app.commands.change_reason_categories_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -47,72 +47,65 @@ private:
 
 public:
     /**
-     * @brief Register country-related commands.
+     * @brief Register change reason category-related commands.
      *
-     * Creates the countries submenu and adds country operations.
+     * Creates the change-reason-categories submenu and adds operations.
      */
     static void register_commands(cli::Menu& root_menu,
         comms::net::client_session& session);
 
     /**
-     * @brief Process a get countries request.
+     * @brief Process a get change reason categories request.
      *
-     * Retrieves all countries from the server and displays them.
+     * Retrieves all change reason categories from the server.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
      */
-    static void process_get_countries(std::ostream& out,
+    static void process_get_categories(std::ostream& out,
         comms::net::client_session& session);
 
     /**
-     * @brief Process an add country request.
+     * @brief Process an add change reason category request.
      *
-     * Creates a new country with the provided details. The recorded_by field
-     * is automatically set from the logged-in user's session.
+     * Creates a new change reason category with the provided details.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
-     * @param alpha2_code ISO 3166-1 alpha-2 code (e.g., "US")
-     * @param alpha3_code ISO 3166-1 alpha-3 code (e.g., "USA")
-     * @param numeric_code ISO 3166-1 numeric code (e.g., "840")
-     * @param name Short name of the country
-     * @param official_name Official name of the country
-     * @param change_reason_code Code identifying the reason for the change
+     * @param code Unique category code (e.g., "static_data")
+     * @param description Human-readable description
      * @param change_commentary Free-text commentary explaining the change
      */
-    static void process_add_country(std::ostream& out,
+    static void process_add_category(std::ostream& out,
         comms::net::client_session& session,
-        std::string alpha2_code, std::string alpha3_code,
-        std::string numeric_code, std::string name,
-        std::string official_name, std::string change_reason_code,
+        std::string code, std::string description,
         std::string change_commentary);
 
     /**
-     * @brief Process a delete country request.
+     * @brief Process a delete change reason category request.
      *
-     * Deletes a country by its alpha-2 code. Requires authentication.
+     * Deletes a category by its code. Requires authentication.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
-     * @param alpha2_code ISO 3166-1 alpha-2 code of the country to delete
+     * @param code Code of the category to delete
      */
-    static void process_delete_country(std::ostream& out,
+    static void process_delete_category(std::ostream& out,
         comms::net::client_session& session,
-        std::string alpha2_code);
+        std::string code);
 
     /**
-     * @brief Process a get country history request.
+     * @brief Process a get category history request.
      *
-     * Retrieves the version history for a country by its alpha-2 code.
+     * Retrieves the version history for a category by its code.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
-     * @param alpha2_code ISO 3166-1 alpha-2 code of the country
+     * @param code Code of the category
      */
-    static void process_get_country_history(std::ostream& out,
+    static void process_get_category_history(std::ostream& out,
         comms::net::client_session& session,
-        std::string alpha2_code);
+        std::string code);
 };
 
 }

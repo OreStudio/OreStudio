@@ -117,11 +117,11 @@ register_commands(cli::Menu& root_menu, client_session& session) {
         process_list_roles(std::ref(out), std::ref(session));
     }, "List all roles in the system");
 
-    roles_menu->Insert("show", [&session](std::ostream& out,
+    roles_menu->Insert("get", [&session](std::ostream& out,
             std::string role_identifier) {
-        process_show_role(std::ref(out), std::ref(session),
+        process_get_role(std::ref(out), std::ref(session),
             std::move(role_identifier));
-    }, "Show role details (role_name or role_id)");
+    }, "Get role details (role_name or role_id)");
 
     root_menu.Insert(std::move(roles_menu));
 }
@@ -177,9 +177,9 @@ process_list_roles(std::ostream& out, client_session& session) {
 }
 
 void rbac_commands::
-process_show_role(std::ostream& out, client_session& session,
+process_get_role(std::ostream& out, client_session& session,
     std::string role_identifier) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating show role request for: "
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get role request for: "
                                << role_identifier;
 
     using iam::messaging::get_role_request;
@@ -206,11 +206,14 @@ process_show_role(std::ostream& out, client_session& session,
     out << std::endl;
     out << "Role Details" << std::endl;
     out << "============" << std::endl;
-    out << "ID:          " << boost::uuids::to_string(found_role.id) << std::endl;
-    out << "Name:        " << found_role.name << std::endl;
-    out << "Description: " << found_role.description << std::endl;
-    out << "Version:     " << found_role.version << std::endl;
-    out << "Recorded By: " << found_role.recorded_by << std::endl;
+    out << "ID:            " << boost::uuids::to_string(found_role.id) << std::endl;
+    out << "Name:          " << found_role.name << std::endl;
+    out << "Description:   " << found_role.description << std::endl;
+    out << "Version:       " << found_role.version << std::endl;
+    out << "Change Reason: " << found_role.change_reason_code << std::endl;
+    out << "Commentary:    " << found_role.change_commentary << std::endl;
+    out << "Recorded By:   " << found_role.recorded_by << std::endl;
+    out << "Recorded At:   " << found_role.recorded_at << std::endl;
     out << std::endl;
     out << "Permissions (" << found_role.permission_codes.size() << "):" << std::endl;
     out << "-------------" << std::endl;

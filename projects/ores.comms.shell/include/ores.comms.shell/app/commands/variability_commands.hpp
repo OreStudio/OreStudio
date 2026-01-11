@@ -67,6 +67,50 @@ public:
      */
     static void process_list_feature_flags(std::ostream& out,
         comms::net::client_session& session);
+
+    /**
+     * @brief Process an add feature flag request.
+     *
+     * Creates a new feature flag with the provided details.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param name Unique flag name
+     * @param enabled Whether the flag is enabled ("true" or "false")
+     * @param description Human-readable description
+     * @param change_reason_code Code identifying the reason for the change
+     * @param change_commentary Free-text commentary
+     */
+    static void process_add_feature_flag(std::ostream& out,
+        comms::net::client_session& session,
+        std::string name, std::string enabled, std::string description,
+        std::string change_reason_code, std::string change_commentary);
+
+    /**
+     * @brief Process a delete feature flag request.
+     *
+     * Deletes a feature flag by its name. Requires authentication.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param name Name of the feature flag to delete
+     */
+    static void process_delete_feature_flag(std::ostream& out,
+        comms::net::client_session& session,
+        std::string name);
+
+    /**
+     * @brief Process a get feature flag history request.
+     *
+     * Retrieves the version history for a feature flag by its name.
+     *
+     * @param out Output stream for results
+     * @param session Client session for connectivity.
+     * @param name Name of the feature flag
+     */
+    static void process_get_feature_flag_history(std::ostream& out,
+        comms::net::client_session& session,
+        std::string name);
 };
 
 }

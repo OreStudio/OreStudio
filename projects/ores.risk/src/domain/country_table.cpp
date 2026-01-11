@@ -29,14 +29,14 @@ fort::char_table make_country_table() {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
     table << fort::header << "Alpha-2" << "Alpha-3" << "Numeric" << "Version"
-          << "Name" << "Official Name" << "Recorded By"
+          << "Name" << "Official Name" << "Change Reason" << "Recorded By"
           << "Recorded At" << fort::endr;
     return table;
 }
 
 void add_country_row(fort::char_table& table, const country& c) {
     table << c.alpha2_code << c.alpha3_code << c.numeric_code << c.version
-          << c.name << c.official_name << c.recorded_by
+          << c.name << c.official_name << c.change_reason_code << c.recorded_by
           << c.recorded_at << fort::endr;
 }
 

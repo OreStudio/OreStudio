@@ -305,8 +305,8 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ORE Studio Shell REPL v0.0.6
-Type 'help' for available commands, 'exit' to quit
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> currencies> Commands available:
  - help
@@ -321,6 +321,10 @@ ores-shell> currencies> Commands available:
 	Retrieve all currencies from the server
  - add <string> <string> <string> <string> <string>
 	Add a currency (iso_code name [numeric_code] [symbol] [fractions_per_unit])
+ - delete <string>
+	Delete a currency by ISO code
+ - history <string>
+	Get version history for a currency by ISO code
  - ores-shell
 	(menu)
 currencies> Bye!
@@ -442,8 +446,8 @@ EOF
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Account created with ID: 019b7c16-a28c-7444-9546-9a051962f014
-ores-shell> ✓ Account created with ID: 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+ores-shell> ✓ Account created with ID: 019bae63-e953-727c-bb2c-e765d462f1f0
+ores-shell> ✓ Account created with ID: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 ores-shell> Bye!
 #+end_example
 
@@ -478,9 +482,9 @@ ores-shell>
 +--------------------------------------+-----------+-----------------------+-------------+-------------------------------+---------+
 | ID (UUID)                            | Username  | Email                 | Recorded By | Recorded At                   | Version |
 +--------------------------------------+-----------+-----------------------+-------------+-------------------------------+---------+
-| 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c | newuser41 | newuser41@example.com | ores        | 2026-01-02 00:23:37.000000000 | 1       |
-| 019b7c16-a28c-7444-9546-9a051962f014 | newuser40 | newuser40@example.com | ores        | 2026-01-02 00:23:36.000000000 | 1       |
-| 019b7c15-5f67-76a1-84be-9d74381b1c7f | newuser3  | newuser3@test.com     | bootstrap   | 2026-01-02 00:22:14.000000000 | 1       |
+| 019bae63-e9cd-7e8b-a378-2e0ca0d48610 | newuser41 | newuser41@example.com | ores        | 2026-01-11 18:49:02.000000000 | 1       |
+| 019bae63-e953-727c-bb2c-e765d462f1f0 | newuser40 | newuser40@example.com | ores        | 2026-01-11 18:49:02.000000000 | 1       |
+| 019ba3a0-48bb-7924-96ae-686f0883cc9c | newuser3  | newuser3@test.com     | bootstrap   | 2026-01-09 16:39:09.000000000 | 1       |
 +--------------------------------------+-----------+-----------------------+-------------+-------------------------------+---------+
 
 
@@ -518,9 +522,9 @@ ores-shell>
 +--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
 | Account ID                           | Last IP   | Last Attempt IP | Failed | Locked | Online | Last Login          |
 +--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
-| 019b7c16-a28c-7444-9546-9a051962f014 | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
-| 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
-| 019b7c15-5f67-76a1-84be-9d74381b1c7f | 127.0.0.1 | 127.0.0.1       | 0      | N      | Y      | 2026-01-02 00:27:36 |
+| 019bae63-e953-727c-bb2c-e765d462f1f0 | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019bae63-e9cd-7e8b-a378-2e0ca0d48610 | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019ba3a0-48bb-7924-96ae-686f0883cc9c | 127.0.0.1 | 127.0.0.1       | 0      | N      | Y      | 2026-01-11 18:49:28 |
 +--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
 
 
@@ -536,7 +540,7 @@ Lock an account to prevent login.
 
 #+name: lock-account
 #+begin_src ores-shell :exports none
-accounts lock 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+accounts lock 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 exit
 #+end_src
 
@@ -555,7 +559,7 @@ ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Account locked successfully!
-  Account ID: 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+  Account ID: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 ores-shell> Bye!
 #+end_example
 
@@ -568,7 +572,7 @@ Unlock a previously locked account.
 
 #+name: unlock-account
 #+begin_src ores-shell :exports none
-accounts unlock 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+accounts unlock 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 exit
 #+end_src
 
@@ -587,7 +591,7 @@ ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Account unlocked successfully!
-  Account ID: 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+  Account ID: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 ores-shell> Bye!
 #+end_example
 
@@ -600,7 +604,7 @@ List roles assigned to an account.
 
 #+name: account-roles
 #+begin_src ores-shell :exports none
-accounts roles 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+accounts roles 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 exit
 #+end_src
 
@@ -619,13 +623,12 @@ ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
-Roles for Account: 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+Roles for Account: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 
 +--------------------------------------+--------+------------------------------------------------+-----------------------------+-------------+---------+
 | ID (UUID)                            | Name   | Description                                    | Permissions                 | Recorded By | Version |
 +--------------------------------------+--------+------------------------------------------------+-----------------------------+-------------+---------+
-| d48b608d-c894-4346-887d-228e342d36c6 | Sales  | Sales operations - read-only currency access   | currencies:read, flags:read | system      | 1       |
-| 6e4ee358-1970-400f-a3cb-fbcfe8296f52 | Viewer | Viewer - basic read-only access to domain data | currencies:read, flags:read | system      | 1       |
+| 0810cd81-1d89-455f-9eb7-90e126c4a241 | Viewer | Viewer - basic read-only access to domain data | currencies:read, flags:read | system      | 1       |
 +--------------------------------------+--------+------------------------------------------------+-----------------------------+-------------+---------+
 
 
@@ -641,7 +644,7 @@ List effective permissions for an account.
 
 #+name: account-permissions
 #+begin_src ores-shell :exports none
-accounts permissions 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+accounts permissions 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 exit
 #+end_src
 
@@ -660,7 +663,7 @@ ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
-Effective Permissions for Account: 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+Effective Permissions for Account: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 =======================================================================
 
   - currencies:read
@@ -680,7 +683,7 @@ Assign a role to an account.
 #+name: assign-role
 #+begin_src ores-shell :exports none
 roles list
-accounts assign-role 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c d48b608d-c894-4346-887d-228e342d36c6
+accounts assign-role 019bae63-e9cd-7e8b-a378-2e0ca0d48610 82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b
 exit
 #+end_src
 
@@ -702,18 +705,18 @@ ores-shell>
 +--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
 | ID (UUID)                            | Name       | Description                                                   | Permissions                                                   | Recorded By | Version |
 +--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
-| dd2ecaec-138b-453c-a110-77441a60583e | Admin      | Full administrative access to all system functions            | *                                                             | system      | 1       |
-| b898350f-f704-4e97-b8ec-36c3481af052 | Operations | Operations - currency management and account viewing          | accounts:read, currencies:create, currencies:delete (+4 more) | system      | 1       |
-| d48b608d-c894-4346-887d-228e342d36c6 | Sales      | Sales operations - read-only currency access                  | currencies:read, flags:read                                   | system      | 1       |
-| d533c93f-bf3c-4d1f-bba8-4e949b976a8a | Support    | Support - read-only access to all resources and admin screens | accounts:read, currencies:history, currencies:read (+3 more)  | system      | 1       |
-| a74f8a4e-f331-4179-aecb-cda61e472805 | Trading    | Trading operations - currency read access                     | currencies:history, currencies:read, flags:read               | system      | 1       |
-| 6e4ee358-1970-400f-a3cb-fbcfe8296f52 | Viewer     | Viewer - basic read-only access to domain data                | currencies:read, flags:read                                   | system      | 1       |
+| f60d8103-0283-4d46-aa4c-aa6bb50934d9 | Admin      | Full administrative access to all system functions            | *                                                             | system      | 1       |
+| d6ac9d9f-91c3-40d2-998d-0e18604a8687 | Operations | Operations - currency management and account viewing          | accounts:read, currencies:create, currencies:delete (+4 more) | system      | 1       |
+| 82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b | Sales      | Sales operations - read-only currency access                  | currencies:read, flags:read                                   | system      | 1       |
+| 1bc4ce25-7f72-4ac1-b42a-6c11dd350906 | Support    | Support - read-only access to all resources and admin screens | accounts:read, currencies:history, currencies:read (+3 more)  | system      | 1       |
+| a6eb024f-0c0c-4e0e-93a4-8fb5df41b2e2 | Trading    | Trading operations - currency read access                     | currencies:history, currencies:read, flags:read               | system      | 1       |
+| 0810cd81-1d89-455f-9eb7-90e126c4a241 | Viewer     | Viewer - basic read-only access to domain data                | currencies:read, flags:read                                   | system      | 1       |
 +--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
 
 
 ores-shell> V Role assigned successfully!
-  Account ID: 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
-  Role ID:    d48b608d-c894-4346-887d-228e342d36c6
+  Account ID: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
+  Role ID:    82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b
 ores-shell> Bye!
 #+end_example
 
@@ -726,7 +729,7 @@ Revoke a role from an account.
 
 #+name: revoke-role
 #+begin_src ores-shell :exports none
-accounts revoke-role e7bddd23-c004-4652-99e1-8d4ff5856fe1 d48b608d-c894-4346-887d-228e342d36c6
+accounts revoke-role 019bae63-e9cd-7e8b-a378-2e0ca0d48610 82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b
 exit
 #+end_src
 
@@ -745,10 +748,47 @@ ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> V Role revoked successfully!
-  Account ID: e7bddd23-c004-4652-99e1-8d4ff5856fe1
-  Role ID:    d48b608d-c894-4346-887d-228e342d36c6
+  Account ID: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
+  Role ID:    82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b
 ores-shell> Bye!
 #+end_example
+
+*** History
+    :PROPERTIES:
+    :header-args+: :var login_args="--login-username newuser3"
+    :END:
+
+Get version history for an account.
+
+#+name: account-history
+#+begin_src ores-shell :exports none
+accounts history newuser41
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<account-history>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> +---------+-----------+-----------------------+-------------+-------------------------------+----------------+
+| Version | Username  | Email                 | Recorded By | Recorded At                   | Change Summary |
++---------+-----------+-----------------------+-------------+-------------------------------+----------------+
+| 1       | newuser41 | newuser41@example.com | ores        | 2026-01-11 18:49:02.000000000 | Version 1      |
++---------+-----------+-----------------------+-------------+-------------------------------+----------------+
+
+ores-shell> Bye!
+#+end_example
+
 
 ** Variability
    :PROPERTIES:
@@ -776,8 +816,8 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ORE Studio Shell REPL v0.0.6
-Type 'help' for available commands, 'exit' to quit
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> variability> Commands available:
  - help
@@ -790,6 +830,12 @@ ores-shell> variability> Commands available:
 	Exec a command by index in the history
  - list-flags
 	Retrieve all feature flags from the server
+ - add-flag <string> <string> <string> <string> <string>
+	Add a feature flag (name enabled description reason_code "commentary")
+ - delete-flag <string>
+	Delete a feature flag by name
+ - flag-history <string>
+	Get version history for a feature flag by name
  - ores-shell
 	(menu)
 variability> Bye!
@@ -825,11 +871,105 @@ ores-shell>
 +--------------------------------------+---------+---------------------------------------------------------------------------------------------------------------------+---------+-------------+-------------------------------+
 | Name                                 | Version | Description                                                                                                         | Enabled | Recorded By | Recorded At                   |
 +--------------------------------------+---------+---------------------------------------------------------------------------------------------------------------------+---------+-------------+-------------------------------+
-| system.bootstrap_mode                | 0       | Indicates whether the system is in bootstrap mode (waiting for initial admin account).                              | 0       | system      | 1970-01-01 00:00:00.000000000 |
-| system.disable_password_validation   | 0       | When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.                                    | 0       | system      | 1970-01-01 00:00:00.000000000 |
-| system.signup_requires_authorization | 0       | Controls whether new signups require admin authorization. NOT YET IMPLEMENTED - enabling will cause signup to fail. | 0       | system      | 1970-01-01 00:00:00.000000000 |
-| system.user_signups                  | 0       | Controls whether user self-registration is allowed.                                                                 | 0       | system      | 1970-01-01 00:00:00.000000000 |
+| test.feature.flag                    | 1       | Test feature flag for recipes                                                                                       | 0       | newuser3    | 2026-01-11 18:55:37.000000000 |
+| system.bootstrap_mode                | 1       | Indicates whether the system is in bootstrap mode (waiting for initial admin account).                              | 0       | system      | 2026-01-09 16:39:09.000000000 |
+| system.synthetic_data_generation     | 1       | Enables synthetic test data generation in the UI. FOR TESTING/DEVELOPMENT ONLY.                                     | 0       | system      | 2026-01-09 16:37:36.000000000 |
+| system.disable_password_validation   | 1       | When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.                                    | 0       | system      | 2026-01-09 16:37:36.000000000 |
+| system.signup_requires_authorization | 1       | Controls whether new signups require admin authorization. NOT YET IMPLEMENTED - enabling will cause signup to fail. | 0       | system      | 2026-01-09 16:37:36.000000000 |
+| system.user_signups                  | 1       | Controls whether user self-registration is allowed.                                                                 | 0       | system      | 2026-01-09 16:37:36.000000000 |
 +--------------------------------------+---------+---------------------------------------------------------------------------------------------------------------------+---------+-------------+-------------------------------+
+
+
+ores-shell> Bye!
+#+end_example
+
+
+*** Add Feature Flag
+
+Add a new feature flag.
+
+#+name: add-feature-flag
+#+begin_src ores-shell :exports none
+variability add-flag test.feature.flag false "Test feature flag for recipes" system.new_record "Test"
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+<<add-feature-flag>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Feature flag added successfully!
+ores-shell> Bye!
+#+end_example
+
+*** Delete Feature Flag
+
+Delete a feature flag by name.
+
+#+name: delete-feature-flag
+#+begin_src ores-shell :exports none
+variability delete-flag test.feature.flag
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+<<delete-feature-flag>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Feature flag deleted successfully!
+ores-shell> Bye!
+#+end_example
+
+*** Feature Flag History
+
+Get version history for a feature flag.
+
+#+name: feature-flag-history
+#+begin_src ores-shell :exports none
+variability flag-history system.bootstrap_mode
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+<<feature-flag-history>>
+EOF
+#+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++-----------------------+---------+----------------------------------------------------------------------------------------+---------+-------------------+-------------+-------------------------------+
+| Name                  | Version | Description                                                                            | Enabled | Change Reason     | Recorded By | Recorded At                   |
++-----------------------+---------+----------------------------------------------------------------------------------------+---------+-------------------+-------------+-------------------------------+
+| system.bootstrap_mode | 1       | Indicates whether the system is in bootstrap mode (waiting for initial admin account). | 0       | system.new_record | system      | 2026-01-09 16:39:09.000000000 |
++-----------------------+---------+----------------------------------------------------------------------------------------+---------+-------------------+-------------+-------------------------------+
 
 
 ores-shell> Bye!
@@ -877,6 +1017,10 @@ ores-shell> currencies> Commands available:
 	Retrieve all currencies from the server
  - add <string> <string> <string> <string> <string>
 	Add a currency (iso_code name [numeric_code] [symbol] [fractions_per_unit])
+ - delete <string>
+	Delete a currency by ISO code
+ - history <string>
+	Get version history for a currency by ISO code
  - ores-shell
 	(menu)
 currencies> Bye!
@@ -908,110 +1052,110 @@ Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
 
-+----------+---------+-----------------------------------------+--------+------+----------------+-----------+-------------+-------------------------------+
-| ISO Code | Version | Name                                    | Symbol | Type | Fractions/Unit | Precision | Recorded By | Recorded At                   |
-+----------+---------+-----------------------------------------+--------+------+----------------+-----------+-------------+-------------------------------+
-| USD      | 1       | US Dollar                               | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| CAD      | 1       | Canadian Dollar                         | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MXN      | 1       | Mexican Peso                            | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BRL      | 1       | Brazilian Real                          | R$     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| ARS      | 1       | Argentine Peso                          | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| CLP      | 1       | Chilean Peso                            | $      | fiat | 0              | 0         | system      | 2026-01-01 23:51:55.000000000 |
-| COP      | 1       | Colombian Peso                          | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| PEN      | 1       | Peruvian Sol                            | S/     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| UYU      | 1       | Uruguayan Peso                          | $U     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| PYG      | 1       | Paraguayan Guarani                      | ₲    | fiat | 0              | 0         | system      | 2026-01-01 23:51:55.000000000 |
-| BOB      | 1       | Bolivian Boliviano                      | Bs     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| VES      | 1       | Venezuelan Bolivar                      | Bs     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| CRC      | 1       | Costa Rican Colon                       | ₡    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| PAB      | 1       | Panamanian Balboa                       | B/.    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| GTQ      | 1       | Guatemalan Quetzal                      | Q      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| HNL      | 1       | Honduran Lempira                        | L      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| NIO      | 1       | Nicaraguan Cordoba                      | C$     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| DOP      | 1       | Dominican Peso                          | RD$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| CUP      | 1       | Cuban Peso                              | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| JMD      | 1       | Jamaican Dollar                         | J$     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| TTD      | 1       | Trinidad and Tobago Dollar              | TT$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BBD      | 1       | Barbadian Dollar                        | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BSD      | 1       | Bahamian Dollar                         | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| HTG      | 1       | Haitian Gourde                          | G      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| SRD      | 1       | Surinamese Dollar                       | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| GYD      | 1       | Guyanese Dollar                         | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BZD      | 1       | Belize Dollar                           | BZ$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| AWG      | 1       | Aruban Florin                           | ƒ     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| ANG      | 1       | Netherlands Antillean Guilder           | ƒ     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| XCD      | 1       | East Caribbean Dollar                   | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| KYD      | 1       | Cayman Islands Dollar                   | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BMD      | 1       | Bermudian Dollar                        | $      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| FKP      | 1       | Falkland Islands Pound                  | £     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| EUR      | 1       | Euro                                    | €    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| GBP      | 1       | British Pound Sterling                  | £     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| CHF      | 1       | Swiss Franc                             | CHF    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| NOK      | 1       | Norwegian Krone                         | kr     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| SEK      | 1       | Swedish Krona                           | kr     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| DKK      | 1       | Danish Krone                            | kr     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| ISK      | 1       | Icelandic Krona                         | kr     | fiat | 0              | 0         | system      | 2026-01-01 23:51:55.000000000 |
-| PLN      | 1       | Polish Zloty                            | zł    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| CZK      | 1       | Czech Koruna                            | Kč    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| HUF      | 1       | Hungarian Forint                        | Ft     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| RON      | 1       | Romanian Leu                            | lei    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BGN      | 1       | Bulgarian Lev                           | лв   | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| HRK      | 1       | Croatian Kuna                           | kn     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| RSD      | 1       | Serbian Dinar                           | дин | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BAM      | 1       | Bosnia and Herzegovina Convertible Mark | KM     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MKD      | 1       | Macedonian Denar                        | ден | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| ALL      | 1       | Albanian Lek                            | L      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MDL      | 1       | Moldovan Leu                            | L      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| UAH      | 1       | Ukrainian Hryvnia                       | ₴    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BYN      | 1       | Belarusian Ruble                        | Br     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| RUB      | 1       | Russian Ruble                           | ₽    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| GEL      | 1       | Georgian Lari                           | ₾    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| AMD      | 1       | Armenian Dram                           | ֏     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| AZN      | 1       | Azerbaijani Manat                       | ₼    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| TRY      | 1       | Turkish Lira                            | ₺    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| GIP      | 1       | Gibraltar Pound                         | £     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| JPY      | 1       | Japanese Yen                            | ¥     | fiat | 0              | 0         | system      | 2026-01-01 23:51:55.000000000 |
-| CNY      | 1       | Chinese Yuan                            | ¥     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| HKD      | 1       | Hong Kong Dollar                        | HK$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| TWD      | 1       | New Taiwan Dollar                       | NT$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| KRW      | 1       | South Korean Won                        | ₩    | fiat | 0              | 0         | system      | 2026-01-01 23:51:55.000000000 |
-| KPW      | 1       | North Korean Won                        | ₩    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| SGD      | 1       | Singapore Dollar                        | S$     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MYR      | 1       | Malaysian Ringgit                       | RM     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| IDR      | 1       | Indonesian Rupiah                       | Rp     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| THB      | 1       | Thai Baht                               | ฿    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| VND      | 1       | Vietnamese Dong                         | ₫    | fiat | 0              | 0         | system      | 2026-01-01 23:51:55.000000000 |
-| PHP      | 1       | Philippine Peso                         | ₱    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| INR      | 1       | Indian Rupee                            | ₹    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| PKR      | 1       | Pakistani Rupee                         | Rs     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BDT      | 1       | Bangladeshi Taka                        | ৳    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| LKR      | 1       | Sri Lankan Rupee                        | Rs     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| NPR      | 1       | Nepalese Rupee                          | Rs     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MMK      | 1       | Myanmar Kyat                            | K      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| KHR      | 1       | Cambodian Riel                          | ៛    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| LAK      | 1       | Lao Kip                                 | ₭    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MNT      | 1       | Mongolian Tugrik                        | ₮    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| KZT      | 1       | Kazakhstani Tenge                       | ₸    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| UZS      | 1       | Uzbekistani Som                         | сўм | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| KGS      | 1       | Kyrgyzstani Som                         | с     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| TJS      | 1       | Tajikistani Somoni                      | ЅМ   | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| TMT      | 1       | Turkmenistani Manat                     | m      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| AFN      | 1       | Afghan Afghani                          | ؋     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| AUD      | 1       | Australian Dollar                       | A$     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| NZD      | 1       | New Zealand Dollar                      | NZ$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| FJD      | 1       | Fijian Dollar                           | FJ$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| PGK      | 1       | Papua New Guinean Kina                  | K      | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| SBD      | 1       | Solomon Islands Dollar                  | SI$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| VUV      | 1       | Vanuatu Vatu                            | VT     | fiat | 0              | 0         | system      | 2026-01-01 23:51:55.000000000 |
-| WST      | 1       | Samoan Tala                             | WS$    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| TOP      | 1       | Tongan Paanga                           | T$     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MOP      | 1       | Macanese Pataca                         | MOP$   | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BND      | 1       | Brunei Dollar                           | B$     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| BTN      | 1       | Bhutanese Ngultrum                      | Nu.    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| MVR      | 1       | Maldivian Rufiyaa                       | Rf     | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| SAR      | 1       | Saudi Riyal                             | ﷼    | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-| AED      | 1       | UAE Dirham                              | د.إ  | fiat | 100            | 2         | system      | 2026-01-01 23:51:55.000000000 |
-+----------+---------+-----------------------------------------+--------+------+----------------+-----------+-------------+-------------------------------+
++----------+---------+-----------------------------------------+--------+------+----------------+-----------+----------------------------+-------------+-------------------------------+
+| ISO Code | Version | Name                                    | Symbol | Type | Fractions/Unit | Precision | Change Reason              | Recorded By | Recorded At                   |
++----------+---------+-----------------------------------------+--------+------+----------------+-----------+----------------------------+-------------+-------------------------------+
+| USD      | 2       | US Dollar                               | $      | fiat | 100            | 1         | common.non_material_update | newuser3    | 2026-01-09 21:05:44.000000000 |
+| CAD      | 1       | Canadian Dollar                         | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MXN      | 1       | Mexican Peso                            | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BRL      | 1       | Brazilian Real                          | R$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| ARS      | 1       | Argentine Peso                          | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| CLP      | 1       | Chilean Peso                            | $      | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| COP      | 1       | Colombian Peso                          | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| PEN      | 1       | Peruvian Sol                            | S/     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| UYU      | 1       | Uruguayan Peso                          | $U     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| PYG      | 1       | Paraguayan Guarani                      | ₲    | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BOB      | 1       | Bolivian Boliviano                      | Bs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| VES      | 1       | Venezuelan Bolivar                      | Bs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| CRC      | 1       | Costa Rican Colon                       | ₡    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| PAB      | 1       | Panamanian Balboa                       | B/.    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| GTQ      | 1       | Guatemalan Quetzal                      | Q      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| HNL      | 1       | Honduran Lempira                        | L      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| NIO      | 1       | Nicaraguan Cordoba                      | C$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| DOP      | 1       | Dominican Peso                          | RD$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| CUP      | 1       | Cuban Peso                              | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| JMD      | 1       | Jamaican Dollar                         | J$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| TTD      | 1       | Trinidad and Tobago Dollar              | TT$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BBD      | 1       | Barbadian Dollar                        | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BSD      | 1       | Bahamian Dollar                         | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| HTG      | 1       | Haitian Gourde                          | G      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| SRD      | 1       | Surinamese Dollar                       | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| GYD      | 1       | Guyanese Dollar                         | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BZD      | 1       | Belize Dollar                           | BZ$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| AWG      | 1       | Aruban Florin                           | ƒ     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| ANG      | 1       | Netherlands Antillean Guilder           | ƒ     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| KYD      | 1       | Cayman Islands Dollar                   | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BMD      | 1       | Bermudian Dollar                        | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| FKP      | 1       | Falkland Islands Pound                  | £     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| XCD      | 1       | East Caribbean Dollar                   | $      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| EUR      | 1       | Euro                                    | €    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| GBP      | 1       | British Pound Sterling                  | £     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| CHF      | 1       | Swiss Franc                             | CHF    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| NOK      | 1       | Norwegian Krone                         | kr     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| SEK      | 1       | Swedish Krona                           | kr     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| DKK      | 1       | Danish Krone                            | kr     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| ISK      | 1       | Icelandic Krona                         | kr     | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| PLN      | 1       | Polish Zloty                            | zł    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| CZK      | 1       | Czech Koruna                            | Kč    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| HUF      | 1       | Hungarian Forint                        | Ft     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| RON      | 1       | Romanian Leu                            | lei    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BGN      | 1       | Bulgarian Lev                           | лв   | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| HRK      | 1       | Croatian Kuna                           | kn     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| RSD      | 1       | Serbian Dinar                           | дин | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BAM      | 1       | Bosnia and Herzegovina Convertible Mark | KM     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MKD      | 1       | Macedonian Denar                        | ден | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| ALL      | 1       | Albanian Lek                            | L      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MDL      | 1       | Moldovan Leu                            | L      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| UAH      | 1       | Ukrainian Hryvnia                       | ₴    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BYN      | 1       | Belarusian Ruble                        | Br     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| RUB      | 1       | Russian Ruble                           | ₽    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| GEL      | 1       | Georgian Lari                           | ₾    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| AMD      | 1       | Armenian Dram                           | ֏     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| AZN      | 1       | Azerbaijani Manat                       | ₼    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| TRY      | 1       | Turkish Lira                            | ₺    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| GIP      | 1       | Gibraltar Pound                         | £     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| JPY      | 1       | Japanese Yen                            | ¥     | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| CNY      | 1       | Chinese Yuan                            | ¥     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| HKD      | 1       | Hong Kong Dollar                        | HK$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| TWD      | 1       | New Taiwan Dollar                       | NT$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| KRW      | 1       | South Korean Won                        | ₩    | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| KPW      | 1       | North Korean Won                        | ₩    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| SGD      | 1       | Singapore Dollar                        | S$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MYR      | 1       | Malaysian Ringgit                       | RM     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| IDR      | 1       | Indonesian Rupiah                       | Rp     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| THB      | 1       | Thai Baht                               | ฿    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| VND      | 1       | Vietnamese Dong                         | ₫    | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| PHP      | 1       | Philippine Peso                         | ₱    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| INR      | 1       | Indian Rupee                            | ₹    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| PKR      | 1       | Pakistani Rupee                         | Rs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BDT      | 1       | Bangladeshi Taka                        | ৳    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| LKR      | 1       | Sri Lankan Rupee                        | Rs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| NPR      | 1       | Nepalese Rupee                          | Rs     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MMK      | 1       | Myanmar Kyat                            | K      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| KHR      | 1       | Cambodian Riel                          | ៛    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| LAK      | 1       | Lao Kip                                 | ₭    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MNT      | 1       | Mongolian Tugrik                        | ₮    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| KZT      | 1       | Kazakhstani Tenge                       | ₸    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| UZS      | 1       | Uzbekistani Som                         | сўм | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| KGS      | 1       | Kyrgyzstani Som                         | с     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| TJS      | 1       | Tajikistani Somoni                      | ЅМ   | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| TMT      | 1       | Turkmenistani Manat                     | m      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| AFN      | 1       | Afghan Afghani                          | ؋     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| AUD      | 1       | Australian Dollar                       | A$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| NZD      | 1       | New Zealand Dollar                      | NZ$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| FJD      | 1       | Fijian Dollar                           | FJ$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| PGK      | 1       | Papua New Guinean Kina                  | K      | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| SBD      | 1       | Solomon Islands Dollar                  | SI$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| VUV      | 1       | Vanuatu Vatu                            | VT     | fiat | 0              | 0         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| WST      | 1       | Samoan Tala                             | WS$    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| TOP      | 1       | Tongan Paanga                           | T$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MOP      | 1       | Macanese Pataca                         | MOP$   | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BND      | 1       | Brunei Dollar                           | B$     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| BTN      | 1       | Bhutanese Ngultrum                      | Nu.    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| MVR      | 1       | Maldivian Rufiyaa                       | Rf     | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| SAR      | 1       | Saudi Riyal                             | ﷼    | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
+| AED      | 1       | UAE Dirham                              | د.إ  | fiat | 100            | 2         | system.new_record          | system      | 2026-01-09 16:37:39.000000000 |
++----------+---------+-----------------------------------------+--------+------+----------------+-----------+----------------------------+-------------+-------------------------------+
 
 
 
@@ -1042,7 +1186,62 @@ EOF
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Currency added successfully!
+ores-shell> ✗ Failed to add currency: Failed to save currency: Repository error: Executing INSERT failed: ERROR:  new row for relation "currencies" violates check constraint "currencies_change_reason_code_check"
+DETAIL:  Failing row contains (TEST700, 1, Test700, 700, A, , 100, Nearest, 2, , fiat, null, newuser3, , , 2026-01-11 18:59:25.874112+00, 9999-12-31 23:59:59+00).
+
+ores-shell> Bye!
+#+end_example
+
+*** Delete
+
+Delete a currency by ISO code.
+
+#+name: currencies-delete
+#+begin_src ores-shell :exports none
+currencies delete TEST700
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<currencies-delete>>
+EOF
+#+end_src
+
+*** History
+
+Get version history for a currency.
+
+#+name: currencies-history
+#+begin_src ores-shell :exports none
+currencies history USD
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<currencies-history>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++---------+----------+-----------+-------------+-------------------------------+----------------+
+| Version | ISO Code | Name      | Recorded By | Recorded At                   | Change Summary |
++---------+----------+-----------+-------------+-------------------------------+----------------+
+| 2       | USD      | US Dollar | newuser3    | 2026-01-09 21:05:44.000000000 | Version 2      |
+| 1       | USD      | US Dollar | system      | 2026-01-09 16:37:39.000000000 | Version 1      |
++---------+----------+-----------+-------------+-------------------------------+----------------+
+
+
 ores-shell> Bye!
 #+end_example
 
@@ -1157,30 +1356,30 @@ ores-shell>
 +--------------------------------------+-------------------------+---------------------------------------+
 | ID (UUID)                            | Code                    | Description                           |
 +--------------------------------------+-------------------------+---------------------------------------+
-| 8f827c95-2af4-4d78-9ccb-22f5d9f4df99 | *                       | Full access to all operations         |
-| 9e337a58-2ee6-4de4-8946-76015de6e928 | accounts:create         | Create new user accounts              |
-| 7151df18-e4c9-4522-bb65-c1055a3e97c1 | accounts:delete         | Delete user accounts                  |
-| c225162e-2b04-4685-b1be-0bacbe367e45 | accounts:lock           | Lock user accounts                    |
-| 4956001c-5ece-4dc8-b437-c834045c25eb | accounts:read           | View user account details             |
-| 5f5f8909-3820-411f-a9f2-d5efb5ad351a | accounts:reset_password | Force password reset on user accounts |
-| fc5587f3-72ad-4706-a1ac-ca735af5a919 | accounts:unlock         | Unlock user accounts                  |
-| cf4ac1a8-b39e-4faa-b6d3-f9ed3d1ef41a | accounts:update         | Modify user account settings          |
-| 43ce84fb-b14a-490a-92d1-4eade25eda37 | currencies:create       | Create new currencies                 |
-| 7fb3f2e6-9b0d-4996-9c02-14e39a732acd | currencies:delete       | Delete currencies                     |
-| 5472a25a-40cf-4bac-9c95-dda2589f12f7 | currencies:history      | View currency version history         |
-| 17f8d400-47fa-4648-8b47-48ab3c1ec82b | currencies:read         | View currency details                 |
-| e1bca8df-8133-4c08-9365-160baf99125e | currencies:update       | Modify currency settings              |
-| 62e6e9ea-5258-41d2-9107-0602512801e6 | flags:create            | Create new feature flags              |
-| 8e42e330-5467-48c2-9a26-5af5b5fcb10e | flags:delete            | Delete feature flags                  |
-| 3b26954f-6368-4c12-b2e2-67797d442714 | flags:read              | View feature flag status              |
-| 5f72cfef-c8a9-4926-a1a3-f51c955595f7 | flags:update            | Modify feature flag settings          |
-| 12e8300a-e76c-4cd6-a439-2098e45393a2 | login_info:read         | View login history and info           |
-| 95d69095-1223-4dbb-970e-8042d90d61de | roles:assign            | Assign roles to accounts              |
-| 2301fe57-f568-4930-b3ec-4a9fba903932 | roles:create            | Create new roles                      |
-| e12a56d4-64a8-436d-8ad8-1909b2439369 | roles:delete            | Delete roles                          |
-| eba37c8c-79e2-4193-9a54-ceb555b1cdda | roles:read              | View role details                     |
-| cd69a420-e93b-4e41-9bab-ee8d6dcd0b7a | roles:revoke            | Revoke roles from accounts            |
-| af5743da-3042-469d-8487-ed859b9de7f5 | roles:update            | Modify role permissions               |
+| 963e09c4-9e79-4999-8328-6d75d2f07357 | *                       | Full access to all operations         |
+| ee6134aa-51da-463f-aef7-151ada8f1ef0 | accounts:create         | Create new user accounts              |
+| da55dfdd-5cc9-44fa-a180-a7b6a63f2c8b | accounts:delete         | Delete user accounts                  |
+| 2931b81c-54b4-416e-ac6a-ab16abaa83b0 | accounts:lock           | Lock user accounts                    |
+| 1bb87ab9-97b5-4da3-a630-247278e01b32 | accounts:read           | View user account details             |
+| 45763784-6d33-4404-9159-085afa320a74 | accounts:reset_password | Force password reset on user accounts |
+| 3051b7f0-26ef-48d6-89a0-0628f83ef8d4 | accounts:unlock         | Unlock user accounts                  |
+| 8526dcf5-e1d3-4b61-8060-74d464be79a1 | accounts:update         | Modify user account settings          |
+| 70302a28-b2c3-4a11-8f89-f5bb96ecaa36 | currencies:create       | Create new currencies                 |
+| 0ac3bdba-73c9-4519-87a7-338820adee11 | currencies:delete       | Delete currencies                     |
+| c2fb104f-140b-4c85-8853-81a92757bb68 | currencies:history      | View currency version history         |
+| d78c18f5-6705-408b-9512-5c7ac643796b | currencies:read         | View currency details                 |
+| 0ce6311e-7239-415f-818c-992ed784bf98 | currencies:update       | Modify currency settings              |
+| 106b9e3e-2ece-433d-8997-215c73e3de3a | flags:create            | Create new feature flags              |
+| 9206160e-3897-4277-bbae-d5c30d25b2fe | flags:delete            | Delete feature flags                  |
+| 58ea2c77-ca88-4d32-9022-bc92802910bc | flags:read              | View feature flag status              |
+| f846d3e5-6f63-4358-bfcc-cae3def9beb6 | flags:update            | Modify feature flag settings          |
+| 9cf7a227-a474-4bc7-9d4a-fc154d14f9b8 | login_info:read         | View login history and info           |
+| 2f503f67-77c2-49a7-aa7d-cf12afef08a3 | roles:assign            | Assign roles to accounts              |
+| c6c02365-8124-480e-b7e9-9a0474385723 | roles:create            | Create new roles                      |
+| 0154a24e-e857-4a63-abf4-346cf42c77ef | roles:delete            | Delete roles                          |
+| e2c6661e-9cd5-4979-a8df-2373d3526fd2 | roles:read              | View role details                     |
+| 2ff0ea13-c8b9-47be-97c1-dd4467a2df47 | roles:revoke            | Revoke roles from accounts            |
+| 1bbc70ed-b41b-46e0-b991-b1e81d5138b2 | roles:update            | Modify role permissions               |
 +--------------------------------------+-------------------------+---------------------------------------+
 
 
@@ -1215,32 +1414,32 @@ ores-shell>
 +--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
 | ID (UUID)                            | Name       | Description                                                   | Permissions                                                   | Recorded By | Version |
 +--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
-| dd2ecaec-138b-453c-a110-77441a60583e | Admin      | Full administrative access to all system functions            | *                                                             | system      | 1       |
-| b898350f-f704-4e97-b8ec-36c3481af052 | Operations | Operations - currency management and account viewing          | accounts:read, currencies:create, currencies:delete (+4 more) | system      | 1       |
-| d48b608d-c894-4346-887d-228e342d36c6 | Sales      | Sales operations - read-only currency access                  | currencies:read, flags:read                                   | system      | 1       |
-| d533c93f-bf3c-4d1f-bba8-4e949b976a8a | Support    | Support - read-only access to all resources and admin screens | accounts:read, currencies:history, currencies:read (+3 more)  | system      | 1       |
-| a74f8a4e-f331-4179-aecb-cda61e472805 | Trading    | Trading operations - currency read access                     | currencies:history, currencies:read, flags:read               | system      | 1       |
-| 6e4ee358-1970-400f-a3cb-fbcfe8296f52 | Viewer     | Viewer - basic read-only access to domain data                | currencies:read, flags:read                                   | system      | 1       |
+| f60d8103-0283-4d46-aa4c-aa6bb50934d9 | Admin      | Full administrative access to all system functions            | *                                                             | system      | 1       |
+| d6ac9d9f-91c3-40d2-998d-0e18604a8687 | Operations | Operations - currency management and account viewing          | accounts:read, currencies:create, currencies:delete (+4 more) | system      | 1       |
+| 82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b | Sales      | Sales operations - read-only currency access                  | currencies:read, flags:read                                   | system      | 1       |
+| 1bc4ce25-7f72-4ac1-b42a-6c11dd350906 | Support    | Support - read-only access to all resources and admin screens | accounts:read, currencies:history, currencies:read (+3 more)  | system      | 1       |
+| a6eb024f-0c0c-4e0e-93a4-8fb5df41b2e2 | Trading    | Trading operations - currency read access                     | currencies:history, currencies:read, flags:read               | system      | 1       |
+| 0810cd81-1d89-455f-9eb7-90e126c4a241 | Viewer     | Viewer - basic read-only access to domain data                | currencies:read, flags:read                                   | system      | 1       |
 +--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
 
 
 ores-shell> Bye!
 #+end_example
 
-*** Show Role
+*** Get Role
 
-Show details for a specific role.
+Get details for a specific role.
 
-#+name: show-role
+#+name: get-role
 #+begin_src ores-shell :exports none
-roles show Admin
+roles get Admin
 exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
 ./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
-<<show-role>>
+<<get-role>>
 EOF
 #+end_src
 
@@ -1254,11 +1453,14 @@ Type 'help' for available commands, 'exit' to quit.
 ores-shell>
 Role Details
 ============
-ID:          dd2ecaec-138b-453c-a110-77441a60583e
-Name:        Admin
-Description: Full administrative access to all system functions
-Version:     1
-Recorded By: system
+ID:            f60d8103-0283-4d46-aa4c-aa6bb50934d9
+Name:          Admin
+Description:   Full administrative access to all system functions
+Version:       1
+Change Reason: system.new_record
+Commentary:    System seed data
+Recorded By:   system
+Recorded At:   2026-01-09 16:37:36.000000000
 
 Permissions (1):
 -------------
@@ -1586,6 +1788,652 @@ Setting takes effect on next connection.
 ores-shell> Compression: on (zlib)
 ores-shell> Bye!
 #+end_example
+
+** Countries
+   :PROPERTIES:
+   :header-args+: :var login_args="--login-username newuser3"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :END:
+
+Functionality related to the countries domain entity.
+
+*** Help
+
+#+name: help-countries-exit
+#+begin_src ores-shell :exports none
+countries
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.comms.shell ${log_args} << 'EOF'
+<<help-countries-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> countries> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - get
+	Retrieve all countries from the server
+ - add <string> <string> <string> <string> <string> <string> <string>
+	Add a country (alpha2 alpha3 numeric name official_name reason_code "commentary")
+ - delete <string>
+	Delete a country by alpha-2 code
+ - history <string>
+	Get version history for a country by alpha-2 code
+ - ores-shell
+	(menu)
+countries> Bye!
+#+end_example
+
+*** Get
+
+Get all countries in the system.
+
+#+name: countries-get
+#+begin_src ores-shell :exports none
+countries get
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<countries-get>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> +---------+---------+---------+---------+-----------------------------------+---------------------------------------------------------------------------+----------------------+-------------+-------------------------------+
+| Alpha-2 | Alpha-3 | Numeric | Version | Name                              | Official Name                                                             | Change Reason        | Recorded By | Recorded At                   |
++---------+---------+---------+---------+-----------------------------------+---------------------------------------------------------------------------+----------------------+-------------+-------------------------------+
+| AE      | ARE     | 784     | 3       | United Arab Emirates              | United Arab Emirates                                                      | common.rectification | newuser3    | 2026-01-10 08:35:13.000000000 |
+| AF      | AFG     | 004     | 1       | Afghanistan                       | Islamic Republic of Afghanistan                                           | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| EE      | EST     | 233     | 1       | Estonia                           | Republic of Estonia                                                       | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| AI      | AIA     | 660     | 1       | Anguilla                          | Anguilla                                                                  | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| AL      | ALB     | 008     | 1       | Albania                           | Republic of Albania                                                       | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| AM      | ARM     | 051     | 1       | Armenia                           | Republic of Armenia                                                       | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BS      | BHS     | 044     | 1       | Bahamas                           | Commonwealth of The Bahamas                                               | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| AQ      | ATA     | 010     | 1       | Antarctica                        | Antarctica                                                                | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| AR      | ARG     | 032     | 1       | Argentina                         | Argentine Republic                                                        | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| AS      | ASM     | 016     | 1       | American Samoa                    | American Samoa                                                            | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| AT      | AUT     | 040     | 1       | Austria                           | Republic of Austria                                                       | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| AU      | AUS     | 036     | 1       | Australia                         | Commonwealth of Australia                                                 | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| AW      | ABW     | 533     | 1       | Aruba                             | Aruba                                                                     | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| AX      | ALA     | 248     | 1       | Åland Islands                    | Åland Islands                                                            | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| AZ      | AZE     | 031     | 1       | Azerbaijan                        | Republic of Azerbaijan                                                    | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BA      | BIH     | 070     | 1       | Bosnia and Herzegovina            | Bosnia and Herzegovina                                                    | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BB      | BRB     | 052     | 1       | Barbados                          | Barbados                                                                  | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BD      | BGD     | 050     | 1       | Bangladesh                        | People's Republic of Bangladesh                                           | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BE      | BEL     | 056     | 1       | Belgium                           | Kingdom of Belgium                                                        | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BF      | BFA     | 854     | 1       | Burkina Faso                      | Burkina Faso                                                              | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BG      | BGR     | 100     | 1       | Bulgaria                          | Republic of Bulgaria                                                      | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BH      | BHR     | 048     | 1       | Bahrain                           | Kingdom of Bahrain                                                        | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BI      | BDI     | 108     | 1       | Burundi                           | Republic of Burundi                                                       | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BJ      | BEN     | 204     | 1       | Benin                             | Republic of Benin                                                         | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BL      | BLM     | 652     | 1       | Saint Barthélemy                 | Saint Barthélemy                                                         | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BM      | BMU     | 060     | 1       | Bermuda                           | Bermuda                                                                   | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BN      | BRN     | 096     | 1       | Brunei                            | Brunei Darussalam                                                         | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BO      | BOL     | 068     | 1       | Bolivia                           | Plurinational State of Bolivia                                            | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BQ      | BES     | 535     | 1       | Bonaire, Sint Eustatius and Saba  | Bonaire, Sint Eustatius and Saba                                          | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BR      | BRA     | 076     | 1       | Brazil                            | Federative Republic of Brazil                                             | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| AO      | AGO     | 024     | 1       | Angola                            | Republic of Angola                                                        | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BT      | BTN     | 064     | 1       | Bhutan                            | Kingdom of Bhutan                                                         | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BV      | BVT     | 074     | 1       | Bouvet Island                     | Bouvet Island                                                             | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BW      | BWA     | 072     | 1       | Botswana                          | Republic of Botswana                                                      | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BY      | BLR     | 112     | 1       | Belarus                           | Republic of Belarus                                                       | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| BZ      | BLZ     | 084     | 1       | Belize                            | Belize                                                                    | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CA      | CAN     | 124     | 1       | Canada                            | Canada                                                                    | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CC      | CCK     | 166     | 1       | Cocos (Keeling) Islands           | Cocos (Keeling) Islands                                                   | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CD      | COD     | 180     | 1       | DR Congo                          | Democratic Republic of the Congo                                          | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CF      | CAF     | 140     | 1       | Central African Republic          | Central African Republic                                                  | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CG      | COG     | 178     | 1       | Congo                             | Republic of the Congo                                                     | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CH      | CHE     | 756     | 1       | Switzerland                       | Swiss Confederation                                                       | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CI      | CIV     | 384     | 1       | Côte d'Ivoire                    | Republic of Côte d'Ivoire                                                | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CK      | COK     | 184     | 1       | Cook Islands                      | Cook Islands                                                              | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CL      | CHL     | 152     | 1       | Chile                             | Republic of Chile                                                         | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CM      | CMR     | 120     | 1       | Cameroon                          | Republic of Cameroon                                                      | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CN      | CHN     | 156     | 1       | China                             | People's Republic of China                                                | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CO      | COL     | 170     | 1       | Colombia                          | Republic of Colombia                                                      | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CR      | CRI     | 188     | 1       | Costa Rica                        | Republic of Costa Rica                                                    | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CU      | CUB     | 192     | 1       | Cuba                              | Republic of Cuba                                                          | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CV      | CPV     | 132     | 1       | Cape Verde                        | Republic of Cabo Verde                                                    | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CW      | CUW     | 531     | 1       | Curaçao                          | Curaçao                                                                  | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CX      | CXR     | 162     | 1       | Christmas Island                  | Christmas Island                                                          | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CY      | CYP     | 196     | 1       | Cyprus                            | Republic of Cyprus                                                        | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| CZ      | CZE     | 203     | 1       | Czechia                           | Czech Republic                                                            | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| DE      | DEU     | 276     | 1       | Germany                           | Federal Republic of Germany                                               | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| DJ      | DJI     | 262     | 1       | Djibouti                          | Republic of Djibouti                                                      | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| DK      | DNK     | 208     | 1       | Denmark                           | Kingdom of Denmark                                                        | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| DM      | DMA     | 212     | 1       | Dominica                          | Commonwealth of Dominica                                                  | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| DO      | DOM     | 214     | 1       | Dominican Republic                | Dominican Republic                                                        | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| DZ      | DZA     | 012     | 1       | Algeria                           | People's Democratic Republic of Algeria                                   | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| EC      | ECU     | 218     | 1       | Ecuador                           | Republic of Ecuador                                                       | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| AG      | ATG     | 028     | 1       | Antigua and Barbuda               | Antigua and Barbuda                                                       | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| EG      | EGY     | 818     | 1       | Egypt                             | Arab Republic of Egypt                                                    | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| EH      | ESH     | 732     | 1       | Western Sahara                    | Western Sahara                                                            | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| ER      | ERI     | 232     | 1       | Eritrea                           | State of Eritrea                                                          | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| ES      | ESP     | 724     | 1       | Spain                             | Kingdom of Spain                                                          | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| ET      | ETH     | 231     | 1       | Ethiopia                          | Federal Democratic Republic of Ethiopia                                   | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| FI      | FIN     | 246     | 1       | Finland                           | Republic of Finland                                                       | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| FJ      | FJI     | 242     | 1       | Fiji                              | Republic of Fiji                                                          | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| FK      | FLK     | 238     | 1       | Falkland Islands                  | Falkland Islands                                                          | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| FM      | FSM     | 583     | 1       | Micronesia                        | Federated States of Micronesia                                            | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| FO      | FRO     | 234     | 1       | Faroe Islands                     | Faroe Islands                                                             | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| FR      | FRA     | 250     | 1       | France                            | French Republic                                                           | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GA      | GAB     | 266     | 1       | Gabon                             | Gabonese Republic                                                         | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GB      | GBR     | 826     | 1       | United Kingdom                    | United Kingdom of Great Britain and Northern Ireland                      | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GD      | GRD     | 308     | 1       | Grenada                           | Grenada                                                                   | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GE      | GEO     | 268     | 1       | Georgia                           | Georgia                                                                   | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GF      | GUF     | 254     | 1       | French Guiana                     | French Guiana                                                             | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GG      | GGY     | 831     | 1       | Guernsey                          | Bailiwick of Guernsey                                                     | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GH      | GHA     | 288     | 1       | Ghana                             | Republic of Ghana                                                         | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GI      | GIB     | 292     | 1       | Gibraltar                         | Gibraltar                                                                 | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GL      | GRL     | 304     | 1       | Greenland                         | Greenland                                                                 | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GM      | GMB     | 270     | 1       | Gambia                            | Republic of The Gambia                                                    | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GN      | GIN     | 324     | 1       | Guinea                            | Republic of Guinea                                                        | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GP      | GLP     | 312     | 1       | Guadeloupe                        | Guadeloupe                                                                | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GQ      | GNQ     | 226     | 1       | Equatorial Guinea                 | Republic of Equatorial Guinea                                             | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GR      | GRC     | 300     | 1       | Greece                            | Hellenic Republic                                                         | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GS      | SGS     | 239     | 1       | South Georgia                     | South Georgia and the South Sandwich Islands                              | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GT      | GTM     | 320     | 1       | Guatemala                         | Republic of Guatemala                                                     | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GU      | GUM     | 316     | 1       | Guam                              | Guam                                                                      | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GW      | GNB     | 624     | 1       | Guinea-Bissau                     | Republic of Guinea-Bissau                                                 | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| GY      | GUY     | 328     | 1       | Guyana                            | Co-operative Republic of Guyana                                           | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| HK      | HKG     | 344     | 1       | Hong Kong                         | Hong Kong Special Administrative Region of the People's Republic of China | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| HM      | HMD     | 334     | 1       | Heard Island and McDonald Islands | Heard Island and McDonald Islands                                         | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| HN      | HND     | 340     | 1       | Honduras                          | Republic of Honduras                                                      | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| HR      | HRV     | 191     | 1       | Croatia                           | Republic of Croatia                                                       | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| HT      | HTI     | 332     | 1       | Haiti                             | Republic of Haiti                                                         | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| HU      | HUN     | 348     | 1       | Hungary                           | Hungary                                                                   | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
+| AD      | AND     | 020     | 1       | Andorra                           | Principality of Andorra                                                   | system.new_record    | system      | 2026-01-09 16:37:38.000000000 |
++---------+---------+---------+---------+-----------------------------------+---------------------------------------------------------------------------+----------------------+-------------+-------------------------------+
+
+ores-shell> Bye!
+#+end_example
+
+*** Add
+
+Add a new country.
+
+#+name: countries-add
+#+begin_src ores-shell :exports none
+countries add XY XYZ 1234 Xyzland "Xyzland land" "system.new" "New country"
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<countries-add>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Country added successfully!
+ores-shell> Bye!
+#+end_example
+
+*** Delete
+
+Delete a country by ISO code.
+
+#+name: countries-delete
+#+begin_src ores-shell :exports none
+countries delete XYZ
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<countries-delete>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Country XYZ deleted successfully!
+ores-shell> Bye!
+#+end_example
+
+*** History
+
+Get version history for a country.
+
+#+name: countries-history
+#+begin_src ores-shell :exports none
+countries history US
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<countries-history>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> +---------+---------+---------+---------+---------------+--------------------------+-------------------+-------------+-------------------------------+
+| Alpha-2 | Alpha-3 | Numeric | Version | Name          | Official Name            | Change Reason     | Recorded By | Recorded At                   |
++---------+---------+---------+---------+---------------+--------------------------+-------------------+-------------+-------------------------------+
+| US      | USA     | 840     | 1       | United States | United States of America | system.new_record | system      | 2026-01-09 16:37:38.000000000 |
++---------+---------+---------+---------+---------------+--------------------------+-------------------+-------------+-------------------------------+
+
+ores-shell> Bye!
+#+end_example
+
+
+** Change Reasons
+   :PROPERTIES:
+   :header-args+: :var login_args="--login-username newuser3"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :END:
+
+Functionality related to the change reasons domain entity.
+
+*** Help
+
+#+name: help-change-reasons-exit
+#+begin_src ores-shell :exports none
+change-reasons
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.comms.shell ${log_args} << 'EOF'
+<<help-change-reasons-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> change-reasons> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - get
+	Retrieve all change reasons from the server
+ - add <string> <string> <string> <string>
+	Add a change reason (code description category_code "commentary")
+ - delete <string>
+	Delete a change reason by code
+ - history <string>
+	Get version history for a change reason by code
+ - ores-shell
+	(menu)
+change-reasons> Bye!
+#+end_example
+
+*** Get
+
+Get all change reasons in the system.
+
+#+name: change-reasons-get
+#+begin_src ores-shell :exports none
+change-reasons get
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reasons-get>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++-----------------------------+----------+----------------------------------------------------+-------+--------+--------------+-------+-------------+---------+
+| Code                        | Category | Description                                        | Amend | Delete | Req. Comment | Order | Recorded By | Version |
++-----------------------------+----------+----------------------------------------------------+-------+--------+--------------+-------+-------------+---------+
+| system.initial_load         | system   | Initial system bootstrap or migration              | N     | N      | N            | 0     | system      | 1       |
+| common.non_material_update  | common   | Non-material update (Touch)                        | Y     | N      | N            | 10    | system      | 1       |
+| system.new_record           | system   | New record created during normal operations        | N     | N      | N            | 10    | system      | 1       |
+| trade.fat_finger            | trade    | Erroneous execution (wrong quantity/price)         | Y     | Y      | N            | 10    | system      | 1       |
+| common.rectification        | common   | User/Booking Error                                 | Y     | Y      | N            | 20    | system      | 1       |
+| system.external_data_import | system   | External data import (requires data lineage)       | Y     | N      | Y            | 20    | system      | 1       |
+| trade.system_malfunction    | trade    | Technical glitch or algorithm issue 2              | Y     | Y      | Y            | 20    | newuser3    | 4       |
+| common.duplicate            | common   | Duplicate Record                                   | N     | Y      | N            | 30    | system      | 1       |
+| trade.corporate_action      | trade    | Stock split, dividend, or merger adjustment        | Y     | Y      | N            | 30    | system      | 1       |
+| common.stale_data           | common   | Data not updated within required liquidity horizon | Y     | Y      | N            | 40    | system      | 1       |
+| trade.allocation_swap       | trade    | House to client sub-account reallocation           | Y     | Y      | N            | 40    | system      | 1       |
+| common.outlier_correction   | common   | Manual override after plausibility check failure   | Y     | Y      | Y            | 50    | system      | 1       |
+| trade.re_booking            | trade    | Wrong legal entity correction                      | Y     | Y      | Y            | 50    | system      | 1       |
+| common.feed_failure         | common   | Upstream vendor/API data issue                     | Y     | Y      | Y            | 60    | system      | 1       |
+| common.mapping_error        | common   | Incorrect ID translation (e.g., ISIN to FIGI)      | Y     | Y      | Y            | 70    | system      | 1       |
+| common.judgmental_override  | common   | Expert judgment when market prices unavailable     | Y     | Y      | Y            | 80    | system      | 1       |
+| common.regulatory           | common   | Mandatory compliance adjustment                    | Y     | Y      | Y            | 90    | system      | 1       |
+| trade.other                 | trade    | Exceptional (requires audit note)                  | N     | Y      | Y            | 999   | newuser3    | 2       |
+| common.other                | common   | Exceptional (requires audit note)                  | Y     | Y      | Y            | 1000  | system      | 1       |
++-----------------------------+----------+----------------------------------------------------+-------+--------+--------------+-------+-------------+---------+
+
+
+ores-shell> Bye!
+#+end_example
+
+*** Add
+
+Add a new change reason.
+
+#+name: change-reasons-add
+#+begin_src ores-shell :exports none
+change-reasons add test_reason "Test reason for recipes" common "New reason for testing."
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reasons-add>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Change reason added successfully!
+ores-shell> Bye!
+#+end_example
+
+*** Delete
+
+Delete a change reason by code.
+
+#+name: change-reasons-delete
+#+begin_src ores-shell :exports none
+change-reasons delete test_reason
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reasons-delete>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Change reason test_reason deleted successfully!
+ores-shell> Bye!
+#+end_example
+
+*** History
+
+Get version history for a change reason.
+
+#+name: change-reasons-history
+#+begin_src ores-shell :exports none
+change-reasons history system.initial_load
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reasons-history>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++---------------------+----------+---------------------------------------+-------+--------+--------------+-------+-------------+---------+
+| Code                | Category | Description                           | Amend | Delete | Req. Comment | Order | Recorded By | Version |
++---------------------+----------+---------------------------------------+-------+--------+--------------+-------+-------------+---------+
+| system.initial_load | system   | Initial system bootstrap or migration | N     | N      | N            | 0     | system      | 1       |
++---------------------+----------+---------------------------------------+-------+--------+--------------+-------+-------------+---------+
+
+
+ores-shell> Bye!
+#+end_example
+
+
+** Change Reason Categories
+   :PROPERTIES:
+   :header-args+: :var login_args="--login-username newuser3"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :END:
+
+Functionality related to the change reason categories domain entity.
+
+*** Help
+
+#+name: help-change-reasons-categories-exit
+#+begin_src ores-shell :exports none
+change-reason-categories
+help
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+./ores.comms.shell ${log_args} << 'EOF'
+<<help-change-reasons-categories-exit>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> change-reason-categories> Commands available:
+ - help
+	This help message
+ - exit
+	Quit the session
+ - history
+	Show the history
+ - ! <history entry index>
+	Exec a command by index in the history
+ - get
+	Retrieve all change reason categories from the server
+ - add <string> <string> <string>
+	Add a category (code description "commentary")
+ - delete <string>
+	Delete a category by code
+ - history <string>
+	Get version history for a category by code
+ - ores-shell
+	(menu)
+change-reason-categories> Bye!
+#+end_example
+
+*** Get
+
+Get all change reason categories in the system.
+
+#+name: change-reason-categories-get
+#+begin_src ores-shell :exports none
+change-reason-categories get
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reason-categories-get>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++--------+-------------------------------------------------------------------------+-------------+---------+
+| Code   | Description                                                             | Recorded By | Version |
++--------+-------------------------------------------------------------------------+-------------+---------+
+| common | Universal data quality reasons aligned with BCBS 239 and FRTB standards | system      | 1       |
+| system | System-generated reasons for automatic operations (not user-selectable) | system      | 1       |
+| trade  | Trade lifecycle reasons aligned with FINRA and MiFID II standards. test | newuser3    | 7       |
++--------+-------------------------------------------------------------------------+-------------+---------+
+
+
+ores-shell> Bye!
+#+end_example
+
+*** Add
+
+Add a new change reason category.
+
+#+name: change-reason-categories-add
+#+begin_src ores-shell :exports none
+change-reason-categories add TEST_CATEGORY "Test category for recipes" "New test category."
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reason-categories-add>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Category added successfully!
+ores-shell> Bye!
+#+end_example
+
+*** Delete
+
+Delete a change reason category by code.
+
+#+name: change-reason-categories-delete
+#+begin_src ores-shell :exports none
+change-reason-categories delete TEST_CATEGORY
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reason-categories-delete>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Category TEST_CATEGORY deleted successfully!
+ores-shell> Bye!
+#+end_example
+
+*** History
+
+Get version history for a change reason category.
+
+#+name: change-reason-categories-history
+#+begin_src ores-shell :exports none
+change-reason-categories history system
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output  :wrap example
+export ORES_COMMS_SHELL_LOGIN_PASSWORD
+./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+<<change-reason-categories-history>>
+EOF
+#+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++--------+-------------------------------------------------------------------------+-------------+---------+
+| Code   | Description                                                             | Recorded By | Version |
++--------+-------------------------------------------------------------------------+-------------+---------+
+| system | System-generated reasons for automatic operations (not user-selectable) | system      | 1       |
++--------+-------------------------------------------------------------------------+-------------+---------+
+
+
+ores-shell> Bye!
+#+end_example
+
 
 * Footer
 

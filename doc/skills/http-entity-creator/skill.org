@@ -247,7 +247,7 @@ register_routes(std::shared_ptr<http::net::router> router,
 
     // GET /api/v1/<entities> - List all <entities>
     {
-        auto route = router->get("/api/v1/<entities>")
+        auto route_builder = router->get("/api/v1/<entities>")
             .summary("Get <entities>")
             .description("Retrieve <entities> with pagination")
             .tags({"<entities>"})
@@ -258,13 +258,14 @@ register_routes(std::shared_ptr<http::net::router> router,
             .handler([this](const http_request& req) {
                 return handle_get_<entities>(req);
             });
-        router->add_route(route.build());
-        registry->register_route(route.build());
+        const auto route = route_builder.build();
+        router->add_route(route);
+        registry->register_route(route);
     }
 
     // POST /api/v1/<entities> - Save <entity>
     {
-        auto route = router->post("/api/v1/<entities>")
+        auto route_builder = router->post("/api/v1/<entities>")
             .summary("Save <entity>")
             .description("Create or update a <entity>")
             .tags({"<entities>"})
@@ -275,8 +276,9 @@ register_routes(std::shared_ptr<http::net::router> router,
             .handler([this](const http_request& req) {
                 return handle_save_<entity>(req);
             });
-        router->add_route(route.build());
-        registry->register_route(route.build());
+        const auto route = route_builder.build();
+        router->add_route(route);
+        registry->register_route(route);
     }
 }
 
@@ -494,7 +496,7 @@ Add to =register_routes()=:
 #+begin_src cpp
     // DELETE /api/v1/<entities> - Delete <entities>
     {
-        auto route = router->delete_("/api/v1/<entities>")
+        auto route_builder = router->delete_("/api/v1/<entities>")
             .summary("Delete <entities>")
             .description("Delete one or more <entities>")
             .tags({"<entities>"})
@@ -505,8 +507,9 @@ Add to =register_routes()=:
             .handler([this](const http_request& req) {
                 return handle_delete_<entities>(req);
             });
-        router->add_route(route.build());
-        registry->register_route(route.build());
+        const auto route = route_builder.build();
+        router->add_route(route);
+        registry->register_route(route);
     }
 #+end_src
 
@@ -577,7 +580,7 @@ Add version history retrieval.
 #+begin_src cpp
     // GET /api/v1/<entities>/{id}/history - Get <entity> history
     {
-        auto route = router->get("/api/v1/<entities>/{<identifier>}/history")
+        auto route_builder = router->get("/api/v1/<entities>/{<identifier>}/history")
             .summary("Get <entity> history")
             .description("Retrieve version history for a <entity>")
             .tags({"<entities>"})
@@ -586,8 +589,9 @@ Add version history retrieval.
             .handler([this](const http_request& req) {
                 return handle_get_<entity>_history(req);
             });
-        router->add_route(route.build());
-        registry->register_route(route.build());
+        const auto route = route_builder.build();
+        router->add_route(route);
+        registry->register_route(route);
     }
 #+end_src
 

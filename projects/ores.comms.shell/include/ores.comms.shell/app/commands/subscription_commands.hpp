@@ -58,9 +58,14 @@ public:
     /**
      * @brief List available event channels.
      *
+     * Queries the server for the list of available event channels
+     * that clients can subscribe to.
+     *
      * @param out Output stream for user feedback
+     * @param session Client session for server communication
      */
-    static void process_channels(std::ostream& out);
+    static void process_channels(std::ostream& out,
+        comms::net::client_session& session);
 
     /**
      * @brief Process a listen (subscribe) request.

@@ -25,8 +25,9 @@ namespace ores::comms::service {
 using namespace ores::logging;
 
 subscription_handler::subscription_handler(
-    std::shared_ptr<subscription_manager> manager)
-    : manager_(std::move(manager)) {
+    std::shared_ptr<subscription_manager> manager,
+    std::shared_ptr<eventing::service::event_channel_registry> registry)
+    : manager_(std::move(manager)), registry_(std::move(registry)) {
     BOOST_LOG_SEV(lg(), debug) << "Subscription handler created.";
 }
 
@@ -45,6 +46,9 @@ subscription_handler::handle_message(messaging::message_type type,
 
     case messaging::message_type::unsubscribe_request:
         co_return handle_unsubscribe_request(payload, remote_address);
+
+    case messaging::message_type::list_event_channels_request:
+        co_return handle_list_event_channels_request(payload, remote_address);
 
     default:
         BOOST_LOG_SEV(lg(), error)
@@ -119,6 +123,30 @@ subscription_handler::handle_unsubscribe_request(std::span<const std::byte> payl
             << "Unsubscribe for " << remote_address
             << " from '" << request->event_type << "' - was not subscribed";
     }
+
+    return response.serialize();
+}
+
+std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
+subscription_handler::handle_list_event_channels_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+
+    auto request = messaging::list_event_channels_request::deserialize(payload);
+    if (!request) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to deserialize list_event_channels_request from " << remote_address
+            << ": " << static_cast<int>(request.error());
+        return std::unexpected(request.error());
+    }
+
+    BOOST_LOG_SEV(lg(), info)
+        << "Processing list_event_channels request from " << remote_address;
+
+    messaging::list_event_channels_response response;
+    response.channels = registry_->get_channels();
+
+    BOOST_LOG_SEV(lg(), info)
+        << "Returning " << response.channels.size() << " event channels to " << remote_address;
 
     return response.serialize();
 }

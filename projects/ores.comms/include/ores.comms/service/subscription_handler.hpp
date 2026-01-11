@@ -22,6 +22,7 @@
 
 #include <memory>
 #include "ores.logging/make_logger.hpp"
+#include "ores.eventing/service/event_channel_registry.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.comms/service/subscription_manager.hpp"
 
@@ -30,8 +31,9 @@ namespace ores::comms::service {
 /**
  * @brief Message handler for subscription protocol messages.
  *
- * Handles subscribe_request and unsubscribe_request messages from clients,
- * delegating to the subscription_manager to track subscriptions.
+ * Handles subscribe_request, unsubscribe_request, and list_event_channels_request
+ * messages from clients, delegating to the subscription_manager to track subscriptions
+ * and the event_channel_registry for channel discovery.
  *
  * Note: notification messages are server-initiated and are sent via the
  * subscription_manager's notify() method, not through this handler.
@@ -50,9 +52,11 @@ public:
      * @brief Construct a subscription handler.
      *
      * @param manager Shared subscription manager for tracking subscriptions.
+     * @param registry Shared event channel registry for channel discovery.
      */
-    explicit subscription_handler(
-        std::shared_ptr<subscription_manager> manager);
+    subscription_handler(
+        std::shared_ptr<subscription_manager> manager,
+        std::shared_ptr<eventing::service::event_channel_registry> registry);
 
     /**
      * @brief Handle a subscription protocol message.
@@ -82,7 +86,15 @@ private:
     handle_unsubscribe_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    /**
+     * @brief Handle list_event_channels_request message.
+     */
+    std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
+    handle_list_event_channels_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     std::shared_ptr<subscription_manager> manager_;
+    std::shared_ptr<eventing::service::event_channel_registry> registry_;
 };
 
 }

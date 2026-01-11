@@ -21,6 +21,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <boost/asio/io_context.hpp>
 #include "ores.testing/run_coroutine_test.hpp"
+#include "ores.eventing/service/event_channel_registry.hpp"
 #include "ores.comms/messaging/subscription_protocol.hpp"
 #include "ores.comms/service/subscription_manager.hpp"
 #include "ores.comms/service/subscription_handler.hpp"
@@ -207,7 +208,8 @@ TEST_CASE("subscription_handler handles subscribe request for registered session
     ores::testing::run_coroutine_test(io_ctx, []()
         -> boost::asio::awaitable<void> {
         auto mgr = std::make_shared<ores::comms::service::subscription_manager>();
-        ores::comms::service::subscription_handler handler(mgr);
+        auto registry = std::make_shared<ores::eventing::service::event_channel_registry>();
+        ores::comms::service::subscription_handler handler(mgr, registry);
 
         // Register the session first
         mgr->register_session("192.168.1.1:12345",
@@ -240,7 +242,8 @@ TEST_CASE("subscription_handler handles subscribe request for unregistered sessi
     ores::testing::run_coroutine_test(io_ctx, []()
         -> boost::asio::awaitable<void> {
         auto mgr = std::make_shared<ores::comms::service::subscription_manager>();
-        ores::comms::service::subscription_handler handler(mgr);
+        auto registry = std::make_shared<ores::eventing::service::event_channel_registry>();
+        ores::comms::service::subscription_handler handler(mgr, registry);
 
         // Don't register the session
 
@@ -267,7 +270,8 @@ TEST_CASE("subscription_handler handles unsubscribe request", tags) {
     ores::testing::run_coroutine_test(io_ctx, []()
         -> boost::asio::awaitable<void> {
         auto mgr = std::make_shared<ores::comms::service::subscription_manager>();
-        ores::comms::service::subscription_handler handler(mgr);
+        auto registry = std::make_shared<ores::eventing::service::event_channel_registry>();
+        ores::comms::service::subscription_handler handler(mgr, registry);
 
         // Register and subscribe
         mgr->register_session("192.168.1.1:12345",
@@ -300,7 +304,8 @@ TEST_CASE("subscription_handler returns error for unknown message type", tags) {
     ores::testing::run_coroutine_test(io_ctx, []()
         -> boost::asio::awaitable<void> {
         auto mgr = std::make_shared<ores::comms::service::subscription_manager>();
-        ores::comms::service::subscription_handler handler(mgr);
+        auto registry = std::make_shared<ores::eventing::service::event_channel_registry>();
+        ores::comms::service::subscription_handler handler(mgr, registry);
 
         std::vector<std::byte> payload;
 

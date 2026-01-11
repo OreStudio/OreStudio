@@ -251,16 +251,16 @@ This program is free software; you can redistribute it and/or modify
 *** Skill naming convention
 
 Use =ores-TOPIC-recipes= for consistency with existing skills:
-- =ores-shell-recipes=
-- =ores-cli-recipes=
+- [[id:30D0AE60-5892-411C-8013-E858FFBF628B][ores-shell-recipes]]
+- [[id:A962DF8E-783D-4DCF-BD60-9FEFAA2E1FBF][ores-cli-recipes]]
 - =ores-sql-recipes= (if created)
 
 ** Existing recipe skills
 
-| Skill                | Recipes file         | Compares against                          |
-|----------------------+----------------------+-------------------------------------------|
-| =ores-shell-recipes= | =shell_recipes.org=  | =projects/ores.comms.shell/src/app/commands/*=  |
-| =ores-cli-recipes=   | =cli_recipes.org=    | =projects/ores.cli/src/config/entity_parsers/*= |
+| Skill                                                       | Recipes file         | Compares against                                |
+|-------------------------------------------------------------+----------------------+-------------------------------------------------|
+| [[id:30D0AE60-5892-411C-8013-E858FFBF628B][ores-shell-recipes]] | =shell_recipes.org=  | =projects/ores.comms.shell/src/app/commands/*=  |
+| [[id:A962DF8E-783D-4DCF-BD60-9FEFAA2E1FBF][ores-cli-recipes]]   | =cli_recipes.org=    | =projects/ores.cli/src/config/entity_parsers/*= |
 
 ** Best practices
 

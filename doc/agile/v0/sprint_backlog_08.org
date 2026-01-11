@@ -17,46 +17,48 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-11 Sun 02:34], for Sunday, January 11, 2026.
+#+CAPTION: Clock summary at [2026-01-11 Sun 13:10], for Sunday, January 11, 2026.
 |      | <75>                    |        |      |      |       |
 | Tags | Headline                | Time   |      |      |     % |
 |------+-------------------------+--------+------+------+-------|
-|      | *Total time*            | *2:32* |      |      | 100.0 |
+|      | *Total time*            | *6:07* |      |      | 100.0 |
 |------+-------------------------+--------+------+------+-------|
-|      | Stories                 | 2:32   |      |      | 100.0 |
-|      | Active                  |        | 2:32 |      | 100.0 |
-| code | Change reasons UI fixes |        |      | 0:57 |  37.5 |
-| code | Add UI for log viewing  |        |      | 1:35 |  62.5 |
+|      | Stories                 | 6:07   |      |      | 100.0 |
+|      | Active                  |        | 6:07 |      | 100.0 |
+| code | Change reasons UI fixes |        |      | 0:57 |  15.5 |
+| code | Add UI for log viewing  |        |      | 1:35 |  25.9 |
+| code | Add key entity skills   |        |      | 3:35 |  58.6 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-11 Sun 02:34]
+#+CAPTION: Clock summary at [2026-01-11 Sun 13:11]
 |       | <75>                                         |         |       |       |       |
 | Tags  | Headline                                     | Time    |       |       |     % |
 |-------+----------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                 | *68:40* |       |       | 100.0 |
+|       | *Total time*                                 | *72:15* |       |       | 100.0 |
 |-------+----------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                      | 68:40   |       |       | 100.0 |
-|       | Active                                       |         | 68:40 |       | 100.0 |
-| agile | Sprint and product backlog refinement        |         |       |  1:50 |   2.7 |
-| code  | Rerun SQL scripts from scratch               |         |       |  7:52 |  11.5 |
-| code  | Run qt client and validate all new features  |         |       |  1:19 |   1.9 |
-| code  | Refactor options and parser                  |         |       |  0:27 |   0.7 |
-| code  | Check functionality in =ores.wt=             |         |       |  2:03 |   3.0 |
-| code  | Rename =ores.shell= to =ores.comms.shell=    |         |       |  1:30 |   2.2 |
-| code  | Review HTTP service                          |         |       |  7:24 |  10.8 |
-| code  | Assorted fixes to currency dialog            |         |       |  4:19 |   6.3 |
-| code  | Add support for offsets in pagination        |         |       |  1:46 |   2.6 |
-| code  | Assorted fixes to feature flags dialog       |         |       |  2:52 |   4.2 |
-| code  | Add country support                          |         |       |  6:31 |   9.5 |
-| code  | Amend and delete reasons base infrastructure |         |       |  5:58 |   8.7 |
-| code  | Change reasons UI fixes                      |         |       |  3:34 |   5.2 |
-| code  | Assorted fixes to currencies dialog          |         |       |  7:52 |  11.5 |
-| code  | Add UI for log viewing                       |         |       |  1:35 |   2.3 |
-| code  | Assorted fixes to accounts dialog            |         |       |  1:10 |   1.7 |
-| code  | Review comms analyser work                   |         |       |  0:27 |   0.7 |
-| code  | Review telemetry work                        |         |       | 10:11 |  14.8 |
+|       | Stories                                      | 72:15   |       |       | 100.0 |
+|       | Active                                       |         | 72:15 |       | 100.0 |
+| agile | Sprint and product backlog refinement        |         |       |  1:50 |   2.5 |
+| code  | Rerun SQL scripts from scratch               |         |       |  7:52 |  10.9 |
+| code  | Run qt client and validate all new features  |         |       |  1:19 |   1.8 |
+| code  | Refactor options and parser                  |         |       |  0:27 |   0.6 |
+| code  | Check functionality in =ores.wt=             |         |       |  2:03 |   2.8 |
+| code  | Rename =ores.shell= to =ores.comms.shell=    |         |       |  1:30 |   2.1 |
+| code  | Review HTTP service                          |         |       |  7:24 |  10.2 |
+| code  | Assorted fixes to currency dialog            |         |       |  4:19 |   6.0 |
+| code  | Add support for offsets in pagination        |         |       |  1:46 |   2.4 |
+| code  | Assorted fixes to feature flags dialog       |         |       |  2:52 |   4.0 |
+| code  | Add country support                          |         |       |  6:31 |   9.0 |
+| code  | Amend and delete reasons base infrastructure |         |       |  5:58 |   8.3 |
+| code  | Change reasons UI fixes                      |         |       |  3:34 |   4.9 |
+| code  | Assorted fixes to currencies dialog          |         |       |  7:52 |  10.9 |
+| code  | Add UI for log viewing                       |         |       |  1:35 |   2.2 |
+| code  | Add key entity skills                        |         |       |  3:35 |   5.0 |
+| code  | Assorted fixes to accounts dialog            |         |       |  1:10 |   1.6 |
+| code  | Review comms analyser work                   |         |       |  0:27 |   0.6 |
+| code  | Review telemetry work                        |         |       | 10:11 |  14.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -903,6 +905,173 @@ Notes:
 Links:
 
 - [[https://github.com/Dingola/Qt-LogViewer/tree/main][GH: Qt-LogViewer]]
+
+*** COMPLETED Add key entity skills                                    :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-11 Sun 10:05]--[2026-01-11 Sun 13:10] =>  3:05
+    CLOCK: [2026-01-11 Sun 08:45]--[2026-01-11 Sun 09:15] =>  0:30
+    :END:
+
+- we need skills for http end points, shell, cli, qt and wt.
+
+**** Qt Entity
+
+#+begin_quote
+This pull request significantly enhances development workflows by introducing
+two new documentation-based skills. The 'qt-entity-creator' skill provides a
+structured, phase-based guide for building comprehensive Qt user interfaces for
+domain entities, from data models to controllers. Complementing this, the
+'feature-branch-manager' skill offers a robust procedure for handling Git
+branches across these multi-phase projects, ensuring a clean and manageable
+commit history. Furthermore, the 'domain-type-creator' skill has been updated to
+incorporate these new phase-based PR checkpoints. The PR also includes an
+in-depth analysis of existing Qt entity dialogs, identifying areas for
+refactoring to improve code consistency and reduce duplication.
+
+Highlights:
+
+- New Qt Entity Creator Skill: A new skill, 'qt-entity-creator', has been added
+  to guide the creation of Qt UI components for domain entities, including list
+  windows, detail dialogs, history dialogs, and controllers.
+- New Feature Branch Manager Skill: A new 'feature-branch-manager' skill is
+  introduced to provide a structured approach for managing Git branches across
+  multi-phase implementations, ensuring a clean and organized history.
+- PR Checkpoint Phases Integration: Both the new 'qt-entity-creator' skill and
+  the existing 'domain-type-creator' skill have been updated to include explicit
+  PR checkpoint phases, promoting incremental development and review cycles.
+- Entity Dialog Refactoring Analysis: A new analysis document has been added,
+  detailing refactoring recommendations for existing Qt entity dialogs to reduce
+  code duplication and improve consistency.
+#+end_quote
+
+**** Shell Entity
+
+#+begin_quote
+This pull request introduces a comprehensive new documentation skill designed to
+standardize and streamline the process of adding shell commands for domain
+entities. By breaking down the development into distinct, manageable phases, it
+provides clear, step-by-step instructions for implementing new commands,
+registering them with the REPL, and ensuring they are properly documented with
+runnable examples. This enhancement aims to improve consistency and ease of
+development for extending shell functionality.
+
+Highlights:
+
+- New Skill Introduction: A new skill, shell-entity-creator, has been added to
+  guide developers in creating shell commands for domain entities within the
+  ores.comms.shell framework.
+- Phased Development Guidance: The skill outlines a three-phase approach for
+  command creation: Phase 1 covers header, implementation, and REPL registration
+  for list/add commands; Phase 2 focuses on adding history commands with
+  formatting helpers; and Phase 3 details the creation of recipe documentation.
+- Documentation Updates: The main skill catalog (claude_code_skills.org) has
+  been updated to include the new shell-entity-creator skill, and
+  cross-references have been added between this new skill and the
+  ores-shell-recipes skill.
+#+end_quote
+
+**** HTTP Entity
+
+#+begin_quote
+This pull request introduces a new 'HTTP Entity Creator' skill, designed to
+guide developers through the process of building HTTP REST API endpoints for
+domain entities within the ores.http.server framework. The skill provides a
+structured, three-phase approach to implementing common CRUD operations,
+ensuring consistency in API design, integration with existing services, and
+automatic OpenAPI documentation generation.
+
+Highlights:
+
+- New Skill Introduction: Introduces the 'HTTP Entity Creator' skill, a
+  comprehensive guide for building HTTP REST API endpoints for domain entities
+  within the ores.http.server framework.
+- Phased Implementation Strategy: Outlines a structured, three-phase PR strategy
+  for incrementally implementing API endpoints, covering initial setup, core
+  CRUD operations, and documentation.
+- Standard CRUD Operations: Provides detailed instructions and code patterns for
+  implementing common HTTP operations: GET (list with pagination, single by ID,
+  history), POST (save/create/update), and DELETE (batch).
+- API Development Best Practices: Includes guidance on OpenAPI metadata
+  generation, coroutine-based handler patterns, integration with the service
+  layer, JSON serialization via rfl, and conventions for logging and URL
+  patterns.
+- Documentation Updates: Adds a new documentation file
+  doc/skills/http-entity-creator/skill.org and updates
+  doc/skills/claude_code_skills.org to list the newly added skill.
+#+end_quote
+
+**** HTTP Recipes
+
+#+begin_quote
+This pull request significantly enhances the project's documentation
+capabilities by introducing a dedicated skill for managing HTTP API recipes. It
+standardizes the process for documenting and verifying HTTP endpoints, ensuring
+that API documentation remains current, accurate, and easily maintainable. The
+new skill provides clear guidelines for creating and updating recipes, improving
+the overall discoverability and usability of the API.
+
+Highlights:
+
+- New Skill Added: Introduced a new skill named ores-http-recipes to facilitate
+  the documentation of HTTP API recipes.
+- Documentation Pattern Alignment: This new skill follows the established
+  pattern of existing ores-shell-recipes and ores-cli-recipes, ensuring
+  consistency across documentation efforts.
+- Recipe Documentation Guidelines: The skill provides comprehensive instructions
+  on how to add new recipes to doc/recipes/http_recipes.org utilizing Emacs verb
+  mode for structured API documentation.
+- Route Source Referencing: It includes references to the source locations of
+  HTTP routes within projects/ores.http.server/src/routes/, aiding in the
+  verification and maintenance of documented endpoints.
+- Typo Correction: Corrected a capitalization typo in
+  doc/skills/claude_code_skills.org, changing 'feature-branch-manager' to
+  'Feature Branch Manager'.
+#+end_quote
+
+**** Wt Entity
+
+#+begin_quote
+This pull request significantly expands the documentation for code generation
+skills. It introduces a detailed guide for creating Wt web UI entities, breaking
+down the process into manageable, PR-driven phases. Concurrently, it refines the
+existing feature branch management skill by automating critical steps like PR
+merge verification and handling of work-in-progress changes, thereby improving
+developer efficiency and ensuring cleaner git history.
+
+Highlights:
+
+- New Skill: Wt Entity Creator: Introduced a new skill, wt-entity-creator, which
+  provides a comprehensive, multi-phase guide for generating Wt web UI
+  components (list widgets, detail dialogs, and application integration) for
+  domain entities, following established patterns in the ores.wt codebase.
+- Improved Feature Branch Manager: Enhanced the feature-branch-manager skill
+  with automated checks for merged Pull Requests using GitHub CLI or Git, and
+  integrated automatic stashing and restoring of uncommitted changes during
+  phase transitions, streamlining the workflow and preventing data loss.
+#+end_quote
+
+**** CLI Entity
+
+#+begin_quote
+This pull request introduces a new cli-entity-creator skill, designed to
+standardize and simplify the process of adding command-line interface commands
+for domain entities in the ores.cli framework. The skill provides a detailed,
+multi-phase guide, ensuring that new CLI commands are consistently implemented
+with proper parsing, application logic, and thorough documentation, thereby
+improving maintainability and ease of development for future CLI extensions.
+
+Highlights:
+
+- New Skill Introduction: A cli-entity-creator skill has been added to guide the
+  creation of CLI commands for domain entities within ores.cli.
+- Phased Development Approach: The skill outlines a structured 3-phase PR
+  strategy, mirroring the shell-entity-creator pattern, to systematically build
+  out CLI functionality.
+- Comprehensive Documentation: It provides detailed instructions for
+  implementing parsers, defining options, developing application logic, and
+  documenting CLI recipes for new entity commands.
+
+#+end_quote
 
 *** STARTED Assorted fixes to accounts dialog                          :code:
     :LOGBOOK:

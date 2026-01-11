@@ -234,7 +234,7 @@ Less critical to order precisely:
 
 ** Step 4: Planning Sprints
 
-When planning a new sprint (typically done using the =new-sprint= skill):
+When planning a new sprint (typically done using the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][new-sprint]] skill):
 
 1. *Review product backlog* – Identify candidate stories from "Near" section.
 2. *Define sprint mission* – Determine the sprint's primary focus.

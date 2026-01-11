@@ -22,7 +22,7 @@ guides you through creating the options structs, entity parser, and application
 logic following established patterns.
 
 Prerequisites:
-- The domain type must already exist (see =domain-type-creator= skill)
+- The domain type must already exist (see [[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]] skill)
 - The repository for CRUD operations must be implemented
 - Table I/O and JSON I/O must be available for output formatting
 
@@ -32,7 +32,7 @@ Prerequisites:
 1. Gather entity requirements (name, operations needed, parameters).
 2. Follow the detailed instructions to create CLI support in phases.
 3. Each phase ends with a PR checkpoint - raise PR, wait for review, merge.
-4. Create a fresh branch from main for the next phase (see =feature-branch-manager=).
+4. Create a fresh branch from main for the next phase (see [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]]).
 5. Build and test after each step.
 
 

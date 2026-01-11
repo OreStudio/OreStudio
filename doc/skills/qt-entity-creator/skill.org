@@ -22,8 +22,8 @@ guides you through creating all the necessary Qt components to display, edit,
 and manage a domain entity, following established patterns in the codebase.
 
 Prerequisites:
-- The domain type must already exist (see =domain-type-creator= skill)
-- The messaging protocol for CRUD operations must exist (see =binary-protocol-developer= skill)
+- The domain type must already exist (see [[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]] skill)
+- The messaging protocol for CRUD operations must exist (see [[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][binary-protocol-developer]] skill)
 - The server-side handlers must be implemented
 
 
@@ -32,7 +32,7 @@ Prerequisites:
 1. Gather entity requirements (name, fields, features needed).
 2. Follow the detailed instructions to create components in order.
 3. Each phase ends with a PR checkpoint - raise PR, wait for review, merge.
-4. Create a fresh branch from main for the next phase (see =feature-branch-manager=).
+4. Create a fresh branch from main for the next phase (see [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]]).
 5. Build and test after each step within a phase.
 
 
@@ -68,7 +68,7 @@ Before starting, gather the following information:
 - *Display fields*: Which fields to show in the list view table.
 - *Editable fields*: Which fields can be edited in the detail dialog.
 - *Primary key*: The unique identifier field (e.g., =iso_code=, =id=, =alpha2_code=).
-- *Entity icon*: Select an appropriate icon using the =icon-guidelines= skill.
+- *Entity icon*: Select an appropriate icon using the [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] skill.
 - *Features needed*:
   - [ ] List view with pagination (for large datasets)
   - [ ] Detail dialog (create/edit/view)
@@ -207,7 +207,7 @@ Create the main list window showing entities in a table.
 
 *** Icon selection
 
-Use the =icon-guidelines= skill to select an appropriate icon for the entity.
+Use the [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] skill to select an appropriate icon for the entity.
 Common patterns:
 - Data entities: Use semantic icons (globe for countries, currency symbols for currencies)
 - System entities: Use system-related icons (lock for roles, flag for feature flags)
@@ -1271,7 +1271,7 @@ class <Entity>Controller;
 
 Add to =MainWindow.ui=:
 - Menu action: =Action<Entity>s=
-- Set appropriate icon (following =icon-guidelines= skill)
+- Set appropriate icon (following [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] skill)
 - Set keyboard shortcut if appropriate
 
 *** Implementation changes
@@ -1317,7 +1317,7 @@ Add menu action and controller for <entity> management in main window.
 
 ** Step 9: Update UML Diagrams
 
-Use the =plantuml-class-modeler= skill to update the =ores.qt= component diagrams.
+Use the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] skill to update the =ores.qt= component diagrams.
 
 *** Files to update
 
@@ -1384,7 +1384,7 @@ At this point:
 
 ** Icon paths by entity type
 
-Use the =icon-guidelines= skill for icon selection. Common patterns:
+Use the [[id:2A167638-8B5A-4691-90CB-4A6B55785108][icon-guidelines]] skill for icon selection. Common patterns:
 
 | Entity Type | Icon Path |
 |-------------+-----------|

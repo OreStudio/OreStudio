@@ -1,0 +1,137 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml skill_dependencies
+!pragma layout smetana
+
+title Claude Code Skills - Dependency Graph
+
+' Styling
+skinparam component {
+    BackgroundColor<<foundation>> #E8F5E9
+    BackgroundColor<<entity>> #E3F2FD
+    BackgroundColor<<recipe>> #FFF3E0
+    BackgroundColor<<utility>> #F3E5F5
+    BackgroundColor<<workflow>> #FFEBEE
+}
+
+' =============================================================================
+' Foundation Skills
+' Skills that provide core functionality used by many other skills
+' =============================================================================
+package "Foundation" {
+    [domain-type-creator] <<foundation>> as dtc
+    [binary-protocol-developer] <<foundation>> as bpd
+    [feature-branch-manager] <<foundation>> as fbm
+    [sql-schema-creator] <<foundation>> as ssc
+}
+
+' =============================================================================
+' Entity Creator Skills
+' Skills for creating entity support across different layers
+' =============================================================================
+package "Entity Creators" {
+    [qt-entity-creator] <<entity>> as qt
+    [shell-entity-creator] <<entity>> as shell
+    [http-entity-creator] <<entity>> as http
+    [cli-entity-creator] <<entity>> as cli
+    [wt-entity-creator] <<entity>> as wt
+}
+
+' =============================================================================
+' Recipe Skills
+' Skills for maintaining executable documentation
+' =============================================================================
+package "Recipes" {
+    [recipe-author] <<recipe>> as ra
+    [ores-shell-recipes] <<recipe>> as osr
+    [ores-cli-recipes] <<recipe>> as ocr
+    [ores-http-recipes] <<recipe>> as ohr
+}
+
+' =============================================================================
+' Utility Skills
+' Supporting skills for specific tasks
+' =============================================================================
+package "Utilities" {
+    [icon-guidelines] <<utility>> as icon
+    [plantuml-class-modeler] <<utility>> as puml
+    [cmake-runner] <<utility>> as cmake
+    [unit-test-writer] <<utility>> as utw
+}
+
+' =============================================================================
+' Workflow Skills
+' Skills for development workflow and process
+' =============================================================================
+package "Workflow" {
+    [agile-product-owner] <<workflow>> as apo
+    [new-sprint] <<workflow>> as ns
+    [skill-manager] <<workflow>> as sm
+    [skill-review] <<workflow>> as sr
+}
+
+' =============================================================================
+' Dependencies
+' Arrows show "references" relationship (A --> B means A references B)
+' =============================================================================
+
+' Foundation internal
+dtc --> fbm
+
+' Qt entity creator dependencies
+qt --> dtc
+qt --> bpd
+qt --> fbm
+qt --> icon
+qt --> puml
+
+' Shell entity creator dependencies
+shell --> dtc
+shell --> bpd
+shell --> fbm
+shell --> osr
+
+' HTTP entity creator dependencies
+http --> dtc
+http --> bpd
+http --> fbm
+http --> shell : "pattern reference"
+
+' CLI entity creator dependencies
+cli --> dtc
+cli --> fbm
+cli --> ocr
+cli --> shell : "pattern reference"
+
+' Wt entity creator dependencies
+wt --> dtc
+wt --> fbm
+
+' Recipe skill dependencies
+ra --> osr
+ra --> ocr
+osr --> shell
+ohr --> http
+
+' Workflow dependencies
+apo --> ns
+
+@enduml
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar skill_dependencies.puml"
+' End:

@@ -104,7 +104,7 @@ For =continuous-windows.yml=:
 7. Update =doc/agile/v0/version_zero.org= adding a row to the Sprints table for
    the new sprint. The table has three columns: Sprint number, Backlog link, and
    Mission. Use the GUID from the new sprint backlog file you will create in step
-   9. Example for sprint 08:
+   8. Example for sprint 08:
 
 #+begin_src diff
  | Sprint | Backlog                                                          | Mission                                                                             |
@@ -112,20 +112,10 @@ For =continuous-windows.yml=:
  |     01 | [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01]] | Create basic project infrastructure; handle currencies front to back.              |
  ...
  |     07 | [[id:44AD3D04-EC5A-4039-91DD-7CEA0A18CA92][Sprint Backlog 07]] | Finish reference implementation.                                                   |
-+|     08 | [[id:NEW-GUID-HERE][Sprint Backlog 08]] | Sprint mission from step 9.                                                         |
++|     08 | [[id:NEW-GUID-HERE][Sprint Backlog 08]] | Sprint mission from step 8.                                                         |
 #+end_src
 
-8. Update the version header file:
-   =projects/ores.utility/src/version/version.hpp=:
-
-#+begin_src diff
--#define ORES_VERSION_PATCH 4
--#define ORES_VERSION "0.0.4"
-+#define ORES_VERSION_PATCH 5
-+#define ORES_VERSION "0.0.5"
-#+end_src
-
-9. Create a new agile sprint backlog for the new sprint in =doc/agile/v0=, with
+8. Create a new agile sprint backlog for the new sprint in =doc/agile/v0=, with
    the file name =sprint_backlog_NN.org= where NN is the new sprint. Use the
    template below to create the file. First generate the template without any
    changes and git stage the file so that I can look at the modifications you

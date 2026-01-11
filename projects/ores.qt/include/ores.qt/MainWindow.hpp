@@ -342,6 +342,9 @@ private:
 
     /** @brief Event viewer MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* eventViewerWindow_;
+
+    /** @brief Telemetry log viewer MDI sub-window (nullptr if not open) */
+    DetachableMdiSubWindow* telemetryViewerWindow_;
 };
 
 }

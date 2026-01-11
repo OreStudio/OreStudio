@@ -86,6 +86,7 @@
      <addaction name="separator"/>
      <addaction name="ActionSetRecordingDirectory"/>
     </widget>
+    <addaction name="ActionTelemetryViewer"/>
     <addaction name="ActionEventViewer"/>
     <addaction name="separator"/>
     <addaction name="menuProtocol"/>
@@ -297,6 +298,18 @@
    </property>
    <property name="toolTip">
     <string>View domain events in real-time</string>
+   </property>
+  </action>
+  <action name="ActionTelemetryViewer">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_document_table_20_regular.svg</normaloff>:/icons/ic_fluent_document_table_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Log Viewer...</string>
+   </property>
+   <property name="toolTip">
+    <string>View telemetry logs by session</string>
    </property>
   </action>
   <action name="ActionChangeReasonCategories">

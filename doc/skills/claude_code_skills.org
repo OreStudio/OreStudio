@@ -16,7 +16,7 @@ using the org-mode publishing system.
 - [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][Skill Manager]]: Skill to create new skills.
 - [[id:44d7a328-f69c-4ee9-83a5-74bd3634ad69][Skill Review]]: Review skills for consistency, conflicts, duplication, and
   alignment with codebase.
-- [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]]: Manage feature branches across multi-phase
+- [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][Feature Branch Manager]]: Manage feature branches across multi-phase
   implementations with clean git history.
 
 ** Documentation
@@ -30,6 +30,7 @@ using the org-mode publishing system.
 - [[id:28aaf9a6-b1e4-402a-83bb-289090990fb8][Recipe Author]]: Create new recipe files and recipe-updating skills.
 - [[id:30D0AE60-5892-411C-8013-E858FFBF628B][ORE Shell Recipes]]: Update shell recipes by comparing commands to recipe documentation.
 - [[id:A962DF8E-783D-4DCF-BD60-9FEFAA2E1FBF][ORE CLI Recipes]]: Update CLI recipes by comparing commands to recipe documentation.
+- [[id:06ce890f-7fce-4c94-83e3-3b8ea7bb18b5][ORE HTTP Recipes]]: Update HTTP recipes by comparing routes to recipe documentation.
 
 ** Development
 

@@ -356,6 +356,9 @@ handle_save_<entity>(const http_request& req) {
 
         BOOST_LOG_SEV(lg(), info) << "Saved <entity>";
         co_return http_response::json(rfl::json::write(resp));
+    } catch (const rfl::json::JsonException& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid JSON in request body: " << e.what();
+        co_return http_response::bad_request("Invalid JSON in request body");
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Save <entity> error: " << e.what();
         co_return http_response::internal_error(e.what());
@@ -539,6 +542,9 @@ handle_delete_<entities>(const http_request& req) {
         }
 
         co_return http_response::json(rfl::json::write(resp));
+    } catch (const rfl::json::JsonException& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid JSON in request body: " << e.what();
+        co_return http_response::bad_request("Invalid JSON in request body");
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Delete <entities> error: " << e.what();
         co_return http_response::internal_error(e.what());

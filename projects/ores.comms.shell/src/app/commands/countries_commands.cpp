@@ -44,12 +44,14 @@ register_commands(cli::Menu& root_menu, client_session& session) {
     countries_menu->Insert("add", [&session](std::ostream& out,
             std::string alpha2_code, std::string alpha3_code,
             std::string numeric_code, std::string name,
-            std::string official_name) {
+            std::string official_name, std::string change_reason_code,
+            std::string change_commentary) {
         process_add_country(std::ref(out), std::ref(session),
             std::move(alpha2_code), std::move(alpha3_code),
             std::move(numeric_code), std::move(name),
-            std::move(official_name));
-    }, "Add a country (alpha2_code alpha3_code numeric_code name [official_name])");
+            std::move(official_name), std::move(change_reason_code),
+            std::move(change_commentary));
+    }, "Add a country (alpha2 alpha3 numeric name official_name reason_code \"commentary\")");
 
     root_menu.Insert(std::move(countries_menu));
 }
@@ -75,7 +77,8 @@ void countries_commands::
 process_add_country(std::ostream& out, client_session& session,
     std::string alpha2_code, std::string alpha3_code,
     std::string numeric_code, std::string name,
-    std::string official_name) {
+    std::string official_name, std::string change_reason_code,
+    std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add country request for: "
                                << alpha2_code;
 
@@ -86,11 +89,6 @@ process_add_country(std::ostream& out, client_session& session,
         return;
     }
     const auto& recorded_by = session_info->username;
-
-    // Use name as official_name if not provided
-    if (official_name.empty()) {
-        official_name = name;
-    }
 
     using risk::messaging::save_country_request;
     using risk::messaging::save_country_response;
@@ -107,8 +105,8 @@ process_add_country(std::ostream& out, client_session& session,
                 .official_name = std::move(official_name),
                 .image_id = std::nullopt,
                 .recorded_by = recorded_by,
-                .change_reason_code = "INITIAL_LOAD",
-                .change_commentary = "Added via shell",
+                .change_reason_code = std::move(change_reason_code),
+                .change_commentary = std::move(change_commentary),
                 .recorded_at = std::chrono::system_clock::now()
             }
         });

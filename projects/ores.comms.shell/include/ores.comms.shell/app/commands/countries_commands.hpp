@@ -77,13 +77,16 @@ public:
      * @param alpha3_code ISO 3166-1 alpha-3 code (e.g., "USA")
      * @param numeric_code ISO 3166-1 numeric code (e.g., "840")
      * @param name Short name of the country
-     * @param official_name Official name of the country (optional)
+     * @param official_name Official name of the country
+     * @param change_reason_code Code identifying the reason for the change
+     * @param change_commentary Free-text commentary explaining the change
      */
     static void process_add_country(std::ostream& out,
         comms::net::client_session& session,
         std::string alpha2_code, std::string alpha3_code,
         std::string numeric_code, std::string name,
-        std::string official_name);
+        std::string official_name, std::string change_reason_code,
+        std::string change_commentary);
 };
 
 }

@@ -158,6 +158,7 @@ public:
 
     // Signals for parent to handle
     Wt::Signal<>& add_requested() { return add_requested_; }
+    Wt::Signal<>& refresh_requested() { return refresh_requested_; }
     Wt::Signal<std::string>& edit_requested() { return edit_requested_; }
     Wt::Signal<std::string>& delete_requested() { return delete_requested_; }
 
@@ -172,6 +173,7 @@ private:
     std::vector<<entity>_row> entries_;
 
     Wt::Signal<> add_requested_;
+    Wt::Signal<> refresh_requested_;
     Wt::Signal<std::string> edit_requested_;
     Wt::Signal<std::string> delete_requested_;
 };
@@ -210,7 +212,10 @@ void <entity>_list_widget::setup_toolbar() {
     auto* refresh_btn = toolbar->addWidget(
         std::make_unique<Wt::WPushButton>("Refresh"));
     refresh_btn->addStyleClass("btn btn-secondary");
-    refresh_btn->clicked().connect([this] { refresh(); });
+    refresh_btn->clicked().connect([this] {
+        refresh();  // Updates status text to "Refreshing..."
+        refresh_requested_.emit();  // Signal parent to reload data
+    });
 
     // Status text
     status_text_ = toolbar->addWidget(std::make_unique<Wt::WText>());
@@ -723,6 +728,10 @@ void ore_application::setup_<entity>_handlers() {
         show_add_<entity>_dialog();
     });
 
+    <entity>_list_widget_->refresh_requested().connect([this] {
+        load_<entity>s();
+    });
+
     <entity>_list_widget_->edit_requested().connect([this](const std::string& pk) {
         show_edit_<entity>_dialog(pk);
     });
@@ -767,6 +776,11 @@ void ore_application::show_add_<entity>_dialog() {
         load_<entity>s();
     });
 
+    // Cleanup dialog when closed
+    dlg->finished().connect([this, dlg] {
+        removeChild(dlg);
+    });
+
     dlg->show();
     addChild(std::move(dialog));
 }
@@ -795,6 +809,11 @@ void ore_application::show_edit_<entity>_dialog(const std::string& primary_key) 
         ctx.<entity>_service().save_<entity>(entity);
 
         load_<entity>s();
+    });
+
+    // Cleanup dialog when closed
+    dlg->finished().connect([this, dlg] {
+        removeChild(dlg);
     });
 
     dlg->show();

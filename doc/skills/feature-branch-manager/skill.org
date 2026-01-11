@@ -104,6 +104,10 @@ git stash push -m "WIP: Transitioning to next phase"
 
 *** Step 4: Fetch latest main
 
+If you used the =gh= command in Step 2, you must now fetch the latest changes
+from main. If you used the git alternative (which includes a fetch), this step
+ensures you have the most recent state.
+
 #+begin_src sh
 git fetch origin main
 #+end_src
@@ -123,6 +127,10 @@ If changes were stashed in Step 3:
 #+begin_src sh
 git stash pop
 #+end_src
+
+*Note*: If =git stash pop= results in merge conflicts, you must resolve them
+before proceeding. Use =git status= to see conflicted files and resolve them
+manually.
 
 *** Step 7: Delete old local branch
 

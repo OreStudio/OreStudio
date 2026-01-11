@@ -20,6 +20,7 @@
 #ifndef ORES_QT_CLIENT_MANAGER_HPP
 #define ORES_QT_CLIENT_MANAGER_HPP
 
+#include <atomic>
 #include <chrono>
 #include <memory>
 #include <optional>
@@ -511,6 +512,10 @@ private:
 
     // Whether streaming is enabled (can be set before connection)
     bool streaming_enabled_{false};
+
+    // Flag to distinguish user-initiated disconnect from connection loss
+    // Set to true when user clicks disconnect, checked before emitting reconnecting signal
+    std::atomic<bool> user_disconnecting_{false};
 };
 
 }

@@ -85,6 +85,9 @@ LoginResult ClientManager::connectAndLogin(
 
     BOOST_LOG_SEV(lg(), info) << "Connecting to " << host << ":" << port;
 
+    // Reset user disconnect flag for fresh connection
+    user_disconnecting_.store(false, std::memory_order_release);
+
     // If already connected, disconnect first
     if (client_ && client_->is_connected()) {
         disconnect();
@@ -115,18 +118,31 @@ LoginResult ClientManager::connectAndLogin(
             QMetaObject::invokeMethod(this, "disconnected", Qt::QueuedConnection);
         });
 
-        // Set up reconnecting callback (events are now published by the client directly)
+        // Set up reconnecting callback - emits signal on Qt thread
+        // The user_disconnecting_ flag prevents spurious signals during user-initiated disconnect
         new_client->set_reconnecting_callback([this]() {
             BOOST_LOG_SEV(lg(), info) << "Client attempting to reconnect";
-            // Emit signal on main thread via meta-object system
-            QMetaObject::invokeMethod(this, "reconnecting", Qt::QueuedConnection);
+            QMetaObject::invokeMethod(this, [this]() {
+                if (user_disconnecting_.load(std::memory_order_acquire)) {
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "Suppressing reconnecting signal - user disconnect in progress";
+                    return;
+                }
+                emit reconnecting();
+            }, Qt::QueuedConnection);
         });
 
-        // Set up reconnected callback (events are now published by the client directly)
+        // Set up reconnected callback - emits signal on Qt thread
         new_client->set_reconnected_callback([this]() {
             BOOST_LOG_SEV(lg(), info) << "Client reconnected successfully";
-            // Emit signal on main thread via meta-object system
-            QMetaObject::invokeMethod(this, "reconnected", Qt::QueuedConnection);
+            QMetaObject::invokeMethod(this, [this]() {
+                if (user_disconnecting_.load(std::memory_order_acquire)) {
+                    BOOST_LOG_SEV(lg(), debug)
+                        << "Suppressing reconnected signal - user disconnect in progress";
+                    return;
+                }
+                emit reconnected();
+            }, Qt::QueuedConnection);
         });
 
         // Perform Login
@@ -415,8 +431,11 @@ SignupResult ClientManager::signup(
 }
 
 void ClientManager::disconnect() {
+    // Set flag FIRST to prevent any pending reconnecting signals from being emitted
+    user_disconnecting_.store(true, std::memory_order_release);
+
     if (client_) {
-        BOOST_LOG_SEV(lg(), info) << "Disconnecting client";
+        BOOST_LOG_SEV(lg(), info) << "Disconnecting client (user-initiated)";
 
         // Stop telemetry streaming before disconnecting
         if (telemetry_streaming_) {
@@ -437,6 +456,15 @@ void ClientManager::disconnect() {
         // The server closes the connection after logout, but we call disconnect
         // to ensure proper cleanup on the client side
         client_->disconnect();
+
+        // Wait for all client coroutines to complete before destroying
+        // This prevents use-after-free crashes during rapid disconnect
+        // Use a short timeout to avoid blocking the UI thread too long
+        if (!client_->await_shutdown(std::chrono::milliseconds{500})) {
+            BOOST_LOG_SEV(lg(), warn) << "Timeout waiting for client shutdown, "
+                                      << "proceeding with cleanup anyway";
+        }
+
         client_.reset();
 
         // Disconnected event is now published by the client directly

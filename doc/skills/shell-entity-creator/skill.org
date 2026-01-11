@@ -283,7 +283,7 @@ process_list_<entities>(std::ostream& out, client_session& session) {
         (get_<entities>_request{});
 
     if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
         return;
     }
 
@@ -381,8 +381,13 @@ process_add_<entity>(std::ostream& out, client_session& session,
     if (!optional_param.empty()) {
         try {
             value = std::stoi(optional_param);
-        } catch (...) {
-            out << "✗ Invalid value: " << optional_param << std::endl;
+        } catch (const std::invalid_argument&) {
+            out << "✗ Invalid value: '" << optional_param
+                << "' is not a valid integer." << std::endl;
+            return;
+        } catch (const std::out_of_range&) {
+            out << "✗ Invalid value: '" << optional_param
+                << "' is out of range." << std::endl;
             return;
         }
     }
@@ -553,7 +558,7 @@ process_<entity>_history(std::ostream& out, client_session& session,
         (get_<entity>_history_request{.<entity>_id = <entity>_id});
 
     if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
         return;
     }
 
@@ -653,7 +658,7 @@ process_get_<entity>(std::ostream& out, client_session& session,
         (get_<entity>_request{.<entity>_id = <entity>_id});
 
     if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
+        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
         return;
     }
 

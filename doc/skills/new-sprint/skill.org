@@ -104,7 +104,7 @@ For =continuous-windows.yml=:
 7. Update =doc/agile/v0/version_zero.org= adding a row to the Sprints table for
    the new sprint. The table has three columns: Sprint number, Backlog link, and
    Mission. Use the GUID from the new sprint backlog file you will create in step
-   9. Example for sprint 08:
+   8. Example for sprint 08:
 
 #+begin_src diff
  | Sprint | Backlog                                                          | Mission                                                                             |
@@ -112,20 +112,10 @@ For =continuous-windows.yml=:
  |     01 | [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01]] | Create basic project infrastructure; handle currencies front to back.              |
  ...
  |     07 | [[id:44AD3D04-EC5A-4039-91DD-7CEA0A18CA92][Sprint Backlog 07]] | Finish reference implementation.                                                   |
-+|     08 | [[id:NEW-GUID-HERE][Sprint Backlog 08]] | Sprint mission from step 9.                                                         |
++|     08 | [[id:NEW-GUID-HERE][Sprint Backlog 08]] | Sprint mission from step 8.                                                         |
 #+end_src
 
-8. Update the version header file:
-   =projects/ores.utility/src/version/version.hpp=:
-
-#+begin_src diff
--#define ORES_VERSION_PATCH 4
--#define ORES_VERSION "0.0.4"
-+#define ORES_VERSION_PATCH 5
-+#define ORES_VERSION "0.0.5"
-#+end_src
-
-9. Create a new agile sprint backlog for the new sprint in =doc/agile/v0=, with
+8. Create a new agile sprint backlog for the new sprint in =doc/agile/v0=, with
    the file name =sprint_backlog_NN.org= where NN is the new sprint. Use the
    template below to create the file. First generate the template without any
    changes and git stage the file so that I can look at the modifications you
@@ -183,14 +173,14 @@ Updates to sprint and product backlog.
 ,#+end_src
 
 ,#+name: pie-stories-chart
-,#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_05_stories_pie_sorted.png :width 1920 :height 1080
+,#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_05_stories_pie_sorted.png :width 1920 :height 1080
 library(conflicted)
 library(ggplot2)
 library(tidyverse)
 library(tibble)
 
-# Remove unnecessary rows (Total time, Stories, Active)
-clean_sprint_summary <- tail(sprint_summary, -4)
+# Filter to only rows with actual story data (non-empty Tags column)
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(!is.na(Tags) & nzchar(Tags))
 stories <- unlist(clean_sprint_summary[2])
 percent_values <- as.numeric(unlist(clean_sprint_summary[6]))
 
@@ -249,14 +239,14 @@ print(p)
 [[file:sprint_backlog_04_stories_pie_sorted.png]]
 
 ,#+name: stories-chart
-,#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_04_stories.png :width 1200 :height 650
+,#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_05_stories.png :width 1200 :height 650
 library(conflicted)
 library(grid)
 library(tidyverse)
 library(tibble)
 
-# Remove unnecessary rows.
-clean_sprint_summary <- tail(sprint_summary, -4)
+# Filter to only rows with actual story data (non-empty Tags column)
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(Tags != "")
 names <- unlist(clean_sprint_summary[2])
 values <- as.numeric(unlist(clean_sprint_summary[6]))
 
@@ -284,14 +274,14 @@ print(p)
 [[file:sprint_backlog_04_stories.png]]
 
 ,#+name: tags-chart
-,#+begin_src R :var sprint_summary=sprint_summary :results file graphics :exports results :file sprint_backlog_04_tags.png :width 600 :height 400
+,#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_05_tags.png :width 600 :height 400
 library(conflicted)
 library(grid)
 library(tidyverse)
 library(tibble)
 
-# Remove unnecessary rows.
-clean_sprint_summary <- tail(sprint_summary, -4)
+# Filter to only rows with actual story data (non-empty Tags column)
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(Tags != "")
 names <- unlist(clean_sprint_summary[1])
 values <- as.numeric(unlist(clean_sprint_summary[6]))
 

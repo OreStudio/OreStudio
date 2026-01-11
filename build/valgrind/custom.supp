@@ -262,6 +262,78 @@
    fun:main
 }
 #
+# Boost.Asio SSL Init (C++ wrapper around OpenSSL)
+# These suppressions cover the boost::asio::ssl initialization which uses
+# a shared_ptr to hold the OpenSSL init singleton. This is harmless - the
+# memory is intentionally kept alive for the lifetime of the process.
+#
+{
+   Boost Asio SSL OpenSSL Init Instance
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZN5boost4asio3ssl6detail17openssl_init_base8instanceEv
+   ...
+}
+{
+   Boost Asio SSL OpenSSL Init Constructor
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:_ZN5boost4asio3ssl6detail12openssl_initILb1EE*
+   ...
+}
+{
+   Boost Asio SSL OpenSSL Init Shared Ptr
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZNSt14__shared_count*openssl_init_base*
+   ...
+}
+{
+   Boost Asio SSL OpenSSL Init Shared Ptr 2
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZNSt12__shared_ptr*openssl_init_base*
+   ...
+}
+#
+# Catch2 Reporter Registry
+# Catch2 registers all its built-in reporters (Automake, Compact, Console,
+# JUnit, SonarQube, TAP, TeamCity, XML) at static initialization time.
+# These are intentionally kept alive for the lifetime of the test process.
+#
+{
+   Catch2 Reporter Registry Init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZN5Catch6Detail11make_unique*ReporterFactory*
+   fun:_ZN5Catch16ReporterRegistry*
+   ...
+}
+{
+   Catch2 Registry Hub Init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:_ZN5Catch*RegistryHub*
+   ...
+}
+{
+   Catch2 Singleton Init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:_ZN5Catch9Singleton*
+   ...
+}
+#
 # Postgres OpenSSL
 #
 {

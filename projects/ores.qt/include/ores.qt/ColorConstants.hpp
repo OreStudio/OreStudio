@@ -51,6 +51,21 @@ struct color_constants {
      * Blue - distinguishes from yellow (stale/updated) indicator.
      */
     static inline const QColor synthetic_indicator{100, 149, 237};  // Cornflower blue
+
+    /**
+     * @brief Log level colors for telemetry viewer badges and filters.
+     */
+    static inline const QColor level_trace{107, 114, 128};   // Gray
+    static inline const QColor level_debug{59, 130, 246};    // Blue
+    static inline const QColor level_info{34, 197, 94};      // Green
+    static inline const QColor level_warn{234, 179, 8};      // Amber
+    static inline const QColor level_error{239, 68, 68};     // Red
+    static inline const QColor level_text{255, 255, 255};    // White text on badges
+
+    /**
+     * @brief Color for indicating active sessions in tree view.
+     */
+    static inline const QColor active_session{34, 197, 94};  // Green (same as INFO)
 };
 
 }

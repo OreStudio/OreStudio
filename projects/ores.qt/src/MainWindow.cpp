@@ -56,6 +56,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/AboutDialog.hpp"
 #include "ores.qt/EventViewerDialog.hpp"
+#include "ores.qt/TelemetryMdiWindow.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/TelemetrySettingsDialog.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
@@ -72,7 +73,8 @@ MainWindow::MainWindow(QWidget* parent) :
     imageCache_(new ImageCache(clientManager_, this)),
     changeReasonCache_(new ChangeReasonCache(clientManager_, this)),
     systemTrayIcon_(nullptr), trayContextMenu_(nullptr),
-    instanceColorIndicator_(nullptr), eventViewerWindow_(nullptr) {
+    instanceColorIndicator_(nullptr), eventViewerWindow_(nullptr),
+    telemetryViewerWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating the main window.";
     ui_->setupUi(this);
@@ -149,6 +151,8 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionRecordSession->setIcon(recordOffIcon_);
     ui_->ActionEventViewer->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_document_code_16_regular.svg", iconColor));
+    ui_->ActionTelemetryViewer->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_document_table_20_regular.svg", iconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this,
@@ -211,6 +215,52 @@ MainWindow::MainWindow(QWidget* parent) :
         mdiArea_->addSubWindow(eventViewerWindow_);
         allDetachableWindows_.append(eventViewerWindow_);
         eventViewerWindow_->show();
+    });
+
+    // Connect Telemetry Viewer action
+    connect(ui_->ActionTelemetryViewer, &QAction::triggered, this, [this]() {
+        BOOST_LOG_SEV(lg(), debug) << "Telemetry Viewer action triggered";
+
+        // If window already exists, just activate it
+        if (telemetryViewerWindow_) {
+            telemetryViewerWindow_->showNormal();
+            mdiArea_->setActiveSubWindow(telemetryViewerWindow_);
+            return;
+        }
+
+        // Create the telemetry viewer widget
+        auto* telemetryViewer = new TelemetryMdiWindow(
+            clientManager_, QString::fromStdString(username_), this);
+
+        // Wrap in MDI sub-window
+        telemetryViewerWindow_ = new DetachableMdiSubWindow();
+        telemetryViewerWindow_->setWidget(telemetryViewer);
+        telemetryViewerWindow_->setWindowTitle("Telemetry Log Viewer");
+        telemetryViewerWindow_->setAttribute(Qt::WA_DeleteOnClose);
+        telemetryViewerWindow_->resize(1200, 700);
+
+        const QColor iconColor(220, 220, 220);
+        telemetryViewerWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_document_table_20_regular.svg", iconColor));
+
+        // Track window destruction
+        connect(telemetryViewerWindow_, &QObject::destroyed, this, [this]() {
+            telemetryViewerWindow_ = nullptr;
+        });
+
+        // Connect status messages to status bar
+        connect(telemetryViewer, &TelemetryMdiWindow::statusChanged, this,
+            [this](const QString& message) {
+                ui_->statusbar->showMessage(message, 5000);
+            });
+        connect(telemetryViewer, &TelemetryMdiWindow::errorOccurred, this,
+            [this](const QString& message) {
+                ui_->statusbar->showMessage(message, 5000);
+            });
+
+        mdiArea_->addSubWindow(telemetryViewerWindow_);
+        allDetachableWindows_.append(telemetryViewerWindow_);
+        telemetryViewerWindow_->show();
     });
 
     // Connect recording signals
@@ -547,6 +597,9 @@ void MainWindow::updateMenuState() {
     // My Account and My Sessions menu items are enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
     ui_->ActionMySessions->setEnabled(isConnected);
+
+    // Telemetry viewer needs connection to load sessions/logs
+    ui_->ActionTelemetryViewer->setEnabled(isConnected);
 
     // Protocol recording can be enabled before connection (will start on connect)
     // Only disable when disconnecting if we were recording

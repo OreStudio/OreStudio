@@ -23,6 +23,7 @@
 #include <QWidget>
 #include <QTreeWidget>
 #include <QTableView>
+#include <QTableWidget>
 #include <QSplitter>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -31,6 +32,7 @@
 #include <QTextEdit>
 #include <QGroupBox>
 #include <QTimer>
+#include <QPushButton>
 #include <QSortFilterProxyModel>
 #include <QCloseEvent>
 #include <memory>
@@ -93,6 +95,7 @@ private slots:
 private:
     void setupUi();
     void setupToolbar();
+    void setupLevelFilters();
     void setupSessionTree();
     void setupLogTable();
     void setupDetailPanels();
@@ -104,6 +107,8 @@ private:
     void updateSessionInfoPanel(const iam::domain::session& session);
     void updateLogDetailPanel(const telemetry::domain::telemetry_log_entry& entry);
     void clearDetailPanels();
+    void applyLevelFilter();
+    void updateFilterButtonStyle(QPushButton* btn, bool enabled, const QColor& color);
 
 protected:
     void closeEvent(QCloseEvent* event) override;
@@ -114,8 +119,11 @@ private:
     QWidget* leftPanel_;
     QWidget* rightPanel_;
 
-    // Left panel: session tree
+    // Left panel: session tree + session details
+    QSplitter* leftSplitter_;
     QTreeWidget* sessionTree_;
+    QGroupBox* sessionDetailsGroup_;
+    QTableWidget* sessionDetailsTable_;
 
     // Right panel: toolbar + table + details
     QVBoxLayout* rightLayout_;
@@ -123,19 +131,16 @@ private:
     QTableView* logTableView_;
     PaginationWidget* paginationWidget_;
 
-    // Detail panels
-    QSplitter* detailSplitter_;
-    QGroupBox* sessionInfoGroup_;
-    QLabel* sessionUsernameLabel_;
-    QLabel* sessionClientLabel_;
-    QLabel* sessionTimeLabel_;
-    QLabel* sessionIpLabel_;
-
+    // Log detail panel (message only)
     QGroupBox* logDetailGroup_;
-    QLabel* logTimestampLabel_;
-    QLabel* logLevelLabel_;
-    QLabel* logComponentLabel_;
     QTextEdit* logMessageEdit_;
+
+    // Level filter buttons
+    QPushButton* filterTraceBtn_;
+    QPushButton* filterDebugBtn_;
+    QPushButton* filterInfoBtn_;
+    QPushButton* filterWarnBtn_;
+    QPushButton* filterErrorBtn_;
 
     // Toolbar actions
     QAction* reloadAction_;
@@ -155,6 +160,13 @@ private:
     // Session data cache
     std::unordered_map<std::string, iam::domain::session> sessionCache_;
     std::optional<boost::uuids::uuid> selectedSessionId_;
+
+    // Level filter state (true = show this level)
+    bool showTrace_{true};
+    bool showDebug_{true};
+    bool showInfo_{true};
+    bool showWarn_{true};
+    bool showError_{true};
 };
 
 }

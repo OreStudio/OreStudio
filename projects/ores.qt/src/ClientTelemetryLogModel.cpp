@@ -79,6 +79,8 @@ QVariant ClientTelemetryLogModel::data(const QModelIndex& index, int role) const
         return QString::fromStdString(entry.source_name);
     case Column::Component:
         return QString::fromStdString(entry.component);
+    case Column::Tag:
+        return QString::fromStdString(entry.tag);
     case Column::Message:
         return QString::fromStdString(entry.message);
     default:
@@ -97,6 +99,7 @@ headerData(int section, Qt::Orientation orientation, int role) const {
         case Column::Level: return tr("Level");
         case Column::Source: return tr("Source");
         case Column::Component: return tr("Component");
+        case Column::Tag: return tr("Tag");
         case Column::Message: return tr("Message");
         default: return {};
         }

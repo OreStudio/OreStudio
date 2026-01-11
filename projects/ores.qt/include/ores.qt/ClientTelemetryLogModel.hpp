@@ -56,6 +56,7 @@ public:
         Level,
         Source,
         Component,
+        Tag,
         Message,
         ColumnCount
     };

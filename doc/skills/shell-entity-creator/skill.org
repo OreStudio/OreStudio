@@ -115,7 +115,7 @@ class Menu;
 namespace ores::comms::shell::app::commands {
 
 /**
- * @brief Manages commands related to <ENTITY>S.
+ * @brief Manages commands related to <entities>.
  */
 class <entity>_commands {
 private:

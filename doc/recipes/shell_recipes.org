@@ -305,8 +305,8 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ORE Studio Shell REPL v0.0.6
-Type 'help' for available commands, 'exit' to quit
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> currencies> Commands available:
  - help
@@ -321,6 +321,10 @@ ores-shell> currencies> Commands available:
 	Retrieve all currencies from the server
  - add <string> <string> <string> <string> <string>
 	Add a currency (iso_code name [numeric_code] [symbol] [fractions_per_unit])
+ - delete <string>
+	Delete a currency by ISO code
+ - history <string>
+	Get version history for a currency by ISO code
  - ores-shell
 	(menu)
 currencies> Bye!
@@ -442,8 +446,8 @@ EOF
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Account created with ID: 019b7c16-a28c-7444-9546-9a051962f014
-ores-shell> ✓ Account created with ID: 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+ores-shell> ✓ Account created with ID: 019bae63-e953-727c-bb2c-e765d462f1f0
+ores-shell> ✓ Account created with ID: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 ores-shell> Bye!
 #+end_example
 
@@ -478,9 +482,9 @@ ores-shell>
 +--------------------------------------+-----------+-----------------------+-------------+-------------------------------+---------+
 | ID (UUID)                            | Username  | Email                 | Recorded By | Recorded At                   | Version |
 +--------------------------------------+-----------+-----------------------+-------------+-------------------------------+---------+
-| 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c | newuser41 | newuser41@example.com | ores        | 2026-01-02 00:23:37.000000000 | 1       |
-| 019b7c16-a28c-7444-9546-9a051962f014 | newuser40 | newuser40@example.com | ores        | 2026-01-02 00:23:36.000000000 | 1       |
-| 019b7c15-5f67-76a1-84be-9d74381b1c7f | newuser3  | newuser3@test.com     | bootstrap   | 2026-01-02 00:22:14.000000000 | 1       |
+| 019bae63-e9cd-7e8b-a378-2e0ca0d48610 | newuser41 | newuser41@example.com | ores        | 2026-01-11 18:49:02.000000000 | 1       |
+| 019bae63-e953-727c-bb2c-e765d462f1f0 | newuser40 | newuser40@example.com | ores        | 2026-01-11 18:49:02.000000000 | 1       |
+| 019ba3a0-48bb-7924-96ae-686f0883cc9c | newuser3  | newuser3@test.com     | bootstrap   | 2026-01-09 16:39:09.000000000 | 1       |
 +--------------------------------------+-----------+-----------------------+-------------+-------------------------------+---------+
 
 
@@ -518,9 +522,9 @@ ores-shell>
 +--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
 | Account ID                           | Last IP   | Last Attempt IP | Failed | Locked | Online | Last Login          |
 +--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
-| 019b7c16-a28c-7444-9546-9a051962f014 | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
-| 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
-| 019b7c15-5f67-76a1-84be-9d74381b1c7f | 127.0.0.1 | 127.0.0.1       | 0      | N      | Y      | 2026-01-02 00:27:36 |
+| 019bae63-e953-727c-bb2c-e765d462f1f0 | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019bae63-e9cd-7e8b-a378-2e0ca0d48610 | 0.0.0.0   | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
+| 019ba3a0-48bb-7924-96ae-686f0883cc9c | 127.0.0.1 | 127.0.0.1       | 0      | N      | Y      | 2026-01-11 18:49:28 |
 +--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
 
 
@@ -536,7 +540,7 @@ Lock an account to prevent login.
 
 #+name: lock-account
 #+begin_src ores-shell :exports none
-accounts lock 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+accounts lock 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 exit
 #+end_src
 
@@ -555,7 +559,7 @@ ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Account locked successfully!
-  Account ID: 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+  Account ID: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 ores-shell> Bye!
 #+end_example
 
@@ -568,7 +572,7 @@ Unlock a previously locked account.
 
 #+name: unlock-account
 #+begin_src ores-shell :exports none
-accounts unlock 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+accounts unlock 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 exit
 #+end_src
 
@@ -587,7 +591,7 @@ ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Account unlocked successfully!
-  Account ID: 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+  Account ID: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 ores-shell> Bye!
 #+end_example
 
@@ -600,7 +604,7 @@ List roles assigned to an account.
 
 #+name: account-roles
 #+begin_src ores-shell :exports none
-accounts roles 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+accounts roles 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 exit
 #+end_src
 
@@ -619,13 +623,12 @@ ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
-Roles for Account: 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+Roles for Account: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 
 +--------------------------------------+--------+------------------------------------------------+-----------------------------+-------------+---------+
 | ID (UUID)                            | Name   | Description                                    | Permissions                 | Recorded By | Version |
 +--------------------------------------+--------+------------------------------------------------+-----------------------------+-------------+---------+
-| d48b608d-c894-4346-887d-228e342d36c6 | Sales  | Sales operations - read-only currency access   | currencies:read, flags:read | system      | 1       |
-| 6e4ee358-1970-400f-a3cb-fbcfe8296f52 | Viewer | Viewer - basic read-only access to domain data | currencies:read, flags:read | system      | 1       |
+| 0810cd81-1d89-455f-9eb7-90e126c4a241 | Viewer | Viewer - basic read-only access to domain data | currencies:read, flags:read | system      | 1       |
 +--------------------------------------+--------+------------------------------------------------+-----------------------------+-------------+---------+
 
 
@@ -641,7 +644,7 @@ List effective permissions for an account.
 
 #+name: account-permissions
 #+begin_src ores-shell :exports none
-accounts permissions 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+accounts permissions 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 exit
 #+end_src
 
@@ -660,7 +663,7 @@ ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell>
-Effective Permissions for Account: 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
+Effective Permissions for Account: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
 =======================================================================
 
   - currencies:read
@@ -680,7 +683,7 @@ Assign a role to an account.
 #+name: assign-role
 #+begin_src ores-shell :exports none
 roles list
-accounts assign-role 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c d48b608d-c894-4346-887d-228e342d36c6
+accounts assign-role 019bae63-e9cd-7e8b-a378-2e0ca0d48610 82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b
 exit
 #+end_src
 
@@ -702,18 +705,18 @@ ores-shell>
 +--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
 | ID (UUID)                            | Name       | Description                                                   | Permissions                                                   | Recorded By | Version |
 +--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
-| dd2ecaec-138b-453c-a110-77441a60583e | Admin      | Full administrative access to all system functions            | *                                                             | system      | 1       |
-| b898350f-f704-4e97-b8ec-36c3481af052 | Operations | Operations - currency management and account viewing          | accounts:read, currencies:create, currencies:delete (+4 more) | system      | 1       |
-| d48b608d-c894-4346-887d-228e342d36c6 | Sales      | Sales operations - read-only currency access                  | currencies:read, flags:read                                   | system      | 1       |
-| d533c93f-bf3c-4d1f-bba8-4e949b976a8a | Support    | Support - read-only access to all resources and admin screens | accounts:read, currencies:history, currencies:read (+3 more)  | system      | 1       |
-| a74f8a4e-f331-4179-aecb-cda61e472805 | Trading    | Trading operations - currency read access                     | currencies:history, currencies:read, flags:read               | system      | 1       |
-| 6e4ee358-1970-400f-a3cb-fbcfe8296f52 | Viewer     | Viewer - basic read-only access to domain data                | currencies:read, flags:read                                   | system      | 1       |
+| f60d8103-0283-4d46-aa4c-aa6bb50934d9 | Admin      | Full administrative access to all system functions            | *                                                             | system      | 1       |
+| d6ac9d9f-91c3-40d2-998d-0e18604a8687 | Operations | Operations - currency management and account viewing          | accounts:read, currencies:create, currencies:delete (+4 more) | system      | 1       |
+| 82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b | Sales      | Sales operations - read-only currency access                  | currencies:read, flags:read                                   | system      | 1       |
+| 1bc4ce25-7f72-4ac1-b42a-6c11dd350906 | Support    | Support - read-only access to all resources and admin screens | accounts:read, currencies:history, currencies:read (+3 more)  | system      | 1       |
+| a6eb024f-0c0c-4e0e-93a4-8fb5df41b2e2 | Trading    | Trading operations - currency read access                     | currencies:history, currencies:read, flags:read               | system      | 1       |
+| 0810cd81-1d89-455f-9eb7-90e126c4a241 | Viewer     | Viewer - basic read-only access to domain data                | currencies:read, flags:read                                   | system      | 1       |
 +--------------------------------------+------------+---------------------------------------------------------------+---------------------------------------------------------------+-------------+---------+
 
 
 ores-shell> V Role assigned successfully!
-  Account ID: 019b7c16-a34a-7d96-8cdd-3f6a1b3aaa6c
-  Role ID:    d48b608d-c894-4346-887d-228e342d36c6
+  Account ID: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
+  Role ID:    82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b
 ores-shell> Bye!
 #+end_example
 
@@ -726,7 +729,7 @@ Revoke a role from an account.
 
 #+name: revoke-role
 #+begin_src ores-shell :exports none
-accounts revoke-role e7bddd23-c004-4652-99e1-8d4ff5856fe1 d48b608d-c894-4346-887d-228e342d36c6
+accounts revoke-role 019bae63-e9cd-7e8b-a378-2e0ca0d48610 82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b
 exit
 #+end_src
 
@@ -745,8 +748,8 @@ ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> V Role revoked successfully!
-  Account ID: e7bddd23-c004-4652-99e1-8d4ff5856fe1
-  Role ID:    d48b608d-c894-4346-887d-228e342d36c6
+  Account ID: 019bae63-e9cd-7e8b-a378-2e0ca0d48610
+  Role ID:    82f4dda0-32c4-4cf2-9da8-ddb8bd7e982b
 ores-shell> Bye!
 #+end_example
 
@@ -759,7 +762,7 @@ Get version history for an account.
 
 #+name: account-history
 #+begin_src ores-shell :exports none
-accounts history newuser3
+accounts history newuser41
 exit
 #+end_src
 
@@ -769,6 +772,22 @@ export ORES_COMMS_SHELL_LOGIN_PASSWORD
 <<account-history>>
 EOF
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> +---------+-----------+-----------------------+-------------+-------------------------------+----------------+
+| Version | Username  | Email                 | Recorded By | Recorded At                   | Change Summary |
++---------+-----------+-----------------------+-------------+-------------------------------+----------------+
+| 1       | newuser41 | newuser41@example.com | ores        | 2026-01-11 18:49:02.000000000 | Version 1      |
++---------+-----------+-----------------------+-------------+-------------------------------+----------------+
+
+ores-shell> Bye!
+#+end_example
 
 
 ** Variability
@@ -797,8 +816,8 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ORE Studio Shell REPL v0.0.6
-Type 'help' for available commands, 'exit' to quit
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> variability> Commands available:
  - help
@@ -811,6 +830,12 @@ ores-shell> variability> Commands available:
 	Exec a command by index in the history
  - list-flags
 	Retrieve all feature flags from the server
+ - add-flag <string> <string> <string> <string> <string>
+	Add a feature flag (name enabled description reason_code "commentary")
+ - delete-flag <string>
+	Delete a feature flag by name
+ - flag-history <string>
+	Get version history for a feature flag by name
  - ores-shell
 	(menu)
 variability> Bye!
@@ -846,10 +871,12 @@ ores-shell>
 +--------------------------------------+---------+---------------------------------------------------------------------------------------------------------------------+---------+-------------+-------------------------------+
 | Name                                 | Version | Description                                                                                                         | Enabled | Recorded By | Recorded At                   |
 +--------------------------------------+---------+---------------------------------------------------------------------------------------------------------------------+---------+-------------+-------------------------------+
-| system.bootstrap_mode                | 0       | Indicates whether the system is in bootstrap mode (waiting for initial admin account).                              | 0       | system      | 1970-01-01 00:00:00.000000000 |
-| system.disable_password_validation   | 0       | When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.                                    | 0       | system      | 1970-01-01 00:00:00.000000000 |
-| system.signup_requires_authorization | 0       | Controls whether new signups require admin authorization. NOT YET IMPLEMENTED - enabling will cause signup to fail. | 0       | system      | 1970-01-01 00:00:00.000000000 |
-| system.user_signups                  | 0       | Controls whether user self-registration is allowed.                                                                 | 0       | system      | 1970-01-01 00:00:00.000000000 |
+| test.feature.flag                    | 1       | Test feature flag for recipes                                                                                       | 0       | newuser3    | 2026-01-11 18:55:37.000000000 |
+| system.bootstrap_mode                | 1       | Indicates whether the system is in bootstrap mode (waiting for initial admin account).                              | 0       | system      | 2026-01-09 16:39:09.000000000 |
+| system.synthetic_data_generation     | 1       | Enables synthetic test data generation in the UI. FOR TESTING/DEVELOPMENT ONLY.                                     | 0       | system      | 2026-01-09 16:37:36.000000000 |
+| system.disable_password_validation   | 1       | When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.                                    | 0       | system      | 2026-01-09 16:37:36.000000000 |
+| system.signup_requires_authorization | 1       | Controls whether new signups require admin authorization. NOT YET IMPLEMENTED - enabling will cause signup to fail. | 0       | system      | 2026-01-09 16:37:36.000000000 |
+| system.user_signups                  | 1       | Controls whether user self-registration is allowed.                                                                 | 0       | system      | 2026-01-09 16:37:36.000000000 |
 +--------------------------------------+---------+---------------------------------------------------------------------------------------------------------------------+---------+-------------+-------------------------------+
 
 
@@ -863,7 +890,7 @@ Add a new feature flag.
 
 #+name: add-feature-flag
 #+begin_src ores-shell :exports none
-variability add-flag test.feature.flag "Test feature flag for recipes" false
+variability add-flag test.feature.flag false "Test feature flag for recipes" system.new_record "Test"
 exit
 #+end_src
 
@@ -873,6 +900,17 @@ export ORES_COMMS_SHELL_LOGIN_PASSWORD
 <<add-feature-flag>>
 EOF
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Feature flag added successfully!
+ores-shell> Bye!
+#+end_example
 
 *** Delete Feature Flag
 
@@ -890,6 +928,17 @@ export ORES_COMMS_SHELL_LOGIN_PASSWORD
 <<delete-feature-flag>>
 EOF
 #+END_SRC
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell> ✓ Feature flag deleted successfully!
+ores-shell> Bye!
+#+end_example
 
 *** Feature Flag History
 
@@ -1097,7 +1146,7 @@ Add a new currency.
 
 #+name: currencies-add
 #+begin_src ores-shell :exports none
-currencies add TEST700 Test700 700 A 100
+currencies add TEST700 Test700 700 A 100 initial_setup "Adding test currency"
 exit
 #+end_src
 
@@ -1795,6 +1844,42 @@ export ORES_COMMS_SHELL_LOGIN_PASSWORD
 <<change-reasons-get>>
 EOF
 #+end_src
+
+#+RESULTS:
+#+begin_example
+✓ Connected to :55555
+✓ Logged in as: newuser3
+ORE Studio Shell REPL v0.0.8
+Type 'help' for available commands, 'exit' to quit.
+
+ores-shell>
++-----------------------------+----------+----------------------------------------------------+-------+--------+--------------+-------+-------------+---------+
+| Code                        | Category | Description                                        | Amend | Delete | Req. Comment | Order | Recorded By | Version |
++-----------------------------+----------+----------------------------------------------------+-------+--------+--------------+-------+-------------+---------+
+| system.initial_load         | system   | Initial system bootstrap or migration              | N     | N      | N            | 0     | system      | 1       |
+| common.non_material_update  | common   | Non-material update (Touch)                        | Y     | N      | N            | 10    | system      | 1       |
+| system.new_record           | system   | New record created during normal operations        | N     | N      | N            | 10    | system      | 1       |
+| trade.fat_finger            | trade    | Erroneous execution (wrong quantity/price)         | Y     | Y      | N            | 10    | system      | 1       |
+| common.rectification        | common   | User/Booking Error                                 | Y     | Y      | N            | 20    | system      | 1       |
+| system.external_data_import | system   | External data import (requires data lineage)       | Y     | N      | Y            | 20    | system      | 1       |
+| trade.system_malfunction    | trade    | Technical glitch or algorithm issue 2              | Y     | Y      | Y            | 20    | newuser3    | 4       |
+| common.duplicate            | common   | Duplicate Record                                   | N     | Y      | N            | 30    | system      | 1       |
+| trade.corporate_action      | trade    | Stock split, dividend, or merger adjustment        | Y     | Y      | N            | 30    | system      | 1       |
+| common.stale_data           | common   | Data not updated within required liquidity horizon | Y     | Y      | N            | 40    | system      | 1       |
+| trade.allocation_swap       | trade    | House to client sub-account reallocation           | Y     | Y      | N            | 40    | system      | 1       |
+| common.outlier_correction   | common   | Manual override after plausibility check failure   | Y     | Y      | Y            | 50    | system      | 1       |
+| trade.re_booking            | trade    | Wrong legal entity correction                      | Y     | Y      | Y            | 50    | system      | 1       |
+| common.feed_failure         | common   | Upstream vendor/API data issue                     | Y     | Y      | Y            | 60    | system      | 1       |
+| common.mapping_error        | common   | Incorrect ID translation (e.g., ISIN to FIGI)      | Y     | Y      | Y            | 70    | system      | 1       |
+| common.judgmental_override  | common   | Expert judgment when market prices unavailable     | Y     | Y      | Y            | 80    | system      | 1       |
+| common.regulatory           | common   | Mandatory compliance adjustment                    | Y     | Y      | Y            | 90    | system      | 1       |
+| trade.other                 | trade    | Exceptional (requires audit note)                  | N     | Y      | Y            | 999   | newuser3    | 2       |
+| common.other                | common   | Exceptional (requires audit note)                  | Y     | Y      | Y            | 1000  | system      | 1       |
++-----------------------------+----------+----------------------------------------------------+-------+--------+--------------+-------+-------------+---------+
+
+
+ores-shell> Bye!
+#+end_example
 
 *** Add
 

@@ -46,12 +46,14 @@ register_commands(cli::Menu& root_menu, client_session& session) {
     currencies_menu->Insert("add", [&session](std::ostream& out,
             std::string iso_code, std::string name,
             std::string numeric_code, std::string symbol,
-            std::string fractions_per_unit) {
+            std::string fractions_per_unit, std::string change_reason_code,
+            std::string change_commentary) {
         process_add_currency(std::ref(out), std::ref(session),
             std::move(iso_code), std::move(name),
             std::move(numeric_code), std::move(symbol),
-            std::move(fractions_per_unit));
-    }, "Add a currency (iso_code name [numeric_code] [symbol] [fractions_per_unit])");
+            std::move(fractions_per_unit), std::move(change_reason_code),
+            std::move(change_commentary));
+    }, "Add a currency (iso_code name numeric_code symbol fractions reason_code \"commentary\")");
 
     currencies_menu->Insert("delete", [&session](std::ostream& out,
             std::string iso_code) {
@@ -89,7 +91,8 @@ void currencies_commands::
 process_add_currency(std::ostream& out, client_session& session,
     std::string iso_code, std::string name,
     std::string numeric_code, std::string symbol,
-    std::string fractions_per_unit) {
+    std::string fractions_per_unit, std::string change_reason_code,
+    std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add currency request for: "
                                << iso_code;
 
@@ -132,6 +135,8 @@ process_add_currency(std::ostream& out, client_session& session,
                 .format = "",
                 .currency_type = "fiat",
                 .recorded_by = recorded_by,
+                .change_reason_code = std::move(change_reason_code),
+                .change_commentary = std::move(change_commentary),
                 .recorded_at = std::chrono::system_clock::now()
             }
         });

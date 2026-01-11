@@ -78,12 +78,15 @@ public:
      * @param numeric_code ISO 4217 numeric code (optional)
      * @param symbol Currency symbol (optional)
      * @param fractions_per_unit Number of fractional units (default: 100)
+     * @param change_reason_code Code identifying the reason for the change
+     * @param change_commentary Free-text commentary explaining the change
      */
     static void process_add_currency(std::ostream& out,
         comms::net::client_session& session,
         std::string iso_code, std::string name,
         std::string numeric_code, std::string symbol,
-        std::string fractions_per_unit);
+        std::string fractions_per_unit, std::string change_reason_code,
+        std::string change_commentary);
 
     /**
      * @brief Process a delete currency request.

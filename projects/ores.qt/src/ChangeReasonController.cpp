@@ -202,7 +202,7 @@ void ChangeReasonController::showAddWindow() {
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Change reason saved: " << code.toStdString();
         if (listWindow_) {
-            listWindow_->reload();
+            listWindow_->markAsStale();
         }
     });
 
@@ -272,14 +272,14 @@ void ChangeReasonController::showDetailWindow(
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Change reason saved: " << code.toStdString();
         if (listWindow_) {
-            listWindow_->reload();
+            listWindow_->markAsStale();
         }
     });
     connect(detailDialog, &ChangeReasonDetailDialog::changeReasonDeleted,
             this, [this, key](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Change reason deleted: " << code.toStdString();
         if (listWindow_) {
-            listWindow_->reload();
+            listWindow_->markAsStale();
         }
     });
 
@@ -504,7 +504,7 @@ void ChangeReasonController::onRevertVersion(
         BOOST_LOG_SEV(lg(), info) << "Change reason reverted: " << code.toStdString();
         emit statusMessage(QString("Change reason '%1' reverted successfully").arg(code));
         if (listWindow_) {
-            listWindow_->reload();
+            listWindow_->markAsStale();
         }
     });
 

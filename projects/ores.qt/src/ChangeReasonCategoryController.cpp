@@ -193,7 +193,7 @@ void ChangeReasonCategoryController::showAddWindow() {
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Category saved: " << code.toStdString();
         if (listWindow_) {
-            listWindow_->reload();
+            listWindow_->markAsStale();
         }
     });
 
@@ -257,14 +257,14 @@ void ChangeReasonCategoryController::showDetailWindow(
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Category saved: " << code.toStdString();
         if (listWindow_) {
-            listWindow_->reload();
+            listWindow_->markAsStale();
         }
     });
     connect(detailDialog, &ChangeReasonCategoryDetailDialog::categoryDeleted,
             this, [this, key](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Category deleted: " << code.toStdString();
         if (listWindow_) {
-            listWindow_->reload();
+            listWindow_->markAsStale();
         }
     });
 
@@ -483,7 +483,7 @@ void ChangeReasonCategoryController::onRevertVersion(
         BOOST_LOG_SEV(lg(), info) << "Category reverted: " << code.toStdString();
         emit statusMessage(QString("Category '%1' reverted successfully").arg(code));
         if (listWindow_) {
-            listWindow_->reload();
+            listWindow_->markAsStale();
         }
     });
 

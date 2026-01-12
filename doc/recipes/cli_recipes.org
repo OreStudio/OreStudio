@@ -992,6 +992,261 @@ export ORES_CLI_DB_PASSWORD
 Feature flag deleted successfully: Test feature3
 #+end_src
 
+** Roles
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Role management operations from the [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio IAM Component]].
+
+*** Help
+
+Show available operations for roles.
+
+#+begin_src sh :wrap src text
+./ores.cli roles --help
+#+end_src
+
+*** List
+
+List roles from the database.
+
+**** List all as JSON
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli roles list ${db_args} ${log_args} --format json | jq .
+#+end_src
+
+**** List all as table
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli roles list ${db_args} ${log_args} --format table
+#+end_src
+
+**** List specific role
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli roles list ${db_args} ${log_args} \
+  --format json --key "admin" | jq .
+#+end_src
+
+*** Delete
+
+Delete a role by ID.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli roles delete ${db_args} ${log_args} \
+  --key "test-role-id"
+#+end_src
+
+** Permissions
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Permission management operations from the [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio IAM Component]].
+
+*** Help
+
+Show available operations for permissions.
+
+#+begin_src sh :wrap src text
+./ores.cli permissions --help
+#+end_src
+
+*** List
+
+List permissions from the database.
+
+**** List all as JSON
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli permissions list ${db_args} ${log_args} --format json | jq .
+#+end_src
+
+**** List all as table
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli permissions list ${db_args} ${log_args} --format table
+#+end_src
+
+**** List specific permission
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli permissions list ${db_args} ${log_args} \
+  --format json --key "read" | jq .
+#+end_src
+
+*** Delete
+
+Delete a permission by ID.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli permissions delete ${db_args} ${log_args} \
+  --key "test-permission-id"
+#+end_src
+
+** Countries
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Country management operations from the [[id:BFD37E19-9CD3-1D74-C683-CA9E40A32E06][ORE Studio Geo Component]].
+
+*** Help
+
+Show available operations for countries.
+
+#+begin_src sh :wrap src text
+./ores.cli countries --help
+#+end_src
+
+*** List
+
+List countries from the database.
+
+**** List all as JSON
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli countries list ${db_args} ${log_args} --format json | jq .[:3]
+#+end_src
+
+**** List all as table
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli countries list ${db_args} ${log_args} --format table | head -n 10
+#+end_src
+
+**** List specific country
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli countries list ${db_args} ${log_args} \
+  --format json --key "US" | jq .
+#+end_src
+
+*** Delete
+
+Delete a country by alpha-2 code.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli countries delete ${db_args} ${log_args} \
+  --key "XX"
+#+end_src
+
+** Change Reasons
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Change reason management operations from the [[id:E8D36E00-5F77-D0B4-B013-5D65707F66EC][ORE Studio Telemetry Component]].
+
+*** Help
+
+Show available operations for change reasons.
+
+#+begin_src sh :wrap src text
+./ores.cli change-reasons --help
+#+end_src
+
+*** List
+
+List change reasons from the database.
+
+**** List all as JSON
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli change-reasons list ${db_args} ${log_args} --format json | jq .
+#+end_src
+
+**** List all as table
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli change-reasons list ${db_args} ${log_args} --format table
+#+end_src
+
+**** List specific change reason
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli change-reasons list ${db_args} ${log_args} \
+  --format json --key "data_correction" | jq .
+#+end_src
+
+*** Delete
+
+Delete a change reason by code.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli change-reasons delete ${db_args} ${log_args} \
+  --key "test_reason"
+#+end_src
+
+** Change Reason Categories
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Change reason category management operations from the [[id:E8D36E00-5F77-D0B4-B013-5D65707F66EC][ORE Studio Telemetry Component]].
+
+*** Help
+
+Show available operations for change reason categories.
+
+#+begin_src sh :wrap src text
+./ores.cli change-reason-categories --help
+#+end_src
+
+*** List
+
+List change reason categories from the database.
+
+**** List all as JSON
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli change-reason-categories list ${db_args} ${log_args} --format json | jq .
+#+end_src
+
+**** List all as table
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli change-reason-categories list ${db_args} ${log_args} --format table
+#+end_src
+
+**** List specific category
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli change-reason-categories list ${db_args} ${log_args} \
+  --format json --key "operational" | jq .
+#+end_src
+
+*** Delete
+
+Delete a change reason category by code.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli change-reason-categories delete ${db_args} ${log_args} \
+  --key "test_category"
+#+end_src
+
 * Footer
 
 | Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |

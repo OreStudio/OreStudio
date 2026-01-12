@@ -56,6 +56,13 @@ jobs:
         with:
           submodules: true
 
+      - name: Ccache for gh actions
+        uses: hendrikmuhs/ccache-action@v1.2.20
+        with:
+          variant: sccache
+          key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+          max-size: 1000M
+
       - name: Install Clang
         uses: KyleMayes/install-llvm-action@v2
         if: ${{matrix.compiler}} == clang

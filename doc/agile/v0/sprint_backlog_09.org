@@ -17,28 +17,31 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-11 Sun 23:40], for Sunday, January 11, 2026.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:39* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:39   |      |      | 100.0 |
-|       | Active                                |        | 1:39 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:39 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-12 Mon 11:11], for Monday, January 12, 2026.
+|       | <75>                                        |        |      |      |       |
+| Tags  | Headline                                    | Time   |      |      |     % |
+|-------+---------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                | *2:03* |      |      | 100.0 |
+|-------+---------------------------------------------+--------+------+------+-------|
+|       | Stories                                     | 2:03   |      |      | 100.0 |
+|       | Active                                      |        | 2:03 |      | 100.0 |
+| infra | Clean up system models and component models |        |      | 0:08 |   6.5 |
+| code  | Add missing entities to CLI                 |        |      | 1:55 |  93.5 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-11 Sun 23:40]
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:39* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:39   |      |      | 100.0 |
-|       | Active                                |        | 1:39 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:39 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-12 Mon 11:11]
+|       | <75>                                        |        |      |      |       |
+| Tags  | Headline                                    | Time   |      |      |     % |
+|-------+---------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                | *4:02* |      |      | 100.0 |
+|-------+---------------------------------------------+--------+------+------+-------|
+|       | Stories                                     | 4:02   |      |      | 100.0 |
+|       | Active                                      |        | 4:02 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |        |      | 1:39 |  40.9 |
+| infra | Clean up system models and component models |        |      | 0:28 |  11.6 |
+| code  | Add missing entities to CLI                 |        |      | 1:55 |  47.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -227,6 +230,61 @@ Highlights
   removing verbose content and instead linking directly to the external website
   documentation for system models and build instructions, improving navigation
   and reducing redundancy.
+#+end_quote
+
+*** COMPLETED Add missing entities to CLI                              :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-12 Mon 10:15]--[2026-01-12 Mon 11:11] =>  0:56
+    CLOCK: [2026-01-12 Mon 09:15]--[2026-01-12 Mon 10:14] =>  0:59
+    :END:
+
+We have added entities but not updated the tool
+
+**** CLI commands
+
+#+begin_quote
+This pull request significantly expands the CLI's administrative capabilities by
+introducing comprehensive management commands for several key entities. Users
+can now list and delete roles, permissions, countries, change reasons, and
+change reason categories directly from the command line, enhancing operational
+efficiency and data control. The changes are implemented with flexible output
+formats and robust lookup mechanisms, providing a more complete and
+user-friendly experience for managing these system components.
+
+Highlights:
+
+- New CLI Entities: Added command-line interface support for five new entities:
+  roles, permissions, countries, change reasons, and change reason categories.
+- List Operations: Implemented 'list' operations for all new entities,
+  supporting both JSON and table output formats.
+- Delete Operations: Implemented 'delete' operations for all new entities, with
+  support for lookup by UUID, code, or name depending on the entity type.
+- Code Structure: Introduced new parser headers and implementations for each new
+  entity, and integrated them into the existing application and parser logic.
+#+end_quote
+
+**** Parser refactoring
+
+#+begin_quote
+This pull request significantly improves the maintainability and conciseness of
+the CLI's entity parsing logic. By abstracting common patterns for entities that
+only support 'list' and 'delete' operations into a generic helper, it eliminates
+substantial boilerplate code and provides a standardized approach for handling
+such commands. This change is a direct response to previous code review feedback
+aimed at reducing duplication.
+
+Highlights:
+
+- New Generic Helper: Introduced a new simple_entity_config struct and
+  handle_simple_entity_command helper function in parser_helpers to centralize
+  common parsing logic.
+- Refactoring of Entity Parsers: Refactored five existing entity parsers (roles,
+  permissions, countries, change_reasons, change_reason_categories) to utilize
+  the newly created generic helper.
+- Code Reduction: Achieved a net reduction of approximately 314 lines of
+  duplicated code across the refactored parsers, improving maintainability and
+  conciseness.
+
 #+end_quote
 
 *** Change reason and categories need permissions                      :code:

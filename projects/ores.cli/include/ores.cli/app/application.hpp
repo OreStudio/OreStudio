@@ -36,6 +36,11 @@
 #include "ores.cli/config/add_account_options.hpp"
 #include "ores.cli/config/add_feature_flag_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
+#include "ores.cli/config/add_role_options.hpp"
+#include "ores.cli/config/add_permission_options.hpp"
+#include "ores.cli/config/add_country_options.hpp"
+#include "ores.cli/config/add_change_reason_options.hpp"
+#include "ores.cli/config/add_change_reason_category_options.hpp"
 
 namespace ores::cli::app {
 
@@ -91,6 +96,11 @@ private:
     void add_account(const config::add_account_options& cfg) const;
     void add_feature_flag(const config::add_feature_flag_options& cfg) const;
     void add_login_info(const config::add_login_info_options& cfg) const;
+    void add_role(const config::add_role_options& cfg) const;
+    void add_permission(const config::add_permission_options& cfg) const;
+    void add_country(const config::add_country_options& cfg) const;
+    void add_change_reason(const config::add_change_reason_options& cfg) const;
+    void add_change_reason_category(const config::add_change_reason_category_options& cfg) const;
     void add_data(const std::optional<config::add_options>& ocfg) const;
 
 public:

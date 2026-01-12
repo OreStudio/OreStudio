@@ -21,15 +21,42 @@
 #define ORES_CLI_CONFIG_PARSER_HELPERS_HPP
 
 #include <string>
+#include <string_view>
 #include <vector>
+#include <optional>
 #include <iosfwd>
 #include <boost/program_options.hpp>
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/format.hpp"
+#include "ores.cli/config/options.hpp"
 #include "ores.cli/config/export_options.hpp"
 #include "ores.cli/config/delete_options.hpp"
 
 namespace ores::cli::config::parser_helpers {
+
+/**
+ * @brief Configuration for a simple entity that supports only list and delete.
+ */
+struct simple_entity_config {
+    std::string_view name;
+    std::string_view description;
+    entity entity_value;
+    std::string_view list_description;
+    std::string_view delete_description;
+};
+
+/**
+ * @brief Generic handler for entities with only list and delete operations.
+ *
+ * This eliminates boilerplate code for simple entity parsers.
+ */
+std::optional<options>
+handle_simple_entity_command(
+    const simple_entity_config& cfg,
+    bool has_help,
+    const boost::program_options::parsed_options& po,
+    std::ostream& info,
+    boost::program_options::variables_map& vm);
 
 /**
  * @brief Prints the header of the help text, applicable to all cases.

@@ -46,6 +46,11 @@ Entity parsers define commands and options in:
 - =projects/ores.cli/src/config/entity_parsers/accounts_parser.cpp=: Account operations
 - =projects/ores.cli/src/config/entity_parsers/feature_flags_parser.cpp=: Feature flag operations
 - =projects/ores.cli/src/config/entity_parsers/login_info_parser.cpp=: Login info operations
+- =projects/ores.cli/src/config/entity_parsers/roles_parser.cpp=: Role operations
+- =projects/ores.cli/src/config/entity_parsers/permissions_parser.cpp=: Permission operations
+- =projects/ores.cli/src/config/entity_parsers/countries_parser.cpp=: Country operations
+- =projects/ores.cli/src/config/entity_parsers/change_reasons_parser.cpp=: Change reason operations
+- =projects/ores.cli/src/config/entity_parsers/change_reason_categories_parser.cpp=: Change reason category operations
 
 The main parser that routes to entity parsers:
 - =projects/ores.cli/src/config/parser.cpp=: Main command routing
@@ -54,12 +59,17 @@ The main parser that routes to entity parsers:
 
 Each entity supports these operations (check parser for current list):
 
-| Entity        | Operations                              |
-|---------------+-----------------------------------------|
-| currencies    | import, export, list, delete, add       |
-| accounts      | list, delete, add                       |
-| feature-flags | list, delete, add                       |
-| login-info    | list, delete, add                       |
+| Entity                   | Operations                        |
+|--------------------------+-----------------------------------|
+| currencies               | import, export, list, delete, add |
+| accounts                 | list, delete, add                 |
+| feature-flags            | list, delete, add                 |
+| login-info               | list, delete, add                 |
+| roles                    | list, delete, add                 |
+| permissions              | list, delete, add                 |
+| countries                | list, delete, add                 |
+| change-reasons           | list, delete, add                 |
+| change-reason-categories | list, delete, add                 |
 
 ** Recipe format
 
@@ -86,6 +96,11 @@ Recipes are organized into sections:
 - *Accounts*: List, delete, add (regular and admin)
 - *Login Info*: List, delete, add
 - *Feature Flags*: List, delete, add
+- *Roles*: List, delete, add (with permissions)
+- *Permissions*: List, delete, add
+- *Countries*: List, delete, add
+- *Change Reasons*: List, delete, add
+- *Change Reason Categories*: List, delete, add
 
 ** Verifying options
 

@@ -24,6 +24,7 @@
 #include "ores.cli/config/parser_helpers.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/add_country_options.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
@@ -32,8 +33,10 @@ namespace ores::cli::config::entity_parsers {
 
 namespace {
 
+using boost::program_options::value;
 using boost::program_options::variables_map;
 using boost::program_options::parsed_options;
+using boost::program_options::options_description;
 using boost::program_options::command_line_parser;
 using boost::program_options::parse_environment;
 using boost::program_options::include_positional;
@@ -53,10 +56,70 @@ using ores::cli::config::parser_helpers::read_delete_options;
 
 const std::string list_command_name("list");
 const std::string delete_command_name("delete");
+const std::string add_command_name("add");
 
 const std::vector<std::string> allowed_operations{
-    list_command_name, delete_command_name
+    list_command_name, delete_command_name, add_command_name
 };
+
+options_description make_add_country_options_description() {
+    options_description r("Add Country Options");
+    r.add_options()
+        ("alpha2-code", value<std::string>(),
+            "ISO 3166-1 alpha-2 code, e.g., US (required)")
+        ("alpha3-code", value<std::string>(),
+            "ISO 3166-1 alpha-3 code, e.g., USA (required)")
+        ("name", value<std::string>(), "Country name (required)")
+        ("numeric-code", value<std::string>(), "ISO 3166-1 numeric code")
+        ("official-name", value<std::string>(), "Official country name")
+        ("recorded-by", value<std::string>(), "Username of modifier (required)")
+        ("change-reason-code", value<std::string>(), "Change reason code")
+        ("change-commentary", value<std::string>(), "Change commentary");
+
+    return r;
+}
+
+add_country_options read_add_country_options(const variables_map& vm) {
+    add_country_options r;
+
+    if (vm.count("alpha2-code") == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --alpha2-code for add country command."));
+    }
+    r.alpha2_code = vm["alpha2-code"].as<std::string>();
+
+    if (vm.count("alpha3-code") == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --alpha3-code for add country command."));
+    }
+    r.alpha3_code = vm["alpha3-code"].as<std::string>();
+
+    if (vm.count("name") == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --name for add country command."));
+    }
+    r.name = vm["name"].as<std::string>();
+
+    if (vm.count("recorded-by") == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --recorded-by for add country command."));
+    }
+    r.recorded_by = vm["recorded-by"].as<std::string>();
+
+    if (vm.count("numeric-code") != 0)
+        r.numeric_code = vm["numeric-code"].as<std::string>();
+
+    if (vm.count("official-name") != 0)
+        r.official_name = vm["official-name"].as<std::string>();
+
+    if (vm.count("change-reason-code") != 0)
+        r.change_reason_code = vm["change-reason-code"].as<std::string>();
+
+    if (vm.count("change-commentary") != 0)
+        r.change_commentary = vm["change-commentary"].as<std::string>();
+
+    return r;
+}
 
 }
 
@@ -66,15 +129,14 @@ handle_countries_command(bool has_help,
     std::ostream& info,
     variables_map& vm) {
 
-    // Collect all unrecognized options from the first pass
     auto o(collect_unrecognized(po.options, include_positional));
-    o.erase(o.begin()); // Remove command name
+    o.erase(o.begin());
 
-    // Show help for countries command if requested with no operation
     if (has_help && o.empty()) {
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List countries as JSON or table"},
-            {"delete", "Delete a country by alpha-2 code"}
+            {"delete", "Delete a country by alpha-2 code"},
+            {"add", "Add a new country"}
         };
         print_entity_help("countries", "Manage countries", operations, info);
         return {};
@@ -82,13 +144,12 @@ handle_countries_command(bool has_help,
 
     if (o.empty()) {
         BOOST_THROW_EXCEPTION(parser_exception(
-            "countries command requires an operation (list, delete)"));
+            "countries command requires an operation (list, delete, add)"));
     }
 
     const auto operation = o.front();
-    o.erase(o.begin()); // Remove operation from args
+    o.erase(o.begin());
 
-    // Validate operation
     validate_operation("countries", operation, allowed_operations);
 
     options r;
@@ -113,9 +174,17 @@ handle_countries_command(bool has_help,
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
         r.deleting = read_delete_options(vm, entity::countries);
+    } else if (operation == add_command_name) {
+        auto d = add_common_options(make_add_country_options_description());
+        if (has_help) {
+            print_help_command("countries add", d, info);
+            return {};
+        }
+        store(command_line_parser(o).options(d).run(), vm);
+        store(parse_environment(d, name_mapper), vm);
+        r.adding = read_add_country_options(vm);
     }
 
-    // Read common options
     using ores::database::database_configuration;
     using ores::logging::logging_configuration;
     r.database = database_configuration::read_options(vm);

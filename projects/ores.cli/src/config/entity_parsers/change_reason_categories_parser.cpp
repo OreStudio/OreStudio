@@ -24,6 +24,7 @@
 #include "ores.cli/config/parser_helpers.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/add_change_reason_category_options.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
@@ -32,8 +33,10 @@ namespace ores::cli::config::entity_parsers {
 
 namespace {
 
+using boost::program_options::value;
 using boost::program_options::variables_map;
 using boost::program_options::parsed_options;
+using boost::program_options::options_description;
 using boost::program_options::command_line_parser;
 using boost::program_options::parse_environment;
 using boost::program_options::include_positional;
@@ -53,10 +56,50 @@ using ores::cli::config::parser_helpers::read_delete_options;
 
 const std::string list_command_name("list");
 const std::string delete_command_name("delete");
+const std::string add_command_name("add");
 
 const std::vector<std::string> allowed_operations{
-    list_command_name, delete_command_name
+    list_command_name, delete_command_name, add_command_name
 };
+
+options_description make_add_change_reason_category_options_description() {
+    options_description r("Add Change Reason Category Options");
+    r.add_options()
+        ("code", value<std::string>(), "Category code (required)")
+        ("description", value<std::string>(), "Description (required)")
+        ("recorded-by", value<std::string>(), "Username of modifier (required)")
+        ("change-commentary", value<std::string>(), "Change commentary");
+
+    return r;
+}
+
+add_change_reason_category_options
+read_add_change_reason_category_options(const variables_map& vm) {
+    add_change_reason_category_options r;
+
+    if (vm.count("code") == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --code for add change-reason-category command."));
+    }
+    r.code = vm["code"].as<std::string>();
+
+    if (vm.count("description") == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --description for add change-reason-category command."));
+    }
+    r.description = vm["description"].as<std::string>();
+
+    if (vm.count("recorded-by") == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --recorded-by for add change-reason-category command."));
+    }
+    r.recorded_by = vm["recorded-by"].as<std::string>();
+
+    if (vm.count("change-commentary") != 0)
+        r.change_commentary = vm["change-commentary"].as<std::string>();
+
+    return r;
+}
 
 }
 
@@ -66,15 +109,14 @@ handle_change_reason_categories_command(bool has_help,
     std::ostream& info,
     variables_map& vm) {
 
-    // Collect all unrecognized options from the first pass
     auto o(collect_unrecognized(po.options, include_positional));
-    o.erase(o.begin()); // Remove command name
+    o.erase(o.begin());
 
-    // Show help for change-reason-categories command if requested with no operation
     if (has_help && o.empty()) {
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List change reason categories as JSON or table"},
-            {"delete", "Delete a change reason category by code"}
+            {"delete", "Delete a change reason category by code"},
+            {"add", "Add a new change reason category"}
         };
         print_entity_help("change-reason-categories",
             "Manage change reason categories", operations, info);
@@ -83,13 +125,12 @@ handle_change_reason_categories_command(bool has_help,
 
     if (o.empty()) {
         BOOST_THROW_EXCEPTION(parser_exception(
-            "change-reason-categories command requires an operation (list, delete)"));
+            "change-reason-categories command requires an operation (list, delete, add)"));
     }
 
     const auto operation = o.front();
-    o.erase(o.begin()); // Remove operation from args
+    o.erase(o.begin());
 
-    // Validate operation
     validate_operation("change-reason-categories", operation, allowed_operations);
 
     options r;
@@ -114,9 +155,17 @@ handle_change_reason_categories_command(bool has_help,
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
         r.deleting = read_delete_options(vm, entity::change_reason_categories);
+    } else if (operation == add_command_name) {
+        auto d = add_common_options(make_add_change_reason_category_options_description());
+        if (has_help) {
+            print_help_command("change-reason-categories add", d, info);
+            return {};
+        }
+        store(command_line_parser(o).options(d).run(), vm);
+        store(parse_environment(d, name_mapper), vm);
+        r.adding = read_add_change_reason_category_options(vm);
     }
 
-    // Read common options
     using ores::database::database_configuration;
     using ores::logging::logging_configuration;
     r.database = database_configuration::read_options(vm);

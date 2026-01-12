@@ -18,7 +18,7 @@
 name: Continuous Windows
 
 env:
-  VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg_cache,readwrite'
+  VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
 
 on:  # yamllint disable-line rule:truthy
   push:
@@ -55,6 +55,13 @@ jobs:
       - uses: actions/checkout@v6.0.1
         with:
           submodules: true
+
+      - name: Ccache for gh actions
+        uses: hendrikmuhs/ccache-action@v1.2.20
+        with:
+          variant: sccache
+          key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+          max-size: 1000M
 
       - name: Install Clang
         uses: KyleMayes/install-llvm-action@v2

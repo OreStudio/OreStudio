@@ -24,6 +24,7 @@
 #include "ores.cli/config/parser_helpers.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/add_permission_options.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
@@ -32,8 +33,10 @@ namespace ores::cli::config::entity_parsers {
 
 namespace {
 
+using boost::program_options::value;
 using boost::program_options::variables_map;
 using boost::program_options::parsed_options;
+using boost::program_options::options_description;
 using boost::program_options::command_line_parser;
 using boost::program_options::parse_environment;
 using boost::program_options::include_positional;
@@ -53,10 +56,36 @@ using ores::cli::config::parser_helpers::read_delete_options;
 
 const std::string list_command_name("list");
 const std::string delete_command_name("delete");
+const std::string add_command_name("add");
 
 const std::vector<std::string> allowed_operations{
-    list_command_name, delete_command_name
+    list_command_name, delete_command_name, add_command_name
 };
+
+options_description make_add_permission_options_description() {
+    options_description r("Add Permission Options");
+    r.add_options()
+        ("code", value<std::string>(),
+            "Permission code in format resource:action (required)")
+        ("description", value<std::string>(), "Permission description");
+
+    return r;
+}
+
+add_permission_options read_add_permission_options(const variables_map& vm) {
+    add_permission_options r;
+
+    if (vm.count("code") == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --code for add permission command."));
+    }
+    r.code = vm["code"].as<std::string>();
+
+    if (vm.count("description") != 0)
+        r.description = vm["description"].as<std::string>();
+
+    return r;
+}
 
 }
 
@@ -66,15 +95,14 @@ handle_permissions_command(bool has_help,
     std::ostream& info,
     variables_map& vm) {
 
-    // Collect all unrecognized options from the first pass
     auto o(collect_unrecognized(po.options, include_positional));
-    o.erase(o.begin()); // Remove command name
+    o.erase(o.begin());
 
-    // Show help for permissions command if requested with no operation
     if (has_help && o.empty()) {
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List permissions as JSON or table"},
-            {"delete", "Delete a permission by ID"}
+            {"delete", "Delete a permission by ID"},
+            {"add", "Add a new permission"}
         };
         print_entity_help("permissions", "Manage permissions", operations, info);
         return {};
@@ -82,13 +110,12 @@ handle_permissions_command(bool has_help,
 
     if (o.empty()) {
         BOOST_THROW_EXCEPTION(parser_exception(
-            "permissions command requires an operation (list, delete)"));
+            "permissions command requires an operation (list, delete, add)"));
     }
 
     const auto operation = o.front();
-    o.erase(o.begin()); // Remove operation from args
+    o.erase(o.begin());
 
-    // Validate operation
     validate_operation("permissions", operation, allowed_operations);
 
     options r;
@@ -113,9 +140,17 @@ handle_permissions_command(bool has_help,
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
         r.deleting = read_delete_options(vm, entity::permissions);
+    } else if (operation == add_command_name) {
+        auto d = add_common_options(make_add_permission_options_description());
+        if (has_help) {
+            print_help_command("permissions add", d, info);
+            return {};
+        }
+        store(command_line_parser(o).options(d).run(), vm);
+        store(parse_environment(d, name_mapper), vm);
+        r.adding = read_add_permission_options(vm);
     }
 
-    // Read common options
     using ores::database::database_configuration;
     using ores::logging::logging_configuration;
     r.database = database_configuration::read_options(vm);

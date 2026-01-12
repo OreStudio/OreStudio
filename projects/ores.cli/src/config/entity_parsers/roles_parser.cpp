@@ -24,6 +24,7 @@
 #include "ores.cli/config/parser_helpers.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/add_role_options.hpp"
 #include "ores.database/config/database_configuration.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
@@ -32,8 +33,10 @@ namespace ores::cli::config::entity_parsers {
 
 namespace {
 
+using boost::program_options::value;
 using boost::program_options::variables_map;
 using boost::program_options::parsed_options;
+using boost::program_options::options_description;
 using boost::program_options::command_line_parser;
 using boost::program_options::parse_environment;
 using boost::program_options::include_positional;
@@ -53,10 +56,55 @@ using ores::cli::config::parser_helpers::read_delete_options;
 
 const std::string list_command_name("list");
 const std::string delete_command_name("delete");
+const std::string add_command_name("add");
 
 const std::vector<std::string> allowed_operations{
-    list_command_name, delete_command_name
+    list_command_name, delete_command_name, add_command_name
 };
+
+options_description make_add_role_options_description() {
+    options_description r("Add Role Options");
+    r.add_options()
+        ("name", value<std::string>(), "Role name (required)")
+        ("description", value<std::string>(), "Role description")
+        ("recorded-by", value<std::string>(), "Username of modifier (required)")
+        ("change-reason-code", value<std::string>(), "Change reason code")
+        ("change-commentary", value<std::string>(), "Change commentary")
+        ("permission-code", value<std::vector<std::string>>()->multitoken(),
+            "Permission codes to assign (can specify multiple)");
+
+    return r;
+}
+
+add_role_options read_add_role_options(const variables_map& vm) {
+    add_role_options r;
+
+    if (vm.count("name") == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --name for add role command."));
+    }
+    r.name = vm["name"].as<std::string>();
+
+    if (vm.count("recorded-by") == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --recorded-by for add role command."));
+    }
+    r.recorded_by = vm["recorded-by"].as<std::string>();
+
+    if (vm.count("description") != 0)
+        r.description = vm["description"].as<std::string>();
+
+    if (vm.count("change-reason-code") != 0)
+        r.change_reason_code = vm["change-reason-code"].as<std::string>();
+
+    if (vm.count("change-commentary") != 0)
+        r.change_commentary = vm["change-commentary"].as<std::string>();
+
+    if (vm.count("permission-code") != 0)
+        r.permission_codes = vm["permission-code"].as<std::vector<std::string>>();
+
+    return r;
+}
 
 }
 
@@ -66,15 +114,14 @@ handle_roles_command(bool has_help,
     std::ostream& info,
     variables_map& vm) {
 
-    // Collect all unrecognized options from the first pass
     auto o(collect_unrecognized(po.options, include_positional));
-    o.erase(o.begin()); // Remove command name
+    o.erase(o.begin());
 
-    // Show help for roles command if requested with no operation
     if (has_help && o.empty()) {
         const std::vector<std::pair<std::string, std::string>> operations = {
             {"list", "List roles as JSON or table"},
-            {"delete", "Delete a role by ID"}
+            {"delete", "Delete a role by ID"},
+            {"add", "Add a new role"}
         };
         print_entity_help("roles", "Manage roles", operations, info);
         return {};
@@ -82,13 +129,12 @@ handle_roles_command(bool has_help,
 
     if (o.empty()) {
         BOOST_THROW_EXCEPTION(parser_exception(
-            "roles command requires an operation (list, delete)"));
+            "roles command requires an operation (list, delete, add)"));
     }
 
     const auto operation = o.front();
-    o.erase(o.begin()); // Remove operation from args
+    o.erase(o.begin());
 
-    // Validate operation
     validate_operation("roles", operation, allowed_operations);
 
     options r;
@@ -113,9 +159,17 @@ handle_roles_command(bool has_help,
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
         r.deleting = read_delete_options(vm, entity::roles);
+    } else if (operation == add_command_name) {
+        auto d = add_common_options(make_add_role_options_description());
+        if (has_help) {
+            print_help_command("roles add", d, info);
+            return {};
+        }
+        store(command_line_parser(o).options(d).run(), vm);
+        store(parse_environment(d, name_mapper), vm);
+        r.adding = read_add_role_options(vm);
     }
 
-    // Read common options
     using ores::database::database_configuration;
     using ores::logging::logging_configuration;
     r.database = database_configuration::read_options(vm);

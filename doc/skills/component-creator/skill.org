@@ -641,21 +641,22 @@ In =modeling= part, under =projects/ores.COMPONENT/modeling= add a file called
 ' GNU Emacs; see the file COPYING. If not, write to the Free Software
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 @startuml
+!pragma layout smetana
 
-title ores.accounts Component
+title ores.COMPONENT - COMPONENT_TITLE Component
 
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "DESCRIPTION" as ores_COMPONENT_note
-    COMPONENT --- ores_COMPONENT_note
-    namespace COMPONENT #F2F2F2 {
+    note "DESCRIPTION" as ores_SHORTNAME_note
+    SHORTNAME --- ores_SHORTNAME_note
+    namespace SHORTNAME #F2F2F2 {
 
     }
 }
 
 ' Local Variables:
-' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.accounts.puml"
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.COMPONENT.puml"
 ' End:
 @enduml
 #+end_src

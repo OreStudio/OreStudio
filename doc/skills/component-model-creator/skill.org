@@ -130,7 +130,7 @@ Create =projects/COMPONENT/modeling/COMPONENT.puml= with this structure:
 @startuml
 !pragma layout smetana
 
-title COMPONENT Component
+title ores.COMPONENT - COMPONENT_TITLE Component
 
 set namespaceSeparator ::
 

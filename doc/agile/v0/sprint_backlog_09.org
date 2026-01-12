@@ -17,31 +17,31 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-12 Mon 10:15], for Monday, January 12, 2026.
+#+CAPTION: Clock summary at [2026-01-12 Mon 11:11], for Monday, January 12, 2026.
 |       | <75>                                        |        |      |      |       |
 | Tags  | Headline                                    | Time   |      |      |     % |
 |-------+---------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                | *1:07* |      |      | 100.0 |
+|       | *Total time*                                | *2:03* |      |      | 100.0 |
 |-------+---------------------------------------------+--------+------+------+-------|
-|       | Stories                                     | 1:07   |      |      | 100.0 |
-|       | Active                                      |        | 1:07 |      | 100.0 |
-| infra | Clean up system models and component models |        |      | 0:08 |  11.9 |
-| code  | Add missing entities to CLI                 |        |      | 0:59 |  88.1 |
+|       | Stories                                     | 2:03   |      |      | 100.0 |
+|       | Active                                      |        | 2:03 |      | 100.0 |
+| infra | Clean up system models and component models |        |      | 0:08 |   6.5 |
+| code  | Add missing entities to CLI                 |        |      | 1:55 |  93.5 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-12 Mon 10:15]
+#+CAPTION: Clock summary at [2026-01-12 Mon 11:11]
 |       | <75>                                        |        |      |      |       |
 | Tags  | Headline                                    | Time   |      |      |     % |
 |-------+---------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                | *3:06* |      |      | 100.0 |
+|       | *Total time*                                | *4:02* |      |      | 100.0 |
 |-------+---------------------------------------------+--------+------+------+-------|
-|       | Stories                                     | 3:06   |      |      | 100.0 |
-|       | Active                                      |        | 3:06 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |        |      | 1:39 |  53.2 |
-| infra | Clean up system models and component models |        |      | 0:28 |  15.1 |
-| code  | Add missing entities to CLI                 |        |      | 0:59 |  31.7 |
+|       | Stories                                     | 4:02   |      |      | 100.0 |
+|       | Active                                      |        | 4:02 |      | 100.0 |
+| agile | Sprint and product backlog refinement       |        |      | 1:39 |  40.9 |
+| infra | Clean up system models and component models |        |      | 0:28 |  11.6 |
+| code  | Add missing entities to CLI                 |        |      | 1:55 |  47.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -232,8 +232,9 @@ Highlights
   and reducing redundancy.
 #+end_quote
 
-*** STARTED Add missing entities to CLI                                :code:
+*** COMPLETED Add missing entities to CLI                              :code:
     :LOGBOOK:
+    CLOCK: [2026-01-12 Mon 10:15]--[2026-01-12 Mon 11:11] =>  0:56
     CLOCK: [2026-01-12 Mon 09:15]--[2026-01-12 Mon 10:14] =>  0:59
     :END:
 

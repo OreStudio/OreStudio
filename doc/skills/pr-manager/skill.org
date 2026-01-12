@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: 545D6B43-17FC-0234-FF2B-AB6565695616
+:END:
+#+title: PR Manager Skill
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: pr-manager
+description: Manage pull request lifecycle from creation through merge.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+This skill manages the complete lifecycle of a Pull Request (PR), from
+generating a summary based on committed work, through creating a draft PR,
+waiting for CI to pass, marking ready for review, and finally merging.
+
+* When to Use This Skill
+
+Use this skill when you want to:
+
+- Generate a PR title and overview from committed work.
+- Create a draft PR and manage its lifecycle through to merge.
+- Ensure CI builds pass before marking a PR as ready for review.
+
+* How to Use This Skill
+
+1. Ensure your local branch contains the commits you wish to include in the PR.
+2. Run the skill from within the repository root.
+3. The skill will guide you through the complete PR lifecycle.
+
+* Detailed Instructions
+
+** Step 1: Generate PR Summary
+
+Identify the branching point and collect commit messages:
+
+#+BEGIN_SRC sh
+# Identify branch point
+merge_base=$(git merge-base HEAD main)
+
+# Collect commit messages
+git log --pretty=format:"%s" ${merge_base}..HEAD
+#+END_SRC
+
+Process the commit messages to generate:
+
+- A short PR title following the format: =[COMPONENT] Description=
+- A structured overview summarising the changes.
+
+** Step 2: Create Draft PR
+
+Create the PR as a draft to trigger CI workflows without requesting review:
+
+#+BEGIN_SRC sh
+gh pr create --draft --title "<title>" --body "<overview>"
+#+END_SRC
+
+Creating as draft allows:
+
+- CI workflows to run and validate the changes.
+- Further commits to be added if needed.
+- Review to be deferred until the author is ready.
+
+** Step 3: Wait for CI to Pass
+
+After creating the draft PR, inform the user:
+
+#+BEGIN_QUOTE
+Draft PR created. Please monitor the CI workflows and confirm when the build is
+green. You can check the status with:
+
+=gh pr checks=
+
+Let me know when the build has passed and you're ready to proceed.
+#+END_QUOTE
+
+*Important*: Do not proceed to the next step until the user explicitly confirms
+that the CI build is green.
+
+** Step 4: Mark PR as Ready for Review
+
+Once the user confirms CI has passed, mark the PR as ready for review:
+
+#+BEGIN_SRC sh
+gh pr ready
+#+END_SRC
+
+This removes the draft status and signals that the PR is ready for review.
+
+** Step 5: Merge the PR
+
+After the PR is marked as ready, merge it:
+
+#+BEGIN_SRC sh
+gh pr merge --squash --delete-branch
+#+END_SRC
+
+The =--squash= flag combines all commits into a single commit for a cleaner
+history. The =--delete-branch= flag removes the feature branch after merge.
+
+* Example Workflow
+
+#+BEGIN_SRC sh
+# Step 1: Generate summary
+merge_base=$(git merge-base HEAD main)
+git log --pretty=format:"%s" ${merge_base}..HEAD
+
+# Step 2: Create draft PR
+gh pr create --draft --title "[cli] Add validation for user input" \
+  --body "## Summary
+
+- Add input validation for CLI commands
+- Improve error messages for invalid arguments
+
+## Changes
+
+- Modified argument parser to validate inputs
+- Added descriptive error messages"
+
+# Step 3: Check CI status
+gh pr checks
+
+# Step 4: Mark ready (after user confirms CI is green)
+gh pr ready
+
+# Step 5: Merge
+gh pr merge --squash --delete-branch
+#+END_SRC
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

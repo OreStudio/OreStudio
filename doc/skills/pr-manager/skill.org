@@ -100,7 +100,7 @@ Use the following format for the PR body:
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
-Co-Authored-By: Claude <noreply@anthropic.com>
+Co-authored-by: Claude <noreply@anthropic.com>
 #+end_src
 
 ** Step 2: Create PR

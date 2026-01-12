@@ -18,7 +18,7 @@
 name: Continuous Windows
 
 env:
-  VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg_cache,readwrite'
+  VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
 
 on:  # yamllint disable-line rule:truthy
   push:

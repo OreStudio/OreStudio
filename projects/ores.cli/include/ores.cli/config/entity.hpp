@@ -29,7 +29,12 @@ enum class entity {
     currencies,
     accounts,
     feature_flags,
-    login_info
+    login_info,
+    roles,
+    permissions,
+    countries,
+    change_reasons,
+    change_reason_categories
 };
 
 }

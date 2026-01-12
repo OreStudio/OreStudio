@@ -19,110 +19,26 @@
  */
 #include "ores.cli/config/entity_parsers/change_reason_categories_parser.hpp"
 
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
 #include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity.hpp"
-#include "ores.database/config/database_configuration.hpp"
-#include "ores.logging/logging_configuration.hpp"
-#include "ores.utility/program_options/environment_mapper_factory.hpp"
 
 namespace ores::cli::config::entity_parsers {
 
-namespace {
-
-using boost::program_options::variables_map;
-using boost::program_options::parsed_options;
-using boost::program_options::command_line_parser;
-using boost::program_options::parse_environment;
-using boost::program_options::include_positional;
-using boost::program_options::collect_unrecognized;
-
-using ores::cli::config::entity;
-using ores::cli::config::options;
-using ores::cli::config::parser_exception;
-using ores::cli::config::parser_helpers::print_help_command;
-using ores::cli::config::parser_helpers::add_common_options;
-using ores::cli::config::parser_helpers::validate_operation;
-using ores::cli::config::parser_helpers::print_entity_help;
-using ores::cli::config::parser_helpers::make_export_options_description;
-using ores::cli::config::parser_helpers::make_delete_options_description;
-using ores::cli::config::parser_helpers::read_export_options;
-using ores::cli::config::parser_helpers::read_delete_options;
-
-const std::string list_command_name("list");
-const std::string delete_command_name("delete");
-
-const std::vector<std::string> allowed_operations{
-    list_command_name, delete_command_name
-};
-
-}
-
 std::optional<options>
 handle_change_reason_categories_command(bool has_help,
-    const parsed_options& po,
+    const boost::program_options::parsed_options& po,
     std::ostream& info,
-    variables_map& vm) {
+    boost::program_options::variables_map& vm) {
 
-    // Collect all unrecognized options from the first pass
-    auto o(collect_unrecognized(po.options, include_positional));
-    o.erase(o.begin()); // Remove command name
+    const parser_helpers::simple_entity_config cfg {
+        .name = "change-reason-categories",
+        .description = "Manage change reason categories",
+        .entity_value = entity::change_reason_categories,
+        .list_description = "List change reason categories as JSON or table",
+        .delete_description = "Delete a change reason category by code"
+    };
 
-    // Show help for change-reason-categories command if requested with no operation
-    if (has_help && o.empty()) {
-        const std::vector<std::pair<std::string, std::string>> operations = {
-            {"list", "List change reason categories as JSON or table"},
-            {"delete", "Delete a change reason category by code"}
-        };
-        print_entity_help("change-reason-categories",
-            "Manage change reason categories", operations, info);
-        return {};
-    }
-
-    if (o.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "change-reason-categories command requires an operation (list, delete)"));
-    }
-
-    const auto operation = o.front();
-    o.erase(o.begin()); // Remove operation from args
-
-    // Validate operation
-    validate_operation("change-reason-categories", operation, allowed_operations);
-
-    options r;
-    using ores::utility::program_options::environment_mapper_factory;
-    const auto name_mapper(environment_mapper_factory::make_mapper("CLI"));
-
-    if (operation == list_command_name) {
-        auto d = add_common_options(make_export_options_description());
-        if (has_help) {
-            print_help_command("change-reason-categories list", d, info);
-            return {};
-        }
-        store(command_line_parser(o).options(d).run(), vm);
-        store(parse_environment(d, name_mapper), vm);
-        r.exporting = read_export_options(vm, entity::change_reason_categories);
-    } else if (operation == delete_command_name) {
-        auto d = add_common_options(make_delete_options_description());
-        if (has_help) {
-            print_help_command("change-reason-categories delete", d, info);
-            return {};
-        }
-        store(command_line_parser(o).options(d).run(), vm);
-        store(parse_environment(d, name_mapper), vm);
-        r.deleting = read_delete_options(vm, entity::change_reason_categories);
-    }
-
-    // Read common options
-    using ores::database::database_configuration;
-    using ores::logging::logging_configuration;
-    r.database = database_configuration::read_options(vm);
-    r.logging = logging_configuration::read_options(vm);
-
-    return r;
+    return parser_helpers::handle_simple_entity_command(cfg, has_help, po, info, vm);
 }
 
 }

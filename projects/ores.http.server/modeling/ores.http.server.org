@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 19aeecd4-03ab-4d23-b2bc-9d96aaa64120
+:END:
+#+title: ORE Studio HTTP Server Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+HTTP REST API server executable for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio HTTP Server Component Diagram
+[[file:ores.http.server.png][file:ores.http.server.png]]
+
+This module provides the HTTP REST API server executable using the ores.http
+library. It serves as an alternative to the binary protocol for web clients and
+integrations. Key features include:
+
+- REST API: HTTP endpoints for all ORE Studio operations
+- Domain integration: Routes for IAM, Risk, Assets, and Variability domains
+- JWT authentication: Token-based security using ores.http middleware
+- Application hosting: Standard application infrastructure with lifecycle
+  management
+- Configuration: Boost.Program_options parser for server, database, and logging
+
+The module is organized into namespaces: app (application, host), config
+(options, parser), and routes (domain-specific route handlers).
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

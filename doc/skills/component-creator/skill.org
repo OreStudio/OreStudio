@@ -641,26 +641,40 @@ In =modeling= part, under =projects/ores.COMPONENT/modeling= add a file called
 ' GNU Emacs; see the file COPYING. If not, write to the Free Software
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 @startuml
+!pragma layout smetana
 
-title ores.accounts Component
+title ores.COMPONENT - COMPONENT_TITLE Component
 
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "DESCRIPTION" as ores_COMPONENT_note
-    COMPONENT --- ores_COMPONENT_note
-    namespace COMPONENT #F2F2F2 {
+    note "DESCRIPTION" as ores_SHORTNAME_note
+    SHORTNAME --- ores_SHORTNAME_note
+    namespace SHORTNAME #F2F2F2 {
 
     }
 }
 
 ' Local Variables:
-' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.accounts.puml"
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.COMPONENT.puml"
 ' End:
 @enduml
 #+end_src
 
-** Step 10: Compile the new component
+** Step 10: Create the component model documentation
+
+The new component needs a component model to document its architecture. Create
+the org-mode documentation file and PlantUML diagram following the
+[[id:b0b99088-d88e-4980-a4ee-7d6a9a8e96a5][Component Model Creator]] skill.
+
+This will create:
+
+- =projects/ores.COMPONENT/modeling/ores.COMPONENT.org= - Component documentation
+- =projects/ores.COMPONENT/modeling/ores.COMPONENT.puml= - Class diagram (refine
+  the stub created in Step 9)
+- =projects/ores.COMPONENT/modeling/ores.COMPONENT.png= - Generated diagram
+
+** Step 11: Compile the new component
 
 Using the skill [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner Skill]]:
 

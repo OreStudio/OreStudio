@@ -11,133 +11,43 @@
  *
  * @section overview_section Overview
  *
- * Understanding ORE Studio requires at least a basic familiarity with both
- * QuantLib and ORE. The following summaries are taken directly from their own
- * project descriptions.
+ * ORE Studio is a C++23 application providing persistent storage, graphical
+ * user interface, and orchestration tools for quantitative risk analysis using
+ * ORE. The system extends ORE with:
  *
- * @subsection quantlib_subsection QuantLib
+ * - **Persistent Storage**: PostgreSQL database with temporal versioning
+ * - **Graphical Interface**: Qt 6-based desktop application
+ * - **Web Interface**: Wt-based browser access
+ * - **REST API**: HTTP server for web clients and integrations
+ * - **Import/Export**: CLI tools for JSON, XML, and CSV formats
+ * - **Client-Server**: SSL/TLS secured binary protocol
  *
- * QuantLib describes itself as:
+ * @section documentation_section Documentation
  *
- * > The QuantLib project (https://www.quantlib.org) is aimed at providing a
- * > comprehensive software framework for quantitative finance. QuantLib is a
- * > free/open-source library for modeling, trading, and risk management in
- * > real-life.
+ * @subsection architecture System Architecture
  *
- * @subsection ore_subsection Open Source Risk Engine (ORE)
+ * For system architecture, component dependencies, and layer organization, see
+ * the [System Model](https://orestudio.github.io/OreStudio/projects/modeling/system_model.html).
  *
- * ORE provides the following description:
+ * @subsection building Building from Source
  *
- * > The Open Source Risk project (https://www.opensourcerisk.org) aims at
- * > establishing a transparent peer-reviewed framework for pricing and risk
- * > analysis that can serve as:
- * >
- * > - a benchmarking, validation, training, teaching reference
- * > - an extensible foundation for tailored risk solutions
- * >
- * > Open Source Risk Engine (ORE) provides:
- * >
- * > - contemporary risk analytics and value adjustments (XVAs)
- * > - interfaces for trade/market data and system configuration (API and XML)
- * > - simple application launchers in Excel, LibreOffice, Python, Jupyter
- * > - various examples demonstrating typical use cases
- * > - comprehensive test suites
- * >
- * > ORE is based on QuantLib and extends it with simulation models, financial
- * > instruments, and pricing engines.
+ * For build instructions including CMake presets and common targets, see the
+ * [CMake Runner Skill](https://orestudio.github.io/OreStudio/doc/skills/cmake-runner/skill.html).
  *
- * @subsection orestudio_subsection ORE Studio Goals
- *
- * **ORE Studio** extends ORE with additional capabilities:
- *
- * - **Persistent Storage**: PostgreSQL database with temporal versioning for
- *   inputs and outputs, supporting full
- *   [CRUD operations](https://en.wikipedia.org/wiki/Create,_read,_update_and_delete)
- * - **Graphical Interface**: Qt 6-based desktop application with MDI interface
- *   for visual data creation and exploration
- * - **Import/Export**: Command-line tools for bulk operations with JSON, XML,
- *   and CSV formats
- * - **Client-Server Architecture**: SSL/TLS secured binary protocol for
- *   multi-client access
- * - **Orchestration Tools**: Configuration and execution management for ORE
- *   workflows
- *
- * @section arch_section Architecture
- *
- * ORE Studio is a C++23 application built on a layered architecture. The system
- * is organized into nine components across five layers:
- *
- * - **Foundation**: ores.utility (database, logging, filesystem utilities)
- * - **Infrastructure**: ores.comms (client-server protocol), ores.testing
- *   (test infrastructure)
- * - **Domain**: ores.risk (ORE domain model), ores.accounts (user management)
- * - **Application**: ores.cli (command-line tool), ores.qt (GUI), ores.service
- *   (server), ores.client (REPL command-line client)
- *
- * For a visual representation of the system architecture and component
- * dependencies, see the system diagram at `projects/modeling/ores.puml`. Each
- * component has its own class diagram showing detailed internal structure.
- *
- * For architectural details, see the ores namespace documentation.
- *
- * @section features_section Key Features
- *
- * @subsection data_management Data Management
- *
- * - Temporal database with version history tracking
- * - ORE XML native format support for interoperability
- * - JSON and CSV export for data analysis
- * - Full CRUD operations through GUI and CLI
- *
- * @subsection security Security & Authentication
- *
- * - Scrypt-based password hashing
- * - Account locking after failed login attempts
- * - SSL/TLS encrypted client-server communication
- * - Feature flags for runtime capability control
- *
- * @subsection development Development
- *
- * - Comprehensive test coverage with Catch2
- * - Database isolation for parallel test execution
- * - PlantUML component diagrams for architecture documentation
- * - CMake build system with vcpkg dependency management
- *
- * @section quickstart_section Quick Start
- *
- * @subsection explore_components Explore Components
+ * @subsection explore_api Explore the API
  *
  * Start with these key namespaces:
  *
- * - ores::risk - Core ORE domain types (currencies, etc.)
- * - ores::accounts - User account management and authentication
+ * - ores::risk - Core ORE domain types (currencies, countries, etc.)
+ * - ores::iam - User account management and authentication
  * - ores::comms - Client-server communication protocol
  * - ores::qt - Qt GUI application components
- * - ores::utility - Foundation utilities (database, logging, etc.)
- *
- * @subsection build_system Build System
- *
- * - Configure: `cmake --preset linux-clang-debug`
- * - Build: `cmake --build --preset linux-clang-debug`
- * - Run tests: `cmake --build --preset linux-clang-release --target rat`
- * - Generate diagrams: `cmake --build --preset linux-clang-debug --target mad`
- *
- * See `CLAUDE.md` in the repository root for detailed build instructions and
- * development guidelines.
+ * - ores::database - PostgreSQL connectivity and repository helpers
  *
  * @section resources_section Resources
  *
- * @subsection documentation Documentation
- *
- * - **API Documentation**: This Doxygen site
- * - **Architecture**: Component diagrams in `projects/COMPONENT/modeling/` directories
- * - **System Overview**: `projects/modeling/ores.puml`
- * - **Developer Guide**: `CLAUDE.md` in repository root
- *
- * @subsection project_links Project Links
- *
- * - **Source Code**: [GitHub](https://github.com/OreStudio/OreStudio)
  * - **Website**: [ORE Studio](https://orestudio.github.io/OreStudio/index.html)
+ * - **Source Code**: [GitHub](https://github.com/OreStudio/OreStudio)
  * - **Agile Updates**: [Sprint Notes](https://orestudio.github.io/OreStudio/doc/agile/agile.html)
  *
  * @subsection related_projects Related Projects

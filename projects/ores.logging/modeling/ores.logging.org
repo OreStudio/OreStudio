@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: 1fbcc86b-8e04-4f81-8558-85c0b6c54836
+:END:
+#+title: ORE Studio Logging Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Core logging infrastructure component for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Logging Component Diagram
+[[file:ores.logging.png][file:ores.logging.png]]
+
+This module provides the core logging infrastructure built on top of Boost.Log.
+It was extracted from ores.telemetry to break circular dependency with
+ores.database. Key features include:
+
+- Logger creation: Factory function =make_logger()= for named loggers
+- Severity levels: OpenTelemetry-compatible severity levels for interoperability
+- Lifecycle management: Console and file sink configuration
+- Command-line options: Boost.Program_options parsing for logging configuration
+- Extensibility: Virtual base class for lifecycle management, extended by
+  ores.telemetry for OTLP export and trace correlation
+
+The module is organized into a single namespace providing logging primitives
+that can be used by all other ORE Studio components.
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

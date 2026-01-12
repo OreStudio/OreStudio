@@ -385,13 +385,13 @@ export_countries(const config::export_options& cfg) const {
 
     // Output in the requested format
     if (cfg.target_format == config::format::json) {
-        // Use the ostream operator<< which outputs JSON
+        output_stream_ << "[";
+        const char* sep = "";
         for (const auto& item : items) {
-            output_stream_ << item;
-            if (&item != &items.back())
-                output_stream_ << ",";
+            output_stream_ << sep << item;
+            sep = ",";
         }
-        output_stream_ << std::endl;
+        output_stream_ << "]" << std::endl;
     } else if (cfg.target_format == config::format::table) {
         output_stream_ << items << std::endl;
     } else {

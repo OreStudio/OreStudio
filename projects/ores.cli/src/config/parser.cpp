@@ -32,6 +32,11 @@
 #include "ores.cli/config/entity_parsers/accounts_parser.hpp"
 #include "ores.cli/config/entity_parsers/feature_flags_parser.hpp"
 #include "ores.cli/config/entity_parsers/login_info_parser.hpp"
+#include "ores.cli/config/entity_parsers/roles_parser.hpp"
+#include "ores.cli/config/entity_parsers/permissions_parser.hpp"
+#include "ores.cli/config/entity_parsers/countries_parser.hpp"
+#include "ores.cli/config/entity_parsers/change_reasons_parser.hpp"
+#include "ores.cli/config/entity_parsers/change_reason_categories_parser.hpp"
 
 namespace {
 
@@ -54,6 +59,21 @@ const std::string feature_flags_command_desc("Manage feature flags (list, delete
 
 const std::string login_info_command_name("login-info");
 const std::string login_info_command_desc("View login tracking information (list).");
+
+const std::string roles_command_name("roles");
+const std::string roles_command_desc("Manage roles (list, delete).");
+
+const std::string permissions_command_name("permissions");
+const std::string permissions_command_desc("Manage permissions (list, delete).");
+
+const std::string countries_command_name("countries");
+const std::string countries_command_desc("Manage countries (list, delete).");
+
+const std::string change_reasons_command_name("change-reasons");
+const std::string change_reasons_command_desc("Manage change reasons (list, delete).");
+
+const std::string change_reason_categories_command_name("change-reason-categories");
+const std::string change_reason_categories_command_desc("Manage change reason categories (list, delete).");
 
 const std::string operation_arg("operation");
 
@@ -119,13 +139,19 @@ void validate_command_name(const std::string& command_name) {
         command_name == currencies_command_name ||
         command_name == accounts_command_name ||
         command_name == feature_flags_command_name ||
-        command_name == login_info_command_name);
+        command_name == login_info_command_name ||
+        command_name == roles_command_name ||
+        command_name == permissions_command_name ||
+        command_name == countries_command_name ||
+        command_name == change_reasons_command_name ||
+        command_name == change_reason_categories_command_name);
 
     if (!is_valid_command_name)
     {
         BOOST_THROW_EXCEPTION(parser_exception(
                 std::format("Invalid or unsupported command: {}. "
-                    "Available commands: currencies, accounts, feature-flags, login-info",
+                    "Available commands: currencies, accounts, feature-flags, login-info, "
+                    "roles, permissions, countries, change-reasons, change-reason-categories",
                     command_name)));
     }
 }
@@ -164,6 +190,11 @@ void print_help(const options_description& od, std::ostream& info) {
     lambda(accounts_command_name, accounts_command_desc);
     lambda(feature_flags_command_name, feature_flags_command_desc);
     lambda(login_info_command_name, login_info_command_desc);
+    lambda(roles_command_name, roles_command_desc);
+    lambda(permissions_command_name, permissions_command_desc);
+    lambda(countries_command_name, countries_command_desc);
+    lambda(change_reasons_command_name, change_reasons_command_desc);
+    lambda(change_reason_categories_command_name, change_reason_categories_command_desc);
 
     info << std::endl << "For entity and operation specific options, use: <entity> <operation> --help"
          << std::endl;
@@ -234,6 +265,16 @@ handle_command(const std::string& command_name, const bool has_help,
         return entity_parsers::handle_feature_flags_command(has_help, po, info, vm);
     } else if (command_name == login_info_command_name) {
         return entity_parsers::handle_login_info_command(has_help, po, info, vm);
+    } else if (command_name == roles_command_name) {
+        return entity_parsers::handle_roles_command(has_help, po, info, vm);
+    } else if (command_name == permissions_command_name) {
+        return entity_parsers::handle_permissions_command(has_help, po, info, vm);
+    } else if (command_name == countries_command_name) {
+        return entity_parsers::handle_countries_command(has_help, po, info, vm);
+    } else if (command_name == change_reasons_command_name) {
+        return entity_parsers::handle_change_reasons_command(has_help, po, info, vm);
+    } else if (command_name == change_reason_categories_command_name) {
+        return entity_parsers::handle_change_reason_categories_command(has_help, po, info, vm);
     }
 
     // Unreachable - all commands handled above

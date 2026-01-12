@@ -57,6 +57,21 @@
 #include "ores.iam/domain/login_info_json.hpp"
 #include "ores.iam/domain/login_info_table.hpp"
 #include "ores.iam/repository/login_info_repository.hpp"
+#include "ores.iam/domain/role_json.hpp"
+#include "ores.iam/domain/role_table.hpp"
+#include "ores.iam/repository/role_repository.hpp"
+#include "ores.iam/domain/permission_json.hpp"
+#include "ores.iam/domain/permission_table.hpp"
+#include "ores.iam/repository/permission_repository.hpp"
+#include "ores.iam/domain/change_reason_json_io.hpp"
+#include "ores.iam/domain/change_reason_table_io.hpp"
+#include "ores.iam/repository/change_reason_repository.hpp"
+#include "ores.iam/domain/change_reason_category_json_io.hpp"
+#include "ores.iam/domain/change_reason_category_table_io.hpp"
+#include "ores.iam/repository/change_reason_category_repository.hpp"
+#include "ores.risk/domain/country_json_io.hpp"
+#include "ores.risk/domain/country_table_io.hpp"
+#include "ores.risk/repository/country_repository.hpp"
 #include "ores.cli/config/export_options.hpp"
 #include "ores.cli/config/add_currency_options.hpp"
 #include "ores.cli/config/add_account_options.hpp"
@@ -278,6 +293,188 @@ export_login_info(const config::export_options& cfg) const {
 }
 
 void application::
+export_roles(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting roles.";
+
+    iam::repository::role_repository repo(context_);
+    std::vector<iam::domain::role> items;
+
+    if (!cfg.key.empty()) {
+        // Export specific role by ID (UUID)
+        try {
+            const auto role_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
+            items = repo.read_latest(role_id);
+        } catch (const boost::bad_lexical_cast&) {
+            // Try by name
+            items = repo.read_latest_by_name(cfg.key);
+        }
+    } else {
+        items = repo.read_latest();
+    }
+
+    // Output in the requested format
+    if (cfg.target_format == config::format::json) {
+        output_stream_ << iam::domain::convert_to_json(items) << std::endl;
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << iam::domain::convert_to_table(items) << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Only JSON and table formats are supported for roles"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " role(s).";
+}
+
+void application::
+export_permissions(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting permissions.";
+
+    iam::repository::permission_repository repo(context_);
+    std::vector<iam::domain::permission> items;
+
+    if (!cfg.key.empty()) {
+        // Export specific permission by ID (UUID)
+        try {
+            const auto perm_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
+            items = repo.read_latest(perm_id);
+        } catch (const boost::bad_lexical_cast&) {
+            // Try by code
+            items = repo.read_latest_by_code(cfg.key);
+        }
+    } else {
+        items = repo.read_latest();
+    }
+
+    // Output in the requested format
+    if (cfg.target_format == config::format::json) {
+        output_stream_ << iam::domain::convert_to_json(items) << std::endl;
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << iam::domain::convert_to_table(items) << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Only JSON and table formats are supported for permissions"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " permission(s).";
+}
+
+void application::
+export_countries(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting countries.";
+
+    risk::repository::country_repository repo;
+    std::vector<risk::domain::country> items;
+
+    if (!cfg.key.empty()) {
+        if (cfg.all_versions) {
+            items = repo.read_all(context_, cfg.key);
+        } else if (cfg.as_of.empty()) {
+            items = repo.read_latest(context_, cfg.key);
+        } else {
+            items = repo.read_at_timepoint(context_, cfg.as_of, cfg.key);
+        }
+    } else {
+        if (cfg.all_versions) {
+            items = repo.read_all(context_);
+        } else if (cfg.as_of.empty()) {
+            items = repo.read_latest(context_);
+        } else {
+            items = repo.read_at_timepoint(context_, cfg.as_of);
+        }
+    }
+
+    // Output in the requested format
+    if (cfg.target_format == config::format::json) {
+        // Use the ostream operator<< which outputs JSON
+        for (const auto& item : items) {
+            output_stream_ << item;
+            if (&item != &items.back())
+                output_stream_ << ",";
+        }
+        output_stream_ << std::endl;
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << items << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Only JSON and table formats are supported for countries"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " country(ies).";
+}
+
+void application::
+export_change_reasons(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting change reasons.";
+
+    iam::repository::change_reason_repository repo(context_);
+    std::vector<iam::domain::change_reason> items;
+
+    if (!cfg.key.empty()) {
+        if (cfg.all_versions) {
+            items = repo.read_all(cfg.key);
+        } else {
+            items = repo.read_latest(cfg.key);
+        }
+    } else {
+        items = repo.read_latest();
+    }
+
+    // Output in the requested format
+    if (cfg.target_format == config::format::json) {
+        output_stream_ << "[";
+        for (size_t i = 0; i < items.size(); ++i) {
+            output_stream_ << items[i];
+            if (i < items.size() - 1)
+                output_stream_ << ",";
+        }
+        output_stream_ << "]" << std::endl;
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << items << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Only JSON and table formats are supported for change reasons"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " change reason(s).";
+}
+
+void application::
+export_change_reason_categories(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting change reason categories.";
+
+    iam::repository::change_reason_category_repository repo(context_);
+    std::vector<iam::domain::change_reason_category> items;
+
+    if (!cfg.key.empty()) {
+        if (cfg.all_versions) {
+            items = repo.read_all(cfg.key);
+        } else {
+            items = repo.read_latest(cfg.key);
+        }
+    } else {
+        items = repo.read_latest();
+    }
+
+    // Output in the requested format
+    if (cfg.target_format == config::format::json) {
+        output_stream_ << "[";
+        for (size_t i = 0; i < items.size(); ++i) {
+            output_stream_ << items[i];
+            if (i < items.size() - 1)
+                output_stream_ << ",";
+        }
+        output_stream_ << "]" << std::endl;
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << items << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Only JSON and table formats are supported for change reason categories"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " change reason category(ies).";
+}
+
+void application::
 export_data(const std::optional<config::export_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No dumping configuration found.";
@@ -298,10 +495,21 @@ export_data(const std::optional<config::export_options>& ocfg) const {
         case config::entity::login_info:
             export_login_info(cfg);
             break;
-        default:
-            BOOST_THROW_EXCEPTION(
-                application_exception(std::format("Unsupported entity: {}",
-                        magic_enum::enum_name(cfg.target_entity))));
+        case config::entity::roles:
+            export_roles(cfg);
+            break;
+        case config::entity::permissions:
+            export_permissions(cfg);
+            break;
+        case config::entity::countries:
+            export_countries(cfg);
+            break;
+        case config::entity::change_reasons:
+            export_change_reasons(cfg);
+            break;
+        case config::entity::change_reason_categories:
+            export_change_reason_categories(cfg);
+            break;
     }
 }
 
@@ -389,6 +597,85 @@ delete_login_info(const config::delete_options& cfg) const {
 }
 
 void application::
+delete_role(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting role: " << cfg.key;
+    iam::repository::role_repository repo(context_);
+
+    // Parse as UUID
+    boost::uuids::uuid role_id;
+    try {
+        role_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
+    } catch (const boost::bad_lexical_cast&) {
+        // Try to find by name
+        const auto roles = repo.read_latest_by_name(cfg.key);
+        if (roles.empty()) {
+            BOOST_THROW_EXCEPTION(
+                application_exception(std::format("Role not found: {}", cfg.key)));
+        }
+        role_id = roles.front().id;
+    }
+
+    repo.remove(role_id);
+    output_stream_ << "Role deleted successfully: "
+                   << boost::uuids::to_string(role_id) << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted role: "
+                              << boost::uuids::to_string(role_id);
+}
+
+void application::
+delete_permission(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting permission: " << cfg.key;
+    iam::repository::permission_repository repo(context_);
+
+    // Parse as UUID
+    boost::uuids::uuid perm_id;
+    try {
+        perm_id = boost::lexical_cast<boost::uuids::uuid>(cfg.key);
+    } catch (const boost::bad_lexical_cast&) {
+        // Try to find by code
+        const auto perms = repo.read_latest_by_code(cfg.key);
+        if (perms.empty()) {
+            BOOST_THROW_EXCEPTION(
+                application_exception(std::format("Permission not found: {}", cfg.key)));
+        }
+        perm_id = perms.front().id;
+    }
+
+    repo.remove(perm_id);
+    output_stream_ << "Permission deleted successfully: "
+                   << boost::uuids::to_string(perm_id) << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted permission: "
+                              << boost::uuids::to_string(perm_id);
+}
+
+void application::
+delete_country(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting country: " << cfg.key;
+    risk::repository::country_repository repo;
+    repo.remove(context_, cfg.key);
+    output_stream_ << "Country deleted successfully: " << cfg.key << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted country: " << cfg.key;
+}
+
+void application::
+delete_change_reason(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting change reason: " << cfg.key;
+    iam::repository::change_reason_repository repo(context_);
+    repo.remove(cfg.key);
+    output_stream_ << "Change reason deleted successfully: " << cfg.key << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted change reason: " << cfg.key;
+}
+
+void application::
+delete_change_reason_category(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting change reason category: " << cfg.key;
+    iam::repository::change_reason_category_repository repo(context_);
+    repo.remove(cfg.key);
+    output_stream_ << "Change reason category deleted successfully: " << cfg.key << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted change reason category: " << cfg.key;
+}
+
+void application::
 delete_data(const std::optional<config::delete_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No deletion configuration found.";
@@ -409,10 +696,21 @@ delete_data(const std::optional<config::delete_options>& ocfg) const {
         case config::entity::login_info:
             delete_login_info(cfg);
             break;
-        default:
-            BOOST_THROW_EXCEPTION(
-                application_exception(std::format("Delete not supported for entity: {}",
-                        magic_enum::enum_name(cfg.target_entity))));
+        case config::entity::roles:
+            delete_role(cfg);
+            break;
+        case config::entity::permissions:
+            delete_permission(cfg);
+            break;
+        case config::entity::countries:
+            delete_country(cfg);
+            break;
+        case config::entity::change_reasons:
+            delete_change_reason(cfg);
+            break;
+        case config::entity::change_reason_categories:
+            delete_change_reason_category(cfg);
+            break;
     }
 }
 

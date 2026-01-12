@@ -382,84 +382,8 @@ If push fails (e.g., branch already exists):
 
 ** Step 9: Create Pull Request
 
-*** Generate PR Title and Description
-
-Create a comprehensive PR description based on:
-
-1. Story title and description
-2. All tasks completed
-3. Files modified
-4. Testing performed
-5. Any questions or assumptions documented
-
-*** PR Format
-
-#+begin_src markdown
-## Summary
-
-[One paragraph summary of what this PR does and why]
-
-## Changes
-
-- Change 1: Brief description
-- Change 2: Brief description
-- Change 3: Brief description
-
-## Implementation Details
-
-### Component A
-- Modified files: file1.cpp, file2.hpp
-- What was changed: [description]
-- Why: [rationale]
-
-### Component B
-- Modified files: file3.cpp
-- What was changed: [description]
-- Why: [rationale]
-
-## Testing
-
-- [X] All existing tests pass
-- [X] Added new tests for [feature]
-- [X] Manual testing performed: [description]
-- [X] No compilation warnings
-
-## Questions/Assumptions
-
-1. Assumption: [description of assumption made]
-   - Rationale: [why this seemed reasonable]
-
-2. Question: [question that arose during implementation]
-   - Implementation: [how it was handled]
-
-## Related
-
-- Closes story: [story title from sprint backlog]
-- Related commits: [list of key commits]
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-#+end_src
-
-*** Create PR Using GitHub CLI
-
-#+begin_src sh
-gh pr create \
-  --title "[Component] Story title summary" \
-  --body "$(cat <<'EOF'
-[Insert PR description from above]
-EOF
-)"
-#+end_src
-
-*** Verify PR Creation
-
-After creating the PR:
-
-1. Note the PR number
-2. Add PR link to sprint backlog story notes
-3. Confirm PR shows up on GitHub
+Follow the [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]] skill to create and manage the pull request through its
+complete lifecycle.
 
 ** Step 10: Final Updates
 

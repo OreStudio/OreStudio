@@ -84,6 +84,9 @@ package "Workflow" {
     [new-sprint] <<workflow>> as ns
     [skill-manager] <<workflow>> as sm
     [skill-review] <<workflow>> as sr
+    [pr-manager] <<workflow>> as prm
+    [autonomous-developer] <<workflow>> as ad
+    [semi-autonomous-developer] <<workflow>> as sad
 }
 
 ' =============================================================================
@@ -133,6 +136,20 @@ ohr --> http
 
 ' Workflow dependencies
 apo --> ns
+
+' Autonomous developer dependencies
+ad --> apo
+ad --> prm
+ad --> fbm
+ad --> cmake
+ad --> utw
+
+' Semi-autonomous developer dependencies
+sad --> apo
+sad --> prm
+sad --> fbm
+sad --> cmake
+sad --> utw
 
 ' Utility dependencies
 cmc --> puml

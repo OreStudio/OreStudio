@@ -19,26 +19,144 @@
  */
 #include "ores.cli/config/entity_parsers/permissions_parser.hpp"
 
+#include <boost/program_options.hpp>
+#include <boost/throw_exception.hpp>
 #include "ores.cli/config/parser_helpers.hpp"
+#include "ores.cli/config/parser_exception.hpp"
 #include "ores.cli/config/entity.hpp"
+#include "ores.cli/config/add_permission_options.hpp"
+#include "ores.database/config/database_configuration.hpp"
+#include "ores.logging/logging_configuration.hpp"
+#include "ores.utility/program_options/environment_mapper_factory.hpp"
 
 namespace ores::cli::config::entity_parsers {
 
+namespace {
+
+using boost::program_options::value;
+using boost::program_options::variables_map;
+using boost::program_options::parsed_options;
+using boost::program_options::options_description;
+using boost::program_options::command_line_parser;
+using boost::program_options::parse_environment;
+using boost::program_options::include_positional;
+using boost::program_options::collect_unrecognized;
+
+using ores::cli::config::entity;
+using ores::cli::config::options;
+using ores::cli::config::parser_exception;
+using ores::cli::config::parser_helpers::print_help_command;
+using ores::cli::config::parser_helpers::add_common_options;
+using ores::cli::config::parser_helpers::validate_operation;
+using ores::cli::config::parser_helpers::print_entity_help;
+using ores::cli::config::parser_helpers::make_export_options_description;
+using ores::cli::config::parser_helpers::make_delete_options_description;
+using ores::cli::config::parser_helpers::read_export_options;
+using ores::cli::config::parser_helpers::read_delete_options;
+
+const std::string list_command_name("list");
+const std::string delete_command_name("delete");
+const std::string add_command_name("add");
+
+const std::vector<std::string> allowed_operations{
+    list_command_name, delete_command_name, add_command_name
+};
+
+options_description make_add_permission_options_description() {
+    options_description r("Add Permission Options");
+    r.add_options()
+        ("code", value<std::string>(),
+            "Permission code in format resource:action (required)")
+        ("description", value<std::string>(), "Permission description");
+
+    return r;
+}
+
+add_permission_options read_add_permission_options(const variables_map& vm) {
+    add_permission_options r;
+
+    if (vm.count("code") == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --code for add permission command."));
+    }
+    r.code = vm["code"].as<std::string>();
+
+    if (vm.count("description") != 0)
+        r.description = vm["description"].as<std::string>();
+
+    return r;
+}
+
+}
+
 std::optional<options>
 handle_permissions_command(bool has_help,
-    const boost::program_options::parsed_options& po,
+    const parsed_options& po,
     std::ostream& info,
-    boost::program_options::variables_map& vm) {
+    variables_map& vm) {
 
-    const parser_helpers::simple_entity_config cfg {
-        .name = "permissions",
-        .description = "Manage permissions",
-        .entity_value = entity::permissions,
-        .list_description = "List permissions as JSON or table",
-        .delete_description = "Delete a permission by ID"
-    };
+    auto o(collect_unrecognized(po.options, include_positional));
+    o.erase(o.begin());
 
-    return parser_helpers::handle_simple_entity_command(cfg, has_help, po, info, vm);
+    if (has_help && o.empty()) {
+        const std::vector<std::pair<std::string, std::string>> operations = {
+            {"list", "List permissions as JSON or table"},
+            {"delete", "Delete a permission by ID"},
+            {"add", "Add a new permission"}
+        };
+        print_entity_help("permissions", "Manage permissions", operations, info);
+        return {};
+    }
+
+    if (o.empty()) {
+        BOOST_THROW_EXCEPTION(parser_exception(
+            "permissions command requires an operation (list, delete, add)"));
+    }
+
+    const auto operation = o.front();
+    o.erase(o.begin());
+
+    validate_operation("permissions", operation, allowed_operations);
+
+    options r;
+    using ores::utility::program_options::environment_mapper_factory;
+    const auto name_mapper(environment_mapper_factory::make_mapper("CLI"));
+
+    if (operation == list_command_name) {
+        auto d = add_common_options(make_export_options_description());
+        if (has_help) {
+            print_help_command("permissions list", d, info);
+            return {};
+        }
+        store(command_line_parser(o).options(d).run(), vm);
+        store(parse_environment(d, name_mapper), vm);
+        r.exporting = read_export_options(vm, entity::permissions);
+    } else if (operation == delete_command_name) {
+        auto d = add_common_options(make_delete_options_description());
+        if (has_help) {
+            print_help_command("permissions delete", d, info);
+            return {};
+        }
+        store(command_line_parser(o).options(d).run(), vm);
+        store(parse_environment(d, name_mapper), vm);
+        r.deleting = read_delete_options(vm, entity::permissions);
+    } else if (operation == add_command_name) {
+        auto d = add_common_options(make_add_permission_options_description());
+        if (has_help) {
+            print_help_command("permissions add", d, info);
+            return {};
+        }
+        store(command_line_parser(o).options(d).run(), vm);
+        store(parse_environment(d, name_mapper), vm);
+        r.adding = read_add_permission_options(vm);
+    }
+
+    using ores::database::database_configuration;
+    using ores::logging::logging_configuration;
+    r.database = database_configuration::read_options(vm);
+    r.logging = logging_configuration::read_options(vm);
+
+    return r;
 }
 
 }

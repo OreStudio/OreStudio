@@ -15,7 +15,7 @@ Demonstrates commands available in the [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225
   :header-args+: :dir ../../build/output/linux-clang-debug/publish/bin
   :header-args+: :var data_dir="../../../../../projects/ores.risk/tests/test_data/currencies"
   :header-args+: :var ORES_CLI_DB_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "ores")
-  :header-args+: :var db_args="--db-user ores --db-host localhost --db-port 5432 --db-database oresdb"
+  :header-args+: :var db_args="--db-user ores --db-host localhost --db-port 5432 --db-database ores_frosty_leaf"
   :header-args+: :var log_args="--log-enabled --log-level debug --log-directory ../log"
   :END:
 
@@ -430,24 +430,29 @@ export ORES_CLI_DB_PASSWORD
 
 **** List all currencies as table
 
-#+begin_src sh :wrap src text
+#+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
 ./ores.cli currencies list ${db_args} ${log_args} \
-  --format table  | head -n 10
+  --format table  | head -n 15
 #+end_src
 
 #+RESULTS:
-#+begin_src text
+#+begin_src org
 
-+----------+---------+------------------------------------------------------------+--------+------+----------------+-----------+-------------+---------------------+---------------------+
-| ISO Code | Version | Name                                                       | Symbol | Type | Fractions/Unit | Precision | Modified By | Valid From          | Valid To            |
-+----------+---------+------------------------------------------------------------+--------+------+----------------+-----------+-------------+---------------------+---------------------+
-| PGK      | 26      | Papua New Guinean kina                                     | K      |      | 100            | 2         | ores        | 2025-12-11 23:45:39 | 2025-12-11 23:45:39 |
-| SOS      | 26      | Somali shilling                                            | K      |      | 100            | 2         | ores        | 2025-12-11 23:45:39 | 2025-12-11 23:45:39 |
-| ALL      | 15      | Albanian lek                                               |        |      | 100            | 2         | ores        | 2025-12-11 23:45:39 | 2025-12-11 23:45:39 |
-| AMD      | 15      | Armenian dram                                              |        |      | 100            | 2         | ores        | 2025-12-11 23:45:39 | 2025-12-11 23:45:39 |
-| ANG      | 15      | Netherlands Antillean guilder                              |        |      | 100            | 2         | ores        | 2025-12-11 23:45:39 | 2025-12-11 23:45:39 |
-| AOA      | 15      | Angolan kwanza                                             |        |      | 100            | 2         | ores        | 2025-12-11 23:45:39 | 2025-12-11 23:45:39 |
++----------+---------+-----------------------------------------+--------+---------------+----------------+-----------+-------------------+-------------+-------------------------------+
+| ISO Code | Version | Name                                    | Symbol | Type          | Fractions/Unit | Precision | Change Reason     | Recorded By | Recorded At                   |
++----------+---------+-----------------------------------------+--------+---------------+----------------+-----------+-------------------+-------------+-------------------------------+
+| USD      | 1       | US Dollar                               | $      | fiat          | 100            | 2         | system.new_record | system      | 2026-01-11 21:39:07.000000000 |
+| CAD      | 1       | Canadian Dollar                         | $      | fiat          | 100            | 2         | system.new_record | system      | 2026-01-11 21:39:07.000000000 |
+| MXN      | 1       | Mexican Peso                            | $      | fiat          | 100            | 2         | system.new_record | system      | 2026-01-11 21:39:07.000000000 |
+| BRL      | 1       | Brazilian Real                          | R$     | fiat          | 100            | 2         | system.new_record | system      | 2026-01-11 21:39:07.000000000 |
+| ARS      | 1       | Argentine Peso                          | $      | fiat          | 100            | 2         | system.new_record | system      | 2026-01-11 21:39:07.000000000 |
+| CLP      | 1       | Chilean Peso                            | $      | fiat          | 0              | 0         | system.new_record | system      | 2026-01-11 21:39:07.000000000 |
+| COP      | 1       | Colombian Peso                          | $      | fiat          | 100            | 2         | system.new_record | system      | 2026-01-11 21:39:07.000000000 |
+| PEN      | 1       | Peruvian Sol                            | S/     | fiat          | 100            | 2         | system.new_record | system      | 2026-01-11 21:39:07.000000000 |
+| UYU      | 1       | Uruguayan Peso                          | $U     | fiat          | 100            | 2         | system.new_record | system      | 2026-01-11 21:39:07.000000000 |
+| PYG      | 1       | Paraguayan Guarani                      | ₲    | fiat          | 0              | 0         | system.new_record | system      | 2026-01-11 21:39:07.000000000 |
+| BOB      | 1       | Bolivian Boliviano                      | Bs     | fiat          | 100            | 2         | system.new_record | system      | 2026-01-11 21:39:07.000000000 |
 #+end_src
 
 **** List specific currency
@@ -580,19 +585,19 @@ export ORES_CLI_DB_PASSWORD
 
 **** List all as table
 
-#+begin_src sh
+#+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
 ./ores.cli accounts list ${db_args} ${log_args} \
   --format table
 #+end_src
 
 #+RESULTS:
-#+begin_src json
-+--------------------------------------+----------+----------------------+--------+-------------+---------+
-| ID (UUID)                            | Username | Email                | Admin? | Modified By | Version |
-+--------------------------------------+----------+----------------------+--------+-------------+---------+
-| e7bddd23-c004-4652-99e1-8d4ff5856fe1 | newuser5 | newuser5@example.com | N      | admin       | 1       |
-+--------------------------------------+----------+----------------------+--------+-------------+---------+
+#+begin_src org
++--------------------------------------+----------+-------------------+-------------------+-------------+-------------------------------+---------+
+| ID (UUID)                            | Username | Email             | Change Reason     | Recorded By | Recorded At                   | Version |
++--------------------------------------+----------+-------------------+-------------------+-------------+-------------------------------+---------+
+| 019baeff-c69f-7571-8e0d-761e1cd3156c | newuser3 | newuser3@test.com | system.new_record | bootstrap   | 2026-01-11 21:39:16.000000000 | 1       |
++--------------------------------------+----------+-------------------+-------------------+-------------+-------------------------------+---------+
 
 #+end_src
 
@@ -794,16 +799,11 @@ export ORES_CLI_DB_PASSWORD
 
 #+RESULTS:
 #+begin_src org
-+--------------------------------------+---------+-----------------+--------+--------+--------+---------------------+
-| Account ID                           | Last IP | Last Attempt IP | Failed | Locked | Online | Last Login          |
-+--------------------------------------+---------+-----------------+--------+--------+--------+---------------------+
-| 019b1008-6da1-733c-a6e6-e942eaab2ed6 | 0.0.0.0 | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
-| 019b1008-6eda-7675-b494-2464a4681cca | 0.0.0.0 | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
-| 019b11ba-9d4d-7292-9a51-a632d59fb27b | 0.0.0.0 | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
-| 019b11ba-9de8-7ade-bd73-6a71c7fb1cd7 | 0.0.0.0 | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
-| 019b1240-2049-704f-9ec7-105120a57e51 | 0.0.0.0 | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
-| 019b1240-2131-7010-8d39-ea31f00a9714 | 0.0.0.0 | 0.0.0.0         | 0      | N      | N      | 1970-01-01 00:00:00 |
-+--------------------------------------+---------+-----------------+--------+--------+--------+---------------------+
++--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
+| Account ID                           | Last IP   | Last Attempt IP | Failed | Locked | Online | Last Login          |
++--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
+| 019baeff-c69f-7571-8e0d-761e1cd3156c | 127.0.0.1 | 127.0.0.1       | 0      | N      | N      | 2026-01-12 00:17:34 |
++--------------------------------------+-----------+-----------------+--------+--------+--------+---------------------+
 
 #+end_src
 
@@ -931,13 +931,15 @@ export ORES_CLI_DB_PASSWORD
 
 #+RESULTS:
 #+begin_src org
-+------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
-| Name                               | Version | Description                                                                            | Enabled | Modified By |
-+------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
-| system.bootstrap_mode              | 1       | Indicates whether the system is in bootstrap mode (waiting for initial admin account). | 0       | system      |
-| system.user_signups                | 1       | Controls whether user self-registration is allowed.                                    | 0       | system      |
-| system.disable_password_validation | 1       | When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.   | 0       | system      |
-+------------------------------------+---------+----------------------------------------------------------------------------------------+---------+-------------+
++--------------------------------------+---------+---------------------------------------------------------------------------------------------------------------------+---------+-------------------+-------------+-------------------------------+
+| Name                                 | Version | Description                                                                                                         | Enabled | Change Reason     | Recorded By | Recorded At                   |
++--------------------------------------+---------+---------------------------------------------------------------------------------------------------------------------+---------+-------------------+-------------+-------------------------------+
+| system.bootstrap_mode                | 1       | Indicates whether the system is in bootstrap mode (waiting for initial admin account).                              | 0       | system.new_record | system      | 2026-01-11 21:39:16.000000000 |
+| system.synthetic_data_generation     | 1       | Enables synthetic test data generation in the UI. FOR TESTING/DEVELOPMENT ONLY.                                     | 0       | system.new_record | system      | 2026-01-11 21:39:06.000000000 |
+| system.disable_password_validation   | 1       | When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.                                    | 0       | system.new_record | system      | 2026-01-11 21:39:06.000000000 |
+| system.signup_requires_authorization | 1       | Controls whether new signups require admin authorization. NOT YET IMPLEMENTED - enabling will cause signup to fail. | 0       | system.new_record | system      | 2026-01-11 21:39:06.000000000 |
+| system.user_signups                  | 1       | Controls whether user self-registration is allowed.                                                                 | 0       | system.new_record | system      | 2026-01-11 21:39:06.000000000 |
++--------------------------------------+---------+---------------------------------------------------------------------------------------------------------------------+---------+-------------------+-------------+-------------------------------+
 
 #+end_src
 
@@ -1007,6 +1009,20 @@ Show available operations for roles.
 ./ores.cli roles --help
 #+end_src
 
+#+RESULTS:
+#+begin_src text
+roles - Manage roles
+
+Usage: ores.cli roles <operation> [options]
+
+Available operations:
+   list           List roles as JSON or table
+   delete         Delete a role by ID
+   add            Add a new role
+
+For operation-specific options, use: roles <operation> --help
+#+end_src
+
 *** List
 
 List roles from the database.
@@ -1015,14 +1031,69 @@ List roles from the database.
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli roles list ${db_args} ${log_args} --format json | jq .
+./ores.cli roles list ${db_args} ${log_args} --format json | jq .[:3]
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "version": 1,
+    "id": "0b24cff7-8095-4223-b060-d1fa0236a942",
+    "name": "Admin",
+    "description": "Full administrative access to all system functions",
+    "recorded_by": "system",
+    "change_reason_code": "system.new_record",
+    "change_commentary": "System seed data",
+    "recorded_at": "2026-01-11 21:39:06.000000000Z",
+    "permission_codes": []
+  },
+  {
+    "version": 1,
+    "id": "888f6214-dd68-4b52-b86e-3c49b1f6f5cc",
+    "name": "Operations",
+    "description": "Operations - currency management and account viewing",
+    "recorded_by": "system",
+    "change_reason_code": "system.new_record",
+    "change_commentary": "System seed data",
+    "recorded_at": "2026-01-11 21:39:06.000000000Z",
+    "permission_codes": []
+  },
+  {
+    "version": 1,
+    "id": "52a9730a-d868-4f21-967a-7959d3584924",
+    "name": "Sales",
+    "description": "Sales operations - read-only currency access",
+    "recorded_by": "system",
+    "change_reason_code": "system.new_record",
+    "change_commentary": "System seed data",
+    "recorded_at": "2026-01-11 21:39:06.000000000Z",
+    "permission_codes": []
+  }
+]
 #+end_src
 
 **** List all as table
 
-#+begin_src sh :wrap src text
+#+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
 ./ores.cli roles list ${db_args} ${log_args} --format table
+#+end_src
+
+#+RESULTS:
+#+begin_src org
++--------------------------------------+-------------+---------------------------------------------------------------+-------------+-------------+---------+
+| ID (UUID)                            | Name        | Description                                                   | Permissions | Recorded By | Version |
++--------------------------------------+-------------+---------------------------------------------------------------+-------------+-------------+---------+
+| 0b24cff7-8095-4223-b060-d1fa0236a942 | Admin       | Full administrative access to all system functions            |             | system      | 1       |
+| f6dd5c47-25f6-42e3-90d2-ac7abc88ad1b | Custom Role | Role with specific permissions                                |             | admin       | 1       |
+| 888f6214-dd68-4b52-b86e-3c49b1f6f5cc | Operations  | Operations - currency management and account viewing          |             | system      | 1       |
+| 52a9730a-d868-4f21-967a-7959d3584924 | Sales       | Sales operations - read-only currency access                  |             | system      | 1       |
+| 6fde2b91-20ac-4c2e-a29d-a678bcfa92c9 | Support     | Support - read-only access to all resources and admin screens |             | system      | 1       |
+| 929cb0de-016e-4647-8bc2-e7664f680d7d | Trading     | Trading operations - currency read access                     |             | system      | 1       |
+| 7585f982-59df-403d-9bdb-bb757da248d3 | Viewer      | Viewer - basic read-only access to domain data                |             | system      | 1       |
++--------------------------------------+-------------+---------------------------------------------------------------+-------------+-------------+---------+
+
 #+end_src
 
 **** List specific role
@@ -1030,7 +1101,24 @@ export ORES_CLI_DB_PASSWORD
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli roles list ${db_args} ${log_args} \
-  --format json --key "admin" | jq .
+  --format json --key "Admin" | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "version": 1,
+    "id": "0b24cff7-8095-4223-b060-d1fa0236a942",
+    "name": "Admin",
+    "description": "Full administrative access to all system functions",
+    "recorded_by": "system",
+    "change_reason_code": "system.new_record",
+    "change_commentary": "System seed data",
+    "recorded_at": "2026-01-11 21:39:06.000000000Z",
+    "permission_codes": []
+  }
+]
 #+end_src
 
 *** Delete
@@ -1039,8 +1127,50 @@ Delete a role by ID.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli roles delete ${db_args} ${log_args} \
-  --key "test-role-id"
+./ores.cli roles delete ${db_args} ${log_args} --key "Test Role"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Role deleted successfully: eb9a2e5c-8015-4dc0-93c1-ef26ba60edd6
+#+end_src
+
+*** Add
+
+Add a new role with optional permission assignments.
+
+**** Add role
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli roles add ${db_args} ${log_args} \
+  --name "Test Role" \
+  --description "A test role for demonstration" \
+  --recorded-by admin \
+  --change-reason-code "system.new_record" \
+  --change-commentary "Adding test role via CLI"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Successfully added role: Test Role
+#+end_src
+
+**** Add role with permissions
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli roles add ${db_args} ${log_args} \
+  --name "Custom Role" \
+  --description "Role with specific permissions" \
+  --recorded-by admin \
+  --permission-code "currencies:read" \
+  --permission-code "currencies:write"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Successfully added role: Custom Role
 #+end_src
 
 ** Permissions
@@ -1058,6 +1188,20 @@ Show available operations for permissions.
 ./ores.cli permissions --help
 #+end_src
 
+#+RESULTS:
+#+begin_src text
+permissions - Manage permissions
+
+Usage: ores.cli permissions <operation> [options]
+
+Available operations:
+   list           List permissions as JSON or table
+   delete         Delete a permission by ID
+   add            Add a new permission
+
+For operation-specific options, use: permissions <operation> --help
+#+end_src
+
 *** List
 
 List permissions from the database.
@@ -1066,14 +1210,78 @@ List permissions from the database.
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli permissions list ${db_args} ${log_args} --format json | jq .
+./ores.cli permissions list ${db_args} ${log_args} --format json | jq .[:5]
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "id": "1498c520-d1de-44dd-9e80-fc55eed99cad",
+    "code": "*",
+    "description": "Full access to all operations"
+  },
+  {
+    "id": "bd12140d-8548-4a74-8c1c-f74a51c3b8f4",
+    "code": "accounts:create",
+    "description": "Create new user accounts"
+  },
+  {
+    "id": "a8181f95-9630-45d2-aa87-329739235891",
+    "code": "accounts:delete",
+    "description": "Delete user accounts"
+  },
+  {
+    "id": "9e41a6c8-ca64-42ef-85cb-824fd7831580",
+    "code": "accounts:lock",
+    "description": "Lock user accounts"
+  },
+  {
+    "id": "154ff7c3-9fc0-43cb-b2a7-a04ca8d29377",
+    "code": "accounts:read",
+    "description": "View user account details"
+  }
+]
 #+end_src
 
 **** List all as table
 
-#+begin_src sh :wrap src text
+#+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
 ./ores.cli permissions list ${db_args} ${log_args} --format table
+#+end_src
+
+#+RESULTS:
+#+begin_src org
++--------------------------------------+-------------------------+---------------------------------------+
+| ID (UUID)                            | Code                    | Description                           |
++--------------------------------------+-------------------------+---------------------------------------+
+| 1498c520-d1de-44dd-9e80-fc55eed99cad | *                       | Full access to all operations         |
+| bd12140d-8548-4a74-8c1c-f74a51c3b8f4 | accounts:create         | Create new user accounts              |
+| a8181f95-9630-45d2-aa87-329739235891 | accounts:delete         | Delete user accounts                  |
+| 9e41a6c8-ca64-42ef-85cb-824fd7831580 | accounts:lock           | Lock user accounts                    |
+| 154ff7c3-9fc0-43cb-b2a7-a04ca8d29377 | accounts:read           | View user account details             |
+| df9f78b9-d404-42d5-8e47-8d34dcd2f53e | accounts:reset_password | Force password reset on user accounts |
+| 404da389-251c-45be-bff7-89f524dc8057 | accounts:unlock         | Unlock user accounts                  |
+| 2fbe9929-74c6-4b79-9189-81274e71cf50 | accounts:update         | Modify user account settings          |
+| 89449ee4-fd11-4d1b-b79a-a8ece124db15 | currencies:create       | Create new currencies                 |
+| 9e5872f5-b38c-46c5-91df-955f152c936d | currencies:delete       | Delete currencies                     |
+| 4086eb14-77d7-468b-9910-980f6125a71f | currencies:history      | View currency version history         |
+| e4d53707-2815-42c6-996b-6e6c7d92a334 | currencies:read         | View currency details                 |
+| caf0279f-6628-40f8-96e4-3b03e38eac9b | currencies:update       | Modify currency settings              |
+| 2431fc5e-d8ab-418c-9cec-6ce11c2a8805 | flags:create            | Create new feature flags              |
+| 8c888602-bc4a-41d4-8d44-fc4c0259220f | flags:delete            | Delete feature flags                  |
+| 0db19b38-fda4-43af-8a41-acf441a098d2 | flags:read              | View feature flag status              |
+| 62f0b1cb-fe50-4ee3-9c2e-9465c2932346 | flags:update            | Modify feature flag settings          |
+| a0ef49da-964d-49a7-80bd-54da813f4989 | login_info:read         | View login history and info           |
+| 0bb9f547-a6f3-4a3e-a042-a5211e0ec513 | roles:assign            | Assign roles to accounts              |
+| 107b10f8-3dc1-4dbd-8a8a-370d00e6210f | roles:create            | Create new roles                      |
+| 86c259d8-1598-449a-b47c-780c3311d52a | roles:delete            | Delete roles                          |
+| be06c01a-1e2f-4f90-b41a-80cec99c980f | roles:read              | View role details                     |
+| d2d8dead-f212-4c6f-8ec8-a80fd6800541 | roles:revoke            | Revoke roles from accounts            |
+| 24836c1b-9851-4bd6-b34f-1952cd101ade | roles:update            | Modify role permissions               |
++--------------------------------------+-------------------------+---------------------------------------+
+
 #+end_src
 
 **** List specific permission
@@ -1081,7 +1289,18 @@ export ORES_CLI_DB_PASSWORD
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli permissions list ${db_args} ${log_args} \
-  --format json --key "read" | jq .
+  --format json --key "accounts:create" | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "id": "bd12140d-8548-4a74-8c1c-f74a51c3b8f4",
+    "code": "accounts:create",
+    "description": "Create new user accounts"
+  }
+]
 #+end_src
 
 *** Delete
@@ -1091,7 +1310,28 @@ Delete a permission by ID.
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
 ./ores.cli permissions delete ${db_args} ${log_args} \
-  --key "test-permission-id"
+  --key "currencies:audit"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Permission deleted successfully: 63dce823-a4b1-451b-844e-b1baf52de3dc
+#+end_src
+
+*** Add
+
+Add a new permission.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli permissions add ${db_args} ${log_args} \
+  --code "currencies:audit" \
+  --description "Permission to audit currency changes"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Successfully added permission: currencies:audit
 #+end_src
 
 ** Countries
@@ -1122,9 +1362,28 @@ export ORES_CLI_DB_PASSWORD
 
 **** List all as table
 
-#+begin_src sh :wrap src text
+#+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
-./ores.cli countries list ${db_args} ${log_args} --format table | head -n 10
+./ores.cli countries list ${db_args} ${log_args} --format table | head -n 15
+#+end_src
+
+#+RESULTS:
+#+begin_src org
++---------+---------+---------+---------+-----------------------------------+---------------------------------------------------------------------------+----------------------+-------------+-------------------------------+
+| Alpha-2 | Alpha-3 | Numeric | Version | Name                              | Official Name                                                             | Change Reason        | Recorded By | Recorded At                   |
++---------+---------+---------+---------+-----------------------------------+---------------------------------------------------------------------------+----------------------+-------------+-------------------------------+
+| AE      | ARE     | 784     | 2       | United Arab Emirates2             | United Arab Emirates                                                      | common.rectification | newuser3    | 2026-01-11 21:56:58.000000000 |
+| AD      | AND     | 020     | 1       | Andorra                           | Principality of Andorra                                                   | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
+| AF      | AFG     | 004     | 1       | Afghanistan                       | Islamic Republic of Afghanistan                                           | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
+| AG      | ATG     | 028     | 1       | Antigua and Barbuda               | Antigua and Barbuda                                                       | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
+| AI      | AIA     | 660     | 1       | Anguilla                          | Anguilla                                                                  | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
+| AL      | ALB     | 008     | 1       | Albania                           | Republic of Albania                                                       | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
+| AM      | ARM     | 051     | 1       | Armenia                           | Republic of Armenia                                                       | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
+| AO      | AGO     | 024     | 1       | Angola                            | Republic of Angola                                                        | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
+| AQ      | ATA     | 010     | 1       | Antarctica                        | Antarctica                                                                | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
+| AR      | ARG     | 032     | 1       | Argentina                         | Argentine Republic                                                        | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
+| AS      | ASM     | 016     | 1       | American Samoa                    | American Samoa                                                            | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
+| AT      | AUT     | 040     | 1       | Austria                           | Republic of Austria                                                       | system.new_record    | system      | 2026-01-11 21:39:07.000000000 |
 #+end_src
 
 **** List specific country
@@ -1143,6 +1402,27 @@ Delete a country by alpha-2 code.
 export ORES_CLI_DB_PASSWORD
 ./ores.cli countries delete ${db_args} ${log_args} \
   --key "XX"
+#+end_src
+
+*** Add
+
+Add a new country.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli countries add ${db_args} ${log_args} \
+  --alpha2-code "XX" \
+  --alpha3-code "XXX" \
+  --name "Test Country" \
+  --numeric-code "999" \
+  --official-name "The Republic of Test Country" \
+  --recorded-by admin \
+  --change-reason-code "system.new_record" \
+  --change-commentary "Adding test country via CLI"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
 #+end_src
 
 ** Change Reasons
@@ -1168,14 +1448,115 @@ List change reasons from the database.
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli change-reasons list ${db_args} ${log_args} --format json | jq .
+./ores.cli change-reasons list ${db_args} ${log_args} --format json | jq .[:5]
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "version": 1,
+    "code": "system.initial_load",
+    "description": "Initial system bootstrap or migration",
+    "category_code": "system",
+    "applies_to_amend": false,
+    "applies_to_delete": false,
+    "requires_commentary": false,
+    "display_order": 0,
+    "recorded_by": "system",
+    "change_commentary": "System seed data - standard regulatory taxonomy",
+    "recorded_at": "2026-01-11 21:39:05.000000000Z"
+  },
+  {
+    "version": 1,
+    "code": "common.non_material_update",
+    "description": "Non-material update (Touch)",
+    "category_code": "common",
+    "applies_to_amend": true,
+    "applies_to_delete": false,
+    "requires_commentary": false,
+    "display_order": 10,
+    "recorded_by": "system",
+    "change_commentary": "System seed data - standard regulatory taxonomy",
+    "recorded_at": "2026-01-11 21:39:05.000000000Z"
+  },
+  {
+    "version": 1,
+    "code": "system.new_record",
+    "description": "New record created during normal operations",
+    "category_code": "system",
+    "applies_to_amend": false,
+    "applies_to_delete": false,
+    "requires_commentary": false,
+    "display_order": 10,
+    "recorded_by": "system",
+    "change_commentary": "System seed data - standard regulatory taxonomy",
+    "recorded_at": "2026-01-11 21:39:05.000000000Z"
+  },
+  {
+    "version": 1,
+    "code": "trade.fat_finger",
+    "description": "Erroneous execution (wrong quantity/price)",
+    "category_code": "trade",
+    "applies_to_amend": true,
+    "applies_to_delete": true,
+    "requires_commentary": false,
+    "display_order": 10,
+    "recorded_by": "system",
+    "change_commentary": "System seed data - standard regulatory taxonomy",
+    "recorded_at": "2026-01-11 21:39:05.000000000Z"
+  },
+  {
+    "version": 1,
+    "code": "common.rectification",
+    "description": "User/Booking Error",
+    "category_code": "common",
+    "applies_to_amend": true,
+    "applies_to_delete": true,
+    "requires_commentary": false,
+    "display_order": 20,
+    "recorded_by": "system",
+    "change_commentary": "System seed data - standard regulatory taxonomy",
+    "recorded_at": "2026-01-11 21:39:05.000000000Z"
+  }
+]
 #+end_src
 
 **** List all as table
 
-#+begin_src sh :wrap src text
+#+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
 ./ores.cli change-reasons list ${db_args} ${log_args} --format table
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+
++-----------------------------+----------+----------------------------------------------------+-------+--------+--------------+-------+-------------+---------+
+| Code                        | Category | Description                                        | Amend | Delete | Req. Comment | Order | Recorded By | Version |
++-----------------------------+----------+----------------------------------------------------+-------+--------+--------------+-------+-------------+---------+
+| system.initial_load         | system   | Initial system bootstrap or migration              | N     | N      | N            | 0     | system      | 1       |
+| common.non_material_update  | common   | Non-material update (Touch)                        | Y     | N      | N            | 10    | system      | 1       |
+| system.new_record           | system   | New record created during normal operations        | N     | N      | N            | 10    | system      | 1       |
+| trade.fat_finger            | trade    | Erroneous execution (wrong quantity/price)         | Y     | Y      | N            | 10    | system      | 1       |
+| common.rectification        | common   | User/Booking Error                                 | Y     | Y      | N            | 20    | system      | 1       |
+| system.external_data_import | system   | External data import (requires data lineage)       | Y     | N      | Y            | 20    | system      | 1       |
+| trade.system_malfunction    | trade    | Technical glitch or algorithm issue                | Y     | Y      | Y            | 20    | system      | 1       |
+| common.duplicate            | common   | Duplicate Record                                   | N     | Y      | N            | 30    | system      | 1       |
+| trade.corporate_action      | trade    | Stock split, dividend, or merger adjustment        | Y     | Y      | N            | 30    | system      | 1       |
+| common.stale_data           | common   | Data not updated within required liquidity horizon | Y     | Y      | N            | 40    | system      | 1       |
+| trade.allocation_swap       | trade    | House to client sub-account reallocation           | Y     | Y      | N            | 40    | system      | 1       |
+| common.outlier_correction   | common   | Manual override after plausibility check failure   | Y     | Y      | Y            | 50    | system      | 1       |
+| trade.re_booking            | trade    | Wrong legal entity correction                      | Y     | Y      | Y            | 50    | system      | 1       |
+| common.feed_failure         | common   | Upstream vendor/API data issue                     | Y     | Y      | Y            | 60    | system      | 1       |
+| common.mapping_error        | common   | Incorrect ID translation (e.g., ISIN to FIGI)      | Y     | Y      | Y            | 70    | system      | 1       |
+| common.judgmental_override  | common   | Expert judgment when market prices unavailable     | Y     | Y      | Y            | 80    | system      | 1       |
+| common.regulatory           | common   | Mandatory compliance adjustment                    | Y     | Y      | Y            | 90    | system      | 1       |
+| common.other                | common   | Exceptional (requires audit note)                  | Y     | Y      | Y            | 1000  | system      | 1       |
+| trade.other                 | trade    | Exceptional (requires audit note)                  | Y     | Y      | Y            | 1000  | system      | 1       |
++-----------------------------+----------+----------------------------------------------------+-------+--------+--------------+-------+-------------+---------+
+
+
 #+end_src
 
 **** List specific change reason
@@ -1194,6 +1575,28 @@ Delete a change reason by code.
 export ORES_CLI_DB_PASSWORD
 ./ores.cli change-reasons delete ${db_args} ${log_args} \
   --key "test_reason"
+#+end_src
+
+*** Add
+
+Add a new change reason.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli change-reasons add ${db_args} ${log_args} \
+  --code "test.reason" \
+  --description "Test change reason for CLI demonstration" \
+  --category-code "operational" \
+  --applies-to-amend 1 \
+  --applies-to-delete 0 \
+  --requires-commentary 1 \
+  --display-order 100 \
+  --recorded-by admin \
+  --change-commentary "Adding test change reason via CLI"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
 #+end_src
 
 ** Change Reason Categories
@@ -1222,11 +1625,55 @@ export ORES_CLI_DB_PASSWORD
 ./ores.cli change-reason-categories list ${db_args} ${log_args} --format json | jq .
 #+end_src
 
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "version": 1,
+    "code": "common",
+    "description": "Universal data quality reasons aligned with BCBS 239 and FRTB standards",
+    "recorded_by": "system",
+    "change_commentary": "System seed data - standard regulatory taxonomy",
+    "recorded_at": "2026-01-11 21:39:05.000000000Z"
+  },
+  {
+    "version": 1,
+    "code": "system",
+    "description": "System-generated reasons for automatic operations (not user-selectable)",
+    "recorded_by": "system",
+    "change_commentary": "System seed data - standard regulatory taxonomy",
+    "recorded_at": "2026-01-11 21:39:05.000000000Z"
+  },
+  {
+    "version": 1,
+    "code": "trade",
+    "description": "Trade lifecycle reasons aligned with FINRA and MiFID II standards",
+    "recorded_by": "system",
+    "change_commentary": "System seed data - standard regulatory taxonomy",
+    "recorded_at": "2026-01-11 21:39:05.000000000Z"
+  }
+]
+#+end_src
+
 **** List all as table
 
-#+begin_src sh :wrap src text
+#+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
 ./ores.cli change-reason-categories list ${db_args} ${log_args} --format table
+#+end_src
+
+#+RESULTS:
+#+begin_src org
+
++--------+-------------------------------------------------------------------------+-------------+---------+
+| Code   | Description                                                             | Recorded By | Version |
++--------+-------------------------------------------------------------------------+-------------+---------+
+| common | Universal data quality reasons aligned with BCBS 239 and FRTB standards | system      | 1       |
+| system | System-generated reasons for automatic operations (not user-selectable) | system      | 1       |
+| trade  | Trade lifecycle reasons aligned with FINRA and MiFID II standards       | system      | 1       |
++--------+-------------------------------------------------------------------------+-------------+---------+
+
+
 #+end_src
 
 **** List specific category
@@ -1234,7 +1681,21 @@ export ORES_CLI_DB_PASSWORD
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
 ./ores.cli change-reason-categories list ${db_args} ${log_args} \
-  --format json --key "operational" | jq .
+  --format json --key "common" | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+[
+  {
+    "version": 1,
+    "code": "common",
+    "description": "Universal data quality reasons aligned with BCBS 239 and FRTB standards",
+    "recorded_by": "system",
+    "change_commentary": "System seed data - standard regulatory taxonomy",
+    "recorded_at": "2026-01-11 21:39:05.000000000Z"
+  }
+]
 #+end_src
 
 *** Delete
@@ -1245,6 +1706,29 @@ Delete a change reason category by code.
 export ORES_CLI_DB_PASSWORD
 ./ores.cli change-reason-categories delete ${db_args} ${log_args} \
   --key "test_category"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Change reason category deleted successfully: test_category
+#+end_src
+
+*** Add
+
+Add a new change reason category.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli change-reason-categories add ${db_args} ${log_args} \
+  --code "test_category" \
+  --description "Test category for CLI demonstration" \
+  --recorded-by admin \
+  --change-commentary "Adding test category via CLI"
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Successfully added change reason category: test_category
 #+end_src
 
 * Footer

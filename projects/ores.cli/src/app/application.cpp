@@ -77,6 +77,11 @@
 #include "ores.cli/config/add_account_options.hpp"
 #include "ores.cli/config/add_feature_flag_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
+#include "ores.cli/config/add_role_options.hpp"
+#include "ores.cli/config/add_permission_options.hpp"
+#include "ores.cli/config/add_country_options.hpp"
+#include "ores.cli/config/add_change_reason_options.hpp"
+#include "ores.cli/config/add_change_reason_category_options.hpp"
 #include "ores.cli/app/application_exception.hpp"
 
 namespace ores::cli::app {
@@ -873,6 +878,123 @@ add_login_info(const config::add_login_info_options& cfg) const {
 }
 
 void application::
+add_role(const config::add_role_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Adding role: " << cfg.name;
+
+    iam::domain::role record;
+    record.id = boost::uuids::random_generator()();
+    record.name = cfg.name;
+    record.description = cfg.description;
+    record.recorded_by = cfg.recorded_by;
+    record.recorded_at = std::chrono::system_clock::now();
+    record.permission_codes = cfg.permission_codes;
+
+    if (cfg.change_reason_code)
+        record.change_reason_code = *cfg.change_reason_code;
+    if (cfg.change_commentary)
+        record.change_commentary = *cfg.change_commentary;
+
+    iam::repository::role_repository repo(context_);
+    repo.write({record});
+
+    output_stream_ << "Successfully added role: " << cfg.name << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added role: " << cfg.name;
+}
+
+void application::
+add_permission(const config::add_permission_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Adding permission: " << cfg.code;
+
+    iam::domain::permission record;
+    record.id = boost::uuids::random_generator()();
+    record.code = cfg.code;
+    if (cfg.description)
+        record.description = *cfg.description;
+
+    iam::repository::permission_repository repo(context_);
+    repo.write({record});
+
+    output_stream_ << "Successfully added permission: " << cfg.code << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added permission: " << cfg.code;
+}
+
+void application::
+add_country(const config::add_country_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Adding country: " << cfg.alpha2_code;
+
+    risk::domain::country record;
+    record.alpha2_code = cfg.alpha2_code;
+    record.alpha3_code = cfg.alpha3_code;
+    record.name = cfg.name;
+    record.recorded_by = cfg.recorded_by;
+    record.recorded_at = std::chrono::system_clock::now();
+
+    if (cfg.numeric_code)
+        record.numeric_code = *cfg.numeric_code;
+    if (cfg.official_name)
+        record.official_name = *cfg.official_name;
+    if (cfg.change_reason_code)
+        record.change_reason_code = *cfg.change_reason_code;
+    if (cfg.change_commentary)
+        record.change_commentary = *cfg.change_commentary;
+
+    risk::repository::country_repository repo;
+    repo.write(context_, record);
+
+    output_stream_ << "Successfully added country: " << cfg.alpha2_code << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added country: " << cfg.alpha2_code;
+}
+
+void application::
+add_change_reason(const config::add_change_reason_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Adding change reason: " << cfg.code;
+
+    iam::domain::change_reason record;
+    record.code = cfg.code;
+    record.description = cfg.description;
+    record.category_code = cfg.category_code;
+    record.recorded_by = cfg.recorded_by;
+    record.recorded_at = std::chrono::system_clock::now();
+
+    if (cfg.applies_to_amend)
+        record.applies_to_amend = *cfg.applies_to_amend;
+    if (cfg.applies_to_delete)
+        record.applies_to_delete = *cfg.applies_to_delete;
+    if (cfg.requires_commentary)
+        record.requires_commentary = *cfg.requires_commentary;
+    if (cfg.display_order)
+        record.display_order = *cfg.display_order;
+    if (cfg.change_commentary)
+        record.change_commentary = *cfg.change_commentary;
+
+    iam::repository::change_reason_repository repo(context_);
+    repo.write({record});
+
+    output_stream_ << "Successfully added change reason: " << cfg.code << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added change reason: " << cfg.code;
+}
+
+void application::
+add_change_reason_category(const config::add_change_reason_category_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Adding change reason category: " << cfg.code;
+
+    iam::domain::change_reason_category record;
+    record.code = cfg.code;
+    record.description = cfg.description;
+    record.recorded_by = cfg.recorded_by;
+    record.recorded_at = std::chrono::system_clock::now();
+
+    if (cfg.change_commentary)
+        record.change_commentary = *cfg.change_commentary;
+
+    iam::repository::change_reason_category_repository repo(context_);
+    repo.write({record});
+
+    output_stream_ << "Successfully added change reason category: " << cfg.code << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added change reason category: " << cfg.code;
+}
+
+void application::
 add_data(const std::optional<config::add_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No add configuration found.";
@@ -890,6 +1012,16 @@ add_data(const std::optional<config::add_options>& ocfg) const {
             add_feature_flag(opts);
         } else if constexpr (std::is_same_v<T, config::add_login_info_options>) {
             add_login_info(opts);
+        } else if constexpr (std::is_same_v<T, config::add_role_options>) {
+            add_role(opts);
+        } else if constexpr (std::is_same_v<T, config::add_permission_options>) {
+            add_permission(opts);
+        } else if constexpr (std::is_same_v<T, config::add_country_options>) {
+            add_country(opts);
+        } else if constexpr (std::is_same_v<T, config::add_change_reason_options>) {
+            add_change_reason(opts);
+        } else if constexpr (std::is_same_v<T, config::add_change_reason_category_options>) {
+            add_change_reason_category(opts);
         } else {
             []<bool flag = false>() {
                 static_assert(flag, "unhandled type in std::visit for add_data");

@@ -65,11 +65,11 @@ Each entity supports these operations (check parser for current list):
 | accounts                 | list, delete, add                 |
 | feature-flags            | list, delete, add                 |
 | login-info               | list, delete, add                 |
-| roles                    | list, delete                      |
-| permissions              | list, delete                      |
-| countries                | list, delete                      |
-| change-reasons           | list, delete                      |
-| change-reason-categories | list, delete                      |
+| roles                    | list, delete, add                 |
+| permissions              | list, delete, add                 |
+| countries                | list, delete, add                 |
+| change-reasons           | list, delete, add                 |
+| change-reason-categories | list, delete, add                 |
 
 ** Recipe format
 
@@ -96,11 +96,11 @@ Recipes are organized into sections:
 - *Accounts*: List, delete, add (regular and admin)
 - *Login Info*: List, delete, add
 - *Feature Flags*: List, delete, add
-- *Roles*: List, delete
-- *Permissions*: List, delete
-- *Countries*: List, delete
-- *Change Reasons*: List, delete
-- *Change Reason Categories*: List, delete
+- *Roles*: List, delete, add (with permissions)
+- *Permissions*: List, delete, add
+- *Countries*: List, delete, add
+- *Change Reasons*: List, delete, add
+- *Change Reason Categories*: List, delete, add
 
 ** Verifying options
 

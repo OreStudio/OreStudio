@@ -26,6 +26,11 @@
 #include "ores.cli/config/add_account_options.hpp"
 #include "ores.cli/config/add_feature_flag_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
+#include "ores.cli/config/add_role_options.hpp"
+#include "ores.cli/config/add_permission_options.hpp"
+#include "ores.cli/config/add_country_options.hpp"
+#include "ores.cli/config/add_change_reason_options.hpp"
+#include "ores.cli/config/add_change_reason_category_options.hpp"
 
 namespace ores::cli::config {
 
@@ -40,7 +45,12 @@ using add_options = std::variant<
     add_currency_options,
     add_account_options,
     add_feature_flag_options,
-    add_login_info_options
+    add_login_info_options,
+    add_role_options,
+    add_permission_options,
+    add_country_options,
+    add_change_reason_options,
+    add_change_reason_category_options
 >;
 
 std::ostream& operator<<(std::ostream& s, const add_options& v);

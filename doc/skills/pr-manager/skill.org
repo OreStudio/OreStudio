@@ -16,16 +16,15 @@ license: Complete terms in LICENSE.txt
 #+end_export
 
 This skill manages the complete lifecycle of a Pull Request (PR), from
-generating a summary based on committed work, through creating a draft PR,
-waiting for CI to pass, marking ready for review, and finally merging.
+generating a summary based on committed work, through creating a PR and
+merging it.
 
 * When to Use This Skill
 
 Use this skill when you want to:
 
 - Generate a PR title and overview from committed work.
-- Create a draft PR and manage its lifecycle through to merge.
-- Ensure CI builds pass before marking a PR as ready for review.
+- Create a PR and manage its lifecycle through to merge.
 
 * How to Use This Skill
 
@@ -104,49 +103,59 @@ Use the following format for the PR body:
 Co-Authored-By: Claude <noreply@anthropic.com>
 #+end_src
 
-** Step 2: Create Draft PR
+** Step 2: Create PR
 
-Create the PR as a draft to trigger CI workflows without requesting review:
+Create the PR:
 
 #+BEGIN_SRC sh
-gh pr create --draft --title "<title>" --body "<overview>"
+gh pr create --title "<title>" --body "<overview>"
 #+END_SRC
 
-Creating as draft allows:
+** Step 3: Wait for CI and Address Review Comments
 
-- CI workflows to run and validate the changes.
-- Further commits to be added if needed.
-- Review to be deferred until the author is ready.
-
-** Step 3: Wait for CI to Pass
-
-After creating the draft PR, inform the user:
+After creating the PR, inform the user:
 
 #+BEGIN_QUOTE
-Draft PR created. Please monitor the CI workflows and confirm when the build is
-green. You can check the status with:
+PR created. Please monitor the CI workflows and confirm when the build is green.
+You can check the status with:
 
 =gh pr checks=
 
-Let me know when the build has passed and you're ready to proceed.
+Let me know when the build has passed and you're ready to merge.
 #+END_QUOTE
 
-*Important*: Do not proceed to the next step until the user explicitly confirms
-that the CI build is green.
+While waiting for CI to pass, review comments may be posted. Address these as
+follows:
 
-** Step 4: Mark PR as Ready for Review
-
-Once the user confirms CI has passed, mark the PR as ready for review:
+1. Read the review comments using =gh pr view --comments= or the GitHub UI.
+2. Make the necessary code changes to address each comment.
+3. Create a new commit for the fixes (do not amend existing commits).
+4. Push the changes when the user requests.
 
 #+BEGIN_SRC sh
-gh pr ready
+# Address review comments
+git add <modified-files>
+git commit -m "[component] Address review comments
+
+- Fixed issue X
+- Updated Y per reviewer feedback
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>"
+
+# Push when user requests
+git push
 #+END_SRC
 
-This removes the draft status and signals that the PR is ready for review.
+*Important*:
 
-** Step 5: Merge the PR
+- Do not proceed to merge until the user explicitly confirms that the CI build
+  is green.
+- Never amend commits; always create new commits for fixes. This preserves the
+  review history and makes it easier for reviewers to see what changed.
 
-After the PR is marked as ready, merge it:
+** Step 4: Merge the PR
+
+Once CI has passed and review comments are addressed, merge the PR:
 
 #+BEGIN_SRC sh
 gh pr merge --delete-branch
@@ -161,8 +170,8 @@ The =--delete-branch= flag removes the feature branch after merge.
 merge_base=$(git merge-base HEAD main)
 git log --pretty=format:"%s" ${merge_base}..HEAD
 
-# Step 2: Create draft PR
-gh pr create --draft --title "[cli] Add validation for user input" \
+# Step 2: Create PR
+gh pr create --title "[cli] Add validation for user input" \
   --body "$(cat <<'EOF'
 ## Summary
 
@@ -176,13 +185,16 @@ gh pr create --draft --title "[cli] Add validation for user input" \
 EOF
 )"
 
-# Step 3: Check CI status
+# Step 3: Check CI status and address review comments
 gh pr checks
+gh pr view --comments
 
-# Step 4: Mark ready (after user confirms CI is green)
-gh pr ready
+# Address any review comments with new commits (never amend)
+git add <files>
+git commit -m "[component] Address review comments"
+git push  # when user requests
 
-# Step 5: Merge
+# Step 4: Merge (after user confirms CI is green)
 gh pr merge --delete-branch
 #+END_SRC
 

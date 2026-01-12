@@ -31,6 +31,27 @@
 (require 'ox-publish)
 (require 'org-element)
 
+(defvar site-github-user "OreStudio"
+  "GitHub username or organization name.")
+
+(defvar site-github-repo "OreStudio"
+  "GitHub repository name.")
+
+(defvar site-github-branch "main"
+  "The default branch to link to (e.g., 'main', 'master').")
+
+(org-link-set-parameters
+ "proj"
+ :export (lambda (path desc backend)
+           "Export `proj:' links to full GitHub URLs for HTML backend."
+           (when (eq backend 'html)
+             (let ((new-url (format "https://github.com/%s/%s/blob/%s/%s"
+                                    site-github-user
+                                    site-github-repo
+                                    site-github-branch
+                                    path)))
+               (format "<a href=\"%s\">%s</a>" new-url (or desc new-url))))))
+
 (setq org-id-locations-file (expand-file-name "./.org-id-locations-file"))
 (org-id-update-id-locations (directory-files-recursively "." "\\.org$"))
 (setq package-user-dir (expand-file-name "./.packages"))

@@ -21,6 +21,7 @@
 #define ORES_CLI_CONFIG_PARSER_HELPERS_HPP
 
 #include <string>
+#include <string_view>
 #include <vector>
 #include <optional>
 #include <iosfwd>
@@ -37,11 +38,11 @@ namespace ores::cli::config::parser_helpers {
  * @brief Configuration for a simple entity that supports only list and delete.
  */
 struct simple_entity_config {
-    std::string name;
-    std::string description;
+    std::string_view name;
+    std::string_view description;
     entity entity_value;
-    std::string list_description;
-    std::string delete_description;
+    std::string_view list_description;
+    std::string_view delete_description;
 };
 
 /**

@@ -194,9 +194,11 @@ handle_simple_entity_command(
     using ores::logging::logging_configuration;
     using ores::utility::program_options::environment_mapper_factory;
 
-    const std::string list_op("list");
-    const std::string delete_op("delete");
-    const std::vector<std::string> allowed_operations{list_op, delete_op};
+    constexpr std::string_view list_op = "list";
+    constexpr std::string_view delete_op = "delete";
+    const std::vector<std::string> allowed_operations{
+        std::string(list_op), std::string(delete_op)
+    };
 
     // Collect all unrecognized options from the first pass
     auto o(collect_unrecognized(po.options, include_positional));
@@ -205,10 +207,11 @@ handle_simple_entity_command(
     // Show help for entity command if requested with no operation
     if (has_help && o.empty()) {
         const std::vector<std::pair<std::string, std::string>> operations = {
-            {"list", cfg.list_description},
-            {"delete", cfg.delete_description}
+            {"list", std::string(cfg.list_description)},
+            {"delete", std::string(cfg.delete_description)}
         };
-        print_entity_help(cfg.name, cfg.description, operations, info);
+        print_entity_help(std::string(cfg.name), std::string(cfg.description),
+            operations, info);
         return {};
     }
 
@@ -221,7 +224,7 @@ handle_simple_entity_command(
     o.erase(o.begin()); // Remove operation from args
 
     // Validate operation
-    validate_operation(cfg.name, operation, allowed_operations);
+    validate_operation(std::string(cfg.name), operation, allowed_operations);
 
     options r;
     const auto name_mapper(environment_mapper_factory::make_mapper("CLI"));
@@ -229,7 +232,7 @@ handle_simple_entity_command(
     if (operation == list_op) {
         auto d = add_common_options(make_export_options_description());
         if (has_help) {
-            print_help_command(cfg.name + " list", d, info);
+            print_help_command(std::format("{} list", cfg.name), d, info);
             return {};
         }
         store(command_line_parser(o).options(d).run(), vm);
@@ -238,7 +241,7 @@ handle_simple_entity_command(
     } else if (operation == delete_op) {
         auto d = add_common_options(make_delete_options_description());
         if (has_help) {
-            print_help_command(cfg.name + " delete", d, info);
+            print_help_command(std::format("{} delete", cfg.name), d, info);
             return {};
         }
         store(command_line_parser(o).options(d).run(), vm);

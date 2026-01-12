@@ -1,0 +1,42 @@
+:PROPERTIES:
+:ID: 8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0
+:ROAM_ALIASES: IAM
+:END:
+#+title: Identity and Access Management
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+
+/Identity and Access Management (IAM)/ is the core security component of a
+system responsible for governing and enforcing access to all system resources.
+It ensures that only authenticated and authorized entities - whether users,
+services, or hardware - can interact with applications, data, and infrastructure
+according to the defined policies.
+
+Core Responsibilities:
+
+- *Identity Lifecycle Management*: Manages the digital identity of all entities
+  (users, systems, applications), including their creation, provisioning,
+  maintenance, and decommissioning.
+- *Authentication*: Verifies the identity of an entity attempting to access the
+  system (/e.g./, via passwords, certificates, or protocols).
+- *Authorisation*: Controls what actions an authenticated identity is permitted
+  to perform on specific resources based on assigned roles and policies.
+- *Access Control Enforcement*: Technically enforces authorization decisions
+  across the ecosystem, ensuring access rights are adhered to during operation.
+
+Operational Scope:
+
+The IAM module operates across two primary phases:
+
+- *Configuration Phase*: The definition and registration of identities, their
+  roles, and their authorized access rights.
+- *Operation Phase*: The real-time execution of identification, authentication,
+  and access control checks based on the configured policies.
+
+In essence, this module centralizes the policy framework and technical
+mechanisms that secure the system by guaranteeing the principle of least
+privilege: the right access for the right entity to the right resource.
+
+* Footer
+
+| Top: [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio IAM Component]] |

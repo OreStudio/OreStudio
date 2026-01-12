@@ -6,6 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
 #+startup: inlineimages
 #+export_exclude_tags: noexport
+#+export_file_name: SKILL.md
 
 #+begin_export markdown
 ---
@@ -30,24 +31,24 @@ with CRUD operations.
 
 * Related skills
 
-- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]]: For building and testing the component.
-- [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator]]: If the domain type requires new database tables.
-- [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][PlantUML ER Modeler]]: Update database ER diagrams after adding repository support.
-- [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]]: Update class diagrams for the component.
+- [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]]: For building and testing the component.
+- [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][sql-schema-creator]]: If the domain type requires new database tables.
+- [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]]: Update database ER diagrams after adding repository support.
+- [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]]: Update class diagrams for the component.
 - [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]]: Manage branch transitions between phases.
 
 * PR strategy
 
-Creating a complete domain type involves significant work across multiple files. To
-keep PRs reviewable, the implementation is split into phases with designated
+Creating a complete domain type involves significant work across multiple files.
+To keep PRs reviewable, the implementation is split into phases with designated
 checkpoints.
 
-| Phase | Steps   | Focus                        | PR Title Template                            |
-|-------+---------+------------------------------+----------------------------------------------|
-|     1 | 1-3     | Domain class and I/O support | [COMPONENT] Add <Entity> domain type         |
-|     2 | 4       | Test data generator          | [COMPONENT] Add <Entity> generator           |
-|     3 | 5-6     | Repository and persistence   | [COMPONENT] Add <Entity> repository          |
-|     4 | 7-10    | Tests and documentation      | [COMPONENT] Add <Entity> tests and diagrams  |
+| Phase | Steps | Focus                        | PR Title Template                           |
+|-------+-------+------------------------------+---------------------------------------------|
+|     1 |   1-3 | Domain class and I/O support | [COMPONENT] Add <Entity> domain type        |
+|     2 |     4 | Test data generator          | [COMPONENT] Add <Entity> generator          |
+|     3 |   5-6 | Repository and persistence   | [COMPONENT] Add <Entity> repository         |
+|     4 |  7-10 | Tests and documentation      | [COMPONENT] Add <Entity> tests and diagrams |
 
 ** Phase checkpoints
 
@@ -76,6 +77,8 @@ Before starting, gather the following information from the user:
 ** Phase 1: Domain class and I/O support
 
 *** Step 1: Create the domain class definition
+
+See [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][Claude Code Skills]].
 
 Create the header file under =projects/COMPONENT/include/COMPONENT/domain/TYPE_NAME.hpp=.
 

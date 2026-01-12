@@ -1,0 +1,10 @@
+:PROPERTIES:
+:ID: 429AE3F5-A825-8834-0353-9B98F235AE84
+:END:
+#+title: Type definition facet
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+The type definition facet is a type of facet which implements the conceptual
+type as a [[https://en.wikipedia.org/wiki/Passive_data_structure][Passive data structure]].

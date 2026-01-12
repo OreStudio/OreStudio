@@ -6,7 +6,6 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
 #+startup: inlineimages
 #+export_exclude_tags: noexport
-#+export_file_name: SKILL.md
 
 #+begin_export markdown
 ---

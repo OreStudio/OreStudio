@@ -382,3 +382,19 @@
    fun:*std*thread*_M_start_thread*
    ...
 }
+#
+# Glibc DNS Resolver Cache
+# The glibc resolver allocates configuration memory on first DNS lookup via
+# getaddrinfo() and keeps it cached for the process lifetime. This is
+# intentional behavior, not a memory leak in application code.
+#
+{
+   Glibc Resolver Config Cache
+   Memcheck:Leak
+   match-leak-kinds: definite,reachable,possible
+   fun:malloc
+   fun:__libc_alloc_buffer_allocate
+   fun:alloc_buffer_allocate
+   fun:__resolv_conf_allocate
+   ...
+}

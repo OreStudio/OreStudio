@@ -37,6 +37,7 @@ package "Foundation" {
     [binary-protocol-developer] <<foundation>> as bpd
     [feature-branch-manager] <<foundation>> as fbm
     [sql-schema-creator] <<foundation>> as ssc
+    [component-creator] <<foundation>> as cc
 }
 
 ' =============================================================================
@@ -92,6 +93,8 @@ package "Workflow" {
 
 ' Foundation internal
 dtc --> fbm
+cc --> cmc
+cc --> cmake
 
 ' Qt entity creator dependencies
 qt --> dtc

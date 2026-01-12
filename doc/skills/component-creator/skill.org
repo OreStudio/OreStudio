@@ -660,7 +660,20 @@ namespace ores #F2F2F2 {
 @enduml
 #+end_src
 
-** Step 10: Compile the new component
+** Step 10: Create the component model documentation
+
+The new component needs a component model to document its architecture. Create
+the org-mode documentation file and PlantUML diagram following the
+[[id:b0b99088-d88e-4980-a4ee-7d6a9a8e96a5][Component Model Creator]] skill.
+
+This will create:
+
+- =projects/ores.COMPONENT/modeling/ores.COMPONENT.org= - Component documentation
+- =projects/ores.COMPONENT/modeling/ores.COMPONENT.puml= - Class diagram (refine
+  the stub created in Step 9)
+- =projects/ores.COMPONENT/modeling/ores.COMPONENT.png= - Generated diagram
+
+** Step 11: Compile the new component
 
 Using the skill [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner Skill]]:
 

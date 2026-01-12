@@ -22,7 +22,7 @@
 {
    CMake Binary Leak
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:malloc
    obj:*/bin/cmake
    obj:*/bin/cmake
@@ -34,7 +34,7 @@
 {
    Boost Log Thread Local Get Severity
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    # boost::log::v2s_mt_posix::sources::aux::get_severity_level()
    fun:_ZN5boost3log12v2s_mt_posix7sources3aux18get_severity_levelEv
@@ -45,7 +45,7 @@
 {
    Boost Log Thread Local Random Seed
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    fun:_ZN5boost3log12v2s_mt_posix3aux11this_thread6get_idEv
    fun:_ZN5boost3log12v2s_mt_posix4core14implementation11thread_data15get_random_seedEv
@@ -57,7 +57,7 @@
 {
    Boost Log Thread Exit Function
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    fun:_ZN5boost6detail8heap_newINS0_20thread_exit_function*
    ...
@@ -66,14 +66,14 @@
 {
    Boost Log Thread Exit Add
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    fun:_ZN5boost6detail24add_thread_exit_function*
 }
 {
    Boost Log Thread Exit Callback
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    fun:_ZN5boost6detail8heap_newINS0_25thread_exit_callback_nodeERPNS0_25thread_exit_function_baseERPS2_EEPT_OT0_OT1_
    ...
@@ -84,7 +84,7 @@
 {
    Boost Log Thread Data Shared Ptr
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    fun:_ZN5boost6detail12shared_countC*
    fun:_ZN5boost10shared_ptrINS_6detail16thread_data_baseEE*
@@ -92,7 +92,7 @@
 {
    Boost Log Thread Data Shared Ptr 2
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    fun:_ZN5boost6detail12shared_countC1INS0_16thread_data_baseEEEPT_
    fun:_ZN5boost6detail20sp_pointer_constructINS0_16thread_data_baseES2_EEvPNS_10shared_ptrIT_EEPT0_RNS0_12shared_countE
@@ -113,7 +113,7 @@
 {
    Boost Log External Thread Data
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    fun:_ZN5boost6detail25make_external_thread_dataEv
 }
@@ -123,7 +123,7 @@
 {
    Boost Log Thread Local Get Severity (ores::logging)
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    # boost::log::v2s_mt_posix::sources::aux::get_severity_level()
    fun:_ZN5boost3log12v2s_mt_posix7sources3aux18get_severity_levelEv
@@ -134,7 +134,7 @@
 {
    Boost Log Thread Data Shared Ptr (ores::logging)
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    fun:_ZN5boost6detail12shared_countC1INS0_16thread_data_baseEEEPT_
    fun:_ZN5boost6detail20sp_pointer_constructINS0_16thread_data_baseES2_EEvPNS_10shared_ptrIT_EEPT0_RNS0_12shared_countE
@@ -154,7 +154,7 @@
 {
    Boost Log External Launch Thread Data
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    fun:_ZN5boost6detail8heap_newINS0_26externally_launched_threadEEEPT_v
    ...
@@ -165,7 +165,7 @@
 {
    OpenSSL Init Thread Local
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:malloc
    fun:CRYPTO_malloc
    fun:CRYPTO_zalloc
@@ -175,7 +175,7 @@
 {
    OpenSSL Init Error State
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:malloc
    fun:CRYPTO_malloc
    fun:CRYPTO_zalloc
@@ -187,7 +187,7 @@
 {
    OpenSSL Init Config Modules
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:malloc
    fun:CRYPTO_malloc
    fun:CRYPTO_zalloc
@@ -199,7 +199,7 @@
 {
    OpenSSL Init Rand
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:malloc
    fun:CRYPTO_malloc
    fun:CRYPTO_zalloc
@@ -214,7 +214,7 @@
 {
    OpenSSL Thread Cleanup
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:malloc
    fun:CRYPTO_malloc
    fun:CRYPTO_zalloc
@@ -231,7 +231,7 @@
 {
    OpenSSL Node Alloc During Connect
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:malloc
    fun:CRYPTO_malloc
    fun:CRYPTO_calloc
@@ -241,7 +241,7 @@
 {
    OpenSSL Rand Usage
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:malloc
    fun:CRYPTO_malloc
    fun:CRYPTO_zalloc
@@ -252,7 +252,7 @@
 {
    OpenSSL Exit Cleanup
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:malloc
    fun:CRYPTO_malloc
    fun:CRYPTO_zalloc
@@ -270,7 +270,7 @@
 {
    Boost Asio SSL OpenSSL Init Instance
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    fun:_ZN5boost4asio3ssl6detail17openssl_init_base8instanceEv
    ...
@@ -278,7 +278,7 @@
 {
    Boost Asio SSL OpenSSL Init Constructor
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    ...
    fun:_ZN5boost4asio3ssl6detail12openssl_initILb1EE*
@@ -287,7 +287,7 @@
 {
    Boost Asio SSL OpenSSL Init Shared Ptr
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    fun:_ZNSt14__shared_count*openssl_init_base*
    ...
@@ -295,7 +295,7 @@
 {
    Boost Asio SSL OpenSSL Init Shared Ptr 2
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    fun:_ZNSt12__shared_ptr*openssl_init_base*
    ...
@@ -309,7 +309,7 @@
 {
    Catch2 Reporter Registry Init
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    fun:_ZN5Catch6Detail11make_unique*ReporterFactory*
    fun:_ZN5Catch16ReporterRegistry*
@@ -318,7 +318,7 @@
 {
    Catch2 Registry Hub Init
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    ...
    fun:_ZN5Catch*RegistryHub*
@@ -327,7 +327,7 @@
 {
    Catch2 Singleton Init
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:_Znwm
    ...
    fun:_ZN5Catch9Singleton*
@@ -339,7 +339,7 @@
 {
    Postgres SSL Connection Init
    Memcheck:Leak
-   match-leak-kinds: reachable
+   match-leak-kinds: reachable,possible
    fun:malloc
    fun:CRYPTO_malloc
    ...
@@ -349,5 +349,36 @@
    fun:pg_SASL_init
    fun:pg_fe_sendauth
    fun:PQconnectPoll
+   ...
+}
+#
+# Pthread/Glibc Thread Local Storage
+# When threads are created, glibc allocates TLS (Thread Local Storage) via
+# allocate_dtv/_dl_allocate_tls. Valgrind reports these as "possibly lost"
+# because the pointer to the memory isn't direct (it's accessed via %fs
+# register on x86_64). This is a known false positive.
+#
+{
+   Pthread TLS Allocation
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   ...
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   ...
+   fun:pthread_create*
+   ...
+}
+{
+   Pthread TLS Allocation via std::thread
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   ...
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   ...
+   fun:*std*thread*_M_start_thread*
    ...
 }

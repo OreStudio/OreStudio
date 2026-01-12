@@ -1,0 +1,33 @@
+:PROPERTIES:
+:ID: fe36240a-7a64-4332-9e82-8d976d458c73
+:END:
+#+title: ORE Studio Wt Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Web frontend component for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Wt Component Diagram
+[[file:ores.wt.png][file:ores.wt.png]]
+
+This module provides a web frontend using the [[https://www.webtoolkit.eu/wt][Wt C++ Web Toolkit]]. It offers
+browser-based access to ORE Studio functionality with direct domain type
+integration. Key features include:
+
+- Account management: Create, edit, and manage user accounts via web UI
+- Currency operations: View and manage currency data
+- Country management: Country list and detail views
+- Feature flags: Toggle system features through web UI
+- Session management: Web-based authentication and session handling
+- Responsive UI: Widget-based interface compatible with modern browsers
+
+The module is organized into namespaces: app (widgets, dialogs, application),
+config (options, parser), and service (application context, session manager).
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

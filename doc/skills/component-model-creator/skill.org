@@ -264,6 +264,19 @@ cmake --build --preset linux-clang-debug --target generate_ores_diagram
 
 See the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]] skill for detailed PlantUML conventions.
 
+** Step 5: Deploy the site
+
+After creating or updating component models, run the =deploy_site= target to
+regenerate the documentation website. This ensures the new org-mode files are
+properly published and linked:
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug --target deploy_site
+#+end_src
+
+This step is necessary because the org-mode component models are published to
+the documentation website and need to be included in the site generation.
+
 * Artefacts                                                        :noexport:
 
 ** Licence

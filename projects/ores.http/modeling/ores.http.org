@@ -1,0 +1,32 @@
+:PROPERTIES:
+:ID: b0c9fdc8-f0b2-48fe-ae37-8fd79e6fd164
+:END:
+#+title: ORE Studio HTTP Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+HTTP server library component for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio HTTP Component Diagram
+[[file:ores.http.png][file:ores.http.png]]
+
+This module provides HTTP server infrastructure using Boost.Beast with JWT
+authentication and OpenAPI support. Key features include:
+
+- HTTP server: Asynchronous HTTP server built on Boost.Beast and Boost.Asio
+- JWT authentication: JSON Web Token parsing, validation, and claims extraction
+- Routing: Path-based request routing with method matching
+- OpenAPI: Endpoint registry for generating OpenAPI documentation
+- Domain types: HTTP request/response abstractions and JWT claims
+
+The module is organized into namespaces: net (server, session, router),
+middleware (JWT authenticator), openapi (endpoint registry), and domain (HTTP
+types, JWT claims).
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

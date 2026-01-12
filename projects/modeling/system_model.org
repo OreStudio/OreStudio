@@ -37,7 +37,7 @@ The system is organised into four architectural layers:
   faker utilities. No ores dependencies.
 - [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]]: Filesystem utilities, environment variables, network info,
   cross-platform time utilities. Depends on: utility.
-- ores.logging: Core logging infrastructure with Boost.Log integration, logger
+- [[id:1fbcc86b-8e04-4f81-8558-85c0b6c54836][ores.logging]]: Core logging infrastructure with Boost.Log integration, logger
   factory, severity levels. Depends on: platform.
 - [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]]: Extends logging with distributed tracing (trace_id, span_id),
   OpenTelemetry integration, log record export. Depends on: logging, platform.
@@ -62,7 +62,7 @@ The system is organised into four architectural layers:
 - [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets]]: Asset management for images and visual resources. Binary image
   storage, hierarchical tagging, currency-to-image linking, messaging handlers
   (0x4000-0x4FFF).
-- ores.http: HTTP infrastructure for RESTful API support. JWT token parsing,
+- [[id:b0c9fdc8-f0b2-48fe-ae37-8fd79e6fd164][ores.http]]: HTTP infrastructure for RESTful API support. JWT token parsing,
   claims extraction, authentication middleware support.
 - Depends on: Foundation (telemetry, database).
 
@@ -80,11 +80,11 @@ The system is organised into four architectural layers:
   exercises the database layer directly.
 - [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]: Desktop GUI with MDI interface for visual data management.
 - [[id:7141E32C-80E2-6B74-F273-C80DAA42D727][ores.comms.service]]: Multi-client server hosting all backend services.
-- ores.http.server: RESTful HTTP API server for ORE Studio. Alternative to
+- [[id:19aeecd4-03ab-4d23-b2bc-9d96aaa64120][ores.http.server]]: RESTful HTTP API server for ORE Studio. Alternative to
   binary protocol for web clients and integrations.
-- ores.wt: Web application built with Wt framework for browser-based access.
+- [[id:fe36240a-7a64-4332-9e82-8d976d458c73][ores.wt]]: Web application built with Wt framework for browser-based access.
   Account management, currency operations, feature flags via web UI.
-- ores.comms.analyser: Communication session analyzer for debugging protocol
+- [[id:6E2967C7-D79E-41DE-8A68-B3F755541C0D][ores.comms.analyser]]: Communication session analyzer for debugging protocol
   issues. Parse and decode recorded binary protocol sessions.
 - Depends on: All layers
 

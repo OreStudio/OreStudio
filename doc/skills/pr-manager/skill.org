@@ -149,11 +149,10 @@ This removes the draft status and signals that the PR is ready for review.
 After the PR is marked as ready, merge it:
 
 #+BEGIN_SRC sh
-gh pr merge --squash --delete-branch
+gh pr merge --delete-branch
 #+END_SRC
 
-The =--squash= flag combines all commits into a single commit for a cleaner
-history. The =--delete-branch= flag removes the feature branch after merge.
+The =--delete-branch= flag removes the feature branch after merge.
 
 * Example Workflow
 
@@ -164,7 +163,8 @@ git log --pretty=format:"%s" ${merge_base}..HEAD
 
 # Step 2: Create draft PR
 gh pr create --draft --title "[cli] Add validation for user input" \
-  --body "## Summary
+  --body "$(cat <<'EOF'
+## Summary
 
 - Add input validation for CLI commands
 - Improve error messages for invalid arguments
@@ -172,7 +172,9 @@ gh pr create --draft --title "[cli] Add validation for user input" \
 ## Changes
 
 - Modified argument parser to validate inputs
-- Added descriptive error messages"
+- Added descriptive error messages
+EOF
+)"
 
 # Step 3: Check CI status
 gh pr checks
@@ -181,7 +183,7 @@ gh pr checks
 gh pr ready
 
 # Step 5: Merge
-gh pr merge --squash --delete-branch
+gh pr merge --delete-branch
 #+END_SRC
 
 * Artefacts                                                        :noexport:

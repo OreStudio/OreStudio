@@ -55,8 +55,7 @@ diagram:
   including import, export, list, delete, and add operations.
 - [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator]]: Create SQL table definitions, triggers, and population scripts.
 - [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer]]: Generate Catch2 unit tests following ORE Studio conventions.
-- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Summary]]: Generate a title and summary for an open PR of the work in this
-  branch.
+- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][PR Manager]]: Manage pull request lifecycle from creation through merge.
 - [[id:8c4f5b9a-3d2e-4c89-a7f1-9e8d6f2b5a4c][Autonomous Developer]]: Autonomously pick up stories from sprint backlog,
   implement them incrementally with tests and commits, then submit for review.
 - [[id:06BDB43A-EA9D-D474-68DB-198696A2B758][Semi Autonomous Developer]]: Given a story, perform most of the development

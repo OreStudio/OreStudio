@@ -29,18 +29,11 @@ on:  # yamllint disable-line rule:truthy
       - '.claude/**'
     tags:
       - '*'
-  pull_request:
-    types: [opened, ready_for_review]
-    branches:
-      - main
-    paths-ignore:
-      - 'doc/**'
-      - '.claude/**'
+  workflow_dispatch:
 
 jobs:
   build:
     name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
-    if: ${{ !github.event.pull_request.draft }}
     concurrency:
       group: ci-${{github.ref}}-${{github.job}}-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
       cancel-in-progress: true

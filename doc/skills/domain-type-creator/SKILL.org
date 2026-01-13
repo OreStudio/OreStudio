@@ -31,10 +31,9 @@ with CRUD operations.
 * Related skills
 
 - [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]]: For building and testing the component.
-- [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][sql-schema-creator]]: If the domain type requires new database tables.
-- [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]]: Update database ER diagrams after adding repository support.
 - [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]]: Update class diagrams for the component.
 - [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]]: Manage branch transitions between phases.
+- [[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]]: Create a new Pull Request (PR).
 
 * PR strategy
 
@@ -53,16 +52,18 @@ checkpoints.
 
 After completing each phase:
 
-1. Build and verify there are no errors.
+1. Using [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]] skill, build and verify there are no errors.
 2. Commit all changes with an appropriate message.
-3. Push the branch and raise a PR with the suggested title.
+3. Push the branch and use [[id:545D6B43-17FC-0234-FF2B-AB6565695616][pr-manager]] skill to raise a PR with the suggested
+   title.
 4. Wait for review feedback and address any comments.
-5. Once approved, the user merges the PR to main.
+5. Once approved, merge the PR back to main.
 6. Use the [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] skill to transition to the next phase.
 
 * Detailed instructions
 
-The following sections describe the step-by-step process for creating a complete domain type.
+The following sections describe the step-by-step process for creating a complete
+domain type.
 
 ** Gather requirements
 
@@ -77,110 +78,15 @@ Before starting, gather the following information from the user:
 
 *** Step 1: Create the domain class definition
 
-See [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][Claude Code Skills]].
-
-Create the header file under =projects/COMPONENT/include/COMPONENT/domain/TYPE_NAME.hpp=.
-
-The domain class should:
-
-- Use a =struct= with all fields public.
-- Include comprehensive doxygen comments for the struct and all fields.
-- Use appropriate C++ types:
-  - =boost::uuids::uuid= for unique identifiers
-  - =std::string= for text fields
-  - =bool= for flags
-  - =int= or appropriate numeric types for counters
-  - =std::chrono::system_clock::time_point= for timestamps
-  - =boost::asio::ip::address= for IP addresses
-- Follow the pattern established in =projects/ores.accounts/include/ores.accounts/domain/account.hpp=.
-
-Example structure:
-
-#+begin_src cpp
-namespace ores::COMPONENT::domain {
-
-/**
- * @brief Brief description of the domain type.
- */
-struct TYPE_NAME final {
-    /**
-     * @brief Description of field.
-     */
-    TYPE field_name;
-
-    // ... more fields
-};
-
-}
-#+end_src
+Follow the instructions in [[id:7FEE0007-A792-5B34-94DB-056EFC99B8D6][Domain Type Class Definition Facet]].
 
 *** Step 2: Create JSON I/O support
 
-Create two files for JSON serialization:
-
-1. Header: =projects/COMPONENT/include/COMPONENT/domain/TYPE_NAME_json_io.hpp=
-2. Implementation: =projects/COMPONENT/src/domain/TYPE_NAME_json_io.cpp=
-
-The header should declare:
-
-#+begin_src cpp
-#include <iosfwd>
-#include "COMPONENT/domain/TYPE_NAME.hpp"
-
-namespace ores::COMPONENT::domain {
-
-/**
- * @brief Dumps the TYPE_NAME object to a stream in JSON format.
- */
-std::ostream& operator<<(std::ostream& s, const TYPE_NAME& v);
-
-}
-#+end_src
-
-The implementation should:
-
-- Include =<rfl.hpp>= and =<rfl/json.hpp>=
-- Include =ores.utility/rfl/reflectors.hpp= for custom type support
-- Use =rfl::json::write()= for serialization
-- Follow the pattern in =projects/ores.accounts/src/domain/account_json_io.cpp=
+Follow the instructions in [[id:23c416e0-1b90-4248-84d6-9275e8b76514][Domain Type JSON I/O Facet]].
 
 *** Step 3: Create table I/O support
 
-Create two files for table output:
-
-1. Header: =projects/COMPONENT/include/COMPONENT/domain/TYPE_NAME_table_io.hpp=
-2. Implementation: =projects/COMPONENT/src/domain/TYPE_NAME_table_io.cpp=
-
-The header should declare:
-
-#+begin_src cpp
-#include <iosfwd>
-#include <vector>
-#include "COMPONENT/domain/TYPE_NAME.hpp"
-
-namespace ores::COMPONENT::domain {
-
-/**
- * @brief Dumps the TYPE_NAME object to a stream in table format.
- */
-std::ostream& operator<<(std::ostream& s, const std::vector<TYPE_NAME>& v);
-
-}
-#+end_src
-
-The implementation should:
-
-- Include =<fort.hpp>= for table formatting
-- Include =<boost/uuid/uuid_io.hpp>= for UUID string conversion
-- Use =fort::char_table= with =FT_BASIC_STYLE=
-- Create appropriate column headers using =fort::header=
-- Format special types appropriately:
-  - UUIDs: use =boost::uuids::to_string()=
-  - Booleans: convert to "Y"/"N"
-  - Timestamps: format using =std::put_time()= as "YYYY-MM-DD HH:MM:SS"
-  - IP addresses: use =.to_string()=
-- End each row with =fort::endr=
-- Follow the pattern in =projects/ores.accounts/src/domain/account_table_io.cpp=
+Follow the instructions in [[id:264c683a-35fd-499f-94c2-476677d2f9bd][Domain Type Table I/O Facet]].
 
 *** Phase 1 checkpoint
 
@@ -196,18 +102,7 @@ At this point you have a complete domain type with JSON and table I/O support.
 
 *** Step 4: Create generator support
 
-Create two files for test data generation:
-
-1. Header: =projects/COMPONENT/include/COMPONENT/generators/TYPE_NAME_generator.hpp=
-2. Implementation: =projects/COMPONENT/src/generators/TYPE_NAME_generator.cpp=
-
-The generator class should:
-
-- Provide a static method =generate()= that creates a random instance
-- Provide a static method =generate_set(size_t n)= that creates n random instances
-- Use =faker-cxx= library for generating realistic fake data
-- Use =ores.utility/uuid/uuid_v7_generator= for generating UUIDs
-- Follow the pattern in =projects/ores.accounts/src/generators/account_generator.cpp=
+Follow the instructions in [[id:8840cd84-2fb3-48d8-b893-ca30db244284][Domain Type Generator Support Facet]].
 
 *** Phase 2 checkpoint
 
@@ -223,59 +118,11 @@ At this point you have a test data generator for the domain type.
 
 *** Step 5: Create repository entity and mapper
 
-Create the database entity and mapper for ORM support:
-
-1. Entity header: =projects/COMPONENT/include/COMPONENT/repository/TYPE_NAME_entity.hpp=
-2. Entity implementation: =projects/COMPONENT/src/repository/TYPE_NAME_entity.cpp=
-3. Mapper header: =projects/COMPONENT/include/COMPONENT/repository/TYPE_NAME_mapper.hpp=
-4. Mapper implementation: =projects/COMPONENT/src/repository/TYPE_NAME_mapper.cpp=
-
-One domain class does not always map to a single entity. Entities reflect
-database tables. Clarify with the user how domain classes should be mapped to
-database entities.
-
-The entity should:
-
-- Use sqlgen annotations for table and column mapping
-- Include all fields from the domain type.
-- Follow the pattern in =projects/ores.accounts/include/ores.accounts/repository/account_entity.hpp=
-
-The mapper should:
-
-- Provide =to_domain()= method to convert entity to domain type
-- Provide =from_domain()= method to convert domain type to entity
-- Handle type conversions (e.g., UUID to string, timestamp conversions)
-- Follow the pattern in =projects/ores.accounts/src/repository/account_mapper.cpp=
+Follow the instructions in [[id:6f78f6f3-7a1d-46c2-9515-101c56145037][Domain Type Repository Entity and Mapper Facet]].
 
 *** Step 6: Create repository with CRUD operations
 
-Create the repository class:
-
-1. Header: =projects/COMPONENT/include/COMPONENT/repository/TYPE_NAME_repository.hpp=
-2. Implementation: =projects/COMPONENT/src/repository/TYPE_NAME_repository.cpp=
-
-The repository should provide:
-
-- Constructor accepting a =context= parameter
-- =sql()= method returning the table creation SQL
-- Write methods:
-  - =void write(const domain::TYPE_NAME& obj)=
-  - =void write(const std::vector<domain::TYPE_NAME>& objs)=
-- Read methods:
-  - =std::vector<domain::TYPE_NAME> read_latest()=
-  - =std::vector<domain::TYPE_NAME> read_latest(const KEY_TYPE& key)=
-  - =std::vector<domain::TYPE_NAME> read_all()=
-  - =std::vector<domain::TYPE_NAME> read_all(const KEY_TYPE& key)=
-  - =std::vector<domain::TYPE_NAME> read_at_timepoint(const std::string& timestamp)=
-  - =std::vector<domain::TYPE_NAME> read_at_timepoint(const std::string& timestamp, const KEY_TYPE& key)=
-
-Implementation details:
-
-- Use sqlgen for database operations
-- Use the mapper to convert between domain and entity types
-- Include proper error handling with =ensure_success()=
-- Include logging using =BOOST_LOG_SEV=
-- Follow the pattern in =projects/ores.accounts/src/repository/account_repository.cpp=
+Follow the instructions in [[id:2132af63-21a0-4ad0-9773-603d00838572][Domain Type Repository CRUD Operations Facet]].
 
 *** Phase 3 checkpoint
 
@@ -291,31 +138,21 @@ At this point you have full repository support for the domain type.
 
 *** Step 7: Update CMakeLists.txt
 
-The CMakeLists.txt in =projects/COMPONENT/src/CMakeLists.txt= will use
-=GLOB_RECURSE= to pick up all =*.cpp= files automatically so do not add new
-files.
-
-Ensure the following dependencies are linked:
-
-- =libfort::fort= for table I/O
-- =reflectcpp::reflectcpp= for JSON I/O
-- =faker-cxx::faker-cxx= for generators
-- =sqlgen::sqlgen= for repository
-- =Boost::boost= for various Boost libraries
+Follow the instructions in [[id:842baa5a-d2fa-4294-8714-ae3f3bb1229a][Domain Type CMakeLists Update Facet]].
 
 *** Step 8: Create tests
 
-Create comprehensive tests for the new domain type under =projects/COMPONENT.tests/=:
+Update the component's UML diagrams to include the new domain type:
 
-1. Domain tests: test JSON and table serialization
-2. Generator tests: verify generator produces valid instances
-3. Repository tests: test all CRUD operations
-
-Follow the test patterns in =projects/ores.accounts.tests/=.
+1. Use the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] skill to update class diagrams showing the
+   new domain type and its relationships.
+2. If repository support was added, use the [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]] skill to update
+   the database ER diagram with the new table.
+3. Build the diagrams using the appropriate CMake targets.
 
 *** Step 9: Build and verify
 
-Using the [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]] skill:
+Using the [[id:654d4a70-e63d-4c18-b5a5-886066e36314][cmake-runner]] skill:
 
 1. Configure the project (reconfigure to pick up new files).
 2. Build the component library (=COMPONENT.lib= target).
@@ -325,10 +162,8 @@ Using the [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]] skill:
 
 Update the component's UML diagrams to include the new domain type:
 
-1. Use the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]] skill to update class diagrams showing the
+1. Use the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] skill to update class diagrams showing the
    new domain type and its relationships.
-2. If repository support was added, use the [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][PlantUML ER Modeler]] skill to update
-   the database ER diagram with the new table.
 3. Build the diagrams using the appropriate CMake targets.
 
 *** Phase 4 checkpoint

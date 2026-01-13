@@ -157,12 +157,12 @@ Stories in ORE Studio use org-mode format with specific structure:
 Stories in sprint backlogs should include:
 
 #+begin_src fundamental
-,**** STARTED Story title                                           :tag1:tag2:
-DEADLINE: <2025-11-30 Sun>
+,**** STARTED Story title                                           :tag1:
 
 Description of the story and acceptance criteria.
 
 ***** Tasks
+
 - [ ] Task 1
 - [ ] Task 2
 - [ ] Task 3
@@ -290,7 +290,8 @@ When you need to investigate something:
 
 ** Step 6: Maintaining the Major Version Manifest
 
-The major version manifest =doc/agile/v0/version_zero.org= should be updated when:
+The major version manifest =doc/agile/v0/version_zero.org= should be updated
+when:
 
 *** Adding Milestones
 
@@ -374,10 +375,10 @@ To ensure work can be resumed after session restarts or context switches:
 
    #+begin_src fundamental
    ,*** COMPLETED Story title                                          :tag:
-   CLOSED: [2025-11-17 Sun]
-       :LOGBOOK:
-       CLOCK: [2025-11-17 Mon 23:40]
-       :END:
+        CLOSED: [2025-11-17 Sun]
+        :LOGBOOK:
+        CLOCK: [2025-11-17 Mon 23:40]
+        :END:
    #+end_src
 
 4. *Update incrementally* – Don't wait until the end of a story to update the
@@ -405,10 +406,9 @@ ORE Studio uses org-mode tags for categorisation:
 
 *** Using Tags
 
-1. *Multiple tags allowed* – Stories can have several tags
+1. *Single tag allowed* – Stories must have a single tag.
 2. *Use for reporting* – Tags enable time tracking by category
 3. *Be consistent* – Follow established tag patterns
-4. *Don't over-tag* – Use tags that add value for reporting
 
 ** Step 9: Org-mode Time Tracking
 

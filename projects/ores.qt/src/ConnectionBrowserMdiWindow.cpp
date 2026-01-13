@@ -461,24 +461,7 @@ void ConnectionBrowserMdiWindow::purgeDatabase() {
     BOOST_LOG_SEV(lg(), warn) << "Purging connections database";
 
     try {
-        // Delete all environments first (they reference folders)
-        auto environments = manager_->get_all_environments();
-        for (const auto& env : environments) {
-            manager_->delete_environment(env.id);
-        }
-
-        // Delete all folders
-        auto folders = manager_->get_all_folders();
-        for (const auto& folder : folders) {
-            manager_->delete_folder(folder.id);
-        }
-
-        // Delete all tags
-        auto tags = manager_->get_all_tags();
-        for (const auto& tag : tags) {
-            manager_->delete_tag(tag.id);
-        }
-
+        manager_->purge();
         model_->refresh();
         emit statusChanged(tr("Database purged - all connections deleted"));
         emit databasePurged();

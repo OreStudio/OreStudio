@@ -60,6 +60,14 @@ public:
      */
     void initialize_schema();
 
+    /**
+     * @brief Delete all data from all tables.
+     *
+     * Efficiently purges the database using bulk DELETE statements.
+     * Tables are deleted in order to respect foreign key constraints.
+     */
+    void purge_all_data();
+
 private:
     std::filesystem::path db_path_;
 };

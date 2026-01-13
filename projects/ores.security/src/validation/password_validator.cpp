@@ -21,6 +21,7 @@
 
 #include <format>
 #include <cctype>
+#include <cstring>
 
 namespace ores::security::validation {
 
@@ -51,7 +52,7 @@ validate(const std::string& password, bool enforce_policy) {
         if (std::isupper(c)) has_uppercase = true;
         if (std::islower(c)) has_lowercase = true;
         if (std::isdigit(c)) has_digit = true;
-        if (std::string(SPECIAL_CHARS).find(c) != std::string::npos)
+        if (std::strchr(SPECIAL_CHARS, c))
             has_special = true;
     }
 

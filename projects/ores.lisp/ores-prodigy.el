@@ -23,10 +23,62 @@
 ;;
 ;;; Code:
 (require 'project)
+(require 'cl-lib)
+(require 'prodigy)
+
+(setq prodigy-list-format
+      [("Marked" 6 t :right-align t)
+       ("Name" 60 t)
+       ("Status" 15 t)
+       ("Tags" 25 nil)])
 
 (autoload 'prodigy-define-tag "prodigy")
 (autoload 'prodigy-define-service "prodigy")
 (defvar prodigy-services)
+
+(defvar ores/checkout-label
+  (let* ((pr (project-current t))
+         (root (directory-file-name (expand-file-name (project-root pr))))
+         (dir-name (file-name-nondirectory root)))
+    (if (string-prefix-p "OreStudio." dir-name)
+        (substring dir-name (length "OreStudio."))
+      dir-name))
+  "The checkout label derived from the project directory name.")
+
+(defvar ores/checkout-tag (intern ores/checkout-label)
+  "The tag symbol for the current checkout.")
+
+;; Remove existing services for THIS checkout only, to allow reloading without
+;; duplicates while preserving services from other checkouts.
+(when (boundp 'prodigy-services)
+  (setq prodigy-services
+        (cl-delete-if (lambda (service)
+                        (memq ores/checkout-tag (plist-get service :tags)))
+                      prodigy-services)))
+
+(defconst ores/port-bases
+  '( ("remote" . 50000)
+     ("local1" . 51000)
+     ("local2" . 52000)
+     ("local3" . 53000)
+     ("local4" . 54000)
+     ("local5" . 55000))
+  "Alist mapping checkout labels to base port numbers.")
+
+(defun ores/get-port (service-type build-type)
+  "Return the port for SERVICE-TYPE and BUILD-TYPE in the current checkout.
+SERVICE-TYPE is one of 'http, 'wt, or 'binary.
+BUILD-TYPE is one of 'debug or 'release."
+  (let* ((base (alist-get ores/checkout-label ores/port-bases 50000 nil #'string=))
+         (offset (cond
+                  ((and (eq service-type 'http) (eq build-type 'debug)) 0)
+                  ((and (eq service-type 'http) (eq build-type 'release)) 1)
+                  ((and (eq service-type 'wt) (eq build-type 'debug)) 2)
+                  ((and (eq service-type 'wt) (eq build-type 'release)) 3)
+                  ((and (eq service-type 'binary) (eq build-type 'debug)) 4)
+                  ((and (eq service-type 'binary) (eq build-type 'release)) 5)
+                  (t 0))))
+    (+ base offset)))
 
 (defun ores--get-build-output-path (build-type)
   "Return the path to the build output directory for BUILD-TYPE.
@@ -74,11 +126,12 @@ configured database name and user."
      (list (concat "ORES_" app-prefix "_DB_PASSWORD") pwd)
      (list (concat "ORES_" app-prefix "_DB_DATABASE") ores/database-name))))
 
-(setq prodigy-services nil)
 (prodigy-define-tag :name 'ores)
 (prodigy-define-tag :name 'ui)
 (prodigy-define-tag :name 'debug)
 (prodigy-define-tag :name 'release)
+(prodigy-define-tag ores/checkout-tag)
+
 (prodigy-define-tag
   :name 'comms-service
   :env (ores/setup-environment "SERVICE"))
@@ -99,130 +152,138 @@ Includes database credentials and JWT secret from auth-source."
   :env (ores/setup-environment "WT"))
 
 (prodigy-define-service
-  :name "ORE Studio QT - Debug"
+  :name (format "ORE Studio QT - Debug - %s" ores/checkout-label)
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--compression-enabled")
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
-  :tags '(ores ui debug)
+  :tags `(ores ui debug ,ores/checkout-tag)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name "ORE Studio QT - Release"
+  :name (format "ORE Studio QT - Release - %s" ores/checkout-label)
   :cwd (concat (ores/path-to-publish 'release) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--compression-enabled")
   :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
-  :tags '(ores ui release)
+  :tags `(ores ui release ,ores/checkout-tag)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name "ORE Studio QT Blue - Debug"
+  :name (format "ORE Studio QT Blue - Debug - %s" ores/checkout-label)
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.blue.log" "--compression-enabled" "--instance-name" "Blue Debug" "--instance-color" "2196F3")
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
-  :tags '(ores ui debug)
+  :tags `(ores ui debug ,ores/checkout-tag)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name "ORE Studio QT Blue - Release"
+  :name (format "ORE Studio QT Blue - Release - %s" ores/checkout-label)
   :cwd (concat (ores/path-to-publish 'release) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.blue.log" "--compression-enabled" "--instance-name" "Blue Release" "--instance-color" "2196F3")
   :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
-  :tags '(ores ui release)
+  :tags `(ores ui release ,ores/checkout-tag)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name "ORE Studio QT Red - Debug"
+  :name (format "ORE Studio QT Red - Debug - %s" ores/checkout-label)
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.red.log" "--compression-enabled" "--instance-name" "Red Debug" "--instance-color" "F44336")
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
-  :tags '(ores ui debug)
+  :tags `(ores ui debug ,ores/checkout-tag)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name "ORE Studio QT Red - Release"
+  :name (format "ORE Studio QT Red - Release - %s" ores/checkout-label)
   :cwd (concat (ores/path-to-publish 'release) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.red.log" "--compression-enabled" "--instance-name" "Red Release" "--instance-color" "F44336")
   :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
-  :tags '(ores ui release)
+  :tags `(ores ui release ,ores/checkout-tag)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name "ORE Studio QT Green - Debug"
+  :name (format "ORE Studio QT Green - Debug - %s" ores/checkout-label)
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.green.log" "--compression-enabled" "--instance-name" "Green Debug" "--instance-color" "4CAF50")
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
-  :tags '(ores ui debug)
+  :tags `(ores ui debug ,ores/checkout-tag)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name "ORE Studio QT Green - Release"
+  :name (format "ORE Studio QT Green - Release - %s" ores/checkout-label)
   :cwd (concat (ores/path-to-publish 'release) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.green.log" "--compression-enabled" "--instance-name" "Green Release" "--instance-color" "4CAF50")
   :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
-  :tags '(ores ui release)
+  :tags `(ores ui release ,ores/checkout-tag)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name "ORE Studio Comms Service - Debug"
+  :name (format "ORE Studio Comms Service - Debug - %s" ores/checkout-label)
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
+  :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
+          "--port" ,(number-to-string (ores/get-port 'binary 'debug)))
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.comms.service")
-  :tags '(ores debug comms-service)
+  :tags `(ores debug comms-service ,ores/checkout-tag)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name "ORE Studio Comms Service - Release"
+  :name (format "ORE Studio Comms Service - Release - %s" ores/checkout-label)
   :cwd (concat (ores/path-to-publish 'release) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
+  :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
+          "--port" ,(number-to-string (ores/get-port 'binary 'release)))
   :command (concat (ores/path-to-publish 'release) "/bin/ores.comms.service")
-  :tags '(ores release comms-service)
+  :tags `(ores release comms-service ,ores/checkout-tag)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name "ORE Studio HTTP Server - Debug"
+  :name (format "ORE Studio HTTP Server - Debug - %s" ores/checkout-label)
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--port" "8081")
+  :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
+          "--port" ,(number-to-string (ores/get-port 'http 'debug)))
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.http.server")
-  :tags '(ores debug http-server)
+  :tags `(ores debug http-server ,ores/checkout-tag)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name "ORE Studio HTTP Server - Release"
+  :name (format "ORE Studio HTTP Server - Release - %s" ores/checkout-label)
   :cwd (concat (ores/path-to-publish 'release) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--port" "8081")
+  :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
+          "--port" ,(number-to-string (ores/get-port 'http 'release)))
   :command (concat (ores/path-to-publish 'release) "/bin/ores.http.server")
-  :tags '(ores release http-server)
+  :tags `(ores release http-server ,ores/checkout-tag)
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name "ORE Studio WT Server - Debug"
+  :name (format "ORE Studio WT Server - Debug - %s" ores/checkout-label)
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
+  :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
+          "--http-address" "0.0.0.0" "--docroot" "."
+          "--http-port" ,(number-to-string (ores/get-port 'wt 'debug)))
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.wt")
-  :tags '(ores debug wt-server)
+  :tags `(ores debug wt-server ,ores/checkout-tag)
   :env `(("WT_RESOURCES_DIR" ,(ores/path-to-wt-resources 'debug))
          ,@(ores/setup-environment "WT"))
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name "ORE Studio WT Server - Release"
+  :name (format "ORE Studio WT Server - Release - %s" ores/checkout-label)
   :cwd (concat (ores/path-to-publish 'release) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")
+  :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
+          "--http-address" "0.0.0.0" "--docroot" "."
+          "--http-port" ,(number-to-string (ores/get-port 'wt 'release)))
   :command (concat (ores/path-to-publish 'release) "/bin/ores.wt")
-  :tags '(ores release wt-server)
+  :tags `(ores release wt-server ,ores/checkout-tag)
   :env `(("WT_RESOURCES_DIR" ,(ores/path-to-wt-resources 'release))
          ,@(ores/setup-environment "WT"))
   :stop-signal 'sigint

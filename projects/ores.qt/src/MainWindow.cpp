@@ -545,6 +545,20 @@ MainWindow::~MainWindow() {
 void MainWindow::onLoginTriggered() {
     BOOST_LOG_SEV(lg(), debug) << "Login action triggered";
 
+    // If already connected, ask user to disconnect first
+    if (clientManager_ && clientManager_->isConnected()) {
+        auto result = MessageBoxHelper::question(this,
+            tr("Already Connected"),
+            tr("You are already connected to a server. Disconnect and connect to a new server?"),
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (result != QMessageBox::Yes) {
+            return;
+        }
+
+        performDisconnectCleanup();
+    }
+
     LoginDialog dialog(clientManager_, this);
     const int result = dialog.exec();
 
@@ -1197,6 +1211,21 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& environm
     BOOST_LOG_SEV(lg(), debug) << "Connect requested for environment: "
                                << boost::uuids::to_string(environmentId)
                                << ", name: " << connectionName.toStdString();
+
+    // If already connected, ask user to disconnect first
+    if (clientManager_ && clientManager_->isConnected()) {
+        auto result = MessageBoxHelper::question(this,
+            tr("Already Connected"),
+            tr("You are already connected to a server. Disconnect and connect to '%1'?")
+                .arg(connectionName),
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (result != QMessageBox::Yes) {
+            return;
+        }
+
+        performDisconnectCleanup();
+    }
 
     if (!connectionManager_) {
         BOOST_LOG_SEV(lg(), error) << "Connection manager not initialized";

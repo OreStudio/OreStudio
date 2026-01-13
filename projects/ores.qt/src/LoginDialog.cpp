@@ -25,6 +25,8 @@
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QSizePolicy>
+#include <QShowEvent>
+#include <QTimer>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/ChangePasswordDialog.hpp"
@@ -257,6 +259,49 @@ void LoginDialog::onSignUpClicked() {
             password_edit_->clear();
             password_edit_->setFocus();
         }
+    }
+}
+
+void LoginDialog::setConnectionDetails(const QString& host, int port,
+                                        const QString& username, const QString& password) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Pre-filling connection details for host: "
+                               << host.toStdString();
+
+    host_edit_->setText(host);
+    port_spinbox_->setValue(port);
+    username_edit_->setText(username);
+    password_edit_->setText(password);
+
+    // If password is empty, focus on password field
+    // Otherwise, user can just click Login
+    if (password.isEmpty()) {
+        password_edit_->setFocus();
+    } else {
+        login_button_->setFocus();
+    }
+}
+
+void LoginDialog::showEvent(QShowEvent* event) {
+    QDialog::showEvent(event);
+
+    if (autoSubmit_) {
+        // Check if all fields are filled
+        const bool allFieldsFilled =
+            !username_edit_->text().trimmed().isEmpty() &&
+            !password_edit_->text().isEmpty() &&
+            !host_edit_->text().trimmed().isEmpty();
+
+        if (allFieldsFilled) {
+            BOOST_LOG_SEV(lg(), debug) << "Auto-submit enabled with all fields filled, triggering login";
+            // Use single-shot timer to trigger login after dialog is fully shown
+            QTimer::singleShot(0, this, &LoginDialog::onLoginClicked);
+        } else {
+            BOOST_LOG_SEV(lg(), debug) << "Auto-submit enabled but not all fields filled";
+        }
+
+        // Reset auto-submit flag to avoid re-triggering
+        autoSubmit_ = false;
     }
 }
 

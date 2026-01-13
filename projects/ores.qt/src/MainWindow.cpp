@@ -59,8 +59,12 @@
 #include "ores.qt/TelemetryMdiWindow.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/TelemetrySettingsDialog.hpp"
+#include "ores.qt/ConnectionBrowserMdiWindow.hpp"
+#include "ores.qt/MasterPasswordDialog.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
+#include "ores.connections/service/connection_manager.hpp"
 #include "ores.utility/version/version.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -142,6 +146,8 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_folder_20_regular.svg", iconColor));
     ui_->ActionTelemetrySettings->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_settings_20_regular.svg", iconColor));
+    ui_->ActionConnectionBrowser->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_server_link_20_regular.svg", iconColor));
 
     // Create record icons - regular (gray) for off, filled (red) for on
     recordOffIcon_ = IconUtils::createRecoloredIcon(
@@ -166,6 +172,8 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionAbout, &QAction::triggered, this,
         &MainWindow::onAboutTriggered);
     connect(ui_->ExitAction, &QAction::triggered, this, &QMainWindow::close);
+    connect(ui_->ActionConnectionBrowser, &QAction::triggered, this,
+        &MainWindow::onConnectionBrowserTriggered);
 
     // Connect Window menu actions
     connect(ui_->ActionDetachAll, &QAction::triggered, this,
@@ -288,6 +296,7 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(clientManager_, &ClientManager::disconnected, this, [this]() {
         ui_->statusbar->showMessage("Disconnected from server.", 5000);
         username_.clear();
+        activeConnectionName_.clear();
         updateWindowTitle();
     });
     connect(clientManager_, &ClientManager::reconnecting, this, [this]() {
@@ -535,6 +544,20 @@ MainWindow::~MainWindow() {
 
 void MainWindow::onLoginTriggered() {
     BOOST_LOG_SEV(lg(), debug) << "Login action triggered";
+
+    // If already connected, ask user to disconnect first
+    if (clientManager_ && clientManager_->isConnected()) {
+        auto result = MessageBoxHelper::question(this,
+            tr("Already Connected"),
+            tr("You are already connected to a server. Disconnect and connect to a new server?"),
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (result != QMessageBox::Yes) {
+            return;
+        }
+
+        performDisconnectCleanup();
+    }
 
     LoginDialog dialog(clientManager_, this);
     const int result = dialog.exec();
@@ -990,12 +1013,16 @@ void MainWindow::updateWindowTitle() {
 
     // Add connection info if connected
     if (clientManager_ && clientManager_->isConnected()) {
-        QString serverInfo = QString::fromStdString(clientManager_->serverAddress());
         if (!username_.empty()) {
+            // Use active connection name if available, otherwise server address
+            QString connectionInfo = !activeConnectionName_.isEmpty()
+                ? activeConnectionName_
+                : QString::fromStdString(clientManager_->serverAddress());
             title += QString(" - %1@%2")
                 .arg(QString::fromStdString(username_))
-                .arg(serverInfo);
+                .arg(connectionInfo);
         } else {
+            QString serverInfo = QString::fromStdString(clientManager_->serverAddress());
             title += QString(" - %1").arg(serverInfo);
         }
     }
@@ -1007,6 +1034,293 @@ void MainWindow::updateWindowTitle() {
 
     setWindowTitle(title);
     BOOST_LOG_SEV(lg(), debug) << "Window title updated: " << title.toStdString();
+}
+
+void MainWindow::onConnectionBrowserTriggered() {
+    BOOST_LOG_SEV(lg(), debug) << "Connection Browser action triggered";
+
+    // If window already exists, bring it to front
+    if (connectionBrowserWindow_) {
+        connectionBrowserWindow_->show();
+        connectionBrowserWindow_->raise();
+        connectionBrowserWindow_->activateWindow();
+        return;
+    }
+
+    // Initialize connection manager if not already done
+    if (!connectionManager_) {
+        QString dataPath = QStandardPaths::writableLocation(
+            QStandardPaths::AppDataLocation);
+        QDir().mkpath(dataPath);
+        QString dbPath = dataPath + "/connections.db";
+
+        BOOST_LOG_SEV(lg(), debug) << "Connections database path: "
+                                   << dbPath.toStdString();
+
+        try {
+            // First, try with stored master password (or empty if none)
+            connectionManager_ = std::make_unique<connections::service::connection_manager>(
+                dbPath.toStdString(), masterPassword_.toStdString());
+
+            // Check if the master password is valid for existing encrypted passwords
+            if (!connectionManager_->verify_master_password()) {
+                // There are encrypted passwords but the master password is wrong
+                BOOST_LOG_SEV(lg(), debug) << "Master password required for encrypted passwords";
+
+                // Prompt for master password (Unlock mode)
+                MasterPasswordDialog dialog(MasterPasswordDialog::Unlock, this);
+                if (dialog.exec() != QDialog::Accepted) {
+                    BOOST_LOG_SEV(lg(), debug) << "Master password entry cancelled";
+                    connectionManager_.reset();
+                    return;
+                }
+
+                masterPassword_ = dialog.getPassword();
+
+                // Re-create with the correct password
+                connectionManager_ = std::make_unique<connections::service::connection_manager>(
+                    dbPath.toStdString(), masterPassword_.toStdString());
+
+                // Verify again
+                if (!connectionManager_->verify_master_password()) {
+                    BOOST_LOG_SEV(lg(), warn) << "Master password verification failed";
+                    MessageBoxHelper::warning(this, tr("Invalid Password"),
+                        tr("The master password is incorrect."));
+                    masterPassword_.clear();
+                    connectionManager_.reset();
+                    return;
+                }
+
+                BOOST_LOG_SEV(lg(), info) << "Master password verified successfully";
+            } else if (masterPassword_.isEmpty()) {
+                // Check if user has already been prompted and chose blank password
+                QSettings settings;
+                bool masterPasswordConfigured = settings.value(
+                    "connections/master_password_configured", false).toBool();
+
+                if (!masterPasswordConfigured) {
+                    // Prompt to create master password
+                    // Note: we may have existing passwords encrypted with blank key
+                    BOOST_LOG_SEV(lg(), debug) << "Prompting for master password creation";
+
+                    MasterPasswordDialog dialog(MasterPasswordDialog::Create, this);
+                    if (dialog.exec() == QDialog::Accepted) {
+                        QString newPassword = dialog.getNewPassword();
+
+                        // Mark as configured regardless of whether blank or not
+                        settings.setValue("connections/master_password_configured", true);
+
+                        // Warn if blank password chosen
+                        if (newPassword.isEmpty()) {
+                            MessageBoxHelper::warning(this, tr("No Master Password"),
+                                tr("You have chosen not to set a master password. "
+                                   "Saved passwords will not be encrypted securely.\n\n"
+                                   "You can set a master password later from the Connection Browser toolbar."));
+                            BOOST_LOG_SEV(lg(), warn) << "User chose blank master password";
+                        } else {
+                            // Re-encrypt any existing passwords from blank to new password
+                            try {
+                                connectionManager_->change_master_password(newPassword.toStdString());
+                                BOOST_LOG_SEV(lg(), info) << "Master password created and existing passwords re-encrypted";
+                            } catch (const std::exception& e) {
+                                BOOST_LOG_SEV(lg(), error) << "Failed to re-encrypt passwords with new master password: " << e.what();
+                            }
+                        }
+
+                        masterPassword_ = newPassword;
+                    }
+                    // If cancelled, continue with empty password (user can set it later)
+                }
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to initialize connection manager: "
+                                       << e.what();
+            MessageBoxHelper::critical(this, tr("Error"),
+                tr("Failed to initialize connection manager: %1").arg(e.what()));
+            return;
+        }
+    }
+
+    // Create the Connection Browser window
+    auto* browserWidget = new ConnectionBrowserMdiWindow(connectionManager_.get(), this);
+
+    // Connect signals
+    connect(browserWidget, &ConnectionBrowserMdiWindow::statusChanged,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(browserWidget, &ConnectionBrowserMdiWindow::errorOccurred,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(browserWidget, &ConnectionBrowserMdiWindow::connectRequested,
+            this, &MainWindow::onConnectionConnectRequested);
+    connect(browserWidget, &ConnectionBrowserMdiWindow::databasePurged,
+            this, [this]() {
+        // Reset master password configuration when database is purged
+        QSettings settings;
+        settings.setValue("connections/master_password_configured", false);
+        masterPassword_.clear();
+        BOOST_LOG_SEV(lg(), info) << "Master password configuration reset after database purge";
+    });
+    connect(browserWidget, &ConnectionBrowserMdiWindow::changeMasterPasswordRequested,
+            this, [this]() {
+        BOOST_LOG_SEV(lg(), debug) << "Change master password requested from Connection Browser";
+
+        if (!connectionManager_) {
+            BOOST_LOG_SEV(lg(), warn) << "Connection manager not initialized";
+            return;
+        }
+
+        MasterPasswordDialog dialog(MasterPasswordDialog::Change, this);
+        if (dialog.exec() != QDialog::Accepted) {
+            return;
+        }
+
+        QString currentPassword = dialog.getPassword();
+        QString newPassword = dialog.getNewPassword();
+
+        // Verify the current password
+        if (currentPassword != masterPassword_) {
+            MessageBoxHelper::warning(this, tr("Invalid Password"),
+                tr("The current password is incorrect."));
+            return;
+        }
+
+        try {
+            // Re-encrypt all stored passwords with the new master password
+            connectionManager_->change_master_password(newPassword.toStdString());
+
+            // Update stored master password
+            masterPassword_ = newPassword;
+
+            // Mark as configured (in case user is setting password for first time)
+            QSettings settings;
+            settings.setValue("connections/master_password_configured", true);
+
+            MessageBoxHelper::information(this, tr("Password Changed"),
+                tr("Master password has been changed successfully."));
+            BOOST_LOG_SEV(lg(), info) << "Master password changed successfully";
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to change master password: " << e.what();
+            MessageBoxHelper::critical(this, tr("Error"),
+                tr("Failed to change master password: %1").arg(e.what()));
+        }
+    });
+
+    // Create MDI sub-window
+    connectionBrowserWindow_ = new DetachableMdiSubWindow();
+    connectionBrowserWindow_->setWidget(browserWidget);
+    connectionBrowserWindow_->setWindowTitle(tr("Connection Browser"));
+    const QColor windowIconColor(220, 220, 220);
+    connectionBrowserWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_server_link_20_regular.svg", windowIconColor));
+    connectionBrowserWindow_->setAttribute(Qt::WA_DeleteOnClose);
+
+    // Track the window
+    allDetachableWindows_.append(connectionBrowserWindow_);
+
+    // Clean up when closed
+    connect(connectionBrowserWindow_, &QObject::destroyed, this, [this]() {
+        allDetachableWindows_.removeOne(connectionBrowserWindow_);
+        connectionBrowserWindow_ = nullptr;
+    });
+
+    mdiArea_->addSubWindow(connectionBrowserWindow_);
+    connectionBrowserWindow_->show();
+
+    BOOST_LOG_SEV(lg(), info) << "Connection Browser window opened";
+}
+
+void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& environmentId,
+                                               const QString& connectionName) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Connect requested for environment: "
+                               << boost::uuids::to_string(environmentId)
+                               << ", name: " << connectionName.toStdString();
+
+    // If already connected, ask user to disconnect first
+    if (clientManager_ && clientManager_->isConnected()) {
+        auto result = MessageBoxHelper::question(this,
+            tr("Already Connected"),
+            tr("You are already connected to a server. Disconnect and connect to '%1'?")
+                .arg(connectionName),
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (result != QMessageBox::Yes) {
+            return;
+        }
+
+        performDisconnectCleanup();
+    }
+
+    if (!connectionManager_) {
+        BOOST_LOG_SEV(lg(), error) << "Connection manager not initialized";
+        return;
+    }
+
+    // Get the environment details
+    auto env = connectionManager_->get_environment(environmentId);
+    if (!env) {
+        MessageBoxHelper::critical(this, tr("Error"),
+            tr("Could not find the selected connection."));
+        return;
+    }
+
+    // Get the decrypted password
+    std::string password;
+    try {
+        password = connectionManager_->get_password(environmentId);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get password: " << e.what();
+        // Password might be empty or decryption failed - user will need to enter it
+    }
+
+    // Store the connection name for the window title
+    activeConnectionName_ = connectionName;
+
+    // Open login dialog pre-filled with connection details
+    LoginDialog dialog(clientManager_, this);
+    dialog.setConnectionDetails(
+        QString::fromStdString(env->host),
+        env->port,
+        QString::fromStdString(env->username),
+        QString::fromStdString(password));
+
+    // Auto-submit if all credentials are available (including password)
+    if (!password.empty()) {
+        dialog.setAutoSubmit(true);
+    }
+
+    const int result = dialog.exec();
+
+    if (result == QDialog::Accepted) {
+        username_ = dialog.getUsername();
+
+        // Update controllers with new username
+        if (currencyController_)
+            currencyController_->setUsername(QString::fromStdString(username_));
+        if (countryController_)
+            countryController_->setUsername(QString::fromStdString(username_));
+        if (accountController_)
+            accountController_->setUsername(QString::fromStdString(username_));
+        if (roleController_)
+            roleController_->setUsername(QString::fromStdString(username_));
+        if (featureFlagController_)
+            featureFlagController_->setUsername(QString::fromStdString(username_));
+        if (changeReasonCategoryController_)
+            changeReasonCategoryController_->setUsername(QString::fromStdString(username_));
+        if (changeReasonController_)
+            changeReasonController_->setUsername(QString::fromStdString(username_));
+
+        updateWindowTitle();
+        ui_->statusbar->showMessage(tr("Connected to %1").arg(connectionName));
+        BOOST_LOG_SEV(lg(), info) << "Connected via saved connection: "
+                                  << connectionName.toStdString();
+    } else {
+        // Login was cancelled, clear the connection name
+        activeConnectionName_.clear();
+    }
 }
 
 }

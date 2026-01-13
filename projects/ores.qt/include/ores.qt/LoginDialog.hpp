@@ -62,6 +62,27 @@ public:
      */
     std::string getUsername() const { return username_edit_->text().toStdString(); }
 
+    /**
+     * @brief Pre-fill connection details from a saved connection.
+     * @param host Server host/IP address.
+     * @param port Server port number.
+     * @param username Username for authentication.
+     * @param password Password for authentication.
+     */
+    void setConnectionDetails(const QString& host, int port,
+                              const QString& username, const QString& password);
+
+    /**
+     * @brief Enable auto-submit mode.
+     *
+     * When enabled and all fields are filled, login will be triggered
+     * automatically when the dialog is shown.
+     */
+    void setAutoSubmit(bool enabled) { autoSubmit_ = enabled; }
+
+protected:
+    void showEvent(QShowEvent* event) override;
+
 private slots:
     void onLoginClicked();
     void onLoginResult(const LoginResult& result);
@@ -87,6 +108,9 @@ private:
 
     // Dependencies
     ClientManager* clientManager_;
+
+    // Auto-submit mode
+    bool autoSubmit_{false};
 };
 
 }

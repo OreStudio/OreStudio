@@ -227,4 +227,8 @@ void connection_manager::change_master_password(const std::string& new_password)
     master_password_ = new_password;
 }
 
+void connection_manager::purge() {
+    ctx_.purge_all_data();
+}
+
 }

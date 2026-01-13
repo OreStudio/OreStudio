@@ -93,4 +93,24 @@ void sqlite_context::initialize_schema() {
     conn->execute("PRAGMA foreign_keys = ON");
 }
 
+void sqlite_context::purge_all_data() {
+    auto conn_result = connect();
+    if (!conn_result) {
+        throw std::runtime_error("Failed to connect to SQLite database: " +
+                                 db_path_.string());
+    }
+
+    auto& conn = *conn_result;
+
+    // Delete in order to respect foreign key constraints:
+    // 1. environment_tags (references both environments and tags)
+    // 2. server_environments (references folders)
+    // 3. folders (self-referential, but CASCADE handles children)
+    // 4. tags (no dependencies)
+    conn->execute("DELETE FROM environment_tags");
+    conn->execute("DELETE FROM server_environments");
+    conn->execute("DELETE FROM folders");
+    conn->execute("DELETE FROM tags");
+}
+
 }

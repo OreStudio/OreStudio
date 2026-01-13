@@ -110,6 +110,14 @@ public:
      */
     void change_master_password(const std::string& new_password);
 
+    /**
+     * @brief Delete all data from the database.
+     *
+     * Removes all environments, folders, and tags. This operation
+     * cannot be undone.
+     */
+    void purge();
+
 private:
     repository::sqlite_context ctx_;
     repository::folder_repository folder_repo_;

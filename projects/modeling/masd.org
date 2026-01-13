@@ -88,6 +88,25 @@ The gist of the approach is as follows:
   the /type/ facet. This is regular C++ code that defines a =struct= with the
   domain type. Each logical element lives on it's "native" component (/e.g./,
   [[proj:projects/ores.iam/include/ores.iam/domain/account.hpp][account]] in =ores.iam=, etc.). They are defined via the [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]]
-  [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skill]].
-- However, because NLP is so flexible, we bundled together a number of facets
-  within that skill:
+  [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skill]]. However, because NLP is so flexible, we bundled together a number of
+  facets within that skill.
+- other facets then refer to the domain type files to extract required
+  information. LLMs are quite good at understanding unstructured data so we
+  don't need to provide much details.
+
+* Facet Catalogue
+
+** Domain type
+
+- [[id:7FEE0007-A792-5B34-94DB-056EFC99B8D6][Domain Type Class Definition Facet]]: creates the class definition.
+- [[id:23c416e0-1b90-4248-84d6-9275e8b76514][Domain Type JSON I/O Facet]]: creates JSON serialization support.
+- [[id:264c683a-35fd-499f-94c2-476677d2f9bd][Domain Type Table I/O Facet]]: creates table output support.
+- [[id:8840cd84-2fb3-48d8-b893-ca30db244284][Domain Type Generator Support Facet]]: creates test data generator support.
+- [[id:6f78f6f3-7a1d-46c2-9515-101c56145037][Domain Type Repository Entity and Mapper Facet]]: creates database entity and
+  mapper for ORM support.
+- [[id:2132af63-21a0-4ad0-9773-603d00838572][Domain Type Repository CRUD Operations Facet]]: creates repository with CRUD
+  operations.
+- [[id:842baa5a-d2fa-4294-8714-ae3f3bb1229a][Domain Type CMakeLists Update Facet]]: updates CMakeLists.txt with required
+  dependencies.
+- [[id:f76ed8a4-94c4-4a3f-86a1-fda9a76a3beb][Domain Type Test Creation Facet]]: creates comprehensive tests for the domain
+  type.

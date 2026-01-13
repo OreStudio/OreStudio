@@ -1053,7 +1053,7 @@ void MainWindow::onConnectionBrowserTriggered() {
                 // There are encrypted passwords but the master password is wrong
                 BOOST_LOG_SEV(lg(), debug) << "Master password required for encrypted passwords";
 
-                // Prompt for master password
+                // Prompt for master password (Unlock mode)
                 MasterPasswordDialog dialog(MasterPasswordDialog::Unlock, this);
                 if (dialog.exec() != QDialog::Accepted) {
                     BOOST_LOG_SEV(lg(), debug) << "Master password entry cancelled";
@@ -1078,6 +1078,30 @@ void MainWindow::onConnectionBrowserTriggered() {
                 }
 
                 BOOST_LOG_SEV(lg(), info) << "Master password verified successfully";
+            } else if (masterPassword_.isEmpty()) {
+                // No encrypted passwords exist yet - prompt to create master password
+                BOOST_LOG_SEV(lg(), debug) << "No encrypted passwords - prompting for master password creation";
+
+                MasterPasswordDialog dialog(MasterPasswordDialog::Create, this);
+                if (dialog.exec() == QDialog::Accepted) {
+                    masterPassword_ = dialog.getNewPassword();
+
+                    // Warn if blank password chosen
+                    if (masterPassword_.isEmpty()) {
+                        MessageBoxHelper::warning(this, tr("No Master Password"),
+                            tr("You have chosen not to set a master password. "
+                               "Saved passwords will not be encrypted securely.\n\n"
+                               "You can set a master password later from the Connection Browser menu."));
+                        BOOST_LOG_SEV(lg(), warn) << "User chose blank master password";
+                    } else {
+                        BOOST_LOG_SEV(lg(), info) << "Master password created";
+                    }
+
+                    // Re-create with the new password
+                    connectionManager_ = std::make_unique<connections::service::connection_manager>(
+                        dbPath.toStdString(), masterPassword_.toStdString());
+                }
+                // If cancelled, continue with empty password (user can set it later)
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Failed to initialize connection manager: "

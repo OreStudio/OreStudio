@@ -72,7 +72,9 @@ void MasterPasswordDialog::setupUI() {
             "Create a master password to protect your saved connection credentials.\n\n"
             "This password will be used to encrypt your server passwords. "
             "Make sure you remember it - there is no way to recover encrypted passwords "
-            "without it."));
+            "without it.\n\n"
+            "You may leave this blank if you don't want password protection, "
+            "but your saved passwords will not be encrypted."));
         currentPasswordEdit_->hide();
         formLayout->addRow(tr("New Password:"), newPasswordEdit_);
         formLayout->addRow(tr("Confirm Password:"), confirmPasswordEdit_);
@@ -165,8 +167,8 @@ void MasterPasswordDialog::updateOkButtonState() {
         break;
 
     case Mode::Create:
-        valid = !newPasswordEdit_->text().isEmpty() &&
-                newPasswordEdit_->text() == confirmPasswordEdit_->text();
+        // Allow blank password - just require both fields match
+        valid = newPasswordEdit_->text() == confirmPasswordEdit_->text();
         break;
 
     case Mode::Change:
@@ -191,12 +193,7 @@ bool MasterPasswordDialog::validateInput() {
         break;
 
     case Mode::Create:
-        if (newPasswordEdit_->text().isEmpty()) {
-            QMessageBox::warning(this, tr("Validation Error"),
-                tr("Please enter a new password."));
-            newPasswordEdit_->setFocus();
-            return false;
-        }
+        // Allow blank password - just require both fields match
         if (newPasswordEdit_->text() != confirmPasswordEdit_->text()) {
             QMessageBox::warning(this, tr("Validation Error"),
                 tr("Passwords do not match."));

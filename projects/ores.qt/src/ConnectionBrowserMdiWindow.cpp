@@ -102,6 +102,11 @@ void ConnectionBrowserMdiWindow::setupUI() {
         tr("Change Password"));
     changeMasterPasswordAction_->setToolTip(tr("Change master password"));
 
+    purgeDatabaseAction_ = toolBar_->addAction(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_delete_dismiss_20_regular.svg", iconColor),
+        tr("Purge"));
+    purgeDatabaseAction_->setToolTip(tr("Delete all connections and reset database"));
+
     layout_->addWidget(toolBar_);
 
     // Create tree view
@@ -142,6 +147,8 @@ void ConnectionBrowserMdiWindow::setupUI() {
             this, &ConnectionBrowserMdiWindow::reload);
     connect(changeMasterPasswordAction_, &QAction::triggered,
             this, &ConnectionBrowserMdiWindow::changeMasterPassword);
+    connect(purgeDatabaseAction_, &QAction::triggered,
+            this, &ConnectionBrowserMdiWindow::purgeDatabase);
 
     connect(treeView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &ConnectionBrowserMdiWindow::onSelectionChanged);
@@ -436,6 +443,51 @@ void ConnectionBrowserMdiWindow::changeMasterPassword() {
     using namespace ores::logging;
     BOOST_LOG_SEV(lg(), debug) << "Change master password requested";
     emit changeMasterPasswordRequested();
+}
+
+void ConnectionBrowserMdiWindow::purgeDatabase() {
+    using namespace ores::logging;
+
+    auto result = MessageBoxHelper::question(this,
+        tr("Purge Database"),
+        tr("This will permanently delete ALL saved connections and folders.\n\n"
+           "This action cannot be undone. Are you sure?"),
+        QMessageBox::Yes | QMessageBox::No);
+
+    if (result != QMessageBox::Yes) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), warn) << "Purging connections database";
+
+    try {
+        // Delete all environments first (they reference folders)
+        auto environments = manager_->get_all_environments();
+        for (const auto& env : environments) {
+            manager_->delete_environment(env.id);
+        }
+
+        // Delete all folders
+        auto folders = manager_->get_all_folders();
+        for (const auto& folder : folders) {
+            manager_->delete_folder(folder.id);
+        }
+
+        // Delete all tags
+        auto tags = manager_->get_all_tags();
+        for (const auto& tag : tags) {
+            manager_->delete_tag(tag.id);
+        }
+
+        model_->refresh();
+        emit statusChanged(tr("Database purged - all connections deleted"));
+        emit databasePurged();
+
+        BOOST_LOG_SEV(lg(), info) << "Database purged successfully";
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to purge database: " << e.what();
+        emit errorOccurred(tr("Failed to purge database: %1").arg(e.what()));
+    }
 }
 
 }

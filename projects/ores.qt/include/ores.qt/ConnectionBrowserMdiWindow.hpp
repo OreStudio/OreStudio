@@ -79,6 +79,11 @@ signals:
      */
     void changeMasterPasswordRequested();
 
+    /**
+     * @brief Emitted when user purges the database.
+     */
+    void databasePurged();
+
 public slots:
     void reload();
     void createFolder();
@@ -87,6 +92,7 @@ public slots:
     void deleteSelected();
     void connectToSelected();
     void changeMasterPassword();
+    void purgeDatabase();
 
 private slots:
     void onSelectionChanged();
@@ -108,6 +114,7 @@ private:
     QAction* connectAction_;
     QAction* refreshAction_;
     QAction* changeMasterPasswordAction_;
+    QAction* purgeDatabaseAction_;
 
     std::unique_ptr<ConnectionTreeModel> model_;
     connections::service::connection_manager* manager_;

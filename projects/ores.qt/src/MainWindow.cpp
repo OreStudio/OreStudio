@@ -1155,6 +1155,14 @@ void MainWindow::onConnectionBrowserTriggered() {
     });
     connect(browserWidget, &ConnectionBrowserMdiWindow::connectRequested,
             this, &MainWindow::onConnectionConnectRequested);
+    connect(browserWidget, &ConnectionBrowserMdiWindow::databasePurged,
+            this, [this]() {
+        // Reset master password configuration when database is purged
+        QSettings settings;
+        settings.setValue("connections/master_password_configured", false);
+        masterPassword_.clear();
+        BOOST_LOG_SEV(lg(), info) << "Master password configuration reset after database purge";
+    });
     connect(browserWidget, &ConnectionBrowserMdiWindow::changeMasterPasswordRequested,
             this, [this]() {
         BOOST_LOG_SEV(lg(), debug) << "Change master password requested from Connection Browser";

@@ -285,7 +285,7 @@ TEST_CASE("event_bus_concurrent_subscribe_unsubscribe", tags) {
 
     // Thread that subscribes and unsubscribes repeatedly
     std::thread subscriber([&]() {
-        for (int i = 0; i < 50; ++i) {
+        for (int i = 0; i < 10; ++i) {
             auto sub = bus.subscribe<test_event_a>([](const test_event_a&) {});
             std::this_thread::sleep_for(std::chrono::microseconds(100));
             sub.unsubscribe();

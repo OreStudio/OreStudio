@@ -28,6 +28,7 @@
 #include <QColor>
 #include <memory>
 #include <vector>
+#include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/MdiAreaWithBackground.hpp"
 #include "ores.eventing/service/event_bus.hpp"
@@ -37,6 +38,12 @@
 namespace Ui {
 
 class MainWindow;
+
+}
+
+namespace ores::connections::service {
+
+class connection_manager;
 
 }
 
@@ -194,6 +201,22 @@ private slots:
      */
     void onSetRecordingDirectoryTriggered();
 
+    /**
+     * @brief Opens the Connection Browser MDI window.
+     *
+     * The Connection Browser allows managing saved server connections locally
+     * without requiring a server connection. This action is always enabled.
+     */
+    void onConnectionBrowserTriggered();
+
+    /**
+     * @brief Handles a connect request from the Connection Browser.
+     *
+     * Opens the Login Dialog pre-filled with the selected connection's details.
+     */
+    void onConnectionConnectRequested(const boost::uuids::uuid& environmentId,
+                                       const QString& connectionName);
+
 private:
     /**
      * @brief Updates menu and toolbar action states based on connection status.
@@ -345,6 +368,18 @@ private:
 
     /** @brief Telemetry log viewer MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* telemetryViewerWindow_;
+
+    /** @brief Connection manager for saved connections (client-side SQLite) */
+    std::unique_ptr<connections::service::connection_manager> connectionManager_;
+
+    /** @brief Connection Browser MDI sub-window (nullptr if not open) */
+    DetachableMdiSubWindow* connectionBrowserWindow_{nullptr};
+
+    /** @brief Name of the connection used for current login (empty if manual) */
+    QString activeConnectionName_;
+
+    /** @brief Master password for encrypting/decrypting saved passwords (session-only) */
+    QString masterPassword_;
 };
 
 }

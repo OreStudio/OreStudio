@@ -349,6 +349,15 @@ Connection verified, authenticated connection.
 
 *Usage*: Verified connection, authenticated session, secure link confirmed.
 
+*** Server Link
+Server connection bookmark, saved connection, connection browser.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_server_link_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_server_link_20_filled.svg]]
+
+*Usage*: Connection browser window, saved server connections, bookmark management.
+Opens the Connection Browser MDI window for managing server connection bookmarks.
+
 ** Files & Documents
 
 Icons for file system and document operations.
@@ -468,6 +477,7 @@ Text validation, spell check, language processing.
 | Connected            | plug_connected_20          | Default | Active |
 | Disconnected         | plug_disconnected_20       | Default | Alert  |
 | Verified Connection  | plug_connected_checkmark_20 | Default | Active |
+| Server Link          | server_link_20             | Default | Active |
 | Folder               | folder_20                  | Closed  | Active |
 | Folder Open          | folder_open_20             | Open    | Active |
 | Table Document       | document_table_20          | Default | Active |

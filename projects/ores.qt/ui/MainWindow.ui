@@ -33,6 +33,7 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="ActionConnectionBrowser"/>
     <addaction name="separator"/>
     <addaction name="ActionConnect"/>
     <addaction name="ActionDisconnect"/>
@@ -111,6 +112,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="ActionConnectionBrowser"/>
+   <addaction name="separator"/>
    <addaction name="ActionConnect"/>
    <addaction name="ActionDisconnect"/>
    <addaction name="separator"/>
@@ -334,6 +337,18 @@
    </property>
    <property name="toolTip">
     <string>Manage change reasons</string>
+   </property>
+  </action>
+  <action name="ActionConnectionBrowser">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_server_link_20_regular.svg</normaloff>:/icons/ic_fluent_server_link_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Connections...</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage saved server connections</string>
    </property>
   </action>
  </widget>

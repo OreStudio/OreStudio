@@ -84,6 +84,16 @@ Remove items, clear content, destructive actions.
 *Usage*: Delete buttons, remove from list. Use filled variant sparingly to
 indicate destructive nature.
 
+*** Delete Dismiss
+Purge data, clear all, destructive bulk action with finality.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_delete_dismiss_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_delete_dismiss_20_filled.svg]]
+
+*Usage*: Purge database actions, clear all data, bulk delete operations.
+Combines delete (trash can) with dismiss (X) to indicate permanent removal
+with no undo. Always require confirmation before use.
+
 *** Edit
 Modify existing content, enter edit mode.
 
@@ -321,6 +331,15 @@ Reset credentials, forgot password flow.
 *Usage*: Password reset screens, credential recovery flows. Large size for
 feature prominence.
 
+*** Key Multiple
+Change master password, manage encryption keys.
+
+- Regular: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_key_multiple_20_regular.svg]]
+- Filled: [[file:../../../projects/ores.qt/resources/icons/ic_fluent_key_multiple_20_filled.svg]]
+
+*Usage*: Change master password actions, encryption key management, password
+vault operations.
+
 ** Connection Status
 
 Icons indicating connectivity and network state.
@@ -452,6 +471,7 @@ Text validation, spell check, language processing.
 |----------------------+----------------------------+---------+--------|
 | Add/Create           | add_20                     | Default | Active |
 | Delete/Remove        | delete_20                  | Default | Danger |
+| Purge/Clear All      | delete_dismiss_20          | Default | Danger |
 | Edit/Modify          | edit_20                    | Default | Active |
 | Save                 | save_20                    | Default | Active |
 | Confirm/Check        | checkmark_20               | Default | Done   |
@@ -474,6 +494,7 @@ Text validation, spell check, language processing.
 | Team                 | person_accounts_20         | Default | Active |
 | Locked               | lock_closed_20             | Default | Active |
 | Unlocked             | lock_open_20               | Default | Active |
+| Change Password      | key_multiple_20            | Default | Active |
 | Connected            | plug_connected_20          | Default | Active |
 | Disconnected         | plug_disconnected_20       | Default | Alert  |
 | Verified Connection  | plug_connected_checkmark_20 | Default | Active |

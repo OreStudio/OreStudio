@@ -675,9 +675,6 @@ namespace ores #F2F2F2 {
             account_service o-- ores::iam::repository::account_repository
             account_service o-- ores::iam::repository::login_info_repository
             account_service ..> ores::iam::domain::account
-            account_service ..> ores::iam::security::password_manager : uses
-            account_service ..> ores::iam::security::password_policy_validator : uses
-            account_service ..> ores::iam::security::email_validator : uses
 
             class bootstrap_mode_service #ECECEC {
                 +bootstrap_mode_service(utility::repository::context)
@@ -1077,80 +1074,6 @@ namespace ores #F2F2F2 {
             end note
         }
 
-        namespace security #F2F2F2 {
-            '
-            ' Layout groupings
-            '
-
-            /'
-             ' together {
-             '     class password_manager
-             '     class password_policy_validator
-             '     class email_validator
-             ' }
-             '/
-
-            password_manager -[hidden]down- password_policy_validator
-            password_policy_validator -[hidden]down- email_validator
-
-            '
-            ' Class definitions
-            '
-
-            class password_manager #ECECEC {
-                +{static} create_password_hash(std::string) std::string
-                +{static} verify_password_hash(std::string, std::string) bool
-                -{static} base64_encode(std::vector<unsigned char>) std::string
-                -{static} base64_decode(std::string) std::vector<unsigned char>
-                -{static} {field} DEFAULT_N std::uint64_t
-                -{static} {field} DEFAULT_r std::uint32_t
-                -{static} {field} DEFAULT_p std::uint32_t
-                -{static} {field} SALT_LEN std::size_t
-                -{static} {field} HASH_LEN std::size_t
-            }
-
-            note top of password_manager
-            Manages password hashing and verification using the scrypt algorithm.
-
-            The password_manager class provides static methods to securely hash passwords
-            and verify them against stored hashes. It uses the scrypt key derivation
-            function from OpenSSL to generate and validate password hashes, ensuring
-            strong security through configurable CPU/memory cost parameters.
-            end note
-
-            class password_policy_validator #ECECEC {
-                +{static} validate(std::string, bool) validation_result
-                -{static} {field} MIN_LENGTH std::size_t
-                -{static} {field} SPECIAL_CHARS const char*
-            }
-
-            note top of password_policy_validator
-            Validates passwords against OWASP-compliant security policy.
-
-            Requirements:
-            - Minimum 12 characters
-            - At least one uppercase letter (A-Z)
-            - At least one lowercase letter (a-z)
-            - At least one digit (0-9)
-            - At least one special character
-            end note
-
-            class email_validator #ECECEC {
-                +{static} validate(std::string) validation_result
-            }
-
-            note top of email_validator
-            Validates email addresses against basic format requirements.
-
-            Checks:
-            - Not empty
-            - Exactly one '@' symbol
-            - '@' not at start or end
-            - Domain contains '.'
-            - Domain doesn't start/end with '.'
-            end note
-        }
-
         namespace generators #F2F2F2 {
             class generate_synthetic_account <<generator>> #D89EF1 {
             }
@@ -1202,21 +1125,10 @@ namespace ores #F2F2F2 {
              ' }
              '/
 
-            ' Group: Security tests
-            /'
-             ' together {
-             '     class security_password_manager_tests
-             '     class security_password_policy_validator_tests
-             '     class security_email_validator_tests
-             ' }
-             '/
-
             ' Stack related tests vertically
             domain_account_tests -[hidden]down- domain_logins_tests
             messaging_accounts_message_handler_tests -[hidden]down- messaging_protocol_tests
             repository_account_repository_tests -[hidden]down- service_account_service_tests
-            security_password_manager_tests -[hidden]down- security_password_policy_validator_tests
-            security_password_policy_validator_tests -[hidden]down- security_email_validator_tests
 
             '
             ' Class definitions
@@ -1366,76 +1278,6 @@ namespace ores #F2F2F2 {
             end note
 
             repository_account_repository_tests ..> ores::iam::repository::account_repository : tests
-
-            class security_password_manager_tests <<test suite>> #C5E1A5 {
-                +verify_password_hash_with_correct_password() void
-                +verify_password_hash_with_incorrect_password() void
-                +hash_is_not_deterministic() void
-                +invalid_hash_format_fails_verification() void
-                +empty_password_throws() void
-            }
-
-            note top of security_password_manager_tests
-            Test suite for password_manager.
-
-            Tests cover password hashing, verification,
-            non-deterministic hashing, and error scenarios.
-            end note
-
-            security_password_manager_tests ..> ores::iam::security::password_manager : tests
-
-            class security_password_policy_validator_tests <<test suite>> #C5E1A5 {
-                +valid_password_passes_validation() void
-                +valid_password_with_all_special_chars() void
-                +password_exactly_12_chars_passes() void
-                +password_too_short_fails() void
-                +password_without_uppercase_fails() void
-                +password_without_lowercase_fails() void
-                +password_without_digit_fails() void
-                +password_without_special_char_fails() void
-                +empty_password_fails() void
-                +password_with_all_special_chars_types() void
-                +long_valid_password_passes() void
-                +password_with_spaces_passes_if_valid() void
-                +weak_password_passes_when_validation_disabled() void
-                +validation_enabled_by_default() void
-            }
-
-            note top of security_password_policy_validator_tests
-            Test suite for password policy validation.
-
-            Tests cover password length, uppercase/lowercase,
-            digits, special characters, and validation enable/disable.
-            end note
-
-            security_password_policy_validator_tests ..> ores::iam::security::password_policy_validator : tests
-
-            class security_email_validator_tests <<test suite>> #C5E1A5 {
-                +valid_email_passes_validation() void
-                +valid_email_with_subdomain() void
-                +valid_email_with_plus_sign() void
-                +valid_email_with_dots_in_local_part() void
-                +empty_email_fails() void
-                +email_without_at_symbol_fails() void
-                +email_with_multiple_at_symbols_fails() void
-                +email_starting_with_at_fails() void
-                +email_ending_with_at_fails() void
-                +email_without_dot_in_domain_fails() void
-                +email_with_domain_starting_with_dot_fails() void
-                +email_with_domain_ending_with_dot_fails() void
-                +valid_email_with_numbers() void
-                +valid_email_with_hyphen_in_domain() void
-            }
-
-            note top of security_email_validator_tests
-            Test suite for email validation.
-
-            Tests cover valid email formats (standard, subdomain, plus sign,
-            dots, numbers, hyphens) and invalid formats (empty, missing @,
-            multiple @, domain without dot, invalid dot placement).
-            end note
-
-            security_email_validator_tests ..> ores::iam::security::email_validator : tests
 
             class service_account_service_tests <<test suite>> #C5E1A5 {
                 +create_account_with_valid_data() void

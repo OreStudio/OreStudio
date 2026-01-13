@@ -1,4 +1,4 @@
-' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 '
 ' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
 '
@@ -21,27 +21,192 @@ title ores.security Component
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "Shared security primitives" as ores_security_note
+    note "Shared security primitives for cryptography and validation." as ores_security_note
     security --- ores_security_note
+
     namespace security #F2F2F2 {
-        namespace crypto {
-            class password_hasher {
-                +hash(password) : string
-                +verify(password, hash) : bool
+
+        namespace crypto #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+            together {
+                class password_hasher
+                class encryption
             }
-            class encryption {
-                +encrypt(plaintext, key) : string
-                +decrypt(ciphertext, key) : string
-                +verify_password(data, key) : bool
+
+            class password_hasher #ECECEC {
+                +{static} hash(password : std::string) : std::string
+                +{static} verify(password : std::string, hash : std::string) : bool
+                -{static} base64_encode(data : std::vector<unsigned char>) : std::string
+                -{static} base64_decode(encoded : std::string) : std::vector<unsigned char>
+                -{static} get_n_parameter() : std::uint64_t
             }
+
+            note top of password_hasher
+            Manages password hashing and verification using the scrypt algorithm.
+
+            Uses OpenSSL EVP_PBE_scrypt with OWASP-recommended parameters.
+            Produces hashes in format: $scrypt$ln=14,r=8,p=1$<salt>$<hash>
+            end note
+
+            class encryption #ECECEC {
+                +{static} encrypt(plaintext : std::string, password : std::string) : std::string
+                +{static} decrypt(encrypted_data : std::string, password : std::string) : std::string
+                +{static} verify_password(encrypted_data : std::string, password : std::string) : bool
+                -{static} derive_key(password : std::string, salt : std::vector<unsigned char>) : std::vector<unsigned char>
+                +{static}{field} SALT_LEN : size_t = 16
+                +{static}{field} IV_LEN : size_t = 12
+                +{static}{field} TAG_LEN : size_t = 16
+                +{static}{field} KEY_LEN : size_t = 32
+                +{static}{field} PBKDF2_ITERATIONS : int = 600000
+            }
+
+            note top of encryption
+            AES-256-GCM encryption service with PBKDF2 key derivation.
+
+            Encrypted format: base64(salt || iv || tag || ciphertext)
+            Uses RAII with std::unique_ptr for EVP_CIPHER_CTX management.
+            end note
         }
-        namespace validation {
-            class password_validator {
-                +validate(password) : validation_result
+
+        namespace validation #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+            together {
+                struct validation_result
+                class password_validator
+                class email_validator
             }
-            class email_validator {
-                +validate(email) : validation_result
+
+            validation_result -[hidden]down- password_validator
+            password_validator -[hidden]down- email_validator
+
+            struct validation_result #F7E5FF {
+                +{field} is_valid : bool
+                +{field} error_message : std::string
             }
+
+            note top of validation_result
+            Result of a validation operation.
+            end note
+
+            class password_validator #ECECEC {
+                +{static} validate(password : std::string, enforce_policy : bool = true) : validation_result
+                -{static}{field} MIN_LENGTH : std::size_t = 12
+                -{static}{field} SPECIAL_CHARS : const char*
+            }
+
+            note top of password_validator
+            Validates passwords against OWASP security policy.
+
+            Requirements:
+            - Minimum 12 characters
+            - Uppercase, lowercase, digit, special character
+            end note
+
+            class email_validator #ECECEC {
+                +{static} validate(email : std::string) : validation_result
+            }
+
+            note top of email_validator
+            Validates email addresses against basic format requirements.
+
+            Checks: non-empty, single @, domain contains dot.
+            end note
+
+            ' Relationships
+            ores::security::validation::password_validator ..> ores::security::validation::validation_result : returns
+            ores::security::validation::email_validator ..> ores::security::validation::validation_result : returns
+        }
+
+        namespace tests #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+            together {
+                class crypto_password_hasher_tests
+                class crypto_encryption_tests
+            }
+
+            together {
+                class validation_password_validator_tests
+                class validation_email_validator_tests
+            }
+
+            crypto_password_hasher_tests -[hidden]right- crypto_encryption_tests
+            validation_password_validator_tests -[hidden]right- validation_email_validator_tests
+            crypto_password_hasher_tests -[hidden]down- validation_password_validator_tests
+
+            class crypto_password_hasher_tests <<test suite>> #C5E1A5 {
+                +verify_hash_with_correct_password() : void
+                +verify_hash_with_incorrect_password() : void
+                +hash_is_not_deterministic() : void
+                +invalid_hash_format_fails_verification() : void
+                +empty_password_throws() : void
+            }
+
+            note top of crypto_password_hasher_tests
+            Test suite for password_hasher.
+
+            Tests hash creation, verification,
+            and error handling.
+            end note
+
+            class crypto_encryption_tests <<test suite>> #C5E1A5 {
+                +encrypt_and_decrypt_simple_password() : void
+                +encrypt_produces_different_output_each_time() : void
+                +decrypt_with_wrong_password_throws() : void
+                +verify_password_with_correct_password() : void
+                +encrypt_and_decrypt_unicode() : void
+                +encrypt_and_decrypt_long_text() : void
+            }
+
+            note top of crypto_encryption_tests
+            Test suite for encryption.
+
+            Tests encrypt/decrypt, password
+            verification, and edge cases.
+            end note
+
+            class validation_password_validator_tests <<test suite>> #C5E1A5 {
+                +valid_password_passes_validation() : void
+                +password_too_short_fails() : void
+                +password_without_uppercase_fails() : void
+                +password_without_lowercase_fails() : void
+                +password_without_digit_fails() : void
+                +password_without_special_char_fails() : void
+                +weak_password_passes_when_validation_disabled() : void
+            }
+
+            note top of validation_password_validator_tests
+            Test suite for password_validator.
+
+            Tests OWASP policy requirements
+            and bypass for testing.
+            end note
+
+            class validation_email_validator_tests <<test suite>> #C5E1A5 {
+                +valid_email_passes_validation() : void
+                +empty_email_fails() : void
+                +email_without_at_symbol_fails() : void
+                +email_with_multiple_at_symbols_fails() : void
+                +email_without_dot_in_domain_fails() : void
+            }
+
+            note top of validation_email_validator_tests
+            Test suite for email_validator.
+
+            Tests valid formats and
+            common validation failures.
+            end note
+
+            ' Test relationships
+            crypto_password_hasher_tests ..> ores::security::crypto::password_hasher : tests
+            crypto_encryption_tests ..> ores::security::crypto::encryption : tests
+            validation_password_validator_tests ..> ores::security::validation::password_validator : tests
+            validation_email_validator_tests ..> ores::security::validation::email_validator : tests
         }
     }
 }

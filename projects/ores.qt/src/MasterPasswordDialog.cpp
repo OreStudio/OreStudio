@@ -172,8 +172,8 @@ void MasterPasswordDialog::updateOkButtonState() {
         break;
 
     case Mode::Change:
+        // Allow blank new password (removes protection) - just require current and match
         valid = !currentPasswordEdit_->text().isEmpty() &&
-                !newPasswordEdit_->text().isEmpty() &&
                 newPasswordEdit_->text() == confirmPasswordEdit_->text();
         break;
     }
@@ -209,12 +209,7 @@ bool MasterPasswordDialog::validateInput() {
             currentPasswordEdit_->setFocus();
             return false;
         }
-        if (newPasswordEdit_->text().isEmpty()) {
-            QMessageBox::warning(this, tr("Validation Error"),
-                tr("Please enter a new password."));
-            newPasswordEdit_->setFocus();
-            return false;
-        }
+        // Allow blank new password (removes protection) - just require match
         if (newPasswordEdit_->text() != confirmPasswordEdit_->text()) {
             QMessageBox::warning(this, tr("Validation Error"),
                 tr("New passwords do not match."));

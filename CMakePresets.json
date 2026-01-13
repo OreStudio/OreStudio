@@ -156,6 +156,9 @@
                 "windows-arch-x64",
                 "msvc-cl"
             ],
+            "cacheVariables": {
+                "CMAKE_MSVC_DEBUG_INFORMATION_FORMAT": "Embedded"
+            },
             "vendor": {
                 "microsoft.com/VisualStudioSettings/CMake/1.0": {
                     "hostOS": [

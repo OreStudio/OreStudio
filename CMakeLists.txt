@@ -317,6 +317,14 @@ add_custom_target(generate_protocol_docs
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 #
+# Java args for PlantUML
+#
+set(ORES_PLANTUML_JAR "/usr/share/plantuml/plantuml.jar")
+set(ORES_JAVA_ARGS "-Djava.awt.headless=true")
+list(APPEND ORES_JAVA_ARGS "-DPLANTUML_SECURITY_PROFILE=UNSECURE")
+list(APPEND ORES_JAVA_ARGS "-DPLANTUML_LIMIT_SIZE=131070")
+
+#
 # aggregate targets and their aliases
 #
 add_custom_target(run_all_tests)

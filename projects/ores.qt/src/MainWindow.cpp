@@ -1099,30 +1099,35 @@ void MainWindow::onConnectionBrowserTriggered() {
                     "connections/master_password_configured", false).toBool();
 
                 if (!masterPasswordConfigured) {
-                    // No encrypted passwords exist yet - prompt to create master password
-                    BOOST_LOG_SEV(lg(), debug) << "No encrypted passwords - prompting for master password creation";
+                    // Prompt to create master password
+                    // Note: we may have existing passwords encrypted with blank key
+                    BOOST_LOG_SEV(lg(), debug) << "Prompting for master password creation";
 
                     MasterPasswordDialog dialog(MasterPasswordDialog::Create, this);
                     if (dialog.exec() == QDialog::Accepted) {
-                        masterPassword_ = dialog.getNewPassword();
+                        QString newPassword = dialog.getNewPassword();
 
                         // Mark as configured regardless of whether blank or not
                         settings.setValue("connections/master_password_configured", true);
 
                         // Warn if blank password chosen
-                        if (masterPassword_.isEmpty()) {
+                        if (newPassword.isEmpty()) {
                             MessageBoxHelper::warning(this, tr("No Master Password"),
                                 tr("You have chosen not to set a master password. "
                                    "Saved passwords will not be encrypted securely.\n\n"
                                    "You can set a master password later from the Connection Browser toolbar."));
                             BOOST_LOG_SEV(lg(), warn) << "User chose blank master password";
                         } else {
-                            BOOST_LOG_SEV(lg(), info) << "Master password created";
+                            // Re-encrypt any existing passwords from blank to new password
+                            try {
+                                connectionManager_->change_master_password(newPassword.toStdString());
+                                BOOST_LOG_SEV(lg(), info) << "Master password created and existing passwords re-encrypted";
+                            } catch (const std::exception& e) {
+                                BOOST_LOG_SEV(lg(), warn) << "No existing passwords to re-encrypt: " << e.what();
+                            }
                         }
 
-                        // Re-create with the new password
-                        connectionManager_ = std::make_unique<connections::service::connection_manager>(
-                            dbPath.toStdString(), masterPassword_.toStdString());
+                        masterPassword_ = newPassword;
                     }
                     // If cancelled, continue with empty password (user can set it later)
                 }

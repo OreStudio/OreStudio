@@ -398,3 +398,1577 @@
    fun:__resolv_conf_allocate
    ...
 }
+#
+# Faker Library Static Data
+# The faker library uses static maps for word data that are initialized at
+# program startup and intentionally kept for the lifetime of the process.
+# These are not memory leaks - they're global caches for locale-specific data.
+#
+{
+   Faker Word AllWords Map
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*faker*word*_allWords_map*
+   ...
+}
+{
+   Faker Word Nouns Sorted Map
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*faker*word*_nouns_sorted_map*
+   ...
+}
+{
+   Faker Word Adjectives Sorted Map
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*faker*word*_adjectives_sorted_map*
+   ...
+}
+{
+   Faker Word Verbs Sorted Map
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*faker*word*_verbs_sorted_map*
+   ...
+}
+{
+   Faker Static Initialization
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*faker*
+   fun:*__static_initialization_and_destruction*
+   ...
+}
+{
+   Faker Word Data Init
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*word_data*
+   ...
+}
+{
+   Faker HexCasing Map
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*faker*HexCasing*
+   ...
+}
+{
+   Faker Rb Tree Copy
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*faker*
+   fun:*_Rb_tree*_M_copy*
+   ...
+}
+{
+   Faker StringCasing Map
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*faker*string*StringCasing*
+   ...
+}
+{
+   Faker String Copy
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*faker*string*
+   ...
+}
+#
+# Static Initialization and Atexit
+# Libraries register cleanup handlers at static initialization.
+#
+{
+   Atexit Faker Internet
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:__new_exitfn
+   fun:__internal_atexit
+   fun:*__static_initialization_and_destruction*
+   fun:*internet.cpp*
+   ...
+}
+{
+   Atexit Faker Person
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:__new_exitfn
+   fun:__internal_atexit
+   fun:*__static_initialization_and_destruction*
+   fun:*person.cpp*
+   ...
+}
+{
+   Atexit General Static Init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:__new_exitfn
+   fun:__internal_atexit
+   fun:*__static_initialization*
+   ...
+}
+{
+   Atexit Global Var Init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:__new_exitfn
+   fun:__internal_atexit
+   fun:__cxx_global_var_init
+   ...
+}
+{
+   Atexit ORE Database Context Factory
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:__new_exitfn
+   fun:__internal_atexit
+   fun:*ores*database*context_factory*
+   ...
+}
+#
+# OpenSSL Name Maps and Module Registration
+# OpenSSL maintains internal name maps for algorithms and providers.
+# These are allocated once and kept for the lifetime of the process.
+#
+{
+   OpenSSL Namemap Insert
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_strdup
+   fun:numname_insert
+   ...
+}
+{
+   OpenSSL Namemap Add Name
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_strdup
+   fun:numname_insert
+   fun:namemap_add_name
+   fun:ossl_namemap_add_name
+   ...
+}
+{
+   OpenSSL Namemap Stored
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_strdup
+   ...
+   fun:ossl_namemap_stored
+   ...
+}
+{
+   OpenSSL Module Add
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_strdup
+   fun:module_add
+   ...
+}
+{
+   OpenSSL Module Init
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_strdup
+   fun:module_init
+   ...
+}
+{
+   OpenSSL Provider New
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_strdup
+   fun:provider_new
+   ...
+}
+{
+   OpenSSL Load Builtin Modules
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:OPENSSL_load_builtin_modules
+   ...
+}
+{
+   OpenSSL Context Init
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   ...
+   fun:context_init
+   ...
+}
+{
+   OpenSSL Indicator Set Callback
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:ossl_indicator_set_callback_new
+   ...
+}
+{
+   OpenSSL Rand Context
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_strdup
+   fun:ossl_rand_ctx_new
+   ...
+}
+{
+   OpenSSL Init Thread
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:manage_thread_local
+   ...
+}
+{
+   OpenSSL Engine Cleanup
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:int_cleanup_item
+   ...
+}
+{
+   OpenSSL Decoder CTX
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_strdup
+   fun:OSSL_DECODER_CTX_new_for_pkey
+   ...
+}
+{
+   OpenSSL Provider Operation Bit
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:realloc
+   fun:CRYPTO_realloc
+   fun:ossl_provider_set_operation_bit
+   ...
+}
+{
+   OpenSSL Aligned Alloc Namemap
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:posix_memalign
+   fun:CRYPTO_aligned_alloc
+   ...
+}
+{
+   OpenSSL Hashtable New
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:posix_memalign
+   fun:CRYPTO_aligned_alloc
+   fun:CRYPTO_aligned_alloc_array
+   fun:alloc_new_neighborhood_list
+   fun:ossl_ht_new
+   ...
+}
+{
+   OpenSSL Namemap New
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   ...
+   fun:ossl_namemap_new
+   ...
+}
+{
+   OpenSSL Decoder Cache New
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:ossl_decoder_cache_new
+   ...
+}
+{
+   OpenSSL Global Thread Event Register
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:create_global_tevent_register
+   ...
+}
+{
+   OpenSSL RCU Lock
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:CRYPTO_calloc
+   fun:allocate_new_qp_group
+   fun:ossl_rcu_lock_new
+   ...
+}
+{
+   OpenSSL Threads Init General
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:*threads_pthread*
+   ...
+}
+{
+   OpenSSL Seed Source
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:seed_src_new
+   ...
+}
+{
+   OpenSSL Rand Primary
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:rand_get0_primary
+   ...
+}
+{
+   OpenSSL Rand Public
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:rand_get0_public
+   ...
+}
+{
+   OpenSSL EVP Rand CTX
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:EVP_RAND_CTX_new
+   ...
+}
+{
+   OpenSSL SSL CTX New
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:SSL_CTX_new*
+   ...
+}
+#
+# OpenSSL Property Strings and Lhash
+# OpenSSL stores property strings and uses lhash tables for cipher/digest names.
+# These are allocated once during initialization and kept for process lifetime.
+#
+{
+   OpenSSL Property String
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:new_property_string
+   ...
+}
+{
+   OpenSSL Property Parse Init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:ossl_property_parse_init
+   ...
+}
+{
+   OpenSSL LHash Insert
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:OPENSSL_LH_insert
+   ...
+}
+{
+   OpenSSL OBJ NAME Add
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:OBJ_NAME_add
+   ...
+}
+{
+   OpenSSL EVP Add Cipher
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:EVP_add_cipher
+   ...
+}
+{
+   OpenSSL EVP Add Digest
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:EVP_add_digest
+   ...
+}
+{
+   OpenSSL Add All Ciphers
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:openssl_add_all_ciphers_int
+   ...
+}
+{
+   OpenSSL Add All Digests
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:openssl_add_all_digests_int
+   ...
+}
+{
+   OpenSSL Init Add All Ciphers
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:ossl_init_add_all_ciphers
+   ...
+}
+{
+   OpenSSL Init Add All Digests
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:ossl_init_add_all_digests
+   ...
+}
+{
+   OpenSSL Init Crypto
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:OPENSSL_init_crypto
+   ...
+}
+{
+   OpenSSL Init SSL
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:OPENSSL_init_ssl
+   ...
+}
+#
+# OpenSSL Stack Operations
+# OpenSSL uses internal stacks for various registrations that live for process lifetime.
+#
+{
+   OpenSSL SK Reserve
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:CRYPTO_calloc
+   fun:sk_reserve
+   ...
+}
+{
+   OpenSSL SK Insert
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:OPENSSL_sk_insert
+   ...
+}
+{
+   OpenSSL SK Push
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:OPENSSL_sk_push
+   ...
+}
+{
+   OpenSSL Init Thread Start
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:ossl_init_thread_start
+   ...
+}
+{
+   OpenSSL RCU Read Lock
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:ossl_rcu_read_lock
+   ...
+}
+{
+   OpenSSL Engine Add
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:ENGINE_add
+   ...
+}
+{
+   OpenSSL Config Load
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:CONF_modules_load*
+   ...
+}
+{
+   OpenSSL EX New Index
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:CRYPTO_get_ex_new_index
+   ...
+}
+{
+   OpenSSL SK New Reserve
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:OPENSSL_sk_new_reserve
+   ...
+}
+{
+   OpenSSL SK New Null
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:OPENSSL_sk_new_reserve
+   fun:OPENSSL_sk_new_null
+   ...
+}
+{
+   OpenSSL Namemap Add Name
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:namemap_add_name
+   ...
+}
+{
+   OpenSSL Decoder CTX Setup
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:ossl_decoder_ctx*
+   ...
+}
+{
+   OpenSSL Algorithm Do Map
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:algorithm_do_map
+   ...
+}
+{
+   OpenSSL Parse Property
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:ossl_parse_property
+   ...
+}
+{
+   OpenSSL Rand Get0 Private
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:rand_get0_private
+   ...
+}
+{
+   OpenSSL OBJ NAME Init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:OBJ_NAME_init
+   ...
+}
+{
+   OpenSSL OBJ Add Sigid
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:OBJ_add_sigid
+   ...
+}
+{
+   OpenSSL Provider Get Capabilities
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:OSSL_PROVIDER_get_capabilities
+   ...
+}
+{
+   OpenSSL Error Load Strings
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:ossl_err_load_crypto_strings
+   ...
+}
+{
+   OpenSSL Engine RDRAND
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:ENGINE_rdrand
+   ...
+}
+{
+   OpenSSL Init Added API
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:ossl_init_added_api
+   ...
+}
+{
+   OpenSSL Conf Module Add
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:CONF_module_add
+   ...
+}
+#
+# Catch-all OpenSSL Suppressions
+# OpenSSL has many internal allocations during initialization that are kept
+# for the process lifetime. These catch remaining edge cases.
+#
+{
+   OpenSSL General CRYPTO Malloc
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:ossl_*
+   ...
+}
+{
+   OpenSSL SSL Functions
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:ssl_*
+   ...
+}
+{
+   OpenSSL SSL_CTX Functions
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:SSL_CTX_*
+   ...
+}
+{
+   OpenSSL TLS Parse
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:tls_parse_*
+   ...
+}
+{
+   OpenSSL TLS13
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:tls13_*
+   ...
+}
+{
+   OpenSSL EVP KDF
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:EVP_KDF_*
+   ...
+}
+{
+   OpenSSL EVP PKEY
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:EVP_PKEY_*
+   ...
+}
+{
+   OpenSSL ASN1
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:asn1_*
+   ...
+}
+{
+   OpenSSL State Machine
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:state_machine
+   ...
+}
+{
+   OpenSSL Default Context Init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:default_context_do_init*
+   ...
+}
+{
+   OpenSSL AES Newctx
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:aes_*_newctx
+   ...
+}
+{
+   OpenSSL EVP Cipher Init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:evp_cipher_init_internal
+   ...
+}
+{
+   OpenSSL DRBG CTR
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:drbg_ctr*
+   ...
+}
+{
+   OpenSSL Rand New DRBG
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:rand_new_drbg
+   ...
+}
+#
+# OpenSSL Realloc Patterns
+# OpenSSL also uses realloc for dynamic arrays that grow during initialization.
+#
+{
+   OpenSSL SK Reserve Realloc
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   fun:CRYPTO_realloc
+   fun:CRYPTO_realloc_array
+   fun:sk_reserve
+   ...
+}
+{
+   OpenSSL General Realloc
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   fun:CRYPTO_realloc
+   ...
+}
+{
+   OpenSSL Thread Lock New
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:CRYPTO_THREAD_lock_new
+   ...
+}
+#
+# Boost.Log Core Singleton
+# The Boost.Log core is a singleton that is initialized once and kept
+# for the lifetime of the process. This is intentional.
+#
+{
+   Boost Log Core Implementation Init
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   fun:*boost*log*core*implementation*init_instance*
+   ...
+}
+{
+   Boost Log Core Get
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*boost*log*core*get*
+   ...
+}
+{
+   Boost Log Lazy Singleton
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   fun:*boost*log*aux*lazy_singleton*
+   ...
+}
+{
+   Boost Log Stateless Allocator
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:*boost*log*aux*stateless_allocator*allocate*
+   ...
+}
+{
+   Boost Log Attribute Impl
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   ...
+   fun:*boost*log*attribute*impl*
+   ...
+}
+{
+   Boost Log Severity Level
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   ...
+   fun:*boost*log*sources*aux*severity_level*
+   ...
+}
+{
+   Boost Log Default Attribute Names
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*boost*log*aux*default_attribute_names*
+   ...
+}
+{
+   Boost Log Default Sink
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*boost*log*sinks*aux*default_sink*
+   ...
+}
+{
+   Boost Log Shared Count
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:*boost*detail*shared_count*
+   ...
+}
+{
+   Boost Log SP Pointer Construct
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*boost*detail*sp_pointer_construct*
+   ...
+}
+{
+   Boost Log Pool Allocator
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*boost*log*pool_allocator*allocate*
+   ...
+}
+{
+   Boost Log Attribute Set Insert
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*boost*log*attribute_set*insert*
+   ...
+}
+{
+   Boost Log Basic Logger Add Attribute
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*boost*log*sources*basic_logger*add_attribute*
+   ...
+}
+{
+   Boost Log Scoped Logger Attribute
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*boost*log*aux*scoped_logger_attribute*
+   ...
+}
+{
+   ORE Logging Make Logger
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*ores*logging*make_logger*
+   ...
+}
+{
+   ORE Testing Logging Listener
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*ores*testing*logging_listener*
+   ...
+}
+{
+   ORE Testing Database Lifecycle Listener
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*ores*testing*database_lifecycle_listener*
+   ...
+}
+{
+   ORE Testing Test Database Manager
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*ores*testing*test_database_manager*
+   ...
+}
+{
+   ORE Database Context Factory
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*ores*database*context_factory*
+   ...
+}
+#
+# ORE Eventing Test Code
+# Test code allocations that are intentionally kept for the test lifetime.
+#
+{
+   ORE Eventing Event Bus Subscribe
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*ores*eventing*event_bus*subscribe*
+   ...
+}
+{
+   ORE Eventing Event Bus Publish
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*ores*eventing*event_bus*publish*
+   ...
+}
+{
+   ORE Eventing Subscriber Entry
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*ores*eventing*subscriber_entry*
+   ...
+}
+#
+# Thread Local Storage and Thread Atexit
+# glibc allocates memory for thread-local variables and thread exit handlers.
+#
+{
+   CXA Thread Atexit
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:__cxa_thread_atexit_impl
+   ...
+}
+{
+   TLS Init
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:__cxa_thread_atexit_impl
+   fun:__cxa_thread_atexit
+   fun:__cxx_global_var_init
+   fun:__tls_init
+   ...
+}
+#
+# Boost Core Demangle
+# Demangling type names for debugging/logging allocates strings.
+#
+{
+   Boost Core Demangle
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*boost*core*demangle*
+   ...
+}
+{
+   Boost Log Attribute Name
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*boost*log*attribute_name*
+   ...
+}
+#
+# Catch2 Test Registration
+# Catch2 registers test cases and invokers at static initialization time.
+# These are intentionally kept alive for the lifetime of the test process.
+#
+{
+   Catch2 Test Invoker
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   fun:*Catch*Detail*make_unique*TestInvokerAsFunction*
+   ...
+}
+{
+   Catch2 Make Test Invoker
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*Catch*makeTestInvoker*
+   ...
+}
+{
+   Catch2 Tag Allocate
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*Catch*Tag*
+   ...
+}
+{
+   Catch2 Test Case Info
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*Catch*TestCaseInfo*
+   ...
+}
+{
+   Catch2 Auto Reg
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*Catch*AutoReg*
+   ...
+}
+{
+   Catch2 Section Tracker
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*Catch*SectionTracker*acquire*
+   ...
+}
+{
+   Catch2 ITracker Vector
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*Catch*ITracker*addChild*
+   ...
+}
+{
+   Catch2 Run Context
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*Catch*RunContext*runTest*
+   ...
+}
+{
+   Catch2 Clara Command Line Parser
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*Catch*Clara*
+   ...
+}
+{
+   Catch2 Make Command Line Parser
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*Catch*makeCommandLineParser*
+   ...
+}
+{
+   Catch2 Session Constructor
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*Catch*Session*Session*
+   ...
+}
+{
+   Catch2 Session Run
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*Catch*Session*run*
+   ...
+}
+{
+   Catch2 Test Group Execute
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*Catch*TestGroup*execute*
+   ...
+}
+{
+   Catch2 Fatal Condition Handler
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znam
+   fun:*Catch*FatalConditionHandler*
+   ...
+}
+{
+   Catch2 Run Context Constructor
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znam
+   ...
+   fun:*Catch*RunContext*RunContext*
+   ...
+}
+{
+   Catch2 Test Group Constructor
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znam
+   ...
+   fun:*Catch*TestGroup*
+   ...
+}
+{
+   Catch2 String Streams
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*Catch*StringStreams*
+   ...
+}
+{
+   Catch2 Reusable String Stream
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*Catch*ReusableStringStream*
+   ...
+}
+{
+   Catch2 Test Case Handle Set
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*Catch*TestCaseHandle*
+   ...
+}
+{
+   Catch2 Test Registry
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*Catch*TestRegistry*
+   ...
+}
+{
+   Catch2 Test Spec
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*Catch*TestSpec*
+   ...
+}
+{
+   Catch2 Column Info
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*Catch*ColumnInfo*
+   ...
+}
+{
+   Catch2 Multi Reporter
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*Catch*MultiReporter*
+   ...
+}
+{
+   Catch2 Prepare Reporters
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*Catch*prepareReporters*
+   ...
+}
+{
+   Catch2 Create Reporter
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*Catch*createReporter*
+   ...
+}
+{
+   Catch2 Reporter Config
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*Catch*ReporterConfig*
+   ...
+}
+#
+# STL Rb Tree Operations used by Catch2
+# Catch2 uses std::set internally which results in _Rb_tree copy operations.
+#
+{
+   STL Rb Tree Clone Node
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*_Rb_tree*_M_clone_node*
+   ...
+}
+{
+   STL Rb Tree M Copy
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*_Rb_tree*_M_copy*
+   ...
+}
+{
+   STL Rb Tree Get Node
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   ...
+   fun:*_Rb_tree*_M_get_node*
+   ...
+}
+#
+# PostgreSQL/libpq BIO Methods
+# libpq creates a custom BIO method for SSL connections that is kept
+# for the lifetime of the process.
+#
+{
+   Libpq BIO Method
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_strdup
+   fun:BIO_meth_new
+   fun:my_BIO_s_socket
+   ...
+}
+{
+   Libpq SSL Set FD
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:my_SSL_set_fd
+   ...
+}
+#
+# OpenSSL EVP Method Construction
+# OpenSSL constructs EVP methods (ciphers, digests, etc.) on demand and caches
+# them for the lifetime of the process.
+#
+{
+   OpenSSL EVP Cipher New
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   fun:CRYPTO_zalloc
+   fun:evp_cipher_new
+   ...
+}
+{
+   OpenSSL EVP Cipher From Algorithm
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:evp_cipher_from_algorithm
+   ...
+}
+{
+   OpenSSL EVP Method Construct
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:construct_evp_method
+   ...
+}
+{
+   OpenSSL Hashtable Insert
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:ossl_ht_insert
+   ...
+}
+{
+   OpenSSL Method Construct
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:malloc
+   fun:CRYPTO_malloc
+   ...
+   fun:ossl_method_construct*
+   ...
+}
+#
+# Faker Library Additional Static Data
+# Additional faker library static data maps for various data types.
+#
+{
+   Faker Internet Emoji Map
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*faker*internet*Emoji*
+   ...
+}
+{
+   Faker Internet Data
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*faker*internet*
+   fun:*__static_initialization*
+   ...
+}
+{
+   Faker General Static Init
+   Memcheck:Leak
+   match-leak-kinds: reachable,possible
+   fun:_Znwm
+   ...
+   fun:*GLOBAL__sub_I*
+   ...
+   fun:call_init
+   ...
+}

@@ -101,6 +101,18 @@ package "Foundation Layer" #F2F2F2 {
     Organized into: service (geolocation_service) namespace.
     end note
 
+    component [ores.security] as security #F7E5FF
+
+    note right of security
+    Shared security primitives for cryptography and validation:
+    - Crypto: Password hashing (scrypt), AES-256-GCM encryption (PBKDF2)
+    - Validation: Password policy (OWASP), email format validation
+    - RAII: Uses unique_ptr with custom deleters for OpenSSL contexts
+    All operations use OpenSSL and follow OWASP security recommendations.
+    Shared by ores.iam, ores.connections, and other components.
+    Organized into: crypto, validation namespaces.
+    end note
+
     component [ores.logging] as logging #F7E5FF
 
     note right of logging
@@ -182,6 +194,18 @@ package "Infrastructure Layer" #F2F2F2 {
     Provides HTTP/REST primitives used by ores.http.server.
     Organized into: http namespace.
     end note
+
+    component [ores.connections] as connections #F7E5FF
+
+    note right of connections
+    Client-side server connection bookmark manager:
+    - Folders: Hierarchical organization of connections
+    - Tags: Flexible categorization orthogonal to folders
+    - Encrypted Credentials: AES-256-GCM with master password
+    - SQLite Storage: Local persistence for connection bookmarks
+    Used by Qt UI, shell commands, and HTTP API for managing server connections.
+    Organized into: domain, repository, service, generators namespaces.
+    end note
 }
 
 ' Domain Layer
@@ -206,13 +230,14 @@ package "Domain Layer" #F2F2F2 {
     note right of iam
     Identity and access management (IAM) with secure authentication:
     - Account Lifecycle: Creation, listing, and deletion of user accounts
-    - Authentication: Secure password hashing using scrypt, login tracking
+    - Authentication: Login with password verification, session tracking
     - Security: Account locking after failed login attempts, unlock capability
+    - RBAC: Role-based access control with permissions and authorization
     - Bootstrap Mode: System initialization state management using feature flags
     - Message API: Async request/response handlers (0x2000-0x2FFF)
     - Temporal Support: Version tracking with valid_from/valid_to fields
-    - Test Data: Synthetic account generation for development
-    Organized into: domain, repository, service, messaging, security, generators namespaces.
+    Uses ores.security for password hashing/validation and encryption.
+    Organized into: domain, repository, service, messaging, eventing, generators namespaces.
     end note
 }
 
@@ -321,6 +346,8 @@ telemetry --> logging
 telemetry --> platform
 database --> telemetry
 variability --> database
+security --> variability
+security --> utility
 
 ' Dependencies - Infrastructure to Foundation
 eventing --> telemetry
@@ -336,6 +363,8 @@ assets --> database
 http --> comms
 http --> telemetry
 http --> utility
+connections --> utility
+connections --> security
 
 ' Dependencies - Domain to Foundation/Infrastructure
 risk --> telemetry
@@ -346,6 +375,7 @@ iam --> comms
 iam --> telemetry
 iam --> database
 iam --> geo
+iam --> security
 
 ' Dependencies - Shell to Foundation/Domain/Infrastructure
 shell --> telemetry

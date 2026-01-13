@@ -15,7 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.connections")
+set(name "ores.security")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
@@ -36,12 +36,11 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.utility.lib
-        ores.security.lib
+        ores.variability.lib
+        OpenSSL::SSL
+        OpenSSL::Crypto
     PRIVATE
-        sqlgen::sqlgen
-        faker-cxx::faker-cxx
-        libfort::fort
+        ores.utility.lib
         Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

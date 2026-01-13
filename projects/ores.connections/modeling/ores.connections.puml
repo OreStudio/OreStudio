@@ -1,4 +1,4 @@
-' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 '
 ' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
 '
@@ -23,8 +23,638 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     note "Manages server connection bookmarks\nwith folders, tags, and encrypted credentials." as ores_connections_note
     connections --- ores_connections_note
+
     namespace connections #F2F2F2 {
 
+        namespace domain #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+            together {
+                struct folder
+                struct tag
+            }
+
+            together {
+                struct server_environment
+                struct environment_tag
+            }
+
+            folder -[hidden]down- server_environment
+            tag -[hidden]down- environment_tag
+
+            '
+            ' Class definitions
+            '
+
+            struct folder #F7E5FF {
+                +{field} id boost::uuids::uuid
+                +{field} name std::string
+                +{field} parent_id std::optional<boost::uuids::uuid>
+            }
+
+            note top of folder
+            Represents a folder for organizing server connections hierarchically.
+
+            Folders can be nested to create a tree structure. A folder with no
+            parent_id is a root-level folder.
+            end note
+
+            struct tag #F7E5FF {
+                +{field} id boost::uuids::uuid
+                +{field} name std::string
+            }
+
+            note top of tag
+            Represents a tag for categorizing server connections.
+
+            Tags provide flexible categorization orthogonal to the folder
+            hierarchy. A connection can have multiple tags.
+            end note
+
+            struct server_environment #F7E5FF {
+                +{field} id boost::uuids::uuid
+                +{field} folder_id std::optional<boost::uuids::uuid>
+                +{field} name std::string
+                +{field} host std::string
+                +{field} port int
+                +{field} username std::string
+                +{field} encrypted_password std::string
+                +{field} description std::string
+            }
+
+            note top of server_environment
+            Represents a server connection/environment configuration.
+
+            Stores connection details including host, port, credentials.
+            Password field stores AES-encrypted form. Use connection_manager
+            to encrypt/decrypt passwords.
+            end note
+
+            struct environment_tag #F7E5FF {
+                +{field} environment_id boost::uuids::uuid
+                +{field} tag_id boost::uuids::uuid
+            }
+
+            note top of environment_tag
+            Junction type for many-to-many relationship between
+            environments and tags.
+            end note
+
+            ' Relationships
+            server_environment --> ores::connections::domain::folder : belongs to
+            environment_tag --> ores::connections::domain::server_environment
+            environment_tag --> ores::connections::domain::tag
+        }
+
+        namespace repository #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Folder persistence
+            together {
+                class folder_entity
+                class folder_mapper
+                class folder_repository
+            }
+
+            ' Group: Tag persistence
+            together {
+                class tag_entity
+                class tag_mapper
+                class tag_repository
+            }
+
+            ' Group: Server environment persistence
+            together {
+                class server_environment_entity
+                class server_environment_mapper
+                class server_environment_repository
+            }
+
+            ' Group: Environment-tag persistence
+            together {
+                class environment_tag_entity
+                class environment_tag_mapper
+                class environment_tag_repository
+            }
+
+            ' Stack persistence classes vertically
+            folder_entity -[hidden]down- folder_mapper
+            folder_mapper -[hidden]down- folder_repository
+            tag_entity -[hidden]down- tag_mapper
+            tag_mapper -[hidden]down- tag_repository
+            server_environment_entity -[hidden]down- server_environment_mapper
+            server_environment_mapper -[hidden]down- server_environment_repository
+            environment_tag_entity -[hidden]down- environment_tag_mapper
+            environment_tag_mapper -[hidden]down- environment_tag_repository
+
+            '
+            ' Class definitions
+            '
+
+            class sqlite_context #ECECEC {
+                +sqlite_context(std::filesystem::path)
+                +db() sqlite3*
+                +initialize_schema() void
+                -{field} db_ std::unique_ptr<sqlite3, decltype(&sqlite3_close)>
+            }
+
+            note top of sqlite_context
+            SQLite database context for connections storage.
+
+            Manages the database lifecycle and schema initialization.
+            end note
+
+            class folder_entity <<orm>> #99CB99 {
+                +{field} id sqlgen::PrimaryKey<std::string>
+                +{field} name std::string
+                +{field} parent_id std::optional<std::string>
+            }
+
+            note top of folder_entity
+            SQLite entity for folder storage.
+
+            ORM Settings:
+            - Table: folders
+            end note
+
+            class folder_mapper <<orm>> #99CB99 {
+                +{static} map(folder_entity) domain::folder
+                +{static} map(domain::folder) folder_entity
+            }
+
+            note top of folder_mapper
+            Maps folder domain to entity and vice-versa.
+            end note
+
+            folder_mapper ..> ores::connections::domain::folder
+            folder_mapper ..> ores::connections::repository::folder_entity
+
+            class folder_repository <<orm>> #99CB99 {
+                +folder_repository(sqlite_context&)
+                +write(domain::folder) void
+                +write(std::vector<domain::folder>) void
+                +read_all() std::vector<domain::folder>
+                +read_by_id(boost::uuids::uuid) std::optional<domain::folder>
+                +read_by_parent(std::optional<boost::uuids::uuid>) std::vector<domain::folder>
+                +remove(boost::uuids::uuid) void
+                -{field} ctx_ sqlite_context&
+            }
+
+            note top of folder_repository
+            Repository for managing folders in SQLite database.
+            end note
+
+            folder_repository ..> ores::connections::domain::folder
+
+            class tag_entity <<orm>> #99CB99 {
+                +{field} id sqlgen::PrimaryKey<std::string>
+                +{field} name std::string
+            }
+
+            note top of tag_entity
+            SQLite entity for tag storage.
+
+            ORM Settings:
+            - Table: tags
+            end note
+
+            class tag_mapper <<orm>> #99CB99 {
+                +{static} map(tag_entity) domain::tag
+                +{static} map(domain::tag) tag_entity
+            }
+
+            note top of tag_mapper
+            Maps tag domain to entity and vice-versa.
+            end note
+
+            tag_mapper ..> ores::connections::domain::tag
+            tag_mapper ..> ores::connections::repository::tag_entity
+
+            class tag_repository <<orm>> #99CB99 {
+                +tag_repository(sqlite_context&)
+                +write(domain::tag) void
+                +write(std::vector<domain::tag>) void
+                +read_all() std::vector<domain::tag>
+                +read_by_id(boost::uuids::uuid) std::optional<domain::tag>
+                +read_by_name(std::string) std::optional<domain::tag>
+                +remove(boost::uuids::uuid) void
+                -{field} ctx_ sqlite_context&
+            }
+
+            note top of tag_repository
+            Repository for managing tags in SQLite database.
+            end note
+
+            tag_repository ..> ores::connections::domain::tag
+
+            class server_environment_entity <<orm>> #99CB99 {
+                +{field} id sqlgen::PrimaryKey<std::string>
+                +{field} folder_id std::optional<std::string>
+                +{field} name std::string
+                +{field} host std::string
+                +{field} port int
+                +{field} username std::string
+                +{field} encrypted_password std::string
+                +{field} description std::string
+            }
+
+            note top of server_environment_entity
+            SQLite entity for server environment storage.
+
+            ORM Settings:
+            - Table: server_environments
+            end note
+
+            class server_environment_mapper <<orm>> #99CB99 {
+                +{static} map(server_environment_entity) domain::server_environment
+                +{static} map(domain::server_environment) server_environment_entity
+            }
+
+            note top of server_environment_mapper
+            Maps server_environment domain to entity and vice-versa.
+            end note
+
+            server_environment_mapper ..> ores::connections::domain::server_environment
+            server_environment_mapper ..> ores::connections::repository::server_environment_entity
+
+            class server_environment_repository <<orm>> #99CB99 {
+                +server_environment_repository(sqlite_context&)
+                +write(domain::server_environment) void
+                +write(std::vector<domain::server_environment>) void
+                +read_all() std::vector<domain::server_environment>
+                +read_by_id(boost::uuids::uuid) std::optional<domain::server_environment>
+                +read_by_folder(std::optional<boost::uuids::uuid>) std::vector<domain::server_environment>
+                +remove(boost::uuids::uuid) void
+                -{field} ctx_ sqlite_context&
+            }
+
+            note top of server_environment_repository
+            Repository for managing server environments in SQLite database.
+            end note
+
+            server_environment_repository ..> ores::connections::domain::server_environment
+
+            class environment_tag_entity <<orm>> #99CB99 {
+                +{field} environment_id std::string
+                +{field} tag_id std::string
+            }
+
+            note top of environment_tag_entity
+            SQLite entity for environment-tag junction.
+
+            ORM Settings:
+            - Table: environment_tags
+            - Primary Key: (environment_id, tag_id)
+            end note
+
+            class environment_tag_mapper <<orm>> #99CB99 {
+                +{static} map(environment_tag_entity) domain::environment_tag
+                +{static} map(domain::environment_tag) environment_tag_entity
+            }
+
+            note top of environment_tag_mapper
+            Maps environment_tag domain to entity and vice-versa.
+            end note
+
+            environment_tag_mapper ..> ores::connections::domain::environment_tag
+            environment_tag_mapper ..> ores::connections::repository::environment_tag_entity
+
+            class environment_tag_repository <<orm>> #99CB99 {
+                +environment_tag_repository(sqlite_context&)
+                +write(domain::environment_tag) void
+                +write(std::vector<domain::environment_tag>) void
+                +read_by_environment(boost::uuids::uuid) std::vector<domain::environment_tag>
+                +read_tags_by_environment(boost::uuids::uuid) std::vector<domain::tag>
+                +read_environments_by_tag(boost::uuids::uuid) std::vector<domain::server_environment>
+                +remove(boost::uuids::uuid, boost::uuids::uuid) void
+                +remove_all_for_environment(boost::uuids::uuid) void
+                -{field} ctx_ sqlite_context&
+            }
+
+            note top of environment_tag_repository
+            Repository for managing environment-tag relationships.
+            end note
+
+            environment_tag_repository ..> ores::connections::domain::environment_tag
+            environment_tag_repository ..> ores::connections::domain::tag
+            environment_tag_repository ..> ores::connections::domain::server_environment
+        }
+
+        namespace service #F2F2F2 {
+            class connection_manager #ECECEC {
+                +connection_manager(std::filesystem::path, std::string)
+                +create_folder(domain::folder) void
+                +update_folder(domain::folder) void
+                +delete_folder(boost::uuids::uuid) void
+                +get_all_folders() std::vector<domain::folder>
+                +get_folder(boost::uuids::uuid) std::optional<domain::folder>
+                +get_root_folders() std::vector<domain::folder>
+                +get_child_folders(boost::uuids::uuid) std::vector<domain::folder>
+                +create_tag(domain::tag) void
+                +update_tag(domain::tag) void
+                +delete_tag(boost::uuids::uuid) void
+                +get_all_tags() std::vector<domain::tag>
+                +get_tag(boost::uuids::uuid) std::optional<domain::tag>
+                +get_tag_by_name(std::string) std::optional<domain::tag>
+                +create_environment(domain::server_environment, std::string) void
+                +update_environment(domain::server_environment, std::optional<std::string>) void
+                +delete_environment(boost::uuids::uuid) void
+                +get_all_environments() std::vector<domain::server_environment>
+                +get_environment(boost::uuids::uuid) std::optional<domain::server_environment>
+                +get_environments_in_folder(std::optional<boost::uuids::uuid>) std::vector<domain::server_environment>
+                +get_password(boost::uuids::uuid) std::string
+                +add_tag_to_environment(boost::uuids::uuid, boost::uuids::uuid) void
+                +remove_tag_from_environment(boost::uuids::uuid, boost::uuids::uuid) void
+                +get_tags_for_environment(boost::uuids::uuid) std::vector<domain::tag>
+                +get_environments_with_tag(boost::uuids::uuid) std::vector<domain::server_environment>
+                +verify_master_password() bool
+                +change_master_password(std::string) void
+                -{field} ctx_ repository::sqlite_context
+                -{field} folder_repo_ repository::folder_repository
+                -{field} tag_repo_ repository::tag_repository
+                -{field} env_repo_ repository::server_environment_repository
+                -{field} env_tag_repo_ repository::environment_tag_repository
+                -{field} master_password_ std::string
+            }
+
+            note top of connection_manager
+            High-level service for managing server connections.
+
+            Provides unified API for:
+            - Folder organization
+            - Tag-based categorization
+            - Encrypted password storage
+
+            Uses ores.security::crypto::encryption for password
+            encryption/decryption.
+            end note
+
+            connection_manager o-- ores::connections::repository::sqlite_context
+            connection_manager o-- ores::connections::repository::folder_repository
+            connection_manager o-- ores::connections::repository::tag_repository
+            connection_manager o-- ores::connections::repository::server_environment_repository
+            connection_manager o-- ores::connections::repository::environment_tag_repository
+            connection_manager ..> ores::connections::domain::folder
+            connection_manager ..> ores::connections::domain::tag
+            connection_manager ..> ores::connections::domain::server_environment
+        }
+
+        namespace generators #F2F2F2 {
+            class generate_synthetic_folder <<generator>> #D89EF1 {
+            }
+
+            note top of generate_synthetic_folder
+            Generates a synthetic folder.
+            end note
+
+            generate_synthetic_folder --> ores::connections::domain::folder : generates
+
+            class generate_synthetic_tag <<generator>> #D89EF1 {
+            }
+
+            note top of generate_synthetic_tag
+            Generates a synthetic tag.
+            end note
+
+            generate_synthetic_tag --> ores::connections::domain::tag : generates
+
+            class generate_synthetic_server_environment <<generator>> #D89EF1 {
+            }
+
+            note top of generate_synthetic_server_environment
+            Generates a synthetic server environment.
+            end note
+
+            generate_synthetic_server_environment --> ores::connections::domain::server_environment : generates
+
+            class generate_synthetic_environment_tag <<generator>> #D89EF1 {
+            }
+
+            note top of generate_synthetic_environment_tag
+            Generates a synthetic environment-tag association.
+            end note
+
+            generate_synthetic_environment_tag --> ores::connections::domain::environment_tag : generates
+        }
+
+        namespace tests #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class domain_folder_tests
+                class domain_tag_tests
+            }
+
+            together {
+                class domain_server_environment_tests
+                class domain_environment_tag_tests
+            }
+
+            together {
+                class repository_folder_repository_tests
+                class repository_tag_repository_tests
+            }
+
+            together {
+                class repository_server_environment_repository_tests
+                class repository_environment_tag_repository_tests
+            }
+
+            ' Stack tests vertically
+            domain_folder_tests -[hidden]down- domain_server_environment_tests
+            domain_tag_tests -[hidden]down- domain_environment_tag_tests
+            repository_folder_repository_tests -[hidden]down- repository_server_environment_repository_tests
+            repository_tag_repository_tests -[hidden]down- repository_environment_tag_repository_tests
+
+            '
+            ' Class definitions
+            '
+
+            class domain_folder_tests <<test suite>> #C5E1A5 {
+                +create_folder_with_valid_fields() void
+                +create_folder_with_parent() void
+                +folder_serialization_to_json() void
+                +create_folder_with_faker() void
+                +folder_table_output() void
+            }
+
+            note top of domain_folder_tests
+            Test suite for folder domain model.
+
+            Tests cover folder creation, nesting,
+            JSON serialization, and table output.
+            end note
+
+            domain_folder_tests ..> ores::connections::domain::folder : tests
+
+            class domain_tag_tests <<test suite>> #C5E1A5 {
+                +create_tag_with_valid_fields() void
+                +tag_serialization_to_json() void
+                +create_tag_with_faker() void
+                +tag_table_output() void
+            }
+
+            note top of domain_tag_tests
+            Test suite for tag domain model.
+
+            Tests cover tag creation, JSON serialization,
+            and table output.
+            end note
+
+            domain_tag_tests ..> ores::connections::domain::tag : tests
+
+            class domain_server_environment_tests <<test suite>> #C5E1A5 {
+                +create_server_environment_with_valid_fields() void
+                +create_server_environment_with_folder() void
+                +server_environment_serialization_to_json() void
+                +create_server_environment_with_faker() void
+                +server_environment_table_output() void
+                +server_environment_with_empty_password() void
+            }
+
+            note top of domain_server_environment_tests
+            Test suite for server_environment domain model.
+
+            Tests cover environment creation, folder assignment,
+            JSON serialization, and table output.
+            end note
+
+            domain_server_environment_tests ..> ores::connections::domain::server_environment : tests
+
+            class domain_environment_tag_tests <<test suite>> #C5E1A5 {
+                +create_environment_tag_with_valid_fields() void
+                +environment_tag_serialization_to_json() void
+                +environment_tag_table_output() void
+                +multiple_tags_for_same_environment() void
+                +same_tag_for_multiple_environments() void
+            }
+
+            note top of domain_environment_tag_tests
+            Test suite for environment_tag domain model.
+
+            Tests cover association creation, serialization,
+            and many-to-many relationship scenarios.
+            end note
+
+            domain_environment_tag_tests ..> ores::connections::domain::environment_tag : tests
+
+            class repository_folder_repository_tests <<test suite>> #C5E1A5 {
+                +write_single_folder() void
+                +write_multiple_folders() void
+                +read_all_folders() void
+                +read_folder_by_id() void
+                +read_folder_by_id_not_found() void
+                +read_root_folders() void
+                +read_child_folders() void
+                +remove_folder() void
+                +update_folder() void
+            }
+
+            note top of repository_folder_repository_tests
+            Test suite for folder_repository.
+
+            Tests cover CRUD operations, hierarchical
+            queries, and update scenarios.
+            end note
+
+            repository_folder_repository_tests ..> ores::connections::repository::folder_repository : tests
+
+            class repository_tag_repository_tests <<test suite>> #C5E1A5 {
+                +write_single_tag() void
+                +write_multiple_tags() void
+                +read_all_tags() void
+                +read_tag_by_id() void
+                +read_tag_by_id_not_found() void
+                +read_tag_by_name() void
+                +read_tag_by_name_not_found() void
+                +remove_tag() void
+                +update_tag() void
+            }
+
+            note top of repository_tag_repository_tests
+            Test suite for tag_repository.
+
+            Tests cover CRUD operations, name lookup,
+            and update scenarios.
+            end note
+
+            repository_tag_repository_tests ..> ores::connections::repository::tag_repository : tests
+
+            class repository_server_environment_repository_tests <<test suite>> #C5E1A5 {
+                +write_single_server_environment() void
+                +write_multiple_server_environments() void
+                +read_all_server_environments() void
+                +read_server_environment_by_id() void
+                +read_server_environment_by_id_not_found() void
+                +read_root_server_environments() void
+                +read_server_environments_in_folder() void
+                +remove_server_environment() void
+                +update_server_environment() void
+                +server_environment_with_encrypted_password() void
+            }
+
+            note top of repository_server_environment_repository_tests
+            Test suite for server_environment_repository.
+
+            Tests cover CRUD operations, folder queries,
+            and encrypted password storage.
+            end note
+
+            repository_server_environment_repository_tests ..> ores::connections::repository::server_environment_repository : tests
+
+            class repository_environment_tag_repository_tests <<test suite>> #C5E1A5 {
+                +write_single_environment_tag() void
+                +write_multiple_environment_tags() void
+                +read_environment_tags_by_environment() void
+                +read_tags_by_environment() void
+                +read_environments_by_tag() void
+                +remove_environment_tag() void
+                +remove_all_tags_from_environment() void
+            }
+
+            note top of repository_environment_tag_repository_tests
+            Test suite for environment_tag_repository.
+
+            Tests cover association management, bidirectional
+            queries, and bulk removal.
+            end note
+
+            repository_environment_tag_repository_tests ..> ores::connections::repository::environment_tag_repository : tests
+
+            class service_connection_manager_tests <<test suite>> #C5E1A5 {
+                +create_and_get_folder() void
+                +get_root_folders() void
+                +create_and_get_tag() void
+                +get_tag_by_name() void
+                +create_environment_with_encrypted_password() void
+                +get_decrypted_password() void
+                +update_environment_without_changing_password() void
+                +update_environment_with_new_password() void
+                +add_and_remove_tag_from_environment() void
+                +get_environments_with_tag() void
+                +verify_master_password() void
+                +change_master_password() void
+                +environments_in_folder() void
+                +delete_folder() void
+                +delete_tag() void
+                +delete_environment() void
+            }
+
+            note top of service_connection_manager_tests
+            Test suite for connection_manager service.
+
+            Tests cover all service operations including
+            folder/tag/environment management, encryption,
+            and master password handling.
+            end note
+
+            service_connection_manager_tests ..> ores::connections::service::connection_manager : tests
+        }
     }
 }
 

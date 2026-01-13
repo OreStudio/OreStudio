@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: E75DE282-4FDE-4B18-B23B-692A2F783B61
+:END:
+#+title: ORE Studio Connections Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Server connection bookmark manager component for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Connections Component Diagram
+[[file:ores.connections.png][file:ores.connections.png]]
+
+This module provides client-side management of server connection bookmarks with
+secure credential storage. Key features include:
+
+- Folder organization: hierarchical folder structure for organizing connections,
+  with support for nested folders
+- Tag-based categorization: flexible tagging system orthogonal to folder
+  hierarchy for cross-cutting organization
+- Encrypted credentials: AES-256-GCM encryption of passwords using a master
+  password, with secure key derivation via PBKDF2
+- Master password management: verification and change capabilities for the
+  encryption master password
+- SQLite persistence: local database storage for connection bookmarks
+- High-level service API: unified =connection_manager= service for all
+  operations
+
+The module is organized into namespaces: domain (folder, tag, server_environment,
+environment_tag), repository ([[https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping][ORM]] entities, mappers, and repositories), service
+(connection_manager), and generators (test data).
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

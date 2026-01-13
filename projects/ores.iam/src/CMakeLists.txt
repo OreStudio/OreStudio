@@ -40,10 +40,9 @@ target_link_libraries(${lib_target_name}
         ores.eventing.lib
         ores.geo.lib
         ores.platform.lib
+        ores.security.lib
     PRIVATE
         faker-cxx::faker-cxx
         libfort::fort)
-# Note: OpenSSL::Crypto comes transitively through ores.variability.lib
-# -> ores.comms.lib -> OpenSSL::SSL (which depends on OpenSSL::Crypto)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

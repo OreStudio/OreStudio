@@ -47,14 +47,6 @@ set(ORES_CATCH2_ARGS --durations yes --filenames-as-tags -r compact)
 set(ORES_TEST_ENV "ORES_TEST_PASSWORD_FAST=1")
 
 #
-# Java args for PlantUML
-#
-set(ORES_PLANTUML_JAR "/usr/share/plantuml/plantuml.jar")
-set(ORES_JAVA_ARGS "-Djava.awt.headless=true")
-list(APPEND ORES_JAVA_ARGS "-DPLANTUML_SECURITY_PROFILE=UNSECURE")
-list(APPEND ORES_JAVA_ARGS "-DPLANTUML_LIMIT_SIZE=131070")
-
-#
 # Projects
 #
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.utility)
@@ -64,6 +56,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.database)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.testing)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.telemetry)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.variability)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.security)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.geo)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.iam)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.cli)

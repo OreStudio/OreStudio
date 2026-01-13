@@ -48,9 +48,9 @@
 #include "ores.iam/domain/role.hpp"
 #include "ores.iam/domain/account_json.hpp"
 #include "ores.iam/domain/account_table.hpp"
-#include "ores.iam/security/password_manager.hpp"
+#include "ores.security/crypto/password_hasher.hpp"
+#include "ores.security/validation/password_validator.hpp"
 #include "ores.iam/repository/account_repository.hpp"
-#include "ores.iam/security/password_policy_validator.hpp"
 #include "ores.variability/domain/feature_flags_json.hpp"
 #include "ores.variability/domain/feature_flags_table.hpp"
 #include "ores.variability/repository/feature_flags_repository.hpp"
@@ -755,7 +755,7 @@ add_account(const config::add_account_options& cfg) const {
     const auto account_id = gen();
 
     // Validate password policy
-    using iam::security::password_policy_validator;
+    using security::validation::password_validator;
     using variability::repository::feature_flags_repository;
 
     // Check if password validation is disabled via feature flag
@@ -766,7 +766,7 @@ add_account(const config::add_account_options& cfg) const {
                                 !disable_validation_flags[0].enabled;
 
     const auto validation_result =
-        password_policy_validator::validate(cfg.password, enforce_policy);
+        password_validator::validate(cfg.password, enforce_policy);
 
     if (!validation_result.is_valid) {
         BOOST_LOG_SEV(lg(), error) << "Password validation failed: "
@@ -777,9 +777,8 @@ add_account(const config::add_account_options& cfg) const {
     }
 
     // Hash the password
-    using iam::security::password_manager;
-    const auto password_hash =
-        password_manager::create_password_hash(cfg.password);
+    using security::crypto::password_hasher;
+    const auto password_hash = password_hasher::hash(cfg.password);
 
     // Create authorization service for RBAC operations
     // (Permissions and roles are seeded via SQL scripts in the database template)

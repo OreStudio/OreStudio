@@ -17,19 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam/security/email_validator.hpp"
+#include "ores.security/validation/email_validator.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 
 namespace {
 
-const std::string_view test_suite("ores.iam.tests");
-const std::string tags("[security][email]");
+const std::string_view test_suite("ores.security.tests");
+const std::string tags("[validation][email]");
 
 }
 
-using ores::iam::security::email_validator;
+using ores::security::validation::email_validator;
 using namespace ores::logging;
 
 TEST_CASE("valid_email_passes_validation", tags) {

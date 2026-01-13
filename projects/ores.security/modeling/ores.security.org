@@ -1,0 +1,34 @@
+:PROPERTIES:
+:ID: D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2
+:END:
+#+title: ORE Studio Security Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Shared security primitives component for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Security Component Diagram
+[[file:ores.security.png][file:ores.security.png]]
+
+This module provides cryptographic operations and validation utilities shared
+across other components. Key features include:
+
+- Password hashing: secure password hashing using scrypt algorithm with
+  OWASP-recommended parameters
+- Encryption: AES-256-GCM encryption/decryption with PBKDF2 key derivation
+- Password validation: OWASP-compliant password policy enforcement (minimum 12
+  characters, uppercase, lowercase, digit, special character)
+- Email validation: basic email format validation
+- RAII resource management: uses =std::unique_ptr= with custom deleters for
+  OpenSSL context management
+
+The module is organized into namespaces: crypto (password hashing and
+encryption) and validation (password policy and email format validators).
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

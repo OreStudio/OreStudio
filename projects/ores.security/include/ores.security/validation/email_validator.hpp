@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
-#ifndef ORES_IAM_SECURITY_EMAIL_VALIDATOR_HPP
-#define ORES_IAM_SECURITY_EMAIL_VALIDATOR_HPP
+#ifndef ORES_SECURITY_VALIDATION_EMAIL_VALIDATOR_HPP
+#define ORES_SECURITY_VALIDATION_EMAIL_VALIDATOR_HPP
 
 #include <string>
+#include "ores.security/validation/validation_result.hpp"
 
-namespace ores::iam::security {
+namespace ores::security::validation {
 
 /**
  * @brief Validates email addresses against basic format requirements.
@@ -41,14 +41,6 @@ namespace ores::iam::security {
  */
 class email_validator {
 public:
-    /**
-     * @brief Result of email validation.
-     */
-    struct validation_result {
-        bool is_valid;
-        std::string error_message;
-    };
-
     /**
      * @brief Validates an email address against basic format requirements.
      *

@@ -47,6 +47,9 @@ The system is organised into four architectural layers:
 - [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C][ores.geo]]: IP-to-location geolocation using MaxMind GeoLite2-City database.
   Provides country, city, and coordinate lookups for session tracking.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]]: Postgres Database setup.
+- [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]]: Shared security primitives for cryptography (password hashing
+  with scrypt, AES-256-GCM encryption) and validation (password policy, email
+  format). Used by ores.iam and ores.connections.
 - Dependency order: utility → platform → logging → telemetry → database.
 
 ** Infrastructure Layer
@@ -64,6 +67,9 @@ The system is organised into four architectural layers:
   (0x4000-0x4FFF).
 - [[id:b0c9fdc8-f0b2-48fe-ae37-8fd79e6fd164][ores.http]]: HTTP infrastructure for RESTful API support. JWT token parsing,
   claims extraction, authentication middleware support.
+- [[id:E75DE282-4FDE-4B18-B23B-692A2F783B61][ores.connections]]: Client-side server connection bookmark manager. Hierarchical
+  folder organization, tag-based categorization, encrypted credential storage
+  using AES-256-GCM with master password, SQLite local persistence.
 - Depends on: Foundation (telemetry, database).
 
 ** Domain Layer

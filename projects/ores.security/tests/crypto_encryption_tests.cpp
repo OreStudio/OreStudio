@@ -17,35 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.connections/service/encryption_service.hpp"
+#include "ores.security/crypto/encryption.hpp"
 
 #include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <faker-cxx/faker.h>
 #include "ores.logging/make_logger.hpp"
 
 namespace {
 
-const std::string test_suite("ores.connections.tests");
-const std::string tags("[service]");
+const std::string test_suite("ores.security.tests");
+const std::string tags("[crypto]");
 
 }
 
-using namespace ores::connections::service;
+using namespace ores::security::crypto;
 using namespace ores::logging;
 
 TEST_CASE("encrypt_and_decrypt_simple_password", tags) {
     auto lg(make_logger(test_suite));
 
     const std::string plaintext = "my_secret_password";
-    const std::string master_password = "master123";
+    const std::string password = "master123";
 
-    const auto encrypted = encryption_service::encrypt(plaintext, master_password);
+    const auto encrypted = encryption::encrypt(plaintext, password);
     BOOST_LOG_SEV(lg, debug) << "Encrypted: " << encrypted;
 
     CHECK(!encrypted.empty());
     CHECK(encrypted != plaintext);
 
-    const auto decrypted = encryption_service::decrypt(encrypted, master_password);
+    const auto decrypted = encryption::decrypt(encrypted, password);
     BOOST_LOG_SEV(lg, debug) << "Decrypted: " << decrypted;
 
     CHECK(decrypted == plaintext);
@@ -55,10 +55,10 @@ TEST_CASE("encrypt_produces_different_output_each_time", tags) {
     auto lg(make_logger(test_suite));
 
     const std::string plaintext = "same_password";
-    const std::string master_password = "master123";
+    const std::string password = "master123";
 
-    const auto encrypted1 = encryption_service::encrypt(plaintext, master_password);
-    const auto encrypted2 = encryption_service::encrypt(plaintext, master_password);
+    const auto encrypted1 = encryption::encrypt(plaintext, password);
+    const auto encrypted2 = encryption::encrypt(plaintext, password);
 
     BOOST_LOG_SEV(lg, debug) << "Encrypted 1: " << encrypted1;
     BOOST_LOG_SEV(lg, debug) << "Encrypted 2: " << encrypted2;
@@ -67,8 +67,8 @@ TEST_CASE("encrypt_produces_different_output_each_time", tags) {
     CHECK(encrypted1 != encrypted2);
 
     // But both should decrypt to the same plaintext
-    CHECK(encryption_service::decrypt(encrypted1, master_password) == plaintext);
-    CHECK(encryption_service::decrypt(encrypted2, master_password) == plaintext);
+    CHECK(encryption::decrypt(encrypted1, password) == plaintext);
+    CHECK(encryption::decrypt(encrypted2, password) == plaintext);
 }
 
 TEST_CASE("decrypt_with_wrong_password_throws", tags) {
@@ -78,11 +78,11 @@ TEST_CASE("decrypt_with_wrong_password_throws", tags) {
     const std::string correct_password = "correct";
     const std::string wrong_password = "wrong";
 
-    const auto encrypted = encryption_service::encrypt(plaintext, correct_password);
+    const auto encrypted = encryption::encrypt(plaintext, correct_password);
     BOOST_LOG_SEV(lg, debug) << "Encrypted: " << encrypted;
 
     CHECK_THROWS_AS(
-        encryption_service::decrypt(encrypted, wrong_password),
+        encryption::decrypt(encrypted, wrong_password),
         std::runtime_error);
 }
 
@@ -90,12 +90,12 @@ TEST_CASE("verify_password_with_correct_password", tags) {
     auto lg(make_logger(test_suite));
 
     const std::string plaintext = "test_data";
-    const std::string master_password = "correct_password";
+    const std::string password = "correct_password";
 
-    const auto encrypted = encryption_service::encrypt(plaintext, master_password);
+    const auto encrypted = encryption::encrypt(plaintext, password);
     BOOST_LOG_SEV(lg, debug) << "Encrypted: " << encrypted;
 
-    CHECK(encryption_service::verify_password(encrypted, master_password));
+    CHECK(encryption::verify_password(encrypted, password));
 }
 
 TEST_CASE("verify_password_with_wrong_password", tags) {
@@ -105,57 +105,57 @@ TEST_CASE("verify_password_with_wrong_password", tags) {
     const std::string correct_password = "correct";
     const std::string wrong_password = "wrong";
 
-    const auto encrypted = encryption_service::encrypt(plaintext, correct_password);
+    const auto encrypted = encryption::encrypt(plaintext, correct_password);
     BOOST_LOG_SEV(lg, debug) << "Encrypted: " << encrypted;
 
-    CHECK_FALSE(encryption_service::verify_password(encrypted, wrong_password));
+    CHECK_FALSE(encryption::verify_password(encrypted, wrong_password));
 }
 
 TEST_CASE("encrypt_and_decrypt_empty_string", tags) {
     auto lg(make_logger(test_suite));
 
     const std::string plaintext = "";
-    const std::string master_password = "master";
+    const std::string password = "master";
 
-    const auto encrypted = encryption_service::encrypt(plaintext, master_password);
+    const auto encrypted = encryption::encrypt(plaintext, password);
     BOOST_LOG_SEV(lg, debug) << "Encrypted empty: " << encrypted;
 
     // Empty plaintext returns empty encrypted string (by design)
     CHECK(encrypted.empty());
 
-    const auto decrypted = encryption_service::decrypt(encrypted, master_password);
+    const auto decrypted = encryption::decrypt(encrypted, password);
     CHECK(decrypted == plaintext);
 }
 
-TEST_CASE("encrypt_and_decrypt_unicode_password", tags) {
+TEST_CASE("encrypt_and_decrypt_unicode", tags) {
     auto lg(make_logger(test_suite));
 
     const std::string plaintext = "密码パスワード🔐";
-    const std::string master_password = "主密码マスター";
+    const std::string password = "主密码マスター";
 
-    const auto encrypted = encryption_service::encrypt(plaintext, master_password);
+    const auto encrypted = encryption::encrypt(plaintext, password);
     BOOST_LOG_SEV(lg, debug) << "Encrypted unicode: " << encrypted;
 
-    const auto decrypted = encryption_service::decrypt(encrypted, master_password);
+    const auto decrypted = encryption::decrypt(encrypted, password);
     BOOST_LOG_SEV(lg, debug) << "Decrypted: " << decrypted;
 
     CHECK(decrypted == plaintext);
 }
 
-TEST_CASE("encrypt_and_decrypt_long_password", tags) {
+TEST_CASE("encrypt_and_decrypt_long_text", tags) {
     auto lg(make_logger(test_suite));
 
-    // Generate a long random password
+    // Generate a long random text
     std::string plaintext;
     for (int i = 0; i < 100; ++i) {
         plaintext += std::string(faker::word::noun()) + "_";
     }
-    const std::string master_password = "master";
+    const std::string password = "master";
 
-    BOOST_LOG_SEV(lg, debug) << "Long password length: " << plaintext.length();
+    BOOST_LOG_SEV(lg, debug) << "Long text length: " << plaintext.length();
 
-    const auto encrypted = encryption_service::encrypt(plaintext, master_password);
-    const auto decrypted = encryption_service::decrypt(encrypted, master_password);
+    const auto encrypted = encryption::encrypt(plaintext, password);
+    const auto decrypted = encryption::decrypt(encrypted, password);
 
     CHECK(decrypted == plaintext);
 }

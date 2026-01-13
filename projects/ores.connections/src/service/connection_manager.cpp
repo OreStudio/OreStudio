@@ -20,9 +20,11 @@
 #include "ores.connections/service/connection_manager.hpp"
 
 #include <stdexcept>
-#include "ores.connections/service/encryption_service.hpp"
+#include "ores.security/crypto/encryption.hpp"
 
 namespace ores::connections::service {
+
+using ores::security::crypto::encryption;
 
 connection_manager::connection_manager(const std::filesystem::path& db_path,
                                         const std::string& master_password)
@@ -95,7 +97,7 @@ std::optional<domain::tag> connection_manager::get_tag_by_name(const std::string
 void connection_manager::create_environment(domain::server_environment env,
                                              const std::string& password) {
     if (!password.empty()) {
-        env.encrypted_password = encryption_service::encrypt(password, master_password_);
+        env.encrypted_password = encryption::encrypt(password, master_password_);
     }
     env_repo_.write(env);
 }
@@ -106,7 +108,7 @@ void connection_manager::update_environment(domain::server_environment env,
         if (password->empty()) {
             env.encrypted_password = "";
         } else {
-            env.encrypted_password = encryption_service::encrypt(*password, master_password_);
+            env.encrypted_password = encryption::encrypt(*password, master_password_);
         }
     } else {
         // Preserve existing encrypted password from database
@@ -148,7 +150,7 @@ std::string connection_manager::get_password(const boost::uuids::uuid& environme
         return "";
     }
 
-    return encryption_service::decrypt(env->encrypted_password, master_password_);
+    return encryption::decrypt(env->encrypted_password, master_password_);
 }
 
 // Environment-tag operations
@@ -202,7 +204,7 @@ bool connection_manager::verify_master_password() {
     auto envs = env_repo_.read_all();
     for (const auto& env : envs) {
         if (!env.encrypted_password.empty()) {
-            return encryption_service::verify_password(env.encrypted_password,
+            return encryption::verify_password(env.encrypted_password,
                                                         master_password_);
         }
     }
@@ -215,9 +217,9 @@ void connection_manager::change_master_password(const std::string& new_password)
     for (auto& env : envs) {
         if (!env.encrypted_password.empty()) {
             // Decrypt with old password, encrypt with new
-            std::string plaintext = encryption_service::decrypt(
+            std::string plaintext = encryption::decrypt(
                 env.encrypted_password, master_password_);
-            env.encrypted_password = encryption_service::encrypt(plaintext, new_password);
+            env.encrypted_password = encryption::encrypt(plaintext, new_password);
             env_repo_.write(env);
         }
     }

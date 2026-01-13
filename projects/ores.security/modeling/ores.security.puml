@@ -1,0 +1,52 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+
+title ores.security Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "Shared security primitives" as ores_security_note
+    security --- ores_security_note
+    namespace security #F2F2F2 {
+        namespace crypto {
+            class password_hasher {
+                +hash(password) : string
+                +verify(password, hash) : bool
+            }
+            class encryption {
+                +encrypt(plaintext, key) : string
+                +decrypt(ciphertext, key) : string
+                +verify_password(data, key) : bool
+            }
+        }
+        namespace validation {
+            class password_validator {
+                +validate(password) : validation_result
+            }
+            class email_validator {
+                +validate(email) : validation_result
+            }
+        }
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.security.puml"
+' End:
+@enduml

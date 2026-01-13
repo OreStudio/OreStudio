@@ -21,14 +21,16 @@
 
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.iam/domain/role.hpp"
-#include "ores.iam/security/password_manager.hpp"
-#include "ores.iam/security/password_policy_validator.hpp"
-#include "ores.iam/security/email_validator.hpp"
+#include "ores.security/crypto/password_hasher.hpp"
+#include "ores.security/validation/password_validator.hpp"
+#include "ores.security/validation/email_validator.hpp"
 
 namespace ores::iam::service {
 
 using namespace ores::logging;
 using error_code = ores::utility::serialization::error_code;
+namespace crypto = ores::security::crypto;
+namespace validation = ores::security::validation;
 
 signup_service::signup_service(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
@@ -84,8 +86,7 @@ signup_result signup_service::register_user(const std::string& username,
     }
 
     // Validate email format
-    using security::email_validator;
-    auto email_validation = email_validator::validate(email);
+    auto email_validation = validation::email_validator::validate(email);
     if (!email_validation.is_valid) {
         BOOST_LOG_SEV(lg(), warn) << "Signup rejected: invalid email format: "
                                   << email;
@@ -105,8 +106,7 @@ signup_result signup_service::register_user(const std::string& username,
     }
 
     // Validate password policy
-    using security::password_policy_validator;
-    auto password_validation = password_policy_validator::validate(password);
+    auto password_validation = validation::password_validator::validate(password);
     if (!password_validation.is_valid) {
         BOOST_LOG_SEV(lg(), warn) << "Signup rejected: weak password";
         result.error_message = password_validation.error_message;
@@ -119,8 +119,7 @@ signup_result signup_service::register_user(const std::string& username,
     BOOST_LOG_SEV(lg(), debug) << "Generated ID for new account: " << id;
 
     // Hash password
-    using security::password_manager;
-    auto password_hash = password_manager::create_password_hash(password);
+    auto password_hash = crypto::password_hasher::hash(password);
 
     // Create the account
     // Note: Admin privileges are now managed via RBAC role assignments

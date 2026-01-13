@@ -23,14 +23,16 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.iam/domain/change_reason_constants.hpp"
-#include "ores.iam/security/password_manager.hpp"
-#include "ores.iam/security/password_policy_validator.hpp"
-#include "ores.iam/security/email_validator.hpp"
+#include "ores.security/crypto/password_hasher.hpp"
+#include "ores.security/validation/password_validator.hpp"
+#include "ores.security/validation/email_validator.hpp"
 
 namespace ores::iam::service {
 
 using namespace ores::logging;
 namespace reason = domain::change_reason_constants;
+namespace crypto = ores::security::crypto;
+namespace validation = ores::security::validation;
 
 void account_service::
 throw_if_empty(const std::string& name, const std::string& value)
@@ -65,9 +67,8 @@ account_service::create_account(const std::string& username,
     auto id = uuid_generator_();
     BOOST_LOG_SEV(lg(), debug) << "ID for new account: " << id;
 
-    // Hash the password using the password manager
-    using security::password_manager;
-    auto password_hash = password_manager::create_password_hash(password);
+    // Hash the password
+    auto password_hash = crypto::password_hasher::hash(password);
 
     // Create the account object with computed fields
     // Note: Administrative privileges are now managed through RBAC roles.
@@ -184,9 +185,7 @@ domain::account account_service::login(const std::string& username,
         throw std::runtime_error("Account is locked due to too many failed attempts");
     }
 
-    using security::password_manager;
-    bool password_valid = password_manager::
-        verify_password_hash(password, account.password_hash);
+    bool password_valid = crypto::password_hasher::verify(password, account.password_hash);
 
     login_info.last_attempt_ip = ip_address;
 
@@ -412,10 +411,9 @@ std::string account_service::change_password(const boost::uuids::uuid& account_i
                                << boost::uuids::to_string(account_id);
 
     // Validate password strength using policy validator
-    using security::password_policy_validator;
-    auto validation = password_policy_validator::validate(new_password);
-    if (!validation.is_valid) {
-        return validation.error_message;
+    auto pass_validation = validation::password_validator::validate(new_password);
+    if (!pass_validation.is_valid) {
+        return pass_validation.error_message;
     }
 
     // Verify account exists
@@ -427,15 +425,14 @@ std::string account_service::change_password(const boost::uuids::uuid& account_i
     }
 
     // Check that new password is different from current password
-    using security::password_manager;
     const auto& current_hash = accounts[0].password_hash;
-    if (password_manager::verify_password_hash(new_password, current_hash)) {
+    if (crypto::password_hasher::verify(new_password, current_hash)) {
         BOOST_LOG_SEV(lg(), debug) << "New password matches current password";
         return "New password must be different from current password";
     }
 
     // Hash the new password
-    auto password_hash = password_manager::create_password_hash(new_password);
+    auto password_hash = crypto::password_hasher::hash(new_password);
 
     // Update account with new password hash
     auto account = accounts[0];
@@ -486,10 +483,9 @@ std::string account_service::update_my_email(const boost::uuids::uuid& account_i
                                << boost::uuids::to_string(account_id);
 
     // Validate email format
-    using security::email_validator;
-    auto validation = email_validator::validate(new_email);
-    if (!validation.is_valid) {
-        return validation.error_message;
+    auto email_validation = validation::email_validator::validate(new_email);
+    if (!email_validation.is_valid) {
+        return email_validation.error_message;
     }
 
     // Verify account exists

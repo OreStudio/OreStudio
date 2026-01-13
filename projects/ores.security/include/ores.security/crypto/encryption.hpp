@@ -17,19 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CONNECTIONS_SERVICE_ENCRYPTION_SERVICE_HPP
-#define ORES_CONNECTIONS_SERVICE_ENCRYPTION_SERVICE_HPP
+#ifndef ORES_SECURITY_CRYPTO_ENCRYPTION_HPP
+#define ORES_SECURITY_CRYPTO_ENCRYPTION_HPP
 
 #include <string>
 #include <vector>
 
-namespace ores::connections::service {
+namespace ores::security::crypto {
 
 /**
- * @brief AES-256-GCM encryption service for connection passwords.
+ * @brief AES-256-GCM encryption service.
  *
- * Provides secure encryption and decryption of server passwords using
- * AES-256-GCM with a key derived from the master password using PBKDF2.
+ * Provides secure encryption and decryption using AES-256-GCM with a key
+ * derived from a password using PBKDF2.
  *
  * The encrypted format is: base64(salt || iv || tag || ciphertext)
  * - salt: 16 bytes for PBKDF2 key derivation
@@ -37,7 +37,7 @@ namespace ores::connections::service {
  * - tag: 16 bytes authentication tag
  * - ciphertext: variable length encrypted data
  */
-class encryption_service final {
+class encryption final {
 public:
     static constexpr size_t SALT_LEN = 16;
     static constexpr size_t IV_LEN = 12;
@@ -46,32 +46,32 @@ public:
     static constexpr int PBKDF2_ITERATIONS = 600000;  // OWASP recommendation
 
     /**
-     * @brief Encrypt plaintext using the master password.
+     * @brief Encrypt plaintext using a password.
      * @param plaintext The text to encrypt.
-     * @param master_password The master password used to derive the encryption key.
+     * @param password The password used to derive the encryption key.
      * @return Base64-encoded encrypted data.
      */
     static std::string encrypt(const std::string& plaintext,
-                               const std::string& master_password);
+                               const std::string& password);
 
     /**
-     * @brief Decrypt ciphertext using the master password.
+     * @brief Decrypt ciphertext using a password.
      * @param encrypted_data Base64-encoded encrypted data.
-     * @param master_password The master password used to derive the decryption key.
+     * @param password The password used to derive the decryption key.
      * @return Decrypted plaintext.
      * @throws std::runtime_error if decryption fails.
      */
     static std::string decrypt(const std::string& encrypted_data,
-                               const std::string& master_password);
+                               const std::string& password);
 
     /**
-     * @brief Verify if the master password can decrypt the given data.
+     * @brief Verify if a password can decrypt the given data.
      * @param encrypted_data Base64-encoded encrypted data.
-     * @param master_password The master password to verify.
+     * @param password The password to verify.
      * @return true if the password is correct.
      */
     static bool verify_password(const std::string& encrypted_data,
-                                const std::string& master_password);
+                                const std::string& password);
 
 private:
     static std::vector<unsigned char> derive_key(

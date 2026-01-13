@@ -39,6 +39,7 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
     PRIVATE
         sqlgen::sqlgen
+        libfort::fort
         Boost::boost
         OpenSSL::Crypto)
 

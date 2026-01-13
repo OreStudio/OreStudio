@@ -113,14 +113,14 @@ void connection_manager::update_environment(domain::server_environment env,
         auto existing = env_repo_.read_by_id(env.id);
         if (existing) {
             env.encrypted_password = existing->encrypted_password;
+        } else {
+            throw std::runtime_error("Cannot update non-existent environment");
         }
     }
     env_repo_.write(env);
 }
 
 void connection_manager::delete_environment(const boost::uuids::uuid& id) {
-    // Also remove all tag associations
-    env_tag_repo_.remove_by_environment(id);
     env_repo_.remove(id);
 }
 

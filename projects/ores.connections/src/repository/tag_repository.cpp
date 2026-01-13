@@ -19,6 +19,7 @@
  */
 #include "ores.connections/repository/tag_repository.hpp"
 
+#include <format>
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
 #include <sqlgen/read.hpp>
@@ -48,7 +49,8 @@ void tag_repository::write(const domain::tag& t) {
     auto result = sqlgen::insert_or_replace(*conn, entity);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error("Failed to write tag");
+        throw std::runtime_error(std::format("Failed to write tag: {}",
+            result.error().what()));
     }
     (*conn)->commit();
 }
@@ -64,7 +66,8 @@ void tag_repository::write(const std::vector<domain::tag>& tags) {
     auto result = sqlgen::insert_or_replace(*conn, entities);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error("Failed to write tags");
+        throw std::runtime_error(std::format("Failed to write tags: {}",
+            result.error().what()));
     }
     (*conn)->commit();
 }
@@ -78,7 +81,8 @@ std::vector<domain::tag> tag_repository::read_all() {
     auto query = sqlgen::read<std::vector<tag_entity>>;
     auto result = query(*conn);
     if (!result) {
-        throw std::runtime_error("Failed to read tags");
+        throw std::runtime_error(std::format("Failed to read tags: {}",
+            result.error().what()));
     }
 
     return tag_mapper::to_domain(*result);
@@ -96,7 +100,8 @@ std::optional<domain::tag> tag_repository::read_by_id(
         where("id"_c == id_str);
     auto result = query(*conn);
     if (!result) {
-        throw std::runtime_error("Failed to read tag by ID");
+        throw std::runtime_error(std::format("Failed to read tag by ID: {}",
+            result.error().what()));
     }
 
     if (result->empty()) {
@@ -115,7 +120,8 @@ std::optional<domain::tag> tag_repository::read_by_name(const std::string& name)
         where("name"_c == name);
     auto result = query(*conn);
     if (!result) {
-        throw std::runtime_error("Failed to read tag by name");
+        throw std::runtime_error(std::format("Failed to read tag by name: {}",
+            result.error().what()));
     }
 
     if (result->empty()) {
@@ -136,7 +142,8 @@ void tag_repository::remove(const boost::uuids::uuid& id) {
     auto result = query(*conn);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error("Failed to delete tag");
+        throw std::runtime_error(std::format("Failed to delete tag: {}",
+            result.error().what()));
     }
     (*conn)->commit();
 }

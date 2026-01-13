@@ -19,6 +19,7 @@
  */
 #include "ores.connections/repository/server_environment_repository.hpp"
 
+#include <format>
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
 #include <sqlgen/read.hpp>
@@ -48,7 +49,8 @@ void server_environment_repository::write(const domain::server_environment& env)
     auto result = sqlgen::insert_or_replace(*conn, entity);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error("Failed to write server environment");
+        throw std::runtime_error(std::format("Failed to write server environment: {}",
+            result.error().what()));
     }
     (*conn)->commit();
 }
@@ -65,7 +67,8 @@ void server_environment_repository::write(
     auto result = sqlgen::insert_or_replace(*conn, entities);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error("Failed to write server environments");
+        throw std::runtime_error(std::format("Failed to write server environments: {}",
+            result.error().what()));
     }
     (*conn)->commit();
 }
@@ -79,7 +82,8 @@ std::vector<domain::server_environment> server_environment_repository::read_all(
     auto query = sqlgen::read<std::vector<server_environment_entity>>;
     auto result = query(*conn);
     if (!result) {
-        throw std::runtime_error("Failed to read server environments");
+        throw std::runtime_error(std::format("Failed to read server environments: {}",
+            result.error().what()));
     }
 
     return server_environment_mapper::to_domain(*result);
@@ -97,7 +101,8 @@ std::optional<domain::server_environment> server_environment_repository::read_by
         where("id"_c == id_str);
     auto result = query(*conn);
     if (!result) {
-        throw std::runtime_error("Failed to read server environment by ID");
+        throw std::runtime_error(std::format("Failed to read server environment by ID: {}",
+            result.error().what()));
     }
 
     if (result->empty()) {
@@ -120,7 +125,8 @@ std::vector<domain::server_environment> server_environment_repository::read_by_f
             where("folder_id"_c == fid_str);
         auto result = query(*conn);
         if (!result) {
-            throw std::runtime_error("Failed to read server environments by folder");
+            throw std::runtime_error(std::format("Failed to read server environments by folder: {}",
+                result.error().what()));
         }
         entities = *result;
     } else {
@@ -128,7 +134,8 @@ std::vector<domain::server_environment> server_environment_repository::read_by_f
             where("folder_id"_c.is_null());
         auto result = query(*conn);
         if (!result) {
-            throw std::runtime_error("Failed to read root server environments");
+            throw std::runtime_error(std::format("Failed to read root server environments: {}",
+                result.error().what()));
         }
         entities = *result;
     }
@@ -148,7 +155,8 @@ void server_environment_repository::remove(const boost::uuids::uuid& id) {
     auto result = query(*conn);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error("Failed to delete server environment");
+        throw std::runtime_error(std::format("Failed to delete server environment: {}",
+            result.error().what()));
     }
     (*conn)->commit();
 }

@@ -43,7 +43,7 @@ public:
     static constexpr size_t IV_LEN = 12;
     static constexpr size_t TAG_LEN = 16;
     static constexpr size_t KEY_LEN = 32;  // AES-256
-    static constexpr int PBKDF2_ITERATIONS = 100000;
+    static constexpr int PBKDF2_ITERATIONS = 600000;  // OWASP recommendation
 
     /**
      * @brief Encrypt plaintext using the master password.

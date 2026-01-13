@@ -19,6 +19,7 @@
  */
 #include "ores.connections/repository/environment_tag_repository.hpp"
 
+#include <format>
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
 #include <sqlgen/read.hpp>
@@ -48,7 +49,8 @@ void environment_tag_repository::write(const domain::environment_tag& et) {
     auto result = sqlgen::insert(*conn, entity);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error("Failed to write environment tag");
+        throw std::runtime_error(std::format("Failed to write environment tag: {}",
+            result.error().what()));
     }
     (*conn)->commit();
 }
@@ -65,7 +67,8 @@ void environment_tag_repository::write(
     auto result = sqlgen::insert(*conn, entities);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error("Failed to write environment tags");
+        throw std::runtime_error(std::format("Failed to write environment tags: {}",
+            result.error().what()));
     }
     (*conn)->commit();
 }
@@ -82,7 +85,8 @@ std::vector<domain::environment_tag> environment_tag_repository::read_by_environ
         where("environment_id"_c == eid_str);
     auto result = query(*conn);
     if (!result) {
-        throw std::runtime_error("Failed to read environment tags");
+        throw std::runtime_error(std::format("Failed to read environment tags: {}",
+            result.error().what()));
     }
 
     return environment_tag_mapper::to_domain(*result);
@@ -100,7 +104,8 @@ std::vector<domain::environment_tag> environment_tag_repository::read_by_tag(
         where("tag_id"_c == tid_str);
     auto result = query(*conn);
     if (!result) {
-        throw std::runtime_error("Failed to read environment tags by tag");
+        throw std::runtime_error(std::format("Failed to read environment tags by tag: {}",
+            result.error().what()));
     }
 
     return environment_tag_mapper::to_domain(*result);
@@ -121,7 +126,8 @@ void environment_tag_repository::remove(
     auto result = query(*conn);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error("Failed to delete environment tag");
+        throw std::runtime_error(std::format("Failed to delete environment tag: {}",
+            result.error().what()));
     }
     (*conn)->commit();
 }
@@ -140,7 +146,8 @@ void environment_tag_repository::remove_by_environment(
     auto result = query(*conn);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error("Failed to delete environment tags");
+        throw std::runtime_error(std::format("Failed to delete environment tags: {}",
+            result.error().what()));
     }
     (*conn)->commit();
 }
@@ -158,7 +165,8 @@ void environment_tag_repository::remove_by_tag(const boost::uuids::uuid& tag_id)
     auto result = query(*conn);
     if (!result) {
         (*conn)->rollback();
-        throw std::runtime_error("Failed to delete environment tags by tag");
+        throw std::runtime_error(std::format("Failed to delete environment tags by tag: {}",
+            result.error().what()));
     }
     (*conn)->commit();
 }

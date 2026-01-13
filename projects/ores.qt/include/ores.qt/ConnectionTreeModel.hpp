@@ -25,7 +25,9 @@
 #include <memory>
 #include <vector>
 #include <optional>
+#include <unordered_set>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_hash.hpp>
 #include "ores.connections/domain/folder.hpp"
 #include "ores.connections/domain/server_environment.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -128,6 +130,9 @@ public:
     // Data operations
     void refresh();
 
+    // Expansion state (for folder icons)
+    void setFolderExpanded(const QModelIndex& index, bool expanded);
+
     // Get domain objects from selection
     std::optional<connections::domain::folder> getFolderFromIndex(
         const QModelIndex& index) const;
@@ -153,6 +158,7 @@ private:
     QIcon folderIcon_;
     QIcon folderOpenIcon_;
     QIcon serverIcon_;
+    std::unordered_set<boost::uuids::uuid> expandedFolders_;
 };
 
 }

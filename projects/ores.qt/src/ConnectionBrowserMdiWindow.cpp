@@ -121,7 +121,6 @@ void ConnectionBrowserMdiWindow::setupUI() {
     // Create model and set on view
     model_ = std::make_unique<ConnectionTreeModel>(manager_, this);
     treeView_->setModel(model_.get());
-    treeView_->expandAll();
 
     // Configure as a simple tree (hide detail columns)
     treeView_->setHeaderHidden(true);
@@ -156,6 +155,14 @@ void ConnectionBrowserMdiWindow::setupUI() {
             this, &ConnectionBrowserMdiWindow::onDoubleClicked);
     connect(treeView_, &QTreeView::customContextMenuRequested,
             this, &ConnectionBrowserMdiWindow::showContextMenu);
+    connect(treeView_, &QTreeView::expanded,
+            this, [this](const QModelIndex& index) {
+                model_->setFolderExpanded(index, true);
+            });
+    connect(treeView_, &QTreeView::collapsed,
+            this, [this](const QModelIndex& index) {
+                model_->setFolderExpanded(index, false);
+            });
 
     connect(model_.get(), &ConnectionTreeModel::errorOccurred,
             this, &ConnectionBrowserMdiWindow::errorOccurred);

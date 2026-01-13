@@ -1123,7 +1123,7 @@ void MainWindow::onConnectionBrowserTriggered() {
                                 connectionManager_->change_master_password(newPassword.toStdString());
                                 BOOST_LOG_SEV(lg(), info) << "Master password created and existing passwords re-encrypted";
                             } catch (const std::exception& e) {
-                                BOOST_LOG_SEV(lg(), warn) << "No existing passwords to re-encrypt: " << e.what();
+                                BOOST_LOG_SEV(lg(), error) << "Failed to re-encrypt passwords with new master password: " << e.what();
                             }
                         }
 

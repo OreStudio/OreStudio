@@ -135,10 +135,12 @@ QVariant ConnectionTreeModel::data(const QModelIndex& index, int role) const {
 
     case Qt::DecorationRole:
         if (index.column() == Name) {
-            if (node->type == ConnectionTreeNode::Type::Folder)
-                return folderIcon_;
-            else if (node->type == ConnectionTreeNode::Type::Environment)
+            if (node->type == ConnectionTreeNode::Type::Folder) {
+                bool isExpanded = expandedFolders_.contains(node->id);
+                return isExpanded ? folderOpenIcon_ : folderIcon_;
+            } else if (node->type == ConnectionTreeNode::Type::Environment) {
                 return serverIcon_;
+            }
         }
         return QVariant();
 
@@ -233,9 +235,24 @@ QModelIndex ConnectionTreeModel::findNodeIndex(ConnectionTreeNode* searchNode,
 void ConnectionTreeModel::refresh() {
     beginResetModel();
     rootNode_->children.clear();
+    expandedFolders_.clear();
     buildTree();
     endResetModel();
     emit dataRefreshed();
+}
+
+void ConnectionTreeModel::setFolderExpanded(const QModelIndex& index, bool expanded) {
+    auto* node = nodeFromIndex(index);
+    if (!node || node->type != ConnectionTreeNode::Type::Folder)
+        return;
+
+    if (expanded)
+        expandedFolders_.insert(node->id);
+    else
+        expandedFolders_.erase(node->id);
+
+    // Notify the view that the decoration has changed
+    emit dataChanged(index, index, {Qt::DecorationRole});
 }
 
 void ConnectionTreeModel::buildTree() {

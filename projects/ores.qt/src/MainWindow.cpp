@@ -1093,29 +1093,39 @@ void MainWindow::onConnectionBrowserTriggered() {
 
                 BOOST_LOG_SEV(lg(), info) << "Master password verified successfully";
             } else if (masterPassword_.isEmpty()) {
-                // No encrypted passwords exist yet - prompt to create master password
-                BOOST_LOG_SEV(lg(), debug) << "No encrypted passwords - prompting for master password creation";
+                // Check if user has already been prompted and chose blank password
+                QSettings settings;
+                bool masterPasswordConfigured = settings.value(
+                    "connections/master_password_configured", false).toBool();
 
-                MasterPasswordDialog dialog(MasterPasswordDialog::Create, this);
-                if (dialog.exec() == QDialog::Accepted) {
-                    masterPassword_ = dialog.getNewPassword();
+                if (!masterPasswordConfigured) {
+                    // No encrypted passwords exist yet - prompt to create master password
+                    BOOST_LOG_SEV(lg(), debug) << "No encrypted passwords - prompting for master password creation";
 
-                    // Warn if blank password chosen
-                    if (masterPassword_.isEmpty()) {
-                        MessageBoxHelper::warning(this, tr("No Master Password"),
-                            tr("You have chosen not to set a master password. "
-                               "Saved passwords will not be encrypted securely.\n\n"
-                               "You can set a master password later from the Connection Browser menu."));
-                        BOOST_LOG_SEV(lg(), warn) << "User chose blank master password";
-                    } else {
-                        BOOST_LOG_SEV(lg(), info) << "Master password created";
+                    MasterPasswordDialog dialog(MasterPasswordDialog::Create, this);
+                    if (dialog.exec() == QDialog::Accepted) {
+                        masterPassword_ = dialog.getNewPassword();
+
+                        // Mark as configured regardless of whether blank or not
+                        settings.setValue("connections/master_password_configured", true);
+
+                        // Warn if blank password chosen
+                        if (masterPassword_.isEmpty()) {
+                            MessageBoxHelper::warning(this, tr("No Master Password"),
+                                tr("You have chosen not to set a master password. "
+                                   "Saved passwords will not be encrypted securely.\n\n"
+                                   "You can set a master password later from the Connection Browser toolbar."));
+                            BOOST_LOG_SEV(lg(), warn) << "User chose blank master password";
+                        } else {
+                            BOOST_LOG_SEV(lg(), info) << "Master password created";
+                        }
+
+                        // Re-create with the new password
+                        connectionManager_ = std::make_unique<connections::service::connection_manager>(
+                            dbPath.toStdString(), masterPassword_.toStdString());
                     }
-
-                    // Re-create with the new password
-                    connectionManager_ = std::make_unique<connections::service::connection_manager>(
-                        dbPath.toStdString(), masterPassword_.toStdString());
+                    // If cancelled, continue with empty password (user can set it later)
                 }
-                // If cancelled, continue with empty password (user can set it later)
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Failed to initialize connection manager: "
@@ -1170,6 +1180,10 @@ void MainWindow::onConnectionBrowserTriggered() {
 
             // Update stored master password
             masterPassword_ = newPassword;
+
+            // Mark as configured (in case user is setting password for first time)
+            QSettings settings;
+            settings.setValue("connections/master_password_configured", true);
 
             MessageBoxHelper::information(this, tr("Password Changed"),
                 tr("Master password has been changed successfully."));

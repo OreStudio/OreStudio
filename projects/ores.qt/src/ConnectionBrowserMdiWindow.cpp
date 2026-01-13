@@ -95,6 +95,13 @@ void ConnectionBrowserMdiWindow::setupUI() {
         tr("Refresh"));
     refreshAction_->setToolTip(tr("Refresh connection list"));
 
+    toolBar_->addSeparator();
+
+    changeMasterPasswordAction_ = toolBar_->addAction(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_key_multiple_20_regular.svg", iconColor),
+        tr("Change Password"));
+    changeMasterPasswordAction_->setToolTip(tr("Change master password"));
+
     layout_->addWidget(toolBar_);
 
     // Create tree view
@@ -133,6 +140,8 @@ void ConnectionBrowserMdiWindow::setupUI() {
             this, &ConnectionBrowserMdiWindow::connectToSelected);
     connect(refreshAction_, &QAction::triggered,
             this, &ConnectionBrowserMdiWindow::reload);
+    connect(changeMasterPasswordAction_, &QAction::triggered,
+            this, &ConnectionBrowserMdiWindow::changeMasterPassword);
 
     connect(treeView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &ConnectionBrowserMdiWindow::onSelectionChanged);
@@ -421,6 +430,12 @@ void ConnectionBrowserMdiWindow::showContextMenu(const QPoint& pos) {
     menu.addAction(refreshAction_);
 
     menu.exec(treeView_->viewport()->mapToGlobal(pos));
+}
+
+void ConnectionBrowserMdiWindow::changeMasterPassword() {
+    using namespace ores::logging;
+    BOOST_LOG_SEV(lg(), debug) << "Change master password requested";
+    emit changeMasterPasswordRequested();
 }
 
 }

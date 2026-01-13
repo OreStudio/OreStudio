@@ -1126,6 +1126,46 @@ void MainWindow::onConnectionBrowserTriggered() {
     });
     connect(browserWidget, &ConnectionBrowserMdiWindow::connectRequested,
             this, &MainWindow::onConnectionConnectRequested);
+    connect(browserWidget, &ConnectionBrowserMdiWindow::changeMasterPasswordRequested,
+            this, [this]() {
+        BOOST_LOG_SEV(lg(), debug) << "Change master password requested from Connection Browser";
+
+        if (!connectionManager_) {
+            BOOST_LOG_SEV(lg(), warn) << "Connection manager not initialized";
+            return;
+        }
+
+        MasterPasswordDialog dialog(MasterPasswordDialog::Change, this);
+        if (dialog.exec() != QDialog::Accepted) {
+            return;
+        }
+
+        QString currentPassword = dialog.getPassword();
+        QString newPassword = dialog.getNewPassword();
+
+        // Verify the current password
+        if (currentPassword != masterPassword_) {
+            MessageBoxHelper::warning(this, tr("Invalid Password"),
+                tr("The current password is incorrect."));
+            return;
+        }
+
+        try {
+            // Re-encrypt all stored passwords with the new master password
+            connectionManager_->change_master_password(newPassword.toStdString());
+
+            // Update stored master password
+            masterPassword_ = newPassword;
+
+            MessageBoxHelper::information(this, tr("Password Changed"),
+                tr("Master password has been changed successfully."));
+            BOOST_LOG_SEV(lg(), info) << "Master password changed successfully";
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to change master password: " << e.what();
+            MessageBoxHelper::critical(this, tr("Error"),
+                tr("Failed to change master password: %1").arg(e.what()));
+        }
+    });
 
     // Create MDI sub-window
     connectionBrowserWindow_ = new DetachableMdiSubWindow();

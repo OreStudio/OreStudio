@@ -74,6 +74,11 @@ signals:
     void connectRequested(const boost::uuids::uuid& environmentId,
                           const QString& connectionName);
 
+    /**
+     * @brief Emitted when user requests to change the master password.
+     */
+    void changeMasterPasswordRequested();
+
 public slots:
     void reload();
     void createFolder();
@@ -81,6 +86,7 @@ public slots:
     void editSelected();
     void deleteSelected();
     void connectToSelected();
+    void changeMasterPassword();
 
 private slots:
     void onSelectionChanged();
@@ -101,6 +107,7 @@ private:
     QAction* deleteAction_;
     QAction* connectAction_;
     QAction* refreshAction_;
+    QAction* changeMasterPasswordAction_;
 
     std::unique_ptr<ConnectionTreeModel> model_;
     connections::service::connection_manager* manager_;

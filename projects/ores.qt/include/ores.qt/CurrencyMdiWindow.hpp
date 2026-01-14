@@ -70,7 +70,7 @@ signals:
     void errorOccurred(const QString& error_message);
     void selectionChanged(int selection_count);
     void addNewRequested();
-    void showCurrencyDetails(const risk::domain::currency& currency);
+    void showCurrencyDetails(const refdata::domain::currency& currency);
     void currencyDeleted(const QString& iso_code);
     void showCurrencyHistory(const QString& iso_code);
 

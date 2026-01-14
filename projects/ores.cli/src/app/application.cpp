@@ -37,12 +37,12 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.risk/orexml/importer.hpp"
-#include "ores.risk/orexml/exporter.hpp"
-#include "ores.risk/csv/exporter.hpp"
-#include "ores.risk/domain/currency_table.hpp"
-#include "ores.risk/domain/currency_json.hpp"
-#include "ores.risk/repository/currency_repository.hpp"
+#include "ores.refdata/orexml/importer.hpp"
+#include "ores.refdata/orexml/exporter.hpp"
+#include "ores.refdata/csv/exporter.hpp"
+#include "ores.refdata/domain/currency_table.hpp"
+#include "ores.refdata/domain/currency_json.hpp"
+#include "ores.refdata/repository/currency_repository.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/domain/role.hpp"
@@ -69,9 +69,9 @@
 #include "ores.iam/domain/change_reason_category_json_io.hpp"
 #include "ores.iam/domain/change_reason_category_table_io.hpp"
 #include "ores.iam/repository/change_reason_category_repository.hpp"
-#include "ores.risk/domain/country_json_io.hpp"
-#include "ores.risk/domain/country_table_io.hpp"
-#include "ores.risk/repository/country_repository.hpp"
+#include "ores.refdata/domain/country_json_io.hpp"
+#include "ores.refdata/domain/country_table_io.hpp"
+#include "ores.refdata/repository/country_repository.hpp"
 #include "ores.cli/config/export_options.hpp"
 #include "ores.cli/config/add_currency_options.hpp"
 #include "ores.cli/config/add_account_options.hpp"
@@ -86,12 +86,12 @@
 
 namespace ores::cli::app {
 
-using ore_importer = risk::orexml::importer;
-using ore_exporter = risk::orexml::exporter;
-using csv_exporter = risk::csv::exporter;
+using ore_importer = refdata::orexml::importer;
+using ore_exporter = refdata::orexml::exporter;
+using csv_exporter = refdata::csv::exporter;
 using namespace ores::logging;
-using ores::risk::domain::currency;
-using risk::repository::currency_repository;
+using ores::refdata::domain::currency;
+using refdata::repository::currency_repository;
 using connection = sqlgen::Result<rfl::Ref<sqlgen::postgres::Connection>>;
 
 database::context application::make_context(
@@ -154,7 +154,7 @@ import_data(const std::optional<config::import_options>& ocfg) const {
 void application::
 export_currencies(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting currency configurations.";
-    risk::repository::currency_repository rp;
+    refdata::repository::currency_repository rp;
 
     const auto reader([&]() {
         if (cfg.all_versions) {
@@ -182,12 +182,12 @@ export_currencies(const config::export_options& cfg) const {
         std::string ccy_cfgs = ore_exporter::export_currency_config(ccys);
         output_stream_ << ccy_cfgs << std::endl;
     } else if (cfg.target_format == config::format::json) {
-        output_stream_ << risk::domain::convert_to_json(ccys) << std::endl;
+        output_stream_ << refdata::domain::convert_to_json(ccys) << std::endl;
     } else if (cfg.target_format == config::format::csv) {
         std::string ccy_cfgs = csv_exporter::export_currency_config(ccys);
         output_stream_ << ccy_cfgs << std::endl;
     } else if (cfg.target_format == config::format::table) {
-        output_stream_ << risk::domain::convert_to_table(ccys) << std::endl;
+        output_stream_ << refdata::domain::convert_to_table(ccys) << std::endl;
     }
 }
 
@@ -367,8 +367,8 @@ void application::
 export_countries(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting countries.";
 
-    risk::repository::country_repository repo;
-    std::vector<risk::domain::country> items;
+    refdata::repository::country_repository repo;
+    std::vector<refdata::domain::country> items;
 
     if (!cfg.key.empty()) {
         if (cfg.all_versions) {
@@ -656,7 +656,7 @@ delete_permission(const config::delete_options& cfg) const {
 void application::
 delete_country(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting country: " << cfg.key;
-    risk::repository::country_repository repo;
+    refdata::repository::country_repository repo;
     repo.remove(context_, cfg.key);
     output_stream_ << "Country deleted successfully: " << cfg.key << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted country: " << cfg.key;
@@ -724,7 +724,7 @@ add_currency(const config::add_currency_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Adding currency: " << cfg.iso_code;
 
     // Construct currency from command-line arguments
-    risk::domain::currency currency;
+    refdata::domain::currency currency;
     currency.iso_code = cfg.iso_code;
     currency.name = cfg.name;
     currency.numeric_code = cfg.numeric_code.value_or("0");
@@ -921,7 +921,7 @@ void application::
 add_country(const config::add_country_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding country: " << cfg.alpha2_code;
 
-    risk::domain::country record;
+    refdata::domain::country record;
     record.alpha2_code = cfg.alpha2_code;
     record.alpha3_code = cfg.alpha3_code;
     record.name = cfg.name;
@@ -937,7 +937,7 @@ add_country(const config::add_country_options& cfg) const {
     if (cfg.change_commentary)
         record.change_commentary = *cfg.change_commentary;
 
-    risk::repository::country_repository repo;
+    refdata::repository::country_repository repo;
     repo.write(context_, record);
 
     output_stream_ << "Successfully added country: " << cfg.alpha2_code << std::endl;

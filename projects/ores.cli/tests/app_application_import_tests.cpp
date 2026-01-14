@@ -27,7 +27,7 @@
 #include "ores.testing/test_database_manager.hpp"
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
-#include "ores.risk/repository/currency_repository.hpp"
+#include "ores.refdata/repository/currency_repository.hpp"
 
 namespace {
 
@@ -69,7 +69,7 @@ TEST_CASE("import_currencies_from_test_file", tags) {
 
     app.run(opts);
 
-    risk::repository::currency_repository repo;
+    refdata::repository::currency_repository repo;
     auto read_currencies = repo.read_latest(h.context());
 
     BOOST_LOG_SEV(lg, debug) << "Read " << read_currencies.size()
@@ -129,7 +129,7 @@ TEST_CASE("import_currencies_from_multiple_files", tags) {
 
     app.run(opts);
 
-    risk::repository::currency_repository repo;
+    refdata::repository::currency_repository repo;
     auto read_currencies = repo.read_latest(h.context());
 
     BOOST_LOG_SEV(lg, debug) << "Total currencies in database: "
@@ -171,7 +171,7 @@ TEST_CASE("import_and_query_specific_currency", tags) {
     const std::string target_iso = "PGK";
     BOOST_LOG_SEV(lg, debug) << "Querying for currency: " << target_iso;
 
-    risk::repository::currency_repository repo;
+    refdata::repository::currency_repository repo;
     auto pgk_currencies = repo.read_latest(h.context(), target_iso);
 
     BOOST_LOG_SEV(lg, debug) << "Found " << pgk_currencies.size()
@@ -195,7 +195,7 @@ TEST_CASE("import_currencies_with_empty_database", tags) {
     ores::testing::database_helper h;
     h.truncate_table(database_table);
 
-    risk::repository::currency_repository repo;
+    refdata::repository::currency_repository repo;
     auto initial_currencies = repo.read_latest(h.context());
 
     BOOST_LOG_SEV(lg, debug) << "Initial currency count: "
@@ -259,7 +259,7 @@ TEST_CASE("import_currencies_verify_all_fields", tags) {
     app.run(opts);
     BOOST_LOG_SEV(lg, debug) << "Console output: " << os.str();
 
-    risk::repository::currency_repository repo;
+    refdata::repository::currency_repository repo;
     auto pgk_currencies = repo.read_latest(h.context(), "PGK");
     REQUIRE(!pgk_currencies.empty());
 
@@ -313,7 +313,7 @@ TEST_CASE("import_currencies_from_api_test_file", tags) {
     app.run(opts);
     BOOST_LOG_SEV(lg, debug) << "Console output: " << os.str();
 
-    risk::repository::currency_repository repo;
+    refdata::repository::currency_repository repo;
     auto read_currencies = repo.read_latest(h.context());
 
     BOOST_LOG_SEV(lg, debug) << "Verified " << read_currencies.size()

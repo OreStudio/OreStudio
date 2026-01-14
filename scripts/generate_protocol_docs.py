@@ -25,7 +25,7 @@ information, then generates comprehensive protocol documentation in org-mode for
 Output structure:
 - projects/modeling/protocol.org - Main index with links to subsystem docs
 - projects/ores.comms/modeling/ores.comms.protocol.org - Core protocol messages
-- projects/ores.risk/modeling/ores.risk.protocol.org - Risk protocol messages
+- projects/ores.refdata/modeling/ores.refdata.protocol.org - Risk protocol messages
 - projects/ores.accounts/modeling/ores.accounts.protocol.org - Accounts protocol messages
 - projects/ores.variability/modeling/ores.variability.protocol.org - Variability protocol messages
 """
@@ -102,7 +102,7 @@ SUBSYSTEMS = {
     ),
     "Risk": SubsystemInfo(
         name="Risk",
-        component="ores.risk",
+        component="ores.refdata",
         min_value=0x1000,
         max_value=0x1FFF,
         org_id="C2B3D4E5-F6A7-8901-BCDE-F12345678901"

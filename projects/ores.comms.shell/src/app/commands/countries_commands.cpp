@@ -23,8 +23,8 @@
 #include <functional>
 #include <cli/cli.h>
 #include "ores.comms/messaging/message_types.hpp"
-#include "ores.risk/messaging/country_protocol.hpp"
-#include "ores.risk/domain/country_table_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata/messaging/country_protocol.hpp"
+#include "ores.refdata/domain/country_table_io.hpp" // IWYU pragma: keep.
 
 namespace ores::comms::shell::app::commands {
 
@@ -72,7 +72,7 @@ void countries_commands::
 process_get_countries(std::ostream& out, client_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get countries request.";
 
-    using risk::messaging::get_countries_request;
+    using refdata::messaging::get_countries_request;
     auto result = session.process_request(get_countries_request{});
 
     if (!result) {
@@ -102,13 +102,13 @@ process_add_country(std::ostream& out, client_session& session,
     }
     const auto& recorded_by = session_info->username;
 
-    using risk::messaging::save_country_request;
-    using risk::messaging::save_country_response;
+    using refdata::messaging::save_country_request;
+    using refdata::messaging::save_country_response;
     auto result = session.process_authenticated_request<save_country_request,
                                                         save_country_response,
                                                         message_type::save_country_request>
         (save_country_request{
-            .country = risk::domain::country{
+            .country = refdata::domain::country{
                 .version = 0,
                 .alpha2_code = std::move(alpha2_code),
                 .alpha3_code = std::move(alpha3_code),
@@ -151,8 +151,8 @@ process_delete_country(std::ostream& out, client_session& session,
         return;
     }
 
-    using risk::messaging::delete_country_request;
-    using risk::messaging::delete_country_response;
+    using refdata::messaging::delete_country_request;
+    using refdata::messaging::delete_country_response;
     auto result = session.process_authenticated_request<delete_country_request,
                                                         delete_country_response,
                                                         message_type::delete_country_request>
@@ -195,8 +195,8 @@ process_get_country_history(std::ostream& out, client_session& session,
         return;
     }
 
-    using risk::messaging::get_country_history_request;
-    using risk::messaging::get_country_history_response;
+    using refdata::messaging::get_country_history_request;
+    using refdata::messaging::get_country_history_response;
     auto result = session.process_authenticated_request<get_country_history_request,
                                                         get_country_history_response,
                                                         message_type::get_country_history_request>

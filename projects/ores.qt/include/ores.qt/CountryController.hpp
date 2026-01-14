@@ -24,7 +24,7 @@
 #include <QList>
 #include <QDateTime>
 #include "ores.qt/EntityController.hpp"
-#include "ores.risk/domain/country.hpp"
+#include "ores.refdata/domain/country.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
@@ -67,10 +67,10 @@ public:
 
 private slots:
     void onAddNewRequested();
-    void onShowCountryDetails(const risk::domain::country& country);
+    void onShowCountryDetails(const refdata::domain::country& country);
     void onShowCountryHistory(const QString& alpha2Code);
-    void onOpenCountryVersion(const risk::domain::country& country, int versionNumber);
-    void onRevertCountry(const risk::domain::country& country);
+    void onOpenCountryVersion(const refdata::domain::country& country, int versionNumber);
+    void onRevertCountry(const refdata::domain::country& country);
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
                                 const QStringList& entityIds);
 

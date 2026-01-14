@@ -30,7 +30,7 @@
 #include <QTableWidget>
 #include <QProgressBar>
 #include <QFutureWatcher>
-#include "ores.risk/domain/currency.hpp"
+#include "ores.refdata/domain/currency.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -68,7 +68,7 @@ public:
      * @param parent Parent widget
      */
     explicit ImportCurrencyDialog(
-        const std::vector<risk::domain::currency>& currencies,
+        const std::vector<refdata::domain::currency>& currencies,
         const QString& filename,
         ClientManager* clientManager,
         const QString& username,
@@ -80,7 +80,7 @@ public:
      * @brief Get the currencies selected for import.
      * @return Vector of selected currencies
      */
-    [[nodiscard]] std::vector<risk::domain::currency>
+    [[nodiscard]] std::vector<refdata::domain::currency>
     getSelectedCurrencies() const;
 
 signals:
@@ -139,7 +139,7 @@ private:
     void updateSelectionCount();
 
 private:
-    std::vector<risk::domain::currency> currencies_;
+    std::vector<refdata::domain::currency> currencies_;
     std::vector<std::string> validation_errors_;
     QString filename_;
     ClientManager* clientManager_;

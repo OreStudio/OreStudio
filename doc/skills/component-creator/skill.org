@@ -19,7 +19,7 @@ license: Complete terms in LICENSE.txt
 
 When the user requests the creation of new components for ORE Studio.
 /Components/ in ORE Studio terminology, are the projects under the =projects=
-directory. Example of existing components: =ores.accounts=, =ores.risk=.
+directory. Example of existing components: =ores.accounts=, =ores.refdata=.
 
 * How to use this skill
 
@@ -46,7 +46,7 @@ Once these have been clarified, proceed with the execution steps below.
 Create the folder under =projects/COMPONENT=. Component names must follow the
 convention =ores.COMPONENT= where =COMPONENT= is all in lower case and ideally
 just one word (though exceptions can be made for two words). Example:
-=ores.risk=.
+=ores.refdata=.
 
 ** Step 2: Create the component part folders
 

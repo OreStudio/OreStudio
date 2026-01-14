@@ -29,8 +29,8 @@
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.risk/eventing/country_changed_event.hpp"
-#include "ores.risk/messaging/protocol.hpp"
+#include "ores.refdata/eventing/country_changed_event.hpp"
+#include "ores.refdata/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -40,7 +40,7 @@ using namespace ores::logging;
 namespace {
     // Event type name for country changes
     constexpr std::string_view country_event_name =
-        eventing::domain::event_traits<risk::eventing::country_changed_event>::name;
+        eventing::domain::event_traits<refdata::eventing::country_changed_event>::name;
 }
 
 CountryController::CountryController(
@@ -187,7 +187,7 @@ void CountryController::closeAllWindows() {
 void CountryController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new country requested";
     const QColor iconColor(220, 220, 220);
-    risk::domain::country new_country;
+    refdata::domain::country new_country;
 
     auto* detailDialog = new CountryDetailDialog(mainWindow_);
     if (clientManager_) {
@@ -245,7 +245,7 @@ void CountryController::onAddNewRequested() {
 }
 
 void CountryController::onShowCountryDetails(
-    const risk::domain::country& country) {
+    const refdata::domain::country& country) {
     BOOST_LOG_SEV(lg(), info) << "Showing country details for: "
                              << country.alpha2_code;
 
@@ -459,7 +459,7 @@ void CountryController::onNotificationReceived(
 }
 
 void CountryController::onOpenCountryVersion(
-    const risk::domain::country& country, int versionNumber) {
+    const refdata::domain::country& country, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for country: " << country.alpha2_code;
 
@@ -551,7 +551,7 @@ void CountryController::onOpenCountryVersion(
     }
 }
 
-void CountryController::onRevertCountry(const risk::domain::country& country) {
+void CountryController::onRevertCountry(const refdata::domain::country& country) {
     BOOST_LOG_SEV(lg(), info) << "Reverting country: " << country.alpha2_code;
 
     if (!clientManager_ || !clientManager_->isConnected()) {
@@ -560,7 +560,7 @@ void CountryController::onRevertCountry(const risk::domain::country& country) {
         return;
     }
 
-    risk::domain::country countryToSave = country;
+    refdata::domain::country countryToSave = country;
     countryToSave.recorded_by = username_.toStdString();
 
     QPointer<CountryController> self = this;
@@ -573,8 +573,8 @@ void CountryController::onRevertCountry(const risk::domain::country& country) {
 
             using comms::messaging::frame;
             using comms::messaging::message_type;
-            using risk::messaging::save_country_request;
-            using risk::messaging::save_country_response;
+            using refdata::messaging::save_country_request;
+            using refdata::messaging::save_country_response;
 
             save_country_request request{countryToSave};
             auto payload = request.serialize();

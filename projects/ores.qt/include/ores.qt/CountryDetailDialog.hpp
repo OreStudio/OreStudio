@@ -26,7 +26,7 @@
 #include <QPushButton>
 #include <memory>
 #include <vector>
-#include "ores.risk/domain/country.hpp"
+#include "ores.refdata/domain/country.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -63,8 +63,8 @@ public:
     void setImageCache(ImageCache* imageCache);
     void setChangeReasonCache(ChangeReasonCache* changeReasonCache);
 
-    void setCountry(const risk::domain::country& country);
-    [[nodiscard]] risk::domain::country getCountry() const;
+    void setCountry(const refdata::domain::country& country);
+    [[nodiscard]] refdata::domain::country getCountry() const;
     void clearDialog();
     void save();
 
@@ -93,7 +93,7 @@ public:
      * @param history All versions ordered newest-first (index 0 is latest)
      * @param versionNumber The version number to initially display
      */
-    void setHistory(const std::vector<risk::domain::country>& history,
+    void setHistory(const std::vector<refdata::domain::country>& history,
         int versionNumber);
 
     /**
@@ -122,7 +122,7 @@ signals:
      * @brief Emitted when user requests to revert to the displayed historical version.
      * @param country The country data to revert to.
      */
-    void revertRequested(const risk::domain::country& country);
+    void revertRequested(const refdata::domain::country& country);
 
 private slots:
     void onSaveClicked();
@@ -165,11 +165,11 @@ private:
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     ChangeReasonCache* changeReasonCache_;
-    risk::domain::country currentCountry_;
+    refdata::domain::country currentCountry_;
     QString pendingImageId_;
 
     // Version navigation members
-    std::vector<risk::domain::country> history_;
+    std::vector<refdata::domain::country> history_;
     int currentHistoryIndex_;
     QAction* firstVersionAction_;
     QAction* prevVersionAction_;

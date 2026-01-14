@@ -64,7 +64,7 @@ Qt entity.
 Before starting, gather the following information:
 
 - *Entity name*: The name of the entity (e.g., =currency=, =country=, =account=).
-- *Component location*: Which domain the entity belongs to (e.g., =ores.risk=, =ores.iam=).
+- *Component location*: Which domain the entity belongs to (e.g., =ores.refdata=, =ores.iam=).
 - *Display fields*: Which fields to show in the list view table.
 - *Editable fields*: Which fields can be edited in the detail dialog.
 - *Primary key*: The unique identifier field (e.g., =iso_code=, =id=, =alpha2_code=).

@@ -28,7 +28,7 @@
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.comms/net/client_session.hpp"
-#include "ores.risk/messaging/protocol.hpp"
+#include "ores.refdata/messaging/protocol.hpp"
 
 namespace ores::qt {
 
@@ -216,7 +216,7 @@ void ClientCountryModel::fetch_countries(std::uint32_t offset,
                                        << offset << ", limit=" << limit;
             if (!self) return {false, {}, 0};
 
-            risk::messaging::get_countries_request request;
+            refdata::messaging::get_countries_request request;
             request.offset = offset;
             request.limit = limit;
 
@@ -255,7 +255,7 @@ void ClientCountryModel::onCountriesLoaded() {
         }
 
         // Filter out duplicates from new results
-        std::vector<risk::domain::country> new_countries;
+        std::vector<refdata::domain::country> new_countries;
         for (auto& country : result.countries) {
             if (existing_codes.find(country.alpha2_code) == existing_codes.end()) {
                 new_countries.push_back(std::move(country));
@@ -298,14 +298,14 @@ void ClientCountryModel::onCountriesLoaded() {
     }
 }
 
-const risk::domain::country* ClientCountryModel::getCountry(int row) const {
+const refdata::domain::country* ClientCountryModel::getCountry(int row) const {
     if (row < 0 || row >= static_cast<int>(countries_.size()))
         return nullptr;
 
     return &countries_[row];
 }
 
-std::vector<risk::domain::country> ClientCountryModel::getCountries() const {
+std::vector<refdata::domain::country> ClientCountryModel::getCountries() const {
     return countries_;
 }
 

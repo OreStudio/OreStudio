@@ -41,7 +41,7 @@
 
 // Event types to subscribe to
 #include "ores.comms/eventing/connection_events.hpp"
-#include "ores.risk/eventing/currency_changed_event.hpp"
+#include "ores.refdata/eventing/currency_changed_event.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
 #include "ores.iam/eventing/account_changed_event.hpp"
 #include "ores.iam/eventing/role_assigned_event.hpp"
@@ -345,8 +345,8 @@ void EventViewerWindow::subscribeToEvents() {
 
     // Subscribe to currency changed events
     subscriptions_.push_back(
-        eventBus_->subscribe<risk::eventing::currency_changed_event>(
-            [this](const risk::eventing::currency_changed_event& e) {
+        eventBus_->subscribe<refdata::eventing::currency_changed_event>(
+            [this](const refdata::eventing::currency_changed_event& e) {
                 QJsonObject json;
                 json["timestamp"] = formatTimestamp(e.timestamp);
                 QJsonArray codes;
@@ -358,7 +358,7 @@ void EventViewerWindow::subscribeToEvents() {
                 EventRecord record{
                     toQDateTime(e.timestamp),
                     QString::fromUtf8(eventing::domain::event_traits<
-                        risk::eventing::currency_changed_event>::name),
+                        refdata::eventing::currency_changed_event>::name),
                     "local",
                     QString("%1 currency(ies) changed").arg(e.iso_codes.size()),
                     QString::fromUtf8(

@@ -36,7 +36,7 @@
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.iam/domain/change_reason_constants.hpp"
-#include "ores.risk/messaging/protocol.hpp"
+#include "ores.refdata/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.platform/time/datetime.hpp"
 
@@ -212,7 +212,7 @@ CountryDetailDialog::~CountryDetailDialog() {
     }
 }
 
-void CountryDetailDialog::setCountry(const risk::domain::country& country) {
+void CountryDetailDialog::setCountry(const refdata::domain::country& country) {
     currentCountry_ = country;
     isAddMode_ = country.alpha2_code.empty();
 
@@ -250,8 +250,8 @@ void CountryDetailDialog::setCountry(const risk::domain::country& country) {
     updateFlagDisplay();
 }
 
-risk::domain::country CountryDetailDialog::getCountry() const {
-    risk::domain::country country = currentCountry_;
+refdata::domain::country CountryDetailDialog::getCountry() const {
+    refdata::domain::country country = currentCountry_;
     country.alpha2_code = ui_->alpha2CodeEdit->text().toUpper().toStdString();
     country.alpha3_code = ui_->alpha3CodeEdit->text().toUpper().toStdString();
     country.numeric_code = ui_->numericCodeEdit->text().toStdString();
@@ -300,7 +300,7 @@ void CountryDetailDialog::onSaveClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Save clicked for country: "
                                << currentCountry_.alpha2_code;
 
-    risk::domain::country country = getCountry();
+    refdata::domain::country country = getCountry();
 
     // For updates (not creates), require change reason
     if (!isAddMode_) {
@@ -343,7 +343,7 @@ void CountryDetailDialog::onSaveClicked() {
             BOOST_LOG_SEV(lg(), debug) << "Sending save country request for: "
                                        << country.alpha2_code;
 
-            risk::messaging::save_country_request request{country};
+            refdata::messaging::save_country_request request{country};
             auto payload = request.serialize();
             frame request_frame = frame(message_type::save_country_request,
                 0, std::move(payload));
@@ -360,7 +360,7 @@ void CountryDetailDialog::onSaveClicked() {
             if (!payload_result)
                 return {false, "Failed to decompress server response"};
 
-            using risk::messaging::save_country_response;
+            using refdata::messaging::save_country_response;
             auto response = save_country_response::deserialize(*payload_result);
 
             bool result = false;
@@ -462,7 +462,7 @@ void CountryDetailDialog::onDeleteClicked() {
             BOOST_LOG_SEV(lg(), debug) << "Sending delete country request for: "
                                        << alpha2_code;
 
-            risk::messaging::delete_country_request request{{alpha2_code}};
+            refdata::messaging::delete_country_request request{{alpha2_code}};
             auto payload = request.serialize();
 
             frame request_frame(message_type::delete_country_request,
@@ -484,7 +484,7 @@ void CountryDetailDialog::onDeleteClicked() {
                 return {false, "Failed to decompress server response"};
             }
 
-            auto response = risk::messaging::delete_country_response::deserialize(
+            auto response = refdata::messaging::delete_country_response::deserialize(
                 *payload_result);
 
             if (!response) {
@@ -743,7 +743,7 @@ void CountryDetailDialog::showVersionNavActions(bool visible) {
 }
 
 void CountryDetailDialog::setHistory(
-    const std::vector<risk::domain::country>& history, int versionNumber) {
+    const std::vector<refdata::domain::country>& history, int versionNumber) {
     BOOST_LOG_SEV(lg(), debug) << "Setting history with " << history.size()
                                << " versions, displaying version " << versionNumber;
 

@@ -28,7 +28,7 @@
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.risk/domain/country.hpp"
+#include "ores.refdata/domain/country.hpp"
 
 namespace ores::qt {
 
@@ -113,14 +113,14 @@ public:
      * @param row The row index.
      * @return The country object, or nullptr if row is invalid.
      */
-    const risk::domain::country* getCountry(int row) const;
+    const refdata::domain::country* getCountry(int row) const;
 
     /**
      * @brief Get all countries.
      *
      * @return A vector containing all current countries.
      */
-    std::vector<risk::domain::country> getCountries() const;
+    std::vector<refdata::domain::country> getCountries() const;
 
     /**
      * @brief Get the page size used for pagination.
@@ -170,7 +170,7 @@ private:
 
     struct FetchResult {
         bool success;
-        std::vector<risk::domain::country> countries;
+        std::vector<refdata::domain::country> countries;
         std::uint32_t total_available_count;
     };
 
@@ -181,7 +181,7 @@ private:
 
     ClientManager* clientManager_;
     ImageCache* imageCache_;
-    std::vector<risk::domain::country> countries_;
+    std::vector<refdata::domain::country> countries_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};

@@ -29,7 +29,7 @@
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.comms/net/client_session.hpp"
-#include "ores.risk/messaging/protocol.hpp"
+#include "ores.refdata/messaging/protocol.hpp"
 
 namespace ores::qt {
 
@@ -231,7 +231,7 @@ void ClientCurrencyModel::fetch_currencies(std::uint32_t offset,
             if (!self) return {false, {}, 0};
 
             // Fetch currencies using typed request
-            risk::messaging::get_currencies_request request;
+            refdata::messaging::get_currencies_request request;
             request.offset = offset;
             request.limit = limit;
 
@@ -270,7 +270,7 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
         }
 
         // Filter out duplicates from new results
-        std::vector<risk::domain::currency> new_currencies;
+        std::vector<refdata::domain::currency> new_currencies;
         for (auto& curr : result.currencies) {
             if (existing_codes.find(curr.iso_code) == existing_codes.end()) {
                 new_currencies.push_back(std::move(curr));
@@ -316,14 +316,14 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
     }
 }
 
-const risk::domain::currency* ClientCurrencyModel::getCurrency(int row) const {
+const refdata::domain::currency* ClientCurrencyModel::getCurrency(int row) const {
     if (row < 0 || row >= static_cast<int>(currencies_.size()))
         return nullptr;
 
     return &currencies_[row];
 }
 
-std::vector<risk::domain::currency> ClientCurrencyModel::getCurrencies() const {
+std::vector<refdata::domain::currency> ClientCurrencyModel::getCurrencies() const {
     return currencies_;
 }
 
@@ -419,7 +419,7 @@ foreground_color(const std::string& iso_code) const {
 }
 
 void ClientCurrencyModel::
-add_synthetic_currencies(std::vector<risk::domain::currency> currencies) {
+add_synthetic_currencies(std::vector<refdata::domain::currency> currencies) {
     if (currencies.empty()) {
         return;
     }

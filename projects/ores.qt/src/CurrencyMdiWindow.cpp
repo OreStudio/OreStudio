@@ -49,12 +49,12 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/CurrencyItemDelegate.hpp"
 #include "ores.qt/ImportCurrencyDialog.hpp"
-#include "ores.risk/messaging/protocol.hpp"
+#include "ores.refdata/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
-#include "ores.risk/csv/exporter.hpp"
-#include "ores.risk/orexml/exporter.hpp"
-#include "ores.risk/orexml/importer.hpp"
-#include "ores.risk/generators/currency_generator.hpp"
+#include "ores.refdata/csv/exporter.hpp"
+#include "ores.refdata/orexml/exporter.hpp"
+#include "ores.refdata/orexml/importer.hpp"
+#include "ores.refdata/generators/currency_generator.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
@@ -475,7 +475,7 @@ void CurrencyMdiWindow::deleteSelected() {
                                    << iso_codes.size() << " currencies";
 
         // Create batch request with all ISO codes
-        risk::messaging::delete_currency_request request{iso_codes};
+        refdata::messaging::delete_currency_request request{iso_codes};
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -511,7 +511,7 @@ void CurrencyMdiWindow::deleteSelected() {
         }
 
         // Deserialize batch response
-        auto response = risk::messaging::delete_currency_response::
+        auto response = refdata::messaging::delete_currency_response::
             deserialize(*payload_result);
 
         if (!response) {
@@ -616,7 +616,7 @@ void CurrencyMdiWindow::exportToCSV() {
 
     try {
         // Export using the existing CSV exporter
-        using risk::csv::exporter;
+        using refdata::csv::exporter;
         std::string csvData = exporter::export_currency_config(currencies);
 
         QFile file(fileName);
@@ -672,7 +672,7 @@ void CurrencyMdiWindow::importFromXML() {
 
     try {
         // Parse the XML file using the existing importer
-        using risk::orexml::importer;
+        using refdata::orexml::importer;
         std::filesystem::path path(fileName.toStdString());
         auto currencies = importer::import_currency_config(path);
 
@@ -763,7 +763,7 @@ void CurrencyMdiWindow::exportToXML() {
     }
 
     try {
-        using risk::orexml::exporter;
+        using refdata::orexml::exporter;
         std::string xmlData = exporter::export_currency_config(currencies);
 
         QFile file(fileName);
@@ -1045,7 +1045,7 @@ void CurrencyMdiWindow::generateSynthetic() {
     BOOST_LOG_SEV(lg(), info) << "Generating " << count << " synthetic currencies";
 
     try {
-        auto currencies = risk::generators::generate_fictional_currencies(
+        auto currencies = refdata::generators::generate_fictional_currencies(
             static_cast<std::size_t>(count));
 
         if (currencies.empty()) {

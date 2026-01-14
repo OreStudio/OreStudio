@@ -752,7 +752,7 @@ Highlights:
   general-purpose utilities like logging, UUID generation, string manipulation,
   DateTime, Converter (Base32/Base64), and program options.
 - Dependency Updates: Build configurations (CMakeLists.txt) and PlantUML
-  diagrams across various projects (ores.risk, ores.telemetry, ores.testing)
+  diagrams across various projects (ores.refdata, ores.telemetry, ores.testing)
   have been updated to correctly reference the new ores.platform module where
   platform-specific functionalities are now located, ensuring proper linking and
   architectural representation.
@@ -794,7 +794,7 @@ Highlights:
   general-purpose utilities like logging, UUID generation, string manipulation,
   DateTime, Converter (Base32/Base64), and program options.
 - Dependency Updates: Build configurations (CMakeLists.txt) and PlantUML
-  diagrams across various projects (ores.risk, ores.telemetry, ores.testing)
+  diagrams across various projects (ores.refdata, ores.telemetry, ores.testing)
   have been updated to correctly reference the new ores.platform module where
   platform-specific functionalities are now located, ensuring proper linking and
   architectural representation.

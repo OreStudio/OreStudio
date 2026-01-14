@@ -26,8 +26,8 @@
 #include <QPushButton>
 #include <memory>
 #include <vector>
-#include "ores.risk/domain/currency.hpp"
-#include "ores.risk/domain/currency_version_history.hpp"
+#include "ores.refdata/domain/currency.hpp"
+#include "ores.refdata/domain/currency_version_history.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -64,8 +64,8 @@ public:
     void setImageCache(ImageCache* imageCache);
     void setChangeReasonCache(ChangeReasonCache* changeReasonCache);
 
-    void setCurrency(const risk::domain::currency& currency);
-    [[nodiscard]] risk::domain::currency getCurrency() const;
+    void setCurrency(const refdata::domain::currency& currency);
+    [[nodiscard]] refdata::domain::currency getCurrency() const;
     void clearDialog();
     void save();
 
@@ -94,7 +94,7 @@ public:
      * @param history All versions ordered newest-first (index 0 is latest)
      * @param versionNumber The version number to initially display
      */
-    void setHistory(const risk::domain::currency_version_history& history,
+    void setHistory(const refdata::domain::currency_version_history& history,
         int versionNumber);
 
     /**
@@ -123,7 +123,7 @@ signals:
      * @brief Emitted when user requests to revert to the displayed historical version.
      * @param currency The currency data to revert to.
      */
-    void revertRequested(const risk::domain::currency& currency);
+    void revertRequested(const refdata::domain::currency& currency);
 
 private slots:
     void onSaveClicked();
@@ -174,12 +174,12 @@ private:
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     ChangeReasonCache* changeReasonCache_;
-    risk::domain::currency currentCurrency_;
+    refdata::domain::currency currentCurrency_;
     QString pendingImageId_;
     static constexpr const char* max_timestamp = "9999-12-31 23:59:59";
 
     // Version navigation members
-    risk::domain::currency_version_history history_;
+    refdata::domain::currency_version_history history_;
     int currentHistoryIndex_;
     QAction* firstVersionAction_;
     QAction* prevVersionAction_;

@@ -70,7 +70,7 @@ signals:
     void errorOccurred(const QString& error_message);
     void selectionChanged(int selection_count);
     void addNewRequested();
-    void showCountryDetails(const risk::domain::country& country);
+    void showCountryDetails(const refdata::domain::country& country);
     void countryDeleted(const QString& alpha2_code);
     void showCountryHistory(const QString& alpha2_code);
 

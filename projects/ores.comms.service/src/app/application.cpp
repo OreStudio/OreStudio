@@ -26,9 +26,9 @@
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
-#include "ores.risk/messaging/registrar.hpp"
-#include "ores.risk/eventing/currency_changed_event.hpp"
-#include "ores.risk/eventing/country_changed_event.hpp"
+#include "ores.refdata/messaging/registrar.hpp"
+#include "ores.refdata/eventing/currency_changed_event.hpp"
+#include "ores.refdata/eventing/country_changed_event.hpp"
 #include "ores.iam/messaging/registrar.hpp"
 #include "ores.iam/eventing/account_changed_event.hpp"
 #include "ores.iam/eventing/change_reason_changed_event.hpp"
@@ -157,11 +157,11 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // Register entity-to-event mappings for each component
     eventing::service::registrar::register_mapping<
-        risk::eventing::currency_changed_event>(
+        refdata::eventing::currency_changed_event>(
         event_source, "ores.risk.currency", "ores_currencies",
         *channel_registry, "Currency data modified");
     eventing::service::registrar::register_mapping<
-        risk::eventing::country_changed_event>(
+        refdata::eventing::country_changed_event>(
         event_source, "ores.risk.country", "ores_countries",
         *channel_registry, "Country data modified");
     eventing::service::registrar::register_mapping<
@@ -201,18 +201,18 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // Bridge event bus to subscription manager - when domain events occur,
     // notify all clients subscribed to those event types
-    auto currency_sub = event_bus.subscribe<risk::eventing::currency_changed_event>(
-        [&subscription_mgr](const risk::eventing::currency_changed_event& e) {
+    auto currency_sub = event_bus.subscribe<refdata::eventing::currency_changed_event>(
+        [&subscription_mgr](const refdata::eventing::currency_changed_event& e) {
             using traits = eventing::domain::event_traits<
-                risk::eventing::currency_changed_event>;
+                refdata::eventing::currency_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
                                      e.iso_codes);
         });
 
-    auto country_sub = event_bus.subscribe<risk::eventing::country_changed_event>(
-        [&subscription_mgr](const risk::eventing::country_changed_event& e) {
+    auto country_sub = event_bus.subscribe<refdata::eventing::country_changed_event>(
+        [&subscription_mgr](const refdata::eventing::country_changed_event& e) {
             using traits = eventing::domain::event_traits<
-                risk::eventing::country_changed_event>;
+                refdata::eventing::country_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
                                      e.alpha2_codes);
         });
@@ -288,7 +288,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     auto geo_service = std::make_shared<geo::service::geolocation_service>(ctx);
 
     // Register subsystem handlers
-    ores::risk::messaging::registrar::register_handlers(*srv, ctx, system_flags,
+    ores::refdata::messaging::registrar::register_handlers(*srv, ctx, system_flags,
         srv->sessions());
     ores::iam::messaging::registrar::register_handlers(*srv, ctx, system_flags, auth_service,
         geo_service);

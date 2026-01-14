@@ -31,8 +31,8 @@
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.assets/messaging/assets_protocol.hpp"
-#include "ores.risk/messaging/currency_protocol.hpp"
-#include "ores.risk/messaging/country_protocol.hpp"
+#include "ores.refdata/messaging/currency_protocol.hpp"
+#include "ores.refdata/messaging/country_protocol.hpp"
 
 namespace ores::qt {
 
@@ -104,7 +104,7 @@ void ImageCache::loadCurrencyImageIds() {
                 return {false, {}};
             }
 
-            risk::messaging::get_currencies_request request;
+            refdata::messaging::get_currencies_request request;
             request.offset = 0;
             request.limit = 1000;
             auto payload = request.serialize();
@@ -126,7 +126,7 @@ void ImageCache::loadCurrencyImageIds() {
                 return {false, {}};
             }
 
-            auto response = risk::messaging::get_currencies_response::deserialize(*payload_result);
+            auto response = refdata::messaging::get_currencies_response::deserialize(*payload_result);
             if (!response) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to deserialize currencies response.";
                 return {false, {}};
@@ -191,7 +191,7 @@ void ImageCache::loadCountryImageIds() {
                 return {false, {}};
             }
 
-            risk::messaging::get_countries_request request;
+            refdata::messaging::get_countries_request request;
             request.offset = 0;
             request.limit = 1000;
             auto payload = request.serialize();
@@ -213,7 +213,7 @@ void ImageCache::loadCountryImageIds() {
                 return {false, {}};
             }
 
-            auto response = risk::messaging::get_countries_response::deserialize(*payload_result);
+            auto response = refdata::messaging::get_countries_response::deserialize(*payload_result);
             if (!response) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to deserialize countries response.";
                 return {false, {}};
@@ -695,7 +695,7 @@ void ImageCache::setCurrencyImage(const std::string& iso_code,
             if (!self) return {false, req_iso_code, "Widget destroyed"};
 
             // Step 1: Fetch currencies
-            risk::messaging::get_currencies_request get_request;
+            refdata::messaging::get_currencies_request get_request;
             get_request.offset = 0;
             get_request.limit = 1000;
             auto get_payload = get_request.serialize();
@@ -715,7 +715,7 @@ void ImageCache::setCurrencyImage(const std::string& iso_code,
             }
 
             auto get_response =
-                risk::messaging::get_currencies_response::deserialize(*get_payload_result);
+                refdata::messaging::get_currencies_response::deserialize(*get_payload_result);
             if (!get_response) {
                 return {false, req_iso_code, "Invalid currencies response"};
             }
@@ -738,7 +738,7 @@ void ImageCache::setCurrencyImage(const std::string& iso_code,
             currency.recorded_by = req_assigned_by;
 
             // Step 3: Save the updated currency
-            risk::messaging::save_currency_request save_request;
+            refdata::messaging::save_currency_request save_request;
             save_request.currency = currency;
             auto save_payload = save_request.serialize();
 
@@ -757,7 +757,7 @@ void ImageCache::setCurrencyImage(const std::string& iso_code,
             }
 
             auto save_response =
-                risk::messaging::save_currency_response::deserialize(*save_payload_result);
+                refdata::messaging::save_currency_response::deserialize(*save_payload_result);
             if (!save_response) {
                 return {false, req_iso_code, "Invalid save response"};
             }
@@ -810,7 +810,7 @@ void ImageCache::setCountryImage(const std::string& alpha2_code,
             if (!self) return {false, req_alpha2_code, "Widget destroyed"};
 
             // Step 1: Fetch countries
-            risk::messaging::get_countries_request get_request;
+            refdata::messaging::get_countries_request get_request;
             get_request.offset = 0;
             get_request.limit = 1000;
             auto get_payload = get_request.serialize();
@@ -830,7 +830,7 @@ void ImageCache::setCountryImage(const std::string& alpha2_code,
             }
 
             auto get_response =
-                risk::messaging::get_countries_response::deserialize(*get_payload_result);
+                refdata::messaging::get_countries_response::deserialize(*get_payload_result);
             if (!get_response) {
                 return {false, req_alpha2_code, "Invalid countries response"};
             }
@@ -853,7 +853,7 @@ void ImageCache::setCountryImage(const std::string& alpha2_code,
             country.recorded_by = req_assigned_by;
 
             // Step 3: Save the updated country
-            risk::messaging::save_country_request save_request;
+            refdata::messaging::save_country_request save_request;
             save_request.country = country;
             auto save_payload = save_request.serialize();
 
@@ -872,7 +872,7 @@ void ImageCache::setCountryImage(const std::string& alpha2_code,
             }
 
             auto save_response =
-                risk::messaging::save_country_response::deserialize(*save_payload_result);
+                refdata::messaging::save_country_response::deserialize(*save_payload_result);
             if (!save_response) {
                 return {false, req_alpha2_code, "Invalid save response"};
             }

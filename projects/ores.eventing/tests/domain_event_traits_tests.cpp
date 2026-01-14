@@ -19,7 +19,7 @@
  */
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.eventing/service/event_bus.hpp"
-#include "ores.risk/eventing/currency_changed_event.hpp"
+#include "ores.refdata/eventing/currency_changed_event.hpp"
 #include "ores.iam/eventing/account_changed_event.hpp"
 
 #include <catch2/catch_test_macros.hpp>
@@ -32,7 +32,7 @@ const std::string tags("[event_traits]");
 }
 
 using namespace ores::eventing::domain;
-using ores::risk::eventing::currency_changed_event;
+using ores::refdata::eventing::currency_changed_event;
 using ores::iam::eventing::account_changed_event;
 
 TEST_CASE("event_traits_currency_changed_event", tags) {

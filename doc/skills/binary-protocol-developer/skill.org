@@ -445,7 +445,7 @@ when subscribing to server-push notifications.
 
 | Provides | Description                              |
 |----------+------------------------------------------|
-| =name=   | The event type name (e.g., "ores.risk.currency_changed") |
+| =name=   | The event type name (e.g., "ores.refdata.currency_changed") |
 
 Location: =ores.eventing/domain/event_traits.hpp=
 
@@ -463,7 +463,7 @@ Example flow:
 #+begin_src cpp
 // 1. Get event name from event_traits
 constexpr auto event_name = event_traits<currency_changed_event>::name;
-// Result: "ores.risk.currency_changed"
+// Result: "ores.refdata.currency_changed"
 
 // 2. Build subscribe request
 subscribe_request req{.event_type = std::string{event_name}};

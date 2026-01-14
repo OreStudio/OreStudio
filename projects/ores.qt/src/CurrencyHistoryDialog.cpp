@@ -30,7 +30,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.risk/messaging/protocol.hpp"
+#include "ores.refdata/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -103,7 +103,7 @@ void CurrencyHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), info) << "Loading currency history for: "
                               << isoCode_.toStdString();
 
-    risk::messaging::get_currency_history_request request{isoCode_.toStdString()};
+    refdata::messaging::get_currency_history_request request{isoCode_.toStdString()};
     auto payload = request.serialize();
 
     frame request_frame(message_type::get_currency_history_request,
@@ -156,7 +156,7 @@ void CurrencyHistoryDialog::loadHistory() {
             return;
         }
 
-        auto response = risk::messaging::get_currency_history_response::
+        auto response = refdata::messaging::get_currency_history_response::
             deserialize(*payload_result);
 
         if (!response) {
@@ -345,8 +345,8 @@ void CurrencyHistoryDialog::displayFullDetailsTab(int version_index) {
 }
 
 CurrencyHistoryDialog::DiffResult CurrencyHistoryDialog::
-calculateDiff(const risk::domain::currency_version& current,
-    const risk::domain::currency_version& previous) {
+calculateDiff(const refdata::domain::currency_version& current,
+    const refdata::domain::currency_version& previous) {
 
     DiffResult diffs;
 
@@ -509,7 +509,7 @@ void CurrencyHistoryDialog::onRevertClicked() {
     }
 
     // Use the PREVIOUS version's data (the "old" side of the diff) with the latest version number
-    risk::domain::currency currency = previous.data;
+    refdata::domain::currency currency = previous.data;
     currency.version = history_.versions[0].version_number;
     emit revertVersionRequested(currency);
 }

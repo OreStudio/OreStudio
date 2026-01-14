@@ -317,7 +317,7 @@ Highlights:
 - Directory Renaming for Clarity: The sql/data/ directory, containing various
   population scripts and assets, has been renamed to sql/populate/ to better
   reflect its purpose.
-- Test Suite Adaptation: Numerous test cases across ores.iam, ores.risk, and
+- Test Suite Adaptation: Numerous test cases across ores.iam, ores.refdata, and
   ores.variability have been updated to correctly handle pre-seeded database
   data, moving away from assumptions of empty databases and instead accounting
   for existing entries.
@@ -685,7 +685,7 @@ Highlights:
 
 - ISO 3166-1 Country Support: Introduced a comprehensive system for managing ISO
   3166-1 countries, including domain models, bitemporal repository, and a
-  dedicated service layer within the ores.risk module.
+  dedicated service layer within the ores.refdata module.
 - Database Schema and Population: Added new SQL scripts to create a bitemporal
   countries table and populate it with data for all 249 ISO 3166-1 countries.
   Also included drop scripts for cleanup.

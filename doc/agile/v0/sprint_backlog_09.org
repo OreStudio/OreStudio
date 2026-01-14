@@ -1457,7 +1457,7 @@ Tasks:
 - Instrument =server_session= with root span on connection, child spans per
   request.
 - Instrument =client_session= with spans for outgoing requests.
-- Pass =telemetry_context= through message handlers in ores.iam, ores.risk, etc.
+- Pass =telemetry_context= through message handlers in ores.iam, ores.refdata, etc.
 - Add spans for database operations in ores.database.
 
 *** Add widget to manage assets                                        :code:

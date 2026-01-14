@@ -70,7 +70,7 @@ Before starting, gather the following information from the user:
 
 - *Domain type name*: the name of the new type (e.g., =currency=, =account=).
 - *Component location*: which component the domain type belongs to (e.g.,
-  =ores.risk=, =ores.accounts=).
+  =ores.refdata=, =ores.accounts=).
 - *Fields*: list of fields with their types and descriptions.
 
 ** Phase 1: Domain class and I/O support

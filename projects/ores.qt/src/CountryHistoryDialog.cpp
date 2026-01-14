@@ -30,7 +30,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.risk/messaging/protocol.hpp"
+#include "ores.refdata/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -103,7 +103,7 @@ void CountryHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), info) << "Loading country history for: "
                               << alpha2Code_.toStdString();
 
-    risk::messaging::get_country_history_request request{alpha2Code_.toStdString()};
+    refdata::messaging::get_country_history_request request{alpha2Code_.toStdString()};
     auto payload = request.serialize();
 
     frame request_frame(message_type::get_country_history_request,
@@ -156,7 +156,7 @@ void CountryHistoryDialog::loadHistory() {
             return;
         }
 
-        auto response = risk::messaging::get_country_history_response::
+        auto response = refdata::messaging::get_country_history_response::
             deserialize(*payload_result);
 
         if (!response) {
@@ -342,8 +342,8 @@ void CountryHistoryDialog::displayFullDetailsTab(int version_index) {
 }
 
 CountryHistoryDialog::DiffResult CountryHistoryDialog::
-calculateDiff(const risk::domain::country& current,
-    const risk::domain::country& previous) {
+calculateDiff(const refdata::domain::country& current,
+    const refdata::domain::country& previous) {
 
     DiffResult diffs;
 
@@ -490,7 +490,7 @@ void CountryHistoryDialog::onRevertClicked() {
     }
 
     // Use the PREVIOUS version's data (the "old" side of the diff) with the latest version number
-    risk::domain::country countryToRevert = previous;
+    refdata::domain::country countryToRevert = previous;
     countryToRevert.version = history_[0].version;
     emit revertVersionRequested(countryToRevert);
 }

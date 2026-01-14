@@ -210,7 +210,7 @@ package "Infrastructure Layer" #F2F2F2 {
 
 ' Domain Layer
 package "Domain Layer" #F2F2F2 {
-    component [ores.risk] as risk #F7E5FF
+    component [ores.refdata] as risk #F7E5FF
 
     note right of risk
     Core domain model for Open Risk Engine (ORE) types following ORE specifications:

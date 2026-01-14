@@ -74,7 +74,7 @@ The system is organised into four architectural layers:
 
 ** Domain Layer
 
-- [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.risk]]: ORE domain model with XML/CSV/JSON I/O and temporal versioning.
+- [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]]: ORE domain model with XML/CSV/JSON I/O and temporal versioning.
 - [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]]: User authentication, authorisation, and session management.
 - Depends on: Foundation, Infrastructure
 

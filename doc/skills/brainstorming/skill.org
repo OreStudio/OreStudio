@@ -216,7 +216,7 @@ If continuing to implementation:
 
 #+begin_example
 User: I want to add caching to the currency lookups.
-Claude: Let me understand your requirements. Looking at ores.risk, I see
+Claude: Let me understand your requirements. Looking at ores.refdata, I see
 currency lookups happen in the repository layer. First question:
 
 What is the primary goal - reducing database load, or improving response time

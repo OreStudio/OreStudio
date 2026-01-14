@@ -26,8 +26,8 @@
 #include "ores.wt/app/account_dialog.hpp"
 #include "ores.wt/service/application_context.hpp"
 #include "ores.iam/domain/login_info.hpp"
-#include "ores.risk/domain/currency.hpp"
-#include "ores.risk/domain/country.hpp"
+#include "ores.refdata/domain/currency.hpp"
+#include "ores.refdata/domain/country.hpp"
 #include "ores.logging/make_logger.hpp"
 #include <Wt/WBootstrap5Theme.h>
 #include <Wt/WNavigationBar.h>
@@ -57,14 +57,14 @@ auto& lg() {
     return instance;
 }
 
-currency_row to_row(const risk::domain::currency& c) {
+currency_row to_row(const refdata::domain::currency& c) {
     return {c.iso_code, c.name, c.symbol, c.numeric_code, c.currency_type,
             c.version};
 }
 
-risk::domain::currency to_domain(const currency_data& d,
+refdata::domain::currency to_domain(const currency_data& d,
                                   const std::string& username) {
-    risk::domain::currency c;
+    refdata::domain::currency c;
     c.version = d.version;
     c.iso_code = d.iso_code;
     c.name = d.name;
@@ -80,7 +80,7 @@ risk::domain::currency to_domain(const currency_data& d,
     return c;
 }
 
-currency_data to_data(const risk::domain::currency& c) {
+currency_data to_data(const refdata::domain::currency& c) {
     currency_data d;
     d.iso_code = c.iso_code;
     d.name = c.name;
@@ -96,13 +96,13 @@ currency_data to_data(const risk::domain::currency& c) {
     return d;
 }
 
-country_row to_country_row(const risk::domain::country& c) {
+country_row to_country_row(const refdata::domain::country& c) {
     return {c.alpha2_code, c.alpha3_code, c.name, c.numeric_code, c.version};
 }
 
-risk::domain::country to_country_domain(const country_data& d,
+refdata::domain::country to_country_domain(const country_data& d,
                                          const std::string& username) {
-    risk::domain::country c;
+    refdata::domain::country c;
     c.version = d.version;
     c.alpha2_code = d.alpha2_code;
     c.alpha3_code = d.alpha3_code;
@@ -113,7 +113,7 @@ risk::domain::country to_country_domain(const country_data& d,
     return c;
 }
 
-country_data to_country_data(const risk::domain::country& c) {
+country_data to_country_data(const refdata::domain::country& c) {
     country_data d;
     d.alpha2_code = c.alpha2_code;
     d.alpha3_code = c.alpha3_code;

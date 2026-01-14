@@ -53,7 +53,7 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.iam.lib
-        ores.risk.lib
+        ores.refdata.lib
         ores.variability.lib
         ores.assets.lib
         ores.eventing.lib

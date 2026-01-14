@@ -47,7 +47,7 @@ struct export_options final {
     /**
      * @brief If true, output all versions of this entity.
      */
-    bool all_versions;
+    bool all_versions{false};
     /**
      * @brief Format to use for the export.
      */

@@ -32,7 +32,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.iam/messaging/change_management_protocol.hpp"
+#include "ores.dq/messaging/change_management_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -163,7 +163,7 @@ void ChangeReasonDetailDialog::setUsername(const std::string& username) {
 }
 
 void ChangeReasonDetailDialog::setCategories(
-    const std::vector<iam::domain::change_reason_category>& categories) {
+    const std::vector<dq::domain::change_reason_category>& categories) {
     categories_ = categories;
     populateCategoryComboBox();
 }
@@ -178,7 +178,7 @@ void ChangeReasonDetailDialog::populateCategoryComboBox() {
 }
 
 void ChangeReasonDetailDialog::setChangeReason(
-    const iam::domain::change_reason& reason) {
+    const dq::domain::change_reason& reason) {
     currentReason_ = reason;
 
     ui_->codeEdit->setText(QString::fromStdString(reason.code));
@@ -206,8 +206,8 @@ void ChangeReasonDetailDialog::setChangeReason(
     updateSaveButtonState();
 }
 
-iam::domain::change_reason ChangeReasonDetailDialog::getChangeReason() const {
-    iam::domain::change_reason reason = currentReason_;
+dq::domain::change_reason ChangeReasonDetailDialog::getChangeReason() const {
+    dq::domain::change_reason reason = currentReason_;
     reason.code = ui_->codeEdit->text().trimmed().toStdString();
     reason.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     reason.category_code = ui_->categoryCodeComboBox->currentData().toString().toStdString();
@@ -260,7 +260,7 @@ void ChangeReasonDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
 }
 
 void ChangeReasonDetailDialog::setHistory(
-    const std::vector<iam::domain::change_reason>& history, int versionNumber) {
+    const std::vector<dq::domain::change_reason>& history, int versionNumber) {
     history_ = history;
 
     // Find the index of the requested version
@@ -278,7 +278,7 @@ void ChangeReasonDetailDialog::setHistory(
 }
 
 void ChangeReasonDetailDialog::clearDialog() {
-    currentReason_ = iam::domain::change_reason{};
+    currentReason_ = dq::domain::change_reason{};
 
     ui_->codeEdit->clear();
     ui_->descriptionEdit->clear();
@@ -438,7 +438,7 @@ void ChangeReasonDetailDialog::onSaveClicked() {
                                << currentReason_.code;
 
     QPointer<ChangeReasonDetailDialog> self = this;
-    iam::domain::change_reason reasonToSave = getChangeReason();
+    dq::domain::change_reason reasonToSave = getChangeReason();
     reasonToSave.change_commentary = commentary.toStdString();
 
     QFuture<FutureResult> future =
@@ -448,7 +448,7 @@ void ChangeReasonDetailDialog::onSaveClicked() {
             BOOST_LOG_SEV(lg(), debug) << "Sending save change reason request for: "
                                        << reasonToSave.code;
 
-            iam::messaging::save_change_reason_request request;
+            dq::messaging::save_change_reason_request request;
             request.reason = reasonToSave;
 
             auto payload = request.serialize();
@@ -467,7 +467,7 @@ void ChangeReasonDetailDialog::onSaveClicked() {
                 return {false, "Failed to decompress server response"};
             }
 
-            auto response = iam::messaging::save_change_reason_response::
+            auto response = dq::messaging::save_change_reason_response::
                 deserialize(*payload_result);
 
             if (!response) {
@@ -544,7 +544,7 @@ void ChangeReasonDetailDialog::onDeleteClicked() {
             BOOST_LOG_SEV(lg(), debug) << "Sending delete change reason request for: "
                                        << code;
 
-            iam::messaging::delete_change_reason_request request;
+            dq::messaging::delete_change_reason_request request;
             request.codes = {code};
 
             auto payload = request.serialize();
@@ -563,7 +563,7 @@ void ChangeReasonDetailDialog::onDeleteClicked() {
                 return {false, "Failed to decompress server response"};
             }
 
-            auto response = iam::messaging::delete_change_reason_response::
+            auto response = dq::messaging::delete_change_reason_response::
                 deserialize(*payload_result);
 
             if (!response) {

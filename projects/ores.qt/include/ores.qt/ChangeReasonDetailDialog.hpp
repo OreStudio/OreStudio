@@ -26,8 +26,8 @@
 #include <QToolBar>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/change_reason.hpp"
-#include "ores.iam/domain/change_reason_category.hpp"
+#include "ores.dq/domain/change_reason.hpp"
+#include "ores.dq/domain/change_reason_category.hpp"
 
 namespace Ui {
 class ChangeReasonDetailDialog;
@@ -61,16 +61,16 @@ public:
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
 
-    void setChangeReason(const iam::domain::change_reason& reason);
-    iam::domain::change_reason getChangeReason() const;
+    void setChangeReason(const dq::domain::change_reason& reason);
+    dq::domain::change_reason getChangeReason() const;
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly, int versionNumber = 0);
-    void setHistory(const std::vector<iam::domain::change_reason>& history,
+    void setHistory(const std::vector<dq::domain::change_reason>& history,
                     int versionNumber);
     void clearDialog();
     void save();
 
-    void setCategories(const std::vector<iam::domain::change_reason_category>& categories);
+    void setCategories(const std::vector<dq::domain::change_reason_category>& categories);
 
     QString changeReasonCode() const;
     bool isDirty() const { return isDirty_; }
@@ -109,8 +109,8 @@ private:
     QAction* deleteAction_;
     QAction* revertAction_;
 
-    iam::domain::change_reason currentReason_;
-    std::vector<iam::domain::change_reason_category> categories_;
+    dq::domain::change_reason currentReason_;
+    std::vector<dq::domain::change_reason_category> categories_;
     bool isDirty_;
     bool isAddMode_;
     bool isReadOnly_;
@@ -118,7 +118,7 @@ private:
     ClientManager* clientManager_;
 
     // Version navigation members
-    std::vector<iam::domain::change_reason> history_;
+    std::vector<dq::domain::change_reason> history_;
     int currentHistoryIndex_;
     QAction* firstVersionAction_;
     QAction* prevVersionAction_;

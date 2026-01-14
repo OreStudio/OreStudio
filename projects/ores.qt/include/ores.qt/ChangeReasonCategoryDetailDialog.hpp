@@ -26,7 +26,7 @@
 #include <QToolBar>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/change_reason_category.hpp"
+#include "ores.dq/domain/change_reason_category.hpp"
 
 namespace Ui {
 class ChangeReasonCategoryDetailDialog;
@@ -60,11 +60,11 @@ public:
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
 
-    void setCategory(const iam::domain::change_reason_category& category);
-    iam::domain::change_reason_category getCategory() const;
+    void setCategory(const dq::domain::change_reason_category& category);
+    dq::domain::change_reason_category getCategory() const;
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly, int versionNumber = 0);
-    void setHistory(const std::vector<iam::domain::change_reason_category>& history,
+    void setHistory(const std::vector<dq::domain::change_reason_category>& history,
                     int versionNumber);
     void clearDialog();
     void save();
@@ -105,7 +105,7 @@ private:
     QAction* deleteAction_;
     QAction* revertAction_;
 
-    iam::domain::change_reason_category currentCategory_;
+    dq::domain::change_reason_category currentCategory_;
     bool isDirty_;
     bool isAddMode_;
     bool isReadOnly_;
@@ -113,7 +113,7 @@ private:
     ClientManager* clientManager_;
 
     // Version navigation members
-    std::vector<iam::domain::change_reason_category> history_;
+    std::vector<dq::domain::change_reason_category> history_;
     int currentHistoryIndex_;
     QAction* firstVersionAction_;
     QAction* prevVersionAction_;

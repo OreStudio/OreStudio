@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: A7E3F8C2-4B91-4D5E-8F3A-1C6D9E2B5A7F
+:END:
+#+title: ORE Studio Data Quality Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Data quality infrastructure for tracking and ensuring data integrity in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio Data Quality Component Diagram
+[[file:ores.dq.png][file:ores.dq.png]]
+
+Provides comprehensive data quality management capabilities for ORE Studio
+components. Key features:
+
+- Data lineage: Track the origin and transformations of data throughout the
+  system.
+- Data provenance: Record metadata about data sources, processing steps, and
+  ownership.
+- Quality metrics: Define and store validation rules and quality measurements.
+- Audit trails: Maintain history of data changes and transformations.
+- Data profiling: Store statistical metadata about data characteristics.
+
+The component is organized into the following facets:
+
+| Facet      | Description                                       |
+|------------+---------------------------------------------------|
+| domain     | Core data quality types and value objects         |
+| service    | Business logic for data quality operations        |
+| repository | Persistence layer for data quality metadata       |
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

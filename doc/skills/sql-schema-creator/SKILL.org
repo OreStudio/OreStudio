@@ -106,12 +106,12 @@ Functions: =iam_rbac_functions_create.sql= (contains RBAC helper functions)
 |---------------------------+----------------------------------------+----------------------------------------|
 | currencies                | =refdata_currencies_tbl=               | =ores.refdata/.../currency_entity.hpp= |
 | countries                 | =refdata_countries_tbl=                | =ores.refdata/.../country_entity.hpp=  |
-| change_reasons            | =refdata_change_reasons_tbl=           | (SQL only - used by triggers)          |
-| change_reason_categories  | =refdata_change_reason_categories_tbl= | (SQL only - used by triggers)          |
+| change_reasons            | =dq_change_reasons_tbl=           | (SQL only - used by triggers)          |
+| change_reason_categories  | =dq_change_reason_categories_tbl= | (SQL only - used by triggers)          |
 
 Schema files: =refdata_currencies_create.sql=, =refdata_countries_create.sql=,
-=refdata_change_reasons_create.sql=, =refdata_change_reason_categories_create.sql=
-Functions: =refdata_change_reason_functions_create.sql= (validation functions)
+=dq_change_reasons_create.sql=, =dq_change_reason_categories_create.sql=
+Functions: =dq_change_reason_functions_create.sql= (validation functions)
 
 *** Assets Component (=assets_=)
 
@@ -421,7 +421,7 @@ from ores.{component}_{entity}_tbl
 where valid_to = ores.utility_infinity_timestamp_fn();
 #+end_src
 
-Follow the pattern in =projects/ores.sql/populate/refdata_change_reasons_populate.sql=.
+Follow the pattern in =projects/ores.sql/populate/dq_change_reasons_populate.sql=.
 
 ** Step 5: Update C++ entity file
 
@@ -452,7 +452,7 @@ Entity files are located at:
 
 The file is organized in sections:
 - Utility functions
-- Change control tables (refdata_change_reason_*)
+- Change control tables (dq_change_reason_*)
 - IAM tables
 - Reference data tables
 - Assets tables
@@ -510,7 +510,7 @@ All entity tables use bitemporal support with:
 - =valid_from= / =valid_to=: Validity period for the record
 - =version=: Incrementing version number for optimistic concurrency
 - =modified_by=: Username or system identifier that made the change
-- =change_reason_code=: Reference to =refdata_change_reasons_tbl=
+- =change_reason_code=: Reference to =dq_change_reasons_tbl=
 - =change_commentary=: Free-text explanation of the change
 - GiST exclusion constraint to prevent overlapping validity periods
 
@@ -547,7 +547,7 @@ The trigger calls =ores.refdata_validate_change_reason_fn()= to ensure the code 
 new.change_reason_code := ores.refdata_validate_change_reason_fn(new.change_reason_code);
 #+end_src
 
-This validates that the change reason code exists in =refdata_change_reasons_tbl= and
+This validates that the change reason code exists in =dq_change_reasons_tbl= and
 raises an exception with SQLSTATE 23503 if invalid.
 
 * Integration with Domain Type Creator

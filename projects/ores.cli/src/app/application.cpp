@@ -63,12 +63,12 @@
 #include "ores.iam/domain/permission_json.hpp"
 #include "ores.iam/domain/permission_table.hpp"
 #include "ores.iam/repository/permission_repository.hpp"
-#include "ores.iam/domain/change_reason_json_io.hpp"
-#include "ores.iam/domain/change_reason_table_io.hpp"
-#include "ores.iam/repository/change_reason_repository.hpp"
-#include "ores.iam/domain/change_reason_category_json_io.hpp"
-#include "ores.iam/domain/change_reason_category_table_io.hpp"
-#include "ores.iam/repository/change_reason_category_repository.hpp"
+#include "ores.dq/domain/change_reason_json_io.hpp"
+#include "ores.dq/domain/change_reason_table_io.hpp"
+#include "ores.dq/repository/change_reason_repository.hpp"
+#include "ores.dq/domain/change_reason_category_json_io.hpp"
+#include "ores.dq/domain/change_reason_category_table_io.hpp"
+#include "ores.dq/repository/change_reason_category_repository.hpp"
 #include "ores.refdata/domain/country_json_io.hpp"
 #include "ores.refdata/domain/country_table_io.hpp"
 #include "ores.refdata/repository/country_repository.hpp"
@@ -411,8 +411,8 @@ void application::
 export_change_reasons(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting change reasons.";
 
-    iam::repository::change_reason_repository repo(context_);
-    std::vector<iam::domain::change_reason> items;
+    dq::repository::change_reason_repository repo(context_);
+    std::vector<dq::domain::change_reason> items;
 
     if (!cfg.key.empty()) {
         if (cfg.all_versions) {
@@ -447,8 +447,8 @@ void application::
 export_change_reason_categories(const config::export_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Exporting change reason categories.";
 
-    iam::repository::change_reason_category_repository repo(context_);
-    std::vector<iam::domain::change_reason_category> items;
+    dq::repository::change_reason_category_repository repo(context_);
+    std::vector<dq::domain::change_reason_category> items;
 
     if (!cfg.key.empty()) {
         if (cfg.all_versions) {
@@ -665,7 +665,7 @@ delete_country(const config::delete_options& cfg) const {
 void application::
 delete_change_reason(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting change reason: " << cfg.key;
-    iam::repository::change_reason_repository repo(context_);
+    dq::repository::change_reason_repository repo(context_);
     repo.remove(cfg.key);
     output_stream_ << "Change reason deleted successfully: " << cfg.key << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted change reason: " << cfg.key;
@@ -674,7 +674,7 @@ delete_change_reason(const config::delete_options& cfg) const {
 void application::
 delete_change_reason_category(const config::delete_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Deleting change reason category: " << cfg.key;
-    iam::repository::change_reason_category_repository repo(context_);
+    dq::repository::change_reason_category_repository repo(context_);
     repo.remove(cfg.key);
     output_stream_ << "Change reason category deleted successfully: " << cfg.key << std::endl;
     BOOST_LOG_SEV(lg(), info) << "Deleted change reason category: " << cfg.key;
@@ -948,7 +948,7 @@ void application::
 add_change_reason(const config::add_change_reason_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding change reason: " << cfg.code;
 
-    iam::domain::change_reason record;
+    dq::domain::change_reason record;
     record.code = cfg.code;
     record.description = cfg.description;
     record.category_code = cfg.category_code;
@@ -966,7 +966,7 @@ add_change_reason(const config::add_change_reason_options& cfg) const {
     if (cfg.change_commentary)
         record.change_commentary = *cfg.change_commentary;
 
-    iam::repository::change_reason_repository repo(context_);
+    dq::repository::change_reason_repository repo(context_);
     repo.write({record});
 
     output_stream_ << "Successfully added change reason: " << cfg.code << std::endl;
@@ -977,7 +977,7 @@ void application::
 add_change_reason_category(const config::add_change_reason_category_options& cfg) const {
     BOOST_LOG_SEV(lg(), debug) << "Adding change reason category: " << cfg.code;
 
-    iam::domain::change_reason_category record;
+    dq::domain::change_reason_category record;
     record.code = cfg.code;
     record.description = cfg.description;
     record.recorded_by = cfg.recorded_by;
@@ -986,7 +986,7 @@ add_change_reason_category(const config::add_change_reason_category_options& cfg
     if (cfg.change_commentary)
         record.change_commentary = *cfg.change_commentary;
 
-    iam::repository::change_reason_category_repository repo(context_);
+    dq::repository::change_reason_category_repository repo(context_);
     repo.write({record});
 
     output_stream_ << "Successfully added change reason category: " << cfg.code << std::endl;

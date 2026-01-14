@@ -29,7 +29,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientChangeReasonCategoryModel.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/change_reason_category.hpp"
+#include "ores.dq/domain/change_reason_category.hpp"
 
 namespace ores::qt {
 
@@ -69,7 +69,7 @@ public slots:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showCategoryDetails(const iam::domain::change_reason_category& category);
+    void showCategoryDetails(const dq::domain::change_reason_category& category);
     void addNewRequested();
     void categoryDeleted(const QString& code);
     void showCategoryHistory(const QString& code);

@@ -22,14 +22,14 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/lexical_cast.hpp>
-#include "ores.iam/domain/change_reason_constants.hpp"
+#include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.iam/domain/permission.hpp"
 #include "ores.iam/domain/role.hpp"
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/authorization_protocol.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
-#include "ores.iam/messaging/change_management_protocol.hpp"
+#include "ores.dq/messaging/change_management_protocol.hpp"
 #include "ores.iam/service/signup_service.hpp"
 #include "ores.iam/service/session_converter.hpp"
 
@@ -37,7 +37,29 @@ namespace ores::iam::messaging {
 
 using namespace ores::logging;
 using comms::messaging::message_type;
-namespace reason = domain::change_reason_constants;
+namespace reason = dq::domain::change_reason_constants;
+
+// Change management messaging types (from ores.dq)
+using dq::messaging::get_change_reason_categories_request;
+using dq::messaging::get_change_reason_categories_response;
+using dq::messaging::get_change_reasons_request;
+using dq::messaging::get_change_reasons_response;
+using dq::messaging::get_change_reasons_by_category_request;
+using dq::messaging::get_change_reasons_by_category_response;
+using dq::messaging::save_change_reason_request;
+using dq::messaging::save_change_reason_response;
+using dq::messaging::delete_change_reason_request;
+using dq::messaging::delete_change_reason_response;
+using dq::messaging::delete_change_reason_result;
+using dq::messaging::get_change_reason_history_request;
+using dq::messaging::get_change_reason_history_response;
+using dq::messaging::save_change_reason_category_request;
+using dq::messaging::save_change_reason_category_response;
+using dq::messaging::delete_change_reason_category_request;
+using dq::messaging::delete_change_reason_category_response;
+using dq::messaging::delete_change_reason_category_result;
+using dq::messaging::get_change_reason_category_history_request;
+using dq::messaging::get_change_reason_category_history_response;
 
 accounts_message_handler::accounts_message_handler(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,

@@ -23,8 +23,8 @@
 #include <functional>
 #include <cli/cli.h>
 #include "ores.comms/messaging/message_types.hpp"
-#include "ores.iam/messaging/change_management_protocol.hpp"
-#include "ores.iam/domain/change_reason_table_io.hpp" // IWYU pragma: keep.
+#include "ores.dq/messaging/change_management_protocol.hpp"
+#include "ores.dq/domain/change_reason_table_io.hpp" // IWYU pragma: keep.
 
 namespace ores::comms::shell::app::commands {
 
@@ -65,7 +65,7 @@ void change_reasons_commands::
 process_get_change_reasons(std::ostream& out, client_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get change reasons request.";
 
-    using iam::messaging::get_change_reasons_request;
+    using dq::messaging::get_change_reasons_request;
     auto result = session.process_request(get_change_reasons_request{});
 
     if (!result) {
@@ -92,13 +92,13 @@ process_add_change_reason(std::ostream& out, client_session& session,
     }
     const auto& recorded_by = session.session_info()->username;
 
-    using iam::messaging::save_change_reason_request;
-    using iam::messaging::save_change_reason_response;
+    using dq::messaging::save_change_reason_request;
+    using dq::messaging::save_change_reason_response;
     auto result = session.process_authenticated_request<save_change_reason_request,
                                                         save_change_reason_response,
                                                         message_type::save_change_reason_request>
         (save_change_reason_request{
-            .reason = iam::domain::change_reason{
+            .reason = dq::domain::change_reason{
                 .version = 0,
                 .code = std::move(code),
                 .description = std::move(description),
@@ -142,8 +142,8 @@ process_delete_change_reason(std::ostream& out, client_session& session,
         return;
     }
 
-    using iam::messaging::delete_change_reason_request;
-    using iam::messaging::delete_change_reason_response;
+    using dq::messaging::delete_change_reason_request;
+    using dq::messaging::delete_change_reason_response;
     auto result = session.process_authenticated_request<delete_change_reason_request,
                                                         delete_change_reason_response,
                                                         message_type::delete_change_reason_request>
@@ -187,8 +187,8 @@ process_get_change_reason_history(std::ostream& out, client_session& session,
         return;
     }
 
-    using iam::messaging::get_change_reason_history_request;
-    using iam::messaging::get_change_reason_history_response;
+    using dq::messaging::get_change_reason_history_request;
+    using dq::messaging::get_change_reason_history_response;
     auto result = session.process_authenticated_request<get_change_reason_history_request,
                                                         get_change_reason_history_response,
                                                         message_type::get_change_reason_history_request>

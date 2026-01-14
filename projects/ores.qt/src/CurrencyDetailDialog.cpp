@@ -43,7 +43,7 @@
 #include "ores.qt/FlagSelectorDialog.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.iam/domain/change_reason_constants.hpp"
+#include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.refdata/generators/currency_generator.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -58,7 +58,7 @@ using comms::messaging::frame;
 using comms::messaging::message_type;
 using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
-namespace reason = iam::domain::change_reason_constants;
+namespace reason = dq::domain::change_reason_constants;
 
 namespace {
     // Event type name for feature flag changes

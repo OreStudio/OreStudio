@@ -39,7 +39,7 @@ dedicated message type range:
 | Subsystem   | Range           | Example                                                                 |
 |-------------+-----------------+-------------------------------------------------------------------------|
 | Core        | 0x0000 - 0x0FFF | handshake, error, ping/pong, subscribe, notification                    |
-| Risk        | 0x1000 - 0x1FFF | currencies, currency history, countries                                 |
+| Refdata     | 0x1000 - 0x1FFF | currencies, currency history, countries                                 |
 | IAM         | 0x2000 - 0x2FFF | login, accounts, lock/unlock, rbac, signup, sessions, change management |
 | Variability | 0x3000 - 0x3FFF | feature flags, feature flag history                                     |
 | Assets      | 0x4000 - 0x4FFF | images, image management                                                |
@@ -442,9 +442,9 @@ Location: =ores.comms/messaging/message_traits.hpp=
 Maps domain events to string names for the pub/sub notification system. Used
 when subscribing to server-push notifications.
 
-| Provides | Description                                              |
-|----------+----------------------------------------------------------|
-| =name=   | The event type name (e.g., "ores.risk.currency_changed") |
+| Provides | Description                                                 |
+|----------+-------------------------------------------------------------|
+| =name=   | The event type name (e.g., "ores.refdata.currency_changed") |
 
 Location: =ores.eventing/domain/event_traits.hpp=
 

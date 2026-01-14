@@ -26,8 +26,8 @@
 #include <QFutureWatcher>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/change_reason.hpp"
-#include "ores.iam/domain/change_reason_category.hpp"
+#include "ores.dq/domain/change_reason.hpp"
+#include "ores.dq/domain/change_reason_category.hpp"
 
 namespace ores::qt {
 
@@ -82,7 +82,7 @@ public:
     /**
      * @brief Get all change reasons.
      */
-    const std::vector<iam::domain::change_reason>& allReasons() const {
+    const std::vector<dq::domain::change_reason>& allReasons() const {
         return reasons_;
     }
 
@@ -92,7 +92,7 @@ public:
      * @param category_code Filter by category (e.g., "common")
      * @return Reasons where applies_to_amend is true, sorted by display_order
      */
-    std::vector<iam::domain::change_reason> getReasonsForAmend(
+    std::vector<dq::domain::change_reason> getReasonsForAmend(
         const std::string& category_code) const;
 
     /**
@@ -101,7 +101,7 @@ public:
      * @param category_code Filter by category (e.g., "common")
      * @return Reasons where applies_to_delete is true, sorted by display_order
      */
-    std::vector<iam::domain::change_reason> getReasonsForDelete(
+    std::vector<dq::domain::change_reason> getReasonsForDelete(
         const std::string& category_code) const;
 
     /**
@@ -110,7 +110,7 @@ public:
      * @param code The reason code (e.g., "common.rectification")
      * @return Pointer to reason if found, nullptr otherwise
      */
-    const iam::domain::change_reason* getReasonByCode(
+    const dq::domain::change_reason* getReasonByCode(
         const std::string& code) const;
 
     /**
@@ -124,7 +124,7 @@ public:
     /**
      * @brief Get all change reason categories.
      */
-    const std::vector<iam::domain::change_reason_category>& allCategories() const {
+    const std::vector<dq::domain::change_reason_category>& allCategories() const {
         return categories_;
     }
 
@@ -157,19 +157,19 @@ private:
 
     struct ReasonsResult {
         bool success;
-        std::vector<iam::domain::change_reason> reasons;
+        std::vector<dq::domain::change_reason> reasons;
     };
 
     struct CategoriesResult {
         bool success;
-        std::vector<iam::domain::change_reason_category> categories;
+        std::vector<dq::domain::change_reason_category> categories;
     };
 
     ClientManager* clientManager_;
 
     // Cached data
-    std::vector<iam::domain::change_reason> reasons_;
-    std::vector<iam::domain::change_reason_category> categories_;
+    std::vector<dq::domain::change_reason> reasons_;
+    std::vector<dq::domain::change_reason_category> categories_;
 
     // Index for fast lookup by code
     std::unordered_map<std::string, std::size_t> reason_index_;

@@ -28,7 +28,7 @@
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.iam/eventing/change_reason_changed_event.hpp"
+#include "ores.dq/eventing/change_reason_changed_event.hpp"
 
 namespace ores::qt {
 
@@ -38,7 +38,7 @@ namespace {
     // Event type name for change reason changes
     constexpr std::string_view reason_event_name =
         eventing::domain::event_traits<
-            iam::eventing::change_reason_changed_event>::name;
+            dq::eventing::change_reason_changed_event>::name;
 }
 
 ChangeReasonController::ChangeReasonController(
@@ -163,7 +163,7 @@ void ChangeReasonController::closeAllWindows() {
 }
 
 void ChangeReasonController::onShowDetails(
-    const iam::domain::change_reason& reason) {
+    const dq::domain::change_reason& reason) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << reason.code;
     showDetailWindow(reason);
 }
@@ -238,7 +238,7 @@ void ChangeReasonController::showAddWindow() {
 }
 
 void ChangeReasonController::showDetailWindow(
-    const iam::domain::change_reason& reason) {
+    const dq::domain::change_reason& reason) {
 
     const QString identifier = QString::fromStdString(reason.code);
     const QString key = build_window_key("details", identifier);
@@ -410,7 +410,7 @@ void ChangeReasonController::showHistoryWindow(const QString& code) {
 }
 
 void ChangeReasonController::onOpenVersion(
-    const iam::domain::change_reason& reason, int versionNumber) {
+    const dq::domain::change_reason& reason, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for change reason: " << reason.code;
 
@@ -477,7 +477,7 @@ void ChangeReasonController::onOpenVersion(
 }
 
 void ChangeReasonController::onRevertVersion(
-    const iam::domain::change_reason& reason) {
+    const dq::domain::change_reason& reason) {
     BOOST_LOG_SEV(lg(), info) << "Reverting change reason to version: "
                               << reason.version;
 

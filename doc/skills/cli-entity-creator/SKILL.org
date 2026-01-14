@@ -60,18 +60,13 @@ commands for an entity.
 
 Before starting, gather the following information:
 
-<<<<<<< Updated upstream
-- *Entity name*: The name of the entity (e.g., =currency=, =account=, =feature_flags=).
-- *Component location*: Which domain the entity belongs to (e.g., =ores.refdata=, =ores.iam=).
-- *Command name*: The CLI command name (typically plural with hyphens, e.g., =currencies=, =accounts=, =feature-flags=).
-=======
 - *Entity name*: The name of the entity (e.g., =currency=, =account=,
   =feature_flags=).
-- *Component location*: Which domain the entity belongs to (e.g., =ores.risk=,
+- *Component location*: Which domain the entity belongs to (e.g., =ores.refdata=,
   =ores.iam=).
 - *Command name*: The CLI command name (typically plural with hyphens, e.g.,
   =currencies=, =accounts=, =feature-flags=).
->>>>>>> Stashed changes
+
 - *Operations needed*:
   - [ ] Import from external files (ORE XML, etc.)
   - [ ] Export to external formats (XML, CSV)

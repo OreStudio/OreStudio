@@ -28,7 +28,7 @@
 #include "ores.iam/service/account_service.hpp"
 #include "ores.iam/service/account_setup_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
-#include "ores.iam/service/change_management_service.hpp"
+#include "ores.dq/service/change_management_service.hpp"
 #include "ores.iam/repository/session_repository.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
@@ -487,7 +487,7 @@ private:
     service::account_setup_service setup_service_;
     repository::session_repository session_repo_;
     std::shared_ptr<geo::service::geolocation_service> geo_service_;
-    service::change_management_service change_management_service_;
+    dq::service::change_management_service change_management_service_;
 };
 
 }

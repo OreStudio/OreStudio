@@ -108,4 +108,12 @@ from ores.iam_roles_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'System Flags', count(*)
 from ores.variability_feature_flags_tbl where name like 'system.%' and valid_to = ores.utility_infinity_timestamp_fn()
+select 'Data Quality Origin Dimensions', count(*)
+from ores.dq_origin_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Nature Dimensions', count(*)
+from ores.dq_nature_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Treatment Dimensions', count(*)
+from ores.dq_treatment_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

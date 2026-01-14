@@ -47,6 +47,16 @@
 \echo '--- Change Control ---'
 \ir dq_change_reasons_populate.sql
 
+-- Data Quality Data Domains
+\echo ''
+\echo '--- Data Quality Data Domains ---'
+\ir dq_data_domain_populate.sql
+
+-- Data Quality Subject Areas
+\echo ''
+\echo '--- Data Quality Subject Areas ---'
+\ir dq_subject_area_populate.sql
+
 -- RBAC (Role-Based Access Control)
 \echo ''
 \echo '--- RBAC Data ---'
@@ -116,4 +126,10 @@ from ores.dq_nature_dimension_tbl where valid_to = ores.utility_infinity_timesta
 union all
 select 'Data Quality Treatment Dimensions', count(*)
 from ores.dq_treatment_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Data Domains', count(*)
+from ores.dq_data_domain_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Subject Areas', count(*)
+from ores.dq_subject_area_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

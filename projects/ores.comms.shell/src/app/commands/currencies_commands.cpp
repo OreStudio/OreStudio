@@ -23,10 +23,10 @@
 #include <functional>
 #include <cli/cli.h>
 #include "ores.comms/messaging/message_types.hpp"
-#include "ores.risk/messaging/currency_protocol.hpp"
-#include "ores.risk/messaging/currency_history_protocol.hpp"
-#include "ores.risk/domain/currency_table_io.hpp" // IWYU pragma: keep.
-#include "ores.risk/domain/currency_version_table_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata/messaging/currency_protocol.hpp"
+#include "ores.refdata/messaging/currency_history_protocol.hpp"
+#include "ores.refdata/domain/currency_table_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata/domain/currency_version_table_io.hpp" // IWYU pragma: keep.
 
 namespace ores::comms::shell::app::commands {
 
@@ -74,7 +74,7 @@ void currencies_commands::
 process_get_currencies(std::ostream& out, client_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get currencies request.";
 
-    using risk::messaging::get_currencies_request;
+    using refdata::messaging::get_currencies_request;
     auto result = session.process_request(get_currencies_request{});
 
     if (!result) {
@@ -116,13 +116,13 @@ process_add_currency(std::ostream& out, client_session& session,
         }
     }
 
-    using risk::messaging::save_currency_request;
-    using risk::messaging::save_currency_response;
+    using refdata::messaging::save_currency_request;
+    using refdata::messaging::save_currency_response;
     auto result = session.process_authenticated_request<save_currency_request,
                                                         save_currency_response,
                                                         message_type::save_currency_request>
         (save_currency_request{
-            .currency = risk::domain::currency{
+            .currency = refdata::domain::currency{
                 .version = 0,
                 .iso_code = std::move(iso_code),
                 .name = std::move(name),
@@ -169,8 +169,8 @@ process_delete_currency(std::ostream& out, client_session& session,
         return;
     }
 
-    using risk::messaging::delete_currency_request;
-    using risk::messaging::delete_currency_response;
+    using refdata::messaging::delete_currency_request;
+    using refdata::messaging::delete_currency_response;
     auto result = session.process_authenticated_request<delete_currency_request,
                                                         delete_currency_response,
                                                         message_type::delete_currency_request>
@@ -213,8 +213,8 @@ process_get_currency_history(std::ostream& out, client_session& session,
         return;
     }
 
-    using risk::messaging::get_currency_history_request;
-    using risk::messaging::get_currency_history_response;
+    using refdata::messaging::get_currency_history_request;
+    using refdata::messaging::get_currency_history_response;
     auto result = session.process_authenticated_request<get_currency_history_request,
                                                         get_currency_history_response,
                                                         message_type::get_currency_history_request>

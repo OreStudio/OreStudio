@@ -24,7 +24,7 @@
 #include <QList>
 #include <QDateTime>
 #include "ores.qt/EntityController.hpp"
-#include "ores.risk/domain/currency.hpp"
+#include "ores.refdata/domain/currency.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
@@ -134,7 +134,7 @@ private slots:
      *
      * @param currency The currency to display/edit
      */
-    void onShowCurrencyDetails(const risk::domain::currency& currency);
+    void onShowCurrencyDetails(const refdata::domain::currency& currency);
 
     /**
      * @brief Handles request to show currency version history.
@@ -156,7 +156,7 @@ private slots:
      * @param currency The currency data at the historical version
      * @param versionNumber The version number being viewed
      */
-    void onOpenCurrencyVersion(const risk::domain::currency& currency, int versionNumber);
+    void onOpenCurrencyVersion(const refdata::domain::currency& currency, int versionNumber);
 
     /**
      * @brief Handles request to revert a currency to a historical version.
@@ -166,7 +166,7 @@ private slots:
      *
      * @param currency The currency data to revert to
      */
-    void onRevertCurrency(const risk::domain::currency& currency);
+    void onRevertCurrency(const refdata::domain::currency& currency);
 
     /**
      * @brief Handles currency change notifications from the server.

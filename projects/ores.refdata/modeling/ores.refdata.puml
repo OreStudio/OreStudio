@@ -1,0 +1,1105 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+
+title ores.refdata Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "Reference data domain model for ORE types and other related classes." as ores_refdata_note
+    refdata --- ores_refdata_note
+    namespace refdata #F2F2F2 {
+        note "Provides XML serialisation support for the ORE domain model types\nusing native ORE XML." as ores_refdata_orexml_note
+        orexml --- ores_refdata_orexml_note
+        namespace orexml #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Currency XML types
+            together {
+                class CurrencyElement
+                class CurrencyConfig
+            }
+
+            ' Group: Import/Export/Mapping
+            together {
+                class importer
+                class currency_mapper
+                class exporter
+            }
+
+            ' Stack vertically
+            CurrencyElement -[hidden]down- CurrencyConfig
+            importer -[hidden]down- currency_mapper
+            currency_mapper -[hidden]down- exporter
+            CurrencyConfig -[hidden]down- importer
+
+            '
+            ' Class definitions
+            '
+
+            class parsing_error <<exception>> #D6B19F {
+                +parsing_error(std::string_view message)
+                +what() const : const char*
+                -{field} message_ : std::string
+            }
+
+            note top of parsing_error
+            A fatal error has occurred during parsing of ORE XML.
+            end note
+
+            class CurrencyElement #F7E5FF {
+                +{field} Name : std::string
+                +{field} ISOCode : std::string
+                +{field} NumericCode : std::string
+                +{field} Symbol : std::string
+                +{field} FractionSymbol : std::string
+                +{field} FractionsPerUnit : int
+                +{field} RoundingType : std::string
+                +{field} RoundingPrecision : int
+                +{field} Format : std::string
+                +{field} CurrencyType : std::optional<std::string>
+            }
+
+            note top of CurrencyElement
+            Represents a currencies in ORE XML format.
+
+            Fields:
+
+            - Name: Name of the currency.
+            - ISOCode: ISO code for the currency.
+            - NumericCode: Numeric code for the currency.
+            - Symbol: Symbol used for the currency.
+            - FractionSymbol: Symbol for fractions.
+            - FractionsPerUnit: Number of fractions per unit.
+            - RoundingType: Type of rounding used.
+            - RoundingPrecision: Precision for rounding.
+            - Format: Format string for display.
+            - CurrencyType: Optional type of currency.
+            end note
+
+            class CurrencyConfig #F7E5FF {
+                +{field} Currency : std::vector<CurrencyElement>
+                +{static} to_xml(const CurrencyConfig& v) : std::string
+                +{static} from_xml(const std::string& xml) : CurrencyConfig
+            }
+
+            note top of CurrencyConfig
+            Represents a set of currencies in ORE XML format.
+
+            Fields:
+
+            - Currency: Vector of currency elements.
+            end note
+
+            CurrencyConfig o-u- ores::refdata::orexml::CurrencyElement
+
+            class importer #ECECEC {
+                +{static} import_currency_config(const std::filesystem::path& path) : std::vector<domain::currency>
+            }
+
+            note top of importer
+            Imports domain objects from their ORE XML representation.
+            end note
+
+            importer ..> ores::refdata::orexml::CurrencyConfig : uses
+            importer ..> ores::refdata::domain::currency : imports
+
+            class currency_mapper #ECECEC {
+                +{static} map(const CurrencyElement& v) : domain::currency
+                +{static} map(const domain::currency& v) : CurrencyElement
+                +{static} map(const CurrencyConfig& v) : std::vector<domain::currency>
+                +{static} map(const std::vector<domain::currency>& v) : CurrencyConfig
+            }
+
+            note top of currency_mapper
+            Maps domain model entities to ORE XML and vice-versa.
+            end note
+
+            currency_mapper ..> ores::refdata::orexml::CurrencyElement : uses
+            currency_mapper ..> ores::refdata::orexml::CurrencyConfig : uses
+            currency_mapper ..> ores::refdata::domain::currency : uses
+
+            class exporter #ECECEC {
+                +{static} export_currency_config(const std::vector<domain::currency>& v) : std::string
+            }
+
+            note top of exporter
+            Exports domain objects from their ORE XML representation.
+            end note
+
+            exporter ..> ores::refdata::domain::currency : exports
+            exporter ..> ores::refdata::orexml::CurrencyConfig : uses
+        }
+
+        namespace domain #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class currency
+                class currency_version
+                class currency_version_history
+            }
+
+            together {
+                class country
+            }
+
+            currency -[hidden]down- currency_version
+            currency_version -[hidden]down- currency_version_history
+            currency_version_history -[hidden]down- country
+
+            '
+            ' Class definitions
+            '
+
+            class currency #F7E5FF {
+                +{field} iso_code : std::string
+                +{field} name : std::string
+                +{field} numeric_code : std::string
+                +{field} symbol : std::string
+                +{field} fraction_symbol : std::string
+                +{field} fractions_per_unit : int
+                +{field} rounding_type : std::string
+                +{field} rounding_precision : int
+                +{field} format : std::string
+                +{field} currency_type : std::string
+                +{field} modified_by : std::string
+                +{field} valid_from : std::string
+                +{field} valid_to : std::string
+            }
+
+            note top of currency
+            Represents a currency.
+
+            Fields:
+
+            - iso_code: ISO code for the currency.
+            - name: Name of the currency.
+            - numeric_code: Numeric code for the currency.
+            - symbol: Symbol used for the currency.
+            - fraction_symbol: Symbol for fractions.
+            - fractions_per_unit: Number of fractions per unit.
+            - rounding_type: Type of rounding used.
+            - rounding_precision: Precision for rounding.
+            - format: Format string for display.
+            - currency_type: Type of currency.
+            - modified_by: User who modified the currency.
+            - valid_from: Start of validity period.
+            - valid_to: End of validity period.
+            end note
+
+            class currency_version #F7E5FF {
+                +{field} data : currency
+                +{field} version_number : int
+                +{field} modified_by : std::string
+                +{field} modified_at : std::string
+                +{field} change_summary : std::string
+            }
+
+            note top of currency_version
+            Represents a specific version of a currency with metadata.
+
+            Fields:
+
+            - data: The currency data at this version.
+            - version_number: Version number (1-based, higher is newer).
+            - modified_by: Username of the person who created this version.
+            - modified_at: Timestamp when this version was created (ISO 8601 format).
+            - change_summary: Summary of changes made in this version.
+            end note
+
+            currency_version o-u- ores::refdata::domain::currency
+
+            class currency_version_history #F7E5FF {
+                +{field} iso_code : std::string
+                +{field} versions : std::vector<currency_version>
+            }
+
+            note top of currency_version_history
+            Contains the full version history for a currency.
+
+            Fields:
+
+            - iso_code: ISO code of the currency.
+            - versions: All versions of this currency, ordered from newest to oldest.
+            end note
+
+            currency_version_history o-u- ores::refdata::domain::currency_version
+
+            class country #F7E5FF {
+                +{field} version : int
+                +{field} alpha2_code : std::string
+                +{field} alpha3_code : std::string
+                +{field} numeric_code : std::string
+                +{field} name : std::string
+                +{field} official_name : std::string
+                +{field} image_id : std::optional<boost::uuids::uuid>
+                +{field} recorded_by : std::string
+                +{field} recorded_at : std::chrono::system_clock::time_point
+            }
+
+            note top of country
+            Represents a country using ISO 3166-1 standard codes.
+
+            Fields:
+
+            - version: Version number for optimistic locking.
+            - alpha2_code: ISO 3166-1 alpha-2 code (e.g., "US").
+            - alpha3_code: ISO 3166-1 alpha-3 code (e.g., "USA").
+            - numeric_code: ISO 3166-1 numeric code (e.g., "840").
+            - name: Short name of the country.
+            - official_name: Official name of the country.
+            - image_id: Optional reference to a flag image.
+            - recorded_by: Username who recorded this version.
+            - recorded_at: Timestamp when this version was recorded.
+            end note
+        }
+
+        namespace repository #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            together {
+                class currency_entity
+                class currency_mapper
+                class currency_repository
+            }
+
+            together {
+                class country_entity
+                class country_mapper
+                class country_repository
+            }
+
+            currency_entity -[hidden]down- currency_mapper
+            currency_mapper -[hidden]down- currency_repository
+            currency_repository -[hidden]down- country_entity
+            country_entity -[hidden]down- country_mapper
+            country_mapper -[hidden]down- country_repository
+
+            '
+            ' Class definitions
+            '
+
+            class currency_entity <<orm>> #99CB99 {
+                +{field} iso_code : sqlgen::PrimaryKey<std::string>
+                +{field} name : std::string
+                +{field} numeric_code : std::string
+                +{field} symbol : std::string
+                +{field} fraction_symbol : std::string
+                +{field} fractions_per_unit : int
+                +{field} rounding_type : std::string
+                +{field} rounding_precision : int
+                +{field} format : std::string
+                +{field} currency_type : std::string
+                +{field} modified_by : std::string
+                +{field} valid_from : std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">>
+                +{field} valid_to : std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">>
+            }
+
+            note top of currency_entity
+            Represents a currency in the database.
+
+            Fields:
+
+            - iso_code: ISO code for the currency (primary key).
+            - name: Name of the currency.
+            - numeric_code: Numeric code for the currency.
+            - symbol: Symbol used for the currency.
+            - fraction_symbol: Symbol for fractions.
+            - fractions_per_unit: Number of fractions per unit.
+            - rounding_type: Type of rounding used.
+            - rounding_precision: Precision for rounding.
+            - format: Format string for display.
+            - currency_type: Type of currency.
+            - modified_by: User who modified the currency.
+            - valid_from: Start of validity period.
+            - valid_to: End of validity period.
+            end note
+
+            class currency_mapper <<orm>> #99CB99 {
+                +{static} map(const currency_entity& v) : domain::currency
+                +{static} map(const domain::currency& v) : currency_entity
+                +{static} map(const std::vector<currency_entity>& v) : std::vector<domain::currency>
+                +{static} map(const std::vector<domain::currency>& v) : std::vector<currency_entity>
+            }
+
+            note top of currency_mapper
+            Maps domain model entities to data storage layer and vice-versa.
+            end note
+
+            currency_mapper ..> ores::refdata::repository::currency_entity : uses
+            currency_mapper ..> ores::refdata::domain::currency : uses
+
+            class currency_repository <<orm>> #99CB99 {
+                +sql() : std::string
+                +write(context ctx, const domain::currency& currencies) : void
+                +write(context ctx, const std::vector<domain::currency>& currencies) : void
+                +read_latest(context ctx) : std::vector<domain::currency>
+                +read_latest(context ctx, const std::string& iso_code) : std::vector<domain::currency>
+                +read_at_timepoint(context ctx, const std::string& as_of) : std::vector<domain::currency>
+                +read_at_timepoint(context ctx, const std::string& as_of, const std::string& iso_code) : std::vector<domain::currency>
+                +read_all(context ctx) : std::vector<domain::currency>
+                +read_all(context ctx, const std::string& iso_code) : std::vector<domain::currency>
+                +update(context ctx, const domain::currency& currency) : void
+                +remove(context ctx, const std::string& iso_code) : void
+                -ensure_success(const auto result) : void
+                -make_timestamp(const std::string& s) : auto
+                -{field} max_timestamp : const std::string
+            }
+
+            note top of currency_repository
+            Reads and writes currencies off of data storage.
+            end note
+
+            currency_repository ..> ores::refdata::domain::currency : uses
+            currency_repository ..> ores::refdata::repository::currency_entity : uses
+
+            class country_entity <<orm>> #99CB99 {
+                +{field} alpha2_code : sqlgen::PrimaryKey<std::string>
+                +{field} version : int
+                +{field} alpha3_code : std::string
+                +{field} numeric_code : std::string
+                +{field} name : std::string
+                +{field} official_name : std::string
+                +{field} image_id : std::optional<std::string>
+                +{field} modified_by : std::string
+                +{field} valid_from : std::optional<sqlgen::Timestamp>
+                +{field} valid_to : std::optional<sqlgen::Timestamp>
+            }
+
+            note top of country_entity
+            Represents a country in the database.
+
+            ORM Settings:
+
+            - Schema: ores
+            - Table: countries
+
+            Fields:
+
+            - alpha2_code: ISO 3166-1 alpha-2 code (primary key).
+            - version: Version number.
+            - alpha3_code: ISO 3166-1 alpha-3 code.
+            - numeric_code: ISO 3166-1 numeric code.
+            - name: Short name.
+            - official_name: Official name.
+            - image_id: UUID of flag image (as string).
+            - modified_by: User who modified.
+            - valid_from: Start of validity period.
+            - valid_to: End of validity period.
+            end note
+
+            class country_mapper <<orm>> #99CB99 {
+                +{static} map(const country_entity& v) : domain::country
+                +{static} map(const domain::country& v) : country_entity
+                +{static} map(const std::vector<country_entity>& v) : std::vector<domain::country>
+                +{static} map(const std::vector<domain::country>& v) : std::vector<country_entity>
+            }
+
+            note top of country_mapper
+            Maps domain model entities to data storage layer and vice-versa.
+            end note
+
+            country_mapper ..> ores::refdata::repository::country_entity : uses
+            country_mapper ..> ores::refdata::domain::country : uses
+
+            class country_repository <<orm>> #99CB99 {
+                +sql() : std::string
+                +write(context ctx, const domain::country& country) : void
+                +write(context ctx, const std::vector<domain::country>& countries) : void
+                +read_latest(context ctx) : std::vector<domain::country>
+                +read_latest(context ctx, const std::string& alpha2_code) : std::vector<domain::country>
+                +read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) : std::vector<domain::country>
+                +get_total_country_count(context ctx) : std::uint32_t
+                +read_at_timepoint(context ctx, const std::string& as_of) : std::vector<domain::country>
+                +read_at_timepoint(context ctx, const std::string& as_of, const std::string& alpha2_code) : std::vector<domain::country>
+                +read_all(context ctx) : std::vector<domain::country>
+                +read_all(context ctx, const std::string& alpha2_code) : std::vector<domain::country>
+                +remove(context ctx, const std::string& alpha2_code) : void
+            }
+
+            note top of country_repository
+            Reads and writes countries off of data storage.
+            end note
+
+            country_repository ..> ores::refdata::domain::country : uses
+            country_repository ..> ores::refdata::repository::country_entity : uses
+        }
+
+        namespace service #F2F2F2 {
+            class country_service #ECECEC {
+                +country_service(context ctx)
+                +list_countries(std::uint32_t offset, std::uint32_t limit) : std::vector<domain::country>
+                +count_countries() : std::uint32_t
+                +save_country(const domain::country& country) : void
+                +delete_country(const std::string& alpha2_code) : void
+                +get_country(const std::string& alpha2_code) : std::optional<domain::country>
+                +get_country_history(const std::string& alpha2_code) : std::vector<domain::country>
+                -{field} ctx_ : context
+                -{field} repo_ : repository::country_repository
+            }
+
+            note top of country_service
+            Service for managing countries.
+
+            Provides a higher-level interface for country operations,
+            wrapping the underlying repository.
+            end note
+
+            country_service o-- ores::refdata::repository::country_repository
+            country_service ..> ores::refdata::domain::country : uses
+        }
+
+        namespace generators #F2F2F2 {
+            class "<functions>" as currency_generator #FFFACD {
+                +{static} generate_synthetic_currency() : domain::currency
+                +{static} generate_synthetic_unicode_currencies() : std::vector<domain::currency>
+                +{static} generate_synthetic_currencies(std::size_t n) : std::vector<domain::currency>
+                +{static} generate_unique_synthetic_currencies(std::size_t n) : std::vector<domain::currency>
+            }
+
+            note top of currency_generator
+            Functions for generating synthetic currency data.
+            end note
+
+            currency_generator ..> ores::refdata::domain::currency : generates
+        }
+
+        namespace csv #F2F2F2 {
+            class exporter #ECECEC {
+                +{static} export_currency_config(const std::vector<domain::currency>& v) : std::string
+            }
+
+            note top of exporter
+            Exports domain objects to their CSV representation.
+            end note
+
+            exporter ..> ores::refdata::domain::currency : exports
+        }
+
+        namespace messaging #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Get currencies messages
+            together {
+                class get_currencies_request
+                class get_currencies_response
+            }
+
+            ' Group: Save currency messages
+            together {
+                class save_currency_request
+                class save_currency_response
+            }
+
+            ' Group: Delete currency messages
+            together {
+                class delete_currency_request
+                class delete_currency_response
+            }
+
+            ' Group: Get currency history messages
+            together {
+                class get_currency_history_request
+                class get_currency_history_response
+            }
+
+            ' Group: Get countries messages
+            together {
+                class get_countries_request
+                class get_countries_response
+            }
+
+            ' Group: Save country messages
+            together {
+                class save_country_request
+                class save_country_response
+            }
+
+            ' Group: Delete country messages
+            together {
+                class delete_country_request
+                class delete_country_result
+                class delete_country_response
+            }
+
+            ' Group: Get country history messages
+            together {
+                class get_country_history_request
+                class get_country_history_response
+            }
+
+            ' Group: Handler infrastructure
+            together {
+                class risk_message_handler
+                class registrar
+            }
+
+            ' Stack request/response pairs vertically
+            get_currencies_request -[hidden]down- get_currencies_response
+            save_currency_request -[hidden]down- save_currency_response
+            delete_currency_request -[hidden]down- delete_currency_response
+            get_currency_history_request -[hidden]down- get_currency_history_response
+            get_countries_request -[hidden]down- get_countries_response
+            save_country_request -[hidden]down- save_country_response
+            delete_country_request -[hidden]down- delete_country_result
+            delete_country_result -[hidden]down- delete_country_response
+            get_country_history_request -[hidden]down- get_country_history_response
+            risk_message_handler -[hidden]down- registrar
+
+            ' Create row structure
+            get_currencies_response -[hidden]down- save_currency_request
+            save_currency_response -[hidden]down- delete_currency_request
+            delete_currency_response -[hidden]down- get_currency_history_request
+            get_currency_history_response -[hidden]down- get_countries_request
+            get_countries_response -[hidden]down- save_country_request
+            save_country_response -[hidden]down- delete_country_request
+            delete_country_response -[hidden]down- get_country_history_request
+            get_country_history_response -[hidden]down- risk_message_handler
+
+            '
+            ' Class definitions
+            '
+
+            class get_currencies_request <<message>> #E1F5FF {
+                +serialize() const : std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<get_currencies_request, comms::messaging::error_code>
+            }
+
+            note top of get_currencies_request
+            Request to retrieve all currencies.
+
+            This request has no parameters - it retrieves all currencies in the system.
+            end note
+
+            class get_currencies_response <<message>> #E1F5FF {
+                +{field} currencies : std::vector<domain::currency>
+                +serialize() const : std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<get_currencies_response, comms::messaging::error_code>
+            }
+
+            note top of get_currencies_response
+            Response containing all currencies.
+
+            Fields:
+
+            - currencies: List of all currencies.
+            end note
+
+            get_currencies_response o-- ores::refdata::domain::currency
+
+            class save_currency_request <<message>> #E1F5FF {
+                +{field} currency : domain::currency
+                +serialize() const : std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<save_currency_request, comms::messaging::error_code>
+            }
+
+            note top of save_currency_request
+            Request to save a currency (create or update).
+
+            Due to bitemporal storage, both create and update operations
+            result in writing a new record. Database triggers handle
+            temporal versioning automatically.
+
+            Fields:
+
+            - currency: The currency to save.
+            end note
+
+            save_currency_request o-- ores::refdata::domain::currency
+
+            class save_currency_response <<message>> #E1F5FF {
+                +{field} success : bool
+                +{field} message : std::string
+                +serialize() const : std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<save_currency_response, comms::messaging::error_code>
+            }
+
+            note top of save_currency_response
+            Response confirming currency save operation.
+
+            Fields:
+
+            - success: Whether the operation succeeded.
+            - message: Status or error message.
+            end note
+
+            class delete_currency_request <<message>> #E1F5FF {
+                +{field} iso_code : std::string
+                +serialize() const : std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<delete_currency_request, comms::messaging::error_code>
+            }
+
+            note top of delete_currency_request
+            Request to delete a currency.
+
+            Fields:
+
+            - iso_code: ISO code of the currency to delete.
+            end note
+
+            class delete_currency_response <<message>> #E1F5FF {
+                +{field} success : bool
+                +{field} message : std::string
+                +serialize() const : std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<delete_currency_response, comms::messaging::error_code>
+            }
+
+            note top of delete_currency_response
+            Response confirming currency deletion.
+
+            Fields:
+
+            - success: Whether the operation succeeded.
+            - message: Status or error message.
+            end note
+
+            class get_currency_history_request <<message>> #E1F5FF {
+                +{field} iso_code : std::string
+                +serialize() const : std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<get_currency_history_request, comms::messaging::error_code>
+            }
+
+            note top of get_currency_history_request
+            Request to retrieve version history for a currency.
+
+            Fields:
+
+            - iso_code: ISO code of the currency.
+            end note
+
+            class get_currency_history_response <<message>> #E1F5FF {
+                +{field} success : bool
+                +{field} message : std::string
+                +{field} history : domain::currency_version_history
+                +serialize() const : std::vector<std::uint8_t>
+                +{static} deserialize(std::span<const std::uint8_t> data) : std::expected<get_currency_history_response, comms::messaging::error_code>
+            }
+
+            note top of get_currency_history_response
+            Response containing currency version history.
+
+            Fields:
+
+            - success: Whether the operation succeeded.
+            - message: Status or error message.
+            - history: The version history for the currency.
+            end note
+
+            get_currency_history_response o-u- ores::refdata::domain::currency_version_history
+
+            class get_countries_request <<message>> #E1F5FF {
+                +{field} offset : std::uint32_t
+                +{field} limit : std::uint32_t
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<get_countries_request, error_code>
+            }
+
+            note top of get_countries_request
+            Request to retrieve countries with pagination support.
+
+            Fields:
+
+            - offset: Number of records to skip (0-based).
+            - limit: Maximum number of records to return.
+            end note
+
+            class get_countries_response <<message>> #E1F5FF {
+                +{field} countries : std::vector<domain::country>
+                +{field} total_available_count : std::uint32_t
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<get_countries_response, error_code>
+            }
+
+            note top of get_countries_response
+            Response containing countries with pagination metadata.
+
+            Fields:
+
+            - countries: List of countries for this page.
+            - total_available_count: Total countries available.
+            end note
+
+            get_countries_response o-- ores::refdata::domain::country
+
+            class save_country_request <<message>> #E1F5FF {
+                +{field} country : domain::country
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<save_country_request, error_code>
+            }
+
+            note top of save_country_request
+            Request to save a country (create or update).
+
+            Due to bitemporal storage, both create and update operations
+            result in writing a new record.
+
+            Fields:
+
+            - country: The country to save.
+            end note
+
+            save_country_request o-- ores::refdata::domain::country
+
+            class save_country_response <<message>> #E1F5FF {
+                +{field} success : bool
+                +{field} message : std::string
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<save_country_response, error_code>
+            }
+
+            note top of save_country_response
+            Response confirming country save operation.
+
+            Fields:
+
+            - success: Whether the operation succeeded.
+            - message: Status or error message.
+            end note
+
+            class delete_country_request <<message>> #E1F5FF {
+                +{field} alpha2_codes : std::vector<std::string>
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<delete_country_request, error_code>
+            }
+
+            note top of delete_country_request
+            Request to delete one or more countries.
+
+            Supports batch deletion with individual results per country.
+
+            Fields:
+
+            - alpha2_codes: ISO 3166-1 alpha-2 codes to delete.
+            end note
+
+            class delete_country_result <<message>> #E1F5FF {
+                +{field} alpha2_code : std::string
+                +{field} success : bool
+                +{field} message : std::string
+            }
+
+            note top of delete_country_result
+            Result for a single country deletion.
+
+            Fields:
+
+            - alpha2_code: The alpha-2 code that was processed.
+            - success: Whether deletion succeeded.
+            - message: Status or error message.
+            end note
+
+            class delete_country_response <<message>> #E1F5FF {
+                +{field} results : std::vector<delete_country_result>
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<delete_country_response, error_code>
+            }
+
+            note top of delete_country_response
+            Response confirming country deletion(s).
+
+            Contains one result per requested country.
+            Supports partial success in batch operations.
+
+            Fields:
+
+            - results: Per-country deletion results.
+            end note
+
+            delete_country_response o-- ores::refdata::messaging::delete_country_result
+
+            class get_country_history_request <<message>> #E1F5FF {
+                +{field} alpha2_code : std::string
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<get_country_history_request, error_code>
+            }
+
+            note top of get_country_history_request
+            Request to retrieve version history for a country.
+
+            Fields:
+
+            - alpha2_code: ISO 3166-1 alpha-2 code.
+            end note
+
+            class get_country_history_response <<message>> #E1F5FF {
+                +{field} success : bool
+                +{field} message : std::string
+                +{field} history : std::vector<domain::country>
+                +serialize() const : std::vector<std::byte>
+                +{static} deserialize(std::span<const std::byte> data) : std::expected<get_country_history_response, error_code>
+            }
+
+            note top of get_country_history_response
+            Response containing country version history.
+
+            Fields:
+
+            - success: Whether the operation succeeded.
+            - message: Status or error message.
+            - history: All versions of the country.
+            end note
+
+            get_country_history_response o-- ores::refdata::domain::country
+
+            class risk_message_handler #ECECEC {
+                +risk_message_handler(database::context ctx, std::shared_ptr<system_flags_service> system_flags)
+                +handle_message(message_type type, std::span<const std::byte> payload, const std::string& remote_address) : handler_result
+                -handle_get_currencies_request(std::span<const std::byte> payload) : handler_result
+                -handle_save_currency_request(std::span<const std::byte> payload) : handler_result
+                -handle_delete_currency_request(std::span<const std::byte> payload) : handler_result
+                -handle_get_currency_history_request(std::span<const std::byte> payload) : handler_result
+                -handle_get_countries_request(std::span<const std::byte> payload) : handler_result
+                -handle_save_country_request(std::span<const std::byte> payload) : handler_result
+                -handle_delete_country_request(std::span<const std::byte> payload) : handler_result
+                -handle_get_country_history_request(std::span<const std::byte> payload) : handler_result
+                -{field} ctx_ : database::context
+                -{field} system_flags_ : std::shared_ptr<system_flags_service>
+                -{field} currency_service_ : service::currency_service
+                -{field} country_service_ : service::country_service
+            }
+
+            note top of risk_message_handler
+            Message handler for risk subsystem messages.
+
+            Processes messages in the risk subsystem range (0x1000-0x1FFF).
+            Handles currency and country CRUD operations:
+            - get/save/delete currencies and history
+            - get/save/delete countries and history
+            end note
+
+            risk_message_handler o-- ores::refdata::service::currency_service
+            risk_message_handler o-- ores::refdata::service::country_service
+            risk_message_handler ..> ores::refdata::messaging::get_currencies_request : uses
+            risk_message_handler ..> ores::refdata::messaging::get_currencies_response : uses
+            risk_message_handler ..> ores::refdata::messaging::save_currency_request : uses
+            risk_message_handler ..> ores::refdata::messaging::save_currency_response : uses
+            risk_message_handler ..> ores::refdata::messaging::delete_currency_request : uses
+            risk_message_handler ..> ores::refdata::messaging::delete_currency_response : uses
+            risk_message_handler ..> ores::refdata::messaging::get_currency_history_request : uses
+            risk_message_handler ..> ores::refdata::messaging::get_currency_history_response : uses
+            risk_message_handler ..> ores::refdata::messaging::get_countries_request : uses
+            risk_message_handler ..> ores::refdata::messaging::get_countries_response : uses
+            risk_message_handler ..> ores::refdata::messaging::save_country_request : uses
+            risk_message_handler ..> ores::refdata::messaging::save_country_response : uses
+            risk_message_handler ..> ores::refdata::messaging::delete_country_request : uses
+            risk_message_handler ..> ores::refdata::messaging::delete_country_response : uses
+            risk_message_handler ..> ores::refdata::messaging::get_country_history_request : uses
+            risk_message_handler ..> ores::refdata::messaging::get_country_history_response : uses
+
+            class registrar #ECECEC {
+                +{static} register_handlers(comms::server& server, utility::repository::context ctx) : void
+            }
+
+            note top of registrar
+            Register risk subsystem message handlers with the server.
+
+            Registers handlers for all risk subsystem messages (0x1000-0x1FFF).
+            Must be called before server.run().
+            end note
+
+            registrar ..> ores::refdata::messaging::risk_message_handler : creates
+        }
+
+        namespace eventing #F2F2F2 {
+            class country_changed_event #F7E5FF {
+                +{field} timestamp : std::chrono::system_clock::time_point
+                +{field} alpha2_codes : std::vector<std::string>
+            }
+
+            note top of country_changed_event
+            Domain event indicating that country data has changed.
+
+            Published when any country entity is created, updated,
+            or deleted. Subscribers use timestamp to query for changes.
+
+            Fields:
+
+            - timestamp: When the change occurred (UTC).
+            - alpha2_codes: Countries that changed.
+            end note
+        }
+
+        namespace tests #F2F2F2 {
+            '
+            ' Layout groupings
+            '
+
+            ' Group: Domain tests
+            together {
+                class domain_currency_tests
+                class domain_currency_version_tests
+            }
+
+            ' Group: Messaging tests
+            together {
+                class messaging_protocol_tests
+                class messaging_risk_message_handler_tests
+            }
+
+            ' Group: Other tests
+            together {
+                class orexml_currency_config_tests
+                class repository_currency_repository_tests
+            }
+
+            ' Stack related tests vertically
+            domain_currency_tests -[hidden]down- domain_currency_version_tests
+            messaging_protocol_tests -[hidden]down- messaging_risk_message_handler_tests
+            orexml_currency_config_tests -[hidden]down- repository_currency_repository_tests
+
+            '
+            ' Class definitions
+            '
+
+            class domain_currency_tests <<test suite>> #C5E1A5 {
+                +create_currency_with_valid_fields() void
+                +create_currency_with_faker() void
+                +create_multiple_random_currencies() void
+                +create_currency_with_high_precision() void
+                +create_currency_with_no_fractions() void
+                +create_currency_with_three_decimal_places() void
+                +create_currencies_with_different_symbols() void
+                +currency_convert_single_to_table() void
+                +currency_convert_multiple_to_table() void
+                +currency_table_with_faker_data() void
+            }
+
+            note top of domain_currency_tests
+            Test suite for currency domain model.
+
+            Tests cover currency creation, precision levels,
+            decimal places, symbols, and table conversion.
+            end note
+
+            domain_currency_tests ..> ores::refdata::domain::currency : tests
+
+            class domain_currency_version_tests <<test suite>> #C5E1A5 {
+                +create_currency_version_with_valid_fields() void
+                +create_currency_version_with_faker() void
+                +currency_version_convert_multiple_to_table() void
+                +currency_version_table_with_faker_data() void
+                +create_currency_version_history_with_valid_fields() void
+                +currency_version_history_convert_multiple_to_table() void
+                +currency_version_history_table_with_faker_data() void
+            }
+
+            note top of domain_currency_version_tests
+            Test suite for currency_version domain model.
+
+            Tests cover version creation, history tracking,
+            and table conversion with faker data.
+            end note
+
+            domain_currency_version_tests ..> ores::refdata::domain::currency_version : tests
+
+            class messaging_protocol_tests <<test suite>> #C5E1A5 {
+                +get_currencies_request_serialize_deserialize() void
+                +get_currencies_response_empty() void
+                +get_currencies_response_with_single_currency() void
+                +get_currencies_response_serialize_deserialize() void
+                +get_currencies_response_large_dataset() void
+                +get_currencies_response_with_special_characters() void
+                +get_currencies_response_with_empty_fields() void
+            }
+
+            note top of messaging_protocol_tests
+            Test suite for messaging protocol serialization.
+
+            Tests cover get_currencies request/response messages,
+            serialization/deserialization, and edge cases.
+            end note
+
+            messaging_protocol_tests ..> ores::refdata::messaging::get_currencies_request : tests
+            messaging_protocol_tests ..> ores::refdata::messaging::get_currencies_response : tests
+
+            class messaging_risk_message_handler_tests <<test suite>> #C5E1A5 {
+                +handle_get_currencies_request_empty() void
+                +handle_get_currencies_request_with_single_currency() void
+                +handle_get_currencies_request_with_multiple_currencies() void
+                +handle_get_currencies_request_with_faker() void
+                +handle_get_currencies_request_verify_serialization_roundtrip() void
+                +handle_get_currencies_request_with_unicode_symbols() void
+                +handle_invalid_message_type() void
+            }
+
+            note top of messaging_risk_message_handler_tests
+            Test suite for risk_message_handler.
+
+            Tests cover currency retrieval scenarios: empty,
+            single, multiple, faker data, and error cases.
+            end note
+
+            messaging_risk_message_handler_tests ..> ores::refdata::messaging::risk_message_handler : tests
+
+            class orexml_currency_config_tests <<test suite>> #C5E1A5 {
+                +read_currency_config_from_simple_xml() void
+                +read_currency_config_from_currencies_xml() void
+                +read_currency_config_from_currencies_01_xml() void
+                +read_currency_config_from_currencies_41_xml() void
+                +read_currency_config_from_currencies_42_xml() void
+                +read_currency_config_from_currencies_62_xml() void
+                +read_currency_config_from_currencies_API_xml() void
+            }
+
+            note top of orexml_currency_config_tests
+            Test suite for ORE XML currency configuration.
+
+            Tests cover reading currency configurations from
+            various ORE XML format versions.
+            end note
+
+            orexml_currency_config_tests ..> ores::refdata::orexml::CurrencyConfig : tests
+            orexml_currency_config_tests ..> ores::refdata::orexml::importer : tests
+
+            class repository_currency_repository_tests <<test suite>> #C5E1A5 {
+                +write_single_currency() void
+                +write_multiple_currencies() void
+                +read_latest_currencies() void
+                +read_latest_currency_by_iso_code() void
+                +read_all_currencies() void
+                +read_all_currencies_multiple_versions() void
+                +read_nonexistent_iso_code() void
+                +write_and_read_currency_with_unicode_symbols() void
+                +write_and_read_currency_with_no_fractions() void
+            }
+
+            note top of repository_currency_repository_tests
+            Test suite for currency_repository.
+
+            Tests cover write, read (latest/all), ISO code lookup,
+            versioning, and Unicode symbol handling.
+            end note
+
+            repository_currency_repository_tests ..> ores::refdata::repository::currency_repository : tests
+        }
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.refdata.puml"
+' End:
+@enduml

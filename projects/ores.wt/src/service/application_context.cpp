@@ -99,10 +99,10 @@ void application_context::setup_services() {
     account_setup_service_ = std::make_unique<iam::service::account_setup_service>(
         *account_service_, authorization_service_);
 
-    currency_service_ = std::make_unique<risk::service::currency_service>(
+    currency_service_ = std::make_unique<refdata::service::currency_service>(
         *db_context_);
 
-    country_service_ = std::make_unique<risk::service::country_service>(
+    country_service_ = std::make_unique<refdata::service::country_service>(
         *db_context_);
 
     BOOST_LOG_SEV(lg(), info) << "Services setup complete";

@@ -55,7 +55,7 @@ Read the system architecture diagram:
 - Note the architectural layers:
   - Foundation Layer (ores.utility)
   - Infrastructure Layer (ores.comms, ores.testing)
-  - Domain Layer (ores.risk, ores.accounts)
+  - Domain Layer (ores.refdata, ores.accounts)
   - Application Layer (ores.client, ores.cli, ores.qt, ores.service)
 
 ** Step 2: Analyze Component Internals

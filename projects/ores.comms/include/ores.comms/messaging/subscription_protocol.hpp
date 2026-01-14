@@ -43,7 +43,7 @@ struct subscribe_request final {
     /**
      * @brief The event type to subscribe to.
      *
-     * Uses the logical event name from event_traits (e.g., "ores.risk.currency_changed").
+     * Uses the logical event name from event_traits (e.g., "ores.refdata.currency_changed").
      */
     std::string event_type;
 

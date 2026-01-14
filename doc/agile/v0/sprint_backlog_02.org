@@ -586,7 +586,7 @@ Notes:
     :END:
 
 #+begin_quote
-Error:   Target "ores.risk.lib" links to:
+Error:   Target "ores.refdata.lib" links to:
 Error(s) when configuring the project
 CMake Error at D:/a/OreStudio/OreStudio/CTest.cmake:276 (message):
 Error:   Failed to configure

@@ -42,7 +42,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/CountryItemDelegate.hpp"
-#include "ores.risk/messaging/protocol.hpp"
+#include "ores.refdata/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -401,7 +401,7 @@ void CountryMdiWindow::deleteSelected() {
         BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
                                    << alpha2_codes.size() << " countries";
 
-        risk::messaging::delete_country_request request{alpha2_codes};
+        refdata::messaging::delete_country_request request{alpha2_codes};
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -433,7 +433,7 @@ void CountryMdiWindow::deleteSelected() {
             return results;
         }
 
-        auto response = risk::messaging::delete_country_response::
+        auto response = refdata::messaging::delete_country_response::
             deserialize(*payload_result);
 
         if (!response) {

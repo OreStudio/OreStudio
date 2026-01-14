@@ -33,7 +33,7 @@ namespace ores::eventing::domain {
 struct entity_change_event final {
     /**
      * @brief The fully qualified name of the entity that changed (e.g.,
-     * "ores.risk.currency").
+     * "ores.refdata.currency").
      */
     std::string entity;
 

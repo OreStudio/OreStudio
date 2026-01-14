@@ -134,10 +134,10 @@ cmake --build --target mad --preset linux-clang-debug
 To generate a diagram for a specific component, use the pattern
 =generate_COMPONENT_diagram= where =COMPONENT= is the component name (with dots).
 
-For example, to generate the ores.risk diagram:
+For example, to generate the ores.refdata diagram:
 
 #+begin_src sh
-cmake --build --target generate_ores.risk_diagram --preset linux-clang-debug
+cmake --build --target generate_ores.refdata_diagram --preset linux-clang-debug
 #+end_src
 
 To generate the ores.comms diagram:

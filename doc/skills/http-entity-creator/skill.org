@@ -63,7 +63,7 @@ endpoints for an entity.
 Before starting, gather the following information:
 
 - *Entity name*: The name of the entity (e.g., =currency=, =country=, =account=).
-- *Domain location*: Which domain the entity belongs to (e.g., =ores.risk=, =ores.iam=).
+- *Domain location*: Which domain the entity belongs to (e.g., =ores.refdata=, =ores.iam=).
 - *Routes class*: The routes file to add to (e.g., =risk_routes=, =iam_routes=) or create new.
 - *API prefix*: The URL prefix (typically =/api/v1/<entities>=).
 - *Operations needed*:

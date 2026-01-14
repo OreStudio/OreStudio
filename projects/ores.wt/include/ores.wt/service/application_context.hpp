@@ -29,8 +29,8 @@
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
-#include "ores.risk/service/currency_service.hpp"
-#include "ores.risk/service/country_service.hpp"
+#include "ores.refdata/service/currency_service.hpp"
+#include "ores.refdata/service/country_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.eventing/service/postgres_event_source.hpp"
 
@@ -82,11 +82,11 @@ public:
         return *system_flags_service_;
     }
 
-    risk::service::currency_service& currency_service() {
+    refdata::service::currency_service& currency_service() {
         return *currency_service_;
     }
 
-    risk::service::country_service& country_service() {
+    refdata::service::country_service& country_service() {
         return *country_service_;
     }
 
@@ -109,8 +109,8 @@ private:
     std::unique_ptr<iam::service::account_setup_service> account_setup_service_;
     std::shared_ptr<iam::service::authorization_service> authorization_service_;
     std::shared_ptr<variability::service::system_flags_service> system_flags_service_;
-    std::unique_ptr<risk::service::currency_service> currency_service_;
-    std::unique_ptr<risk::service::country_service> country_service_;
+    std::unique_ptr<refdata::service::currency_service> currency_service_;
+    std::unique_ptr<refdata::service::country_service> country_service_;
 
     // Eventing infrastructure for cross-service cache invalidation
     std::unique_ptr<eventing::service::event_bus> event_bus_;

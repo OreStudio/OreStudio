@@ -25,8 +25,8 @@
 #include <QFileInfo>
 #include <QtConcurrent/QtConcurrent>
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.risk/messaging/protocol.hpp"
-#include "ores.risk/orexml/importer.hpp"
+#include "ores.refdata/messaging/protocol.hpp"
+#include "ores.refdata/orexml/importer.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -34,7 +34,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 ImportCurrencyDialog::ImportCurrencyDialog(
-    const std::vector<risk::domain::currency>& currencies,
+    const std::vector<refdata::domain::currency>& currencies,
     const QString& filename,
     ClientManager* clientManager,
     const QString& username,
@@ -54,7 +54,7 @@ ImportCurrencyDialog::ImportCurrencyDialog(
     // Validate all currencies using shared validation
     validation_errors_.reserve(currencies.size());
     for (const auto& currency : currencies) {
-        validation_errors_.push_back(risk::orexml::importer::validate_currency(currency));
+        validation_errors_.push_back(refdata::orexml::importer::validate_currency(currency));
     }
 
     setupUI();
@@ -258,9 +258,9 @@ void ImportCurrencyDialog::updateImportButtonState() {
     importButton_->setEnabled(selectedCount > 0 && !importInProgress_);
 }
 
-std::vector<risk::domain::currency>
+std::vector<refdata::domain::currency>
 ImportCurrencyDialog::getSelectedCurrencies() const {
-    std::vector<risk::domain::currency> selected;
+    std::vector<refdata::domain::currency> selected;
 
     for (int i = 0; i < currencyTable_->rowCount(); ++i) {
         auto* cellWidget = currencyTable_->cellWidget(i, 0);
@@ -358,7 +358,7 @@ void ImportCurrencyDialog::onImportClicked() {
     // Run import in background thread
     QFuture<std::pair<int, int>> future =
         QtConcurrent::run([self, selected, total]() -> std::pair<int, int> {
-            using namespace ores::risk::messaging;
+            using namespace ores::refdata::messaging;
 
             int success_count = 0;
             int current = 0;

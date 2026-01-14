@@ -531,7 +531,7 @@ Organize components into packages by layer:
 |----------------------+----------------+--------------------------------------------------|
 | Foundation Layer     | =#LIGHTBLUE=   | ores.utility                                     |
 | Infrastructure Layer | =#LIGHTGREEN=  | ores.comms, ores.testing                         |
-| Domain Layer         | =#LIGHTYELLOW= | ores.risk, ores.accounts                         |
+| Domain Layer         | =#LIGHTYELLOW= | ores.refdata, ores.accounts                         |
 | Application Layer    | =#LIGHTCORAL=  | ores.client, ores.cli, ores.qt, ores.service |
 
 ** 7. CMakeLists.txt setup

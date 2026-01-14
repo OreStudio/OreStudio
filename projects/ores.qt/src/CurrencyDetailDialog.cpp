@@ -44,8 +44,8 @@
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.iam/domain/change_reason_constants.hpp"
-#include "ores.risk/messaging/protocol.hpp"
-#include "ores.risk/generators/currency_generator.hpp"
+#include "ores.refdata/messaging/protocol.hpp"
+#include "ores.refdata/generators/currency_generator.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
@@ -268,7 +268,7 @@ CurrencyDetailDialog::~CurrencyDetailDialog() {
     }
 }
 
-void CurrencyDetailDialog::setCurrency(const risk::domain::currency& currency) {
+void CurrencyDetailDialog::setCurrency(const refdata::domain::currency& currency) {
     currentCurrency_ = currency;
     isAddMode_ = currency.iso_code.empty();
 
@@ -311,8 +311,8 @@ void CurrencyDetailDialog::setCurrency(const risk::domain::currency& currency) {
     updateFlagDisplay();
 }
 
-risk::domain::currency CurrencyDetailDialog::getCurrency() const {
-    risk::domain::currency currency = currentCurrency_;
+refdata::domain::currency CurrencyDetailDialog::getCurrency() const {
+    refdata::domain::currency currency = currentCurrency_;
     currency.iso_code = ui_->isoCodeEdit->text().toStdString();
     currency.name = ui_->nameEdit->text().toStdString();
     currency.numeric_code = ui_->numericCodeEdit->text().toStdString();
@@ -371,7 +371,7 @@ void CurrencyDetailDialog::onSaveClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Save clicked for currency: "
                                << currentCurrency_.iso_code;
 
-    risk::domain::currency currency = getCurrency();
+    refdata::domain::currency currency = getCurrency();
 
     // For updates (not creates), require change reason
     if (!isAddMode_) {
@@ -414,7 +414,7 @@ void CurrencyDetailDialog::onSaveClicked() {
                                            << currency.iso_code;
 
                 // Use single save_currency message for both create and update
-                risk::messaging::save_currency_request request{currency};
+                refdata::messaging::save_currency_request request{currency};
                 auto payload = request.serialize();
                 frame request_frame = frame(message_type::save_currency_request,
                     0, std::move(payload));
@@ -432,7 +432,7 @@ void CurrencyDetailDialog::onSaveClicked() {
                 if (!payload_result)
                     return {false, "Failed to decompress server response"};
 
-                using risk::messaging::save_currency_response;
+                using refdata::messaging::save_currency_response;
                 auto response = save_currency_response::
                     deserialize(*payload_result);
 
@@ -535,7 +535,7 @@ void CurrencyDetailDialog::onDeleteClicked() {
                                        << iso_code;
 
             // Create batch request with single ISO code
-            risk::messaging::delete_currency_request request{{iso_code}};
+            refdata::messaging::delete_currency_request request{{iso_code}};
             auto payload = request.serialize();
 
             frame request_frame(message_type::delete_currency_request,
@@ -558,7 +558,7 @@ void CurrencyDetailDialog::onDeleteClicked() {
                 return {false, "Failed to decompress server response"};
             }
 
-            auto response = risk::messaging::delete_currency_response::deserialize(
+            auto response = refdata::messaging::delete_currency_response::deserialize(
                 *payload_result);
 
             if (!response) {
@@ -840,7 +840,7 @@ void CurrencyDetailDialog::showVersionNavActions(bool visible) {
 }
 
 void CurrencyDetailDialog::setHistory(
-    const risk::domain::currency_version_history& history, int versionNumber) {
+    const refdata::domain::currency_version_history& history, int versionNumber) {
     BOOST_LOG_SEV(lg(), debug) << "Setting history with " << history.versions.size()
                                << " versions, displaying version " << versionNumber;
 
@@ -1016,7 +1016,7 @@ void CurrencyDetailDialog::onGenerateClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Generate clicked in detail dialog";
 
     try {
-        auto currencies = risk::generators::generate_fictional_currencies();
+        auto currencies = refdata::generators::generate_fictional_currencies();
         static std::random_device rd;
         static std::mt19937 gen(rd());
         std::uniform_int_distribution<std::size_t> dist(0, currencies.size() - 1);

@@ -821,7 +821,7 @@ namespace ores #F2F2F2 {
             Fields:
 
             - event_type: The fully qualified event type name to subscribe to
-              (e.g., "ores.risk.currency_changed_event").
+              (e.g., "ores.refdata.currency_changed_event").
             end note
 
             subscribe_request ..> ores::comms::messaging::error_code

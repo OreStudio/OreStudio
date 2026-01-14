@@ -45,7 +45,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.iam.lib
         ores.variability.lib
-        ores.risk.lib
+        ores.refdata.lib
         ores.comms.lib
         cli::cli)
 

@@ -29,8 +29,8 @@
 #include <QAction>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
-#include "ores.risk/domain/currency_version.hpp"
-#include "ores.risk/domain/currency_version_history.hpp"
+#include "ores.refdata/domain/currency_version.hpp"
+#include "ores.refdata/domain/currency_version_history.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ui_CurrencyHistoryDialog.h"
 
@@ -89,7 +89,7 @@ public:
     /**
      * @brief Returns the loaded history for version navigation.
      */
-    [[nodiscard]] const risk::domain::currency_version_history& getHistory() const {
+    [[nodiscard]] const refdata::domain::currency_version_history& getHistory() const {
         return history_;
     }
 
@@ -102,13 +102,13 @@ signals:
      * @param currency The currency data at the selected version.
      * @param versionNumber The version number being viewed.
      */
-    void openVersionRequested(const risk::domain::currency& currency, int versionNumber);
+    void openVersionRequested(const refdata::domain::currency& currency, int versionNumber);
 
     /**
      * @brief Emitted when user requests to revert to a selected version.
      * @param currency The currency data to revert to.
      */
-    void revertVersionRequested(const risk::domain::currency& currency);
+    void revertVersionRequested(const refdata::domain::currency& currency);
 
 private slots:
     void onVersionSelected(int index);
@@ -129,8 +129,8 @@ private:
      */
     using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
     DiffResult calculateDiff(
-        const risk::domain::currency_version& current,
-        const risk::domain::currency_version& previous);
+        const refdata::domain::currency_version& current,
+        const refdata::domain::currency_version& previous);
 
     void setupToolbar();
     void updateButtonStates();
@@ -140,7 +140,7 @@ private:
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     QString isoCode_;
-    risk::domain::currency_version_history history_;
+    refdata::domain::currency_version_history history_;
 
     QToolBar* toolBar_;
     QAction* reloadAction_;

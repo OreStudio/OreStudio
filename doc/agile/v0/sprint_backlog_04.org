@@ -735,7 +735,7 @@ them separately.
 
 - reviewed =ores.accounts=. Done core library, missing tests.
 - reviewed =ores.cli=.
-- reviewed =ores.risk=.
+- reviewed =ores.refdata=.
 
 *** COMPLETED Fix broken windows build due to local time               :code:
     :LOGBOOK:
@@ -1196,7 +1196,7 @@ This sprint focused on **stabilizing the core application**, **improving develop
 
 ## ✅ **Highlights**
 
-- **LLM-powered code review completed** across core modules (`ores.accounts`, `ores.cli`, `ores.risk`), identifying bugs, modern C++ improvements, and security patterns.
+- **LLM-powered code review completed** across core modules (`ores.accounts`, `ores.cli`, `ores.refdata`), identifying bugs, modern C++ improvements, and security patterns.
 - **Claude skills framework implemented** to automate documentation, code generation, and system analysis using structured prompts and PlantUML.
 - **UI/UX modernization** with Fluent UI icons, professional dark theme styling, and MDI window flexibility.
 - **Critical crash on shutdown resolved** via improved Qt ownership model and lifecycle management.

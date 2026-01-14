@@ -1553,8 +1553,8 @@ ores-shell> Available event channels:
   ores.iam.change_reason_changed - Change reason data modified
   ores.iam.permission_changed - Permission data modified
   ores.iam.role_changed - Role data modified
-  ores.risk.country_changed - Country data modified
-  ores.risk.currency_changed - Currency data modified
+  ores.refdata.country_changed - Country data modified
+  ores.refdata.currency_changed - Currency data modified
   ores.variability.feature_flags_changed - Feature flags modified
 
 Use 'listen <channel>' to subscribe, or 'listen *' for all.
@@ -1567,7 +1567,7 @@ Subscribe to notifications for an event type.
 
 #+name: events-listen
 #+begin_src ores-shell :exports none
-events listen ores.risk.currency_changed
+events listen ores.refdata.currency_changed
 events subscriptions
 exit
 #+end_src
@@ -1586,9 +1586,9 @@ EOF
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Listening on ores.risk.currency_changed
+ores-shell> ✓ Listening on ores.refdata.currency_changed
 ores-shell> Active subscriptions:
-  • ores.risk.currency_changed
+  • ores.refdata.currency_changed
 ores-shell> Bye!
 #+end_example
 
@@ -1598,8 +1598,8 @@ Unsubscribe from notifications.
 
 #+name: events-unlisten
 #+begin_src ores-shell :exports none
-events listen ores.risk.currency_changed
-events unlisten ores.risk.currency_changed
+events listen ores.refdata.currency_changed
+events unlisten ores.refdata.currency_changed
 events subscriptions
 exit
 #+end_src
@@ -1618,8 +1618,8 @@ EOF
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Listening on ores.risk.currency_changed
-ores-shell> ✓ Stopped listening on ores.risk.currency_changed
+ores-shell> ✓ Listening on ores.refdata.currency_changed
+ores-shell> ✓ Stopped listening on ores.refdata.currency_changed
 ores-shell> No active subscriptions.
 ores-shell> Bye!
 #+end_example

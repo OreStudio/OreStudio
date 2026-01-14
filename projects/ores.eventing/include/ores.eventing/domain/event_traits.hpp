@@ -34,7 +34,7 @@ namespace ores::eventing::domain {
  * @code
  *     template<>
  *     struct event_traits<currency_changed_event> {
- *         static constexpr std::string_view name = "ores.risk.currency_changed";
+ *         static constexpr std::string_view name = "ores.refdata.currency_changed";
  *     };
  * @endcode
  *

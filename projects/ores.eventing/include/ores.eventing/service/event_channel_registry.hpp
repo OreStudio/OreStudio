@@ -78,7 +78,7 @@ public:
     /**
      * @brief Register a channel by name.
      *
-     * @param name The channel name (e.g., "ores.risk.currency_changed").
+     * @param name The channel name (e.g., "ores.refdata.currency_changed").
      * @param description Human-readable description of the channel.
      */
     void register_channel(const std::string& name, const std::string& description);

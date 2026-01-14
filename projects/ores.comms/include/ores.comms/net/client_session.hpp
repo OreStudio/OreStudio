@@ -468,7 +468,7 @@ public:
      * Delegates to remote_event_adapter to send a SUBSCRIBE protocol message.
      * Received notifications are queued for retrieval via take_pending_notifications().
      *
-     * @param event_type The fully qualified event type name (e.g., "ores.risk.currency_changed")
+     * @param event_type The fully qualified event type name (e.g., "ores.refdata.currency_changed")
      * @return True if subscription succeeded, false otherwise
      */
     bool subscribe(const std::string& event_type);

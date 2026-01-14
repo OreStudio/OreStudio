@@ -31,8 +31,8 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.risk/eventing/currency_changed_event.hpp"
-#include "ores.risk/messaging/protocol.hpp"
+#include "ores.refdata/eventing/currency_changed_event.hpp"
+#include "ores.refdata/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -44,7 +44,7 @@ using namespace ores::logging;
 namespace {
     // Event type name for currency changes
     constexpr std::string_view currency_event_name =
-        eventing::domain::event_traits<risk::eventing::currency_changed_event>::name;
+        eventing::domain::event_traits<refdata::eventing::currency_changed_event>::name;
 }
 
 CurrencyController::CurrencyController(
@@ -201,7 +201,7 @@ void CurrencyController::closeAllWindows() {
 void CurrencyController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new currency requested";
     const QColor iconColor(220, 220, 220);
-    risk::domain::currency new_currency;
+    refdata::domain::currency new_currency;
 
     // Assuming CurrencyDetailDialog updated to take ClientManager*
     auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
@@ -262,7 +262,7 @@ void CurrencyController::onAddNewRequested() {
 }
 
 void CurrencyController::onShowCurrencyDetails(
-    const risk::domain::currency& currency) {
+    const refdata::domain::currency& currency) {
     BOOST_LOG_SEV(lg(), info) << "Showing currency details for: "
                              << currency.iso_code;
 
@@ -475,7 +475,7 @@ void CurrencyController::onNotificationReceived(
 }
 
 void CurrencyController::onOpenCurrencyVersion(
-    const risk::domain::currency& currency, int versionNumber) {
+    const refdata::domain::currency& currency, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for currency: " << currency.iso_code;
 
@@ -567,7 +567,7 @@ void CurrencyController::onOpenCurrencyVersion(
     }
 }
 
-void CurrencyController::onRevertCurrency(const risk::domain::currency& currency) {
+void CurrencyController::onRevertCurrency(const refdata::domain::currency& currency) {
     BOOST_LOG_SEV(lg(), info) << "Reverting currency: " << currency.iso_code;
 
     if (!clientManager_ || !clientManager_->isConnected()) {
@@ -577,7 +577,7 @@ void CurrencyController::onRevertCurrency(const risk::domain::currency& currency
     }
 
     // Create a copy of the currency for saving
-    risk::domain::currency currencyToSave = currency;
+    refdata::domain::currency currencyToSave = currency;
     currencyToSave.recorded_by = username_.toStdString();
 
     QPointer<CurrencyController> self = this;
@@ -588,7 +588,7 @@ void CurrencyController::onRevertCurrency(const risk::domain::currency& currency
             BOOST_LOG_SEV(lg(), debug) << "Sending save currency request for revert: "
                                        << currencyToSave.iso_code;
 
-            risk::messaging::save_currency_request request{currencyToSave};
+            refdata::messaging::save_currency_request request{currencyToSave};
             auto payload = request.serialize();
             frame request_frame = frame(message_type::save_currency_request,
                 0, std::move(payload));
@@ -603,7 +603,7 @@ void CurrencyController::onRevertCurrency(const risk::domain::currency& currency
             if (!payload_result)
                 return {false, "Failed to decompress server response"};
 
-            using risk::messaging::save_currency_response;
+            using refdata::messaging::save_currency_response;
             auto response = save_currency_response::deserialize(*payload_result);
 
             bool result = false;

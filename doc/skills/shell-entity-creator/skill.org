@@ -62,7 +62,7 @@ commands for an entity.
 Before starting, gather the following information:
 
 - *Entity name*: The name of the entity (e.g., =currency=, =country=, =account=).
-- *Component location*: Which domain the entity belongs to (e.g., =ores.risk=, =ores.iam=).
+- *Component location*: Which domain the entity belongs to (e.g., =ores.refdata=, =ores.iam=).
 - *Menu name*: The shell menu name (typically plural, e.g., =currencies=, =accounts=).
 - *Operations needed*:
   - [ ] List/get all entities

@@ -45,7 +45,7 @@ namespace ores #F2F2F2 {
             to an entity at the repository level.
 
             - entity: Fully qualified name of the entity
-              (e.g., "ores.risk.currency").
+              (e.g., "ores.refdata.currency").
             - timestamp: When the change occurred (UTC).
             end note
         }

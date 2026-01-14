@@ -28,7 +28,7 @@
 #include <QTimer>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.risk/domain/currency.hpp"
+#include "ores.refdata/domain/currency.hpp"
 
 namespace ores::qt {
 
@@ -134,14 +134,14 @@ public:
      * @param row The row index.
      * @return The currency object, or nullptr if row is invalid.
      */
-    const risk::domain::currency* getCurrency(int row) const;
+    const refdata::domain::currency* getCurrency(int row) const;
 
     /**
      * @brief Get all currencies.
      *
      * @return A vector containing all current currencies.
      */
-    std::vector<risk::domain::currency> getCurrencies() const;
+    std::vector<refdata::domain::currency> getCurrencies() const;
 
     /**
      * @brief Get the page size used for pagination.
@@ -172,7 +172,7 @@ public:
      *
      * @param currencies The generated currencies to add.
      */
-    void add_synthetic_currencies(std::vector<risk::domain::currency> currencies);
+    void add_synthetic_currencies(std::vector<refdata::domain::currency> currencies);
 
     /**
      * @brief Check if a currency is synthetic (generated but not saved).
@@ -234,7 +234,7 @@ private:
 
     struct FetchResult {
         bool success;
-        std::vector<risk::domain::currency> currencies;
+        std::vector<refdata::domain::currency> currencies;
         std::uint32_t total_available_count;
     };
 
@@ -242,7 +242,7 @@ private:
 
     ClientManager* clientManager_;
     ImageCache* imageCache_;
-    std::vector<risk::domain::currency> currencies_;
+    std::vector<refdata::domain::currency> currencies_;
     QFutureWatcher<FutureWatcherResult>* watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};

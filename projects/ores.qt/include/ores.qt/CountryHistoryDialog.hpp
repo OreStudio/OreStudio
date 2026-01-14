@@ -29,7 +29,7 @@
 #include <QAction>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
-#include "ores.risk/domain/country.hpp"
+#include "ores.refdata/domain/country.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ui_CountryHistoryDialog.h"
 
@@ -88,7 +88,7 @@ public:
     /**
      * @brief Returns the loaded history vector for version navigation.
      */
-    [[nodiscard]] const std::vector<risk::domain::country>& getHistory() const {
+    [[nodiscard]] const std::vector<refdata::domain::country>& getHistory() const {
         return history_;
     }
 
@@ -101,13 +101,13 @@ signals:
      * @param country The country data at the selected version.
      * @param versionNumber The version number being viewed.
      */
-    void openVersionRequested(const risk::domain::country& country, int versionNumber);
+    void openVersionRequested(const refdata::domain::country& country, int versionNumber);
 
     /**
      * @brief Emitted when user requests to revert to a selected version.
      * @param country The country data to revert to.
      */
-    void revertVersionRequested(const risk::domain::country& country);
+    void revertVersionRequested(const refdata::domain::country& country);
 
 private slots:
     void onVersionSelected(int index);
@@ -128,8 +128,8 @@ private:
      */
     using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
     DiffResult calculateDiff(
-        const risk::domain::country& current,
-        const risk::domain::country& previous);
+        const refdata::domain::country& current,
+        const refdata::domain::country& previous);
 
     void setupToolbar();
     void updateButtonStates();
@@ -139,7 +139,7 @@ private:
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     QString alpha2Code_;
-    std::vector<risk::domain::country> history_;
+    std::vector<refdata::domain::country> history_;
 
     QToolBar* toolBar_;
     QAction* reloadAction_;

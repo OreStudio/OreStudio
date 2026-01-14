@@ -431,7 +431,7 @@ Infrastructure (ores.comms):
 - Message types: =create_currency_request/response= (0x1009/0x100A) and
   =update_currency_request/response= (0x1003/0x1004)
 
-Domain (ores.risk):
+Domain (ores.refdata):
 
 - =handle_create_currency_request()= calls =currency_repo_.write()=
 - =handle_update_currency_request()= calls =currency_repo_.update()=
@@ -449,12 +449,12 @@ Application (ores.qt):
 ***** Affected Files
 
 1. =projects/ores.comms/include/ores.comms/protocol/message_types.hpp=
-2. =projects/ores.risk/include/ores.risk/messaging/protocol.hpp=
-3. =projects/ores.risk/src/messaging/protocol.cpp=
-4. =projects/ores.risk/src/messaging/risk_message_handler.cpp=
-5. =projects/ores.risk/include/ores.risk/messaging/risk_message_handler.hpp=
-6. =projects/ores.risk/include/ores.risk/repository/currency_repository.hpp=
-7. =projects/ores.risk/src/repository/currency_repository.cpp=
+2. =projects/ores.refdata/include/ores.refdata/messaging/protocol.hpp=
+3. =projects/ores.refdata/src/messaging/protocol.cpp=
+4. =projects/ores.refdata/src/messaging/risk_message_handler.cpp=
+5. =projects/ores.refdata/include/ores.refdata/messaging/risk_message_handler.hpp=
+6. =projects/ores.refdata/include/ores.refdata/repository/currency_repository.hpp=
+7. =projects/ores.refdata/src/repository/currency_repository.cpp=
 8. =projects/ores.qt/src/CurrencyDetailDialog.cpp=
 9. =projects/ores.qt/include/ores.qt/CurrencyDetailDialog.hpp=
 10. Test files for all affected components
@@ -467,8 +467,8 @@ Application (ores.qt):
 - [ ] Update repository tests to use =write()= for both create and update
   scenarios.
 - [ ] Verify all tests pass.
-- Build target: =ores.risk.lib=
-- Test target: =ores.risk.tests=
+- Build target: =ores.refdata.lib=
+- Test target: =ores.refdata.tests=
 
 ***** Step 2: Domain Layer - Messaging Consolidation
 
@@ -481,8 +481,8 @@ Application (ores.qt):
 - [ ] Update =risk_message_handler= to use single handler
 - [ ] Update messaging tests
 - [ ] Verify all tests pass
-- Build target: =ores.risk.lib=
-- Test target: =ores.risk.tests=
+- Build target: =ores.refdata.lib=
+- Test target: =ores.refdata.tests=
 
 ***** Step 3: Infrastructure Layer - Protocol Update
 
@@ -515,7 +515,7 @@ Application (ores.qt):
 
 ***** Step 6: Documentation and Diagrams
 
-- [ ] Update =projects/ores.risk/modeling/ores.risk.puml= to reflect merged messages
+- [ ] Update =projects/ores.refdata/modeling/ores.refdata.puml= to reflect merged messages
 - [ ] Update =projects/ores.comms/modeling/ores.comms.puml= to reflect protocol changes
 - [ ] Regenerate diagrams with: =cmake --build --target generate_ores_risk_diagram
   --preset linux-clang-debug=
@@ -1342,11 +1342,11 @@ loop) with a batch deletion approach (single request for multiple currencies).
 
 *Estimated Effort*: ~6-9 hours for complete implementation and testing (ACTUAL: ~4 hours)
 
-***** Phase 1: Protocol Layer Changes (=ores.risk/messaging=)
+***** Phase 1: Protocol Layer Changes (=ores.refdata/messaging=)
 
 ****** Update =delete_currency_request= Structure
 
-*File*: =projects/ores.risk/include/ores.risk/messaging/protocol.hpp=
+*File*: =projects/ores.refdata/include/ores.refdata/messaging/protocol.hpp=
 
 *Current*:
 #+begin_src cpp
@@ -1370,7 +1370,7 @@ struct delete_currency_request final {
 
 ****** Update =delete_currency_response= Structure
 
-*File*: =projects/ores.risk/include/ores.risk/messaging/protocol.hpp=
+*File*: =projects/ores.refdata/include/ores.refdata/messaging/protocol.hpp=
 
 *Current*:
 #+begin_src cpp
@@ -1401,7 +1401,7 @@ struct delete_currency_response final {
 
 ****** Update Serialization Implementation
 
-*File*: =projects/ores.risk/src/messaging/protocol.cpp=
+*File*: =projects/ores.refdata/src/messaging/protocol.cpp=
 
 *Serialization Format for Request*:
 - 4 bytes: count (number of ISO codes)
@@ -1424,11 +1424,11 @@ struct delete_currency_response final {
 - [X] Implement response serialization with results vector
 - [X] Implement response deserialization with results vector
 
-***** Phase 2: Server-Side Changes (=ores.risk/messaging=)
+***** Phase 2: Server-Side Changes (=ores.refdata/messaging=)
 
 ****** Update Message Handler
 
-*File*: =projects/ores.risk/src/messaging/risk_message_handler.cpp= (lines 115-144)
+*File*: =projects/ores.refdata/src/messaging/risk_message_handler.cpp= (lines 115-144)
 
 *Current Implementation*:
 - Processes single currency
@@ -1556,7 +1556,7 @@ QtConcurrent::run([self, iso_codes]() -> DeleteResult {
 
 ****** Unit Tests
 
-*New File*: =projects/ores.risk.tests/src/messaging/delete_currency_batch_tests.cpp=
+*New File*: =projects/ores.refdata.tests/src/messaging/delete_currency_batch_tests.cpp=
 
 *Test Cases*:
 - [ ] Serialization/Deserialization:
@@ -1904,7 +1904,7 @@ in 5 phases with review and commit points between phases.
 
   - [X] Import XML toolbar button in Currency window (not File menu)
   - [X] File dialog for selecting ORE XML files (*.xml filter)
-  - [X] XML parsing using existing ores.risk::orexml::importer
+  - [X] XML parsing using existing ores.refdata::orexml::importer
   - [X] Message box preview showing up to 10 currencies with confirmation
   - [X] Background async import to server (QtConcurrent)
   - [X] Send each currency via save_currency_request protocol
@@ -1921,7 +1921,7 @@ in 5 phases with review and commit points between phases.
   - Positioned before Export CSV/XML actions
 
   Phase 2: Parse XML and display preview
-  - Parses XML using ores.risk::orexml::importer::import_currency_config()
+  - Parses XML using ores.refdata::orexml::importer::import_currency_config()
   - Shows message box with first 10 currencies (ISO code and name)
   - User confirms or cancels import
   - Handles empty files gracefully
@@ -1953,7 +1953,7 @@ in 5 phases with review and commit points between phases.
 
   - =projects/ores.qt/include/ores.qt/CurrencyMdiWindow.hpp=
   - =projects/ores.qt/src/CurrencyMdiWindow.cpp=
-  - =projects/ores.risk/src/orexml/importer.cpp=
+  - =projects/ores.refdata/src/orexml/importer.cpp=
 
 - Limitations
 
@@ -1995,21 +1995,21 @@ Links:
 
 **** System-Wide Impact Analysis
 
-1. Repository Layer (ores.accounts, ores.risk) - HIGH IMPACT
+1. Repository Layer (ores.accounts, ores.refdata) - HIGH IMPACT
 
    - Add offset and limit parameters to read_latest() methods
    - Add get_total_count() methods for each entity repository
    - Update SQL queries to use LIMIT and OFFSET clauses
    - Performance: COUNT queries can be expensive on large tables
 
-2. Protocol/Messaging Layer (ores.comms, ores.accounts, ores.risk) - HIGH IMPACT
+2. Protocol/Messaging Layer (ores.comms, ores.accounts, ores.refdata) - HIGH IMPACT
 
    - Breaking change to wire protocol
    - Update request messages: Add offset and limit fields
    - Update response messages: Add total_available_count field
    - Update serialization/deserialization logic
 
-3. Service/Handler Layer (ores.accounts, ores.risk) - MEDIUM IMPACT
+3. Service/Handler Layer (ores.accounts, ores.refdata) - MEDIUM IMPACT
 
    - Extract pagination params from requests
    - Pass to repository methods
@@ -2058,8 +2058,8 @@ Tasks:
 Affected Files:
 - ores.accounts/include/ores.accounts/repository/account_repository.hpp
 - ores.accounts/src/repository/account_repository.cpp (modified)
-- ores.risk/include/ores.risk/repository/currency_repository.hpp
-- ores.risk/src/repository/currency_repository.cpp (modified)
+- ores.refdata/include/ores.refdata/repository/currency_repository.hpp
+- ores.refdata/src/repository/currency_repository.cpp (modified)
 - ores.utility/include/ores.utility/repository/context.hpp (modified)
 - ores.utility/include/ores.utility/repository/context_factory.hpp (modified)
 - ores.utility/src/repository/context_factory.cpp (modified)
@@ -2104,8 +2104,8 @@ Affected Files:
 
 - ores.accounts/include/ores.accounts/messaging/protocol.hpp (modified)
 - ores.accounts/src/messaging/protocol.cpp (modified)
-- ores.risk/include/ores.risk/messaging/protocol.hpp (modified)
-- ores.risk/src/messaging/protocol.cpp (modified)
+- ores.refdata/include/ores.refdata/messaging/protocol.hpp (modified)
+- ores.refdata/src/messaging/protocol.cpp (modified)
 
 Notes:
 
@@ -2145,7 +2145,7 @@ Affected Files:
 - ores.accounts/include/ores.accounts/service/account_service.hpp (modified)
 - ores.accounts/src/service/account_service.cpp (modified)
 - ores.accounts/src/messaging/accounts_message_handler.cpp (modified)
-- ores.risk/src/messaging/risk_message_handler.cpp (modified)
+- ores.refdata/src/messaging/risk_message_handler.cpp (modified)
 
 Notes:
 
@@ -2894,7 +2894,7 @@ We seem to have gone below 70% again.
 | client_options.cpp | Zero   |    0.00% | 3/3               |
 | client.cpp         | Zero   |    0.00% | 199/199           |
 
-- =projects/ores.risk/src/domain=:
+- =projects/ores.refdata/src/domain=:
 
 | File                                  | Status | Coverage | Lines not covered |
 |---------------------------------------+--------+----------+-------------------|
@@ -2905,7 +2905,7 @@ We seem to have gone below 70% again.
 | currency_version_table_io.cpp         | Zero   |    0.00% | 4/4               |
 | currency_table_io.cpp                 | Zero   |    0.00% | 6/6               |
 
-- =projects/ores.risk/src/csv=:
+- =projects/ores.refdata/src/csv=:
 
 | File         | Status | Coverage | Lines not covered |
 |--------------+--------+----------+-------------------|

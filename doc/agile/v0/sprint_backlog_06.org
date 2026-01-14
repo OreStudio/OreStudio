@@ -1688,7 +1688,7 @@ subscription protocol management).
 - *Event sinks*: Components that subscribe and perform side effects (e.g.,
   =subscription_manager= forwarding to sessions).
 - *Domain events*: Each component owns its events (e.g.,
-  =ores::risk::domain::events::currency_changed_event=).
+  =ores::refdata::domain::events::currency_changed_event=).
 
 **** Tasks
 
@@ -1703,7 +1703,7 @@ subscription protocol management).
 
 ***** Phase 2: Domain Events
 
-- [X] Create =events= namespace in =ores.risk/domain= with =currency_changed_event=
+- [X] Create =events= namespace in =ores.refdata/domain= with =currency_changed_event=
 - [X] Create =events= namespace in =ores.accounts/domain= with =account_changed_event=
 - [X] Define =event_traits= template for event type → string mapping
 

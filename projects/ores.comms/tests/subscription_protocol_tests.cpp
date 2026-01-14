@@ -39,7 +39,7 @@ using ores::utility::serialization::error_code;
 
 TEST_CASE("subscribe_request roundtrip serialization", tags) {
     subscribe_request original;
-    original.event_type = "ores.risk.currency_changed";
+    original.event_type = "ores.refdata.currency_changed";
 
     auto bytes = original.serialize();
     auto result = subscribe_request::deserialize(bytes);
@@ -154,7 +154,7 @@ TEST_CASE("unsubscribe_response roundtrip serialization", tags) {
 
 TEST_CASE("notification_message roundtrip serialization", tags) {
     notification_message original;
-    original.event_type = "ores.risk.currency_changed";
+    original.event_type = "ores.refdata.currency_changed";
     original.timestamp = std::chrono::system_clock::now();
 
     auto bytes = original.serialize();
@@ -236,7 +236,7 @@ TEST_CASE("list_event_channels_request stream operator", tags) {
 TEST_CASE("list_event_channels_response roundtrip serialization with channels", tags) {
     list_event_channels_response original;
     original.channels = {
-        {.name = "ores.risk.currency_changed", .description = "Currency data modified"},
+        {.name = "ores.refdata.currency_changed", .description = "Currency data modified"},
         {.name = "ores.iam.account_changed", .description = "Account data modified"},
     };
 
@@ -245,7 +245,7 @@ TEST_CASE("list_event_channels_response roundtrip serialization with channels", 
 
     REQUIRE(result.has_value());
     REQUIRE(result->channels.size() == 2);
-    REQUIRE(result->channels[0].name == "ores.risk.currency_changed");
+    REQUIRE(result->channels[0].name == "ores.refdata.currency_changed");
     REQUIRE(result->channels[0].description == "Currency data modified");
     REQUIRE(result->channels[1].name == "ores.iam.account_changed");
     REQUIRE(result->channels[1].description == "Account data modified");

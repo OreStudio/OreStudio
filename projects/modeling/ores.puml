@@ -210,9 +210,9 @@ package "Infrastructure Layer" #F2F2F2 {
 
 ' Domain Layer
 package "Domain Layer" #F2F2F2 {
-    component [ores.risk] as risk #F7E5FF
+    component [ores.refdata] as refdata #F7E5FF
 
-    note right of risk
+    note right of refdata
     Core domain model for Open Risk Engine (ORE) types following ORE specifications:
     - Domain: Currency entities with temporal versioning (valid_from/valid_to)
     - ORE XML: Import/export to native ORE format using pugixml
@@ -367,9 +367,9 @@ connections --> utility
 connections --> security
 
 ' Dependencies - Domain to Foundation/Infrastructure
-risk --> telemetry
-risk --> platform
-risk --> database
+refdata --> telemetry
+refdata --> platform
+refdata --> database
 iam --> variability
 iam --> comms
 iam --> telemetry
@@ -387,11 +387,11 @@ shell --> comms
 cli --> telemetry
 cli --> variability
 cli --> iam
-cli --> risk
+cli --> refdata
 
 qt --> telemetry
 qt --> iam
-qt --> risk
+qt --> refdata
 qt --> comms
 qt --> eventing
 qt --> assets
@@ -399,7 +399,7 @@ qt --> assets
 service --> telemetry
 service --> database
 service --> iam
-service --> risk
+service --> refdata
 service --> comms
 service --> eventing
 service --> assets
@@ -407,7 +407,7 @@ service --> geo
 
 httpserver --> http
 httpserver --> iam
-httpserver --> risk
+httpserver --> refdata
 httpserver --> assets
 httpserver --> variability
 httpserver --> geo
@@ -417,7 +417,7 @@ httpserver --> comms
 
 wt --> database
 wt --> iam
-wt --> risk
+wt --> refdata
 wt --> variability
 wt --> telemetry
 wt --> platform

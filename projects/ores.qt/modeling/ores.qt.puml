@@ -270,7 +270,7 @@ namespace ores #F2F2F2 {
             +showListWindow() void
             +closeAllWindows() void
             -onAddNewRequested() void
-            -onShowCurrencyDetails(const risk::domain::currency& currency) void
+            -onShowCurrencyDetails(const refdata::domain::currency& currency) void
             -onShowCurrencyHistory(const QString& isoCode) void
             -{field} allDetachableWindows_ QList<DetachableMdiSubWindow*>&
             -{field} currencyListWindow_ QPointer<DetachableMdiSubWindow>
@@ -332,11 +332,11 @@ namespace ores #F2F2F2 {
             +data(const QModelIndex& index, int role) QVariant
             +headerData(int section, Qt::Orientation orientation, int role) QVariant
             +refresh() void
-            +getCurrency(int row) const risk::domain::currency*
-            +getCurrencies() std::vector<risk::domain::currency>
+            +getCurrency(int row) const refdata::domain::currency*
+            +getCurrencies() std::vector<refdata::domain::currency>
             -onCurrenciesLoaded() void
             -{field} clientManager_ ClientManager*
-            -{field} currencies_ std::vector<risk::domain::currency>
+            -{field} currencies_ std::vector<refdata::domain::currency>
             -{field} watcher_ QFutureWatcher<FutureWatcherResult>*
         }
         note top of ClientCurrencyModel
@@ -352,8 +352,8 @@ namespace ores #F2F2F2 {
             +~CurrencyDetailDialog()
             +setClientManager(ClientManager* clientManager) void
             +setUsername(const std::string& username) void
-            +setCurrency(const risk::domain::currency& currency) void
-            +getCurrency() risk::domain::currency
+            +setCurrency(const refdata::domain::currency& currency) void
+            +getCurrency() refdata::domain::currency
             +clearDialog() void
             +save() void
             -onSaveClicked() void
@@ -369,7 +369,7 @@ namespace ores #F2F2F2 {
             -{field} saveAction_ QAction*
             -{field} deleteAction_ QAction*
             -{field} clientManager_ ClientManager*
-            -{field} currentCurrency_ risk::domain::currency
+            -{field} currentCurrency_ refdata::domain::currency
         }
         note top of CurrencyDetailDialog
         Widget for creating/editing currency details.
@@ -395,11 +395,11 @@ namespace ores #F2F2F2 {
             -onHistoryLoadError(const QString& error) void
             -displayChangesTab(int version_index) void
             -displayFullDetailsTab(int version_index) void
-            -calculateDiff(const risk::domain::currency_version& current, const risk::domain::currency_version& previous) DiffResult
+            -calculateDiff(const refdata::domain::currency_version& current, const refdata::domain::currency_version& previous) DiffResult
             -{field} ui_ std::unique_ptr<Ui::CurrencyHistoryDialog>
             -{field} clientManager_ ClientManager*
             -{field} isoCode_ QString
-            -{field} history_ risk::domain::currency_version_history
+            -{field} history_ refdata::domain::currency_version_history
         }
         note top of CurrencyHistoryDialog
         Widget for displaying currency version history.
@@ -417,7 +417,7 @@ namespace ores #F2F2F2 {
             +showListWindow() void
             +closeAllWindows() void
             -onAddNewRequested() void
-            -onShowCountryDetails(const risk::domain::country& country) void
+            -onShowCountryDetails(const refdata::domain::country& country) void
             -onShowCountryHistory(const QString& alpha2Code) void
             -onNotificationReceived(const QString& eventType, const QDateTime& timestamp, const QStringList& entityIds) void
             -{field} allDetachableWindows_ QList<DetachableMdiSubWindow*>&
@@ -488,8 +488,8 @@ namespace ores #F2F2F2 {
             +load_page(std::uint32_t offset, std::uint32_t limit) void
             +canFetchMore(const QModelIndex& parent) bool
             +fetchMore(const QModelIndex& parent) void
-            +getCountry(int row) const risk::domain::country*
-            +getCountries() std::vector<risk::domain::country>
+            +getCountry(int row) const refdata::domain::country*
+            +getCountries() std::vector<refdata::domain::country>
             +page_size() std::uint32_t
             +set_page_size(std::uint32_t size) void
             +total_available_count() std::uint32_t
@@ -498,7 +498,7 @@ namespace ores #F2F2F2 {
             -recency_foreground_color(const std::string& alpha2_code) QVariant
             -{field} clientManager_ ClientManager*
             -{field} imageCache_ ImageCache*
-            -{field} countries_ std::vector<risk::domain::country>
+            -{field} countries_ std::vector<refdata::domain::country>
             -{field} watcher_ QFutureWatcher<FetchResult>*
             -{field} page_size_ std::uint32_t
             -{field} total_available_count_ std::uint32_t
@@ -521,8 +521,8 @@ namespace ores #F2F2F2 {
             +setClientManager(ClientManager* clientManager) void
             +setUsername(const std::string& username) void
             +setImageCache(ImageCache* imageCache) void
-            +setCountry(const risk::domain::country& country) void
-            +getCountry() risk::domain::country
+            +setCountry(const refdata::domain::country& country) void
+            +getCountry() refdata::domain::country
             +clearDialog() void
             +save() void
             +setReadOnly(bool readOnly, int versionNumber) void
@@ -549,7 +549,7 @@ namespace ores #F2F2F2 {
             -{field} revertAction_ QAction*
             -{field} clientManager_ ClientManager*
             -{field} imageCache_ ImageCache*
-            -{field} currentCountry_ risk::domain::country
+            -{field} currentCountry_ refdata::domain::country
         }
         note top of CountryDetailDialog
         Widget for creating/editing country details.
@@ -583,12 +583,12 @@ namespace ores #F2F2F2 {
             -onReloadClicked() void
             -displayChangesTab(int version_index) void
             -displayFullDetailsTab(int version_index) void
-            -calculateDiff(const risk::domain::country& current, const risk::domain::country& previous) DiffResult
+            -calculateDiff(const refdata::domain::country& current, const refdata::domain::country& previous) DiffResult
             -{field} ui_ std::unique_ptr<Ui::CountryHistoryDialog>
             -{field} clientManager_ ClientManager*
             -{field} imageCache_ ImageCache*
             -{field} alpha2Code_ QString
-            -{field} history_ std::vector<risk::domain::country>
+            -{field} history_ std::vector<refdata::domain::country>
             -{field} toolBar_ QToolBar*
         }
         note top of CountryHistoryDialog

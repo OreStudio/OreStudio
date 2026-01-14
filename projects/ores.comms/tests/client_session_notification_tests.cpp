@@ -34,10 +34,10 @@ using namespace ores::comms::net;
 
 TEST_CASE("pending_notification stores event_type and timestamp", tags) {
     pending_notification notif;
-    notif.event_type = "ores.risk.currency_changed";
+    notif.event_type = "ores.refdata.currency_changed";
     notif.timestamp = std::chrono::system_clock::now();
 
-    REQUIRE(notif.event_type == "ores.risk.currency_changed");
+    REQUIRE(notif.event_type == "ores.refdata.currency_changed");
     REQUIRE(notif.timestamp.time_since_epoch().count() > 0);
 }
 

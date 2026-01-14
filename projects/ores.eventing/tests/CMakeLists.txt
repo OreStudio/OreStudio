@@ -35,7 +35,7 @@ target_link_libraries(${tests_target_name}
         ores.telemetry.lib
         ores.utility.lib
         ores.testing.lib
-        ores.risk.lib
+        ores.refdata.lib
         ores.iam.lib
         Catch2::Catch2
         faker-cxx::faker-cxx

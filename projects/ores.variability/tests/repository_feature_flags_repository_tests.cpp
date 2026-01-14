@@ -29,7 +29,7 @@
 namespace {
 
 const std::string_view test_suite("ores.variability.tests");
-const std::string database_table("ores.feature_flags");
+const std::string database_table("ores.variability_feature_flags_tbl");
 const std::string tags("[repository]");
 
 ores::variability::domain::feature_flags generate_feature_flag() {

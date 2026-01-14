@@ -60,47 +60,47 @@ void database_helper::seed_rbac() {
     const std::vector<std::string> statements = {
         // Create wildcard permission if not exists
         R"SQL(
-        INSERT INTO ores.permissions (id, code, description, valid_from, valid_to)
+        INSERT INTO ores.iam_permissions_tbl (id, code, description, valid_from, valid_to)
         SELECT gen_random_uuid(), '*', 'Wildcard permission - grants all access',
                current_timestamp, '9999-12-31 23:59:59'::timestamptz
         WHERE NOT EXISTS (
-            SELECT 1 FROM ores.permissions
+            SELECT 1 FROM ores.iam_permissions_tbl
             WHERE code = '*' AND valid_to = '9999-12-31 23:59:59'::timestamptz
         ))SQL",
 
         // Create Admin role if not exists
         R"SQL(
-        INSERT INTO ores.roles (id, version, name, description, modified_by,
+        INSERT INTO ores.iam_roles_tbl (id, version, name, description, modified_by,
             change_reason_code, change_commentary, valid_from, valid_to)
         SELECT gen_random_uuid(), 1, 'Admin', 'Full administrative access', 'test',
                'system.seed', 'Test RBAC seed data',
                current_timestamp, '9999-12-31 23:59:59'::timestamptz
         WHERE NOT EXISTS (
-            SELECT 1 FROM ores.roles
+            SELECT 1 FROM ores.iam_roles_tbl
             WHERE name = 'Admin' AND valid_to = '9999-12-31 23:59:59'::timestamptz
         ))SQL",
 
         // Create Viewer role if not exists (default role for new accounts)
         R"SQL(
-        INSERT INTO ores.roles (id, version, name, description, modified_by,
+        INSERT INTO ores.iam_roles_tbl (id, version, name, description, modified_by,
             change_reason_code, change_commentary, valid_from, valid_to)
         SELECT gen_random_uuid(), 1, 'Viewer', 'Default role for new accounts', 'test',
                'system.seed', 'Test RBAC seed data',
                current_timestamp, '9999-12-31 23:59:59'::timestamptz
         WHERE NOT EXISTS (
-            SELECT 1 FROM ores.roles
+            SELECT 1 FROM ores.iam_roles_tbl
             WHERE name = 'Viewer' AND valid_to = '9999-12-31 23:59:59'::timestamptz
         ))SQL",
 
         // Assign wildcard permission to Admin role if not exists
         R"SQL(
-        INSERT INTO ores.role_permissions (role_id, permission_id, valid_from, valid_to)
+        INSERT INTO ores.iam_role_permissions_tbl (role_id, permission_id, valid_from, valid_to)
         SELECT r.id, p.id, current_timestamp, '9999-12-31 23:59:59'::timestamptz
-        FROM ores.roles r, ores.permissions p
+        FROM ores.iam_roles_tbl r, ores.iam_permissions_tbl p
         WHERE r.name = 'Admin' AND r.valid_to = '9999-12-31 23:59:59'::timestamptz
           AND p.code = '*' AND p.valid_to = '9999-12-31 23:59:59'::timestamptz
           AND NOT EXISTS (
-              SELECT 1 FROM ores.role_permissions rp
+              SELECT 1 FROM ores.iam_role_permissions_tbl rp
               WHERE rp.role_id = r.id AND rp.permission_id = p.id
                 AND rp.valid_to = '9999-12-31 23:59:59'::timestamptz
           ))SQL"

@@ -62,7 +62,7 @@ Before starting, gather the following information:
 
 - *Entity name*: The name of the entity (e.g., =currency=, =account=,
   =feature_flags=).
-- *Component location*: Which domain the entity belongs to (e.g., =ores.risk=,
+- *Component location*: Which domain the entity belongs to (e.g., =ores.refdata=,
   =ores.iam=).
 - *Command name*: The CLI command name (typically plural with hyphens, e.g.,
   =currencies=, =accounts=, =feature-flags=).

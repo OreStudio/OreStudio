@@ -99,14 +99,14 @@ echo ""
 cd "${SCRIPT_DIR}"
 
 # Run the recreate_database.sql script
-# Note: ores_password needs quotes (it's a string literal in SQL)
+# Note: psql's :'var' syntax handles quoting for string literals
 # Note: db_name should NOT have quotes (it's an identifier in SQL)
 # Note: -h localhost forces TCP connection (password auth vs peer auth on socket)
 PGPASSWORD="${POSTGRES_PASSWORD}" psql \
     -h localhost \
     -f ./recreate_database.sql \
     -U postgres \
-    -v ores_password="'${ORES_PASSWORD}'" \
+    -v ores_password="${ORES_PASSWORD}" \
     -v db_name="${DB_NAME}"
 
 echo ""

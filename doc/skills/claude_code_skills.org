@@ -76,7 +76,7 @@ diagram:
 ** Code Review
 
 - [[id:04ca6bd9-7739-4213-a9dc-17aaace43252][Code Review PR]]: Review pull request changes for code quality, conventions, and correctness.
-- [[id:dadf4117-757a-4eef-a137-cc2ee8023c73][Code Review Component]]: Deep review of a component for technical debt,
+- [[id:dadf4117-757a-4eef-a137-cc2ee8023c73][Code Review Component]]: Deep review of a component for technical debt.
   modernization, and convention compliance.
 
 * Rebuilding skills
@@ -156,3 +156,7 @@ Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/cm
 Publishing file /home/marco/Development/OreStudio/OreStudio.local1/doc/skills/domain-type-creator/skill.org using ‘org-gfm-publish-to-gfm’
 Build complete!
 #+end_example
+
+* Footer
+
+| Previous: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] |

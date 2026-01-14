@@ -22,10 +22,12 @@ guides you through creating the options structs, entity parser, and application
 logic following established patterns.
 
 Prerequisites:
-- The domain type must already exist (see [[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]] skill)
+
+- The domain type must already exist
 - The repository for CRUD operations must be implemented
 - Table I/O and JSON I/O must be available for output formatting
 
+These are all implemented by [[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]] skill.
 
 * How to use this skill
 
@@ -35,16 +37,15 @@ Prerequisites:
 4. Create a fresh branch from main for the next phase (see [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]]).
 5. Build and test after each step.
 
-
 * PR Strategy
 
 This skill is structured into *three phases*, each resulting in a separate PR.
 
-| Phase | Steps     | PR Title Template                              |
-|-------+-----------+------------------------------------------------|
-|     1 | Steps 1-4 | =[cli] Add <entity> list and export commands=    |
-|     2 | Steps 5-7 | =[cli] Add <entity> add and delete commands=     |
-|     3 | Step 8    | =[doc] Add <entity> CLI command recipes=         |
+| Phase | Steps     | PR Title Template                             |
+|-------+-----------+-----------------------------------------------|
+|     1 | Steps 1-4 | =[cli] Add <entity> list and export commands= |
+|     2 | Steps 5-7 | =[cli] Add <entity> add and delete commands=  |
+|     3 | Step 8    | =[doc] Add <entity> CLI command recipes=      |
 
 After each PR is merged, use [[id:6DAFFC2F-7F94-403B-87D0-2A56C4669B7F][feature-branch-manager]] to transition to the next
 phase.
@@ -55,24 +56,32 @@ phase.
 The following sections describe the step-by-step process for creating CLI
 commands for an entity.
 
-
 ** Gather Requirements
 
 Before starting, gather the following information:
 
+<<<<<<< Updated upstream
 - *Entity name*: The name of the entity (e.g., =currency=, =account=, =feature_flags=).
 - *Component location*: Which domain the entity belongs to (e.g., =ores.refdata=, =ores.iam=).
 - *Command name*: The CLI command name (typically plural with hyphens, e.g., =currencies=, =accounts=, =feature-flags=).
+=======
+- *Entity name*: The name of the entity (e.g., =currency=, =account=,
+  =feature_flags=).
+- *Component location*: Which domain the entity belongs to (e.g., =ores.risk=,
+  =ores.iam=).
+- *Command name*: The CLI command name (typically plural with hyphens, e.g.,
+  =currencies=, =accounts=, =feature-flags=).
+>>>>>>> Stashed changes
 - *Operations needed*:
   - [ ] Import from external files (ORE XML, etc.)
   - [ ] Export to external formats (XML, CSV)
   - [ ] List in internal formats (JSON, table)
   - [ ] Delete by key
   - [ ] Add new entity from command-line parameters
-- *Key field*: The primary identifier for filtering (e.g., =iso_code= for currencies).
+- *Key field*: The primary identifier for filtering (e.g., =iso_code= for
+  currencies).
 - *Required add parameters*: What fields are required when adding a new entity.
 - *Optional add parameters*: What fields have defaults.
-
 
 * Phase 1: List and Export Commands
 
@@ -81,18 +90,10 @@ completing Steps 1-4, raise a PR.
 
 *Suggested PR title:* =[cli] Add <entity> list and export commands=
 
-
 ** Step 1: Add Entity Enum Value
 
-Add the entity to the enumeration of available entities.
-
-*** File to modify
-
-=projects/ores.cli/include/ores.cli/config/entity.hpp=
-
-*** Changes required
-
-Add the new entity to the =entity= enum:
+Add the entity to the enumeration of available entities in
+[[proj:projects/ores.cli/include/ores.cli/config/entity.hpp][projects/ores.cli/include/ores.cli/config/entity.hpp]] as follows:
 
 #+begin_src cpp
 enum class entity {
@@ -104,311 +105,8 @@ enum class entity {
 };
 #+end_src
 
-*** Commit message
+** Step 2: Create Entity Parser
 
-#+begin_example
-[cli] Add <entity> to entity enumeration
-#+end_example
-
-
-** Step 2: Create Entity Parser Header
-
-Create the parser header declaring the command handler function.
-
-*** File location
-
-=projects/ores.cli/include/ores.cli/config/entity_parsers/<entities>_parser.hpp=
-
-*** Header structure
-
-#+begin_src cpp
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
- *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
- *
- * licensing text...
- */
-#ifndef ORES_CLI_CONFIG_ENTITY_PARSERS_<ENTITIES>_PARSER_HPP
-#define ORES_CLI_CONFIG_ENTITY_PARSERS_<ENTITIES>_PARSER_HPP
-
-#include <optional>
-#include <iosfwd>
-#include <boost/program_options.hpp>
-#include "ores.cli/config/options.hpp"
-
-namespace ores::cli::config::entity_parsers {
-
-/**
- * @brief Handles parsing of <entities> entity commands.
- */
-std::optional<options>
-handle_<entities>_command(bool has_help,
-    const boost::program_options::parsed_options& po,
-    std::ostream& info,
-    boost::program_options::variables_map& vm);
-
-}
-
-#endif
-#+end_src
-
-*** Commit message
-
-#+begin_example
-[cli] Add <entities>_parser header
-#+end_example
-
-
-** Step 3: Create Entity Parser Implementation
-
-Implement the command parsing for list and export operations.
-
-*** File location
-
-=projects/ores.cli/src/config/entity_parsers/<entities>_parser.cpp=
-
-*** Implementation structure
-
-#+begin_src cpp
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
- *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
- *
- * licensing text...
- */
-#include "ores.cli/config/entity_parsers/<entities>_parser.hpp"
-
-#include <boost/program_options.hpp>
-#include <boost/throw_exception.hpp>
-#include "ores.cli/config/parser_helpers.hpp"
-#include "ores.cli/config/parser_exception.hpp"
-#include "ores.cli/config/entity.hpp"
-#include "ores.database/config/database_configuration.hpp"
-#include "ores.logging/logging_configuration.hpp"
-#include "ores.utility/program_options/environment_mapper_factory.hpp"
-
-namespace ores::cli::config::entity_parsers {
-
-namespace {
-
-using boost::program_options::value;
-using boost::program_options::variables_map;
-using boost::program_options::parsed_options;
-using boost::program_options::options_description;
-using boost::program_options::command_line_parser;
-using boost::program_options::parse_environment;
-using boost::program_options::include_positional;
-using boost::program_options::collect_unrecognized;
-
-using ores::cli::config::entity;
-using ores::cli::config::options;
-using ores::cli::config::parser_exception;
-using ores::cli::config::parser_helpers::print_help_command;
-using ores::cli::config::parser_helpers::add_common_options;
-using ores::cli::config::parser_helpers::validate_operation;
-using ores::cli::config::parser_helpers::print_entity_help;
-using ores::cli::config::parser_helpers::make_export_options_description;
-using ores::cli::config::parser_helpers::make_delete_options_description;
-using ores::cli::config::parser_helpers::read_export_options;
-using ores::cli::config::parser_helpers::read_delete_options;
-
-const std::string export_command_name("export");
-const std::string list_command_name("list");
-
-// Initial allowed operations - add more in Phase 2
-const std::vector<std::string> allowed_operations{
-    export_command_name, list_command_name
-};
-
-}
-
-std::optional<options>
-handle_<entities>_command(bool has_help,
-    const parsed_options& po,
-    std::ostream& info,
-    variables_map& vm) {
-
-    // Collect all unrecognized options from the first pass
-    auto o(collect_unrecognized(po.options, include_positional));
-    o.erase(o.begin()); // Remove command name
-
-    // Show help for <entities> command if requested with no operation
-    if (has_help && o.empty()) {
-        const std::vector<std::pair<std::string, std::string>> operations = {
-            {"export", "Export <entities> to external formats (JSON, table)"},
-            {"list", "List <entities> in internal formats (JSON, table)"}
-        };
-        print_entity_help("<entities>", "Manage <entities>", operations, info);
-        return {};
-    }
-
-    if (o.empty()) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-            "<entities> command requires an operation (export, list)"));
-    }
-
-    const auto operation = o.front();
-    o.erase(o.begin()); // Remove operation from args
-
-    // Validate operation
-    validate_operation("<entities>", operation, allowed_operations);
-
-    options r;
-    using ores::utility::program_options::environment_mapper_factory;
-    const auto name_mapper(environment_mapper_factory::make_mapper("CLI"));
-
-    if (operation == export_command_name) {
-        auto d = add_common_options(make_export_options_description());
-        if (has_help) {
-            print_help_command("<entities> export", d, info);
-            return {};
-        }
-        store(command_line_parser(o).options(d).run(), vm);
-        store(parse_environment(d, name_mapper), vm);
-        r.exporting = read_export_options(vm, entity::<entities>);
-    } else if (operation == list_command_name) {
-        auto d = add_common_options(make_export_options_description());
-        if (has_help) {
-            print_help_command("<entities> list", d, info);
-            return {};
-        }
-        store(command_line_parser(o).options(d).run(), vm);
-        store(parse_environment(d, name_mapper), vm);
-        r.exporting = read_export_options(vm, entity::<entities>);
-    }
-
-    // Read common options
-    using ores::database::database_configuration;
-    using ores::logging::logging_configuration;
-    r.database = database_configuration::read_options(vm);
-    r.logging = logging_configuration::read_options(vm);
-
-    return r;
-}
-
-}
-#+end_src
-
-*** Commit message
-
-#+begin_example
-[cli] Implement <entities>_parser for list and export operations
-#+end_example
-
-
-** Step 4: Register Parser and Application Logic
-
-Register the parser in the main parser and add application logic.
-
-*** Files to modify
-
-**** 1. Update main parser
-
-File: =projects/ores.cli/src/config/parser.cpp=
-
-Add include:
-#+begin_src cpp
-#include "ores.cli/config/entity_parsers/<entities>_parser.hpp"
-#+end_src
-
-Add command constants (in anonymous namespace):
-#+begin_src cpp
-const std::string <entities>_command_name("<entities>");
-const std::string <entities>_command_desc("Manage <entities> (list, export).");
-#+end_src
-
-Add to =validate_command_name()=:
-#+begin_src cpp
-const bool is_valid_command_name(
-    command_name == currencies_command_name ||
-    command_name == accounts_command_name ||
-    // ... existing ...
-    command_name == <entities>_command_name);
-#+end_src
-
-Add to =print_help()=:
-#+begin_src cpp
-lambda(<entities>_command_name, <entities>_command_desc);
-#+end_src
-
-Add to =handle_command()=:
-#+begin_src cpp
-} else if (command_name == <entities>_command_name) {
-    return entity_parsers::handle_<entities>_command(has_help, po, info, vm);
-}
-#+end_src
-
-**** 2. Update application header
-
-File: =projects/ores.cli/include/ores.cli/app/application.hpp=
-
-Add method declarations:
-#+begin_src cpp
-    void export_<entities>(const config::export_options& cfg) const;
-#+end_src
-
-**** 3. Update application implementation
-
-File: =projects/ores.cli/src/app/application.cpp=
-
-Add includes:
-#+begin_src cpp
-#include "ores.<component>/domain/<entity>_json.hpp"
-#include "ores.<component>/domain/<entity>_table.hpp"
-#include "ores.<component>/repository/<entity>_repository.hpp"
-#+end_src
-
-Add export method:
-#+begin_src cpp
-void application::
-export_<entities>(const config::export_options& cfg) const {
-    BOOST_LOG_SEV(lg(), debug) << "Exporting <entities>.";
-
-    <component>::repository::<entity>_repository repo(context_);
-    std::vector<<component>::domain::<entity>> items;
-
-    if (!cfg.key.empty()) {
-        // Export specific <entity> by key
-        if (cfg.all_versions) {
-            items = repo.read_all(cfg.key);
-        } else {
-            items = repo.read_latest(cfg.key);
-        }
-    } else {
-        // Export all <entities>
-        if (cfg.all_versions) {
-            items = repo.read_all();
-        } else {
-            items = repo.read_latest();
-        }
-    }
-
-    // Output in the requested format
-    if (cfg.target_format == config::format::json) {
-        output_stream_ << <component>::domain::convert_to_json(items) << std::endl;
-    } else if (cfg.target_format == config::format::table) {
-        output_stream_ << <component>::domain::convert_to_table(items) << std::endl;
-    } else {
-        BOOST_THROW_EXCEPTION(
-            application_exception("Only JSON and table formats are supported for <entities>"));
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " <entity>(s).";
-}
-#+end_src
-
-Add to =export_data()= switch:
-#+begin_src cpp
-case config::entity::<entities>:
-    export_<entities>(cfg);
-    break;
-#+end_src
-
-*** Commit message
-
-#+begin_example
-[cli] Register <entities> parser and export operations
-#+end_example
 
 
 ** Phase 1 Checkpoint: Raise PR

@@ -23,6 +23,7 @@
 #include <QtConcurrent>
 #include "ores.iam/messaging/change_management_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/messaging/error_protocol.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.iam/eventing/change_reason_changed_event.hpp"
 #include "ores.iam/eventing/change_reason_category_changed_event.hpp"
@@ -125,6 +126,19 @@ void ChangeReasonCache::loadReasons() {
             return {false, {}};
         }
 
+        // Check for error response
+        if (response_result->header().type == message_type::error_response) {
+            auto err_payload = response_result->decompressed_payload();
+            if (err_payload) {
+                auto err_resp = comms::messaging::error_response::deserialize(*err_payload);
+                if (err_resp) {
+                    BOOST_LOG_SEV(lg(), error) << "Server returned error for reasons request: "
+                                               << err_resp->message;
+                }
+            }
+            return {false, {}};
+        }
+
         auto payload_result = response_result->decompressed_payload();
         if (!payload_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to decompress reasons response";
@@ -166,6 +180,19 @@ void ChangeReasonCache::loadCategories() {
             std::move(request_frame));
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send categories request";
+            return {false, {}};
+        }
+
+        // Check for error response
+        if (response_result->header().type == message_type::error_response) {
+            auto err_payload = response_result->decompressed_payload();
+            if (err_payload) {
+                auto err_resp = comms::messaging::error_response::deserialize(*err_payload);
+                if (err_resp) {
+                    BOOST_LOG_SEV(lg(), error) << "Server returned error for categories request: "
+                                               << err_resp->message;
+                }
+            }
             return {false, {}};
         }
 

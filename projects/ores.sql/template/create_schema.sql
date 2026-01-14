@@ -50,46 +50,48 @@ grant create on schema ores to ores;
 -- See admin/setup_admin.sql for cluster-level utilities.
 
 -- Change control tables (must be created before entities that reference them)
-\ir ../schema/change_reason_categories_create.sql
-\ir ../schema/change_reason_categories_notify_trigger.sql
-\ir ../schema/change_reasons_create.sql
-\ir ../schema/change_reasons_notify_trigger.sql
-\ir ../schema/change_reason_functions_create.sql
+\ir ../schema/refdata_change_reason_categories_create.sql
+\ir ../schema/refdata_change_reason_categories_notify_trigger.sql
+\ir ../schema/refdata_change_reasons_create.sql
+\ir ../schema/refdata_change_reasons_notify_trigger.sql
+\ir ../schema/refdata_change_reason_functions_create.sql
 
--- Core tables
-\ir ../schema/currencies_create.sql
-\ir ../schema/currencies_notify_trigger.sql
-\ir ../schema/countries_create.sql
-\ir ../schema/countries_notify_trigger.sql
-\ir ../schema/accounts_create.sql
-\ir ../schema/accounts_notify_trigger.sql
-\ir ../schema/feature_flags_create.sql
-\ir ../schema/feature_flags_notify_trigger.sql
-\ir ../schema/login_info_create.sql
-\ir ../schema/sessions_create.sql
-\ir ../schema/session_stats_create.sql
+-- Reference data tables
+\ir ../schema/refdata_currencies_create.sql
+\ir ../schema/refdata_currencies_notify_trigger.sql
+\ir ../schema/refdata_countries_create.sql
+\ir ../schema/refdata_countries_notify_trigger.sql
+
+-- IAM tables
+\ir ../schema/iam_accounts_create.sql
+\ir ../schema/iam_accounts_notify_trigger.sql
+\ir ../schema/iam_login_info_create.sql
+\ir ../schema/iam_sessions_create.sql
+\ir ../schema/iam_session_stats_create.sql
+\ir ../schema/iam_permissions_create.sql
+\ir ../schema/iam_permissions_notify_trigger.sql
+\ir ../schema/iam_roles_create.sql
+\ir ../schema/iam_roles_notify_trigger.sql
+\ir ../schema/iam_role_permissions_create.sql
+\ir ../schema/iam_account_roles_create.sql
+\ir ../schema/iam_rbac_functions_create.sql
+
+-- Variability tables
+\ir ../schema/variability_feature_flags_create.sql
+\ir ../schema/variability_feature_flags_notify_trigger.sql
 
 -- Telemetry tables
 \ir ../schema/telemetry_logs_create.sql
-\ir ../schema/telemetry_stats_create.sql
+\ir ../schema/telemetry_stats_functions_create.sql
 
--- RBAC tables
-\ir ../schema/permissions_create.sql
-\ir ../schema/permissions_notify_trigger.sql
-\ir ../schema/roles_create.sql
-\ir ../schema/roles_notify_trigger.sql
-\ir ../schema/role_permissions_create.sql
-\ir ../schema/account_roles_create.sql
-\ir ../schema/rbac_functions_create.sql
+-- Asset tables
+\ir ../schema/assets_images_create.sql
+\ir ../schema/assets_tags_create.sql
+\ir ../schema/assets_image_tags_create.sql
+\ir ../schema/assets_images_functions_create.sql
 
--- Image/asset tables
-\ir ../schema/images_create.sql
-\ir ../schema/tags_create.sql
-\ir ../schema/image_tags_create.sql
-\ir ../schema/images_functions_create.sql
-
--- Geolocation tables and functions
-\ir ../schema/geolocation_create.sql
+-- Geo tables and functions
+\ir ../schema/geo_ip2country_create.sql
 
 -- NOTE: The template database contains schema only, no data.
 -- To seed data after creating an instance:

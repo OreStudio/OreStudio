@@ -39,14 +39,14 @@
 
 -- Flag images and tags
 \echo '--- Flag Data ---'
-\ir load_flags.sql
-\ir flags_populate.sql
+\ir assets_load_flags.sql
+\ir assets_flags_populate.sql
 
 -- Currencies
 \echo ''
 \echo '--- Currency Data ---'
-\ir currencies_populate.sql
-\ir currency_images_populate.sql
+\ir refdata_currencies_populate.sql
+\ir assets_currency_images_populate.sql
 
 \echo ''
 \echo '=== Reference Data Population Complete ==='
@@ -56,11 +56,11 @@
 \echo '--- Summary ---'
 
 select 'Currencies' as entity, count(*) as count
-from ores.currencies where valid_to = ores.infinity_timestamp()
+from ores.refdata_currencies_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Images', count(*)
-from ores.images where valid_to = ores.infinity_timestamp()
+from ores.assets_images_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Tags', count(*)
-from ores.tags where valid_to = ores.infinity_timestamp()
+from ores.assets_tags_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

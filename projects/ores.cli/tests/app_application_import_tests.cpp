@@ -32,7 +32,7 @@
 namespace {
 
 const std::string_view test_suite("ores.cli.tests");
-const std::string database_table("ores.currencies");
+const std::string database_table("ores.refdata_currencies_tbl");
 const std::string tags("[import]");
 
 }

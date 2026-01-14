@@ -32,7 +32,7 @@ namespace ores::assets::repository {
  */
 struct image_entity {
     constexpr static const char* schema = "ores";
-    constexpr static const char* tablename = "images";
+    constexpr static const char* tablename = "assets_images_tbl";
 
     sqlgen::PrimaryKey<std::string> image_id;
     int version = 0;

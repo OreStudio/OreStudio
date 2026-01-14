@@ -43,21 +43,21 @@ set schema 'ores';
 \endif
 
 -- Update the flag using bitemporal pattern
-insert into ores.feature_flags (name, enabled, description, modified_by, valid_from, valid_to)
+insert into ores.variability_feature_flags_tbl (name, enabled, description, modified_by, valid_from, valid_to)
 values (
     'system.disable_password_validation',
     true,
     'When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.',
     current_user,
     current_timestamp,
-    ores.infinity_timestamp()
+    ores.utility_infinity_timestamp_fn()
 );
 
 -- Show the updated state
 select name, enabled, description, modified_by, valid_from
-from ores.feature_flags
+from ores.variability_feature_flags_tbl
 where name = 'system.disable_password_validation'
-  and valid_to = ores.infinity_timestamp();
+  and valid_to = ores.utility_infinity_timestamp_fn();
 
 \if :new_value
     \echo 'Password validation is now DISABLED (weak passwords allowed)'

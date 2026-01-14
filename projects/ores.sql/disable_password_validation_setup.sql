@@ -40,21 +40,21 @@ declare
 begin
     -- Check if the flag already exists
     select exists(
-        select 1 from ores.feature_flags
+        select 1 from ores.variability_feature_flags_tbl
         where name = 'system.disable_password_validation'
-          and valid_to = ores.infinity_timestamp()
+          and valid_to = ores.utility_infinity_timestamp_fn()
     ) into flag_exists;
 
     if not flag_exists then
         -- Insert the flag with enabled=0 (validation ENABLED by default for security)
-        insert into ores.feature_flags (name, enabled, description, modified_by, valid_from, valid_to)
+        insert into ores.variability_feature_flags_tbl (name, enabled, description, modified_by, valid_from, valid_to)
         values (
             'system.disable_password_validation',
             0,  -- 0 = false = password validation ENABLED (secure default)
             'When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.',
             'system',
             current_timestamp,
-            ores.infinity_timestamp()
+            ores.utility_infinity_timestamp_fn()
         );
 
         raise notice 'Created system.disable_password_validation flag with enabled=0 (password validation ENABLED)';
@@ -66,6 +66,6 @@ $$ language plpgsql;
 
 -- Query to check current state
 select name, enabled, description, modified_by
-from ores.feature_flags
+from ores.variability_feature_flags_tbl
 where name = 'system.disable_password_validation'
-  and valid_to = ores.infinity_timestamp();
+  and valid_to = ores.utility_infinity_timestamp_fn();

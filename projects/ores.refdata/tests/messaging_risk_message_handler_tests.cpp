@@ -37,7 +37,7 @@
 namespace {
 
 const std::string_view test_suite("ores.refdata.tests");
-const std::string database_table("ores.currencies");
+const std::string database_table("ores.refdata_currencies_tbl");
 const std::string tags("[messaging][handler]");
 
 std::shared_ptr<ores::variability::service::system_flags_service>

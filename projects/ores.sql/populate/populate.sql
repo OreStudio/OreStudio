@@ -45,35 +45,35 @@
 
 -- Change Control (must be populated before entities that use reasons)
 \echo '--- Change Control ---'
-\ir change_reasons_populate.sql
+\ir refdata_change_reasons_populate.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''
 \echo '--- RBAC Data ---'
-\ir permissions_populate.sql
-\ir roles_populate.sql
+\ir iam_permissions_populate.sql
+\ir iam_roles_populate.sql
 
 -- System Flags
 \echo ''
 \echo '--- System Flags ---'
-\ir system_flags_populate.sql
+\ir variability_system_flags_populate.sql
 
 -- Flag Images
 \echo ''
 \echo '--- Flag Images ---'
-\ir load_flags.sql
-\ir flags_populate.sql
+\ir assets_load_flags.sql
+\ir assets_flags_populate.sql
 
 -- Currency-to-Flag Mappings
 \echo ''
 \echo '--- Currency Image Mappings ---'
-\ir currency_images_populate.sql
+\ir assets_currency_images_populate.sql
 
 -- Countries
 \echo ''
 \echo '--- Countries ---'
-\ir countries_populate.sql
-\ir country_images_populate.sql
+\ir refdata_countries_populate.sql
+\ir assets_country_images_populate.sql
 
 \echo ''
 \echo '=== System Population Complete ==='
@@ -83,29 +83,29 @@
 \echo '--- Summary ---'
 
 select 'Change Reasons' as entity, count(*) as count
-from ores.change_reasons where valid_to = ores.infinity_timestamp()
+from ores.refdata_change_reasons_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Countries', count(*)
-from ores.countries where valid_to = ores.infinity_timestamp()
+from ores.refdata_countries_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Countries with Flags', count(*)
-from ores.countries where image_id is not null and valid_to = ores.infinity_timestamp()
+from ores.refdata_countries_tbl where image_id is not null and valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Currencies with Flags', count(*)
-from ores.currencies where image_id is not null and valid_to = ores.infinity_timestamp()
+from ores.refdata_currencies_tbl where image_id is not null and valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Flag Images', count(*)
-from ores.images where valid_to = ores.infinity_timestamp()
+from ores.assets_images_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Permissions', count(*)
-from ores.permissions where valid_to = ores.infinity_timestamp()
+from ores.iam_permissions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Change Reason Categories', count(*)
-from ores.change_reason_categories where valid_to = ores.infinity_timestamp()
+from ores.refdata_change_reason_categories_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Roles', count(*)
-from ores.roles where valid_to = ores.infinity_timestamp()
+from ores.iam_roles_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'System Flags', count(*)
-from ores.feature_flags where name like 'system.%' and valid_to = ores.infinity_timestamp()
+from ores.variability_feature_flags_tbl where name like 'system.%' and valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

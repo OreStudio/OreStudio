@@ -161,9 +161,9 @@ account_role_repository::read_effective_permissions(
 
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
 
-    // Call the SQL function defined in rbac_functions_create.sql
+    // Call the SQL function defined in iam_rbac_functions_create.sql
     const std::string sql =
-        "SELECT code FROM ores.get_effective_permissions('" +
+        "SELECT code FROM ores.iam_get_effective_permissions_fn('" +
         account_id_str + "'::uuid)";
 
     return execute_raw_string_query(ctx_, sql, lg(),
@@ -178,11 +178,11 @@ account_role_repository::read_roles_with_permissions(
 
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
 
-    // Call the SQL function defined in rbac_functions_create.sql
+    // Call the SQL function defined in iam_rbac_functions_create.sql
     const std::string sql =
         "SELECT role_id, role_version, role_name, role_description, "
         "role_modified_by, permission_codes "
-        "FROM ores.get_account_roles_with_permissions('" +
+        "FROM ores.iam_get_account_roles_with_permissions_fn('" +
         account_id_str + "'::uuid)";
 
     const auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),

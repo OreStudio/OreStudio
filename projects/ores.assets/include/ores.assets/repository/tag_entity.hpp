@@ -32,7 +32,7 @@ namespace ores::assets::repository {
  */
 struct tag_entity {
     constexpr static const char* schema = "ores";
-    constexpr static const char* tablename = "tags";
+    constexpr static const char* tablename = "assets_tags_tbl";
 
     sqlgen::PrimaryKey<std::string> tag_id;
     int version = 0;

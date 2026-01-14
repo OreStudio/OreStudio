@@ -136,9 +136,9 @@ std::map<std::string, std::vector<std::string>>
 role_permission_repository::read_all_role_permission_codes() {
     BOOST_LOG_SEV(lg(), debug) << "Reading all role permission codes.";
 
-    // Call the SQL function defined in rbac_functions_create.sql
+    // Call the SQL function defined in iam_rbac_functions_create.sql
     const std::string sql =
-        "SELECT role_id, code FROM ores.get_all_role_permission_codes()";
+        "SELECT role_id, code FROM ores.iam_get_all_role_permission_codes_fn()";
 
     return execute_raw_grouped_query(ctx_, sql, lg(),
         "Reading all role permission codes");
@@ -162,9 +162,9 @@ role_permission_repository::read_role_permission_codes(
     }
     array_literal += "]";
 
-    // Call the SQL function defined in rbac_functions_create.sql
+    // Call the SQL function defined in iam_rbac_functions_create.sql
     const std::string sql =
-        "SELECT role_id, code FROM ores.get_role_permission_codes(" +
+        "SELECT role_id, code FROM ores.iam_get_role_permission_codes_fn(" +
         array_literal + ")";
 
     return execute_raw_grouped_query(ctx_, sql, lg(),

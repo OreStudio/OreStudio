@@ -291,6 +291,19 @@ def main():
 
     print(f"\nLooking for logs in: {log_dir}")
 
+    # Check if log directory exists and has content
+    if not os.path.exists(log_dir) or not os.listdir(log_dir):
+        print(f"\n{'='*80}")
+        print("WARNING: No test logs found!")
+        print("="*80)
+        print("\nTest logging is disabled by default. To enable logging, reconfigure CMake:")
+        print("\n  cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=debug")
+        print("\nOr for trace level with console output:")
+        print("\n  cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON")
+        print("\nThen rebuild and run tests:")
+        print("\n  cmake --build --preset linux-clang-debug --target rat")
+        print(f"\n{'='*80}\n")
+
     total_failures = 0
     all_stats = []
     valid_xml_count = 0

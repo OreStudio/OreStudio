@@ -33,7 +33,7 @@ geolocation_service::lookup(const boost::asio::ip::address& ip) const {
         // Use the validated IP address's string representation to prevent injection
         const auto ip_str = ip.to_string();
         const std::string sql =
-            "SELECT country_code FROM ores.geoip_lookup('" + ip_str + "'::inet)";
+            "SELECT country_code FROM ores.geo_ip2country_lookup_fn('" + ip_str + "'::inet)";
 
         auto rows = database::repository::execute_raw_multi_column_query(
             ctx_, sql, lg(), "Geolocation lookup for " + ip_str);

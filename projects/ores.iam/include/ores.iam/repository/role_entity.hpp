@@ -31,7 +31,7 @@ namespace ores::iam::repository {
  */
 struct role_entity {
     constexpr static const char* schema = "ores";
-    constexpr static const char* tablename = "roles";
+    constexpr static const char* tablename = "iam_roles_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
     int version = 0;

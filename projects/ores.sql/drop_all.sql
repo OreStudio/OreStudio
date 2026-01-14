@@ -17,30 +17,52 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-\ir ./template/database_functions_drop.sql
-\ir ./drop/image_tags_drop.sql
-\ir ./drop/tags_drop.sql
-\ir ./drop/images_drop.sql
-\ir ./drop/rbac_functions_drop.sql
-\ir ./drop/account_roles_drop.sql
-\ir ./drop/role_permissions_drop.sql
-\ir ./drop/roles_notify_trigger_drop.sql
-\ir ./drop/roles_drop.sql
-\ir ./drop/permissions_notify_trigger_drop.sql
-\ir ./drop/permissions_drop.sql
-\ir ./drop/currencies_notify_trigger_drop.sql
-\ir ./drop/currencies_drop.sql
-\ir ./drop/countries_notify_trigger_drop.sql
-\ir ./drop/countries_drop.sql
-\ir ./drop/accounts_notify_trigger_drop.sql
-\ir ./drop/accounts_drop.sql
-\ir ./drop/feature_flags_drop.sql
-\ir ./drop/session_stats_drop.sql
-\ir ./drop/sessions_drop.sql
-\ir ./drop/login_info_drop.sql
-\ir ./drop/change_reasons_notify_trigger_drop.sql
-\ir ./drop/change_reason_functions_drop.sql
-\ir ./drop/change_reasons_drop.sql
-\ir ./drop/change_reason_categories_notify_trigger_drop.sql
-\ir ./drop/change_reason_categories_drop.sql
-\ir ./drop/whimsical_names_drop.sql
+
+-- Geo
+\ir ./drop/geo_ip2country_drop.sql
+
+-- Assets
+\ir ./drop/assets_images_functions_drop.sql
+\ir ./drop/assets_image_tags_drop.sql
+\ir ./drop/assets_tags_drop.sql
+\ir ./drop/assets_images_drop.sql
+
+-- Telemetry
+\ir ./drop/telemetry_stats_functions_drop.sql
+\ir ./drop/telemetry_logs_drop.sql
+
+-- IAM RBAC
+\ir ./drop/iam_rbac_functions_drop.sql
+\ir ./drop/iam_account_roles_drop.sql
+\ir ./drop/iam_role_permissions_drop.sql
+\ir ./drop/iam_roles_notify_trigger_drop.sql
+\ir ./drop/iam_roles_drop.sql
+\ir ./drop/iam_permissions_notify_trigger_drop.sql
+\ir ./drop/iam_permissions_drop.sql
+
+-- IAM sessions and login
+\ir ./drop/iam_session_stats_drop.sql
+\ir ./drop/iam_sessions_drop.sql
+\ir ./drop/iam_login_info_drop.sql
+
+-- IAM accounts
+\ir ./drop/iam_accounts_notify_trigger_drop.sql
+\ir ./drop/iam_accounts_drop.sql
+
+-- Variability
+\ir ./drop/variability_feature_flags_notify_trigger_drop.sql
+\ir ./drop/variability_feature_flags_drop.sql
+
+-- Refdata
+\ir ./drop/refdata_currencies_notify_trigger_drop.sql
+\ir ./drop/refdata_currencies_drop.sql
+\ir ./drop/refdata_countries_notify_trigger_drop.sql
+\ir ./drop/refdata_countries_drop.sql
+\ir ./drop/refdata_change_reasons_notify_trigger_drop.sql
+\ir ./drop/refdata_change_reason_functions_drop.sql
+\ir ./drop/refdata_change_reasons_drop.sql
+\ir ./drop/refdata_change_reason_categories_notify_trigger_drop.sql
+\ir ./drop/refdata_change_reason_categories_drop.sql
+
+-- Utility
+\ir ./drop/utility_functions_drop.sql

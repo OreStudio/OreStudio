@@ -26,7 +26,7 @@ SET search_path TO ores;
 
 -- Returns the 'infinity' timestamp used for valid_to in temporal tables.
 -- This centralizes the sentinel value representing records that are currently valid.
-CREATE OR REPLACE FUNCTION ores.infinity_timestamp()
+CREATE OR REPLACE FUNCTION ores.utility_infinity_timestamp_fn()
 RETURNS timestamptz AS $$
     SELECT '9999-12-31 23:59:59'::timestamptz;
 $$ LANGUAGE sql IMMUTABLE;

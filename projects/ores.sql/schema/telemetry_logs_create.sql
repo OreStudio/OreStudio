@@ -19,98 +19,43 @@
  */
 set schema 'ores';
 
---
--- telemetry_logs table stores log entries from clients and server.
---
--- If TimescaleDB is available:
---   - Table becomes a hypertable partitioned by timestamp
---   - Automatic compression for chunks older than 3 days
---   - Automatic retention policy (30 days)
---
--- If TimescaleDB is NOT available:
---   - Regular PostgreSQL table with standard indexes
---   - Manual cleanup required for old data
---
-
---
--- Create the telemetry_logs table.
--- The composite primary key (id, timestamp) works for both regular tables
--- and TimescaleDB hypertables.
---
-create table if not exists "ores"."telemetry_logs" (
-    -- Log entry identifier
+create table if not exists "ores"."telemetry_logs_tbl" (
     "id" uuid not null,
-
-    -- Log timestamp (when the log was emitted)
-    -- Part of primary key for TimescaleDB hypertable partitioning
     "timestamp" timestamp with time zone not null,
-
-    -- Source identification
-    -- 'client' for logs from ores.qt, ores.shell, etc.
-    -- 'server' for logs from ores.comms.service
     "source" text not null,
-
-    -- Source application name
-    -- e.g., 'ores.qt', 'ores.comms.shell', 'ores.comms.service'
     "source_name" text not null,
-
-    -- Optional linkage to sessions table
-    -- NULL for server logs or pre-login client logs
     "session_id" uuid,
-
-    -- Optional linkage to accounts table
-    -- NULL for server logs or pre-login client logs
     "account_id" uuid,
-
-    -- Log severity level
-    -- Valid values: trace, debug, info, warn, error
     "level" text not null,
-
-    -- Logger/component name that emitted this log
-    -- e.g., 'ores.qt.main_window', 'ores.comms.client'
     "component" text not null default '',
-
-    -- The actual log message
     "message" text not null,
-
-    -- Optional tag for filtering
     "tag" text not null default '',
-
-    -- Server receipt timestamp
     "recorded_at" timestamp with time zone not null default now(),
-
-    -- Composite primary key: id + timestamp
-    -- Required for TimescaleDB, also works for regular tables
     primary key (id, timestamp)
 );
 
--- Indexes for common query patterns (work with both table types)
 create index if not exists telemetry_logs_session_idx
-on "ores"."telemetry_logs" (session_id, timestamp desc)
+on "ores"."telemetry_logs_tbl" (session_id, timestamp desc)
 where session_id is not null;
 
 create index if not exists telemetry_logs_account_idx
-on "ores"."telemetry_logs" (account_id, timestamp desc)
+on "ores"."telemetry_logs_tbl" (account_id, timestamp desc)
 where account_id is not null;
 
 create index if not exists telemetry_logs_level_idx
-on "ores"."telemetry_logs" (level, timestamp desc);
+on "ores"."telemetry_logs_tbl" (level, timestamp desc);
 
 create index if not exists telemetry_logs_source_idx
-on "ores"."telemetry_logs" (source, source_name, timestamp desc);
+on "ores"."telemetry_logs_tbl" (source, source_name, timestamp desc);
 
 create index if not exists telemetry_logs_component_idx
-on "ores"."telemetry_logs" (component, timestamp desc)
+on "ores"."telemetry_logs_tbl" (component, timestamp desc)
 where component != '';
 
---
--- TimescaleDB-specific setup (only if extension is installed)
---
 do $$
 declare
     tsdb_installed boolean;
 begin
-    -- Check if TimescaleDB extension is installed
     select exists (
         select 1 from pg_extension where extname = 'timescaledb'
     ) into tsdb_installed;
@@ -120,41 +65,35 @@ begin
         raise notice 'TimescaleDB detected - creating hypertable';
         raise notice '=========================================';
 
-        -- Convert to hypertable with 1-day chunks (logs are high volume)
-        -- Use public schema prefix as search_path is set to 'ores'
         perform public.create_hypertable(
-            'ores.telemetry_logs',
+            'ores.telemetry_logs_tbl',
             'timestamp',
             chunk_time_interval => interval '1 day',
             if_not_exists => true
         );
         raise notice 'Created hypertable with 1-day chunks';
 
-        -- Compression and retention policies require Timescale License (not Apache)
-        -- Check if we have the community license before enabling these features
         declare
             current_license text;
         begin
             select current_setting('timescaledb.license', true) into current_license;
 
             if current_license = 'timescale' then
-                -- Enable compression for chunks older than 3 days
-                alter table "ores"."telemetry_logs" set (
+                alter table "ores"."telemetry_logs_tbl" set (
                     timescaledb.compress,
                     timescaledb.compress_segmentby = 'source, source_name, level',
                     timescaledb.compress_orderby = 'timestamp desc'
                 );
 
                 perform public.add_compression_policy(
-                    'ores.telemetry_logs',
+                    'ores.telemetry_logs_tbl',
                     compress_after => interval '3 days',
                     if_not_exists => true
                 );
                 raise notice 'Enabled compression policy (3 days)';
 
-                -- Data retention policy: keep raw logs for 30 days
                 perform public.add_retention_policy(
-                    'ores.telemetry_logs',
+                    'ores.telemetry_logs_tbl',
                     drop_after => interval '30 days',
                     if_not_exists => true
                 );
@@ -165,7 +104,7 @@ begin
             end if;
         end;
 
-        raise notice 'TimescaleDB setup complete for telemetry_logs table';
+        raise notice 'TimescaleDB setup complete for telemetry_logs_tbl table';
     else
         raise notice '================================================';
         raise notice 'TimescaleDB NOT available - using regular table';

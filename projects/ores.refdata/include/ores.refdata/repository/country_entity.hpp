@@ -32,7 +32,7 @@ namespace ores::refdata::repository {
  */
 struct country_entity {
     constexpr static const char* schema = "ores";
-    constexpr static const char* tablename = "countries";
+    constexpr static const char* tablename = "refdata_countries_tbl";
 
     sqlgen::PrimaryKey<std::string> alpha2_code;
     int version = 0;

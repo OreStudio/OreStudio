@@ -36,7 +36,7 @@ namespace ores::iam::repository {
  */
 struct session_entity {
     constexpr static const char* schema = "ores";
-    constexpr static const char* tablename = "sessions";
+    constexpr static const char* tablename = "iam_sessions_tbl";
 
     /**
      * @brief Session UUID - part of composite primary key.
@@ -112,7 +112,7 @@ std::ostream& operator<<(std::ostream& s, const session_entity& v);
  */
 struct session_statistics_entity {
     constexpr static const char* schema = "ores";
-    constexpr static const char* tablename = "session_stats_daily";
+    constexpr static const char* tablename = "iam_session_stats_tbl";
 
     std::string day;
     std::string account_id;

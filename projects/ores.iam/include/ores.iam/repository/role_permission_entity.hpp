@@ -38,7 +38,7 @@ namespace ores::iam::repository {
  */
 struct role_permission_entity {
     constexpr static const char* schema = "ores";
-    constexpr static const char* tablename = "role_permissions";
+    constexpr static const char* tablename = "iam_role_permissions_tbl";
 
     std::string role_id;
     std::string permission_id;

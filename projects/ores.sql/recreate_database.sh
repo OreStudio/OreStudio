@@ -28,9 +28,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
     cat <<EOF
-Usage: $(basename "$0") -p POSTGRES_PASSWORD -o ORES_PASSWORD [-d DB_NAME] [-P]
+Usage: $(basename "$0") -p POSTGRES_PASSWORD -o ORES_PASSWORD [-d DB_NAME]
 
 Recreates the ORE Studio database from scratch.
+Population scripts are automatically run as part of database recreation.
 
 Required arguments:
     -p POSTGRES_PASSWORD    Password for the postgres superuser
@@ -38,13 +39,11 @@ Required arguments:
 
 Optional arguments:
     -d DB_NAME              Database name (default: ${DEFAULT_DB_NAME})
-    -P                      Run population scripts after database creation
     -h                      Show this help message
 
 Example:
     $(basename "$0") -p myPostgresPass -o myOresPass
     $(basename "$0") -p myPostgresPass -o myOresPass -d my_custom_db
-    $(basename "$0") -p myPostgresPass -o myOresPass -P
 
 EOF
     exit 1
@@ -54,9 +53,8 @@ EOF
 POSTGRES_PASSWORD=""
 ORES_PASSWORD=""
 DB_NAME="${DEFAULT_DB_NAME}"
-RUN_POPULATE=false
 
-while getopts "p:o:d:Ph" opt; do
+while getopts "p:o:d:h" opt; do
     case ${opt} in
         p)
             POSTGRES_PASSWORD="${OPTARG}"
@@ -66,9 +64,6 @@ while getopts "p:o:d:Ph" opt; do
             ;;
         d)
             DB_NAME="${OPTARG}"
-            ;;
-        P)
-            RUN_POPULATE=true
             ;;
         h)
             usage
@@ -97,7 +92,6 @@ fi
 
 echo "=== ORE Studio Database Recreation ==="
 echo "Database name: ${DB_NAME}"
-echo "Run populate: ${RUN_POPULATE}"
 echo "Script directory: ${SCRIPT_DIR}"
 echo ""
 
@@ -107,21 +101,13 @@ cd "${SCRIPT_DIR}"
 # Run the recreate_database.sql script
 # Note: ores_password needs quotes (it's a string literal in SQL)
 # Note: db_name should NOT have quotes (it's an identifier in SQL)
+# Note: -h localhost forces TCP connection (password auth vs peer auth on socket)
 PGPASSWORD="${POSTGRES_PASSWORD}" psql \
+    -h localhost \
     -f ./recreate_database.sql \
     -U postgres \
     -v ores_password="'${ORES_PASSWORD}'" \
     -v db_name="${DB_NAME}"
-
-# Run population scripts if requested
-if [[ "${RUN_POPULATE}" == "true" ]]; then
-    echo ""
-    echo "=== Running population scripts ==="
-    PGPASSWORD="${ORES_PASSWORD}" psql \
-        -f ./populate/populate.sql \
-        -U ores \
-        -d "${DB_NAME}"
-fi
 
 echo ""
 echo "=== Database recreation complete ==="

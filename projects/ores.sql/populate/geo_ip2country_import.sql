@@ -87,7 +87,7 @@ from ores.geo_ip2country_tbl;
 -- Test lookup for well-known IPs
 \echo 'Testing lookups:'
 \echo '  8.8.8.8 (Google DNS, expected: US):'
-select * from ores.geo_ip2country_lookup_fn('8.8.8.8'::inet);
+select * from ores.geo_ip_lookup_fn('8.8.8.8'::inet);
 
 \echo '  1.1.1.1 (Cloudflare, expected: US):'
-select * from ores.geo_ip2country_lookup_fn('1.1.1.1'::inet);
+select * from ores.geo_ip_lookup_fn('1.1.1.1'::inet);

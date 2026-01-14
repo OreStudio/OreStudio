@@ -36,7 +36,7 @@ namespace ores::telemetry::repository {
  */
 struct telemetry_entity {
     constexpr static const char* schema = "ores";
-    constexpr static const char* tablename = "telemetry_logs";
+    constexpr static const char* tablename = "telemetry_logs_tbl";
 
     /**
      * @brief Log entry UUID - part of composite primary key.

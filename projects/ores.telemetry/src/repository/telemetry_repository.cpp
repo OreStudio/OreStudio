@@ -191,7 +191,7 @@ telemetry_repository::query(const domain::telemetry_query& q) {
     const auto sql = std::format(
         "SELECT id, timestamp, source, source_name, session_id, account_id, "
         "level, component, message, tag, recorded_at "
-        "FROM ores.telemetry_logs "
+        "FROM ores.telemetry_logs_tbl "
         "WHERE {} "
         "ORDER BY timestamp DESC "
         "LIMIT {} OFFSET {}",
@@ -239,7 +239,7 @@ std::uint64_t telemetry_repository::count(const domain::telemetry_query& q) {
 
     // Build count query with same filters as query() for accurate pagination
     const auto sql = std::format(
-        "SELECT COUNT(*) FROM ores.telemetry_logs WHERE {}",
+        "SELECT COUNT(*) FROM ores.telemetry_logs_tbl WHERE {}",
         where_clause);
 
     BOOST_LOG_SEV(lg(), trace) << "Executing count: " << sql;

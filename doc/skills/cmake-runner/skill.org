@@ -144,6 +144,27 @@ Available environment variables:
 - =ORES_TEST_LOG_LEVEL=: Log severity level (default: =trace=)
 - =ORES_TEST_LOG_CONSOLE=: Output logs to console (default: =false=)
 
+*** Analysing test results
+
+The =parse_test_results.py= script provides a summary of test results, including
+failed tests and relevant log entries. It requires test logging to be enabled.
+
+#+begin_src sh
+# First, enable logging and run tests
+cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=debug
+cmake --build --preset linux-clang-debug --target rat
+
+# Then analyse the results
+./scripts/parse_test_results.py build/output/linux-clang-debug/publish/bin
+#+end_src
+
+The script:
+- Parses all =test-results*.xml= files in the specified directory
+- Shows overall statistics (total tests, passed, failed, duration)
+- For failed tests, displays the test name, location, and exception info
+- Correlates failures with log files and shows ERROR/WARN entries
+- Provides an overall summary across all test suites
+
 ** Deploying skills
 
 To deploy Claude Code skills:

@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: F663DF66-4F62-0884-DB23-BB2D6A42B644
+:END:
+#+title: Claude Code Skills
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+
+As per [[https://code.claude.com/docs/en/skills][Claude documentation]]:
+
+#+begin_quote
+A Skill is a markdown file that teaches Claude how to do something specific:
+reviewing PRs using your team’s standards, generating commit messages in your
+preferred format, or querying your company’s database schema. When you ask
+Claude something that matches a Skill’s purpose, Claude automatically applies
+it.
+#+end_quote
+
+See [[id:2003934B-ED05-D114-404B-08C0E0D844BB][ORE Claude Code Skill Catalogue]] for the available skills in this project.

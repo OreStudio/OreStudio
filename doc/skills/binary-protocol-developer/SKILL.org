@@ -36,19 +36,21 @@ communication in ORE Studio.
 The ORE Studio binary protocol is organized into subsystems, each with a
 dedicated message type range:
 
-| Subsystem     | Range           | Example                          |
-|---------------+-----------------+----------------------------------|
-| Core          | 0x0000 - 0x0FFF | handshake, error, ping/pong      |
-| Risk          | 0x1000 - 0x1FFF | currencies, currency history     |
-| Accounts      | 0x2000 - 0x2FFF | login, accounts, lock/unlock     |
-| Variability   | 0x3000 - 0x3FFF | feature flags                    |
+| Subsystem   | Range           | Example                                                                 |
+|-------------+-----------------+-------------------------------------------------------------------------|
+| Core        | 0x0000 - 0x0FFF | handshake, error, ping/pong, subscribe, notification                    |
+| Risk        | 0x1000 - 0x1FFF | currencies, currency history, countries                                 |
+| IAM         | 0x2000 - 0x2FFF | login, accounts, lock/unlock, rbac, signup, sessions, change management |
+| Variability | 0x3000 - 0x3FFF | feature flags, feature flag history                                     |
+| Assets      | 0x4000 - 0x4FFF | images, image management                                                |
+| Telemetry   | 0x5000 - 0x5FFF | log records, telemetry stats                                            |
 
 Protocol definitions are located in:
 
-- =projects/ores.comms/include/ores.comms/messaging/message_types.hpp= - Message
-  type enum and protocol version
+- [[proj:projects/ores.comms/include/ores.comms/messaging/message_types.hpp][ores.comms/messaging/message_types.hpp]] - Message type enum and protocol
+  version
 - =projects/COMPONENT/include/COMPONENT/messaging/*_protocol.hpp= - Protocol
-  structs for each subsystem
+  structs for each subsystem, e.g. [[proj:projects/ores.iam/include/ores.iam/messaging/login_protocol.hpp][ores.iam/messaging/login_protocol.hpp]]
 
 ** Step 1: Determine version impact
 
@@ -74,11 +76,9 @@ Bump the minor version when:
 
 ** Step 2: Update message types enum
 
-Add new message types to =message_types.hpp=:
+Add new message types to [[proj:projects/ores.comms/include/ores.comms/messaging/message_types.hpp][message_types.hpp]]:
 
 #+begin_src cpp
-// In projects/ores.comms/include/ores.comms/messaging/message_types.hpp
-
 enum class message_type {
     // ... existing types ...
 
@@ -110,9 +110,10 @@ Protocol files are named by feature:
 - =projects/COMPONENT/src/messaging/FEATURE_protocol.cpp=
 
 For example:
-- =account_protocol.hpp= - Account CRUD operations
-- =login_protocol.hpp= - Authentication operations
-- =bootstrap_protocol.hpp= - Initial admin setup
+
+- [[proj:projects/ores.iam/include/ores.iam/messaging/account_protocol.hpp][account_protocol.hpp]] - Account CRUD operations
+- [[proj:projects/ores.iam/include/ores.iam/messaging/login_protocol.hpp][login_protocol.hpp]] - Authentication operations
+- [[proj:projects/ores.iam/include/ores.iam/messaging/bootstrap_protocol.hpp][bootstrap_protocol.hpp]] - Initial admin setup
 
 *** Struct naming conventions
 
@@ -190,8 +191,6 @@ to enable the simplified =process_request= API. This should be added at the end
 of the protocol header, in the =ores::comms::messaging= namespace:
 
 #+begin_src cpp
-} // namespace ores::COMPONENT::messaging
-
 namespace ores::comms::messaging {
 
 /**
@@ -205,7 +204,7 @@ struct message_traits<COMPONENT::messaging::action_resource_request> {
         message_type::action_resource_request;
 };
 
-} // namespace ores::comms::messaging
+}
 #+end_src
 
 Include the traits header at the top of your protocol file:
@@ -430,11 +429,11 @@ ORE Studio uses two complementary traits systems for different purposes:
 Maps request types to their corresponding response types and =message_type= enum
 values. Used for RPC-style request/response messaging.
 
-| Provides              | Description                              |
-|-----------------------+------------------------------------------|
-| =request_type=        | The request struct type                  |
-| =response_type=       | The corresponding response struct type   |
-| =request_message_type= | The =message_type= enum value           |
+| Provides               | Description                            |
+|------------------------+----------------------------------------|
+| =request_type=         | The request struct type                |
+| =response_type=        | The corresponding response struct type |
+| =request_message_type= | The =message_type= enum value          |
 
 Location: =ores.comms/messaging/message_traits.hpp=
 
@@ -443,9 +442,9 @@ Location: =ores.comms/messaging/message_traits.hpp=
 Maps domain events to string names for the pub/sub notification system. Used
 when subscribing to server-push notifications.
 
-| Provides | Description                              |
-|----------+------------------------------------------|
-| =name=   | The event type name (e.g., "ores.refdata.currency_changed") |
+| Provides | Description                                              |
+|----------+----------------------------------------------------------|
+| =name=   | The event type name (e.g., "ores.risk.currency_changed") |
 
 Location: =ores.eventing/domain/event_traits.hpp=
 

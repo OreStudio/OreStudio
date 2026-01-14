@@ -6,7 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
 
-Account management component for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+[[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] component for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
 
 * Component Architecture
 
@@ -28,8 +28,14 @@ authentication and authorization. Key features include:
   fields
 - Synthetic data generation: test account generation for development
 
-The module is organized into namespaces: domain (core entities), repository ([[https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping][ORM]]
+The module is organised into namespaces: domain (core entities), repository ([[https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping][ORM]]
 and persistence), service (business logic), messaging (API handlers), security
 (password management), and generators (test data).
+
+* Entities
+
+- [[id:126F3756-77E8-9D14-B8EB-E0FF7C19A384][IAM Account]]
+
+* Footer
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

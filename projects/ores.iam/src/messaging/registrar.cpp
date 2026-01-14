@@ -38,8 +38,8 @@ void registrar::register_handlers(comms::net::server& server,
         std::move(auth_service), std::move(geo_service));
 
     comms::messaging::message_type_range accounts_range{
-        .min = comms::messaging::ACCOUNTS_SUBSYSTEM_MIN,
-        .max = comms::messaging::ACCOUNTS_SUBSYSTEM_MAX
+        .min = comms::messaging::IAM_SUBSYSTEM_MIN,
+        .max = comms::messaging::IAM_SUBSYSTEM_MAX
     };
     server.register_handler(accounts_range, std::move(handler));
 

@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: BA0E3273-DC4B-7CD4-447B-06227B7D09A8
+:ROAM_ALIASES: MASD
+:END:
+#+title: Model Assisted Software Development
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+MASD is the [[https://uhra.herts.ac.uk/id/eprint/17031/][Model Assisted Software Development]] methodology I developed as part
+of a PhD programme. Snippet of the abstract:
+
+#+begin_quote
+Model Driven Engineering (MDE) is a flexible approach for the creation and
+evolution of software systems, centred around models and their transforma-
+tions. MDE provides a fundamental substrate upon which practitioners can create
+sophisticated solutions, invariably characterised by a high degree of
+automation, but tailored specifically to their problem domain. Adoption liter-
+ature reports of widespread MDE use across industry and academia but also
+underscores its status as a niche technology. Meanwhile, the challenges it is
+purported to overcome continue to loom large over software engineering.
+
+The present work identifies factors underlying the deficit in MDE adoption, both
+theoretical and practical, and determines the extent to which a new MDE-based
+Software Development Methodology (SDM) can be used to ad- dress them. It does so
+by putting forward Model Assisted Software Devel- opment (MASD), a novel SDM
+that aids in the design and implementation of software systems. MASD trades the
+flexibility and power of MDE for a reduction in complexity, and consequently has
+a restricted but better defined range of applications. MASD’s problem space is a
+subset of the solution space itself: it provides well-defined abstractions over
+elements of the domain of soft- ware engineering and a conceptual framework for
+their manipulation. MASD targets software developers with little to no knowledge
+of MDE, and aims to act as a bridge between traditional software engineering and
+model-driven approaches.
+#+end_quote
+
+Though very few concrete artefacts of MASD are used in this project - in
+particular, we do not make use of the code generator [[https://github.com/MASD-Project/dogen/][Dogen]] which was
+decommissioned - this project is an attempt to port MASD's core ideas to [[https://en.wikipedia.org/wiki/Large_language_model][LLMs]]
+and [[https://en.wikipedia.org/wiki/Natural_language_processing][NLP]]. Thus, the conceptual model used is of relevance if one wants to
+understand the organisation of the project.
+
+* Conceptual Model
+
+MASD starts with the premise that a software project is just a collection of
+/physical artefacts/ - files and directories - which live in /physical space/;
+and that these artefacts can be thought of as projections from a higher
+dimension space called the /logical space/. There are many, many additional
+complexities around terminology due to the field of [[https://masd-project.github.io/progen/docs/towards_a_definition_of_mde.html][Model Driven Engineering]],
+and we won't get in to those here. However, if one were to summarise it for the
+purposes of [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]:
+
+- /logical entities/ have well-defined properties in logical space which we call
+  /facets/.
+- [[https://masd-project.github.io/progen/docs/models_and_transformations.html#ID-C807836B-B1D6-1024-86E3-7D49BCF20D74][transformations]] can be defined which convert these facets into their physical
+  representation.
+
+In the past we tried to define more precisely the infrastructure around these
+notions but it proved to be quite a difficult undertaking. In this second
+attempt we have decided to use [[https://en.wikipedia.org/wiki/Natural_language_processing][NLP]] and [[https://en.wikipedia.org/wiki/Large_language_model][LLMs]] instead. First, let us then define
+some key terms so we can understand how the mapping has been performed.
+
+- a /product/ in MASD terminology is the overall container for the physical
+  artefacts one is interested in.
+- products are made up of /components/. This is just a logical grouping of
+  physical artefacts. For example, a component could be a C++ project. It can
+  also be any other arbitrary bundle of files and folders which exists as a
+  unit.
+- within each component we will encounter the physical expression of different
+  /facets/ of logical elements.
+
+You can think of a product as the github project, and the component as the c++
+projects within it - /i.e./ the bundle of files that are eventually compiled
+into libraries or executables; but it is perhaps best to just imagine these as a
+collection of related physical elements. They can be just as well a set of
+org-mode files. Our objective is to generate these diverse physical elements
+from a small logical description of the underlying element.
+
+MASD using NLP and LLMs does not require the rigid formalism of [[https://masd-project.github.io/progen/docs/models_and_transformations.html][meta-models]] and
+meta-meta-models and so on. Instead, we port the underlying concepts into a set
+of recipes called [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skills]] which the LLM can understand; and we use these generate
+the target physical artefacts. This greatly simplifies the undertaking but there
+are downsides. We are still in the process of understanding these trade-offs.
+
+The gist of the approach is as follows:
+
+- The key attributes of the logical element we intend to model are kept within
+  the /type/ facet. This is regular C++ code that defines a =struct= with the
+  domain type. Each logical element lives on it's "native" component (/e.g./,
+  [[proj:projects/ores.iam/include/ores.iam/domain/account.hpp][account]] in =ores.iam=, etc.). They are defined via the [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]]
+  [[id:F663DF66-4F62-0884-DB23-BB2D6A42B644][skill]]. However, because NLP is so flexible, we bundled together a number of
+  facets within that skill.
+- other facets then refer to the domain type files to extract required
+  information. LLMs are quite good at understanding unstructured data so we
+  don't need to provide much details.
+
+* Facet Catalogue
+
+** Domain type
+
+- [[id:7FEE0007-A792-5B34-94DB-056EFC99B8D6][Domain Type Class Definition Facet]]: creates the class definition.
+- [[id:23c416e0-1b90-4248-84d6-9275e8b76514][Domain Type JSON I/O Facet]]: creates JSON serialization support.
+- [[id:264c683a-35fd-499f-94c2-476677d2f9bd][Domain Type Table I/O Facet]]: creates table output support.
+- [[id:8840cd84-2fb3-48d8-b893-ca30db244284][Domain Type Generator Support Facet]]: creates test data generator support.
+- [[id:6f78f6f3-7a1d-46c2-9515-101c56145037][Domain Type Repository Entity and Mapper Facet]]: creates database entity and
+  mapper for ORM support.
+- [[id:2132af63-21a0-4ad0-9773-603d00838572][Domain Type Repository CRUD Operations Facet]]: creates repository with CRUD
+  operations.
+- [[id:842baa5a-d2fa-4294-8714-ae3f3bb1229a][Domain Type CMakeLists Update Facet]]: updates CMakeLists.txt with required
+  dependencies.
+- [[id:f76ed8a4-94c4-4a3f-86a1-fda9a76a3beb][Domain Type Test Creation Facet]]: creates comprehensive tests for the domain
+  type.

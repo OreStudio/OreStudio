@@ -1,0 +1,23 @@
+:PROPERTIES:
+:ID: 126F3756-77E8-9D14-B8EB-E0FF7C19A384
+:END:
+#+title: IAM Account
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+An Account is the fundamental digital identity and record within the [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][IAM system]]
+for a distinct entity that interacts with the platform. It serves as the primary
+container for authentication credentials, authorization attributes, and
+descriptive metadata.
+
+An account uniquely binds an entity (/e.g./, a human user, a software service, a
+system component) to a persistent profile that governs its access and
+capabilities.
+
+* Files
+
+| Purpose         | Location                            |
+|-----------------+-------------------------------------|
+| Type definition | [[proj:projects/ores.iam/include/ores.iam/domain/account.hpp][include/ores.iam/domain/account.hpp]] |
+|

@@ -17,7 +17,7 @@ license: Complete terms in LICENSE.txt
 
 * When to use this skill
 
-You MUST use this skill before any creative work:
+Use this skill before creative work:
 
 - Creating new features.
 - Building new components.
@@ -53,12 +53,12 @@ Before asking questions, understand the current project state:
 
 *** Ask questions one at a time
 
-| Principle | Description |
-|-----------+-------------|
-| One question per message | Don't overwhelm with multiple questions. |
-| Multiple choice preferred | Easier to answer than open-ended when possible. |
-| Open-ended when needed | Complex topics may require free-form responses. |
-| Explore further | If a topic needs more exploration, use follow-up questions. |
+| Principle                 | Description                                                 |
+|---------------------------+-------------------------------------------------------------|
+| One question per message  | Don't overwhelm with multiple questions.                    |
+| Multiple choice preferred | Easier to answer than open-ended when possible.             |
+| Open-ended when needed    | Complex topics may require free-form responses.             |
+| Explore further           | If a topic needs more exploration, use follow-up questions. |
 
 Focus questions on understanding:
 
@@ -75,9 +75,9 @@ Always propose 2-3 different approaches with trade-offs:
 
 | Approach | Pros | Cons |
 |----------+------+------|
-| Option A | ... | ... |
-| Option B | ... | ... |
-| Option C | ... | ... |
+| Option A | ...  | ...  |
+| Option B | ...  | ...  |
+| Option C | ...  | ...  |
 
 *** Lead with your recommendation
 
@@ -110,34 +110,34 @@ Once you understand what you're building:
 
 *** Design sections to cover
 
-| Section | Description |
-|---------+-------------|
-| Overview | Problem statement, goals, success criteria. |
-| Architecture | High-level structure, components involved. |
-| Domain model | New or modified domain types. |
-| Data flow | How data moves through the system. |
-| API/Protocol | New messages, endpoints, or interfaces. |
-| Error handling | Failure modes and recovery strategies. |
-| Testing strategy | How the feature will be tested. |
-| Migration | If modifying existing behaviour, upgrade path. |
+| Section          | Description                                    |
+|------------------+------------------------------------------------|
+| Overview         | Problem statement, goals, success criteria.    |
+| Architecture     | High-level structure, components involved.     |
+| Domain model     | New or modified domain types.                  |
+| Data flow        | How data moves through the system.             |
+| API/Protocol     | New messages, endpoints, or interfaces.        |
+| Error handling   | Failure modes and recovery strategies.         |
+| Testing strategy | How the feature will be tested.                |
+| Migration        | If modifying existing behaviour, upgrade path. |
 
 *** Reference existing skills
 
 Link to relevant skills for implementation details:
 
-- Components: [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][Component Creator]]
-- Domain types: [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]]
-- Messaging: [[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][Binary Protocol Developer]]
-- Diagrams: [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Modeler]]
-- Tests: [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][Unit Test Writer]]
+- Components: [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][component-creator]]
+- Domain types: [[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]]
+- Messaging: [[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][binary-protocol-developer]]
+- Diagrams: [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]]
+- Tests: [[id:cb56337e-4839-4048-b5a7-c481812ce3d0][unit-test-writer]]
 
 ** Phase 4: After the design
 
 *** Document the design
 
-Write the validated design to a markdown file:
+Write the validated design to a org-mode file:
 
-- Location: =doc/plans/YYYY-MM-DD-<topic>-design.md=
+- Location: =doc/plans/YYYY-MM-DD-<topic>-design.org=
 - Use clear, concise writing.
 - Include all validated sections.
 - Add diagrams if helpful (ASCII or PlantUML references).
@@ -145,37 +145,43 @@ Write the validated design to a markdown file:
 Example structure:
 
 #+begin_example
-# Feature Name Design
+:PROPERTIES:
+:ID: NEW_GUID
+:END:
+#+title: Feature Name Design
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
 
-## Overview
+,* Overview
 
 Brief description and goals.
 
-## Architecture
+,** Architecture
 
 High-level design decisions.
 
-## Domain Model
+,** Domain Model
 
 New types and their relationships.
 
-## Data Flow
+,** Data Flow
 
 How data moves through the system.
 
-## API Changes
+,** API Changes
 
 New messages or endpoints.
 
-## Error Handling
+,** Error Handling
 
 Failure modes and recovery.
 
-## Testing Strategy
+,** Testing Strategy
 
 How the feature will be tested.
 
-## Open Questions
+,** Open Questions
 
 Any unresolved decisions.
 #+end_example
@@ -185,8 +191,8 @@ Any unresolved decisions.
 Commit the design document:
 
 #+begin_example
-git add doc/plans/YYYY-MM-DD-topic-design.md
-git commit -m "[doc] Add design for topic"
+git add doc/plans/YYYY-MM-DD-topic-design.org
+git commit -m "[design] Add design for topic"
 #+end_example
 
 *** Proceed to implementation (optional)
@@ -194,21 +200,21 @@ git commit -m "[doc] Add design for topic"
 If continuing to implementation:
 
 1. Ask: "Ready to set up for implementation?"
-2. Create stories in the sprint backlog per [[id:2df8adaf-20c9-4757-9399-798eec6df828][Agile Product Owner]] skill.
+2. Create stories in the sprint backlog per [[id:2df8adaf-20c9-4757-9399-798eec6df828][agile-product-owner]] skill.
 3. Break the design into implementable tasks.
 4. Reference the design document in story notes.
 
 * Key principles
 
-| Principle | Description |
-|-----------+-------------|
-| One question at a time | Don't overwhelm with multiple questions. |
-| Multiple choice preferred | Easier to answer than open-ended when possible. |
-| YAGNI ruthlessly | Remove unnecessary features from all designs. |
-| Explore alternatives | Always propose 2-3 approaches before settling. |
-| Incremental validation | Present design in sections, validate each. |
-| Be flexible | Go back and clarify when something doesn't make sense. |
-| Reference skills | Don't duplicate, link to existing skills. |
+| Principle                 | Description                                            |
+|---------------------------+--------------------------------------------------------|
+| One question at a time    | Don't overwhelm with multiple questions.               |
+| Multiple choice preferred | Easier to answer than open-ended when possible.        |
+| YAGNI ruthlessly          | Remove unnecessary features from all designs.          |
+| Explore alternatives      | Always propose 2-3 approaches before settling.         |
+| Incremental validation    | Present design in sections, validate each.             |
+| Be flexible               | Go back and clarify when something doesn't make sense. |
+| Reference skills          | Don't duplicate, link to existing skills.              |
 
 * Example dialogue
 

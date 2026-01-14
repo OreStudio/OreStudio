@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 7FEE0007-A792-5B34-94DB-056EFC99B8D6
+:END:
+#+title: Domain Type Class Definition Facet
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil title:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+This facet provides instructions on how to generate a domain type class
+definition.
+
+Create the header file under:
+
+- =projects/COMPONENT/include/COMPONENT/domain/TYPE_NAME.hpp=
+
+The domain class should:
+
+- Use a =struct= with all fields public.
+- Include comprehensive doxygen comments for the struct and all fields.
+- Use appropriate C++ types:
+  - =boost::uuids::uuid= for unique identifiers
+  - =std::string= for text fields
+  - =bool= for flags
+  - =int= or appropriate numeric types for counters
+  - =std::chrono::system_clock::time_point= for timestamps
+  - =boost::asio::ip::address= for IP addresses
+- Follow the pattern established in [[proj:projects/ores.iam/include/ores.iam/domain/account.hpp][projects/ores.iam/include/ores.iam/domain/account.hpp]].
+
+Example structure:
+
+#+begin_src cpp
+namespace ores::COMPONENT::domain {
+
+/**
+ * @brief Brief description of the domain type.
+ */
+struct TYPE_NAME final {
+    /**
+     * @brief Description of field.
+     */
+    TYPE field_name;
+
+    // ... more fields
+};
+
+}
+#+end_src

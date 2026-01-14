@@ -1,0 +1,39 @@
+:PROPERTIES:
+:ID: 2132af63-21a0-4ad0-9773-603d00838572
+:END:
+#+title: Domain Type Repository CRUD Operations Facet
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil title:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+This facet provides instructions on how to create repository with CRUD operations for a domain type.
+
+Create the repository class:
+
+1. Header: =projects/COMPONENT/include/COMPONENT/repository/TYPE_NAME_repository.hpp=
+2. Implementation: =projects/COMPONENT/src/repository/TYPE_NAME_repository.cpp=
+
+The repository should provide:
+
+- Constructor accepting a =context= parameter
+- =sql()= method returning the table creation SQL
+- Write methods:
+  - =void write(const domain::TYPE_NAME& obj)=
+  - =void write(const std::vector<domain::TYPE_NAME>& objs)=
+- Read methods:
+  - =std::vector<domain::TYPE_NAME> read_latest()=
+  - =std::vector<domain::TYPE_NAME> read_latest(const KEY_TYPE& key)=
+  - =std::vector<domain::TYPE_NAME> read_all()=
+  - =std::vector<domain::TYPE_NAME> read_all(const KEY_TYPE& key)=
+  - =std::vector<domain::TYPE_NAME> read_at_timepoint(const std::string& timestamp)=
+  - =std::vector<domain::TYPE_NAME> read_at_timepoint(const std::string& timestamp, const KEY_TYPE& key)=
+
+Implementation details:
+
+- Use sqlgen for database operations
+- Use the mapper to convert between domain and entity types
+- Include proper error handling with =ensure_success()=
+- Include logging using =BOOST_LOG_SEV=
+- Follow the pattern in
+  =projects/ores.accounts/src/repository/account_repository.cpp=

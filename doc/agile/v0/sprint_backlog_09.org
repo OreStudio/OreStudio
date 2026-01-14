@@ -17,31 +17,43 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-12 Mon 11:11], for Monday, January 12, 2026.
-|       | <75>                                        |        |      |      |       |
-| Tags  | Headline                                    | Time   |      |      |     % |
-|-------+---------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                | *2:03* |      |      | 100.0 |
-|-------+---------------------------------------------+--------+------+------+-------|
-|       | Stories                                     | 2:03   |      |      | 100.0 |
-|       | Active                                      |        | 2:03 |      | 100.0 |
-| infra | Clean up system models and component models |        |      | 0:08 |   6.5 |
-| code  | Add missing entities to CLI                 |        |      | 1:55 |  93.5 |
+#+CAPTION: Clock summary at [2026-01-14 Wed 15:34], for Wednesday, January 14, 2026.
+|       | <75>                                    |        |      |      |       |
+| Tags  | Headline                                | Time   |      |      |     % |
+|-------+-----------------------------------------+--------+------+------+-------|
+|       | *Total time*                            | *5:01* |      |      | 100.0 |
+|-------+-----------------------------------------+--------+------+------+-------|
+|       | Stories                                 | 5:01   |      |      | 100.0 |
+|       | Active                                  |        | 5:01 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint      |        |      | 0:48 |  15.9 |
+| code  | Fix valgrind errors in nightly          |        |      | 0:15 |   5.0 |
+| code  | Rename risk to refdata                  |        |      | 0:43 |  14.3 |
+| code  | Prefix database entities with component |        |      | 3:15 |  64.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-12 Mon 11:11]
-|       | <75>                                        |        |      |      |       |
-| Tags  | Headline                                    | Time   |      |      |     % |
-|-------+---------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                | *4:02* |      |      | 100.0 |
-|-------+---------------------------------------------+--------+------+------+-------|
-|       | Stories                                     | 4:02   |      |      | 100.0 |
-|       | Active                                      |        | 4:02 |      | 100.0 |
-| agile | Sprint and product backlog refinement       |        |      | 1:39 |  40.9 |
-| infra | Clean up system models and component models |        |      | 0:28 |  11.6 |
-| code  | Add missing entities to CLI                 |        |      | 1:55 |  47.5 |
+#+CAPTION: Clock summary at [2026-01-14 Wed 15:34]
+|       | <75>                                         |         |       |      |       |
+| Tags  | Headline                                     | Time    |       |      |     % |
+|-------+----------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                 | *25:19* |       |      | 100.0 |
+|-------+----------------------------------------------+---------+-------+------+-------|
+|       | Stories                                      | 25:19   |       |      | 100.0 |
+|       | Active                                       |         | 25:19 |      | 100.0 |
+| agile | Sprint and product backlog refinement        |         |       | 1:39 |   6.5 |
+| infra | OCR scan notebooks for this sprint           |         |       | 2:48 |  11.1 |
+| infra | Clean up system models and component models  |         |       | 0:28 |   1.8 |
+| code  | Add missing entities to CLI                  |         |       | 1:55 |   7.6 |
+| infra | Refactor PR related skills                   |         |       | 0:18 |   1.2 |
+| code  | Fix valgrind errors in nightly               |         |       | 1:25 |   5.6 |
+| code  | Create security module                       |         |       | 1:23 |   5.5 |
+| code  | Prodigy should support multiple environments |         |       | 0:19 |   1.3 |
+| code  | Add named environment sets                   |         |       | 4:17 |  16.9 |
+| code  | Rename risk to refdata                       |         |       | 0:43 |   2.8 |
+| code  | Prefix database entities with component      |         |       | 3:15 |  12.8 |
+| infra | Refactor documentation                       |         |       | 6:29 |  25.6 |
+| code  | Clean up seed data                           |         |       | 0:20 |   1.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -195,6 +207,18 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_09_tags.png]]
 
+*** STARTED OCR scan notebooks for this sprint                        :infra:
+    :LOGBOOK:
+    CLOCK: [2026-01-14 Wed 12:06]--[2026-01-14 Wed 12:30] =>  0:24
+    CLOCK: [2026-01-14 Wed 09:16]--[2026-01-14 Wed 09:40] =>  0:24
+    CLOCK: [2026-01-13 Tue 11:00]--[2026-01-13 Tue 11:59] =>  0:59
+    CLOCK: [2026-01-13 Tue 09:40]--[2026-01-13 Tue 10:41] =>  1:01
+    :END:
+
+We need to scan all of our finance notebooks so we can use them with AI. Each
+sprint will have a story similar to this until we scan and process them all.
+
+
 *** COMPLETED Clean up system models and component models             :infra:
     :LOGBOOK:
     CLOCK: [2026-01-11 Sun 23:40]--[2026-01-12 Mon 00:08] =>  0:28
@@ -286,6 +310,418 @@ Highlights:
   conciseness.
 
 #+end_quote
+
+*** COMPLETED Refactor PR related skills                              :infra:
+    :LOGBOOK:
+    CLOCK: [2026-01-12 Mon 11:12]--[2026-01-12 Mon 11:30] =>  0:18
+    :END:
+
+#+begin_quote
+This pull request streamlines and centralizes the Pull Request (PR) management
+process by renaming and significantly expanding the 'pr-summary' skill into a
+comprehensive 'pr-manager'. This change consolidates the entire PR lifecycle,
+from initial draft creation and CI integration to final merging, into a single,
+reusable skill. By doing so, it eliminates redundant PR creation logic
+previously found in other developer skills, promoting a more efficient and
+standardized workflow across the system.
+
+Highlights:
+
+- Skill Renaming and Consolidation: The 'pr-summary' skill has been renamed to
+  'pr-manager' and its scope significantly expanded to manage the entire Pull
+  Request (PR) lifecycle.
+- Centralized PR Workflow: The new 'pr-manager' skill now encompasses a
+  comprehensive 5-step PR workflow: generating a summary, creating a draft PR,
+  waiting for CI to pass, marking the PR as ready for review, and finally
+  merging the PR.
+- Standardized PR Body Format: A detailed and structured PR body format template
+  has been integrated into the 'pr-manager' skill, promoting consistency across
+  PR descriptions.
+- Reduced Duplication: The 'autonomous-developer' and
+  'semi-autonomous-developer' skills have been refactored to remove duplicated
+  PR creation logic, now referencing the centralized 'pr-manager' skill.
+- Dependency Diagram Updates: The 'skill_dependencies.puml' diagram has been
+  updated to include the new 'pr-manager' skill and reflect the updated
+  dependencies for 'autonomous-developer' and 'semi-autonomous-developer'.
+#+end_quote
+
+*** COMPLETED Fix valgrind errors in nightly                           :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-14 Wed 09:00]--[2026-01-14 Wed 09:15] =>  0:15
+    CLOCK: [2026-01-13 Tue 09:01]--[2026-01-13 Tue 09:39] =>  0:38
+    CLOCK: [2026-01-12 Mon 11:31]--[2026-01-12 Mon 12:03] =>  0:32
+    :END:
+
+- lots of errors in eventing tests, but just for clang.
+- 1 new possible leak for both clang and gcc.
+
+*** COMPLETED Create security module                                   :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-13 Tue 17:04]--[2026-01-13 Tue 18:27] =>  1:23
+    :END:
+
+#+begin_quote
+This pull request establishes a dedicated ores.security component to consolidate
+and manage all shared security primitives within the project. It systematically
+extracts and relocates cryptographic operations and validation utilities from
+existing modules like ores.iam and ores.connections. The refactoring also
+introduces modern C++ practices, such as RAII for OpenSSL resources, to enhance
+code reliability and maintainability. This change centralizes security logic,
+making it easier to manage, audit, and extend in the future.
+
+Highlights:
+
+- New Component Creation: A new component, ores.security, has been introduced to
+  centralize shared security primitives, promoting better organization and
+  reusability of security-related code.
+- Code Migration and Refactoring: Existing security code, including password
+  management and encryption services, has been migrated from ores.iam and
+  ores.connections into the new ores.security component. This involved renaming
+  classes (e.g., password_manager to password_hasher, encryption_service to
+  encryption) and their methods for clarity and consistency within the new
+  structure.
+- RAII Pattern for OpenSSL Contexts: The RAII (Resource Acquisition Is
+  Initialization) pattern has been applied to OpenSSL cipher context management
+  using std::unique_ptr with a custom deleter (EVP_CIPHER_CTX_free). This
+  significantly improves memory safety by ensuring automatic resource cleanup,
+  eliminating manual cleanup on error paths, and making the code more robust.
+- CMake and Build System Updates: The CMake build system has been updated to
+  include the new ores.security component and adjust dependencies in ores.cli,
+  ores.connections, and ores.iam to link against the new security library.
+#+end_quote
+
+*** COMPLETED Prodigy should support multiple environments             :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-13 Tue 10:41]--[2026-01-13 Tue 11:00] =>  0:19
+    :END:
+
+Now that we are running multiple claudes, qwens and geminis, it is often the
+case that we need to run a service from two environments. At present we cannot
+do this without a lot of effort. Ideally prodigy should just show all
+environments in one buffer and we can choose what to run.
+
+*** COMPLETED Add named environment sets                               :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-13 Tue 21:15]--[2026-01-13 Tue 23:22] =>  2:07
+    CLOCK: [2026-01-13 Tue 16:02]--[2026-01-13 Tue 17:03] =>  1:01
+    CLOCK: [2026-01-13 Tue 12:56]--[2026-01-13 Tue 13:25] =>  0:29
+    CLOCK: [2026-01-13 Tue 12:15]--[2026-01-13 Tue 12:55] =>  0:40
+    :END:
+
+At present we are having to supply the port name and host which is fine when we
+have a single environment. However, because we have so many instances on the go
+at the same time, it is a bit painful to have to remember ports for each
+environment. Ideally we want a client side list of servers and the UI to go with
+it.
+
+We need environment management, where we can add new connections and new
+folders. Folders can contain sub-folders. Environments can have names and tags.
+User can add tags. Data is stored in local SQL Lite database. Passwords are
+hashed.
+
+Then in Qt we have an environment manager which has the UI for adding new
+environments, etc. We should have a "test connection" button.
+
+Notes:
+
+- need to be able to export to JSON the data and import from JSON. Must have
+  option to exclude usernames and or passwords.
+- need to add commands to shell for this.
+
+**** Core support
+
+#+begin_quote
+This pull request delivers a brand new ores.connections component, establishing
+a robust system for managing server connection bookmarks. It encompasses a
+well-defined domain model for organizing connections hierarchically and by tags,
+backed by secure SQLite persistence. The component features AES-256-GCM
+encryption for sensitive credentials and exposes a user-friendly service layer
+for all management operations, all thoroughly validated with extensive unit
+tests.
+
+Highlights:
+
+- New Component: ores.connections: Introduces a dedicated component for managing
+  server connection bookmarks, providing a structured way to store and organize
+  connection details.
+- Domain Modeling: Defines core domain types including 'folder' for hierarchical
+  organization, 'tag' for flexible categorization, 'server_environment' for
+  connection details, and 'environment_tag' for many-to-many relationships,
+  complete with JSON and table I/O support.
+- Secure Persistence: Implements SQLite-based local persistence with a manually
+  defined schema, including foreign keys and cascade delete rules, ensuring data
+  integrity. Passwords are securely stored using AES-256-GCM encryption with
+  PBKDF2 key derivation.
+- High-Level API: Provides a 'connection_manager' service as a high-level API to
+  interact with the connection data, abstracting away the underlying storage and
+  encryption complexities.
+- Comprehensive Testing: Includes a robust test suite with 79 test cases
+  covering the domain objects, repository layer, and service layer, ensuring the
+  reliability and correctness of the new component.
+#+end_quote
+
+**** Qt UI Support
+
+#+begin_quote
+This pull request significantly enhances the application's connection management
+capabilities by introducing a dedicated Connection Browser. This new feature
+allows users to securely store, organize, and manage their server connections
+using a hierarchical structure and master password encryption. It streamlines
+the login process by enabling pre-filled connection details and automatic
+submission, while also providing robust tools for managing connection data and
+ensuring a smoother user experience.
+
+Highlights:
+
+- Connection Browser MDI Window: Introduced a new MDI window for managing saved
+  server connections, featuring a hierarchical tree view for folders and
+  environments. This allows users to organize and access their connections
+  efficiently before logging in.
+- Secure Credential Management: Implemented master password support using
+  AES-256-GCM encryption for securing saved server credentials. This includes
+  features to create, change, and unlock access to encrypted passwords,
+  enhancing security for stored connection details.
+- CRUD Operations for Connections and Folders: Added comprehensive Create, Read,
+  Update, and Delete (CRUD) functionalities for both connection folders and
+  individual server environments within the Connection Browser, providing full
+  control over saved configurations.
+- Database Purge and Connection Handling: Included a 'Purge Database' action to
+  reset all saved connections and folders. The system now also gracefully
+  handles attempts to connect while already connected, prompting the user to
+  disconnect first.
+- Enhanced Login Experience: The Login Dialog now supports pre-filling
+  connection details from saved entries and an auto-submit mode for seamless
+  login when all credentials (including password) are available.
+- Icon Guidelines Update: Updated the icon guidelines documentation to include
+  new icons for 'Delete Dismiss', 'Key Multiple', and 'Server Link', reflecting
+  the new functionalities.
+#+end_quote
+
+*** COMPLETED Rename risk to refdata                                   :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-14 Wed 10:11]--[2026-01-14 Wed 10:25] =>  0:14
+    CLOCK: [2026-01-14 Wed 09:41]--[2026-01-14 Wed 10:10] =>  0:29
+    :END:
+
+We need to split risk from ref data.
+
+#+begin_quote
+This pull request executes a significant refactoring effort by renaming a core
+component from ores.risk to ores.refdata. The change aims to clarify the
+component's role within the system, emphasizing its function in managing
+reference data rather than performing risk calculations. The scope of this
+change is broad, touching upon various layers of the application, from build
+configurations and source code to documentation and architectural diagrams,
+ensuring consistency and improved semantic clarity across the entire project.
+
+Highlights:
+
+- Component Rename: The ores.risk component has been comprehensively renamed to
+  ores.refdata to better reflect its purpose as a reference data module for ORE
+  (Open Source Risk Engine).
+- Codebase-Wide Updates: This rename involved updating all include paths from
+  ores.risk/ to ores.refdata/, changing the C++ namespace from ores::risk to
+  ores::refdata, and modifying CMake targets (e.g., ores.risk.lib to
+  ores.refdata.lib).
+- Header Guard and File Renames: Header guards were updated from ORES_RISK_* to
+  ORES_REFDATA_*, and risk_routes.cpp was renamed to refdata_routes.cpp in the
+  HTTP server.
+- Documentation and Diagram Synchronization: All PlantUML diagrams and various
+  documentation files (e.g., sprint backlogs, skill definitions) were updated to
+  correctly reference the new component name and aliases.
+#+end_quote
+
+*** COMPLETED Prefix database entities with component                  :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-14 Wed 14:55]--[2026-01-14 Wed 15:33] =>  0:38
+    CLOCK: [2026-01-14 Wed 14:30]--[2026-01-14 Wed 14:54] =>  0:24
+    CLOCK: [2026-01-14 Wed 12:31]--[2026-01-14 Wed 13:05] =>  0:34
+    CLOCK: [2026-01-14 Wed 10:26]--[2026-01-14 Wed 12:05] =>  1:39
+    :END:
+
+The database is becoming a bit confusing and we can't tell what entities belong
+where. We need to prefix them by component, e.g. "accounts" becomes
+"iam_accounts".
+
+#+begin_quote
+This pull request introduces a fundamental refactoring of the SQL database
+schema by implementing a new, consistent naming convention across all entities.
+The primary goal is to enhance the organization and readability of the database,
+making it easier to understand the purpose and ownership of each object. This
+change facilitates better integration with the C++ codebase and streamlines
+future schema evolution by providing clear guidelines for naming new components.
+
+Highlights:
+
+- Consistent Naming Convention: All SQL tables, functions, triggers, and rules
+  now adhere to a strict {component}_{entity}_{suffix} naming pattern, improving
+  clarity and maintainability.
+- Component Prefixes: New component prefixes (e.g., iam_, refdata_, assets_,
+  telemetry_, geo_, variability_, utility_) have been introduced to align SQL
+  entities with their corresponding C++ components.
+- Standardized Suffixes: Entity suffixes like _tbl for tables, _fn for
+  functions, _trg for triggers, _rule for rules, and various index suffixes
+  (_idx, _uniq_idx, _gist_idx) are now consistently applied.
+- C++ Code Alignment: Corresponding C++ entity files have been updated to
+  reflect the new SQL table names in their tablename constants, ensuring
+  synchronization between code and schema.
+- Enhanced Documentation: The sql-schema-creator documentation has been
+  significantly expanded to detail the new naming conventions, provide examples,
+  and list existing entities by component, serving as a comprehensive guide for
+  future development.
+#+end_quote
+
+*** STARTED Refactor documentation                                    :infra:
+    :LOGBOOK:
+    CLOCK: [2026-01-13 Tue 15:01]--[2026-01-13 Tue 16:02] =>  1:01
+    CLOCK: [2026-01-13 Tue 08:50]--[2026-01-13 Tue 09:00] =>  0:10
+    CLOCK: [2026-01-12 Mon 21:55]--[2026-01-12 Mon 23:50] =>  1:55
+    CLOCK: [2026-01-12 Mon 14:55]--[2026-01-12 Mon 17:52] =>  2:57
+    CLOCK: [2026-01-12 Mon 12:04]--[2026-01-12 Mon 12:30] =>  0:26
+    :END:
+
+- split recipes per entity.
+- create a top-level "domain" document per entity which cross-references
+  recipes, component model, entity implementation files (including SQL), skills.
+- recipes should belong to the component rather than being global.
+
+*** STARTED Clean up seed data                                         :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-13 Tue 13:38]--[2026-01-13 Tue 13:58] =>  0:20
+    :END:
+
+Originally we added seed data more or less haphazardly to the system. We now
+need to clean this up. We need to have a user driven way to inject sample data
+in the system, and the sample data must be curated carefully in order to
+preserve it's lineage and provenience.
+
+- all data must have a source, a date at which it was sourced and a licence (if
+  available). We should record who sourced it (email, name).
+- data should be marked as synthetic (generated), primary or derived. Unless
+  there is a data quality classification.
+- data should be organised into collections / data sets.
+- all data should be stored in the database, we probably don't even need c++
+  representation for it. There should be a stored procedure that copies data
+  from sample tables to actual tables.
+
+**** Analysis from Qwen
+
+***** Core Concepts
+
+| Concept          | Description                                                                                                             |
+|------------------+-------------------------------------------------------------------------------------------------------------------------|
+| Dataset          | A logical collection of sample records (e.g., a set of trades, portfolios, or market data snapshots).                   |
+| Record           | An individual row or entity within a dataset (optional granularity; lineage may be tracked at dataset or record level). |
+| Provenance       | The origin of the data—external vendor, internal system, or synthetic generator.                                        |
+| Classification   | Categorizes the nature of the data for compliance and usage control.                                                    |
+| Lineage          | Directed acyclic graph (DAG) linking derived data to its upstream sources.                                              |
+| Temporal Context | Captures both business time (as_of_date) and system time (ingestion_timestamp), supporting bi-temporal reasoning.       |
+| Data Passport    | A self-contained metadata manifest (relational or document-based) that answers the 5 Ws of data governance.             |
+
+**** Metadata Attributes
+
+Each dataset (or optionally each record) must carry the following metadata
+fields.
+
+***** Provenance & Classification
+
+| Field               | Type                      | Required                | Description                                                                                                 |
+|---------------------+---------------------------+-------------------------+-------------------------------------------------------------------------------------------------------------|
+| source_system_id    | String (UUID or mnemonic) | ✅                     | Identifier of the originating system (e.g., "BLOOMBERG", "INTERNAL_RISK_ENGINE_v2").                        |
+| data_classification | Enum                      | ✅                     | One of: REAL, SYNTHETIC, OBFUSCATED, HYBRID.                                                                |
+| generation_method   | String / Enum             | ✅ if synthetic/hybrid | Describes how data was created (e.g., "MONTE_CARLO", "REPLAY_OF_20231004", "BOOTSTRAP_FROM_PROD_SNAPSHOT"). |
+| business_context    | String                    | ✅                     | Human-readable purpose (e.g., "Testing FX Forward P&L attribution", "Demo for client onboarding").          |
+
+***** B. Lineage & Derivation
+
+| Field                    | Type          | Required                  | Description                                                                                       |
+|--------------------------+---------------+---------------------------+---------------------------------------------------------------------------------------------------|
+| upstream_derivation_id   | String (UUID) | ❌ (required if derived) | Points to the parent dataset or record ID from which this was derived.                            |
+| transformation_logic_ref | URI / String  | ❌ (required if derived) | Reference to the logic that produced this data (e.g., Git commit hash, script name, workflow ID). |
+| lineage_depth            | Integer       | ✅                       | Number of derivation steps from the original raw source (0 = raw/golden copy).                    |
+
+***** C. Temporal Metadata
+
+| Field               | Type            | Required | Description                                                                     |
+|---------------------+-----------------+----------+---------------------------------------------------------------------------------|
+| as_of_date          | Date            | ✅      | The business/market date the data represents (e.g., valuation date).            |
+| ingestion_timestamp | Timestamp (UTC) | ✅      | When the data entered the sample repository.                                    |
+| valid_from          | Timestamp (UTC) | ✅      | Start of validity interval (for time-sliced data).                              |
+| valid_to            | Timestamp (UTC) | ✅      | End of validity interval (use far-future sentinel like 9999-12-31 for current). |
+
+Note: valid_from/valid_to enable bi-temporal modeling—essential for replaying
+historical states in trading systems.
+
+Granularity Options
+
+Choose one of the following approaches based on your use case.
+
+| Option                 | Description                                                    | When to Use                                                                                            |
+|------------------------+----------------------------------------------------------------+--------------------------------------------------------------------------------------------------------|
+| Dataset-level metadata | One metadata record per dataset (e.g., per CSV file or table). | For bulk samples where all rows share the same origin and transformation.                              |
+| Record-level metadata  | Each row carries its own metadata (via FK or embedded).        | When lineage varies per trade/portfolio (e.g., hybrid datasets mixing real and synthetic instruments). |
+
+Data Passport Structure (Logical View)
+
+Every sample dataset should be accompanied by a Data Passport manifest containing:
+
+#+begin_src json
+{
+    "who": "",
+    "what": {
+        "classification": "<SYNTHETIC|REAL|...>",
+        "generation_method": "<...>"
+    },
+    "where": {
+        "upstream_derivation_id": "<UUID?>",
+        "transformation_logic_ref": "<URI?>"
+    },
+    "when": {
+        "as_of_date": "YYYY-MM-DD",
+        "ingestion_timestamp": "ISO8601 UTC",
+        "valid_from": "ISO8601 UTC",
+        "valid_to": "ISO8601 UTC"
+    },
+    "why": ""
+}
+#+end_src
+
+This can be stored as:
+
+- A JSON/JSONB column in a relational table
+- A standalone .passport.json file alongside Parquet/CSV
+- A row in a metadata_registry table
+
+Constraints & Validation Rules
+
+- If data_classification ∈ {SYNTHETIC, HYBRID}, then generation_method must be
+  non-null.
+- If lineage_depth > 0, then upstream_derivation_id and transformation_logic_ref
+  must be provided.
+- valid_from ≤ valid_to
+- as_of_date should align with valid_from/valid_to for consistency (e.g.,
+  as_of_date ∈ [valid_from, valid_to]).
+
+*** Improvements to connection browser                                 :code:
+
+- We should validate the password to make sure it complies with password
+  policies.
+- add test connection to check the connection and credentials are correct.
+- disable buttons are very bright, look enabled.
+- connection browser should start with expanded tree.
+- no tags support.
+- login dialog should support connections from connection browser.
+
+*** Add UI for bootstrapping from Qt                                   :code:
+
+At present we need to go to the shell to bootstrap. It would be easier if we
+just had a button in Qt for this.
+
+*** Add schemes for countries and currencies                           :code:
+
+We should have data lineage where possible. There should be a table telling us
+where we sourced countries, currencies etc. Even permissions/roles, if there are
+Qany specs on this. There should be an entry for "internal".
 
 *** Change reason and categories need permissions                      :code:
 
@@ -1117,6 +1553,43 @@ the code.
 - Description: Harare, Zimbabwe
 
 
+*** Geo-location tests fail for some IP Addresses                      :code:
+
+Error is probably happening because the range is not supposed to be used.
+
+#+begin_src xml
+<Catch2TestRun name="ores.geo.tests" rng-seed="3117545047" xml-format-version="3" catch2-version="3.12.0">
+  <TestCase name="geolocation_result_default_construction" tags="[service][#geolocation_service_tests]" filename="/home/marco/Development/OreStudio/OreStudio.local1/projects/ores.geo/tests/geolocation_service_tests.cpp" line="38">
+    <OverallResult success="true" skips="0" durationInSeconds="1.00031"/>
+  </TestCase>
+  <TestCase name="lookup_with_boost_asio_address" tags="[service][#geolocation_service_tests]" filename="/home/marco/Development/OreStudio/OreStudio.local1/projects/ores.geo/tests/geolocation_service_tests.cpp" line="90">
+    <Expression success="false" type="CHECK" filename="/home/marco/Development/OreStudio/OreStudio.local1/projects/ores.geo/tests/geolocation_service_tests.cpp" line="102">
+      <Original>
+        result.error() == geolocation_error::address_not_found
+      </Original>
+      <Expanded>
+        2 == 1
+      </Expanded>
+    </Expression>
+    <OverallResult success="false" skips="0" durationInSeconds="1.00013"/>
+  </TestCase>
+#+end_src
+
+We don't see anything in the logs:
+
+#+begin_src logview
+2026-01-09 19:16:19.370327 [INFO] [ores.testing.test_database_manager] Database context created successfully
+2026-01-09 19:16:19.370360 [DEBUG] [ores.geo.service.geolocation_service] Geolocation lookup for 10.0.0.1. SQL: SELECT country_code FROM ores.geoip_lookup('10.0.0.1'::inet)
+2026-01-09 19:16:19.386331 [DEBUG] [ores.geo.service.geolocation_service] Geolocation lookup for 10.0.0.1. Total rows: 0
+2026-01-09 19:16:19.386475 [INFO] [ores.geo.tests] Lookup result for boost::asio::ip::address
+2026-01-09 19:16:19.386695 [DEBUG] [catch2] Section ended: lookup_with_boost_asio_address (assertions: 1)
+2026-01-09 19:16:19.386741 [INFO] [catch2] Test case ended: lookup_with_boost_asio_address - PASSED
+2026-01-09 19:16:19.386767 [INFO] [catch2]   Assertions: 1 passed, 0 failed, 1 total
+#+end_src
+
+We should write the assertions in the logs.
+
+
 *** Business unit entity                                               :code:
 
 Represents internal organizational units (e.g., desks, departments, branches).
@@ -1280,6 +1753,12 @@ Combined Hierarchy Rules (Refined):
 Observations, snags and so forth that have not been analysed to form a proper
 story.
 
+- no repository tests for change reason. We need to check all entities and the
+  coverage.
+- qt code processing for network error messages is duplicated.
+- raw SQL in image repository, should be a function.
+- session should record if telemetry is enabled or not enabled.
+- bootstrap mode flag change does not generate new version.
 - it is possible to create a country without a name. likely a currency too.
 - should be possible to click on user and see user profile details. If the user
   is admin, show all details; if not, show only key ones like email, etc.

@@ -30,6 +30,14 @@
 (require 'ox-publish)
 (require 'org-element)
 
+(with-eval-after-load 'ol
+  (org-link-set-parameters
+   "proj"
+   :export (lambda (path desc format)
+             (let* ((proj (project-current))
+                    (root (if proj (project-root proj) "")))
+               (format "[%s](file:%s%s)" root path (or desc path))))))
+
 (setq org-id-locations-file (expand-file-name "./.org-id-locations-file"))
 (org-id-update-id-locations (directory-files-recursively "." "\\.org$"))
 (setq package-user-dir (expand-file-name "./.packages"))
@@ -72,13 +80,6 @@
 
 ;; Generate the site output
 (org-publish-all t)
-
-;; Claude Code requires SKILL.md (uppercase) for skill discovery.
-;; Rename all skill.md files to SKILL.md after publishing.
-(dolist (file (directory-files-recursively "./.claude/skills/" "^skill\\.md$"))
-  (let ((new-name (concat (file-name-directory file) "SKILL.md")))
-    (rename-file file new-name t)
-    (message "Renamed %s to %s" file new-name)))
 
 (message "Build complete!")
 

@@ -12,7 +12,8 @@ product website.
 
 - [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]]: documentation related to the [[https://masd-project.github.io/progen/docs/mde_and_the_software_development_process.html][software development process]] used to
   develop this project.
-- [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain]]: assorted documents covering domain related topics.
+- [[id:CE1D1ADC-E267-8AD4-7033-3A0FEA7F89EC][Domain Information]]: assorted documents covering finance related topics. Broad
+  (and incomplete) overview of the domain of [[id:8BF323A0-B868-7AA4-EC7B-D988934482AA][Computational Finance]].
 - [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]]: Notebooks on how to use ORE Studio.
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]]: Claude code skills used in this project.
 - [[id:590DED5A-FF09-8D94-9B2B-74FC027FCFEF][Prompts]]: Set of useful prompts we've collected over time.

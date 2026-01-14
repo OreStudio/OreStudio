@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID: 842baa5a-d2fa-4294-8714-ae3f3bb1229a
+:END:
+#+title: Domain Type CMakeLists Update Facet
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil title:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+This facet provides instructions on how to update CMakeLists.txt for a domain type.
+
+The CMakeLists.txt in =projects/COMPONENT/src/CMakeLists.txt= will use
+=GLOB_RECURSE= to pick up all =*.cpp= files automatically so do not add new
+files.
+
+Ensure the following dependencies are linked:
+
+- =libfort::fort= for table I/O
+- =reflectcpp::reflectcpp= for JSON I/O
+- =faker-cxx::faker-cxx= for generators
+- =sqlgen::sqlgen= for repository
+- =Boost::boost= for various Boost libraries

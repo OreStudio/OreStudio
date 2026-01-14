@@ -243,7 +243,8 @@ domain_account_tests ..> ores::accounts::domain::account : tests
 - *Relationships*: Use =..> : tests= dependency arrow to classes under test
   - For protocol tests that test multiple message types, add one arrow per message class
   - For handler/service tests, add arrow to the handler/service class
-- *No ghost types*: Avoid relationship arrows to external component types to prevent PlantUML from creating placeholder boxes
+- *No ghost types*: Avoid relationship arrows to external component types to
+  prevent PlantUML from creating placeholder boxes
   - Keep field declarations that reference external types (shows actual code structure)
   - But omit the corresponding relationship arrows
 
@@ -341,14 +342,14 @@ frame -[hidden]down- ping
 
 *** Common grouping patterns
 
-| Pattern                   | Classes to group                           |
-|---------------------------+--------------------------------------------|
-| Request/Response pairs    | =foo_request=, =foo_response=              |
-| Handshake sequence        | =handshake_request=, =_response=, =_ack=   |
-| Entity/Mapper/Repository  | =foo_entity=, =foo_mapper=, =foo_repository= |
-| Infrastructure classes    | =result=, =message_type_range=, =handler=  |
-| Config/Options            | =parser=, =parser_exception=, =options=    |
-| Test suites               | Group related test suite classes           |
+| Pattern                  | Classes to group                             |
+|--------------------------+----------------------------------------------|
+| Request/Response pairs   | =foo_request=, =foo_response=                |
+| Handshake sequence       | =handshake_request=, =_response=, =_ack=     |
+| Entity/Mapper/Repository | =foo_entity=, =foo_mapper=, =foo_repository= |
+| Infrastructure classes   | =result=, =message_type_range=, =handler=    |
+| Config/Options           | =parser=, =parser_exception=, =options=      |
+| Test suites              | Group related test suite classes             |
 
 *** Structure within namespace
 

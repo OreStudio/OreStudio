@@ -1,0 +1,18 @@
+:PROPERTIES:
+:ID: f76ed8a4-94c4-4a3f-86a1-fda9a76a3beb
+:END:
+#+title: Domain Type Test Creation Facet
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil title:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+This facet provides instructions on how to create tests for a domain type.
+
+Create comprehensive tests for the new domain type under =projects/COMPONENT.tests/=:
+
+1. Domain tests: test JSON and table serialization
+2. Generator tests: verify generator produces valid instances
+3. Repository tests: test all CRUD operations
+
+Follow the test patterns in =projects/ores.accounts.tests/=.

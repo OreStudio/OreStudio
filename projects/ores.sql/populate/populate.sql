@@ -57,6 +57,11 @@
 \echo '--- Data Quality Subject Areas ---'
 \ir dq_subject_area_populate.sql
 
+-- Data Quality Datasets
+\echo ''
+\echo '--- Data Quality Datasets ---'
+\ir dq_iso3166_countries_dataset_populate.sql
+
 -- RBAC (Role-Based Access Control)
 \echo ''
 \echo '--- RBAC Data ---'
@@ -132,4 +137,7 @@ from ores.dq_data_domain_tbl where valid_to = ores.utility_infinity_timestamp_fn
 union all
 select 'Data Quality Subject Areas', count(*)
 from ores.dq_subject_area_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Datasets', count(*)
+from ores.dq_dataset_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

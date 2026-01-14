@@ -101,6 +101,7 @@ grant create on schema ores to ores;
 \ir ../schema/dq_treatment_dimension_create.sql
 \ir ../schema/dq_methodology_create.sql
 \ir ../schema/dq_dataset_create.sql
+\ir ../schema/dq_countries_artefact_create.sql
 
 -- NOTE: The template database contains schema only, no data.
 -- To seed data after creating an instance:

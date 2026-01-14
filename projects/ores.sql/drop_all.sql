@@ -22,6 +22,7 @@
 \ir ./drop/geo_ip2country_drop.sql
 
 -- Data Quality
+\ir ./drop/dq_countries_artefact_drop.sql
 \ir ./drop/dq_dataset_drop.sql
 \ir ./drop/dq_methodology_drop.sql
 \ir ./drop/dq_treatment_dimension_drop.sql

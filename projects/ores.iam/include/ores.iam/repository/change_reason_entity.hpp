@@ -31,7 +31,7 @@ namespace ores::iam::repository {
  */
 struct change_reason_entity {
     constexpr static const char* schema = "ores";
-    constexpr static const char* tablename = "change_reasons";
+    constexpr static const char* tablename = "refdata_change_reasons_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
     int version = 0;

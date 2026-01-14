@@ -15,4 +15,4 @@ Create comprehensive tests for the new domain type under =projects/COMPONENT.tes
 2. Generator tests: verify generator produces valid instances
 3. Repository tests: test all CRUD operations
 
-Follow the test patterns in =projects/ores.accounts.tests/=.
+Follow the test patterns in [[proj:projects/ores.iam/tests][projects/ores.iam/tests]].

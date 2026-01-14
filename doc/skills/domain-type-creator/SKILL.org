@@ -142,6 +142,10 @@ Follow the instructions in [[id:842baa5a-d2fa-4294-8714-ae3f3bb1229a][Domain Typ
 
 *** Step 8: Create tests
 
+Follow the instructions in [[id:f76ed8a4-94c4-4a3f-86a1-fda9a76a3beb][Domain Type Test Creation Facet]].
+
+*** Step 9: Update UML diagrams
+
 Update the component's UML diagrams to include the new domain type:
 
 1. Use the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] skill to update class diagrams showing the

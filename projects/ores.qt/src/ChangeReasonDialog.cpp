@@ -24,14 +24,14 @@
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QStandardItemModel>
-#include "ores.iam/domain/change_reason_constants.hpp"
+#include "ores.dq/domain/change_reason_constants.hpp"
 
 namespace ores::qt {
 
-namespace reason = iam::domain::change_reason_constants;
+namespace reason = dq::domain::change_reason_constants;
 
 ChangeReasonDialog::ChangeReasonDialog(
-    const std::vector<iam::domain::change_reason>& reasons,
+    const std::vector<dq::domain::change_reason>& reasons,
     OperationType operation,
     bool hasFieldChanges,
     QWidget* parent)

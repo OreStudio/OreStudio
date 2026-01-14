@@ -28,7 +28,7 @@
 #include <QToolBar>
 #include <QAction>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.iam/domain/change_reason_category.hpp"
+#include "ores.dq/domain/change_reason_category.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ui_ChangeReasonCategoryHistoryDialog.h"
 
@@ -88,14 +88,14 @@ signals:
      * @param category The category data at the selected version.
      * @param versionNumber The version number being viewed.
      */
-    void openVersionRequested(const iam::domain::change_reason_category& category,
+    void openVersionRequested(const dq::domain::change_reason_category& category,
         int versionNumber);
 
     /**
      * @brief Emitted when user requests to revert to a selected version.
      * @param category The category data to revert to.
      */
-    void revertVersionRequested(const iam::domain::change_reason_category& category);
+    void revertVersionRequested(const dq::domain::change_reason_category& category);
 
 private slots:
     void onVersionSelected(int index);
@@ -116,8 +116,8 @@ private:
      */
     using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
     DiffResult calculateDiff(
-        const iam::domain::change_reason_category& current,
-        const iam::domain::change_reason_category& previous);
+        const dq::domain::change_reason_category& current,
+        const dq::domain::change_reason_category& previous);
 
     void setupToolbar();
     void updateButtonStates();
@@ -126,7 +126,7 @@ private:
     std::unique_ptr<Ui::ChangeReasonCategoryHistoryDialog> ui_;
     ClientManager* clientManager_;
     QString code_;
-    std::vector<iam::domain::change_reason_category> versions_;
+    std::vector<dq::domain::change_reason_category> versions_;
 
     QToolBar* toolBar_;
     QAction* reloadAction_;

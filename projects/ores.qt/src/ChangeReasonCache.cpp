@@ -21,12 +21,12 @@
 
 #include <algorithm>
 #include <QtConcurrent>
-#include "ores.iam/messaging/change_management_protocol.hpp"
+#include "ores.dq/messaging/change_management_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/error_protocol.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.iam/eventing/change_reason_changed_event.hpp"
-#include "ores.iam/eventing/change_reason_category_changed_event.hpp"
+#include "ores.dq/eventing/change_reason_changed_event.hpp"
+#include "ores.dq/eventing/change_reason_category_changed_event.hpp"
 
 namespace ores::qt {
 
@@ -37,10 +37,10 @@ using ores::comms::messaging::message_type;
 namespace {
     constexpr std::string_view reason_event_name =
         eventing::domain::event_traits<
-            iam::eventing::change_reason_changed_event>::name;
+            dq::eventing::change_reason_changed_event>::name;
     constexpr std::string_view category_event_name =
         eventing::domain::event_traits<
-            iam::eventing::change_reason_category_changed_event>::name;
+            dq::eventing::change_reason_category_changed_event>::name;
 }
 
 ChangeReasonCache::ChangeReasonCache(ClientManager* clientManager,
@@ -111,7 +111,7 @@ void ChangeReasonCache::loadReasons() {
             return {false, {}};
         }
 
-        iam::messaging::get_change_reasons_request request;
+        dq::messaging::get_change_reasons_request request;
         auto payload = request.serialize();
 
         frame request_frame(
@@ -145,7 +145,7 @@ void ChangeReasonCache::loadReasons() {
             return {false, {}};
         }
 
-        auto response = iam::messaging::get_change_reasons_response::
+        auto response = dq::messaging::get_change_reasons_response::
             deserialize(*payload_result);
         if (!response) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize reasons response";
@@ -168,7 +168,7 @@ void ChangeReasonCache::loadCategories() {
             return {false, {}};
         }
 
-        iam::messaging::get_change_reason_categories_request request;
+        dq::messaging::get_change_reason_categories_request request;
         auto payload = request.serialize();
 
         frame request_frame(
@@ -202,7 +202,7 @@ void ChangeReasonCache::loadCategories() {
             return {false, {}};
         }
 
-        auto response = iam::messaging::get_change_reason_categories_response::
+        auto response = dq::messaging::get_change_reason_categories_response::
             deserialize(*payload_result);
         if (!response) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize categories response";
@@ -284,10 +284,10 @@ void ChangeReasonCache::onNotificationReceived(const QString& eventType,
     }
 }
 
-std::vector<iam::domain::change_reason> ChangeReasonCache::getReasonsForAmend(
+std::vector<dq::domain::change_reason> ChangeReasonCache::getReasonsForAmend(
     const std::string& category_code) const {
 
-    std::vector<iam::domain::change_reason> result;
+    std::vector<dq::domain::change_reason> result;
     for (const auto& reason : reasons_) {
         if (reason.applies_to_amend && reason.category_code == category_code) {
             result.push_back(reason);
@@ -303,10 +303,10 @@ std::vector<iam::domain::change_reason> ChangeReasonCache::getReasonsForAmend(
     return result;
 }
 
-std::vector<iam::domain::change_reason> ChangeReasonCache::getReasonsForDelete(
+std::vector<dq::domain::change_reason> ChangeReasonCache::getReasonsForDelete(
     const std::string& category_code) const {
 
-    std::vector<iam::domain::change_reason> result;
+    std::vector<dq::domain::change_reason> result;
     for (const auto& reason : reasons_) {
         if (reason.applies_to_delete && reason.category_code == category_code) {
             result.push_back(reason);
@@ -322,7 +322,7 @@ std::vector<iam::domain::change_reason> ChangeReasonCache::getReasonsForDelete(
     return result;
 }
 
-const iam::domain::change_reason* ChangeReasonCache::getReasonByCode(
+const dq::domain::change_reason* ChangeReasonCache::getReasonByCode(
     const std::string& code) const {
 
     auto it = reason_index_.find(code);

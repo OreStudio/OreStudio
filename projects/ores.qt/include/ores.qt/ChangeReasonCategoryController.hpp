@@ -25,7 +25,7 @@
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/change_reason_category.hpp"
+#include "ores.dq/domain/change_reason_category.hpp"
 
 namespace ores::qt {
 
@@ -64,16 +64,16 @@ public:
     void closeAllWindows() override;
 
 private slots:
-    void onShowDetails(const iam::domain::change_reason_category& category);
+    void onShowDetails(const dq::domain::change_reason_category& category);
     void onAddNewRequested();
     void onShowHistory(const QString& code);
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
                                 const QStringList& entityIds);
-    void onOpenVersion(const iam::domain::change_reason_category& category, int versionNumber);
-    void onRevertVersion(const iam::domain::change_reason_category& category);
+    void onOpenVersion(const dq::domain::change_reason_category& category, int versionNumber);
+    void onRevertVersion(const dq::domain::change_reason_category& category);
 
 private:
-    void showDetailWindow(const iam::domain::change_reason_category& category);
+    void showDetailWindow(const dq::domain::change_reason_category& category);
     void showAddWindow();
     void showHistoryWindow(const QString& code);
 

@@ -27,7 +27,7 @@
 #include "ores.qt/ChangeReasonCategoryHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.iam/eventing/change_reason_category_changed_event.hpp"
+#include "ores.dq/eventing/change_reason_category_changed_event.hpp"
 
 namespace ores::qt {
 
@@ -37,7 +37,7 @@ namespace {
     // Event type name for change reason category changes
     constexpr std::string_view category_event_name =
         eventing::domain::event_traits<
-            iam::eventing::change_reason_category_changed_event>::name;
+            dq::eventing::change_reason_category_changed_event>::name;
 }
 
 ChangeReasonCategoryController::ChangeReasonCategoryController(
@@ -160,7 +160,7 @@ void ChangeReasonCategoryController::closeAllWindows() {
 }
 
 void ChangeReasonCategoryController::onShowDetails(
-    const iam::domain::change_reason_category& category) {
+    const dq::domain::change_reason_category& category) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << category.code;
     showDetailWindow(category);
 }
@@ -229,7 +229,7 @@ void ChangeReasonCategoryController::showAddWindow() {
 }
 
 void ChangeReasonCategoryController::showDetailWindow(
-    const iam::domain::change_reason_category& category) {
+    const dq::domain::change_reason_category& category) {
 
     const QString identifier = QString::fromStdString(category.code);
     const QString key = build_window_key("details", identifier);
@@ -395,7 +395,7 @@ void ChangeReasonCategoryController::showHistoryWindow(const QString& code) {
 }
 
 void ChangeReasonCategoryController::onOpenVersion(
-    const iam::domain::change_reason_category& category, int versionNumber) {
+    const dq::domain::change_reason_category& category, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for category: " << category.code;
 
@@ -462,7 +462,7 @@ void ChangeReasonCategoryController::onOpenVersion(
 }
 
 void ChangeReasonCategoryController::onRevertVersion(
-    const iam::domain::change_reason_category& category) {
+    const dq::domain::change_reason_category& category) {
     BOOST_LOG_SEV(lg(), info) << "Reverting category to version: "
                               << category.version;
 

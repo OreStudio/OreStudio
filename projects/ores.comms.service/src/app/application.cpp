@@ -31,8 +31,8 @@
 #include "ores.refdata/eventing/country_changed_event.hpp"
 #include "ores.iam/messaging/registrar.hpp"
 #include "ores.iam/eventing/account_changed_event.hpp"
-#include "ores.iam/eventing/change_reason_changed_event.hpp"
-#include "ores.iam/eventing/change_reason_category_changed_event.hpp"
+#include "ores.dq/eventing/change_reason_changed_event.hpp"
+#include "ores.dq/eventing/change_reason_category_changed_event.hpp"
 #include "ores.iam/eventing/role_changed_event.hpp"
 #include "ores.iam/eventing/permission_changed_event.hpp"
 #include "ores.assets/eventing/assets_changed_event.hpp"
@@ -169,11 +169,11 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         event_source, "ores.iam.account", "ores_accounts",
         *channel_registry, "Account data modified");
     eventing::service::registrar::register_mapping<
-        iam::eventing::change_reason_changed_event>(
+        dq::eventing::change_reason_changed_event>(
         event_source, "ores.iam.change_reason", "ores_change_reasons",
         *channel_registry, "Change reason data modified");
     eventing::service::registrar::register_mapping<
-        iam::eventing::change_reason_category_changed_event>(
+        dq::eventing::change_reason_category_changed_event>(
         event_source, "ores.iam.change_reason_category", "ores_change_reason_categories",
         *channel_registry, "Change reason category data modified");
     eventing::service::registrar::register_mapping<
@@ -233,18 +233,18 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                                      e.iso_codes);
         });
 
-    auto change_reason_sub = event_bus.subscribe<iam::eventing::change_reason_changed_event>(
-        [&subscription_mgr](const iam::eventing::change_reason_changed_event& e) {
+    auto change_reason_sub = event_bus.subscribe<dq::eventing::change_reason_changed_event>(
+        [&subscription_mgr](const dq::eventing::change_reason_changed_event& e) {
             using traits = eventing::domain::event_traits<
-                iam::eventing::change_reason_changed_event>;
+                dq::eventing::change_reason_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
                                      e.reason_codes);
         });
 
-    auto change_reason_category_sub = event_bus.subscribe<iam::eventing::change_reason_category_changed_event>(
-        [&subscription_mgr](const iam::eventing::change_reason_category_changed_event& e) {
+    auto change_reason_category_sub = event_bus.subscribe<dq::eventing::change_reason_category_changed_event>(
+        [&subscription_mgr](const dq::eventing::change_reason_category_changed_event& e) {
             using traits = eventing::domain::event_traits<
-                iam::eventing::change_reason_category_changed_event>;
+                dq::eventing::change_reason_category_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
                                      e.category_codes);
         });

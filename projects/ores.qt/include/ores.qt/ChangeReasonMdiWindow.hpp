@@ -29,7 +29,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientChangeReasonModel.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/change_reason.hpp"
+#include "ores.dq/domain/change_reason.hpp"
 
 namespace ores::qt {
 
@@ -69,7 +69,7 @@ public slots:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showReasonDetails(const iam::domain::change_reason& reason);
+    void showReasonDetails(const dq::domain::change_reason& reason);
     void addNewRequested();
     void reasonDeleted(const QString& code);
     void showReasonHistory(const QString& code);

@@ -100,7 +100,7 @@ void ChangeReasonCategoryHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), info) << "Loading category history for: "
                               << code_.toStdString();
 
-    iam::messaging::get_change_reason_category_history_request request{code_.toStdString()};
+    dq::messaging::get_change_reason_category_history_request request{code_.toStdString()};
     auto payload = request.serialize();
 
     frame request_frame(message_type::get_change_reason_category_history_request,
@@ -153,7 +153,7 @@ void ChangeReasonCategoryHistoryDialog::loadHistory() {
             return;
         }
 
-        auto response = iam::messaging::get_change_reason_category_history_response::
+        auto response = dq::messaging::get_change_reason_category_history_response::
             deserialize(*payload_result);
 
         if (!response) {
@@ -295,8 +295,8 @@ void ChangeReasonCategoryHistoryDialog::displayFullDetailsTab(int version_index)
     }
 
 ChangeReasonCategoryHistoryDialog::DiffResult ChangeReasonCategoryHistoryDialog::
-calculateDiff(const iam::domain::change_reason_category& current,
-    const iam::domain::change_reason_category& previous) {
+calculateDiff(const dq::domain::change_reason_category& current,
+    const dq::domain::change_reason_category& previous) {
 
     DiffResult diffs;
 
@@ -417,7 +417,7 @@ void ChangeReasonCategoryHistoryDialog::onRevertClicked() {
     }
 
     // Use the PREVIOUS version's data (the "old" side of the diff) with the latest version number
-    iam::domain::change_reason_category category = previous;
+    dq::domain::change_reason_category category = previous;
     category.version = versions_[0].version;
     emit revertVersionRequested(category);
 }

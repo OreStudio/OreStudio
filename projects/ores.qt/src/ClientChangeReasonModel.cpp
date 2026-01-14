@@ -21,7 +21,7 @@
 
 #include <QtConcurrent>
 #include <QBrush>
-#include "ores.iam/messaging/change_management_protocol.hpp"
+#include "ores.dq/messaging/change_management_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
@@ -151,7 +151,7 @@ void ClientChangeReasonModel::refresh() {
             return {false, {}};
         }
 
-        iam::messaging::get_change_reasons_request request;
+        dq::messaging::get_change_reasons_request request;
         auto payload = request.serialize();
 
         frame request_frame(
@@ -172,7 +172,7 @@ void ClientChangeReasonModel::refresh() {
             return {false, {}};
         }
 
-        auto response = iam::messaging::get_change_reasons_response::
+        auto response = dq::messaging::get_change_reasons_response::
             deserialize(*payload_result);
         if (!response) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
@@ -207,7 +207,7 @@ void ClientChangeReasonModel::onReasonsLoaded() {
     emit dataLoaded();
 }
 
-const iam::domain::change_reason*
+const dq::domain::change_reason*
 ClientChangeReasonModel::getReason(int row) const {
     const auto idx = static_cast<std::size_t>(row);
     if (idx >= reasons_.size())

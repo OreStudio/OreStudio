@@ -29,7 +29,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.iam/messaging/change_management_protocol.hpp"
+#include "ores.dq/messaging/change_management_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -310,7 +310,7 @@ void ChangeReasonCategoryMdiWindow::deleteSelected() {
         BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
                                    << codes.size() << " categories";
 
-        iam::messaging::delete_change_reason_category_request request;
+        dq::messaging::delete_change_reason_category_request request;
         request.codes = codes;
         auto payload = request.serialize();
 
@@ -339,7 +339,7 @@ void ChangeReasonCategoryMdiWindow::deleteSelected() {
             return results;
         }
 
-        auto response = iam::messaging::delete_change_reason_category_response::
+        auto response = dq::messaging::delete_change_reason_category_response::
             deserialize(*payload_result);
 
         if (!response) {

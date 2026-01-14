@@ -23,8 +23,8 @@
 #include <functional>
 #include <cli/cli.h>
 #include "ores.comms/messaging/message_types.hpp"
-#include "ores.iam/messaging/change_management_protocol.hpp"
-#include "ores.iam/domain/change_reason_category_table_io.hpp" // IWYU pragma: keep.
+#include "ores.dq/messaging/change_management_protocol.hpp"
+#include "ores.dq/domain/change_reason_category_table_io.hpp" // IWYU pragma: keep.
 
 namespace ores::comms::shell::app::commands {
 
@@ -65,7 +65,7 @@ void change_reason_categories_commands::
 process_get_categories(std::ostream& out, client_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get change reason categories request.";
 
-    using iam::messaging::get_change_reason_categories_request;
+    using dq::messaging::get_change_reason_categories_request;
     auto result = session.process_request(get_change_reason_categories_request{});
 
     if (!result) {
@@ -91,14 +91,14 @@ process_add_category(std::ostream& out, client_session& session,
     }
     const auto& recorded_by = session.session_info()->username;
 
-    using iam::messaging::save_change_reason_category_request;
-    using iam::messaging::save_change_reason_category_response;
+    using dq::messaging::save_change_reason_category_request;
+    using dq::messaging::save_change_reason_category_response;
     auto result = session.process_authenticated_request<
         save_change_reason_category_request,
         save_change_reason_category_response,
         message_type::save_change_reason_category_request>
         (save_change_reason_category_request{
-            .category = iam::domain::change_reason_category{
+            .category = dq::domain::change_reason_category{
                 .version = 0,
                 .code = std::move(code),
                 .description = std::move(description),
@@ -136,8 +136,8 @@ process_delete_category(std::ostream& out, client_session& session,
         return;
     }
 
-    using iam::messaging::delete_change_reason_category_request;
-    using iam::messaging::delete_change_reason_category_response;
+    using dq::messaging::delete_change_reason_category_request;
+    using dq::messaging::delete_change_reason_category_response;
     auto result = session.process_authenticated_request<
         delete_change_reason_category_request,
         delete_change_reason_category_response,
@@ -181,8 +181,8 @@ process_get_category_history(std::ostream& out, client_session& session,
         return;
     }
 
-    using iam::messaging::get_change_reason_category_history_request;
-    using iam::messaging::get_change_reason_category_history_response;
+    using dq::messaging::get_change_reason_category_history_request;
+    using dq::messaging::get_change_reason_category_history_response;
     auto result = session.process_authenticated_request<
         get_change_reason_category_history_request,
         get_change_reason_category_history_response,

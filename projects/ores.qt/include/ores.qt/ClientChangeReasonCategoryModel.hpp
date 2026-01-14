@@ -28,7 +28,7 @@
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/change_reason_category.hpp"
+#include "ores.dq/domain/change_reason_category.hpp"
 
 namespace ores::qt {
 
@@ -86,7 +86,7 @@ public:
      * @param row The row index.
      * @return The category, or nullptr if row is invalid.
      */
-    const iam::domain::change_reason_category* getCategory(int row) const;
+    const dq::domain::change_reason_category* getCategory(int row) const;
 
 signals:
     /**
@@ -109,11 +109,11 @@ private:
 
     struct FetchResult {
         bool success;
-        std::vector<iam::domain::change_reason_category> categories;
+        std::vector<dq::domain::change_reason_category> categories;
     };
 
     ClientManager* clientManager_;
-    std::vector<iam::domain::change_reason_category> categories_;
+    std::vector<dq::domain::change_reason_category> categories_;
     QFutureWatcher<FetchResult>* watcher_;
     bool is_fetching_{false};
 

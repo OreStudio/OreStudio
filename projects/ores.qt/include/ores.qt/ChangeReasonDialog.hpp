@@ -27,7 +27,7 @@
 #include <QPushButton>
 #include <QDialogButtonBox>
 #include <vector>
-#include "ores.iam/domain/change_reason.hpp"
+#include "ores.dq/domain/change_reason.hpp"
 
 namespace ores::qt {
 
@@ -70,7 +70,7 @@ public:
      * @param parent Parent widget
      */
     explicit ChangeReasonDialog(
-        const std::vector<iam::domain::change_reason>& reasons,
+        const std::vector<dq::domain::change_reason>& reasons,
         OperationType operation,
         bool hasFieldChanges,
         QWidget* parent = nullptr);
@@ -100,7 +100,7 @@ private:
     void setupUi();
     void updateValidation();
 
-    std::vector<iam::domain::change_reason> reasons_;
+    std::vector<dq::domain::change_reason> reasons_;
     OperationType operation_;
     bool hasFieldChanges_;
 

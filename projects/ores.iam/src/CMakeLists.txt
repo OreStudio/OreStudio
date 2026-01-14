@@ -41,6 +41,7 @@ target_link_libraries(${lib_target_name}
         ores.geo.lib
         ores.platform.lib
         ores.security.lib
+        ores.dq.lib
     PRIVATE
         faker-cxx::faker-cxx
         libfort::fort)

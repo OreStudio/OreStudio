@@ -31,7 +31,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.iam/messaging/change_management_protocol.hpp"
+#include "ores.dq/messaging/change_management_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -152,7 +152,7 @@ void ChangeReasonCategoryDetailDialog::setUsername(const std::string& username) 
 }
 
 void ChangeReasonCategoryDetailDialog::setCategory(
-    const iam::domain::change_reason_category& category) {
+    const dq::domain::change_reason_category& category) {
     currentCategory_ = category;
 
     ui_->codeEdit->setText(QString::fromStdString(category.code));
@@ -168,8 +168,8 @@ void ChangeReasonCategoryDetailDialog::setCategory(
     updateSaveButtonState();
 }
 
-iam::domain::change_reason_category ChangeReasonCategoryDetailDialog::getCategory() const {
-    iam::domain::change_reason_category category = currentCategory_;
+dq::domain::change_reason_category ChangeReasonCategoryDetailDialog::getCategory() const {
+    dq::domain::change_reason_category category = currentCategory_;
     category.code = ui_->codeEdit->text().trimmed().toStdString();
     category.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     category.recorded_by = modifiedByUsername_;
@@ -211,7 +211,7 @@ void ChangeReasonCategoryDetailDialog::setReadOnly(bool readOnly, int versionNum
 }
 
 void ChangeReasonCategoryDetailDialog::setHistory(
-    const std::vector<iam::domain::change_reason_category>& history, int versionNumber) {
+    const std::vector<dq::domain::change_reason_category>& history, int versionNumber) {
     history_ = history;
 
     // Find the index of the requested version
@@ -229,7 +229,7 @@ void ChangeReasonCategoryDetailDialog::setHistory(
 }
 
 void ChangeReasonCategoryDetailDialog::clearDialog() {
-    currentCategory_ = iam::domain::change_reason_category{};
+    currentCategory_ = dq::domain::change_reason_category{};
 
     ui_->codeEdit->clear();
     ui_->descriptionEdit->clear();
@@ -373,7 +373,7 @@ void ChangeReasonCategoryDetailDialog::onSaveClicked() {
                                << currentCategory_.code;
 
     QPointer<ChangeReasonCategoryDetailDialog> self = this;
-    iam::domain::change_reason_category categoryToSave = getCategory();
+    dq::domain::change_reason_category categoryToSave = getCategory();
     categoryToSave.change_commentary = commentary.toStdString();
 
     QFuture<FutureResult> future =
@@ -383,7 +383,7 @@ void ChangeReasonCategoryDetailDialog::onSaveClicked() {
             BOOST_LOG_SEV(lg(), debug) << "Sending save category request for: "
                                        << categoryToSave.code;
 
-            iam::messaging::save_change_reason_category_request request;
+            dq::messaging::save_change_reason_category_request request;
             request.category = categoryToSave;
 
             auto payload = request.serialize();
@@ -402,7 +402,7 @@ void ChangeReasonCategoryDetailDialog::onSaveClicked() {
                 return {false, "Failed to decompress server response"};
             }
 
-            auto response = iam::messaging::save_change_reason_category_response::
+            auto response = dq::messaging::save_change_reason_category_response::
                 deserialize(*payload_result);
 
             if (!response) {
@@ -479,7 +479,7 @@ void ChangeReasonCategoryDetailDialog::onDeleteClicked() {
             BOOST_LOG_SEV(lg(), debug) << "Sending delete category request for: "
                                        << code;
 
-            iam::messaging::delete_change_reason_category_request request;
+            dq::messaging::delete_change_reason_category_request request;
             request.codes = {code};
 
             auto payload = request.serialize();
@@ -498,7 +498,7 @@ void ChangeReasonCategoryDetailDialog::onDeleteClicked() {
                 return {false, "Failed to decompress server response"};
             }
 
-            auto response = iam::messaging::delete_change_reason_category_response::
+            auto response = dq::messaging::delete_change_reason_category_response::
                 deserialize(*payload_result);
 
             if (!response) {

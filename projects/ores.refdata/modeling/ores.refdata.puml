@@ -21,11 +21,11 @@ title ores.refdata Component
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "Domain model for the ORE types and other related classes." as ores_risk_note
-    risk --- ores_risk_note
-    namespace risk #F2F2F2 {
-        note "Provides XML serialisation support for the ORE domain model types\nusing native ORE XML." as ores_risk_orexml_note
-        orexml --- ores_risk_orexml_note
+    note "Reference data domain model for ORE types and other related classes." as ores_refdata_note
+    refdata --- ores_refdata_note
+    namespace refdata #F2F2F2 {
+        note "Provides XML serialisation support for the ORE domain model types\nusing native ORE XML." as ores_refdata_orexml_note
+        orexml --- ores_refdata_orexml_note
         namespace orexml #F2F2F2 {
             '
             ' Layout groupings

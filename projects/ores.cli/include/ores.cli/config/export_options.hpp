@@ -35,23 +35,23 @@ struct export_options final {
     /**
      * @brief Which entity to export.
      */
-    entity target_entity;
+    entity target_entity{entity::currencies};
     /**
      * @brief Timepoint to use for the reading. If empty, use latest.
      */
-    std::string as_of;
+    std::string as_of{};
     /**
      * @brief Key to filter by, if any.
      */
-    std::string key;
+    std::string key{};
     /**
      * @brief If true, output all versions of this entity.
      */
-    bool all_versions;
+    bool all_versions{false};
     /**
      * @brief Format to use for the export.
      */
-    format target_format;
+    format target_format{format::json};
 };
 
 std::ostream& operator<<(std::ostream& s, const export_options& v);

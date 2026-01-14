@@ -50,11 +50,11 @@ grant create on schema ores to ores;
 -- See admin/setup_admin.sql for cluster-level utilities.
 
 -- Change control tables (must be created before entities that reference them)
-\ir ../schema/refdata_change_reason_categories_create.sql
-\ir ../schema/refdata_change_reason_categories_notify_trigger.sql
-\ir ../schema/refdata_change_reasons_create.sql
-\ir ../schema/refdata_change_reasons_notify_trigger.sql
-\ir ../schema/refdata_change_reason_functions_create.sql
+\ir ../schema/dq_change_reason_categories_create.sql
+\ir ../schema/dq_change_reason_categories_notify_trigger.sql
+\ir ../schema/dq_change_reasons_create.sql
+\ir ../schema/dq_change_reasons_notify_trigger.sql
+\ir ../schema/dq_change_reason_functions_create.sql
 
 -- Reference data tables
 \ir ../schema/refdata_currencies_create.sql

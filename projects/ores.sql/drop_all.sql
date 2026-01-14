@@ -58,11 +58,11 @@
 \ir ./drop/refdata_currencies_drop.sql
 \ir ./drop/refdata_countries_notify_trigger_drop.sql
 \ir ./drop/refdata_countries_drop.sql
-\ir ./drop/refdata_change_reasons_notify_trigger_drop.sql
-\ir ./drop/refdata_change_reason_functions_drop.sql
-\ir ./drop/refdata_change_reasons_drop.sql
-\ir ./drop/refdata_change_reason_categories_notify_trigger_drop.sql
-\ir ./drop/refdata_change_reason_categories_drop.sql
+\ir ./drop/dq_change_reasons_notify_trigger_drop.sql
+\ir ./drop/dq_change_reason_functions_drop.sql
+\ir ./drop/dq_change_reasons_drop.sql
+\ir ./drop/dq_change_reason_categories_notify_trigger_drop.sql
+\ir ./drop/dq_change_reason_categories_drop.sql
 
 -- Utility
 \ir ./drop/utility_functions_drop.sql

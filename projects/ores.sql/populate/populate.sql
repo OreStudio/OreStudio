@@ -45,7 +45,7 @@
 
 -- Change Control (must be populated before entities that use reasons)
 \echo '--- Change Control ---'
-\ir refdata_change_reasons_populate.sql
+\ir dq_change_reasons_populate.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''
@@ -83,7 +83,7 @@
 \echo '--- Summary ---'
 
 select 'Change Reasons' as entity, count(*) as count
-from ores.refdata_change_reasons_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_change_reasons_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Countries', count(*)
 from ores.refdata_countries_tbl where valid_to = ores.utility_infinity_timestamp_fn()
@@ -101,7 +101,7 @@ select 'Permissions', count(*)
 from ores.iam_permissions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Change Reason Categories', count(*)
-from ores.refdata_change_reason_categories_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_change_reason_categories_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Roles', count(*)
 from ores.iam_roles_tbl where valid_to = ores.utility_infinity_timestamp_fn()

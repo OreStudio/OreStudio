@@ -30,7 +30,6 @@ create table if not exists "ores"."dq_subject_area_tbl" (
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (id, valid_from, valid_to),
-    foreign key (domain_id) references ores.dq_data_domain_tbl(id),
     exclude using gist (
         id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
@@ -55,6 +54,16 @@ begin
 
     if NEW.version is null then
         NEW.version := 0;
+    end if;
+
+    -- Validate foreign key reference
+    if not exists (
+        select 1 from ores.dq_data_domain_tbl
+        where id = NEW.domain_id
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid domain_id: %. Domain must exist.', NEW.domain_id
+        using errcode = '23503';
     end if;
 
     NEW.change_reason_code := ores.refdata_validate_change_reason_fn(NEW.change_reason_code);

@@ -41,12 +41,6 @@ create table if not exists "ores"."dq_dataset_tbl" (
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
     primary key (id, valid_from, valid_to),
-    foreign key (subject_area_id) references ores.dq_subject_area_tbl(id),
-    foreign key (origin_id) references ores.dq_origin_dimension_tbl(id),
-    foreign key (nature_id) references ores.dq_nature_dimension_tbl(id),
-    foreign key (treatment_id) references ores.dq_treatment_dimension_tbl(id),
-    foreign key (methodology_id) references ores.dq_methodology_tbl(id),
-    foreign key (upstream_derivation_id) references ores.dq_dataset_tbl(id),
     exclude using gist (
         id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
@@ -73,11 +67,66 @@ begin
         NEW.version := 0;
     end if;
 
+    -- Validate foreign key references
+    if not exists (
+        select 1 from ores.dq_subject_area_tbl
+        where id = NEW.subject_area_id
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid subject_area_id: %. Subject area must exist.', NEW.subject_area_id
+        using errcode = '23503';
+    end if;
+
+    if not exists (
+        select 1 from ores.dq_origin_dimension_tbl
+        where id = NEW.origin_id
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid origin_id: %. Origin dimension must exist.', NEW.origin_id
+        using errcode = '23503';
+    end if;
+
+    if not exists (
+        select 1 from ores.dq_nature_dimension_tbl
+        where id = NEW.nature_id
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid nature_id: %. Nature dimension must exist.', NEW.nature_id
+        using errcode = '23503';
+    end if;
+
+    if not exists (
+        select 1 from ores.dq_treatment_dimension_tbl
+        where id = NEW.treatment_id
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid treatment_id: %. Treatment dimension must exist.', NEW.treatment_id
+        using errcode = '23503';
+    end if;
+
+    if NEW.methodology_id is not null and not exists (
+        select 1 from ores.dq_methodology_tbl
+        where id = NEW.methodology_id
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid methodology_id: %. Methodology must exist.', NEW.methodology_id
+        using errcode = '23503';
+    end if;
+
+    if NEW.upstream_derivation_id is not null and not exists (
+        select 1 from ores.dq_dataset_tbl
+        where id = NEW.upstream_derivation_id
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid upstream_derivation_id: %. Upstream dataset must exist.', NEW.upstream_derivation_id
+        using errcode = '23503';
+    end if;
+
     if NEW.upstream_derivation_id is null then
         NEW.lineage_depth := 0;
     else
-        select COALESCE((select lineage_depth from ores.dq_dataset_tbl 
-                         where id = NEW.upstream_derivation_id 
+        select COALESCE((select lineage_depth from ores.dq_dataset_tbl
+                         where id = NEW.upstream_derivation_id
                          and valid_to = ores.utility_infinity_timestamp_fn()), 0) + 1
         into NEW.lineage_depth;
     end if;

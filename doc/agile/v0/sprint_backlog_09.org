@@ -17,44 +17,43 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-13 Tue 19:00], for Tuesday, January 13, 2026.
-|       | <75>                                         |        |      |      |       |
-| Tags  | Headline                                     | Time   |      |      |     % |
-|-------+----------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                 | *8:01* |      |      | 100.0 |
-|-------+----------------------------------------------+--------+------+------+-------|
-|       | Stories                                      | 8:01   |      |      | 100.0 |
-|       | Active                                       |        | 8:01 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint           |        |      | 2:00 |  24.9 |
-| code  | Fix valgrind errors in nightly               |        |      | 0:38 |   7.9 |
-| code  | Create security module                       |        |      | 1:23 |  17.3 |
-| code  | Prodigy should support multiple environments |        |      | 0:19 |   4.0 |
-| infra | Refactor documentation                       |        |      | 1:11 |  14.8 |
-| code  | Add named environment sets                   |        |      | 2:10 |  27.0 |
-| code  | Clean up seed data                           |        |      | 0:20 |   4.2 |
+#+CAPTION: Clock summary at [2026-01-14 Wed 15:34], for Wednesday, January 14, 2026.
+|       | <75>                                    |        |      |      |       |
+| Tags  | Headline                                | Time   |      |      |     % |
+|-------+-----------------------------------------+--------+------+------+-------|
+|       | *Total time*                            | *5:01* |      |      | 100.0 |
+|-------+-----------------------------------------+--------+------+------+-------|
+|       | Stories                                 | 5:01   |      |      | 100.0 |
+|       | Active                                  |        | 5:01 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint      |        |      | 0:48 |  15.9 |
+| code  | Fix valgrind errors in nightly          |        |      | 0:15 |   5.0 |
+| code  | Rename risk to refdata                  |        |      | 0:43 |  14.3 |
+| code  | Prefix database entities with component |        |      | 3:15 |  64.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-13 Tue 19:00]
+#+CAPTION: Clock summary at [2026-01-14 Wed 15:34]
 |       | <75>                                         |         |       |      |       |
 | Tags  | Headline                                     | Time    |       |      |     % |
 |-------+----------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                 | *18:11* |       |      | 100.0 |
+|       | *Total time*                                 | *25:19* |       |      | 100.0 |
 |-------+----------------------------------------------+---------+-------+------+-------|
-|       | Stories                                      | 18:11   |       |      | 100.0 |
-|       | Active                                       |         | 18:11 |      | 100.0 |
-| agile | Sprint and product backlog refinement        |         |       | 1:39 |   9.1 |
-| infra | OCR scan notebooks for this sprint           |         |       | 2:00 |  11.0 |
-| infra | Clean up system models and component models  |         |       | 0:28 |   2.6 |
-| code  | Add missing entities to CLI                  |         |       | 1:55 |  10.5 |
-| infra | Refactor PR related skills                   |         |       | 0:18 |   1.6 |
-| code  | Fix valgrind errors in nightly               |         |       | 1:10 |   6.4 |
-| code  | Create security module                       |         |       | 1:23 |   7.6 |
-| code  | Prodigy should support multiple environments |         |       | 0:19 |   1.7 |
-| infra | Refactor documentation                       |         |       | 6:29 |  35.7 |
-| code  | Add named environment sets                   |         |       | 2:10 |  11.9 |
-| code  | Clean up seed data                           |         |       | 0:20 |   1.8 |
+|       | Stories                                      | 25:19   |       |      | 100.0 |
+|       | Active                                       |         | 25:19 |      | 100.0 |
+| agile | Sprint and product backlog refinement        |         |       | 1:39 |   6.5 |
+| infra | OCR scan notebooks for this sprint           |         |       | 2:48 |  11.1 |
+| infra | Clean up system models and component models  |         |       | 0:28 |   1.8 |
+| code  | Add missing entities to CLI                  |         |       | 1:55 |   7.6 |
+| infra | Refactor PR related skills                   |         |       | 0:18 |   1.2 |
+| code  | Fix valgrind errors in nightly               |         |       | 1:25 |   5.6 |
+| code  | Create security module                       |         |       | 1:23 |   5.5 |
+| code  | Prodigy should support multiple environments |         |       | 0:19 |   1.3 |
+| code  | Add named environment sets                   |         |       | 4:17 |  16.9 |
+| code  | Rename risk to refdata                       |         |       | 0:43 |   2.8 |
+| code  | Prefix database entities with component      |         |       | 3:15 |  12.8 |
+| infra | Refactor documentation                       |         |       | 6:29 |  25.6 |
+| code  | Clean up seed data                           |         |       | 0:20 |   1.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -498,15 +497,13 @@ Highlights:
   the new functionalities.
 #+end_quote
 
-*** STARTED Rename risk to refdata                                     :code:
+*** COMPLETED Rename risk to refdata                                   :code:
     :LOGBOOK:
     CLOCK: [2026-01-14 Wed 10:11]--[2026-01-14 Wed 10:25] =>  0:14
     CLOCK: [2026-01-14 Wed 09:41]--[2026-01-14 Wed 10:10] =>  0:29
     :END:
 
 We need to split risk from ref data.
-
-**** Code
 
 #+begin_quote
 This pull request executes a significant refactoring effort by renaming a core
@@ -534,7 +531,17 @@ Highlights:
   correctly reference the new component name and aliases.
 #+end_quote
 
-**** SQL
+*** COMPLETED Prefix database entities with component                  :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-14 Wed 14:55]--[2026-01-14 Wed 15:33] =>  0:38
+    CLOCK: [2026-01-14 Wed 14:30]--[2026-01-14 Wed 14:54] =>  0:24
+    CLOCK: [2026-01-14 Wed 12:31]--[2026-01-14 Wed 13:05] =>  0:34
+    CLOCK: [2026-01-14 Wed 10:26]--[2026-01-14 Wed 12:05] =>  1:39
+    :END:
+
+The database is becoming a bit confusing and we can't tell what entities belong
+where. We need to prefix them by component, e.g. "accounts" becomes
+"iam_accounts".
 
 #+begin_quote
 This pull request introduces a fundamental refactoring of the SQL database
@@ -563,16 +570,6 @@ Highlights:
   and list existing entities by component, serving as a comprehensive guide for
   future development.
 #+end_quote
-
-*** STARTED Prefix database entities with component                    :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-14 Wed 12:31]--[2026-01-14 Wed 13:05] =>  0:34
-    CLOCK: [2026-01-14 Wed 10:26]--[2026-01-14 Wed 12:05] =>  1:39
-    :END:
-
-The database is becoming a bit confusing and we can't tell what entities belong
-where. We need to prefix them by component, e.g. "accounts" becomes
-"iam_accounts".
 
 *** STARTED Refactor documentation                                    :infra:
     :LOGBOOK:
@@ -606,6 +603,119 @@ preserve it's lineage and provenience.
 - all data should be stored in the database, we probably don't even need c++
   representation for it. There should be a stored procedure that copies data
   from sample tables to actual tables.
+
+**** Analysis from Qwen
+
+***** Core Concepts
+
+| Concept          | Description                                                                                                             |
+|------------------+-------------------------------------------------------------------------------------------------------------------------|
+| Dataset          | A logical collection of sample records (e.g., a set of trades, portfolios, or market data snapshots).                   |
+| Record           | An individual row or entity within a dataset (optional granularity; lineage may be tracked at dataset or record level). |
+| Provenance       | The origin of the data—external vendor, internal system, or synthetic generator.                                        |
+| Classification   | Categorizes the nature of the data for compliance and usage control.                                                    |
+| Lineage          | Directed acyclic graph (DAG) linking derived data to its upstream sources.                                              |
+| Temporal Context | Captures both business time (as_of_date) and system time (ingestion_timestamp), supporting bi-temporal reasoning.       |
+| Data Passport    | A self-contained metadata manifest (relational or document-based) that answers the 5 Ws of data governance.             |
+
+**** Metadata Attributes
+
+Each dataset (or optionally each record) must carry the following metadata
+fields.
+
+***** Provenance & Classification
+
+| Field               | Type                      | Required                | Description                                                                                                 |
+|---------------------+---------------------------+-------------------------+-------------------------------------------------------------------------------------------------------------|
+| source_system_id    | String (UUID or mnemonic) | ✅                     | Identifier of the originating system (e.g., "BLOOMBERG", "INTERNAL_RISK_ENGINE_v2").                        |
+| data_classification | Enum                      | ✅                     | One of: REAL, SYNTHETIC, OBFUSCATED, HYBRID.                                                                |
+| generation_method   | String / Enum             | ✅ if synthetic/hybrid | Describes how data was created (e.g., "MONTE_CARLO", "REPLAY_OF_20231004", "BOOTSTRAP_FROM_PROD_SNAPSHOT"). |
+| business_context    | String                    | ✅                     | Human-readable purpose (e.g., "Testing FX Forward P&L attribution", "Demo for client onboarding").          |
+
+***** B. Lineage & Derivation
+
+| Field                    | Type          | Required                  | Description                                                                                       |
+|--------------------------+---------------+---------------------------+---------------------------------------------------------------------------------------------------|
+| upstream_derivation_id   | String (UUID) | ❌ (required if derived) | Points to the parent dataset or record ID from which this was derived.                            |
+| transformation_logic_ref | URI / String  | ❌ (required if derived) | Reference to the logic that produced this data (e.g., Git commit hash, script name, workflow ID). |
+| lineage_depth            | Integer       | ✅                       | Number of derivation steps from the original raw source (0 = raw/golden copy).                    |
+
+***** C. Temporal Metadata
+
+| Field               | Type            | Required | Description                                                                     |
+|---------------------+-----------------+----------+---------------------------------------------------------------------------------|
+| as_of_date          | Date            | ✅      | The business/market date the data represents (e.g., valuation date).            |
+| ingestion_timestamp | Timestamp (UTC) | ✅      | When the data entered the sample repository.                                    |
+| valid_from          | Timestamp (UTC) | ✅      | Start of validity interval (for time-sliced data).                              |
+| valid_to            | Timestamp (UTC) | ✅      | End of validity interval (use far-future sentinel like 9999-12-31 for current). |
+
+Note: valid_from/valid_to enable bi-temporal modeling—essential for replaying
+historical states in trading systems.
+
+Granularity Options
+
+Choose one of the following approaches based on your use case.
+
+| Option                 | Description                                                    | When to Use                                                                                            |
+|------------------------+----------------------------------------------------------------+--------------------------------------------------------------------------------------------------------|
+| Dataset-level metadata | One metadata record per dataset (e.g., per CSV file or table). | For bulk samples where all rows share the same origin and transformation.                              |
+| Record-level metadata  | Each row carries its own metadata (via FK or embedded).        | When lineage varies per trade/portfolio (e.g., hybrid datasets mixing real and synthetic instruments). |
+
+Data Passport Structure (Logical View)
+
+Every sample dataset should be accompanied by a Data Passport manifest containing:
+
+#+begin_src json
+{
+    "who": "",
+    "what": {
+        "classification": "<SYNTHETIC|REAL|...>",
+        "generation_method": "<...>"
+    },
+    "where": {
+        "upstream_derivation_id": "<UUID?>",
+        "transformation_logic_ref": "<URI?>"
+    },
+    "when": {
+        "as_of_date": "YYYY-MM-DD",
+        "ingestion_timestamp": "ISO8601 UTC",
+        "valid_from": "ISO8601 UTC",
+        "valid_to": "ISO8601 UTC"
+    },
+    "why": ""
+}
+#+end_src
+
+This can be stored as:
+
+- A JSON/JSONB column in a relational table
+- A standalone .passport.json file alongside Parquet/CSV
+- A row in a metadata_registry table
+
+Constraints & Validation Rules
+
+- If data_classification ∈ {SYNTHETIC, HYBRID}, then generation_method must be
+  non-null.
+- If lineage_depth > 0, then upstream_derivation_id and transformation_logic_ref
+  must be provided.
+- valid_from ≤ valid_to
+- as_of_date should align with valid_from/valid_to for consistency (e.g.,
+  as_of_date ∈ [valid_from, valid_to]).
+
+*** Improvements to connection browser                                 :code:
+
+- We should validate the password to make sure it complies with password
+  policies.
+- add test connection to check the connection and credentials are correct.
+- disable buttons are very bright, look enabled.
+- connection browser should start with expanded tree.
+- no tags support.
+- login dialog should support connections from connection browser.
+
+*** Add UI for bootstrapping from Qt                                   :code:
+
+At present we need to go to the shell to bootstrap. It would be easier if we
+just had a button in Qt for this.
 
 *** Add schemes for countries and currencies                           :code:
 
@@ -1443,6 +1553,43 @@ the code.
 - Description: Harare, Zimbabwe
 
 
+*** Geo-location tests fail for some IP Addresses                      :code:
+
+Error is probably happening because the range is not supposed to be used.
+
+#+begin_src xml
+<Catch2TestRun name="ores.geo.tests" rng-seed="3117545047" xml-format-version="3" catch2-version="3.12.0">
+  <TestCase name="geolocation_result_default_construction" tags="[service][#geolocation_service_tests]" filename="/home/marco/Development/OreStudio/OreStudio.local1/projects/ores.geo/tests/geolocation_service_tests.cpp" line="38">
+    <OverallResult success="true" skips="0" durationInSeconds="1.00031"/>
+  </TestCase>
+  <TestCase name="lookup_with_boost_asio_address" tags="[service][#geolocation_service_tests]" filename="/home/marco/Development/OreStudio/OreStudio.local1/projects/ores.geo/tests/geolocation_service_tests.cpp" line="90">
+    <Expression success="false" type="CHECK" filename="/home/marco/Development/OreStudio/OreStudio.local1/projects/ores.geo/tests/geolocation_service_tests.cpp" line="102">
+      <Original>
+        result.error() == geolocation_error::address_not_found
+      </Original>
+      <Expanded>
+        2 == 1
+      </Expanded>
+    </Expression>
+    <OverallResult success="false" skips="0" durationInSeconds="1.00013"/>
+  </TestCase>
+#+end_src
+
+We don't see anything in the logs:
+
+#+begin_src logview
+2026-01-09 19:16:19.370327 [INFO] [ores.testing.test_database_manager] Database context created successfully
+2026-01-09 19:16:19.370360 [DEBUG] [ores.geo.service.geolocation_service] Geolocation lookup for 10.0.0.1. SQL: SELECT country_code FROM ores.geoip_lookup('10.0.0.1'::inet)
+2026-01-09 19:16:19.386331 [DEBUG] [ores.geo.service.geolocation_service] Geolocation lookup for 10.0.0.1. Total rows: 0
+2026-01-09 19:16:19.386475 [INFO] [ores.geo.tests] Lookup result for boost::asio::ip::address
+2026-01-09 19:16:19.386695 [DEBUG] [catch2] Section ended: lookup_with_boost_asio_address (assertions: 1)
+2026-01-09 19:16:19.386741 [INFO] [catch2] Test case ended: lookup_with_boost_asio_address - PASSED
+2026-01-09 19:16:19.386767 [INFO] [catch2]   Assertions: 1 passed, 0 failed, 1 total
+#+end_src
+
+We should write the assertions in the logs.
+
+
 *** Business unit entity                                               :code:
 
 Represents internal organizational units (e.g., desks, departments, branches).
@@ -1606,6 +1753,12 @@ Combined Hierarchy Rules (Refined):
 Observations, snags and so forth that have not been analysed to form a proper
 story.
 
+- no repository tests for change reason. We need to check all entities and the
+  coverage.
+- qt code processing for network error messages is duplicated.
+- raw SQL in image repository, should be a function.
+- session should record if telemetry is enabled or not enabled.
+- bootstrap mode flag change does not generate new version.
 - it is possible to create a country without a name. likely a currency too.
 - should be possible to click on user and see user profile details. If the user
   is admin, show all details; if not, show only key ones like email, etc.

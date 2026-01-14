@@ -43,7 +43,7 @@ begin
 end;
 $$ language plpgsql immutable strict;
 
-create or replace function ores.geo_ip_lookup_fn(ip_address inet)
+create or replace function ores.geo_ip2country_lookup_fn(ip_address inet)
 returns table (
     country_code text
 ) as $$

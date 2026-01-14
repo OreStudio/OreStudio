@@ -150,7 +150,7 @@ Note: telemetry tables use TimescaleDB hypertables for time-series data.
 | ip2country | =geo_ip2country_tbl=  | (SQL only)      |
 
 Schema files: =geo_ip2country_create.sql=
-Functions: =geo_ip2country_lookup_fn()= for IP geolocation lookups
+Functions: =geo_ip2country_lookup_fn()= for IP geolocation lookups (returns country code for IPv4 address)
 
 *** Utility Functions (=utility_=)
 
@@ -246,10 +246,10 @@ create table if not exists "ores"."{component}_{entity}_tbl" (
         {pk_column} WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to"),
-    constraint {component}_{entity}_change_reason_code_chk
-        check (ores.refdata_change_reason_code_exists_fn(change_reason_code))
+    check ("valid_from" < "valid_to")
 );
+-- Note: change_reason_code validation is handled by the insert trigger function,
+-- not via check constraint. See Step 4 below for the trigger implementation.
 #+end_src
 
 3. *Unique indexes* for current records:
@@ -260,7 +260,7 @@ on "ores"."{component}_{entity}_tbl" ({column})
 where valid_to = ores.utility_infinity_timestamp_fn();
 #+end_src
 
-4. *Insert trigger function* for temporal versioning:
+4. *Insert trigger function* for temporal versioning and validation:
 
 #+begin_src sql
 create or replace function ores.{component}_{entity}_insert_fn()
@@ -277,6 +277,9 @@ begin
     if NEW.version is null then
         NEW.version := 0;
     end if;
+
+    -- Validate change_reason_code (raises exception if invalid)
+    NEW.change_reason_code := ores.refdata_validate_change_reason_fn(NEW.change_reason_code);
 
     return NEW;
 end;
@@ -400,7 +403,7 @@ begin
         );
         raise notice 'Created {entity}: %', p_field1;
     else
-        raise notice '{Entity} already exists: %', p_field1;
+        raise notice '{entity} already exists: %', p_field1;
     end if;
 end;
 $$ language plpgsql;
@@ -413,7 +416,7 @@ select ores.upsert_{entity}('value3', 'value4');
 drop function ores.upsert_{entity}(text, text);
 
 -- Summary
-select '{Entity}' as entity, count(*) as count
+select '{entity}' as entity, count(*) as count
 from ores.{component}_{entity}_tbl
 where valid_to = ores.utility_infinity_timestamp_fn();
 #+end_src
@@ -536,14 +539,16 @@ the ID without temporal constraints (the application layer manages consistency):
 
 ** Change reason validation
 
-All tables with =change_reason_code= should include a check constraint:
+All tables with =change_reason_code= validate the code via the insert trigger function.
+The trigger calls =ores.refdata_validate_change_reason_fn()= to ensure the code exists:
 
 #+begin_src sql
-constraint {component}_{entity}_change_reason_code_chk
-    check (ores.refdata_change_reason_code_exists_fn(change_reason_code))
+-- Inside the insert trigger function:
+new.change_reason_code := ores.refdata_validate_change_reason_fn(new.change_reason_code);
 #+end_src
 
-This validates that the change reason code exists in =refdata_change_reasons_tbl=.
+This validates that the change reason code exists in =refdata_change_reasons_tbl= and
+raises an exception with SQLSTATE 23503 if invalid.
 
 * Integration with Domain Type Creator
 

@@ -41,10 +41,34 @@ add_compile_options(
 set(ORES_CATCH2_ARGS --durations yes --filenames-as-tags -r compact)
 
 #
+# Test logging configuration.
+# ORES_TEST_LOG_LEVEL: Set to a log level (trace, debug, info, warn, error) to
+#                      enable test logging. Default is OFF (logging disabled).
+# ORES_TEST_LOG_CONSOLE: Set to ON to also output logs to console.
+#
+# Example usage:
+#   cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=debug
+#   cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON
+#
+set(ORES_TEST_LOG_LEVEL "OFF" CACHE STRING "Test log level (OFF, trace, debug, info, warn, error)")
+set_property(CACHE ORES_TEST_LOG_LEVEL PROPERTY STRINGS OFF trace debug info warn error)
+option(ORES_TEST_LOG_CONSOLE "Enable console output for test logs" OFF)
+
+#
 # Test environment variables: applied to all test targets.
 # ORES_TEST_PASSWORD_FAST: Use fast scrypt parameters (16x faster) for tests.
 #
 set(ORES_TEST_ENV "ORES_TEST_PASSWORD_FAST=1")
+
+# Add logging environment variables if logging is enabled
+if(NOT ORES_TEST_LOG_LEVEL STREQUAL "OFF")
+    string(APPEND ORES_TEST_ENV ";ORES_TEST_LOG_ENABLED=true")
+    string(APPEND ORES_TEST_ENV ";ORES_TEST_LOG_LEVEL=${ORES_TEST_LOG_LEVEL}")
+    if(ORES_TEST_LOG_CONSOLE)
+        string(APPEND ORES_TEST_ENV ";ORES_TEST_LOG_CONSOLE=true")
+    endif()
+    message(STATUS "Test logging enabled: level=${ORES_TEST_LOG_LEVEL}, console=${ORES_TEST_LOG_CONSOLE}")
+endif()
 
 #
 # Projects

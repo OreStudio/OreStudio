@@ -93,7 +93,40 @@ Replace =ores.accounts.tests= with the desired component name.
 
 *** Configuring test logging
 
-Test logging is disabled by default for performance. To enable logging when debugging test failures, use environment variables:
+Test logging is disabled by default for performance. To enable logging when
+debugging test failures, use CMake options during configuration.
+
+**** Using CMake options (recommended)
+
+Configure the project with logging enabled:
+
+#+begin_src sh
+# Enable logging at debug level (logs to files only)
+cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=debug
+
+# Enable logging at trace level with console output
+cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON
+#+end_src
+
+Then run tests as normal:
+
+#+begin_src sh
+cmake --build --preset linux-clang-debug --target rat
+#+end_src
+
+Available CMake options:
+- =ORES_TEST_LOG_LEVEL=: Log level (default: =OFF=, options: =trace=, =debug=, =info=, =warn=, =error=)
+- =ORES_TEST_LOG_CONSOLE=: Output logs to console (default: =OFF=)
+
+To disable logging again, reconfigure with:
+
+#+begin_src sh
+cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=OFF
+#+end_src
+
+**** Using environment variables
+
+Alternatively, set environment variables directly when running tests:
 
 #+begin_src sh
 # Enable logging to files
@@ -102,7 +135,7 @@ ORES_TEST_LOG_ENABLED=true cmake --build --target test_ores.accounts.tests --pre
 # Enable logging with console output
 ORES_TEST_LOG_ENABLED=true ORES_TEST_LOG_CONSOLE=true cmake --build --target test_ores.accounts.tests --preset linux-clang-debug
 
-# Change log level (default: trace, options: trace, debug, info, warn, error, fatal)
+# Change log level (default: trace, options: trace, debug, info, warn, error)
 ORES_TEST_LOG_ENABLED=true ORES_TEST_LOG_LEVEL=debug cmake --build --target test_ores.accounts.tests --preset linux-clang-debug
 #+end_src
 

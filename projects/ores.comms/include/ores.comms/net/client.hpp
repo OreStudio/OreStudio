@@ -99,7 +99,7 @@ using reconnected_callback_t = std::function<void()>;
  * perform blocking operations. Any UI updates must be dispatched to the
  * appropriate UI thread.
  *
- * @param event_type The fully qualified event type name (e.g., "ores.risk.currency_changed_event")
+ * @param event_type The fully qualified event type name (e.g., "ores.refdata.currency_changed_event")
  * @param timestamp When the event occurred (UTC)
  * @param entity_ids Identifiers of specific entities that changed (e.g., currency ISO codes)
  */

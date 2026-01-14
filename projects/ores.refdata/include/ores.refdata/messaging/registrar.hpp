@@ -43,7 +43,7 @@ namespace ores::refdata::messaging {
 class registrar {
 private:
     inline static std::string_view logger_name =
-        "ores.risk.messaging.registrar";
+        "ores.refdata.messaging.registrar";
 
     static auto& lg() {
         using namespace ores::logging;

@@ -307,7 +307,7 @@ public:
      * This method is non-blocking - the subscription request is sent
      * asynchronously and any errors are logged.
      *
-     * @param eventType The event type to subscribe to (e.g., "ores.risk.currency_changed_event")
+     * @param eventType The event type to subscribe to (e.g., "ores.refdata.currency_changed_event")
      */
     void subscribeToEvent(const std::string& eventType);
 
@@ -442,7 +442,7 @@ signals:
     /**
      * @brief Emitted when a notification is received from the server.
      *
-     * @param eventType The event type name (e.g., "ores.risk.currency_changed_event")
+     * @param eventType The event type name (e.g., "ores.refdata.currency_changed_event")
      * @param timestamp When the event occurred
      * @param entityIds Identifiers of entities that changed (e.g., currency ISO codes)
      */

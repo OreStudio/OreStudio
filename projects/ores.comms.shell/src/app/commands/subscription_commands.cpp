@@ -103,7 +103,7 @@ process_listen(std::ostream& out, client_session& session,
 
     if (event_type.empty()) {
         out << "✗ Event type required. Usage: listen <event_type>" << std::endl;
-        out << "  Example: listen ores.risk.currency_changed" << std::endl;
+        out << "  Example: listen ores.refdata.currency_changed" << std::endl;
         out << "  Use 'listen *' to subscribe to all channels." << std::endl;
         return;
     }

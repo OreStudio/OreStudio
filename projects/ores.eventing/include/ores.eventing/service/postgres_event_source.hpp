@@ -48,7 +48,7 @@ namespace ores::eventing::service {
  *     postgres_event_source source(ctx, bus);
  *
  *     // Register entity mappings
- *     source.register_mapping<currency_changed_event>("ores.risk.currency",
+ *     source.register_mapping<currency_changed_event>("ores.refdata.currency",
  *         "ores_currencies");
  *
  *     source.start();
@@ -99,7 +99,7 @@ public:
      * notification's timestamp.
      *
      * @tparam Event The domain event type to publish (must have a timestamp member).
-     * @param entity_name The fully qualified entity name (e.g., "ores.risk.currency").
+     * @param entity_name The fully qualified entity name (e.g., "ores.refdata.currency").
      * @param channel_name The PostgreSQL channel to listen on (e.g., "ores_currencies").
      */
     template<typename Event>

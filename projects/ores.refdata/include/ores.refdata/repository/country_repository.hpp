@@ -35,7 +35,7 @@ namespace ores::refdata::repository {
 class country_repository {
 private:
     inline static std::string_view logger_name =
-        "ores.risk.repository.country_repository";
+        "ores.refdata.repository.country_repository";
 
     static auto& lg() {
         using namespace ores::logging;

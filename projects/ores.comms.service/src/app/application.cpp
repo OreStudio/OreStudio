@@ -158,11 +158,11 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     // Register entity-to-event mappings for each component
     eventing::service::registrar::register_mapping<
         refdata::eventing::currency_changed_event>(
-        event_source, "ores.risk.currency", "ores_currencies",
+        event_source, "ores.refdata.currency", "ores_currencies",
         *channel_registry, "Currency data modified");
     eventing::service::registrar::register_mapping<
         refdata::eventing::country_changed_event>(
-        event_source, "ores.risk.country", "ores_countries",
+        event_source, "ores.refdata.country", "ores_countries",
         *channel_registry, "Country data modified");
     eventing::service::registrar::register_mapping<
         iam::eventing::account_changed_event>(

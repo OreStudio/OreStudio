@@ -32,7 +32,7 @@ namespace ores::refdata::orexml {
  */
 class currency_mapper {
 private:
-    inline static std::string_view logger_name = "ores.risk.orexml.currency_mapper";
+    inline static std::string_view logger_name = "ores.refdata.orexml.currency_mapper";
 
     static auto& lg() {
         using namespace ores::logging;

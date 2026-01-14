@@ -3,7 +3,7 @@ create or replace function ores.notify_country_changes()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.risk.country';
+    entity_name text := 'ores.refdata.country';
     change_timestamp timestamptz := NOW();
     changed_alpha2_code text;
 begin

@@ -39,7 +39,7 @@ namespace ores::refdata::service {
 class country_service {
 private:
     inline static std::string_view logger_name =
-        "ores.risk.service.country_service";
+        "ores.refdata.service.country_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

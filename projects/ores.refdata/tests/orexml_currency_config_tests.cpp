@@ -26,7 +26,7 @@
 
 namespace {
 
-const std::string_view test_suite("ores.risk.tests");
+const std::string_view test_suite("ores.refdata.tests");
 const std::string test_data_dir = "../test_data/currencies/";
 const std::string tags("[orexml]");
 

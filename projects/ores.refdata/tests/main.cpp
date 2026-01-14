@@ -28,6 +28,6 @@ CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
 CATCH_REGISTER_LISTENER(ores::testing::test_timeout_listener)
 
 int main(int argc, char* argv[]) {
-    ores::testing::logging_listener::set_test_module_name("ores.risk.tests");
+    ores::testing::logging_listener::set_test_module_name("ores.refdata.tests");
     return Catch::Session().run(argc, argv);
 }

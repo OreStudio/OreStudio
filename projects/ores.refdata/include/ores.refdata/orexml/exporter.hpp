@@ -32,7 +32,7 @@ namespace ores::refdata::orexml {
  */
 class exporter {
 private:
-    inline static std::string_view logger_name = "ores.risk.orexml.exporter";
+    inline static std::string_view logger_name = "ores.refdata.orexml.exporter";
 
     static auto& lg() {
         using namespace ores::logging;

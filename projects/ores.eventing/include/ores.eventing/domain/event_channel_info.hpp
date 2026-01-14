@@ -34,7 +34,7 @@ struct event_channel_info final {
      * @brief The fully qualified event channel name.
      *
      * Uses the pattern: ores.<module>.<event_name>
-     * Example: "ores.risk.currency_changed"
+     * Example: "ores.refdata.currency_changed"
      */
     std::string name;
 

@@ -40,7 +40,7 @@ namespace ores::refdata::service {
 class currency_service {
 private:
     inline static std::string_view logger_name =
-        "ores.risk.service.currency_service";
+        "ores.refdata.service.currency_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

@@ -41,7 +41,7 @@ namespace ores::refdata::messaging {
 class risk_message_handler final : public comms::messaging::message_handler {
 private:
     inline static std::string_view logger_name =
-        "ores.risk.messaging.risk_message_handler";
+        "ores.refdata.messaging.risk_message_handler";
 
     static auto& lg() {
         using namespace ores::logging;

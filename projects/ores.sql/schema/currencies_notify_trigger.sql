@@ -3,7 +3,7 @@ create or replace function ores.notify_currency_changes()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.risk.currency';
+    entity_name text := 'ores.refdata.currency';
     change_timestamp timestamptz := NOW();
     changed_iso_code text;
 begin

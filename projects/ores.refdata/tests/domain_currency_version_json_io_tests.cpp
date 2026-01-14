@@ -29,7 +29,7 @@
 
 namespace {
 
-const std::string_view test_suite("ores.risk.tests");
+const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[domain][json]");
 
 std::chrono::system_clock::time_point make_timepoint(int year, int month, int day) {

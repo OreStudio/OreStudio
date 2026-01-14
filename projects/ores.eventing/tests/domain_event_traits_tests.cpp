@@ -36,7 +36,7 @@ using ores::refdata::eventing::currency_changed_event;
 using ores::iam::eventing::account_changed_event;
 
 TEST_CASE("event_traits_currency_changed_event", tags) {
-    REQUIRE(event_traits<currency_changed_event>::name == "ores.risk.currency_changed");
+    REQUIRE(event_traits<currency_changed_event>::name == "ores.refdata.currency_changed");
 
     // Verify the concept works
     STATIC_REQUIRE(has_event_traits<currency_changed_event>);

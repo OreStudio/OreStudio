@@ -32,7 +32,7 @@ namespace ores::refdata::csv {
  */
 class exporter {
 private:
-    inline static std::string_view logger_name = "ores.risk.csv.exporter";
+    inline static std::string_view logger_name = "ores.refdata.csv.exporter";
 
     static auto& lg() {
         using namespace ores::logging;

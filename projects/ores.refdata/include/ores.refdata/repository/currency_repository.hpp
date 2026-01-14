@@ -35,7 +35,7 @@ namespace ores::refdata::repository {
 class currency_repository {
 private:
     inline static std::string_view logger_name =
-        "ores.risk.repository.currency_repository";
+        "ores.refdata.repository.currency_repository";
 
     static auto& lg() {
         using namespace ores::logging;

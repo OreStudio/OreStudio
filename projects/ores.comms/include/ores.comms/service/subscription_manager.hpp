@@ -72,10 +72,10 @@ using session_id = std::string;
  *         });
  *
  *     // Subscribe to events
- *     mgr.subscribe("192.168.1.1:45678", "ores.risk.currency_changed");
+ *     mgr.subscribe("192.168.1.1:45678", "ores.refdata.currency_changed");
  *
  *     // Notify all subscribers of an event
- *     mgr.notify("ores.risk.currency_changed", std::chrono::system_clock::now());
+ *     mgr.notify("ores.refdata.currency_changed", std::chrono::system_clock::now());
  *
  *     // Unregister when session ends
  *     mgr.unregister_session("192.168.1.1:45678");

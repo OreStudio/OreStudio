@@ -168,7 +168,7 @@ Functionality related to connectivity such as connect to server, etc.
 
 *** Auto connect
    :PROPERTIES:
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
    :END:
 
 #+name: auto-connect
@@ -184,7 +184,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 
 ⚠ WARNING: System is in BOOTSTRAP MODE
   System in BOOTSTRAP MODE - awaiting initial admin account creation
@@ -200,7 +200,7 @@ ores-shell> Bye!
 
 #+name: basic-connect
 #+begin_src ores-shell :exports none
-connect localhost 55555 test
+connect localhost 51004 test
 exit
 #+end_src
 
@@ -215,7 +215,7 @@ EOF
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Connected to :55555
+ores-shell> ✓ Connected to :51004
 
 ⚠ WARNING: System is in BOOTSTRAP MODE
   System in BOOTSTRAP MODE - awaiting initial admin account creation
@@ -226,7 +226,7 @@ ores-shell> Bye!
 *** Auto login
    :PROPERTIES:
    :ID: CA27A829-0A1C-2C44-9AE3-D389D3898C4E
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
    :header-args+: :var login_args="--login-username newuser3"
    :END:
 
@@ -244,7 +244,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -256,7 +256,7 @@ ores-shell> Bye!
 
 #+name: login-alias
 #+begin_src ores-shell :exports none
-connect localhost 55555 test
+connect localhost 51004 test
 login newuser3 Secure-Password-123
 logout
 exit
@@ -273,7 +273,7 @@ EOF
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
-ores-shell> ✓ Connected to :55555
+ores-shell> ✓ Connected to :51004
 ores-shell> ✓ Login successful!
 ores-shell> ✓ Logged out successfully.
 ores-shell> Bye!
@@ -282,7 +282,7 @@ ores-shell> Bye!
 
 ** Accounts
    :PROPERTIES:
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
    :END:
 
 Functionality related to the accounts domain entity in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ORE Studio Accounts
@@ -348,17 +348,17 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 
 ⚠ WARNING: System is in BOOTSTRAP MODE
   System in BOOTSTRAP MODE - awaiting initial admin account creation
   Use 'bootstrap <username> <password> <email>' to create the initial admin account.
 
-ORE Studio Shell REPL v0.0.8
+ORE Studio Shell REPL v0.0.9
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Initial admin account created successfully!
-  Account ID: 019baeff-c69f-7571-8e0d-761e1cd3156c
+  Account ID: 019bbd0e-ee0a-7d8d-843f-b9d31557e4a5
   You can now login with the credentials provided.
 ores-shell> Bye!
 #+end_example
@@ -382,7 +382,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
@@ -409,7 +409,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
 
@@ -441,7 +441,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -473,7 +473,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -513,7 +513,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -553,7 +553,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -585,7 +585,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -617,7 +617,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -657,7 +657,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -696,7 +696,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -742,7 +742,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -775,7 +775,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -793,7 +793,7 @@ ores-shell> Bye!
 ** Variability
    :PROPERTIES:
    :header-args+: :var login_args="--login-username newuser3"
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
    :END:
 
 Functionality related to the accounts domain entity in [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ORE Studio Variability
@@ -862,7 +862,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -903,7 +903,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -931,7 +931,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -959,7 +959,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -979,7 +979,7 @@ ores-shell> Bye!
 ** Currencies
    :PROPERTIES:
    :header-args+: :var login_args="--login-username newuser3"
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
    :END:
 
 Functionality related to the currencies domain entity.
@@ -1045,7 +1045,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -1181,7 +1181,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -1228,7 +1228,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -1249,7 +1249,7 @@ ores-shell> Bye!
 ** RBAC
    :PROPERTIES:
    :header-args+: :var login_args="--login-username newuser3"
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
    :END:
 
 Role-Based Access Control functionality for managing permissions and roles.
@@ -1347,7 +1347,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -1405,7 +1405,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -1445,7 +1445,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -1473,7 +1473,7 @@ ores-shell> Bye!
 ** Events
    :PROPERTIES:
    :header-args+: :var login_args="--login-username newuser3"
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
    :END:
 
 Event subscription functionality for receiving notifications from the server.
@@ -1541,7 +1541,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -1581,7 +1581,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -1613,7 +1613,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -1643,7 +1643,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -1671,7 +1671,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -1795,7 +1795,7 @@ ores-shell> Bye!
 ** Countries
    :PROPERTIES:
    :header-args+: :var login_args="--login-username newuser3"
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
    :END:
 
 Functionality related to the countries domain entity.
@@ -1861,7 +1861,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -1993,7 +1993,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -2021,7 +2021,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -2049,7 +2049,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -2067,7 +2067,7 @@ ores-shell> Bye!
 ** Change Reasons
    :PROPERTIES:
    :header-args+: :var login_args="--login-username newuser3"
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
    :END:
 
 Functionality related to the change reasons domain entity.
@@ -2133,7 +2133,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -2186,7 +2186,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -2214,7 +2214,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -2242,7 +2242,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -2262,7 +2262,7 @@ ores-shell> Bye!
 ** Change Reason Categories
    :PROPERTIES:
    :header-args+: :var login_args="--login-username newuser3"
-   :header-args+: :var connect_args="--connect-host localhost --connect-port 55555 --connect-identifier recipes"
+   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
    :END:
 
 Functionality related to the change reason categories domain entity.
@@ -2328,7 +2328,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -2365,7 +2365,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -2393,7 +2393,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.
@@ -2421,7 +2421,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-✓ Connected to :55555
+✓ Connected to :51004
 ✓ Logged in as: newuser3
 ORE Studio Shell REPL v0.0.8
 Type 'help' for available commands, 'exit' to quit.

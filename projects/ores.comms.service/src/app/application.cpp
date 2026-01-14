@@ -170,11 +170,11 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         *channel_registry, "Account data modified");
     eventing::service::registrar::register_mapping<
         dq::eventing::change_reason_changed_event>(
-        event_source, "ores.iam.change_reason", "ores_change_reasons",
+        event_source, "ores.dq.change_reason", "ores_change_reasons",
         *channel_registry, "Change reason data modified");
     eventing::service::registrar::register_mapping<
         dq::eventing::change_reason_category_changed_event>(
-        event_source, "ores.iam.change_reason_category", "ores_change_reason_categories",
+        event_source, "ores.dq.change_reason_category", "ores_change_reason_categories",
         *channel_registry, "Change reason category data modified");
     eventing::service::registrar::register_mapping<
         iam::eventing::role_changed_event>(

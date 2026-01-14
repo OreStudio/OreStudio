@@ -61,7 +61,7 @@ namespace ores::eventing::domain {
  */
 template<>
 struct event_traits<ores::dq::eventing::change_reason_changed_event> {
-    static constexpr std::string_view name = "ores.iam.change_reason_changed";
+    static constexpr std::string_view name = "ores.dq.change_reason_changed";
 };
 
 }

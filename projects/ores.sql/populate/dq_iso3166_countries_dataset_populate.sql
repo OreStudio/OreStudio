@@ -49,11 +49,11 @@ begin
         v_id := gen_random_uuid();
         insert into ores.dq_methodology_tbl (
             id, version, name, description, logic_reference, implementation_details,
-            modified_by, change_commentary, valid_from, valid_to
+            modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
         values (
             v_id, 0, p_name, p_description, p_logic_reference, p_implementation_details,
-            'system', 'System seed data - data quality methodology',
+            'system', 'system.new_record', 'System seed data - data quality methodology',
             current_timestamp, ores.utility_infinity_timestamp_fn()
         );
         raise notice 'Created data quality methodology: %', p_name;
@@ -81,9 +81,6 @@ create or replace function ores.upsert_dq_dataset(
 ) returns uuid as $$
 declare
     v_subject_area_id uuid;
-    v_origin_id uuid;
-    v_nature_id uuid;
-    v_treatment_id uuid;
     v_id uuid;
 begin
     -- Get the subject area ID
@@ -96,36 +93,6 @@ begin
         raise exception 'Subject area "%" does not exist', p_subject_area_name;
     end if;
 
-    -- Get the origin ID
-    select id into v_origin_id
-    from ores.dq_origin_dimension_tbl
-    where code = p_origin_code
-    and valid_to = ores.utility_infinity_timestamp_fn();
-
-    if v_origin_id is null then
-        raise exception 'Origin code "%" does not exist', p_origin_code;
-    end if;
-
-    -- Get the nature ID
-    select id into v_nature_id
-    from ores.dq_nature_dimension_tbl
-    where code = p_nature_code
-    and valid_to = ores.utility_infinity_timestamp_fn();
-
-    if v_nature_id is null then
-        raise exception 'Nature code "%" does not exist', p_nature_code;
-    end if;
-
-    -- Get the treatment ID
-    select id into v_treatment_id
-    from ores.dq_treatment_dimension_tbl
-    where code = p_treatment_code
-    and valid_to = ores.utility_infinity_timestamp_fn();
-
-    if v_treatment_id is null then
-        raise exception 'Treatment code "%" does not exist', p_treatment_code;
-    end if;
-
     -- Check if dataset already exists
     select id into v_id
     from ores.dq_dataset_tbl
@@ -136,16 +103,16 @@ begin
     if v_id is null then
         v_id := gen_random_uuid();
         insert into ores.dq_dataset_tbl (
-            id, version, subject_area_id, origin_id, nature_id, treatment_id, methodology_id,
+            id, version, subject_area_id, origin_code, nature_code, treatment_code, methodology_id,
             name, description, source_system_id, business_context,
             upstream_derivation_id, lineage_depth, as_of_date, ingestion_timestamp, license_info,
-            modified_by, change_commentary, valid_from, valid_to
+            modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
         values (
-            v_id, 0, v_subject_area_id, v_origin_id, v_nature_id, v_treatment_id, p_methodology_id,
+            v_id, 0, v_subject_area_id, p_origin_code, p_nature_code, p_treatment_code, p_methodology_id,
             p_name, p_description, p_source_system_id, p_business_context,
             null, 0, p_as_of_date, current_timestamp, p_license_info,
-            'system', 'System seed data - data quality dataset',
+            'system', 'system.new_record', 'System seed data - data quality dataset',
             current_timestamp, ores.utility_infinity_timestamp_fn()
         );
         raise notice 'Created data quality dataset: %', p_name;

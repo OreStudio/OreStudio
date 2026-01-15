@@ -39,22 +39,13 @@ create or replace function ores.upsert_dq_dataset(
 ) returns void as $$
 declare
     v_subject_area_id uuid;
-    v_origin_id uuid;
-    v_nature_id uuid;
-    v_treatment_id uuid;
     v_methodology_id uuid;
 begin
-    -- Get related IDs
+    -- Get related IDs (only for tables that still use UUID PKs)
     select id into v_subject_area_id from ores.dq_subject_area_tbl where name = p_subject_area_name and valid_to = ores.utility_infinity_timestamp_fn();
-    select id into v_origin_id from ores.dq_origin_dimension_tbl where code = p_origin_code and valid_to = ores.utility_infinity_timestamp_fn();
-    select id into v_nature_id from ores.dq_nature_dimension_tbl where code = p_nature_code and valid_to = ores.utility_infinity_timestamp_fn();
-    select id into v_treatment_id from ores.dq_treatment_dimension_tbl where code = p_treatment_code and valid_to = ores.utility_infinity_timestamp_fn();
     select id into v_methodology_id from ores.dq_methodology_tbl where name = p_methodology_name and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_subject_area_id is null then raise exception 'Subject area not found: %', p_subject_area_name; end if;
-    if v_origin_id is null then raise exception 'Origin not found: %', p_origin_code; end if;
-    if v_nature_id is null then raise exception 'Nature not found: %', p_nature_code; end if;
-    if v_treatment_id is null then raise exception 'Treatment not found: %', p_treatment_code; end if;
     if v_methodology_id is null then raise exception 'Methodology not found: %', p_methodology_name; end if;
 
     if not exists (
@@ -64,14 +55,14 @@ begin
           and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
         insert into ores.dq_dataset_tbl (
-            id, version, subject_area_id, origin_id, nature_id, treatment_id, methodology_id,
+            id, version, subject_area_id, origin_code, nature_code, treatment_code, methodology_id,
             name, description, source_system_id, business_context,
             upstream_derivation_id, lineage_depth, as_of_date, ingestion_timestamp, license_info,
             modified_by, change_reason_code, change_commentary,
             valid_from, valid_to
         )
         values (
-            gen_random_uuid(), 0, v_subject_area_id, v_origin_id, v_nature_id, v_treatment_id, v_methodology_id,
+            gen_random_uuid(), 0, v_subject_area_id, p_origin_code, p_nature_code, p_treatment_code, v_methodology_id,
             p_name, p_description, p_source_system_id, p_business_context,
             null, 0, p_as_of_date, current_timestamp, p_license_info,
             'system', 'system.new_record', 'System seed data',

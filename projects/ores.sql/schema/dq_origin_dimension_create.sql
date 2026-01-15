@@ -19,9 +19,8 @@
  */
 
 create table if not exists "ores"."dq_origin_dimension_tbl" (
-    "id" uuid not null,
-    "version" integer not null,
     "code" text not null,
+    "version" integer not null,
     "name" text not null,
     "description" text not null,
     "modified_by" text not null,
@@ -29,17 +28,13 @@ create table if not exists "ores"."dq_origin_dimension_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (id, valid_from, valid_to),
+    primary key (code, valid_from, valid_to),
     exclude using gist (
-        id WITH =,
+        code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to")
 );
-
-create unique index if not exists dq_origin_dimension_code_uniq_idx
-on "ores"."dq_origin_dimension_tbl" (code)
-where valid_to = ores.utility_infinity_timestamp_fn();
 
 create or replace function ores.dq_origin_dimension_insert_fn()
 returns trigger as $$
@@ -70,5 +65,5 @@ create or replace rule dq_origin_dimension_delete_rule as
 on delete to "ores"."dq_origin_dimension_tbl" do instead
     update "ores"."dq_origin_dimension_tbl"
     set valid_to = current_timestamp
-    where id = OLD.id
+    where code = OLD.code
       and valid_to = ores.utility_infinity_timestamp_fn();

@@ -48,11 +48,11 @@ begin
     ) then
         insert into ores.dq_data_domain_tbl (
             id, version, name, description,
-            modified_by, change_commentary, valid_from, valid_to
+            modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
         values (
             gen_random_uuid(), 0, p_name, p_description,
-            'system', 'System seed data - data quality data domain',
+            'system', 'system.new_record', 'System seed data - data quality data domain',
             current_timestamp, ores.utility_infinity_timestamp_fn()
         );
         raise notice 'Created data quality data domain: %', p_name;

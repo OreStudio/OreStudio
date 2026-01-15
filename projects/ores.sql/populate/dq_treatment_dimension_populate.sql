@@ -48,12 +48,12 @@ begin
         where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
         insert into ores.dq_treatment_dimension_tbl (
-            id, version, code, name, description,
-            modified_by, change_commentary, valid_from, valid_to
+            code, version, name, description,
+            modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
         values (
-            gen_random_uuid(), 0, p_code, p_name, p_description,
-            'system', 'System seed data - data quality treatment dimension',
+            p_code, 0, p_name, p_description,
+            'system', 'system.new_record', 'System seed data - data quality treatment dimension',
             current_timestamp, ores.utility_infinity_timestamp_fn()
         );
         raise notice 'Created data quality treatment: %', p_code;

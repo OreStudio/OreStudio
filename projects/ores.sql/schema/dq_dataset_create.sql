@@ -22,9 +22,9 @@ create table if not exists "ores"."dq_dataset_tbl" (
     "id" uuid not null,
     "version" integer not null,
     "subject_area_id" uuid not null,
-    "origin_id" uuid not null,
-    "nature_id" uuid not null,
-    "treatment_id" uuid not null,
+    "origin_code" text not null,
+    "nature_code" text not null,
+    "treatment_code" text not null,
     "methodology_id" uuid,
     "name" text not null,
     "description" text not null,
@@ -79,28 +79,28 @@ begin
 
     if not exists (
         select 1 from ores.dq_origin_dimension_tbl
-        where id = NEW.origin_id
+        where code = NEW.origin_code
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid origin_id: %. Origin dimension must exist.', NEW.origin_id
+        raise exception 'Invalid origin_code: %. Origin dimension must exist.', NEW.origin_code
         using errcode = '23503';
     end if;
 
     if not exists (
         select 1 from ores.dq_nature_dimension_tbl
-        where id = NEW.nature_id
+        where code = NEW.nature_code
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid nature_id: %. Nature dimension must exist.', NEW.nature_id
+        raise exception 'Invalid nature_code: %. Nature dimension must exist.', NEW.nature_code
         using errcode = '23503';
     end if;
 
     if not exists (
         select 1 from ores.dq_treatment_dimension_tbl
-        where id = NEW.treatment_id
+        where code = NEW.treatment_code
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid treatment_id: %. Treatment dimension must exist.', NEW.treatment_id
+        raise exception 'Invalid treatment_code: %. Treatment dimension must exist.', NEW.treatment_code
         using errcode = '23503';
     end if;
 

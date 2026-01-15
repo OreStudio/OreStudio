@@ -62,11 +62,11 @@ begin
     ) then
         insert into ores.dq_subject_area_tbl (
             id, version, domain_id, name, description,
-            modified_by, change_commentary, valid_from, valid_to
+            modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
         values (
             gen_random_uuid(), 0, v_domain_id, p_name, p_description,
-            'system', 'System seed data - data quality subject area',
+            'system', 'system.new_record', 'System seed data - data quality subject area',
             current_timestamp, ores.utility_infinity_timestamp_fn()
         );
         raise notice 'Created data quality subject area: % in domain %', p_name, p_domain_name;

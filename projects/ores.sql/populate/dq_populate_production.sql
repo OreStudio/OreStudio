@@ -161,8 +161,8 @@ begin
     end loop;
 
     raise notice '';
-    raise notice '--- Populating Cryptocurrencies ---';
-    for v_result in select * from ores.dq_populate_currencies(v_cryptocurrencies_dataset_id, 'upsert') loop
+    raise notice '--- Populating Major Cryptocurrencies (crypto.major only) ---';
+    for v_result in select * from ores.dq_populate_currencies(v_cryptocurrencies_dataset_id, 'upsert', 'crypto.major') loop
         raise notice '  %: %', v_result.action, v_result.record_count;
         if v_result.action = 'inserted' then v_total_inserted := v_total_inserted + v_result.record_count; end if;
         if v_result.action = 'updated' then v_total_updated := v_total_updated + v_result.record_count; end if;
@@ -193,11 +193,20 @@ union all
 select 'Countries with Images', count(*)
 from ores.refdata_countries_tbl where image_id is not null and valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Currencies (Fiat)', count(*)
-from ores.refdata_currencies_tbl where currency_type = 'fiat' and valid_to = ores.utility_infinity_timestamp_fn()
+select 'Currencies (fiat.major)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'fiat.major' and valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Currencies (Crypto)', count(*)
-from ores.refdata_currencies_tbl where currency_type = 'crypto' and valid_to = ores.utility_infinity_timestamp_fn()
+select 'Currencies (fiat.emerging)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'fiat.emerging' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (Commodity)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'commodity' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (Supranational)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'supranational' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (crypto.major)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'crypto.major' and valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Currencies with Images', count(*)
 from ores.refdata_currencies_tbl where image_id is not null and valid_to = ores.utility_infinity_timestamp_fn()

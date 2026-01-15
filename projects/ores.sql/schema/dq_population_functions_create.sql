@@ -451,6 +451,12 @@ $$ language plpgsql;
 /**
  * Populate refdata_currencies_tbl from a DQ currencies dataset.
  *
+ * @param p_dataset_id      The DQ dataset to populate from.
+ * @param p_mode            Population mode: 'upsert', 'insert_only', or 'replace_all'.
+ * @param p_currency_type_filter  Optional filter to only populate currencies with
+ *                                matching currency_type (e.g., 'crypto.major').
+ *                                If NULL, all currencies from the dataset are processed.
+ *
  * IMPORTANT: Ensure images are populated first if you want image_id
  * references to resolve correctly.
  *
@@ -460,7 +466,8 @@ $$ language plpgsql;
  */
 create or replace function ores.dq_populate_currencies(
     p_dataset_id uuid,
-    p_mode text default 'upsert'
+    p_mode text default 'upsert',
+    p_currency_type_filter text default null
 )
 returns table (
     action text,
@@ -500,6 +507,7 @@ begin
 
     -- Process each currency from DQ dataset
     -- Skip currencies where the iso_code already exists
+    -- Apply currency_type filter if specified
     for r in
         select
             dq.iso_code,
@@ -515,6 +523,7 @@ begin
             dq.image_id
         from ores.dq_currencies_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
+          and (p_currency_type_filter is null or dq.currency_type = p_currency_type_filter)
           and not exists (
               select 1 from ores.refdata_currencies_tbl existing
               where existing.iso_code = dq.iso_code
@@ -554,6 +563,7 @@ begin
     select count(*) into v_skipped
     from ores.dq_currencies_artefact_tbl dq
     where dq.dataset_id = p_dataset_id
+      and (p_currency_type_filter is null or dq.currency_type = p_currency_type_filter)
       and exists (
           select 1 from ores.refdata_currencies_tbl existing
           where existing.iso_code = dq.iso_code

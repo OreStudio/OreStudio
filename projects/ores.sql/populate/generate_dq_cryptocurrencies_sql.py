@@ -39,7 +39,32 @@ CRYPTO_DEFAULTS = {
     'rounding_type': 'standard',
     'rounding_precision': 8,
     'format': '#,##0.00000000',
-    'currency_type': 'crypto',
+}
+
+# Top 20 cryptocurrencies by market cap (January 2026)
+# Source: https://staxpayments.com/blog/most-popular-cryptocurrencies/
+# These are classified as 'crypto.major', all others as 'crypto.minor'
+MAJOR_CRYPTOS = {
+    'BTC',   # Bitcoin
+    'ETH',   # Ethereum
+    'USDT',  # Tether
+    'XRP',   # Ripple
+    'BNB',   # Binance Coin
+    'SOL',   # Solana
+    'USDC',  # USD Coin
+    'DOGE',  # Dogecoin
+    'ADA',   # Cardano
+    'TRX',   # TRON
+    'LINK',  # Chainlink
+    'XLM',   # Stellar
+    'HBAR',  # Hedera
+    'SUI',   # Sui
+    'HYPE',  # Hyperliquid
+    'BCH',   # Bitcoin Cash
+    'XMR',   # Monero
+    'ZEC',   # Zcash
+    'PAXG',  # PAX Gold
+    'OKB',   # OKB
 }
 
 # Special symbols for well-known cryptocurrencies
@@ -198,6 +223,18 @@ from ores.dq_currencies_artefact_tbl c
 join ores.dq_dataset_tbl d on c.dataset_id = d.id
 where d.name = '{dataset_name}'
 union all
+select 'Major Cryptocurrencies (crypto.major)', count(*)
+from ores.dq_currencies_artefact_tbl c
+join ores.dq_dataset_tbl d on c.dataset_id = d.id
+where d.name = '{dataset_name}'
+  and c.currency_type = 'crypto.major'
+union all
+select 'Minor Cryptocurrencies (crypto.minor)', count(*)
+from ores.dq_currencies_artefact_tbl c
+join ores.dq_dataset_tbl d on c.dataset_id = d.id
+where d.name = '{dataset_name}'
+  and c.currency_type = 'crypto.minor'
+union all
 select 'Cryptocurrencies with Icons', count(*)
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_dataset_tbl d on c.dataset_id = d.id
@@ -222,16 +259,22 @@ def get_symbol(iso_code: str) -> str:
     return SPECIAL_SYMBOLS.get(iso_code, iso_code)
 
 
+def get_currency_type(iso_code: str) -> str:
+    """Get currency type classification for a cryptocurrency."""
+    return 'crypto.major' if iso_code in MAJOR_CRYPTOS else 'crypto.minor'
+
+
 def generate_value_row(iso_code: str, name: str, is_last: bool) -> str:
     """Generate a single VALUES row for a cryptocurrency."""
     safe_name = escape_sql_string(name)
     symbol = escape_sql_string(get_symbol(iso_code))
     safe_iso_code = escape_sql_string(iso_code)
+    currency_type = get_currency_type(iso_code)
 
     defaults = CRYPTO_DEFAULTS
     comma = '' if is_last else ','
 
-    return f"        ('{safe_iso_code}', '{safe_name}', '{defaults['numeric_code']}', '{symbol}', '{defaults['fraction_symbol']}', {defaults['fractions_per_unit']}, '{defaults['rounding_type']}', {defaults['rounding_precision']}, '{defaults['format']}', '{defaults['currency_type']}'){comma}\n"
+    return f"        ('{safe_iso_code}', '{safe_name}', '{defaults['numeric_code']}', '{symbol}', '{defaults['fraction_symbol']}', {defaults['fractions_per_unit']}, '{defaults['rounding_type']}', {defaults['rounding_precision']}, '{defaults['format']}', '{currency_type}'){comma}\n"
 
 
 def main():
@@ -310,8 +353,14 @@ Examples:
 
         f.write(get_footer(args.dataset_name, len(sorted_items)))
 
+    # Count majors and minors
+    major_count = sum(1 for iso_code, _ in sorted_items if iso_code in MAJOR_CRYPTOS)
+    minor_count = len(sorted_items) - major_count
+
     print(f"Successfully generated {args.output_file}")
     print(f"  Total cryptocurrencies: {len(sorted_items)}")
+    print(f"  Major (crypto.major):   {major_count}")
+    print(f"  Minor (crypto.minor):   {minor_count}")
 
 
 if __name__ == '__main__':

@@ -114,7 +114,22 @@ union all
 select 'Countries with Flags', count(*)
 from ores.refdata_countries_tbl where image_id is not null and valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Currencies with Flags', count(*)
+select 'Currencies (fiat.major)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'fiat.major' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (fiat.emerging)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'fiat.emerging' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (Commodity)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'commodity' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (Supranational)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'supranational' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (crypto.major)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'crypto.major' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies with Images', count(*)
 from ores.refdata_currencies_tbl where image_id is not null and valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Flag Images', count(*)

@@ -19,6 +19,7 @@
  */
 #include "ores.qt/ConnectionDetailDialog.hpp"
 #include "ores.connections/service/connection_manager.hpp"
+#include "ores.security/validation/password_validator.hpp"
 #include <QtWidgets/QApplication>
 #include <QFormLayout>
 #include <QVBoxLayout>
@@ -281,6 +282,23 @@ bool ConnectionDetailDialog::validateInput() {
             tr("Username cannot be empty."));
         usernameEdit_->setFocus();
         return false;
+    }
+
+    // Validate password if provided (password is optional, but if set must meet policy)
+    QString password = passwordEdit_->text();
+    if (!password.isEmpty()) {
+        // Only validate in add mode, or in edit mode if password was changed
+        if (isAddMode_ || passwordChanged_) {
+            auto result = security::validation::password_validator::validate(
+                password.toStdString());
+            if (!result.is_valid) {
+                QMessageBox::warning(this, tr("Password Policy"),
+                    tr("Password does not meet security requirements:\n\n%1")
+                        .arg(QString::fromStdString(result.error_message)));
+                passwordEdit_->setFocus();
+                return false;
+            }
+        }
     }
 
     return true;

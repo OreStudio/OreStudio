@@ -18,9 +18,18 @@
  *
  */
 
--- Script to populate DQ SVG flag images into the database
--- This file was auto-generated from the SVG files in projects/ores.sql/populate/data/flags/
--- by projects/ores.sql/populate/generate_dq_flags_sql.py
+-- Script to populate DQ SVG images into the database
+-- Dataset: Country Flags from lipis/flag-icons
+-- Subject Area: Countries
+-- Domain: Reference Data
+--
+-- This file was auto-generated from the SVG files in projects/ores.sql/populate/data/flags
+-- by generate_dq_images_sql.py
+--
+-- To regenerate, run:
+--   python3 generate_dq_images_sql.py --config <config_name>
+-- or with explicit parameters:
+--   python3 generate_dq_images_sql.py --dataset-name "..." --subject-area "..." --domain "..." ...
 
 set schema 'ores';
 
@@ -28,19 +37,23 @@ DO $$
 declare
     v_dataset_id uuid;
 begin
-    -- Get the dataset ID
+    -- Get the dataset ID using (name, subject_area_name, domain_name)
     select id into v_dataset_id
     from ores.dq_dataset_tbl
     where name = 'Country Flags from lipis/flag-icons'
-    and valid_to = ores.utility_infinity_timestamp_fn();
+      and subject_area_name = 'Countries'
+      and domain_name = 'Reference Data'
+      and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset "Country Flags from lipis/flag-icons" not found.';
+        raise exception 'Dataset not found: name="Country Flags from lipis/flag-icons", subject_area="Countries", domain="Reference Data"';
     end if;
 
-    -- Clear existing data for this dataset (Idempotency)
+    -- Clear existing data for this dataset (idempotency)
     delete from ores.dq_images_artefact_tbl
     where dataset_id = v_dataset_id;
+
+    raise notice 'Populating images for dataset: %', 'Country Flags from lipis/flag-icons';
 
     -- Insert images
     insert into ores.dq_images_artefact_tbl (
@@ -12023,5 +12036,5 @@ begin
 </svg>$svg$
     );
 
-    raise notice 'Populated dq_images_artefact_tbl for dataset: %', 'Country Flags from lipis/flag-icons';
+    raise notice 'Successfully populated % images for dataset: %', 276, 'Country Flags from lipis/flag-icons';
 end $$;

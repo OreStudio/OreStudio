@@ -27,17 +27,17 @@ import sys
 CONFIGS = {
     'flags': {
         'dataset_name': 'Country Flags from lipis/flag-icons',
-        'subject_area_name': 'Country Flags',
+        'subject_area_name': 'Countries',
         'domain_name': 'Reference Data',
         'source_dir': 'projects/ores.sql/populate/data/flags',
         'output_file': 'projects/ores.sql/populate/dq_flags_images_artefact_populate.sql',
         'description_template': 'Flag of {key}',
     },
     'crypto': {
-        'dataset_name': 'Cryptocurrency Icons',
-        'subject_area_name': 'Cryptocurrency Icons',
+        'dataset_name': 'Cryptocurrency Icons from spothq/cryptocurrency-icons',
+        'subject_area_name': 'Cryptocurrencies',
         'domain_name': 'Reference Data',
-        'source_dir': 'projects/ores.sql/populate/data/crypto',
+        'source_dir': 'projects/ores.sql/populate/data/cryptocurrency-icons',
         'output_file': 'projects/ores.sql/populate/dq_crypto_images_artefact_populate.sql',
         'description_template': 'Icon for {key}',
     },

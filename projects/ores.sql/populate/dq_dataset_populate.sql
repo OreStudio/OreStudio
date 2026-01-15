@@ -108,6 +108,21 @@ select ores.upsert_dq_dataset(
     'MIT'
 );
 
+select ores.upsert_dq_dataset(
+    'Cryptocurrencies',
+    'Reference Data',
+    'Source',
+    'Actual',
+    'Raw',
+    'GitHub Cryptocurrency Icons Download',
+    'Cryptocurrency Icons from spothq/cryptocurrency-icons',
+    'SVG cryptocurrency icons from spothq/cryptocurrency-icons repository at commit 1a63530',
+    'GITHUB',
+    'Visual assets for cryptocurrencies',
+    '2025-01-15'::date,
+    'CC0 1.0 Universal'
+);
+
 -- =============================================================================
 -- Cleanup
 -- =============================================================================

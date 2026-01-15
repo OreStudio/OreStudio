@@ -29,6 +29,7 @@
  * - Countries: Country reference data
  * - Country Flags: Flag image data associated with countries
  * - IP Address to Country maps: IP geolocation mapping data
+ * - Cryptocurrencies: Cryptocurrency reference data including icons
  */
 
 set schema 'ores';
@@ -92,6 +93,12 @@ select ores.upsert_dq_subject_area(
     'Reference Data',
     'IP Address to Country maps',
     'IP geolocation mapping data.'
+);
+
+select ores.upsert_dq_subject_area(
+    'Reference Data',
+    'Cryptocurrencies',
+    'Cryptocurrency reference data including icons and metadata.'
 );
 
 -- =============================================================================

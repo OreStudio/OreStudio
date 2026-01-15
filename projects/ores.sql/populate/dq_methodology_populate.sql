@@ -73,6 +73,13 @@ select ores.upsert_dq_methodology(
     'Bulk download of SVG flag icons'
 );
 
+select ores.upsert_dq_methodology(
+    'GitHub Cryptocurrency Icons Download',
+    'SVG images downloaded from spothq/cryptocurrency-icons GitHub repository',
+    'https://github.com/spothq/cryptocurrency-icons',
+    'Bulk download of SVG cryptocurrency icons at commit 1a63530be6e374711a8554f31b17e4cb92c25fa5'
+);
+
 -- =============================================================================
 -- Cleanup
 -- =============================================================================

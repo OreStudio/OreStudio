@@ -17,22 +17,27 @@ Diagram:
 [[file:ores.dq.png][file:ores.dq.png]]
 
 Provides comprehensive data quality management capabilities for ORE Studio
-components. Key features:
+components. Key domain concepts:
 
-- Data lineage: Track the origin and transformations of data throughout the
-  system.
-- Data provenance: Record metadata about data sources, processing steps, and
-  ownership.
-- Quality metrics: Define and store validation rules and quality measurements.
-- Audit trails: Maintain history of data changes and transformations.
-- Data profiling: Store statistical metadata about data characteristics.
+| Concept           | Description                                                                                                             |
+|-------------------+-------------------------------------------------------------------------------------------------------------------------|
+| Dataset           | A logical collection of sample records (e.g., a set of trades, portfolios, or market data snapshots).                   |
+| Record            | An individual row or entity within a dataset (optional granularity; lineage may be tracked at dataset or record level). |
+| Provenance        | The origin of the data—external vendor, internal system, or synthetic generator.                                        |
+| Classification    | Categorizes the nature of the data for compliance and usage control.                                                    |
+| Lineage           | Directed acyclic graph (DAG) linking derived data to its upstream sources.                                              |
+| Temporal Context  | Captures both business time (as_of_date) and system time (ingestion_timestamp), supporting bi-temporal reasoning.       |
+| Data Passport     | A self-contained metadata manifest (relational or document-based) that answers the 5 Ws of data governance.             |
+| Quality metrics   | Define and store validation rules and quality measurements.                                                             |
+| Change Management | Maintain history of data changes (who did what, when and for what reason.                                               |
+| Data profiling    | Store statistical metadata about data characteristics.                                                                  |
 
 The component is organized into the following facets:
 
-| Facet      | Description                                       |
-|------------+---------------------------------------------------|
-| domain     | Core data quality types and value objects         |
-| service    | Business logic for data quality operations        |
-| repository | Persistence layer for data quality metadata       |
+| Facet      | Description                                 |
+|------------+---------------------------------------------|
+| [[id:7FEE0007-A792-5B34-94DB-056EFC99B8D6][domain]]     | Core data quality types and value objects   |
+| service    | Business logic for data quality operations  |
+| [[id:2132af63-21a0-4ad0-9773-603d00838572][repository]] | Persistence layer for data quality metadata |
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

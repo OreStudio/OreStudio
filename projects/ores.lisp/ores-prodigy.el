@@ -307,7 +307,7 @@ Includes database credentials and JWT secret from auth-source."
 ;; Environment faces - proced-inspired color scheme
 ;; Using face-spec-set with face-defface-spec to ensure colors update on reload
 (defface ores/prodigy-local1-face '((t)) "Face for local1." :group 'ores)
-(face-spec-set 'ores/prodigy-local1-face '((t :foreground "#cd4d40")) 'face-defface-spec)
+(face-spec-set 'ores/prodigy-local1-face '((t :foreground "#8a2be2")) 'face-defface-spec)
 
 (defface ores/prodigy-local2-face '((t)) "Face for local2." :group 'ores)
 (face-spec-set 'ores/prodigy-local2-face '((t :foreground "#5085ef")) 'face-defface-spec)
@@ -316,27 +316,27 @@ Includes database credentials and JWT secret from auth-source."
 (face-spec-set 'ores/prodigy-local3-face '((t :foreground "#ded93e")) 'face-defface-spec)
 
 (defface ores/prodigy-local4-face '((t)) "Face for local4." :group 'ores)
-(face-spec-set 'ores/prodigy-local4-face '((t :foreground "#8bcd50")) 'face-defface-spec)
+(face-spec-set 'ores/prodigy-local4-face '((t :foreground "#6d5cc3")) 'face-defface-spec)
 
 (defface ores/prodigy-local5-face '((t)) "Face for local5." :group 'ores)
-(face-spec-set 'ores/prodigy-local5-face '((t :foreground "#6d5cc3")) 'face-defface-spec)
+(face-spec-set 'ores/prodigy-local5-face '((t :foreground "#1e90ff")) 'face-defface-spec)
 
 (defface ores/prodigy-remote-face '((t)) "Face for remote." :group 'ores)
 (face-spec-set 'ores/prodigy-remote-face '((t :foreground "DeepSkyBlue")) 'face-defface-spec)
 
 ;; Configuration faces - proced-inspired
 (defface ores/prodigy-debug-face '((t)) "Face for debug." :group 'ores)
-(face-spec-set 'ores/prodigy-debug-face '((t :foreground "#5085ef")) 'face-defface-spec)  ; Like proced-pid
+(face-spec-set 'ores/prodigy-debug-face '((t :foreground "#5085ef")) 'face-defface-spec)
 
 (defface ores/prodigy-release-face '((t)) "Face for release." :group 'ores)
-(face-spec-set 'ores/prodigy-release-face '((t :foreground "#5085bf")) 'face-defface-spec)  ; Like proced-ppid
+(face-spec-set 'ores/prodigy-release-face '((t :foreground "#5085bf")) 'face-defface-spec)
 
 ;; Name and port faces - proced-inspired
 (defface ores/prodigy-name-face '((t)) "Face for name." :group 'ores)
 (face-spec-set 'ores/prodigy-name-face '((t :foreground "DeepSkyBlue")) 'face-defface-spec)
 
 (defface ores/prodigy-port-face '((t)) "Face for port." :group 'ores)
-(face-spec-set 'ores/prodigy-port-face '((t :foreground "#6d5cc3")) 'face-defface-spec)  ; Like proced-cpu
+(face-spec-set 'ores/prodigy-port-face '((t :foreground "#40e0d0")) 'face-defface-spec)
 
 ;; Force recalculation of all faces
 (dolist (face '(ores/prodigy-local1-face ores/prodigy-local2-face ores/prodigy-local3-face

@@ -34,9 +34,9 @@ target_link_libraries(${tests_target_name}
         ${lib_target_name}
         ores.utility.lib
         ores.testing.lib
+        ores.openssl_cleanup
         Catch2::Catch2
         faker-cxx::faker-cxx
-        ores.openssl_cleanup
         ${CMAKE_THREAD_LIBS_INIT})
 
 add_custom_target(test_${tests_target_name}

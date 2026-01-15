@@ -40,6 +40,10 @@
  *   psql -U ores -d your_database -f populate/populate.sql
  */
 
+-- Suppress noisy output during population
+\timing off
+\pset tuples_only on
+
 \echo '=== Starting System Population ==='
 \echo ''
 
@@ -110,7 +114,9 @@
 \echo ''
 \echo '=== System Population Complete ==='
 
--- Summary
+-- Summary - restore normal output format
+\pset tuples_only off
+
 \echo ''
 \echo '--- Summary ---'
 

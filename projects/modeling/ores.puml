@@ -239,6 +239,20 @@ package "Domain Layer" #F2F2F2 {
     Uses ores.security for password hashing/validation and encryption.
     Organized into: domain, repository, service, messaging, eventing, generators namespaces.
     end note
+
+    component [ores.dq] as dq #F7E5FF
+
+    note right of dq
+    Data Quality component for tracking and ensuring data integrity:
+    - Lineage: Data provenance and transformation history tracking
+    - Quality Metrics: Validation rules and quality scoring metadata
+    - Profiling: Data anomaly detection and profiling metadata
+    - Audit Trails: Full history of data changes and transformations
+    - Change Management: Change reasons and categories for data modifications
+    - Message API: Protocol handlers for change management operations
+    Provides centralized metadata management for data quality across all domains.
+    Organized into: domain, repository, service, messaging, eventing, generators namespaces.
+    end note
 }
 
 ' Application Layer
@@ -376,6 +390,9 @@ iam --> telemetry
 iam --> database
 iam --> geo
 iam --> security
+dq --> eventing
+dq --> database
+dq --> utility
 
 ' Dependencies - Shell to Foundation/Domain/Infrastructure
 shell --> telemetry

@@ -199,10 +199,10 @@ union all
 select 'Currencies (fiat.emerging)', count(*)
 from ores.refdata_currencies_tbl where currency_type = 'fiat.emerging' and valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Currencies (Commodity)', count(*)
+select 'Currencies (commodity)', count(*)
 from ores.refdata_currencies_tbl where currency_type = 'commodity' and valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Currencies (Supranational)', count(*)
+select 'Currencies (supranational)', count(*)
 from ores.refdata_currencies_tbl where currency_type = 'supranational' and valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Currencies (crypto.major)', count(*)

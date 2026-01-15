@@ -297,11 +297,11 @@ select 'Emerging Fiat Currencies (fiat.emerging)', count(*)
 from ores.dq_currencies_artefact_tbl
 where currency_type = 'fiat.emerging'
 union all
-select 'Commodity Currencies', count(*)
+select 'Commodity Currencies (commodity)', count(*)
 from ores.dq_currencies_artefact_tbl
 where currency_type = 'commodity'
 union all
-select 'Supranational Currencies', count(*)
+select 'Supranational Currencies (supranational)', count(*)
 from ores.dq_currencies_artefact_tbl
 where currency_type = 'supranational'
 union all

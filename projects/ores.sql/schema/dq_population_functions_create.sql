@@ -228,7 +228,7 @@ begin
             modified_by, change_reason_code, change_commentary
         ) values (
             r.image_id, 0, r.key, r.description, r.svg_data,
-            'dq_population', 'system.external_data_import',
+            'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         );
         v_inserted := v_inserted + 1;
@@ -382,7 +382,7 @@ begin
             modified_by, change_reason_code, change_commentary
         ) values (
             r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name, v_resolved_image_id,
-            'dq_population', 'system.external_data_import',
+            'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         );
         v_inserted := v_inserted + 1;
@@ -553,7 +553,7 @@ begin
         ) values (
             r.iso_code, 0, r.name, r.numeric_code, r.symbol, r.fraction_symbol,
             r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.currency_type, v_resolved_image_id,
-            'dq_population', 'system.external_data_import',
+            'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         );
         v_inserted := v_inserted + 1;

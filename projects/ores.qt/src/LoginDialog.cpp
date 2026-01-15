@@ -46,6 +46,7 @@ LoginDialog::LoginDialog(ClientManager* clientManager,
                          QWidget* parent)
     : QDialog(parent),
       saved_connections_combo_(new QComboBox(this)),
+      unlock_button_(new QPushButton(tr("Unlock"), this)),
       username_edit_(new QLineEdit(this)),
       password_edit_(new QLineEdit(this)),
       host_edit_(new QLineEdit(this)),
@@ -63,6 +64,7 @@ LoginDialog::LoginDialog(ClientManager* clientManager,
     connect(login_button_, &QPushButton::clicked, this, &LoginDialog::onLoginClicked);
     connect(signup_button_, &QPushButton::clicked, this, &LoginDialog::onSignUpClicked);
     connect(cancel_button_, &QPushButton::clicked, this, &QDialog::reject);
+    connect(unlock_button_, &QPushButton::clicked, this, &LoginDialog::onUnlockClicked);
     connect(this, &LoginDialog::loginCompleted,
             this, &LoginDialog::onLoginResult);
 
@@ -86,15 +88,38 @@ void LoginDialog::setupUI() {
     auto* form_layout = new QFormLayout();
     form_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
 
-    // Saved connections combo (only visible if connection manager is available)
-    saved_connections_combo_->setPlaceholderText("Select a saved connection...");
+    // Saved connections combo with unlock button
+    // Always show the row, but disable combo and show unlock button if not unlocked
+    auto* savedConnectionsLayout = new QHBoxLayout();
+    savedConnectionsLayout->setContentsMargins(0, 0, 0, 0);
+    savedConnectionsLayout->setSpacing(6);
+
+    saved_connections_combo_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    const QColor iconColor(220, 220, 220);
+    unlock_button_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_lock_closed_20_regular.svg", iconColor));
+    unlock_button_->setToolTip(tr("Unlock saved connections"));
+
+    savedConnectionsLayout->addWidget(saved_connections_combo_, 1);
+    savedConnectionsLayout->addWidget(unlock_button_, 0);
+
+    form_layout->addRow(tr("Saved Connection:"), savedConnectionsLayout);
+
+    // Set up initial state based on whether connection manager is available
     if (connectionManager_) {
+        // Already unlocked - populate and hide unlock button
+        saved_connections_combo_->setPlaceholderText(tr("Select a saved connection..."));
+        saved_connections_combo_->setEnabled(true);
+        unlock_button_->setVisible(false);
         populateSavedConnections();
-        form_layout->addRow("Saved Connection:", saved_connections_combo_);
         connect(saved_connections_combo_, &QComboBox::currentIndexChanged,
                 this, &LoginDialog::onSavedConnectionSelected);
     } else {
-        saved_connections_combo_->setVisible(false);
+        // Locked - show disabled combo with unlock button
+        saved_connections_combo_->setPlaceholderText(tr("Unlock to see saved connections"));
+        saved_connections_combo_->setEnabled(false);
+        unlock_button_->setVisible(true);
     }
 
     // Username field
@@ -122,8 +147,7 @@ void LoginDialog::setupUI() {
     status_label_->setWordWrap(true);
     status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
 
-    // Set icons on buttons
-    const QColor iconColor(220, 220, 220); // Light gray for dark theme
+    // Set icons on buttons (reusing iconColor from above)
     login_button_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_checkmark_20_regular.svg", iconColor));
     signup_button_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_person_add_20_regular.svg", iconColor));
     cancel_button_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
@@ -383,6 +407,43 @@ void LoginDialog::onSavedConnectionSelected(int index) {
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load connection: " << e.what();
     }
+}
+
+void LoginDialog::setUnlockCallback(UnlockConnectionsCallback callback) {
+    unlockCallback_ = std::move(callback);
+}
+
+void LoginDialog::onUnlockClicked() {
+    BOOST_LOG_SEV(lg(), debug) << "Unlock button clicked";
+
+    if (!unlockCallback_) {
+        BOOST_LOG_SEV(lg(), warn) << "No unlock callback set";
+        return;
+    }
+
+    // Call the unlock callback to get the connection manager
+    auto* mgr = unlockCallback_();
+    if (!mgr) {
+        BOOST_LOG_SEV(lg(), debug) << "Unlock cancelled or failed";
+        return;
+    }
+
+    // Store the connection manager and update UI
+    connectionManager_ = mgr;
+
+    // Enable and populate the combo
+    saved_connections_combo_->setPlaceholderText(tr("Select a saved connection..."));
+    saved_connections_combo_->setEnabled(true);
+    unlock_button_->setVisible(false);
+
+    // Connect the selection signal
+    connect(saved_connections_combo_, &QComboBox::currentIndexChanged,
+            this, &LoginDialog::onSavedConnectionSelected);
+
+    // Populate the combo with saved connections
+    populateSavedConnections();
+
+    BOOST_LOG_SEV(lg(), info) << "Saved connections unlocked";
 }
 
 }

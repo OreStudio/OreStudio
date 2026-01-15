@@ -21,10 +21,6 @@
 #include "ores.qt/ConnectionTypes.hpp"
 #include "ores.connections/service/connection_manager.hpp"
 #include <QHBoxLayout>
-#include <QApplication>
-#include <QMessageBox>
-#include <QtConcurrent>
-#include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
@@ -75,11 +71,6 @@ ConnectionDetailPanel::ConnectionDetailPanel(
 
 ConnectionDetailPanel::~ConnectionDetailPanel() = default;
 
-void ConnectionDetailPanel::setTestCallback(TestConnectionCallback callback) {
-    testCallback_ = std::move(callback);
-    envTestButton_->setVisible(static_cast<bool>(testCallback_));
-}
-
 void ConnectionDetailPanel::setupEmptyPage() {
     emptyPage_ = new QWidget(this);
     auto* layout = new QVBoxLayout(emptyPage_);
@@ -93,32 +84,11 @@ void ConnectionDetailPanel::setupEmptyPage() {
     layout->addWidget(titleLabel);
 
     auto* subtitleLabel = new QLabel(
-        tr("Select a connection or folder to view details,\n"
-           "or use the buttons below to get started."),
+        tr("Select a connection or folder to view details."),
         emptyPage_);
     subtitleLabel->setStyleSheet("font-size: 13px; color: #909090;");
     subtitleLabel->setAlignment(Qt::AlignCenter);
     layout->addWidget(subtitleLabel);
-
-    layout->addSpacing(24);
-
-    // Quick action buttons
-    auto* buttonLayout = new QHBoxLayout();
-    buttonLayout->setSpacing(12);
-
-    auto* addFolderBtn = new QPushButton(tr("New Folder"), emptyPage_);
-    addFolderBtn->setMinimumHeight(36);
-    connect(addFolderBtn, &QPushButton::clicked,
-            this, &ConnectionDetailPanel::createFolderRequested);
-    buttonLayout->addWidget(addFolderBtn);
-
-    auto* addConnectionBtn = new QPushButton(tr("New Connection"), emptyPage_);
-    addConnectionBtn->setMinimumHeight(36);
-    connect(addConnectionBtn, &QPushButton::clicked,
-            this, &ConnectionDetailPanel::createConnectionRequested);
-    buttonLayout->addWidget(addConnectionBtn);
-
-    layout->addLayout(buttonLayout);
 
     layout->addStretch();
 }
@@ -127,6 +97,9 @@ void ConnectionDetailPanel::setupFolderPage() {
     folderPage_ = new QWidget(this);
     auto* layout = new QVBoxLayout(folderPage_);
     layout->setContentsMargins(24, 24, 24, 24);
+
+    auto labelStyle = QString("font-size: 11px; color: #707070; text-transform: uppercase;");
+    auto valueStyle = QString("font-size: 13px; color: #c0c0c0;");
 
     // Folder icon and name
     folderNameLabel_ = new QLabel(folderPage_);
@@ -137,12 +110,24 @@ void ConnectionDetailPanel::setupFolderPage() {
 
     // Item count
     auto* countLabel = new QLabel(tr("Contents"), folderPage_);
-    countLabel->setStyleSheet("font-size: 11px; color: #707070; text-transform: uppercase;");
+    countLabel->setStyleSheet(labelStyle);
     layout->addWidget(countLabel);
 
     folderItemCountLabel_ = new QLabel(folderPage_);
-    folderItemCountLabel_->setStyleSheet("font-size: 13px; color: #c0c0c0;");
+    folderItemCountLabel_->setStyleSheet(valueStyle);
     layout->addWidget(folderItemCountLabel_);
+
+    layout->addSpacing(16);
+
+    // Description
+    auto* descHeaderLabel = new QLabel(tr("Description"), folderPage_);
+    descHeaderLabel->setStyleSheet(labelStyle);
+    layout->addWidget(descHeaderLabel);
+
+    folderDescriptionLabel_ = new QLabel(folderPage_);
+    folderDescriptionLabel_->setStyleSheet(valueStyle);
+    folderDescriptionLabel_->setWordWrap(true);
+    layout->addWidget(folderDescriptionLabel_);
 
     layout->addStretch();
 }
@@ -209,62 +194,13 @@ void ConnectionDetailPanel::setupEnvironmentPage() {
     layout->addWidget(envDescriptionLabel_);
 
     layout->addStretch();
-
-    // Password and connect section
-    auto* connectSection = new QWidget(environmentPage_);
-    auto* connectLayout = new QVBoxLayout(connectSection);
-    connectLayout->setContentsMargins(0, 0, 0, 0);
-    connectLayout->setSpacing(12);
-
-    auto* passwordLabel = new QLabel(tr("Password"), environmentPage_);
-    passwordLabel->setStyleSheet(labelStyle);
-    connectLayout->addWidget(passwordLabel);
-
-    envPasswordEdit_ = new QLineEdit(environmentPage_);
-    envPasswordEdit_->setEchoMode(QLineEdit::Password);
-    envPasswordEdit_->setPlaceholderText(tr("Enter password to connect"));
-    connectLayout->addWidget(envPasswordEdit_);
-
-    // Button row
-    auto* buttonLayout = new QHBoxLayout();
-    buttonLayout->setSpacing(8);
-
-    envEditButton_ = new QPushButton(tr("Edit"), environmentPage_);
-    envEditButton_->setMinimumHeight(36);
-    connect(envEditButton_, &QPushButton::clicked,
-            this, &ConnectionDetailPanel::editRequested);
-    buttonLayout->addWidget(envEditButton_);
-
-    envTestButton_ = new QPushButton(tr("Test"), environmentPage_);
-    envTestButton_->setMinimumHeight(36);
-    envTestButton_->setVisible(false);
-    connect(envTestButton_, &QPushButton::clicked,
-            this, &ConnectionDetailPanel::onTestClicked);
-    buttonLayout->addWidget(envTestButton_);
-
-    envConnectButton_ = new QPushButton(tr("Connect"), environmentPage_);
-    envConnectButton_->setMinimumHeight(36);
-    envConnectButton_->setStyleSheet(
-        "QPushButton { background-color: #3b82f6; color: white; font-weight: bold; }"
-        "QPushButton:hover { background-color: #2563eb; }"
-        "QPushButton:pressed { background-color: #1d4ed8; }"
-    );
-    connect(envConnectButton_, &QPushButton::clicked,
-            this, &ConnectionDetailPanel::onConnectClicked);
-    buttonLayout->addWidget(envConnectButton_);
-
-    connectLayout->addLayout(buttonLayout);
-    layout->addWidget(connectSection);
 }
 
 void ConnectionDetailPanel::showEmptyState() {
-    currentEnvironment_.reset();
     stackedWidget_->setCurrentWidget(emptyPage_);
 }
 
 void ConnectionDetailPanel::showFolder(const connections::domain::folder& folder, int itemCount) {
-    currentEnvironment_.reset();
-
     folderNameLabel_->setText(QString::fromStdString(folder.name));
 
     if (itemCount == 0) {
@@ -275,12 +211,18 @@ void ConnectionDetailPanel::showFolder(const connections::domain::folder& folder
         folderItemCountLabel_->setText(tr("%1 items").arg(itemCount));
     }
 
+    if (folder.description.empty()) {
+        folderDescriptionLabel_->setText(tr("No description"));
+        folderDescriptionLabel_->setStyleSheet("font-size: 13px; color: #606060; font-style: italic;");
+    } else {
+        folderDescriptionLabel_->setText(QString::fromStdString(folder.description));
+        folderDescriptionLabel_->setStyleSheet("font-size: 13px; color: #c0c0c0;");
+    }
+
     stackedWidget_->setCurrentWidget(folderPage_);
 }
 
 void ConnectionDetailPanel::showEnvironment(const connections::domain::server_environment& env) {
-    currentEnvironment_ = env;
-
     envNameLabel_->setText(QString::fromStdString(env.name));
     envHostLabel_->setText(QString::fromStdString(env.host));
     envPortLabel_->setText(QString::number(env.port));
@@ -293,9 +235,6 @@ void ConnectionDetailPanel::showEnvironment(const connections::domain::server_en
         envDescriptionLabel_->setText(QString::fromStdString(env.description));
         envDescriptionLabel_->setStyleSheet("font-size: 13px; color: #c0c0c0;");
     }
-
-    // Clear password field for new selection
-    envPasswordEdit_->clear();
 
     // Update tags
     updateTagBadges(env.id);
@@ -322,78 +261,11 @@ void ConnectionDetailPanel::updateTagBadges(const boost::uuids::uuid& envId) {
         static_cast<QHBoxLayout*>(envTagsContainer_->layout())->addStretch();
 
         envTagsContainer_->setVisible(!tags.empty());
-    } catch (...) {
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(lg(), error) << "Failed to load tags: " << e.what();
         envTagsContainer_->setVisible(false);
     }
-}
-
-void ConnectionDetailPanel::onConnectClicked() {
-    if (!currentEnvironment_) {
-        return;
-    }
-
-    QString password = envPasswordEdit_->text();
-    if (password.isEmpty()) {
-        QMessageBox::warning(this, tr("Connect"),
-            tr("Please enter the password to connect."));
-        envPasswordEdit_->setFocus();
-        return;
-    }
-
-    emit connectRequested(currentEnvironment_->id, password);
-}
-
-void ConnectionDetailPanel::onTestClicked() {
-    using namespace ores::logging;
-
-    if (!currentEnvironment_ || !testCallback_) {
-        return;
-    }
-
-    QString host = QString::fromStdString(currentEnvironment_->host);
-    QString username = QString::fromStdString(currentEnvironment_->username);
-    QString password = envPasswordEdit_->text();
-    int port = currentEnvironment_->port;
-
-    if (password.isEmpty()) {
-        QMessageBox::warning(this, tr("Test Connection"),
-            tr("Please enter the password to test the connection."));
-        envPasswordEdit_->setFocus();
-        return;
-    }
-
-    envTestButton_->setEnabled(false);
-    envTestButton_->setText(tr("Testing..."));
-
-    BOOST_LOG_SEV(lg(), info) << "Testing connection to " << host.toStdString()
-                              << ":" << port;
-
-    // Run test asynchronously to avoid blocking UI
-    auto* watcher = new QFutureWatcher<QString>(this);
-    connect(watcher, &QFutureWatcher<QString>::finished, this, [this, watcher]() {
-        QString error = watcher->result();
-        watcher->deleteLater();
-
-        envTestButton_->setEnabled(true);
-        envTestButton_->setText(tr("Test"));
-
-        if (error.isEmpty()) {
-            QMessageBox::information(this, tr("Test Connection"),
-                tr("Connection successful!"));
-            BOOST_LOG_SEV(lg(), info) << "Connection test successful";
-        } else {
-            QMessageBox::warning(this, tr("Test Connection"),
-                tr("Connection failed: %1").arg(error));
-            BOOST_LOG_SEV(lg(), warn) << "Connection test failed: " << error.toStdString();
-        }
-    });
-
-    QFuture<QString> future = QtConcurrent::run(
-        [cb = testCallback_, host, port, username, password]() {
-            return cb(host, port, username, password);
-        }
-    );
-    watcher->setFuture(future);
 }
 
 }

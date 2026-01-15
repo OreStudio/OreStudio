@@ -560,6 +560,15 @@ void MainWindow::onLoginTriggered() {
     }
 
     LoginDialog dialog(clientManager_, connectionManager_.get(), this);
+
+    // Set up unlock callback so user can unlock saved connections from login dialog
+    dialog.setUnlockCallback([this]() -> connections::service::connection_manager* {
+        if (initializeConnectionManager()) {
+            return connectionManager_.get();
+        }
+        return nullptr;
+    });
+
     const int result = dialog.exec();
 
     if (result == QDialog::Accepted) {
@@ -760,6 +769,106 @@ void MainWindow::onDisconnectTriggered() {
 void MainWindow::performDisconnectCleanup() {
     if (clientManager_) {
         clientManager_->disconnect();
+    }
+}
+
+bool MainWindow::initializeConnectionManager() {
+    // Already initialized
+    if (connectionManager_) {
+        return true;
+    }
+
+    QString dataPath = QStandardPaths::writableLocation(
+        QStandardPaths::AppDataLocation);
+    QDir().mkpath(dataPath);
+    QString dbPath = dataPath + "/connections.db";
+
+    BOOST_LOG_SEV(lg(), debug) << "Connections database path: "
+                               << dbPath.toStdString();
+
+    try {
+        // First, try with stored master password (or empty if none)
+        connectionManager_ = std::make_unique<connections::service::connection_manager>(
+            dbPath.toStdString(), masterPassword_.toStdString());
+
+        // Check if the master password is valid for existing encrypted passwords
+        if (!connectionManager_->verify_master_password()) {
+            // There are encrypted passwords but the master password is wrong
+            BOOST_LOG_SEV(lg(), debug) << "Master password required for encrypted passwords";
+
+            // Prompt for master password (Unlock mode)
+            MasterPasswordDialog dialog(MasterPasswordDialog::Unlock, this);
+            if (dialog.exec() != QDialog::Accepted) {
+                BOOST_LOG_SEV(lg(), debug) << "Master password entry cancelled";
+                connectionManager_.reset();
+                return false;
+            }
+
+            masterPassword_ = dialog.getPassword();
+
+            // Re-create with the correct password
+            connectionManager_ = std::make_unique<connections::service::connection_manager>(
+                dbPath.toStdString(), masterPassword_.toStdString());
+
+            // Verify again
+            if (!connectionManager_->verify_master_password()) {
+                BOOST_LOG_SEV(lg(), warn) << "Master password verification failed";
+                MessageBoxHelper::warning(this, tr("Invalid Password"),
+                    tr("The master password is incorrect."));
+                masterPassword_.clear();
+                connectionManager_.reset();
+                return false;
+            }
+
+            BOOST_LOG_SEV(lg(), info) << "Master password verified successfully";
+        } else if (masterPassword_.isEmpty()) {
+            // Check if user has already been prompted and chose blank password
+            QSettings settings;
+            bool masterPasswordConfigured = settings.value(
+                "connections/master_password_configured", false).toBool();
+
+            if (!masterPasswordConfigured) {
+                // Prompt to create master password
+                // Note: we may have existing passwords encrypted with blank key
+                BOOST_LOG_SEV(lg(), debug) << "Prompting for master password creation";
+
+                MasterPasswordDialog dialog(MasterPasswordDialog::Create, this);
+                if (dialog.exec() == QDialog::Accepted) {
+                    QString newPassword = dialog.getNewPassword();
+
+                    // Mark as configured regardless of whether blank or not
+                    settings.setValue("connections/master_password_configured", true);
+
+                    // Warn if blank password chosen
+                    if (newPassword.isEmpty()) {
+                        MessageBoxHelper::warning(this, tr("No Master Password"),
+                            tr("You have chosen not to set a master password. "
+                               "Saved passwords will not be encrypted securely.\n\n"
+                               "You can set a master password later from the Connection Browser toolbar."));
+                        BOOST_LOG_SEV(lg(), warn) << "User chose blank master password";
+                    } else {
+                        // Re-encrypt any existing passwords from blank to new password
+                        try {
+                            connectionManager_->change_master_password(newPassword.toStdString());
+                            BOOST_LOG_SEV(lg(), info) << "Master password created and existing passwords re-encrypted";
+                        } catch (const std::exception& e) {
+                            BOOST_LOG_SEV(lg(), error) << "Failed to re-encrypt passwords with new master password: " << e.what();
+                        }
+                    }
+
+                    masterPassword_ = newPassword;
+                }
+                // If cancelled, continue with empty password (user can set it later)
+            }
+        }
+
+        return true;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to initialize connection manager: "
+                                   << e.what();
+        MessageBoxHelper::critical(this, tr("Error"),
+            tr("Failed to initialize connection manager: %1").arg(e.what()));
+        return false;
     }
 }
 
@@ -1048,97 +1157,8 @@ void MainWindow::onConnectionBrowserTriggered() {
     }
 
     // Initialize connection manager if not already done
-    if (!connectionManager_) {
-        QString dataPath = QStandardPaths::writableLocation(
-            QStandardPaths::AppDataLocation);
-        QDir().mkpath(dataPath);
-        QString dbPath = dataPath + "/connections.db";
-
-        BOOST_LOG_SEV(lg(), debug) << "Connections database path: "
-                                   << dbPath.toStdString();
-
-        try {
-            // First, try with stored master password (or empty if none)
-            connectionManager_ = std::make_unique<connections::service::connection_manager>(
-                dbPath.toStdString(), masterPassword_.toStdString());
-
-            // Check if the master password is valid for existing encrypted passwords
-            if (!connectionManager_->verify_master_password()) {
-                // There are encrypted passwords but the master password is wrong
-                BOOST_LOG_SEV(lg(), debug) << "Master password required for encrypted passwords";
-
-                // Prompt for master password (Unlock mode)
-                MasterPasswordDialog dialog(MasterPasswordDialog::Unlock, this);
-                if (dialog.exec() != QDialog::Accepted) {
-                    BOOST_LOG_SEV(lg(), debug) << "Master password entry cancelled";
-                    connectionManager_.reset();
-                    return;
-                }
-
-                masterPassword_ = dialog.getPassword();
-
-                // Re-create with the correct password
-                connectionManager_ = std::make_unique<connections::service::connection_manager>(
-                    dbPath.toStdString(), masterPassword_.toStdString());
-
-                // Verify again
-                if (!connectionManager_->verify_master_password()) {
-                    BOOST_LOG_SEV(lg(), warn) << "Master password verification failed";
-                    MessageBoxHelper::warning(this, tr("Invalid Password"),
-                        tr("The master password is incorrect."));
-                    masterPassword_.clear();
-                    connectionManager_.reset();
-                    return;
-                }
-
-                BOOST_LOG_SEV(lg(), info) << "Master password verified successfully";
-            } else if (masterPassword_.isEmpty()) {
-                // Check if user has already been prompted and chose blank password
-                QSettings settings;
-                bool masterPasswordConfigured = settings.value(
-                    "connections/master_password_configured", false).toBool();
-
-                if (!masterPasswordConfigured) {
-                    // Prompt to create master password
-                    // Note: we may have existing passwords encrypted with blank key
-                    BOOST_LOG_SEV(lg(), debug) << "Prompting for master password creation";
-
-                    MasterPasswordDialog dialog(MasterPasswordDialog::Create, this);
-                    if (dialog.exec() == QDialog::Accepted) {
-                        QString newPassword = dialog.getNewPassword();
-
-                        // Mark as configured regardless of whether blank or not
-                        settings.setValue("connections/master_password_configured", true);
-
-                        // Warn if blank password chosen
-                        if (newPassword.isEmpty()) {
-                            MessageBoxHelper::warning(this, tr("No Master Password"),
-                                tr("You have chosen not to set a master password. "
-                                   "Saved passwords will not be encrypted securely.\n\n"
-                                   "You can set a master password later from the Connection Browser toolbar."));
-                            BOOST_LOG_SEV(lg(), warn) << "User chose blank master password";
-                        } else {
-                            // Re-encrypt any existing passwords from blank to new password
-                            try {
-                                connectionManager_->change_master_password(newPassword.toStdString());
-                                BOOST_LOG_SEV(lg(), info) << "Master password created and existing passwords re-encrypted";
-                            } catch (const std::exception& e) {
-                                BOOST_LOG_SEV(lg(), error) << "Failed to re-encrypt passwords with new master password: " << e.what();
-                            }
-                        }
-
-                        masterPassword_ = newPassword;
-                    }
-                    // If cancelled, continue with empty password (user can set it later)
-                }
-            }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to initialize connection manager: "
-                                       << e.what();
-            MessageBoxHelper::critical(this, tr("Error"),
-                tr("Failed to initialize connection manager: %1").arg(e.what()));
-            return;
-        }
+    if (!initializeConnectionManager()) {
+        return;
     }
 
     // Create the Connection Browser window
@@ -1165,6 +1185,9 @@ void MainWindow::onConnectionBrowserTriggered() {
 
         return result.error_message;
     });
+
+    // Pass MDI area so dialogs opened from the browser become MDI sub-windows
+    browserWidget->setMdiArea(mdiArea_, this, &allDetachableWindows_);
 
     // Connect signals
     connect(browserWidget, &ConnectionBrowserMdiWindow::statusChanged,

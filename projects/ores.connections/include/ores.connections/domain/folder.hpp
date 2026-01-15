@@ -49,6 +49,11 @@ struct folder final {
      * If empty, this folder is at the root level.
      */
     std::optional<boost::uuids::uuid> parent_id;
+
+    /**
+     * @brief Optional description or notes about this folder.
+     */
+    std::string description;
 };
 
 }

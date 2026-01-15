@@ -23,15 +23,12 @@
 #include <QWidget>
 #include <QStackedWidget>
 #include <QLabel>
-#include <QLineEdit>
-#include <QPushButton>
 #include <QVBoxLayout>
 #include <QFormLayout>
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/folder.hpp"
 #include "ores.connections/domain/server_environment.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.qt/ConnectionTypes.hpp"
 
 namespace ores::connections::service {
 class connection_manager;
@@ -40,12 +37,12 @@ class connection_manager;
 namespace ores::qt {
 
 /**
- * @brief Detail panel showing information about selected connection or folder.
+ * @brief Detail panel showing read-only information about selected item.
  *
  * Displays contextual information based on current selection:
  * - Empty state: Welcome message with quick actions
- * - Folder: Name, description, item count
- * - Environment: Connection details, tags, password field, connect button
+ * - Folder: Name and item count
+ * - Environment: Connection details and tags (read-only)
  */
 class ConnectionDetailPanel : public QWidget {
     Q_OBJECT
@@ -66,21 +63,9 @@ public:
         QWidget* parent = nullptr);
     ~ConnectionDetailPanel() override;
 
-    void setTestCallback(TestConnectionCallback callback);
     void showEmptyState();
     void showFolder(const connections::domain::folder& folder, int itemCount);
     void showEnvironment(const connections::domain::server_environment& env);
-
-signals:
-    void connectRequested(const boost::uuids::uuid& environmentId,
-                          const QString& password);
-    void createFolderRequested();
-    void createConnectionRequested();
-    void editRequested();
-
-private slots:
-    void onConnectClicked();
-    void onTestClicked();
 
 private:
     void setupEmptyPage();
@@ -89,7 +74,6 @@ private:
     void updateTagBadges(const boost::uuids::uuid& envId);
 
     connections::service::connection_manager* manager_;
-    TestConnectionCallback testCallback_;
 
     QStackedWidget* stackedWidget_;
 
@@ -100,6 +84,7 @@ private:
     QWidget* folderPage_;
     QLabel* folderNameLabel_;
     QLabel* folderItemCountLabel_;
+    QLabel* folderDescriptionLabel_;
 
     // Environment page
     QWidget* environmentPage_;
@@ -109,13 +94,6 @@ private:
     QLabel* envUsernameLabel_;
     QLabel* envDescriptionLabel_;
     QWidget* envTagsContainer_;
-    QLineEdit* envPasswordEdit_;
-    QPushButton* envConnectButton_;
-    QPushButton* envTestButton_;
-    QPushButton* envEditButton_;
-
-    // Currently displayed environment
-    std::optional<connections::domain::server_environment> currentEnvironment_;
 };
 
 }

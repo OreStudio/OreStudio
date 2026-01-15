@@ -31,6 +31,9 @@ folder_entity folder_mapper::to_entity(const domain::folder& f) {
     if (f.parent_id) {
         e.parent_id = boost::uuids::to_string(*f.parent_id);
     }
+    if (!f.description.empty()) {
+        e.description = f.description;
+    }
     return e;
 }
 
@@ -41,6 +44,9 @@ domain::folder folder_mapper::to_domain(const folder_entity& e) {
     f.name = e.name;
     if (e.parent_id) {
         f.parent_id = gen(*e.parent_id);
+    }
+    if (e.description) {
+        f.description = *e.description;
     }
     return f;
 }

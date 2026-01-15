@@ -45,6 +45,7 @@ void sqlite_context::initialize_schema() {
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             parent_id TEXT,
+            description TEXT,
             FOREIGN KEY (parent_id) REFERENCES folders(id) ON DELETE CASCADE
         )
     )";
@@ -88,6 +89,14 @@ void sqlite_context::initialize_schema() {
     conn->execute(create_tags);
     conn->execute(create_environments);
     conn->execute(create_environment_tags);
+
+    // Migration: Add description column to folders if it doesn't exist
+    // SQLite silently ignores duplicate column errors, but we catch anyway
+    try {
+        conn->execute("ALTER TABLE folders ADD COLUMN description TEXT");
+    } catch (...) {
+        // Column already exists, ignore
+    }
 
     // Enable foreign keys
     conn->execute("PRAGMA foreign_keys = ON");

@@ -19,10 +19,10 @@
  */
 #include "ores.qt/ConnectionBrowserMdiWindow.hpp"
 #include "ores.qt/ConnectionTreeModel.hpp"
-#include "ores.qt/ConnectionDetailDialog.hpp"
+#include "ores.qt/AddItemDialog.hpp"
 #include "ores.qt/ConnectionDetailPanel.hpp"
 #include "ores.qt/ConnectionItemDelegate.hpp"
-#include "ores.qt/FolderDetailDialog.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.connections/service/connection_manager.hpp"
@@ -36,7 +36,10 @@ ConnectionBrowserMdiWindow::ConnectionBrowserMdiWindow(
     connections::service::connection_manager* manager,
     QWidget* parent)
     : QWidget(parent),
-      manager_(manager) {
+      manager_(manager),
+      mdiArea_(nullptr),
+      mainWindow_(nullptr),
+      allDetachableWindows_(nullptr) {
 
     setupUI();
     updateActionStates();
@@ -49,8 +52,14 @@ QSize ConnectionBrowserMdiWindow::sizeHint() const {
 }
 
 void ConnectionBrowserMdiWindow::setTestCallback(TestConnectionCallback callback) {
-    testCallback_ = callback;
-    detailPanel_->setTestCallback(std::move(callback));
+    testCallback_ = std::move(callback);
+}
+
+void ConnectionBrowserMdiWindow::setMdiArea(QMdiArea* mdiArea, QMainWindow* mainWindow,
+                                             QList<DetachableMdiSubWindow*>* allDetachableWindows) {
+    mdiArea_ = mdiArea;
+    mainWindow_ = mainWindow;
+    allDetachableWindows_ = allDetachableWindows;
 }
 
 void ConnectionBrowserMdiWindow::setupUI() {
@@ -66,15 +75,10 @@ void ConnectionBrowserMdiWindow::setupUI() {
 
     const QColor iconColor(220, 220, 220); // Light gray for dark theme
 
-    createFolderAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_folder_20_regular.svg", iconColor),
-        tr("New Folder"));
-    createFolderAction_->setToolTip(tr("Create a new folder"));
-
-    createConnectionAction_ = toolBar_->addAction(
+    addAction_ = toolBar_->addAction(
         IconUtils::createRecoloredIcon(":/icons/ic_fluent_add_20_regular.svg", iconColor),
-        tr("New Connection"));
-    createConnectionAction_->setToolTip(tr("Add a new server connection"));
+        tr("Add"));
+    addAction_->setToolTip(tr("Add a new folder or connection"));
 
     toolBar_->addSeparator();
 
@@ -106,7 +110,7 @@ void ConnectionBrowserMdiWindow::setupUI() {
 
     changeMasterPasswordAction_ = toolBar_->addAction(
         IconUtils::createRecoloredIcon(":/icons/ic_fluent_key_multiple_20_regular.svg", iconColor),
-        tr("Change Password"));
+        tr("Change"));
     changeMasterPasswordAction_->setToolTip(tr("Change master password"));
 
     purgeDatabaseAction_ = toolBar_->addAction(
@@ -156,18 +160,15 @@ void ConnectionBrowserMdiWindow::setupUI() {
     detailPanel_ = new ConnectionDetailPanel(manager_, this);
     splitter_->addWidget(detailPanel_);
 
-    // Set initial splitter sizes (40% tree, 60% detail)
-    splitter_->setSizes({240, 360});
+    splitter_->setSizes({330, 270});
     splitter_->setStretchFactor(0, 0);
     splitter_->setStretchFactor(1, 1);
 
     layout_->addWidget(splitter_);
 
     // Connect signals
-    connect(createFolderAction_, &QAction::triggered,
-            this, &ConnectionBrowserMdiWindow::createFolder);
-    connect(createConnectionAction_, &QAction::triggered,
-            this, &ConnectionBrowserMdiWindow::createConnection);
+    connect(addAction_, &QAction::triggered,
+            this, &ConnectionBrowserMdiWindow::openAddDialog);
     connect(editAction_, &QAction::triggered,
             this, &ConnectionBrowserMdiWindow::editSelected);
     connect(deleteAction_, &QAction::triggered,
@@ -199,21 +200,6 @@ void ConnectionBrowserMdiWindow::setupUI() {
     connect(model_.get(), &ConnectionTreeModel::errorOccurred,
             this, &ConnectionBrowserMdiWindow::errorOccurred);
 
-    // Connect detail panel signals
-    connect(detailPanel_, &ConnectionDetailPanel::createFolderRequested,
-            this, &ConnectionBrowserMdiWindow::createFolder);
-    connect(detailPanel_, &ConnectionDetailPanel::createConnectionRequested,
-            this, &ConnectionBrowserMdiWindow::createConnection);
-    connect(detailPanel_, &ConnectionDetailPanel::editRequested,
-            this, &ConnectionBrowserMdiWindow::editSelected);
-    connect(detailPanel_, &ConnectionDetailPanel::connectRequested,
-            this, [this](const boost::uuids::uuid& envId, const QString& password) {
-        // Find the environment name for the signal
-        auto* node = model_->nodeFromIndex(model_->indexFromUuid(envId));
-        QString name = node ? node->name : QString();
-        emit connectRequested(envId, name);
-    });
-
     // Start with tree expanded
     treeView_->expandAll();
 
@@ -226,15 +212,11 @@ void ConnectionBrowserMdiWindow::updateActionStates() {
 
     auto* node = model_->nodeFromIndex(current);
     bool isEnvironment = node && node->type == ConnectionTreeNode::Type::Environment;
-    bool isFolder = node && node->type == ConnectionTreeNode::Type::Folder;
 
     editAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
     connectAction_->setEnabled(isEnvironment);
-
-    // Create folder action can specify parent if folder is selected
-    createFolderAction_->setEnabled(true);
-    createConnectionAction_->setEnabled(true);
+    addAction_->setEnabled(true);
 }
 
 void ConnectionBrowserMdiWindow::updateDetailPanel() {
@@ -281,42 +263,10 @@ void ConnectionBrowserMdiWindow::reload() {
     emit statusChanged(tr("Connections reloaded"));
 }
 
-void ConnectionBrowserMdiWindow::createFolder() {
+void ConnectionBrowserMdiWindow::openAddDialog() {
     using namespace ores::logging;
 
-    // Get current selection as potential parent
-    std::optional<boost::uuids::uuid> parentId;
-    QModelIndex current = treeView_->currentIndex();
-    if (current.isValid()) {
-        auto* node = model_->nodeFromIndex(current);
-        if (node && node->type == ConnectionTreeNode::Type::Folder) {
-            parentId = node->id;
-        }
-    }
-
-    FolderDetailDialog dialog(manager_, this);
-    dialog.setInitialParent(parentId);
-
-    if (dialog.exec() == QDialog::Accepted) {
-        try {
-            auto folder = dialog.getFolder();
-            manager_->create_folder(folder);
-            model_->refresh();
-            treeView_->expandAll();
-            emit statusChanged(tr("Folder created: %1").arg(
-                QString::fromStdString(folder.name)));
-            BOOST_LOG_SEV(lg(), info) << "Created folder: " << folder.name;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to create folder: " << e.what();
-            emit errorOccurred(tr("Failed to create folder: %1").arg(e.what()));
-        }
-    }
-}
-
-void ConnectionBrowserMdiWindow::createConnection() {
-    using namespace ores::logging;
-
-    // Get current selection as potential folder
+    // Get current selection to determine initial folder
     std::optional<boost::uuids::uuid> folderId;
     QModelIndex current = treeView_->currentIndex();
     if (current.isValid()) {
@@ -330,34 +280,62 @@ void ConnectionBrowserMdiWindow::createConnection() {
         }
     }
 
-    ConnectionDetailDialog dialog(manager_, this);
-    dialog.setInitialFolder(folderId);
+    auto* dialog = new AddItemDialog(manager_, nullptr);
+    dialog->setCreateMode(true);
+    dialog->setInitialFolder(folderId);
+    dialog->setInitialParent(folderId);
     if (testCallback_) {
-        dialog.setTestCallback(testCallback_);
+        dialog->setTestCallback(testCallback_);
     }
 
-    if (dialog.exec() == QDialog::Accepted) {
-        try {
-            auto env = dialog.getEnvironment();
-            auto password = dialog.getPassword();
-            manager_->create_environment(env, password.value_or(""));
+    // Connect signals for refresh
+    connect(dialog, &AddItemDialog::folderSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
+        model_->refresh();
+        treeView_->expandAll();
+        emit statusChanged(tr("Folder created: %1").arg(name));
+    });
+    connect(dialog, &AddItemDialog::connectionSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
+        model_->refresh();
+        treeView_->expandAll();
+        emit statusChanged(tr("Connection created: %1").arg(name));
+    });
+    connect(dialog, &AddItemDialog::statusMessage, this, &ConnectionBrowserMdiWindow::statusChanged);
+    connect(dialog, &AddItemDialog::errorMessage, this, &ConnectionBrowserMdiWindow::errorOccurred);
 
-            // Add tags to the new environment
-            auto tagIds = dialog.getSelectedTagIds();
-            for (const auto& tagId : tagIds) {
-                manager_->add_tag_to_environment(env.id, tagId);
-            }
+    // Create as MDI sub-window if MDI area is available
+    if (mdiArea_) {
+        const QColor iconColor(220, 220, 220);
+        auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
+        subWindow->setWidget(dialog);
+        subWindow->setWindowTitle(tr("Add Item"));
+        subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_add_20_regular.svg", iconColor));
+        subWindow->setAttribute(Qt::WA_DeleteOnClose);
+        subWindow->resize(450, 500);
 
-            model_->refresh();
-            treeView_->expandAll();
-            emit statusChanged(tr("Connection created: %1").arg(
-                QString::fromStdString(env.name)));
-            BOOST_LOG_SEV(lg(), info) << "Created connection: " << env.name;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to create connection: " << e.what();
-            emit errorOccurred(tr("Failed to create connection: %1").arg(e.what()));
+        mdiArea_->addSubWindow(subWindow);
+        subWindow->show();
+
+        if (allDetachableWindows_) {
+            allDetachableWindows_->append(subWindow);
+            connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
+                if (allDetachableWindows_) {
+                    allDetachableWindows_->removeOne(subWindow);
+                }
+            });
         }
+    } else {
+        // Fallback to regular window
+        dialog->setWindowFlag(Qt::Window);
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+        dialog->setWindowTitle(tr("Add Item"));
+        dialog->resize(450, 500);
+        dialog->show();
+        dialog->raise();
+        dialog->activateWindow();
     }
+
+    BOOST_LOG_SEV(lg(), debug) << "Opened add dialog";
 }
 
 void ConnectionBrowserMdiWindow::editSelected() {
@@ -371,79 +349,98 @@ void ConnectionBrowserMdiWindow::editSelected() {
     if (!node)
         return;
 
+    auto* dialog = new AddItemDialog(manager_, nullptr);
+    dialog->setCreateMode(false);
+
+    QString windowTitle;
+    QString iconPath;
+
     if (node->type == ConnectionTreeNode::Type::Folder) {
         auto folder = model_->getFolderFromIndex(current);
         if (!folder) {
             emit errorOccurred(tr("Failed to load folder details"));
+            delete dialog;
             return;
         }
 
-        FolderDetailDialog dialog(manager_, this);
-        dialog.setFolder(*folder);
+        dialog->setFolder(*folder);
+        windowTitle = tr("Edit Folder: %1").arg(QString::fromStdString(folder->name));
+        iconPath = ":/icons/ic_fluent_folder_20_regular.svg";
 
-        if (dialog.exec() == QDialog::Accepted) {
-            try {
-                auto updated = dialog.getFolder();
-                manager_->update_folder(updated);
-                model_->refresh();
-                treeView_->expandAll();
-                emit statusChanged(tr("Folder updated: %1").arg(
-                    QString::fromStdString(updated.name)));
-                BOOST_LOG_SEV(lg(), info) << "Updated folder: " << updated.name;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to update folder: " << e.what();
-                emit errorOccurred(tr("Failed to update folder: %1").arg(e.what()));
-            }
-        }
+        connect(dialog, &AddItemDialog::folderSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
+            model_->refresh();
+            treeView_->expandAll();
+            emit statusChanged(tr("Folder updated: %1").arg(name));
+        });
     } else if (node->type == ConnectionTreeNode::Type::Environment) {
         auto env = model_->getEnvironmentFromIndex(current);
         if (!env) {
             emit errorOccurred(tr("Failed to load connection details"));
+            delete dialog;
             return;
         }
 
-        ConnectionDetailDialog dialog(manager_, this);
-        dialog.setEnvironment(*env);
+        dialog->setEnvironment(*env);
+        windowTitle = tr("Edit Connection: %1").arg(QString::fromStdString(env->name));
+        iconPath = ":/icons/ic_fluent_server_20_regular.svg";
         if (testCallback_) {
-            dialog.setTestCallback(testCallback_);
+            dialog->setTestCallback(testCallback_);
         }
 
-        // Load existing tags for this environment
+        // Load existing tags
         try {
             auto tags = manager_->get_tags_for_environment(node->id);
-            dialog.setTags(tags);
+            dialog->setTags(tags);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Failed to load tags for environment: " << e.what();
         }
 
-        if (dialog.exec() == QDialog::Accepted) {
-            try {
-                auto updated = dialog.getEnvironment();
-                auto password = dialog.getPassword();
-                manager_->update_environment(updated, password);
-
-                // Update tags - remove old, add new
-                auto oldTags = manager_->get_tags_for_environment(node->id);
-                auto newTagIds = dialog.getSelectedTagIds();
-
-                for (const auto& oldTag : oldTags) {
-                    manager_->remove_tag_from_environment(node->id, oldTag.id);
-                }
-                for (const auto& tagId : newTagIds) {
-                    manager_->add_tag_to_environment(node->id, tagId);
-                }
-
-                model_->refresh();
-                treeView_->expandAll();
-                emit statusChanged(tr("Connection updated: %1").arg(
-                    QString::fromStdString(updated.name)));
-                BOOST_LOG_SEV(lg(), info) << "Updated connection: " << updated.name;
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to update connection: " << e.what();
-                emit errorOccurred(tr("Failed to update connection: %1").arg(e.what()));
-            }
-        }
+        connect(dialog, &AddItemDialog::connectionSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
+            model_->refresh();
+            treeView_->expandAll();
+            emit statusChanged(tr("Connection updated: %1").arg(name));
+        });
+    } else {
+        delete dialog;
+        return;
     }
+
+    connect(dialog, &AddItemDialog::statusMessage, this, &ConnectionBrowserMdiWindow::statusChanged);
+    connect(dialog, &AddItemDialog::errorMessage, this, &ConnectionBrowserMdiWindow::errorOccurred);
+
+    // Create as MDI sub-window if MDI area is available
+    if (mdiArea_) {
+        const QColor iconColor(220, 220, 220);
+        auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
+        subWindow->setWidget(dialog);
+        subWindow->setWindowTitle(windowTitle);
+        subWindow->setWindowIcon(IconUtils::createRecoloredIcon(iconPath, iconColor));
+        subWindow->setAttribute(Qt::WA_DeleteOnClose);
+        subWindow->resize(450, 500);
+
+        mdiArea_->addSubWindow(subWindow);
+        subWindow->show();
+
+        if (allDetachableWindows_) {
+            allDetachableWindows_->append(subWindow);
+            connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
+                if (allDetachableWindows_) {
+                    allDetachableWindows_->removeOne(subWindow);
+                }
+            });
+        }
+    } else {
+        // Fallback to regular window
+        dialog->setWindowFlag(Qt::Window);
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+        dialog->setWindowTitle(windowTitle);
+        dialog->resize(450, 500);
+        dialog->show();
+        dialog->raise();
+        dialog->activateWindow();
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Opened edit dialog";
 }
 
 void ConnectionBrowserMdiWindow::deleteSelected() {
@@ -543,9 +540,8 @@ void ConnectionBrowserMdiWindow::showContextMenu(const QPoint& pos) {
 
     QMenu menu(this);
 
-    // Always show create actions
-    menu.addAction(createFolderAction_);
-    menu.addAction(createConnectionAction_);
+    // Always show add action
+    menu.addAction(addAction_);
 
     if (index.isValid()) {
         menu.addSeparator();

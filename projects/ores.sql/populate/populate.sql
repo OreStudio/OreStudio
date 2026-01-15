@@ -75,6 +75,7 @@
 \ir dq_dataset_populate.sql
 \ir dq_flags_images_artefact_populate.sql
 \ir dq_crypto_images_artefact_populate.sql
+\ir dq_countries_artefact_populate.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''
@@ -158,4 +159,7 @@ from ores.dq_dataset_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Data Quality Images', count(*)
 from ores.dq_images_artefact_tbl
+union all
+select 'Data Quality Countries', count(*)
+from ores.dq_countries_artefact_tbl
 order by entity;

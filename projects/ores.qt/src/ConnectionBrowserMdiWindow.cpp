@@ -167,6 +167,9 @@ void ConnectionBrowserMdiWindow::setupUI() {
     connect(model_.get(), &ConnectionTreeModel::errorOccurred,
             this, &ConnectionBrowserMdiWindow::errorOccurred);
 
+    // Start with tree expanded
+    treeView_->expandAll();
+
     BOOST_LOG_SEV(lg(), info) << "Connection browser window initialized";
 }
 

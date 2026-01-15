@@ -559,7 +559,7 @@ void MainWindow::onLoginTriggered() {
         performDisconnectCleanup();
     }
 
-    LoginDialog dialog(clientManager_, this);
+    LoginDialog dialog(clientManager_, connectionManager_.get(), this);
     const int result = dialog.exec();
 
     if (result == QDialog::Accepted) {
@@ -1303,7 +1303,7 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& environm
     activeConnectionName_ = connectionName;
 
     // Open login dialog pre-filled with connection details
-    LoginDialog dialog(clientManager_, this);
+    LoginDialog dialog(clientManager_, connectionManager_.get(), this);
     dialog.setConnectionDetails(
         QString::fromStdString(env->host),
         env->port,

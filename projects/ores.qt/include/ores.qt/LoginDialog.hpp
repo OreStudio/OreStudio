@@ -24,8 +24,13 @@
 #include <QDialog>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QComboBox>
 #include <QPushButton>
 #include "ores.qt/ClientManager.hpp"
+
+namespace ores::connections::service {
+class connection_manager;
+}
 
 namespace ores::qt {
 
@@ -51,9 +56,12 @@ public:
     /**
      * @brief Construct LoginDialog.
      * @param clientManager Pointer to the application's client manager.
+     * @param connectionManager Optional pointer to saved connections manager.
      * @param parent Parent widget.
      */
-    explicit LoginDialog(ClientManager* clientManager, QWidget* parent = nullptr);
+    explicit LoginDialog(ClientManager* clientManager,
+                         connections::service::connection_manager* connectionManager = nullptr,
+                         QWidget* parent = nullptr);
     ~LoginDialog() override;
 
     /**
@@ -87,6 +95,7 @@ private slots:
     void onLoginClicked();
     void onLoginResult(const LoginResult& result);
     void onSignUpClicked();
+    void onSavedConnectionSelected(int index);
 
 signals:
     void loginCompleted(const LoginResult& result);
@@ -94,9 +103,11 @@ signals:
 private:
     void setupUI();
     void enableForm(bool enabled);
+    void populateSavedConnections();
 
 private:
     // UI components
+    QComboBox* saved_connections_combo_;
     QLineEdit* username_edit_;
     QLineEdit* password_edit_;
     QLineEdit* host_edit_;
@@ -108,6 +119,7 @@ private:
 
     // Dependencies
     ClientManager* clientManager_;
+    connections::service::connection_manager* connectionManager_;
 
     // Auto-submit mode
     bool autoSubmit_{false};

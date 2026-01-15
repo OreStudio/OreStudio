@@ -33,13 +33,19 @@
 #include "ores.qt/SignUpDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.connections/service/connection_manager.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/string_generator.hpp>
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-LoginDialog::LoginDialog(ClientManager* clientManager, QWidget* parent)
+LoginDialog::LoginDialog(ClientManager* clientManager,
+                         connections::service::connection_manager* connectionManager,
+                         QWidget* parent)
     : QDialog(parent),
+      saved_connections_combo_(new QComboBox(this)),
       username_edit_(new QLineEdit(this)),
       password_edit_(new QLineEdit(this)),
       host_edit_(new QLineEdit(this)),
@@ -48,7 +54,8 @@ LoginDialog::LoginDialog(ClientManager* clientManager, QWidget* parent)
       signup_button_(new QPushButton("Sign Up", this)),
       cancel_button_(new QPushButton("Cancel", this)),
       status_label_(new QLabel(this)),
-      clientManager_(clientManager) {
+      clientManager_(clientManager),
+      connectionManager_(connectionManager) {
 
     setupUI();
 
@@ -78,6 +85,17 @@ void LoginDialog::setupUI() {
     // Create form layout
     auto* form_layout = new QFormLayout();
     form_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+
+    // Saved connections combo (only visible if connection manager is available)
+    saved_connections_combo_->setPlaceholderText("Select a saved connection...");
+    if (connectionManager_) {
+        populateSavedConnections();
+        form_layout->addRow("Saved Connection:", saved_connections_combo_);
+        connect(saved_connections_combo_, &QComboBox::currentIndexChanged,
+                this, &LoginDialog::onSavedConnectionSelected);
+    } else {
+        saved_connections_combo_->setVisible(false);
+    }
 
     // Username field
     username_edit_->setPlaceholderText("Enter username");
@@ -302,6 +320,68 @@ void LoginDialog::showEvent(QShowEvent* event) {
 
         // Reset auto-submit flag to avoid re-triggering
         autoSubmit_ = false;
+    }
+}
+
+void LoginDialog::populateSavedConnections() {
+    if (!connectionManager_) {
+        return;
+    }
+
+    saved_connections_combo_->clear();
+    saved_connections_combo_->addItem("", QVariant()); // Empty option
+
+    try {
+        auto environments = connectionManager_->get_all_environments();
+        for (const auto& env : environments) {
+            QString displayName = QString::fromStdString(env.name);
+            QString idStr = QString::fromStdString(boost::uuids::to_string(env.id));
+            saved_connections_combo_->addItem(displayName, idStr);
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to load saved connections: " << e.what();
+    }
+}
+
+void LoginDialog::onSavedConnectionSelected(int index) {
+    if (!connectionManager_ || index <= 0) {
+        return; // Index 0 is the empty placeholder
+    }
+
+    QString idStr = saved_connections_combo_->itemData(index).toString();
+    if (idStr.isEmpty()) {
+        return;
+    }
+
+    try {
+        boost::uuids::string_generator gen;
+        boost::uuids::uuid envId = gen(idStr.toStdString());
+
+        auto env = connectionManager_->get_environment(envId);
+        if (env) {
+            host_edit_->setText(QString::fromStdString(env->host));
+            port_spinbox_->setValue(env->port);
+            username_edit_->setText(QString::fromStdString(env->username));
+
+            // Try to get the password
+            try {
+                std::string password = connectionManager_->get_password(envId);
+                password_edit_->setText(QString::fromStdString(password));
+            } catch (...) {
+                password_edit_->clear();
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Selected saved connection: " << env->name;
+
+            // Focus password field if empty, otherwise login button
+            if (password_edit_->text().isEmpty()) {
+                password_edit_->setFocus();
+            } else {
+                login_button_->setFocus();
+            }
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to load connection: " << e.what();
     }
 }
 

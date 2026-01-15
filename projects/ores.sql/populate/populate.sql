@@ -76,6 +76,7 @@
 \ir dq_flags_images_artefact_populate.sql
 \ir dq_crypto_images_artefact_populate.sql
 \ir dq_countries_artefact_populate.sql
+\ir dq_currencies_artefact_populate.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''
@@ -162,4 +163,7 @@ from ores.dq_images_artefact_tbl
 union all
 select 'Data Quality Countries', count(*)
 from ores.dq_countries_artefact_tbl
+union all
+select 'Data Quality Currencies', count(*)
+from ores.dq_currencies_artefact_tbl
 order by entity;

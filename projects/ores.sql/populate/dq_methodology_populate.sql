@@ -80,6 +80,13 @@ select ores.upsert_dq_methodology(
     'Bulk download of SVG cryptocurrency icons at commit 1a63530be6e374711a8554f31b17e4cb92c25fa5'
 );
 
+select ores.upsert_dq_methodology(
+    'Wikipedia ISO 4217 Extraction',
+    'Data extracted from Wikipedia page listing ISO 4217 currency codes',
+    'https://en.wikipedia.org/wiki/ISO_4217',
+    'Manual extraction of ISO 4217 currency codes with names, symbols, and formatting details'
+);
+
 -- =============================================================================
 -- Cleanup
 -- =============================================================================

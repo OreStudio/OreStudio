@@ -179,6 +179,29 @@ select ores.upsert_dq_tag(
     'Cryptocurrency icon images'
 );
 
+select ores.upsert_dq_dataset(
+    'Currencies',
+    'Reference Data',
+    'Source',
+    'Actual',
+    'Raw',
+    'Wikipedia ISO 4217 Extraction',
+    'ISO 4217 Currencies from Wikipedia',
+    'ISO 4217 currency codes and names from Wikipedia',
+    'WIKIPEDIA',
+    'Reference data for currency codes',
+    current_date,
+    'CC BY-SA 3.0'
+);
+
+select ores.upsert_dq_tag(
+    'ISO 4217 Currencies from Wikipedia',
+    'Currencies',
+    'Reference Data',
+    'currency',
+    'Currency reference data'
+);
+
 -- =============================================================================
 -- Cleanup
 -- =============================================================================

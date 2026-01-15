@@ -20,6 +20,7 @@
 #include "ores.qt/ConnectionBrowserMdiWindow.hpp"
 #include "ores.qt/ConnectionTreeModel.hpp"
 #include "ores.qt/ConnectionDetailDialog.hpp"
+#include "ores.qt/ConnectionItemDelegate.hpp"
 #include "ores.qt/FolderDetailDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -133,6 +134,9 @@ void ConnectionBrowserMdiWindow::setupUI() {
     // Create model and set on view
     model_ = std::make_unique<ConnectionTreeModel>(manager_, this);
     treeView_->setModel(model_.get());
+
+    // Set custom delegate for rendering tag badges
+    treeView_->setItemDelegate(new ConnectionItemDelegate(this));
 
     // Configure as a simple tree (hide detail columns)
     treeView_->setHeaderHidden(true);
@@ -271,6 +275,13 @@ void ConnectionBrowserMdiWindow::createConnection() {
             auto env = dialog.getEnvironment();
             auto password = dialog.getPassword();
             manager_->create_environment(env, password.value_or(""));
+
+            // Add tags to the new environment
+            auto tagIds = dialog.getSelectedTagIds();
+            for (const auto& tagId : tagIds) {
+                manager_->add_tag_to_environment(env.id, tagId);
+            }
+
             model_->refresh();
             treeView_->expandAll();
             emit statusChanged(tr("Connection created: %1").arg(
@@ -331,11 +342,31 @@ void ConnectionBrowserMdiWindow::editSelected() {
             dialog.setTestCallback(testCallback_);
         }
 
+        // Load existing tags for this environment
+        try {
+            auto tags = manager_->get_tags_for_environment(node->id);
+            dialog.setTags(tags);
+        } catch (...) {
+            // Ignore tag loading errors
+        }
+
         if (dialog.exec() == QDialog::Accepted) {
             try {
                 auto updated = dialog.getEnvironment();
                 auto password = dialog.getPassword();
                 manager_->update_environment(updated, password);
+
+                // Update tags - remove old, add new
+                auto oldTags = manager_->get_tags_for_environment(node->id);
+                auto newTagIds = dialog.getSelectedTagIds();
+
+                for (const auto& oldTag : oldTags) {
+                    manager_->remove_tag_from_environment(node->id, oldTag.id);
+                }
+                for (const auto& tagId : newTagIds) {
+                    manager_->add_tag_to_environment(node->id, tagId);
+                }
+
                 model_->refresh();
                 treeView_->expandAll();
                 emit statusChanged(tr("Connection updated: %1").arg(

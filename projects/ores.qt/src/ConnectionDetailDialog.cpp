@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ConnectionDetailDialog.hpp"
+#include "ores.qt/TagSelectorWidget.hpp"
 #include "ores.connections/service/connection_manager.hpp"
 #include "ores.security/validation/password_validator.hpp"
 #include <QtWidgets/QApplication>
@@ -56,6 +57,10 @@ void ConnectionDetailDialog::setupUI() {
 
     folderCombo_ = new QComboBox(this);
     formLayout->addRow(tr("Folder:"), folderCombo_);
+
+    // Tags
+    tagSelector_ = new TagSelectorWidget(manager_, this);
+    formLayout->addRow(tr("Tags:"), tagSelector_);
 
     formLayout->addRow(new QLabel(tr("<b>Connection Details</b>"), this), new QWidget(this));
 
@@ -302,6 +307,14 @@ bool ConnectionDetailDialog::validateInput() {
     }
 
     return true;
+}
+
+void ConnectionDetailDialog::setTags(const std::vector<connections::domain::tag>& tags) {
+    tagSelector_->setSelectedTags(tags);
+}
+
+std::vector<boost::uuids::uuid> ConnectionDetailDialog::getSelectedTagIds() const {
+    return tagSelector_->selectedTagIds();
 }
 
 void ConnectionDetailDialog::setTestCallback(TestConnectionCallback callback) {

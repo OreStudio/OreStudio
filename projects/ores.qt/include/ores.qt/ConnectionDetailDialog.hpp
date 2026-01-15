@@ -32,7 +32,12 @@
 #include <optional>
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/server_environment.hpp"
+#include "ores.connections/domain/tag.hpp"
 #include "ores.logging/make_logger.hpp"
+
+namespace ores::qt {
+class TagSelectorWidget;
+}
 
 namespace ores::connections::service {
 class connection_manager;
@@ -92,6 +97,16 @@ public:
     std::optional<std::string> getPassword() const;
 
     /**
+     * @brief Set the tags for this environment.
+     */
+    void setTags(const std::vector<connections::domain::tag>& tags);
+
+    /**
+     * @brief Get the selected tag IDs.
+     */
+    std::vector<boost::uuids::uuid> getSelectedTagIds() const;
+
+    /**
      * @brief Check if this is a new environment (add mode).
      */
     bool isAddMode() const { return isAddMode_; }
@@ -125,6 +140,7 @@ private:
     QCheckBox* showPasswordCheckbox_;
     QTextEdit* descriptionEdit_;
     QComboBox* folderCombo_;
+    TagSelectorWidget* tagSelector_;
     QDialogButtonBox* buttonBox_;
     QPushButton* testButton_;
 

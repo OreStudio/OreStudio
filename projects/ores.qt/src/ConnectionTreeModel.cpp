@@ -170,6 +170,21 @@ QVariant ConnectionTreeModel::data(const QModelIndex& index, int role) const {
     case IsFolderRole:
         return node->type == ConnectionTreeNode::Type::Folder;
 
+    case TagsRole:
+        if (node->type == ConnectionTreeNode::Type::Environment) {
+            try {
+                auto tags = manager_->get_tags_for_environment(node->id);
+                QStringList tagNames;
+                for (const auto& tag : tags) {
+                    tagNames.append(QString::fromStdString(tag.name));
+                }
+                return tagNames;
+            } catch (...) {
+                return QStringList();
+            }
+        }
+        return QStringList();
+
     default:
         return QVariant();
     }

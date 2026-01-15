@@ -104,7 +104,8 @@ public:
         NodeTypeRole = Qt::UserRole + 1,
         UuidRole,
         IsEnvironmentRole,
-        IsFolderRole
+        IsFolderRole,
+        TagsRole
     };
 
     explicit ConnectionTreeModel(

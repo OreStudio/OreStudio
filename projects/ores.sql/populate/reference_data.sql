@@ -34,6 +34,10 @@
  *   psql -U ores -d your_database -f populate/reference_data.sql
  */
 
+-- Suppress noisy output during population
+\timing off
+\pset tuples_only on
+
 \echo '=== Starting Reference Data Population ==='
 \echo ''
 
@@ -51,7 +55,9 @@
 \echo ''
 \echo '=== Reference Data Population Complete ==='
 
--- Summary
+-- Summary - restore normal output format
+\pset tuples_only off
+
 \echo ''
 \echo '--- Summary ---'
 

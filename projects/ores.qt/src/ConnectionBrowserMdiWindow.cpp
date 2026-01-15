@@ -20,6 +20,7 @@
 #include "ores.qt/ConnectionBrowserMdiWindow.hpp"
 #include "ores.qt/ConnectionTreeModel.hpp"
 #include "ores.qt/ConnectionDetailDialog.hpp"
+#include "ores.qt/ConnectionDetailPanel.hpp"
 #include "ores.qt/ConnectionItemDelegate.hpp"
 #include "ores.qt/FolderDetailDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -44,11 +45,12 @@ ConnectionBrowserMdiWindow::ConnectionBrowserMdiWindow(
 ConnectionBrowserMdiWindow::~ConnectionBrowserMdiWindow() = default;
 
 QSize ConnectionBrowserMdiWindow::sizeHint() const {
-    return {600, 400};
+    return {800, 500};
 }
 
 void ConnectionBrowserMdiWindow::setTestCallback(TestConnectionCallback callback) {
-    testCallback_ = std::move(callback);
+    testCallback_ = callback;
+    detailPanel_->setTestCallback(std::move(callback));
 }
 
 void ConnectionBrowserMdiWindow::setupUI() {
@@ -114,6 +116,9 @@ void ConnectionBrowserMdiWindow::setupUI() {
 
     layout_->addWidget(toolBar_);
 
+    // Create splitter for tree and detail panel
+    splitter_ = new QSplitter(Qt::Horizontal, this);
+
     // Create tree view
     treeView_ = new QTreeView(this);
     treeView_->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -145,7 +150,18 @@ void ConnectionBrowserMdiWindow::setupUI() {
     treeView_->setColumnHidden(2, true); // Hide Port
     treeView_->setColumnHidden(3, true); // Hide Username
 
-    layout_->addWidget(treeView_);
+    splitter_->addWidget(treeView_);
+
+    // Create detail panel
+    detailPanel_ = new ConnectionDetailPanel(manager_, this);
+    splitter_->addWidget(detailPanel_);
+
+    // Set initial splitter sizes (40% tree, 60% detail)
+    splitter_->setSizes({240, 360});
+    splitter_->setStretchFactor(0, 0);
+    splitter_->setStretchFactor(1, 1);
+
+    layout_->addWidget(splitter_);
 
     // Connect signals
     connect(createFolderAction_, &QAction::triggered,
@@ -183,6 +199,21 @@ void ConnectionBrowserMdiWindow::setupUI() {
     connect(model_.get(), &ConnectionTreeModel::errorOccurred,
             this, &ConnectionBrowserMdiWindow::errorOccurred);
 
+    // Connect detail panel signals
+    connect(detailPanel_, &ConnectionDetailPanel::createFolderRequested,
+            this, &ConnectionBrowserMdiWindow::createFolder);
+    connect(detailPanel_, &ConnectionDetailPanel::createConnectionRequested,
+            this, &ConnectionBrowserMdiWindow::createConnection);
+    connect(detailPanel_, &ConnectionDetailPanel::editRequested,
+            this, &ConnectionBrowserMdiWindow::editSelected);
+    connect(detailPanel_, &ConnectionDetailPanel::connectRequested,
+            this, [this](const boost::uuids::uuid& envId, const QString& password) {
+        // Find the environment name for the signal
+        auto* node = model_->nodeFromIndex(model_->indexFromUuid(envId));
+        QString name = node ? node->name : QString();
+        emit connectRequested(envId, name);
+    });
+
     // Start with tree expanded
     treeView_->expandAll();
 
@@ -204,6 +235,41 @@ void ConnectionBrowserMdiWindow::updateActionStates() {
     // Create folder action can specify parent if folder is selected
     createFolderAction_->setEnabled(true);
     createConnectionAction_->setEnabled(true);
+}
+
+void ConnectionBrowserMdiWindow::updateDetailPanel() {
+    QModelIndex current = treeView_->currentIndex();
+
+    if (!current.isValid()) {
+        detailPanel_->showEmptyState();
+        return;
+    }
+
+    auto* node = model_->nodeFromIndex(current);
+    if (!node) {
+        detailPanel_->showEmptyState();
+        return;
+    }
+
+    if (node->type == ConnectionTreeNode::Type::Folder) {
+        auto folder = model_->getFolderFromIndex(current);
+        if (folder) {
+            // Count items in this folder
+            int itemCount = static_cast<int>(node->children.size());
+            detailPanel_->showFolder(*folder, itemCount);
+        } else {
+            detailPanel_->showEmptyState();
+        }
+    } else if (node->type == ConnectionTreeNode::Type::Environment) {
+        auto env = model_->getEnvironmentFromIndex(current);
+        if (env) {
+            detailPanel_->showEnvironment(*env);
+        } else {
+            detailPanel_->showEmptyState();
+        }
+    } else {
+        detailPanel_->showEmptyState();
+    }
 }
 
 void ConnectionBrowserMdiWindow::reload() {
@@ -449,6 +515,7 @@ void ConnectionBrowserMdiWindow::connectToSelected() {
 
 void ConnectionBrowserMdiWindow::onSelectionChanged() {
     updateActionStates();
+    updateDetailPanel();
 }
 
 void ConnectionBrowserMdiWindow::onDoubleClicked(const QModelIndex& index) {

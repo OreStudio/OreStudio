@@ -25,6 +25,7 @@
 #include <QToolBar>
 #include <QAction>
 #include <QVBoxLayout>
+#include <QSplitter>
 #include <functional>
 #include <memory>
 #include <boost/uuid/uuid.hpp>
@@ -37,6 +38,7 @@ class connection_manager;
 namespace ores::qt {
 
 class ConnectionTreeModel;
+class ConnectionDetailPanel;
 
 /**
  * @brief Callback type for testing connections.
@@ -114,9 +116,12 @@ private slots:
 private:
     void setupUI();
     void updateActionStates();
+    void updateDetailPanel();
 
     QVBoxLayout* layout_;
+    QSplitter* splitter_;
     QTreeView* treeView_;
+    ConnectionDetailPanel* detailPanel_;
     QToolBar* toolBar_;
 
     QAction* createFolderAction_;

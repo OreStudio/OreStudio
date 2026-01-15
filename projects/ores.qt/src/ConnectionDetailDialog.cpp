@@ -334,9 +334,9 @@ void ConnectionDetailDialog::onTestClicked() {
     QString password = passwordEdit_->text();
     int port = portSpinBox_->value();
 
-    if (host.isEmpty() || username.isEmpty()) {
+    if (host.isEmpty() || username.isEmpty() || password.isEmpty()) {
         QMessageBox::warning(this, tr("Test Connection"),
-            tr("Please enter host and username to test the connection."));
+            tr("Please enter host, username, and password to test the connection."));
         return;
     }
 

@@ -49,7 +49,7 @@ begin
         raise exception 'Dataset not found: name="Country Flags from lipis/flag-icons", subject_area="Countries", domain="Reference Data"';
     end if;
 
-    -- Clear existing data for this dataset (idempotency)
+    -- Clear existing images for this dataset (idempotency)
     delete from ores.dq_images_artefact_tbl
     where dataset_id = v_dataset_id;
 

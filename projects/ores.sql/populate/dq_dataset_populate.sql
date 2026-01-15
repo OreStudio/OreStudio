@@ -21,9 +21,49 @@
 set schema 'ores';
 
 -- =============================================================================
--- Helper Function
+-- Helper Functions
 -- =============================================================================
 
+-- Helper function to create a tag for a dataset
+create or replace function ores.upsert_dq_tag(
+    p_dataset_name text,
+    p_subject_area_name text,
+    p_domain_name text,
+    p_tag_name text,
+    p_tag_description text
+) returns void as $$
+declare
+    v_dataset_id uuid;
+begin
+    -- Get dataset ID
+    select id into v_dataset_id
+    from ores.dq_dataset_tbl
+    where name = p_dataset_name
+      and subject_area_name = p_subject_area_name
+      and domain_name = p_domain_name
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_dataset_id is null then
+        raise exception 'Dataset not found: name=%, subject_area=%, domain=%',
+            p_dataset_name, p_subject_area_name, p_domain_name;
+    end if;
+
+    -- Delete existing tag with same name for this dataset (idempotency)
+    delete from ores.dq_tags_artefact_tbl
+    where dataset_id = v_dataset_id and name = p_tag_name;
+
+    -- Insert the tag
+    insert into ores.dq_tags_artefact_tbl (
+        dataset_id, tag_id, version, name, description
+    ) values (
+        v_dataset_id, gen_random_uuid(), 0, p_tag_name, p_tag_description
+    );
+
+    raise notice 'Created dq_tag: % for dataset %', p_tag_name, p_dataset_name;
+end;
+$$ language plpgsql;
+
+-- Helper function to create a dataset
 create or replace function ores.upsert_dq_dataset(
     p_subject_area_name text,
     p_domain_name text,
@@ -108,6 +148,14 @@ select ores.upsert_dq_dataset(
     'MIT'
 );
 
+select ores.upsert_dq_tag(
+    'Country Flags from lipis/flag-icons',
+    'Countries',
+    'Reference Data',
+    'flag',
+    'Country and region flag images'
+);
+
 select ores.upsert_dq_dataset(
     'Cryptocurrencies',
     'Reference Data',
@@ -123,11 +171,20 @@ select ores.upsert_dq_dataset(
     'CC0 1.0 Universal'
 );
 
+select ores.upsert_dq_tag(
+    'Cryptocurrency Icons from spothq/cryptocurrency-icons',
+    'Cryptocurrencies',
+    'Reference Data',
+    'cryptocurrency',
+    'Cryptocurrency icon images'
+);
+
 -- =============================================================================
 -- Cleanup
 -- =============================================================================
 
 drop function ores.upsert_dq_dataset(text, text, text, text, text, text, text, text, text, text, date, text);
+drop function ores.upsert_dq_tag(text, text, text, text, text);
 
 -- =============================================================================
 -- Summary
@@ -135,4 +192,7 @@ drop function ores.upsert_dq_dataset(text, text, text, text, text, text, text, t
 
 select 'dq_dataset' as entity, count(*) as count
 from ores.dq_dataset_tbl
-where valid_to = ores.utility_infinity_timestamp_fn();
+where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'dq_tags_artefact', count(*)
+from ores.dq_tags_artefact_tbl;

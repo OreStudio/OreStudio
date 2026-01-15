@@ -75,8 +75,6 @@
 \ir dq_dataset_populate.sql
 \ir dq_flags_images_artefact_populate.sql
 \ir dq_crypto_images_artefact_populate.sql
-\ir dq_tags_artefact_populate.sql
-\ir dq_image_tags_artefact_populate.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''

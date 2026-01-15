@@ -49,7 +49,7 @@ begin
         raise exception 'Dataset not found: name="Cryptocurrency Icons from spothq/cryptocurrency-icons", subject_area="Cryptocurrencies", domain="Reference Data"';
     end if;
 
-    -- Clear existing data for this dataset (idempotency)
+    -- Clear existing images for this dataset (idempotency)
     delete from ores.dq_images_artefact_tbl
     where dataset_id = v_dataset_id;
 

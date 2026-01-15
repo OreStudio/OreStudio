@@ -51,3 +51,6 @@ projects/ores.utility/include/ores.utility/version/version.hpp
 
 # VSCode
 .vscode/
+
+# Open Code
+.opencode/

@@ -151,16 +151,14 @@ begin
         raise exception 'Dataset not found: {icons_dataset_name}';
     end if;
 
-    -- Get a placeholder image (use 'generic' or first available if no specific placeholder)
+    -- Get a placeholder image (use 'xx' flag from the flags dataset)
     select image_id into v_placeholder_image_id
     from ores.dq_images_artefact_tbl
-    where dataset_id = v_icons_dataset_id
-      and key = 'generic'
+    where key = 'xx'
     limit 1;
 
-    -- If no generic placeholder, try to get any image as fallback marker
     if v_placeholder_image_id is null then
-        raise warning 'No placeholder image found - cryptocurrencies without icons will have NULL image_id';
+        raise warning 'Placeholder image (xx) not found - cryptocurrencies without icons will have NULL image_id';
     end if;
 
     -- Clear existing cryptocurrencies for this dataset (idempotency)

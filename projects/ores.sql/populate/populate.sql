@@ -52,15 +52,30 @@
 \echo '--- Data Quality Data Domains ---'
 \ir dq_data_domain_populate.sql
 
+-- Data Quality Dimensions
+\echo ''
+\echo '--- Data Quality Dimensions ---'
+\ir dq_origin_dimension_populate.sql
+\ir dq_nature_dimension_populate.sql
+\ir dq_treatment_dimension_populate.sql
+
 -- Data Quality Subject Areas
 \echo ''
 \echo '--- Data Quality Subject Areas ---'
 \ir dq_subject_area_populate.sql
 
+-- Data Quality Methodologies
+\echo ''
+\echo '--- Data Quality Methodologies ---'
+\ir dq_methodology_populate.sql
+
 -- Data Quality Datasets
 \echo ''
 \echo '--- Data Quality Datasets ---'
-\ir dq_iso3166_countries_dataset_populate.sql
+\ir dq_dataset_populate.sql
+\ir dq_images_artefact_populate.sql
+\ir dq_tags_artefact_populate.sql
+\ir dq_image_tags_artefact_populate.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''
@@ -123,6 +138,7 @@ from ores.iam_roles_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'System Flags', count(*)
 from ores.variability_feature_flags_tbl where name like 'system.%' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
 select 'Data Quality Origin Dimensions', count(*)
 from ores.dq_origin_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all

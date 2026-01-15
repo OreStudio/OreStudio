@@ -156,4 +156,7 @@ from ores.dq_subject_area_tbl where valid_to = ores.utility_infinity_timestamp_f
 union all
 select 'Data Quality Datasets', count(*)
 from ores.dq_dataset_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Images', count(*)
+from ores.dq_images_artefact_tbl
 order by entity;

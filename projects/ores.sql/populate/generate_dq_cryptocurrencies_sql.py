@@ -188,7 +188,7 @@ begin
         c.rounding_precision,
         c.format,
         c.currency_type,
-        i.image_id
+        coalesce(i.image_id, v_placeholder_image_id)
     from (values
 """
 

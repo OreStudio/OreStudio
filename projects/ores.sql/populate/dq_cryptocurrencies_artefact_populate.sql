@@ -106,7 +106,7 @@ begin
         c.rounding_precision,
         c.format,
         c.currency_type,
-        i.image_id
+        coalesce(i.image_id, v_placeholder_image_id)
     from (values
         ('$MAID', 'MaidCoin', '', '$MAID', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('$NOBS', 'No BS Crypto', '', '$NOBS', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),

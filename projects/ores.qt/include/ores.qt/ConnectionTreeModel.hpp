@@ -125,6 +125,15 @@ public:
     bool setData(const QModelIndex& index, const QVariant& value,
         int role = Qt::EditRole) override;
 
+    // Drag and drop support
+    Qt::DropActions supportedDropActions() const override;
+    QStringList mimeTypes() const override;
+    QMimeData* mimeData(const QModelIndexList& indexes) const override;
+    bool canDropMimeData(const QMimeData* data, Qt::DropAction action,
+        int row, int column, const QModelIndex& parent) const override;
+    bool dropMimeData(const QMimeData* data, Qt::DropAction action,
+        int row, int column, const QModelIndex& parent) override;
+
     // Data access
     ConnectionTreeNode* nodeFromIndex(const QModelIndex& index) const;
     QModelIndex indexFromUuid(const boost::uuids::uuid& id) const;

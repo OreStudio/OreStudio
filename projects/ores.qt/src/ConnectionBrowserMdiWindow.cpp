@@ -120,6 +120,12 @@ void ConnectionBrowserMdiWindow::setupUI() {
     treeView_->setUniformRowHeights(true);
     treeView_->setIconSize(QSize(20, 20)); // Larger icons for better visibility
 
+    // Enable drag and drop for reorganizing folders and connections
+    treeView_->setDragEnabled(true);
+    treeView_->setAcceptDrops(true);
+    treeView_->setDropIndicatorShown(true);
+    treeView_->setDragDropMode(QAbstractItemView::InternalMove);
+
     // Create model and set on view
     model_ = std::make_unique<ConnectionTreeModel>(manager_, this);
     treeView_->setModel(model_.get());

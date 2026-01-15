@@ -1151,16 +1151,15 @@ void MainWindow::onConnectionBrowserTriggered() {
             return tr("Client manager not initialized");
         }
 
-        // Attempt connection and login - this validates both network and credentials
-        auto result = clientManager_->connectAndLogin(
+        // Use testConnection which creates a temporary client without affecting
+        // main connection state or emitting signals
+        auto result = clientManager_->testConnection(
             host.toStdString(),
             static_cast<std::uint16_t>(port),
             username.toStdString(),
             password.toStdString());
 
         if (result.success) {
-            // Connection worked - disconnect immediately since this was just a test
-            clientManager_->disconnect();
             return QString(); // Empty = success
         }
 

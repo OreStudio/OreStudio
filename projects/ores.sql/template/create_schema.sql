@@ -88,7 +88,6 @@ grant create on schema ores to ores;
 \ir ../schema/assets_images_create.sql
 \ir ../schema/assets_tags_create.sql
 \ir ../schema/assets_image_tags_create.sql
-\ir ../schema/assets_images_functions_create.sql
 
 -- Geo tables and functions
 \ir ../schema/geo_ip2country_create.sql

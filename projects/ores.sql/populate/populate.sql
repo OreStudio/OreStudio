@@ -26,15 +26,12 @@
  * safely re-run without creating duplicate data.
  *
  * This script is run automatically during template creation and seeds:
- * 1. RBAC: Permissions, roles, role-permission assignments
- * 2. System Flags: Bootstrap mode, user signups, etc.
- * 3. Flag Images: Country flags and placeholder images
- * 4. Currency-to-Flag Mappings: Links currencies to their flag images
- *
- * NOTE: Currencies themselves are imported separately via the CLI:
- *   ores.cli import currencies <file.xml>
- *
- * After importing currencies, re-run this script to assign flag mappings.
+ * 1. Change Control: Change reasons and categories
+ * 2. Data Quality: Dimensions, domains, subject areas, methodologies, datasets
+ * 3. DQ Artefacts: Images, countries, currencies (staging data)
+ * 4. Production Data: Images, countries, currencies (via DQ population functions)
+ * 5. RBAC: Permissions, roles, role-permission assignments
+ * 6. System Flags: Bootstrap mode, user signups, etc.
  *
  * Usage:
  *   psql -U ores -d your_database -f populate/populate.sql
@@ -94,22 +91,10 @@
 \echo '--- System Flags ---'
 \ir variability_system_flags_populate.sql
 
--- Flag Images
+-- Production Data (populated from DQ staging tables)
 \echo ''
-\echo '--- Flag Images ---'
-\ir assets_load_flags.sql
-\ir assets_flags_populate.sql
-
--- Currency-to-Flag Mappings
-\echo ''
-\echo '--- Currency Image Mappings ---'
-\ir assets_currency_images_populate.sql
-
--- Countries
-\echo ''
-\echo '--- Countries ---'
-\ir refdata_countries_populate.sql
-\ir assets_country_images_populate.sql
+\echo '--- Production Data (from DQ) ---'
+\ir dq_populate_production.sql
 
 \echo ''
 \echo '=== System Population Complete ==='

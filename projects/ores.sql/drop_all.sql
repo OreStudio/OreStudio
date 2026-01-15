@@ -32,7 +32,6 @@
 \ir ./drop/dq_data_domain_drop.sql
 
 -- Assets
-\ir ./drop/assets_images_functions_drop.sql
 \ir ./drop/assets_image_tags_drop.sql
 \ir ./drop/assets_tags_drop.sql
 \ir ./drop/assets_images_drop.sql

@@ -21,7 +21,8 @@
 create table if not exists "ores"."dq_dataset_tbl" (
     "id" uuid not null,
     "version" integer not null,
-    "subject_area_id" uuid not null,
+    "subject_area_name" text not null,
+    "domain_name" text not null,
     "origin_code" text not null,
     "nature_code" text not null,
     "treatment_code" text not null,
@@ -49,7 +50,7 @@ create table if not exists "ores"."dq_dataset_tbl" (
 );
 
 create unique index if not exists dq_dataset_name_uniq_idx
-on "ores"."dq_dataset_tbl" (name, subject_area_id)
+on "ores"."dq_dataset_tbl" (name, subject_area_name, domain_name)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
 create or replace function ores.dq_dataset_insert_fn()
@@ -70,10 +71,11 @@ begin
     -- Validate foreign key references
     if not exists (
         select 1 from ores.dq_subject_area_tbl
-        where id = NEW.subject_area_id
+        where name = NEW.subject_area_name
+        and domain_name = NEW.domain_name
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid subject_area_id: %. Subject area must exist.', NEW.subject_area_id
+        raise exception 'Invalid subject_area_name/domain_name: %/%. Subject area must exist.', NEW.subject_area_name, NEW.domain_name
         using errcode = '23503';
     end if;
 

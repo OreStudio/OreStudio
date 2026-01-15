@@ -68,6 +68,7 @@ $$ language plpgsql;
 -- Helper function to insert a data quality dataset if it doesn't exist
 create or replace function ores.upsert_dq_dataset(
     p_subject_area_name text,
+    p_domain_name text,
     p_origin_code text,
     p_nature_code text,
     p_treatment_code text,
@@ -80,36 +81,26 @@ create or replace function ores.upsert_dq_dataset(
     p_license_info text default null
 ) returns uuid as $$
 declare
-    v_subject_area_id uuid;
     v_id uuid;
 begin
-    -- Get the subject area ID
-    select id into v_subject_area_id
-    from ores.dq_subject_area_tbl
-    where name = p_subject_area_name
-    and valid_to = ores.utility_infinity_timestamp_fn();
-
-    if v_subject_area_id is null then
-        raise exception 'Subject area "%" does not exist', p_subject_area_name;
-    end if;
-
     -- Check if dataset already exists
     select id into v_id
     from ores.dq_dataset_tbl
     where name = p_name
-    and subject_area_id = v_subject_area_id
+    and subject_area_name = p_subject_area_name
+    and domain_name = p_domain_name
     and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_id is null then
         v_id := gen_random_uuid();
         insert into ores.dq_dataset_tbl (
-            id, version, subject_area_id, origin_code, nature_code, treatment_code, methodology_id,
+            id, version, subject_area_name, domain_name, origin_code, nature_code, treatment_code, methodology_id,
             name, description, source_system_id, business_context,
             upstream_derivation_id, lineage_depth, as_of_date, ingestion_timestamp, license_info,
             modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
         values (
-            v_id, 0, v_subject_area_id, p_origin_code, p_nature_code, p_treatment_code, p_methodology_id,
+            v_id, 0, p_subject_area_name, p_domain_name, p_origin_code, p_nature_code, p_treatment_code, p_methodology_id,
             p_name, p_description, p_source_system_id, p_business_context,
             null, 0, p_as_of_date, current_timestamp, p_license_info,
             'system', 'system.new_record', 'System seed data - data quality dataset',
@@ -146,6 +137,7 @@ begin
     -- Create dataset for ISO 3166 countries
     v_dataset_id := ores.upsert_dq_dataset(
         'Countries',                    -- subject area
+        'Reference Data',               -- domain
         'Source',                       -- origin
         'Actual',                       -- nature
         'Raw',                          -- treatment
@@ -157,7 +149,7 @@ begin
         current_date,                   -- as-of date
         'CC BY-SA 3.0'                 -- license info
     );
-    
+
     -- Store the dataset ID for potential use in artifact population
     raise notice 'Dataset ID for ISO 3166 Countries: %', v_dataset_id;
 end $$;
@@ -167,4 +159,4 @@ end $$;
 -- =============================================================================
 
 drop function ores.upsert_dq_methodology(text, text, text, text);
-drop function ores.upsert_dq_dataset(text, text, text, text, uuid, text, text, text, text, date, text);
+drop function ores.upsert_dq_dataset(text, text, text, text, text, uuid, text, text, text, text, date, text);

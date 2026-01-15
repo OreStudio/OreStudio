@@ -19,27 +19,23 @@
  */
 
 create table if not exists "ores"."dq_subject_area_tbl" (
-    "id" uuid not null,
-    "version" integer not null,
-    "domain_id" uuid not null,
     "name" text not null,
+    "version" integer not null,
+    "domain_name" text not null,
     "description" text not null,
     "modified_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (id, valid_from, valid_to),
+    primary key (name, domain_name, valid_from, valid_to),
     exclude using gist (
-        id WITH =,
+        name WITH =,
+        domain_name WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to")
 );
-
-create unique index if not exists dq_subject_area_name_uniq_idx
-on "ores"."dq_subject_area_tbl" (name, domain_id)
-where valid_to = ores.utility_infinity_timestamp_fn();
 
 create or replace function ores.dq_subject_area_insert_fn()
 returns trigger as $$
@@ -59,10 +55,10 @@ begin
     -- Validate foreign key reference
     if not exists (
         select 1 from ores.dq_data_domain_tbl
-        where id = NEW.domain_id
+        where name = NEW.domain_name
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid domain_id: %. Domain must exist.', NEW.domain_id
+        raise exception 'Invalid domain_name: %. Domain must exist.', NEW.domain_name
         using errcode = '23503';
     end if;
 
@@ -80,5 +76,6 @@ create or replace rule dq_subject_area_delete_rule as
 on delete to "ores"."dq_subject_area_tbl" do instead
     update "ores"."dq_subject_area_tbl"
     set valid_to = current_timestamp
-    where id = OLD.id
+    where name = OLD.name
+      and domain_name = OLD.domain_name
       and valid_to = ores.utility_infinity_timestamp_fn();

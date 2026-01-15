@@ -19,26 +19,21 @@
  */
 
 create table if not exists "ores"."dq_data_domain_tbl" (
-    "id" uuid not null,
-    "version" integer not null,
     "name" text not null,
+    "version" integer not null,
     "description" text not null,
     "modified_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (id, valid_from, valid_to),
+    primary key (name, valid_from, valid_to),
     exclude using gist (
-        id WITH =,
+        name WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to")
 );
-
-create unique index if not exists dq_data_domain_name_uniq_idx
-on "ores"."dq_data_domain_tbl" (name)
-where valid_to = ores.utility_infinity_timestamp_fn();
 
 create or replace function ores.dq_data_domain_insert_fn()
 returns trigger as $$
@@ -69,5 +64,5 @@ create or replace rule dq_data_domain_delete_rule as
 on delete to "ores"."dq_data_domain_tbl" do instead
     update "ores"."dq_data_domain_tbl"
     set valid_to = current_timestamp
-    where id = OLD.id
+    where name = OLD.name
       and valid_to = ores.utility_infinity_timestamp_fn();

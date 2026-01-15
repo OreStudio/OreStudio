@@ -43,29 +43,17 @@ create or replace function ores.upsert_dq_subject_area(
     p_name text,
     p_description text
 ) returns void as $$
-declare
-    v_domain_id uuid;
 begin
-    -- Get the domain ID based on the domain name
-    select id into v_domain_id
-    from ores.dq_data_domain_tbl
-    where name = p_domain_name
-    and valid_to = ores.utility_infinity_timestamp_fn();
-
-    if v_domain_id is null then
-        raise exception 'Domain "%" does not exist', p_domain_name;
-    end if;
-
     if not exists (
         select 1 from ores.dq_subject_area_tbl
-        where name = p_name and domain_id = v_domain_id and valid_to = ores.utility_infinity_timestamp_fn()
+        where name = p_name and domain_name = p_domain_name and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
         insert into ores.dq_subject_area_tbl (
-            id, version, domain_id, name, description,
+            name, version, domain_name, description,
             modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
         values (
-            gen_random_uuid(), 0, v_domain_id, p_name, p_description,
+            p_name, 0, p_domain_name, p_description,
             'system', 'system.new_record', 'System seed data - data quality subject area',
             current_timestamp, ores.utility_infinity_timestamp_fn()
         );

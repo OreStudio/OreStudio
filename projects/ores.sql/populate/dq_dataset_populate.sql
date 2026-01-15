@@ -26,6 +26,7 @@ set schema 'ores';
 
 create or replace function ores.upsert_dq_dataset(
     p_subject_area_name text,
+    p_domain_name text,
     p_origin_code text,
     p_nature_code text,
     p_treatment_code text,
@@ -38,31 +39,29 @@ create or replace function ores.upsert_dq_dataset(
     p_license_info text default null
 ) returns void as $$
 declare
-    v_subject_area_id uuid;
     v_methodology_id uuid;
 begin
-    -- Get related IDs (only for tables that still use UUID PKs)
-    select id into v_subject_area_id from ores.dq_subject_area_tbl where name = p_subject_area_name and valid_to = ores.utility_infinity_timestamp_fn();
+    -- Get methodology ID (only table that still uses UUID PK)
     select id into v_methodology_id from ores.dq_methodology_tbl where name = p_methodology_name and valid_to = ores.utility_infinity_timestamp_fn();
 
-    if v_subject_area_id is null then raise exception 'Subject area not found: %', p_subject_area_name; end if;
     if v_methodology_id is null then raise exception 'Methodology not found: %', p_methodology_name; end if;
 
     if not exists (
         select 1 from ores.dq_dataset_tbl
         where name = p_name
-          and subject_area_id = v_subject_area_id
+          and subject_area_name = p_subject_area_name
+          and domain_name = p_domain_name
           and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
         insert into ores.dq_dataset_tbl (
-            id, version, subject_area_id, origin_code, nature_code, treatment_code, methodology_id,
+            id, version, subject_area_name, domain_name, origin_code, nature_code, treatment_code, methodology_id,
             name, description, source_system_id, business_context,
             upstream_derivation_id, lineage_depth, as_of_date, ingestion_timestamp, license_info,
             modified_by, change_reason_code, change_commentary,
             valid_from, valid_to
         )
         values (
-            gen_random_uuid(), 0, v_subject_area_id, p_origin_code, p_nature_code, p_treatment_code, v_methodology_id,
+            gen_random_uuid(), 0, p_subject_area_name, p_domain_name, p_origin_code, p_nature_code, p_treatment_code, v_methodology_id,
             p_name, p_description, p_source_system_id, p_business_context,
             null, 0, p_as_of_date, current_timestamp, p_license_info,
             'system', 'system.new_record', 'System seed data',
@@ -81,6 +80,7 @@ $$ language plpgsql;
 
 select ores.upsert_dq_dataset(
     'Countries',
+    'Reference Data',
     'Source',
     'Actual',
     'Raw',
@@ -95,6 +95,7 @@ select ores.upsert_dq_dataset(
 
 select ores.upsert_dq_dataset(
     'Countries',
+    'Reference Data',
     'Source',
     'Actual',
     'Raw',
@@ -111,7 +112,7 @@ select ores.upsert_dq_dataset(
 -- Cleanup
 -- =============================================================================
 
-drop function ores.upsert_dq_dataset(text, text, text, text, text, text, text, text, text, date, text);
+drop function ores.upsert_dq_dataset(text, text, text, text, text, text, text, text, text, text, date, text);
 
 -- =============================================================================
 -- Summary

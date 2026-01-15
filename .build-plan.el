@@ -74,7 +74,5 @@
   (error
    (message "Build failed: %s" (error-message-string err))))
 
-(message "Build complete!")
-
 (provide '.build-plan)
 ;;; .build-plan.el ends here

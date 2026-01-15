@@ -93,7 +93,5 @@
   (error
    (message "Build failed: %s" (error-message-string err))))
 
-(message "Build complete!")
-
 (provide '.build-skills)
 ;;; .build-skills.el ends here

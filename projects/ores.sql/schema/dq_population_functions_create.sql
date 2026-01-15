@@ -161,6 +161,10 @@ $$ language plpgsql;
  *
  * IMPORTANT: Images must be populated before countries/currencies
  * to ensure image_id references are valid.
+ *
+ * NOTE: For images, 'upsert' mode behaves like 'insert_only' because
+ * SVG images are immutable - if a key already exists, we skip it.
+ * This allows multiple datasets to contribute images without conflicts.
  */
 create or replace function ores.dq_populate_images(
     p_dataset_id uuid,
@@ -172,7 +176,6 @@ returns table (
 ) as $$
 declare
     v_inserted bigint := 0;
-    v_updated bigint := 0;
     v_skipped bigint := 0;
     v_deleted bigint := 0;
     v_dataset_name text;
@@ -204,54 +207,48 @@ begin
     end if;
 
     -- Process each image from DQ dataset
+    -- Skip images where the key already exists (images are immutable)
     for r in
         select
             dq.image_id,
             dq.key,
             dq.description,
-            dq.svg_data,
-            existing.image_id as existing_image_id
+            dq.svg_data
         from ores.dq_images_artefact_tbl dq
-        left join ores.assets_images_tbl existing
-            on existing.key = dq.key
-            and existing.valid_to = ores.utility_infinity_timestamp_fn()
         where dq.dataset_id = p_dataset_id
+          and not exists (
+              select 1 from ores.assets_images_tbl existing
+              where existing.key = dq.key
+                and existing.valid_to = ores.utility_infinity_timestamp_fn()
+          )
     loop
-        if r.existing_image_id is null then
-            -- Insert new image (preserve the DQ image_id for referential integrity)
-            insert into ores.assets_images_tbl (
-                image_id, version, key, description, svg_data,
-                modified_by, change_reason_code, change_commentary
-            ) values (
-                r.image_id, 0, r.key, r.description, r.svg_data,
-                'dq_population', 'system.external_data_import',
-                'Imported from DQ dataset: ' || v_dataset_name
-            );
-            v_inserted := v_inserted + 1;
-
-        elsif p_mode = 'upsert' then
-            -- Update existing image (insert triggers handle versioning)
-            insert into ores.assets_images_tbl (
-                image_id, version, key, description, svg_data,
-                modified_by, change_reason_code, change_commentary
-            ) values (
-                r.existing_image_id, 0, r.key, r.description, r.svg_data,
-                'dq_population', 'system.external_data_import',
-                'Updated from DQ dataset: ' || v_dataset_name
-            );
-            v_updated := v_updated + 1;
-
-        else
-            -- insert_only mode: skip existing
-            v_skipped := v_skipped + 1;
-        end if;
+        -- Insert new image (preserve the DQ image_id for referential integrity)
+        insert into ores.assets_images_tbl (
+            image_id, version, key, description, svg_data,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            r.image_id, 0, r.key, r.description, r.svg_data,
+            'dq_population', 'system.external_data_import',
+            'Imported from DQ dataset: ' || v_dataset_name
+        );
+        v_inserted := v_inserted + 1;
     end loop;
+
+    -- Count skipped (keys that already existed)
+    select count(*) into v_skipped
+    from ores.dq_images_artefact_tbl dq
+    where dq.dataset_id = p_dataset_id
+      and exists (
+          select 1 from ores.assets_images_tbl existing
+          where existing.key = dq.key
+            and existing.valid_to = ores.utility_infinity_timestamp_fn()
+      );
 
     -- Return summary
     return query
     select 'inserted'::text, v_inserted
-    union all select 'updated'::text, v_updated
     union all select 'skipped'::text, v_skipped
+    where v_skipped > 0
     union all select 'deleted'::text, v_deleted
     where v_deleted > 0;
 end;

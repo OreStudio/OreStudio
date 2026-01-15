@@ -64,7 +64,7 @@ MAJOR_CRYPTOS = {
     'XMR',   # Monero
     'ZEC',   # Zcash
     'PAXG',  # PAX Gold
-    'OKB',   # OKB
+    'AVAX',  # Avalanche
 }
 
 # Special symbols for well-known cryptocurrencies

@@ -32,6 +32,7 @@ DO $$
 declare
     v_countries_dataset_id uuid;
     v_flags_dataset_id uuid;
+    v_placeholder_image_id uuid;
     v_count integer := 0;
 begin
     -- Get the countries dataset ID
@@ -58,6 +59,16 @@ begin
         raise exception 'Dataset not found: Country Flags from lipis/flag-icons';
     end if;
 
+    -- Get the placeholder image (xx.svg = "no flag available")
+    select image_id into v_placeholder_image_id
+    from ores.dq_images_artefact_tbl
+    where dataset_id = v_flags_dataset_id
+      and key = 'xx';
+
+    if v_placeholder_image_id is null then
+        raise warning 'Placeholder image (xx) not found - countries without flags will have NULL image_id';
+    end if;
+
     -- Clear existing countries for this dataset (idempotency)
     delete from ores.dq_countries_artefact_tbl
     where dataset_id = v_countries_dataset_id;
@@ -66,6 +77,7 @@ begin
 
     -- Insert countries with flag image links
     -- The flag images have keys matching lowercase alpha2 codes (e.g., 'us', 'gb')
+    -- Countries without matching flags fall back to the placeholder (xx.svg)
     insert into ores.dq_countries_artefact_tbl (
         dataset_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id
     )
@@ -77,7 +89,7 @@ begin
         c.numeric_code,
         c.name,
         c.official_name,
-        i.image_id
+        coalesce(i.image_id, v_placeholder_image_id)
     from (values
         -- A
         ('AD', 'AND', '020', 'Andorra', 'Principality of Andorra'),
@@ -362,12 +374,12 @@ begin
 
     raise notice 'Successfully populated % countries for dataset: ISO 3166 Countries from Wikipedia', v_count;
 
-    -- Report countries without flags
-    raise notice 'Countries without matching flags:';
+    -- Report countries using placeholder flag
+    raise notice 'Countries using placeholder flag (xx):';
     perform alpha2_code
     from ores.dq_countries_artefact_tbl
     where dataset_id = v_countries_dataset_id
-      and image_id is null;
+      and image_id = v_placeholder_image_id;
 end $$;
 
 -- =============================================================================
@@ -380,10 +392,7 @@ end $$;
 select 'Total DQ Countries' as metric, count(*) as count
 from ores.dq_countries_artefact_tbl
 union all
-select 'Countries with Flags', count(*)
-from ores.dq_countries_artefact_tbl
-where image_id is not null
-union all
-select 'Countries without Flags', count(*)
-from ores.dq_countries_artefact_tbl
-where image_id is null;
+select 'Countries with Placeholder Flag', count(*)
+from ores.dq_countries_artefact_tbl c
+join ores.dq_images_artefact_tbl i on c.image_id = i.image_id
+where i.key = 'xx';

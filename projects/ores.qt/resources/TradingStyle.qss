@@ -138,5 +138,5 @@ QMenu::item:selected {
 }
 
 QMenu::item:disabled {
-    color: rgb(50, 50, 50);
+    color: #646464;
 }

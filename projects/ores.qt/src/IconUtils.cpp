@@ -38,7 +38,9 @@ QIcon IconUtils::createRecoloredIcon(const QString& svgPath, const QColor& color
     }
 
     QIcon recoloredIcon;
-    const QColor disabledColor(50, 50, 50); // Dark gray for disabled state
+    // Disabled color should be visible but clearly dimmed against #1A1A1A background
+    // Using #646464 (100, 100, 100) - matches disabled text styling
+    const QColor disabledColor(100, 100, 100);
 
     for (int size : {16, 20, 24, 32, 48, 64}) {
         QPixmap pixmap = originalIcon.pixmap(size, size);

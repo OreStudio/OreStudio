@@ -1,0 +1,581 @@
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+
+/**
+ * Data Quality Population Functions
+ *
+ * These functions copy data from DQ staging tables to production tables.
+ * Designed to support a future UI for dataset management.
+ *
+ * Usage pattern:
+ *   1. List available datasets: SELECT * FROM ores.dq_list_populatable_datasets();
+ *   2. Preview what will be copied: SELECT * FROM ores.dq_preview_*_population(dataset_id);
+ *   3. Execute the copy: SELECT * FROM ores.dq_populate_*(dataset_id, mode);
+ *
+ * Modes:
+ *   - 'upsert': Insert new records, update existing (default)
+ *   - 'insert_only': Only insert new records, skip existing
+ *   - 'replace_all': Delete all existing, insert fresh (use with caution)
+ */
+
+set schema 'ores';
+
+-- =============================================================================
+-- Discovery Function
+-- =============================================================================
+
+/**
+ * Lists all DQ datasets that can be populated into production tables.
+ * Returns dataset metadata and record counts for UI display.
+ */
+create or replace function ores.dq_list_populatable_datasets()
+returns table (
+    dataset_id uuid,
+    dataset_name text,
+    subject_area_name text,
+    domain_name text,
+    artefact_type text,
+    record_count bigint,
+    source_system_id text,
+    as_of_date date,
+    license_info text
+) as $$
+begin
+    return query
+    -- Images datasets
+    select
+        d.id,
+        d.name,
+        d.subject_area_name,
+        d.domain_name,
+        'images'::text as artefact_type,
+        count(i.image_id)::bigint as record_count,
+        d.source_system_id,
+        d.as_of_date,
+        d.license_info
+    from ores.dq_dataset_tbl d
+    join ores.dq_images_artefact_tbl i on i.dataset_id = d.id
+    where d.valid_to = ores.utility_infinity_timestamp_fn()
+    group by d.id, d.name, d.subject_area_name, d.domain_name,
+             d.source_system_id, d.as_of_date, d.license_info
+
+    union all
+
+    -- Countries datasets
+    select
+        d.id,
+        d.name,
+        d.subject_area_name,
+        d.domain_name,
+        'countries'::text as artefact_type,
+        count(c.alpha2_code)::bigint as record_count,
+        d.source_system_id,
+        d.as_of_date,
+        d.license_info
+    from ores.dq_dataset_tbl d
+    join ores.dq_countries_artefact_tbl c on c.dataset_id = d.id
+    where d.valid_to = ores.utility_infinity_timestamp_fn()
+    group by d.id, d.name, d.subject_area_name, d.domain_name,
+             d.source_system_id, d.as_of_date, d.license_info
+
+    union all
+
+    -- Currencies datasets
+    select
+        d.id,
+        d.name,
+        d.subject_area_name,
+        d.domain_name,
+        'currencies'::text as artefact_type,
+        count(c.iso_code)::bigint as record_count,
+        d.source_system_id,
+        d.as_of_date,
+        d.license_info
+    from ores.dq_dataset_tbl d
+    join ores.dq_currencies_artefact_tbl c on c.dataset_id = d.id
+    where d.valid_to = ores.utility_infinity_timestamp_fn()
+    group by d.id, d.name, d.subject_area_name, d.domain_name,
+             d.source_system_id, d.as_of_date, d.license_info
+
+    order by artefact_type, dataset_name;
+end;
+$$ language plpgsql;
+
+-- =============================================================================
+-- Images Population Functions
+-- =============================================================================
+
+/**
+ * Preview what images would be copied from a DQ dataset.
+ * Shows the action that would be taken for each record.
+ */
+create or replace function ores.dq_preview_image_population(p_dataset_id uuid)
+returns table (
+    action text,
+    image_key text,
+    description text,
+    reason text
+) as $$
+begin
+    return query
+    select
+        case
+            when existing.image_id is not null then 'update'
+            else 'insert'
+        end as action,
+        dq.key as image_key,
+        dq.description,
+        case
+            when existing.image_id is not null then 'Image with this key already exists'
+            else 'New image'
+        end as reason
+    from ores.dq_images_artefact_tbl dq
+    left join ores.assets_images_tbl existing
+        on existing.key = dq.key
+        and existing.valid_to = ores.utility_infinity_timestamp_fn()
+    where dq.dataset_id = p_dataset_id
+    order by dq.key;
+end;
+$$ language plpgsql;
+
+/**
+ * Populate assets_images_tbl from a DQ images dataset.
+ * Returns summary of actions taken.
+ *
+ * IMPORTANT: Images must be populated before countries/currencies
+ * to ensure image_id references are valid.
+ */
+create or replace function ores.dq_populate_images(
+    p_dataset_id uuid,
+    p_mode text default 'upsert'
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_inserted bigint := 0;
+    v_updated bigint := 0;
+    v_skipped bigint := 0;
+    v_deleted bigint := 0;
+    v_dataset_name text;
+    r record;
+begin
+    -- Validate dataset exists
+    select name into v_dataset_name
+    from ores.dq_dataset_tbl
+    where id = p_dataset_id
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    -- Validate mode
+    if p_mode not in ('upsert', 'insert_only', 'replace_all') then
+        raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
+    end if;
+
+    -- Handle replace_all mode: delete all existing images first
+    if p_mode = 'replace_all' then
+        -- Soft delete by setting valid_to
+        update ores.assets_images_tbl
+        set valid_to = current_timestamp
+        where valid_to = ores.utility_infinity_timestamp_fn();
+
+        get diagnostics v_deleted = row_count;
+    end if;
+
+    -- Process each image from DQ dataset
+    for r in
+        select
+            dq.image_id,
+            dq.key,
+            dq.description,
+            dq.svg_data,
+            existing.image_id as existing_image_id
+        from ores.dq_images_artefact_tbl dq
+        left join ores.assets_images_tbl existing
+            on existing.key = dq.key
+            and existing.valid_to = ores.utility_infinity_timestamp_fn()
+        where dq.dataset_id = p_dataset_id
+    loop
+        if r.existing_image_id is null then
+            -- Insert new image (preserve the DQ image_id for referential integrity)
+            insert into ores.assets_images_tbl (
+                image_id, version, key, description, svg_data,
+                modified_by, change_reason_code, change_commentary
+            ) values (
+                r.image_id, 0, r.key, r.description, r.svg_data,
+                'dq_population', 'system.external_data_import',
+                'Imported from DQ dataset: ' || v_dataset_name
+            );
+            v_inserted := v_inserted + 1;
+
+        elsif p_mode = 'upsert' then
+            -- Update existing image (insert triggers handle versioning)
+            insert into ores.assets_images_tbl (
+                image_id, version, key, description, svg_data,
+                modified_by, change_reason_code, change_commentary
+            ) values (
+                r.existing_image_id, 0, r.key, r.description, r.svg_data,
+                'dq_population', 'system.external_data_import',
+                'Updated from DQ dataset: ' || v_dataset_name
+            );
+            v_updated := v_updated + 1;
+
+        else
+            -- insert_only mode: skip existing
+            v_skipped := v_skipped + 1;
+        end if;
+    end loop;
+
+    -- Return summary
+    return query
+    select 'inserted'::text, v_inserted
+    union all select 'updated'::text, v_updated
+    union all select 'skipped'::text, v_skipped
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
+end;
+$$ language plpgsql;
+
+-- =============================================================================
+-- Countries Population Functions
+-- =============================================================================
+
+/**
+ * Preview what countries would be copied from a DQ dataset.
+ */
+create or replace function ores.dq_preview_country_population(p_dataset_id uuid)
+returns table (
+    action text,
+    alpha2_code text,
+    country_name text,
+    has_image boolean,
+    reason text
+) as $$
+begin
+    return query
+    select
+        case
+            when existing.alpha2_code is not null then 'update'
+            else 'insert'
+        end as action,
+        dq.alpha2_code,
+        dq.name as country_name,
+        dq.image_id is not null as has_image,
+        case
+            when existing.alpha2_code is not null then 'Country already exists'
+            else 'New country'
+        end as reason
+    from ores.dq_countries_artefact_tbl dq
+    left join ores.refdata_countries_tbl existing
+        on existing.alpha2_code = dq.alpha2_code
+        and existing.valid_to = ores.utility_infinity_timestamp_fn()
+    where dq.dataset_id = p_dataset_id
+    order by dq.alpha2_code;
+end;
+$$ language plpgsql;
+
+/**
+ * Populate refdata_countries_tbl from a DQ countries dataset.
+ *
+ * IMPORTANT: Ensure images are populated first if you want image_id
+ * references to resolve correctly.
+ */
+create or replace function ores.dq_populate_countries(
+    p_dataset_id uuid,
+    p_mode text default 'upsert'
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_inserted bigint := 0;
+    v_updated bigint := 0;
+    v_skipped bigint := 0;
+    v_deleted bigint := 0;
+    v_dataset_name text;
+    r record;
+    v_resolved_image_id uuid;
+begin
+    -- Validate dataset exists
+    select name into v_dataset_name
+    from ores.dq_dataset_tbl
+    where id = p_dataset_id
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    -- Validate mode
+    if p_mode not in ('upsert', 'insert_only', 'replace_all') then
+        raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
+    end if;
+
+    -- Handle replace_all mode
+    if p_mode = 'replace_all' then
+        update ores.refdata_countries_tbl
+        set valid_to = current_timestamp
+        where valid_to = ores.utility_infinity_timestamp_fn();
+
+        get diagnostics v_deleted = row_count;
+    end if;
+
+    -- Process each country from DQ dataset
+    for r in
+        select
+            dq.alpha2_code,
+            dq.alpha3_code,
+            dq.numeric_code,
+            dq.name,
+            dq.official_name,
+            dq.image_id,
+            existing.alpha2_code as existing_code
+        from ores.dq_countries_artefact_tbl dq
+        left join ores.refdata_countries_tbl existing
+            on existing.alpha2_code = dq.alpha2_code
+            and existing.valid_to = ores.utility_infinity_timestamp_fn()
+        where dq.dataset_id = p_dataset_id
+    loop
+        -- Resolve image_id: check if image exists in assets_images_tbl
+        -- (either by same UUID or by matching key via DQ lookup)
+        if r.image_id is not null then
+            select image_id into v_resolved_image_id
+            from ores.assets_images_tbl
+            where image_id = r.image_id
+              and valid_to = ores.utility_infinity_timestamp_fn();
+
+            -- If not found by ID, image hasn't been populated yet
+            if v_resolved_image_id is null then
+                raise warning 'Image % not found in assets_images_tbl for country %. Populate images first.',
+                    r.image_id, r.alpha2_code;
+            end if;
+        else
+            v_resolved_image_id := null;
+        end if;
+
+        if r.existing_code is null then
+            -- Insert new country
+            insert into ores.refdata_countries_tbl (
+                alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id,
+                modified_by, change_reason_code, change_commentary
+            ) values (
+                r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name, v_resolved_image_id,
+                'dq_population', 'system.external_data_import',
+                'Imported from DQ dataset: ' || v_dataset_name
+            );
+            v_inserted := v_inserted + 1;
+
+        elsif p_mode = 'upsert' then
+            -- Update existing country
+            insert into ores.refdata_countries_tbl (
+                alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id,
+                modified_by, change_reason_code, change_commentary
+            ) values (
+                r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name, v_resolved_image_id,
+                'dq_population', 'system.external_data_import',
+                'Updated from DQ dataset: ' || v_dataset_name
+            );
+            v_updated := v_updated + 1;
+
+        else
+            v_skipped := v_skipped + 1;
+        end if;
+    end loop;
+
+    -- Return summary
+    return query
+    select 'inserted'::text, v_inserted
+    union all select 'updated'::text, v_updated
+    union all select 'skipped'::text, v_skipped
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
+end;
+$$ language plpgsql;
+
+-- =============================================================================
+-- Currencies Population Functions
+-- =============================================================================
+
+/**
+ * Preview what currencies would be copied from a DQ dataset.
+ */
+create or replace function ores.dq_preview_currency_population(p_dataset_id uuid)
+returns table (
+    action text,
+    iso_code text,
+    currency_name text,
+    currency_type text,
+    has_image boolean,
+    reason text
+) as $$
+begin
+    return query
+    select
+        case
+            when existing.iso_code is not null then 'update'
+            else 'insert'
+        end as action,
+        dq.iso_code,
+        dq.name as currency_name,
+        dq.currency_type,
+        dq.image_id is not null as has_image,
+        case
+            when existing.iso_code is not null then 'Currency already exists'
+            else 'New currency'
+        end as reason
+    from ores.dq_currencies_artefact_tbl dq
+    left join ores.refdata_currencies_tbl existing
+        on existing.iso_code = dq.iso_code
+        and existing.valid_to = ores.utility_infinity_timestamp_fn()
+    where dq.dataset_id = p_dataset_id
+    order by dq.iso_code;
+end;
+$$ language plpgsql;
+
+/**
+ * Populate refdata_currencies_tbl from a DQ currencies dataset.
+ *
+ * IMPORTANT: Ensure images are populated first if you want image_id
+ * references to resolve correctly.
+ */
+create or replace function ores.dq_populate_currencies(
+    p_dataset_id uuid,
+    p_mode text default 'upsert'
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_inserted bigint := 0;
+    v_updated bigint := 0;
+    v_skipped bigint := 0;
+    v_deleted bigint := 0;
+    v_dataset_name text;
+    r record;
+    v_resolved_image_id uuid;
+begin
+    -- Validate dataset exists
+    select name into v_dataset_name
+    from ores.dq_dataset_tbl
+    where id = p_dataset_id
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    -- Validate mode
+    if p_mode not in ('upsert', 'insert_only', 'replace_all') then
+        raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
+    end if;
+
+    -- Handle replace_all mode
+    if p_mode = 'replace_all' then
+        update ores.refdata_currencies_tbl
+        set valid_to = current_timestamp
+        where valid_to = ores.utility_infinity_timestamp_fn();
+
+        get diagnostics v_deleted = row_count;
+    end if;
+
+    -- Process each currency from DQ dataset
+    for r in
+        select
+            dq.iso_code,
+            dq.name,
+            dq.numeric_code,
+            dq.symbol,
+            dq.fraction_symbol,
+            dq.fractions_per_unit,
+            dq.rounding_type,
+            dq.rounding_precision,
+            dq.format,
+            dq.currency_type,
+            dq.image_id,
+            existing.iso_code as existing_code
+        from ores.dq_currencies_artefact_tbl dq
+        left join ores.refdata_currencies_tbl existing
+            on existing.iso_code = dq.iso_code
+            and existing.valid_to = ores.utility_infinity_timestamp_fn()
+        where dq.dataset_id = p_dataset_id
+    loop
+        -- Resolve image_id
+        if r.image_id is not null then
+            select image_id into v_resolved_image_id
+            from ores.assets_images_tbl
+            where image_id = r.image_id
+              and valid_to = ores.utility_infinity_timestamp_fn();
+
+            if v_resolved_image_id is null then
+                raise warning 'Image % not found in assets_images_tbl for currency %. Populate images first.',
+                    r.image_id, r.iso_code;
+            end if;
+        else
+            v_resolved_image_id := null;
+        end if;
+
+        if r.existing_code is null then
+            -- Insert new currency
+            insert into ores.refdata_currencies_tbl (
+                iso_code, version, name, numeric_code, symbol, fraction_symbol,
+                fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id,
+                modified_by, change_reason_code, change_commentary
+            ) values (
+                r.iso_code, 0, r.name, r.numeric_code, r.symbol, r.fraction_symbol,
+                r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.currency_type, v_resolved_image_id,
+                'dq_population', 'system.external_data_import',
+                'Imported from DQ dataset: ' || v_dataset_name
+            );
+            v_inserted := v_inserted + 1;
+
+        elsif p_mode = 'upsert' then
+            -- Update existing currency
+            insert into ores.refdata_currencies_tbl (
+                iso_code, version, name, numeric_code, symbol, fraction_symbol,
+                fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id,
+                modified_by, change_reason_code, change_commentary
+            ) values (
+                r.iso_code, 0, r.name, r.numeric_code, r.symbol, r.fraction_symbol,
+                r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.currency_type, v_resolved_image_id,
+                'dq_population', 'system.external_data_import',
+                'Updated from DQ dataset: ' || v_dataset_name
+            );
+            v_updated := v_updated + 1;
+
+        else
+            v_skipped := v_skipped + 1;
+        end if;
+    end loop;
+
+    -- Return summary
+    return query
+    select 'inserted'::text, v_inserted
+    union all select 'updated'::text, v_updated
+    union all select 'skipped'::text, v_skipped
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
+end;
+$$ language plpgsql;

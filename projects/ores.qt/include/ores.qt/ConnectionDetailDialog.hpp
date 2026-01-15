@@ -28,6 +28,7 @@
 #include <QPushButton>
 #include <QDialogButtonBox>
 #include <QCheckBox>
+#include <functional>
 #include <optional>
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/server_environment.hpp"
@@ -38,6 +39,15 @@ class connection_manager;
 }
 
 namespace ores::qt {
+
+/**
+ * @brief Callback type for testing connections.
+ *
+ * Parameters: host, port, username, password
+ * Returns: error message if failed, empty string if successful
+ */
+using TestConnectionCallback = std::function<QString(
+    const QString& host, int port, const QString& username, const QString& password)>;
 
 /**
  * @brief Dialog for creating and editing server environments (connections).
@@ -86,7 +96,15 @@ public:
      */
     bool isAddMode() const { return isAddMode_; }
 
+    /**
+     * @brief Set callback for testing connections.
+     *
+     * If set, a Test button will be shown in the dialog.
+     */
+    void setTestCallback(TestConnectionCallback callback);
+
 private slots:
+    void onTestClicked();
     void onSaveClicked();
     void updateSaveButtonState();
     void onPasswordChanged();
@@ -108,7 +126,9 @@ private:
     QTextEdit* descriptionEdit_;
     QComboBox* folderCombo_;
     QDialogButtonBox* buttonBox_;
+    QPushButton* testButton_;
 
+    TestConnectionCallback testCallback_;
     bool isAddMode_{true};
     bool passwordChanged_{false};
     boost::uuids::uuid environmentId_;

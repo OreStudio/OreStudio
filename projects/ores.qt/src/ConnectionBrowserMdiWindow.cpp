@@ -43,7 +43,11 @@ ConnectionBrowserMdiWindow::ConnectionBrowserMdiWindow(
 ConnectionBrowserMdiWindow::~ConnectionBrowserMdiWindow() = default;
 
 QSize ConnectionBrowserMdiWindow::sizeHint() const {
-    return QSize(600, 400);
+    return {600, 400};
+}
+
+void ConnectionBrowserMdiWindow::setTestCallback(TestConnectionCallback callback) {
+    testCallback_ = std::move(callback);
 }
 
 void ConnectionBrowserMdiWindow::setupUI() {
@@ -258,6 +262,9 @@ void ConnectionBrowserMdiWindow::createConnection() {
 
     ConnectionDetailDialog dialog(manager_, this);
     dialog.setInitialFolder(folderId);
+    if (testCallback_) {
+        dialog.setTestCallback(testCallback_);
+    }
 
     if (dialog.exec() == QDialog::Accepted) {
         try {
@@ -320,6 +327,9 @@ void ConnectionBrowserMdiWindow::editSelected() {
 
         ConnectionDetailDialog dialog(manager_, this);
         dialog.setEnvironment(*env);
+        if (testCallback_) {
+            dialog.setTestCallback(testCallback_);
+        }
 
         if (dialog.exec() == QDialog::Accepted) {
             try {

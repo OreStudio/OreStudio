@@ -25,6 +25,7 @@
 #include <QToolBar>
 #include <QAction>
 #include <QVBoxLayout>
+#include <functional>
 #include <memory>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -36,6 +37,12 @@ class connection_manager;
 namespace ores::qt {
 
 class ConnectionTreeModel;
+
+/**
+ * @brief Callback type for testing connections.
+ */
+using TestConnectionCallback = std::function<QString(
+    const QString& host, int port, const QString& username, const QString& password)>;
 
 /**
  * @brief MDI window for browsing and managing saved server connections.
@@ -63,6 +70,11 @@ public:
     ~ConnectionBrowserMdiWindow() override;
 
     QSize sizeHint() const override;
+
+    /**
+     * @brief Set callback for testing connections from dialogs.
+     */
+    void setTestCallback(TestConnectionCallback callback);
 
 signals:
     void statusChanged(const QString& message);
@@ -118,6 +130,7 @@ private:
 
     std::unique_ptr<ConnectionTreeModel> model_;
     connections::service::connection_manager* manager_;
+    TestConnectionCallback testCallback_;
 };
 
 }

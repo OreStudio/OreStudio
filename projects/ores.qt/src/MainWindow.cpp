@@ -1144,6 +1144,29 @@ void MainWindow::onConnectionBrowserTriggered() {
     // Create the Connection Browser window
     auto* browserWidget = new ConnectionBrowserMdiWindow(connectionManager_.get(), this);
 
+    // Set up test connection callback
+    browserWidget->setTestCallback([this](const QString& host, int port,
+                                           const QString& username, const QString& password) -> QString {
+        if (!clientManager_) {
+            return tr("Client manager not initialized");
+        }
+
+        // Attempt connection and login - this validates both network and credentials
+        auto result = clientManager_->connectAndLogin(
+            host.toStdString(),
+            static_cast<std::uint16_t>(port),
+            username.toStdString(),
+            password.toStdString());
+
+        if (result.success) {
+            // Connection worked - disconnect immediately since this was just a test
+            clientManager_->disconnect();
+            return QString(); // Empty = success
+        }
+
+        return result.error_message;
+    });
+
     // Connect signals
     connect(browserWidget, &ConnectionBrowserMdiWindow::statusChanged,
             this, [this](const QString& message) {

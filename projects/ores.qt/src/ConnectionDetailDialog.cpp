@@ -19,6 +19,7 @@
  */
 #include "ores.qt/ConnectionDetailDialog.hpp"
 #include "ores.connections/service/connection_manager.hpp"
+#include <QtWidgets/QApplication>
 #include <QFormLayout>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -92,8 +93,13 @@ void ConnectionDetailDialog::setupUI() {
 
     layout->addLayout(formLayout);
 
+    // Test button (initially hidden, shown when callback is set)
+    testButton_ = new QPushButton(tr("Test Connection"), this);
+    testButton_->setVisible(false);
+
     buttonBox_ = new QDialogButtonBox(
         QDialogButtonBox::Save | QDialogButtonBox::Cancel, this);
+    buttonBox_->addButton(testButton_, QDialogButtonBox::ActionRole);
     layout->addWidget(buttonBox_);
 
     populateFolderCombo();
@@ -109,6 +115,8 @@ void ConnectionDetailDialog::setupUI() {
             this, &ConnectionDetailDialog::onPasswordChanged);
     connect(showPasswordCheckbox_, &QCheckBox::toggled,
             this, &ConnectionDetailDialog::togglePasswordVisibility);
+    connect(testButton_, &QPushButton::clicked,
+            this, &ConnectionDetailDialog::onTestClicked);
     connect(buttonBox_, &QDialogButtonBox::accepted,
             this, &ConnectionDetailDialog::onSaveClicked);
     connect(buttonBox_, &QDialogButtonBox::rejected,
@@ -276,6 +284,53 @@ bool ConnectionDetailDialog::validateInput() {
     }
 
     return true;
+}
+
+void ConnectionDetailDialog::setTestCallback(TestConnectionCallback callback) {
+    testCallback_ = std::move(callback);
+    testButton_->setVisible(static_cast<bool>(testCallback_));
+}
+
+void ConnectionDetailDialog::onTestClicked() {
+    using namespace ores::logging;
+
+    if (!testCallback_) {
+        return;
+    }
+
+    QString host = hostEdit_->text().trimmed();
+    QString username = usernameEdit_->text().trimmed();
+    QString password = passwordEdit_->text();
+    int port = portSpinBox_->value();
+
+    if (host.isEmpty() || username.isEmpty()) {
+        QMessageBox::warning(this, tr("Test Connection"),
+            tr("Please enter host and username to test the connection."));
+        return;
+    }
+
+    // Disable test button during test
+    testButton_->setEnabled(false);
+    testButton_->setText(tr("Testing..."));
+    QApplication::processEvents();
+
+    BOOST_LOG_SEV(lg(), info) << "Testing connection to " << host.toStdString()
+                              << ":" << port;
+
+    QString error = testCallback_(host, port, username, password);
+
+    testButton_->setEnabled(true);
+    testButton_->setText(tr("Test Connection"));
+
+    if (error.isEmpty()) {
+        QMessageBox::information(this, tr("Test Connection"),
+            tr("Connection successful!"));
+        BOOST_LOG_SEV(lg(), info) << "Connection test successful";
+    } else {
+        QMessageBox::warning(this, tr("Test Connection"),
+            tr("Connection failed: %1").arg(error));
+        BOOST_LOG_SEV(lg(), warn) << "Connection test failed: " << error.toStdString();
+    }
 }
 
 }

@@ -30,6 +30,12 @@
 (require 'ox-publish)
 (require 'org-element)
 
+;; Prevent Emacs from entering debugger or showing full stack traces
+(setq debug-on-error nil)
+
+;; Optionally, also suppress debug-on-quit and debug-on-signal if needed
+(setq debug-on-quit nil)
+
 (with-eval-after-load 'ol
   (org-link-set-parameters
    "proj"
@@ -79,9 +85,13 @@
         ))
 
 ;; Generate the site output
-(org-publish-all t)
-
-(message "Build complete!")
+;; Wrap publishing in error handler to avoid backtraces
+(condition-case err
+    (progn
+      (org-publish-all t)
+      (message "Build complete!"))
+  (error
+   (message "Build failed: %s" (error-message-string err))))
 
 (provide '.build-skills)
 ;;; .build-skills.el ends here

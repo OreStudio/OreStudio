@@ -1339,7 +1339,7 @@ Successfully added permission: currencies:audit
    :header-args+: :wrap src json
    :END:
 
-Country management operations from the [[id:BFD37E19-9CD3-1D74-C683-CA9E40A32E06][ORE Studio Geo Component]].
+Country management operations from the [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C][ORE Studio Geo Component]].
 
 *** Help
 
@@ -1430,7 +1430,7 @@ export ORES_CLI_DB_PASSWORD
    :header-args+: :wrap src json
    :END:
 
-Change reason management operations from the [[id:E8D36E00-5F77-D0B4-B013-5D65707F66EC][ORE Studio Telemetry Component]].
+Change reason management operations from the [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ORE Studio Telemetry Component]].
 
 *** Help
 
@@ -1604,7 +1604,7 @@ export ORES_CLI_DB_PASSWORD
    :header-args+: :wrap src json
    :END:
 
-Change reason category management operations from the [[id:E8D36E00-5F77-D0B4-B013-5D65707F66EC][ORE Studio Telemetry Component]].
+Change reason category management operations from the [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ORE Studio Telemetry Component]].
 
 *** Help
 

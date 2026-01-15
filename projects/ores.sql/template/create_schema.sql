@@ -88,10 +88,25 @@ grant create on schema ores to ores;
 \ir ../schema/assets_images_create.sql
 \ir ../schema/assets_tags_create.sql
 \ir ../schema/assets_image_tags_create.sql
-\ir ../schema/assets_images_functions_create.sql
 
 -- Geo tables and functions
 \ir ../schema/geo_ip2country_create.sql
+
+-- Data Quality tables
+\ir ../schema/dq_data_domain_create.sql
+\ir ../schema/dq_subject_area_create.sql
+\ir ../schema/dq_origin_dimension_create.sql
+\ir ../schema/dq_nature_dimension_create.sql
+\ir ../schema/dq_treatment_dimension_create.sql
+\ir ../schema/dq_methodology_create.sql
+\ir ../schema/dq_dataset_create.sql
+\ir ../schema/dq_countries_artefact_create.sql
+\ir ../schema/dq_currencies_artefact_create.sql
+\ir ../schema/dq_images_artefact_create.sql
+\ir ../schema/dq_tags_artefact_create.sql
+\ir ../schema/dq_image_tags_artefact_create.sql
+\ir ../schema/dq_functions_create.sql
+\ir ../schema/dq_population_functions_create.sql
 
 -- NOTE: The template database contains schema only, no data.
 -- To seed data after creating an instance:

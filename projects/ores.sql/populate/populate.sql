@@ -26,19 +26,20 @@
  * safely re-run without creating duplicate data.
  *
  * This script is run automatically during template creation and seeds:
- * 1. RBAC: Permissions, roles, role-permission assignments
- * 2. System Flags: Bootstrap mode, user signups, etc.
- * 3. Flag Images: Country flags and placeholder images
- * 4. Currency-to-Flag Mappings: Links currencies to their flag images
- *
- * NOTE: Currencies themselves are imported separately via the CLI:
- *   ores.cli import currencies <file.xml>
- *
- * After importing currencies, re-run this script to assign flag mappings.
+ * 1. Change Control: Change reasons and categories
+ * 2. Data Quality: Dimensions, domains, subject areas, methodologies, datasets
+ * 3. DQ Artefacts: Images, countries, currencies (staging data)
+ * 4. Production Data: Images, countries, currencies (via DQ population functions)
+ * 5. RBAC: Permissions, roles, role-permission assignments
+ * 6. System Flags: Bootstrap mode, user signups, etc.
  *
  * Usage:
  *   psql -U ores -d your_database -f populate/populate.sql
  */
+
+-- Suppress noisy output during population
+\timing off
+\pset tuples_only on
 
 \echo '=== Starting System Population ==='
 \echo ''
@@ -46,6 +47,38 @@
 -- Change Control (must be populated before entities that use reasons)
 \echo '--- Change Control ---'
 \ir dq_change_reasons_populate.sql
+
+-- Data Quality Data Domains
+\echo ''
+\echo '--- Data Quality Data Domains ---'
+\ir dq_data_domain_populate.sql
+
+-- Data Quality Dimensions
+\echo ''
+\echo '--- Data Quality Dimensions ---'
+\ir dq_origin_dimension_populate.sql
+\ir dq_nature_dimension_populate.sql
+\ir dq_treatment_dimension_populate.sql
+
+-- Data Quality Subject Areas
+\echo ''
+\echo '--- Data Quality Subject Areas ---'
+\ir dq_subject_area_populate.sql
+
+-- Data Quality Methodologies
+\echo ''
+\echo '--- Data Quality Methodologies ---'
+\ir dq_methodology_populate.sql
+
+-- Data Quality Datasets
+\echo ''
+\echo '--- Data Quality Datasets ---'
+\ir dq_dataset_populate.sql
+\ir dq_flags_images_artefact_populate.sql
+\ir dq_crypto_images_artefact_populate.sql
+\ir dq_countries_artefact_populate.sql
+\ir dq_currencies_artefact_populate.sql
+\ir dq_cryptocurrencies_artefact_populate.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''
@@ -58,27 +91,17 @@
 \echo '--- System Flags ---'
 \ir variability_system_flags_populate.sql
 
--- Flag Images
+-- Production Data (populated from DQ staging tables)
 \echo ''
-\echo '--- Flag Images ---'
-\ir assets_load_flags.sql
-\ir assets_flags_populate.sql
-
--- Currency-to-Flag Mappings
-\echo ''
-\echo '--- Currency Image Mappings ---'
-\ir assets_currency_images_populate.sql
-
--- Countries
-\echo ''
-\echo '--- Countries ---'
-\ir refdata_countries_populate.sql
-\ir assets_country_images_populate.sql
+\echo '--- Production Data (from DQ) ---'
+\ir dq_populate_production.sql
 
 \echo ''
 \echo '=== System Population Complete ==='
 
--- Summary
+-- Summary - restore normal output format
+\pset tuples_only off
+
 \echo ''
 \echo '--- Summary ---'
 
@@ -91,7 +114,22 @@ union all
 select 'Countries with Flags', count(*)
 from ores.refdata_countries_tbl where image_id is not null and valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Currencies with Flags', count(*)
+select 'Currencies (fiat.major)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'fiat.major' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (fiat.emerging)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'fiat.emerging' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (commodity)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'commodity' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (supranational)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'supranational' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (crypto.major)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'crypto.major' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies with Images', count(*)
 from ores.refdata_currencies_tbl where image_id is not null and valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Flag Images', count(*)
@@ -108,4 +146,31 @@ from ores.iam_roles_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'System Flags', count(*)
 from ores.variability_feature_flags_tbl where name like 'system.%' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Origin Dimensions', count(*)
+from ores.dq_origin_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Nature Dimensions', count(*)
+from ores.dq_nature_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Treatment Dimensions', count(*)
+from ores.dq_treatment_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Data Domains', count(*)
+from ores.dq_data_domain_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Subject Areas', count(*)
+from ores.dq_subject_area_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Datasets', count(*)
+from ores.dq_dataset_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Images', count(*)
+from ores.dq_images_artefact_tbl
+union all
+select 'Data Quality Countries', count(*)
+from ores.dq_countries_artefact_tbl
+union all
+select 'Data Quality Currencies', count(*)
+from ores.dq_currencies_artefact_tbl
 order by entity;

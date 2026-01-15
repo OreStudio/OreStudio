@@ -1,0 +1,151 @@
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+
+create table if not exists "ores"."dq_dataset_tbl" (
+    "id" uuid not null,
+    "version" integer not null,
+    "subject_area_name" text not null,
+    "domain_name" text not null,
+    "origin_code" text not null,
+    "nature_code" text not null,
+    "treatment_code" text not null,
+    "methodology_id" uuid,
+    "name" text not null,
+    "description" text not null,
+    "source_system_id" text not null,
+    "business_context" text not null,
+    "upstream_derivation_id" uuid,
+    "lineage_depth" integer not null,
+    "as_of_date" date not null,
+    "ingestion_timestamp" timestamp with time zone not null,
+    "license_info" text,
+    "modified_by" text not null,
+    "change_reason_code" text not null,
+    "change_commentary" text not null,
+    "valid_from" timestamp with time zone not null,
+    "valid_to" timestamp with time zone not null,
+    primary key (id, valid_from, valid_to),
+    exclude using gist (
+        id WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+    check ("valid_from" < "valid_to")
+);
+
+create unique index if not exists dq_dataset_name_uniq_idx
+on "ores"."dq_dataset_tbl" (name, subject_area_name, domain_name)
+where valid_to = ores.utility_infinity_timestamp_fn();
+
+create or replace function ores.dq_dataset_insert_fn()
+returns trigger as $$
+begin
+    if NEW.valid_from is null then
+        NEW.valid_from := current_timestamp;
+    end if;
+
+    if NEW.valid_to is null then
+        NEW.valid_to := ores.utility_infinity_timestamp_fn();
+    end if;
+
+    if NEW.version is null then
+        NEW.version := 0;
+    end if;
+
+    -- Validate foreign key references
+    if not exists (
+        select 1 from ores.dq_subject_area_tbl
+        where name = NEW.subject_area_name
+        and domain_name = NEW.domain_name
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid subject_area_name/domain_name: %/%. Subject area must exist.', NEW.subject_area_name, NEW.domain_name
+        using errcode = '23503';
+    end if;
+
+    if not exists (
+        select 1 from ores.dq_origin_dimension_tbl
+        where code = NEW.origin_code
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid origin_code: %. Origin dimension must exist.', NEW.origin_code
+        using errcode = '23503';
+    end if;
+
+    if not exists (
+        select 1 from ores.dq_nature_dimension_tbl
+        where code = NEW.nature_code
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid nature_code: %. Nature dimension must exist.', NEW.nature_code
+        using errcode = '23503';
+    end if;
+
+    if not exists (
+        select 1 from ores.dq_treatment_dimension_tbl
+        where code = NEW.treatment_code
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid treatment_code: %. Treatment dimension must exist.', NEW.treatment_code
+        using errcode = '23503';
+    end if;
+
+    if NEW.methodology_id is not null and not exists (
+        select 1 from ores.dq_methodology_tbl
+        where id = NEW.methodology_id
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid methodology_id: %. Methodology must exist.', NEW.methodology_id
+        using errcode = '23503';
+    end if;
+
+    if NEW.upstream_derivation_id is not null and not exists (
+        select 1 from ores.dq_dataset_tbl
+        where id = NEW.upstream_derivation_id
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid upstream_derivation_id: %. Upstream dataset must exist.', NEW.upstream_derivation_id
+        using errcode = '23503';
+    end if;
+
+    if NEW.upstream_derivation_id is null then
+        NEW.lineage_depth := 0;
+    else
+        select COALESCE((select lineage_depth from ores.dq_dataset_tbl
+                         where id = NEW.upstream_derivation_id
+                         and valid_to = ores.utility_infinity_timestamp_fn()), 0) + 1
+        into NEW.lineage_depth;
+    end if;
+
+    NEW.change_reason_code := ores.refdata_validate_change_reason_fn(NEW.change_reason_code);
+
+    return NEW;
+end;
+$$ language plpgsql;
+
+create or replace trigger dq_dataset_insert_trg
+before insert on "ores"."dq_dataset_tbl"
+for each row execute function ores.dq_dataset_insert_fn();
+
+create or replace rule dq_dataset_delete_rule as
+on delete to "ores"."dq_dataset_tbl" do instead
+    update "ores"."dq_dataset_tbl"
+    set valid_to = current_timestamp
+    where id = OLD.id
+      and valid_to = ores.utility_infinity_timestamp_fn();

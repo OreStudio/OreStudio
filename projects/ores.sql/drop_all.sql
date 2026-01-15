@@ -21,8 +21,17 @@
 -- Geo
 \ir ./drop/geo_ip2country_drop.sql
 
+-- Data Quality
+\ir ./drop/dq_countries_artefact_drop.sql
+\ir ./drop/dq_dataset_drop.sql
+\ir ./drop/dq_methodology_drop.sql
+\ir ./drop/dq_treatment_dimension_drop.sql
+\ir ./drop/dq_nature_dimension_drop.sql
+\ir ./drop/dq_origin_dimension_drop.sql
+\ir ./drop/dq_subject_area_drop.sql
+\ir ./drop/dq_data_domain_drop.sql
+
 -- Assets
-\ir ./drop/assets_images_functions_drop.sql
 \ir ./drop/assets_image_tags_drop.sql
 \ir ./drop/assets_tags_drop.sql
 \ir ./drop/assets_images_drop.sql

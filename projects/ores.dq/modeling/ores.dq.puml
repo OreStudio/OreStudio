@@ -1,4 +1,4 @@
-' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
 '
 ' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
 '
@@ -24,10 +24,372 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     note "Data Quality: Stores meta-data types\nfor tracking and ensuring data quality,\nincluding lineage, provenance, and\nvalidation metadata." as ores_dq_note
     dq --- ores_dq_note
-    namespace dq #F2F2F2 {
 
+    namespace dq #F2F2F2 {
+        '
+        ' Domain namespace
+        '
+        namespace domain #F2F2F2 {
+            '
+            ' Class definitions
+            '
+            class change_reason_category #F7E5FF {
+                +{field} version : int
+                +{field} code : std::string
+                +{field} description : std::string
+                +{field} recorded_by : std::string
+                +{field} change_commentary : std::string
+                +{field} recorded_at : time_point
+            }
+
+            note top of change_reason_category
+            Groups change reasons into logical categories.
+
+            Categories define the namespace for change reasons
+            and determine which reasons apply to which entity types.
+            Examples: static_data, trade, market_data, system.
+            end note
+
+            class change_reason #F7E5FF {
+                +{field} version : int
+                +{field} code : std::string
+                +{field} description : std::string
+                +{field} category_code : std::string
+                +{field} applies_to_amend : bool
+                +{field} applies_to_delete : bool
+                +{field} requires_commentary : bool
+                +{field} display_order : int
+                +{field} recorded_by : std::string
+                +{field} change_commentary : std::string
+                +{field} recorded_at : time_point
+            }
+
+            note top of change_reason
+            Defines a specific reason for record changes.
+
+            Provides controlled vocabulary for documenting why
+            records are modified. Format: "category.reason_name".
+            Examples: system.new, static_data.front_office_error.
+            end note
+        }
+
+        '
+        ' Repository namespace
+        '
+        namespace repository #F2F2F2 {
+            '
+            ' Class definitions
+            '
+            class change_reason_category_entity <<orm>> #99CB99 {
+                +{field} code : PrimaryKey
+                +{field} version : int
+                +{field} description : std::string
+                +{field} modified_by : std::string
+                +{field} change_commentary : std::string
+                +{field} valid_from : Timestamp
+                +{field} valid_to : Timestamp
+            }
+
+            note top of change_reason_category_entity
+            Represents a change_reason_category in the database.
+
+            ORM Settings:
+            - Schema: ores
+            - Table: dq_change_reason_categories_tbl
+            end note
+
+            class change_reason_category_mapper <<orm>> #99CB99 {
+                +{static} map(entity) : change_reason_category
+                +{static} map(domain) : change_reason_category_entity
+            }
+
+            note top of change_reason_category_mapper
+            Maps change_reason_category domain entities
+            to data storage layer and vice-versa.
+            end note
+
+            class change_reason_category_repository <<orm>> #99CB99 {
+                +change_reason_category_repository(ctx)
+                +sql() : std::string
+                +write(category) : void
+                +read_latest() : vector
+                +read_latest(code) : vector
+                +get_total_count() : uint32_t
+                +read_all(code) : vector
+                +remove(code) : void
+            }
+
+            note top of change_reason_category_repository
+            Reads and writes change_reason_categories
+            to data storage.
+            end note
+
+            class change_reason_entity <<orm>> #99CB99 {
+                +{field} code : PrimaryKey
+                +{field} version : int
+                +{field} description : std::string
+                +{field} category_code : std::string
+                +{field} applies_to_amend : bool
+                +{field} applies_to_delete : bool
+                +{field} requires_commentary : bool
+                +{field} display_order : int
+                +{field} modified_by : std::string
+                +{field} change_commentary : std::string
+                +{field} valid_from : Timestamp
+                +{field} valid_to : Timestamp
+            }
+
+            note top of change_reason_entity
+            Represents a change_reason in the database.
+
+            ORM Settings:
+            - Schema: ores
+            - Table: dq_change_reasons_tbl
+            end note
+
+            class change_reason_mapper <<orm>> #99CB99 {
+                +{static} map(entity) : change_reason
+                +{static} map(domain) : change_reason_entity
+            }
+
+            note top of change_reason_mapper
+            Maps change_reason domain entities
+            to data storage layer and vice-versa.
+            end note
+
+            class change_reason_repository <<orm>> #99CB99 {
+                +change_reason_repository(ctx)
+                +sql() : std::string
+                +write(reason) : void
+                +read_latest() : vector
+                +read_latest(code) : vector
+                +read_latest_by_category(code) : vector
+                +get_total_count() : uint32_t
+                +read_all(code) : vector
+                +remove(code) : void
+            }
+
+            note top of change_reason_repository
+            Reads and writes change_reasons
+            to data storage.
+            end note
+        }
+
+        '
+        ' Service namespace
+        '
+        namespace service #F2F2F2 {
+            class change_management_service #ECECEC {
+                +change_management_service(ctx)
+                +list_categories() : vector
+                +find_category(code) : optional
+                +create_category(category) : change_reason_category
+                +update_category(category) : void
+                +remove_category(code) : void
+                +list_reasons() : vector
+                +find_reason(code) : optional
+                +create_reason(reason) : change_reason
+                +update_reason(reason) : void
+                +remove_reason(code) : void
+                +is_valid_reason_code(code) : bool
+                +is_valid_category_code(code) : bool
+            }
+
+            note top of change_management_service
+            Service for managing change reason categories
+            and change reasons.
+
+            Provides CRUD operations for both categories
+            and reasons, plus validation of codes.
+            end note
+        }
+
+        '
+        ' Messaging namespace
+        '
+        namespace messaging #F2F2F2 {
+            '
+            ' Class definitions - Category messages
+            '
+            class get_change_reason_categories_request <<message>> #E1F5FF {
+                +serialize() : bytes
+                +{static} deserialize(data) : expected
+            }
+
+            class get_change_reason_categories_response <<message>> #E1F5FF {
+                +{field} categories : vector
+                +serialize() : bytes
+                +{static} deserialize(data) : expected
+            }
+
+            class save_change_reason_category_request <<message>> #E1F5FF {
+                +{field} category : change_reason_category
+                +serialize() : bytes
+                +{static} deserialize(data) : expected
+            }
+
+            class save_change_reason_category_response <<message>> #E1F5FF {
+                +{field} success : bool
+                +{field} message : std::string
+                +serialize() : bytes
+                +{static} deserialize(data) : expected
+            }
+
+            class delete_change_reason_category_request <<message>> #E1F5FF {
+                +{field} codes : vector
+                +serialize() : bytes
+                +{static} deserialize(data) : expected
+            }
+
+            class delete_change_reason_category_response <<message>> #E1F5FF {
+                +{field} results : vector
+                +serialize() : bytes
+                +{static} deserialize(data) : expected
+            }
+
+            '
+            ' Class definitions - Reason messages
+            '
+            class get_change_reasons_request <<message>> #E1F5FF {
+                +serialize() : bytes
+                +{static} deserialize(data) : expected
+            }
+
+            class get_change_reasons_response <<message>> #E1F5FF {
+                +{field} reasons : vector
+                +serialize() : bytes
+                +{static} deserialize(data) : expected
+            }
+
+            class save_change_reason_request <<message>> #E1F5FF {
+                +{field} reason : change_reason
+                +serialize() : bytes
+                +{static} deserialize(data) : expected
+            }
+
+            class save_change_reason_response <<message>> #E1F5FF {
+                +{field} success : bool
+                +{field} message : std::string
+                +serialize() : bytes
+                +{static} deserialize(data) : expected
+            }
+
+            class delete_change_reason_request <<message>> #E1F5FF {
+                +{field} codes : vector
+                +serialize() : bytes
+                +{static} deserialize(data) : expected
+            }
+
+            class delete_change_reason_response <<message>> #E1F5FF {
+                +{field} results : vector
+                +serialize() : bytes
+                +{static} deserialize(data) : expected
+            }
+        }
+
+        '
+        ' Eventing namespace
+        '
+        namespace eventing #F2F2F2 {
+            class change_reason_category_changed_event #F7E5FF {
+                +{field} timestamp : time_point
+                +{field} category_codes : vector
+            }
+
+            note top of change_reason_category_changed_event
+            Domain event indicating that change
+            reason category data has changed.
+            end note
+
+            class change_reason_changed_event #F7E5FF {
+                +{field} timestamp : time_point
+                +{field} reason_codes : vector
+            }
+
+            note top of change_reason_changed_event
+            Domain event indicating that change
+            reason data has changed.
+            end note
+        }
+
+        '
+        ' Generators namespace
+        '
+        namespace generators #F2F2F2 {
+            class generate_synthetic_change_reason_category <<generator>> #D89EF1 {
+                +{static} generate() : change_reason_category
+            }
+
+            note top of generate_synthetic_change_reason_category
+            Generates synthetic change_reason_category
+            instances for testing.
+            end note
+
+            class generate_synthetic_change_reason <<generator>> #D89EF1 {
+                +{static} generate() : change_reason
+            }
+
+            note top of generate_synthetic_change_reason
+            Generates synthetic change_reason
+            instances for testing.
+            end note
+        }
+
+        '
+        ' Tests namespace
+        '
+        namespace tests #F2F2F2 {
+            class domain_change_reason_category_tests <<test suite>> #C5E1A5 {
+                +create_change_reason_category_with_valid_fields() : void
+                +change_reason_category_convert_single_to_table() : void
+            }
+
+            note top of domain_change_reason_category_tests
+            Test suite for change_reason_category domain model.
+
+            Tests cover creation and table conversion.
+            end note
+
+            class domain_change_reason_tests <<test suite>> #C5E1A5 {
+                +create_change_reason_with_valid_fields() : void
+                +change_reason_convert_single_to_table() : void
+            }
+
+            note top of domain_change_reason_tests
+            Test suite for change_reason domain model.
+
+            Tests cover creation and table conversion.
+            end note
+        }
     }
 }
+
+'
+' Relationships
+'
+
+' Domain relationships
+ores::dq::domain::change_reason o-- ores::dq::domain::change_reason_category : category_code
+
+' Repository to domain relationships
+ores::dq::repository::change_reason_category_mapper ..> ores::dq::domain::change_reason_category : maps
+ores::dq::repository::change_reason_category_mapper ..> ores::dq::repository::change_reason_category_entity : maps
+ores::dq::repository::change_reason_category_repository ..> ores::dq::domain::change_reason_category : uses
+ores::dq::repository::change_reason_mapper ..> ores::dq::domain::change_reason : maps
+ores::dq::repository::change_reason_mapper ..> ores::dq::repository::change_reason_entity : maps
+ores::dq::repository::change_reason_repository ..> ores::dq::domain::change_reason : uses
+
+' Service relationships
+ores::dq::service::change_management_service *-- ores::dq::repository::change_reason_category_repository
+ores::dq::service::change_management_service *-- ores::dq::repository::change_reason_repository
+
+' Generator relationships
+ores::dq::generators::generate_synthetic_change_reason_category ..> ores::dq::domain::change_reason_category : generates
+ores::dq::generators::generate_synthetic_change_reason ..> ores::dq::domain::change_reason : generates
+
+' Test relationships
+ores::dq::tests::domain_change_reason_category_tests ..> ores::dq::domain::change_reason_category : tests
+ores::dq::tests::domain_change_reason_tests ..> ores::dq::domain::change_reason : tests
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.dq.puml"

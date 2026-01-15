@@ -28,15 +28,17 @@
 
 (setq prodigy-list-format
       [("Marked" 6 t :right-align t)
-       ("Name" 60 t)
-       ("Status" 15 t)
-       ("Tags" 25 nil)])
+       ("Name" 35 t)
+       ("Port" 8 t)
+       ("Env" 8 t)
+       ("Config" 8 t)
+       ("Status" 10 t)])
 
 (autoload 'prodigy-define-tag "prodigy")
 (autoload 'prodigy-define-service "prodigy")
 (defvar prodigy-services)
 
-(defvar ores/checkout-label
+(defconst ores/checkout-label
   (let* ((pr (project-current t))
          (root (directory-file-name (expand-file-name (project-root pr))))
          (dir-name (file-name-nondirectory root)))
@@ -45,7 +47,7 @@
       dir-name))
   "The checkout label derived from the project directory name.")
 
-(defvar ores/checkout-tag (intern ores/checkout-label)
+(defconst ores/checkout-tag (intern ores/checkout-label)
   "The tag symbol for the current checkout.")
 
 ;; Remove existing services for THIS checkout only, to allow reloading without
@@ -130,7 +132,7 @@ configured database name and user."
 (prodigy-define-tag :name 'ui)
 (prodigy-define-tag :name 'debug)
 (prodigy-define-tag :name 'release)
-(prodigy-define-tag ores/checkout-tag)
+(prodigy-define-tag :name ores/checkout-tag)
 
 (prodigy-define-tag
   :name 'comms-service
@@ -151,8 +153,13 @@ Includes database credentials and JWT secret from auth-source."
   :name 'wt-server
   :env (ores/setup-environment "WT"))
 
+(defun ores/service-name (base config)
+  "Generate unique service name from BASE, CONFIG (debug/release) and checkout."
+  (let ((cfg-char (if (eq config 'debug) "D" "R")))
+    (format "%s [%s:%s]" base cfg-char ores/checkout-label)))
+
 (prodigy-define-service
-  :name (format "ORE Studio QT - Debug - %s" ores/checkout-label)
+  :name (ores/service-name "ORE Studio QT" 'debug)
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--compression-enabled")
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
@@ -161,7 +168,7 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name (format "ORE Studio QT - Release - %s" ores/checkout-label)
+  :name (ores/service-name "ORE Studio QT" 'release)
   :cwd (concat (ores/path-to-publish 'release) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--compression-enabled")
   :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
@@ -170,7 +177,7 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name (format "ORE Studio QT Blue - Debug - %s" ores/checkout-label)
+  :name (ores/service-name "ORE Studio QT Blue" 'debug)
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.blue.log" "--compression-enabled" "--instance-name" "Blue Debug" "--instance-color" "2196F3")
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
@@ -179,7 +186,7 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name (format "ORE Studio QT Blue - Release - %s" ores/checkout-label)
+  :name (ores/service-name "ORE Studio QT Blue" 'release)
   :cwd (concat (ores/path-to-publish 'release) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.blue.log" "--compression-enabled" "--instance-name" "Blue Release" "--instance-color" "2196F3")
   :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
@@ -188,7 +195,7 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name (format "ORE Studio QT Red - Debug - %s" ores/checkout-label)
+  :name (ores/service-name "ORE Studio QT Red" 'debug)
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.red.log" "--compression-enabled" "--instance-name" "Red Debug" "--instance-color" "F44336")
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
@@ -197,7 +204,7 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name (format "ORE Studio QT Red - Release - %s" ores/checkout-label)
+  :name (ores/service-name "ORE Studio QT Red" 'release)
   :cwd (concat (ores/path-to-publish 'release) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.red.log" "--compression-enabled" "--instance-name" "Red Release" "--instance-color" "F44336")
   :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
@@ -206,7 +213,7 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name (format "ORE Studio QT Green - Debug - %s" ores/checkout-label)
+  :name (ores/service-name "ORE Studio QT Green" 'debug)
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.green.log" "--compression-enabled" "--instance-name" "Green Debug" "--instance-color" "4CAF50")
   :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
@@ -215,7 +222,7 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name (format "ORE Studio QT Green - Release - %s" ores/checkout-label)
+  :name (ores/service-name "ORE Studio QT Green" 'release)
   :cwd (concat (ores/path-to-publish 'release) "/bin")
   :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.green.log" "--compression-enabled" "--instance-name" "Green Release" "--instance-color" "4CAF50")
   :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
@@ -224,7 +231,7 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name (format "ORE Studio Comms Service - Debug - %s" ores/checkout-label)
+  :name (ores/service-name "ORE Studio Comms Service" 'debug)
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
   :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
           "--port" ,(number-to-string (ores/get-port 'binary 'debug)))
@@ -234,7 +241,7 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name (format "ORE Studio Comms Service - Release - %s" ores/checkout-label)
+  :name (ores/service-name "ORE Studio Comms Service" 'release)
   :cwd (concat (ores/path-to-publish 'release) "/bin")
   :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
           "--port" ,(number-to-string (ores/get-port 'binary 'release)))
@@ -244,7 +251,7 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name (format "ORE Studio HTTP Server - Debug - %s" ores/checkout-label)
+  :name (ores/service-name "ORE Studio HTTP Server" 'debug)
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
   :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
           "--port" ,(number-to-string (ores/get-port 'http 'debug)))
@@ -254,7 +261,7 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name (format "ORE Studio HTTP Server - Release - %s" ores/checkout-label)
+  :name (ores/service-name "ORE Studio HTTP Server" 'release)
   :cwd (concat (ores/path-to-publish 'release) "/bin")
   :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
           "--port" ,(number-to-string (ores/get-port 'http 'release)))
@@ -264,7 +271,7 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name (format "ORE Studio WT Server - Debug - %s" ores/checkout-label)
+  :name (ores/service-name "ORE Studio WT Server" 'debug)
   :cwd (concat (ores/path-to-publish 'debug) "/bin")
   :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
           "--http-address" "0.0.0.0" "--docroot" "."
@@ -277,7 +284,7 @@ Includes database credentials and JWT secret from auth-source."
   :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
-  :name (format "ORE Studio WT Server - Release - %s" ores/checkout-label)
+  :name (ores/service-name "ORE Studio WT Server" 'release)
   :cwd (concat (ores/path-to-publish 'release) "/bin")
   :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
           "--http-address" "0.0.0.0" "--docroot" "."
@@ -288,6 +295,175 @@ Includes database credentials and JWT secret from auth-source."
          ,@(ores/setup-environment "WT"))
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
+
+;; =============================================================================
+;; Color-code services by checkout in prodigy buffer
+;; =============================================================================
+
+;; Clean up any stale hooks from previous loads
+(remove-hook 'prodigy-mode-hook #'ores/prodigy-setup-font-lock)
+(remove-hook 'prodigy-mode-hook #'ores/prodigy-add-font-lock)
+
+;; Environment faces - proced-inspired color scheme
+;; Using face-spec-set with face-defface-spec to ensure colors update on reload
+(defface ores/prodigy-local1-face '((t)) "Face for local1." :group 'ores)
+(face-spec-set 'ores/prodigy-local1-face '((t :foreground "#8a2be2")) 'face-defface-spec)
+
+(defface ores/prodigy-local2-face '((t)) "Face for local2." :group 'ores)
+(face-spec-set 'ores/prodigy-local2-face '((t :foreground "#5085ef")) 'face-defface-spec)
+
+(defface ores/prodigy-local3-face '((t)) "Face for local3." :group 'ores)
+(face-spec-set 'ores/prodigy-local3-face '((t :foreground "#ded93e")) 'face-defface-spec)
+
+(defface ores/prodigy-local4-face '((t)) "Face for local4." :group 'ores)
+(face-spec-set 'ores/prodigy-local4-face '((t :foreground "#6d5cc3")) 'face-defface-spec)
+
+(defface ores/prodigy-local5-face '((t)) "Face for local5." :group 'ores)
+(face-spec-set 'ores/prodigy-local5-face '((t :foreground "#1e90ff")) 'face-defface-spec)
+
+(defface ores/prodigy-remote-face '((t)) "Face for remote." :group 'ores)
+(face-spec-set 'ores/prodigy-remote-face '((t :foreground "DeepSkyBlue")) 'face-defface-spec)
+
+;; Configuration faces - proced-inspired
+(defface ores/prodigy-debug-face '((t)) "Face for debug." :group 'ores)
+(face-spec-set 'ores/prodigy-debug-face '((t :foreground "#5085ef")) 'face-defface-spec)
+
+(defface ores/prodigy-release-face '((t)) "Face for release." :group 'ores)
+(face-spec-set 'ores/prodigy-release-face '((t :foreground "#5085bf")) 'face-defface-spec)
+
+;; Name and port faces - proced-inspired
+(defface ores/prodigy-name-face '((t)) "Face for name." :group 'ores)
+(face-spec-set 'ores/prodigy-name-face '((t :foreground "DeepSkyBlue")) 'face-defface-spec)
+
+(defface ores/prodigy-port-face '((t)) "Face for port." :group 'ores)
+(face-spec-set 'ores/prodigy-port-face '((t :foreground "#40e0d0")) 'face-defface-spec)
+
+;; Force recalculation of all faces
+(dolist (face '(ores/prodigy-local1-face ores/prodigy-local2-face ores/prodigy-local3-face
+                ores/prodigy-local4-face ores/prodigy-local5-face ores/prodigy-remote-face
+                ores/prodigy-debug-face ores/prodigy-release-face
+                ores/prodigy-name-face ores/prodigy-port-face))
+  (face-spec-recalc face nil))
+
+(defvar ores/prodigy-env-faces
+  '((local1 . ores/prodigy-local1-face)
+    (local2 . ores/prodigy-local2-face)
+    (local3 . ores/prodigy-local3-face)
+    (local4 . ores/prodigy-local4-face)
+    (local5 . ores/prodigy-local5-face)
+    (remote . ores/prodigy-remote-face))
+  "Alist mapping environment tags to faces.")
+
+(defvar ores/prodigy-config-faces
+  '((debug . ores/prodigy-debug-face)
+    (release . ores/prodigy-release-face))
+  "Alist mapping configuration tags to faces.")
+
+(defun ores/prodigy-get-env (service)
+  "Extract environment (local1, local2, etc.) from SERVICE tags."
+  (let ((tags (plist-get service :tags)))
+    (cl-find-if (lambda (tag)
+                  (assq tag ores/prodigy-env-faces))
+                tags)))
+
+(defun ores/prodigy-get-config (service)
+  "Extract configuration (debug, release) from SERVICE tags."
+  (let ((tags (plist-get service :tags)))
+    (cond ((memq 'debug tags) 'debug)
+          ((memq 'release tags) 'release)
+          (t nil))))
+
+(defun ores/prodigy-colorize-env (env)
+  "Return colorized string for ENV."
+  (if env
+      (let ((face (alist-get env ores/prodigy-env-faces)))
+        (propertize (symbol-name env) 'face face))
+    ""))
+
+(defun ores/prodigy-colorize-config (config)
+  "Return colorized string for CONFIG."
+  (if config
+      (let ((face (alist-get config ores/prodigy-config-faces)))
+        (propertize (symbol-name config) 'face face))
+    ""))
+
+(defun ores/prodigy-get-port (service)
+  "Extract port number from SERVICE args.
+Looks for --port or --http-port arguments and returns the following value.
+Returns \"-\" if no port is found."
+  (let ((args (plist-get service :args)))
+    (if args
+        (let ((port-idx (or (cl-position "--port" args :test #'string=)
+                            (cl-position "--http-port" args :test #'string=))))
+          (if port-idx
+              (nth (1+ port-idx) args)
+            "N/A"))
+      "N/A")))
+
+(defun ores/prodigy-normalize-name (name)
+  "Normalize NAME to prodigy's internal ID format.
+Converts to lowercase and replaces spaces with hyphens."
+  (downcase (replace-regexp-in-string " " "-" name)))
+
+(defun ores/prodigy-find-service-by-id (id)
+  "Find service plist by ID (normalized name)."
+  (cl-find-if (lambda (s)
+                (string= (ores/prodigy-normalize-name (plist-get s :name)) id))
+              prodigy-services))
+
+(defun ores/prodigy-strip-name-suffix (name)
+  "Strip the [D:env] or [R:env] suffix from NAME for display."
+  (if (string-match "\\(.+\\) \\[.+\\]$" name)
+      (match-string 1 name)
+    name))
+
+;; Custom column functions for our extended format
+;; These use propertize like prodigy-status-col does
+
+(defun ores/prodigy-name-col (service)
+  "Return SERVICE name column with suffix stripped and color."
+  (let ((name (ores/prodigy-strip-name-suffix (plist-get service :name))))
+    (propertize name 'face 'ores/prodigy-name-face)))
+
+(defun ores/prodigy-port-col (service)
+  "Return SERVICE port column with color."
+  (let ((port (ores/prodigy-get-port service)))
+    (propertize port 'face 'ores/prodigy-port-face)))
+
+(defun ores/prodigy-env-col (service)
+  "Return SERVICE env column with color."
+  (let ((env (ores/prodigy-get-env service)))
+    (if env
+        (let ((face (alist-get env ores/prodigy-env-faces)))
+          (propertize (symbol-name env) 'face face))
+      "")))
+
+(defun ores/prodigy-config-col (service)
+  "Return SERVICE config column with color."
+  (let ((config (ores/prodigy-get-config service)))
+    (if config
+        (let ((face (alist-get config ores/prodigy-config-faces)))
+          (propertize (symbol-name config) 'face face))
+      "")))
+
+;; Override prodigy-list-entries to add our custom columns
+;; Uses same pattern as original prodigy to preserve text properties
+(defun prodigy-list-entries ()
+  "Create entries for the service list with ORES custom columns."
+  (-map
+   (lambda (service)
+     (list
+      (prodigy-service-id service)
+      (apply 'vector
+             (--map
+              (funcall it service)
+              '(prodigy-marked-col
+                ores/prodigy-name-col
+                ores/prodigy-port-col
+                ores/prodigy-env-col
+                ores/prodigy-config-col
+                prodigy-status-col)))))
+   (prodigy-services)))
 
 (provide 'ores-prodigy)
 ;;; ores-prodigy.el ends here

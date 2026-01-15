@@ -22,7 +22,8 @@
  * Runs a clean up for the current database and then gets it into a ready state.
  */
 \pset pager off
-\timing
+\pset tuples_only on
+\timing off
 
 \ir clean_slate.sql
 \ir setup_user.sql

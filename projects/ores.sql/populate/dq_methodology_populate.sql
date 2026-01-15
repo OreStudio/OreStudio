@@ -1,0 +1,210 @@
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+
+set schema 'ores';
+
+-- =============================================================================
+-- Helper Function
+-- =============================================================================
+
+create or replace function ores.upsert_dq_methodology(
+    p_name text,
+    p_description text,
+    p_logic_reference text default null,
+    p_implementation_details text default null
+) returns void as $$
+declare
+    v_id uuid;
+begin
+    if not exists (
+        select 1 from ores.dq_methodology_tbl
+        where name = p_name
+          and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        insert into ores.dq_methodology_tbl (
+            id, version, name, description, logic_reference, implementation_details,
+            modified_by, change_reason_code, change_commentary,
+            valid_from, valid_to
+        )
+        values (
+            gen_random_uuid(), 0, p_name, p_description, p_logic_reference, p_implementation_details,
+            'system', 'system.new_record', 'System seed data',
+            current_timestamp, ores.utility_infinity_timestamp_fn()
+        );
+        raise notice 'Created dq_methodology: %', p_name;
+    else
+        raise notice 'dq_methodology already exists: %', p_name;
+    end if;
+end;
+$$ language plpgsql;
+
+-- =============================================================================
+-- Seed Data
+-- =============================================================================
+
+select ores.upsert_dq_methodology(
+    'Wikipedia ISO 3166 Extraction',
+    'Data extracted from Wikipedia page listing ISO 3166 country codes',
+    'https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes',
+    'Data Sourcing and Generation Steps:
+
+1. SOURCE DATA
+   URL: https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes
+   Method: Manual extraction of ISO 3166-1 alpha-2, alpha-3, and numeric codes
+
+2. POPULATE SCRIPT
+   File: projects/ores.sql/populate/dq_countries_artefact_populate.sql
+   Content: Manually curated SQL VALUES with country data
+   Format: (alpha2_code, alpha3_code, numeric_code, name, flag_key)
+
+3. COMMIT CHANGES
+   git add projects/ores.sql/populate/dq_countries_artefact_populate.sql
+   git commit -m "[sql] Update countries artefact populate script"
+
+Note: Countries are linked to flag images via the flag_key field, which matches
+the key in the dq_images_artefact_tbl (e.g., ''gb'' -> gb.svg flag).'
+);
+
+select ores.upsert_dq_methodology(
+    'GitHub Flag Icons Download',
+    'SVG images downloaded from lipis/flag-icons GitHub repository',
+    'https://github.com/lipis/flag-icons',
+    'Data Sourcing and Generation Steps:
+
+1. SOURCE DATA DOWNLOAD
+   Repository: https://github.com/lipis/flag-icons
+   Download: Clone or download the repository
+   Files: flags/4x3/*.svg (country flags in 4:3 aspect ratio)
+
+2. SAVE TO REPOSITORY
+   Target directory: projects/ores.sql/populate/data/flags/
+   Copy all SVG files from flags/4x3/ to the target directory
+   Commit: git add projects/ores.sql/populate/data/flags/
+           git commit -m "[data] Add flag icons from lipis/flag-icons"
+
+3. GENERATE SQL POPULATE SCRIPT
+   Script: projects/ores.sql/populate/generate_dq_images_sql.py
+   Command: python3 projects/ores.sql/populate/generate_dq_images_sql.py --config flags
+   Output: projects/ores.sql/populate/dq_flags_images_artefact_populate.sql
+
+4. COMMIT GENERATED SQL
+   git add projects/ores.sql/populate/dq_flags_images_artefact_populate.sql
+   git commit -m "[sql] Regenerate flag images populate script"'
+);
+
+select ores.upsert_dq_methodology(
+    'GitHub Cryptocurrency Icons Download',
+    'SVG images downloaded from spothq/cryptocurrency-icons GitHub repository',
+    'https://github.com/spothq/cryptocurrency-icons',
+    'Data Sourcing and Generation Steps:
+
+1. SOURCE DATA DOWNLOAD
+   Repository: https://github.com/spothq/cryptocurrency-icons
+   Commit: 1a63530be6e374711a8554f31b17e4cb92c25fa5
+   Download: Clone the repository at the specified commit
+   Files: svg/color/*.svg (colored cryptocurrency icons)
+
+2. SAVE TO REPOSITORY
+   Target directory: projects/ores.sql/populate/data/cryptocurrency-icons/
+   Copy all SVG files from svg/color/ to the target directory
+   Commit: git add projects/ores.sql/populate/data/cryptocurrency-icons/
+           git commit -m "[data] Add cryptocurrency icons from spothq/cryptocurrency-icons"
+
+3. GENERATE SQL POPULATE SCRIPT
+   Script: projects/ores.sql/populate/generate_dq_images_sql.py
+   Command: python3 projects/ores.sql/populate/generate_dq_images_sql.py --config crypto
+   Output: projects/ores.sql/populate/dq_crypto_images_artefact_populate.sql
+
+4. COMMIT GENERATED SQL
+   git add projects/ores.sql/populate/dq_crypto_images_artefact_populate.sql
+   git commit -m "[sql] Regenerate cryptocurrency icons populate script"'
+);
+
+select ores.upsert_dq_methodology(
+    'Wikipedia ISO 4217 Extraction',
+    'Data extracted from Wikipedia page listing ISO 4217 currency codes',
+    'https://en.wikipedia.org/wiki/ISO_4217',
+    'Data Sourcing and Generation Steps:
+
+1. SOURCE DATA
+   URL: https://en.wikipedia.org/wiki/ISO_4217
+   Method: Manual extraction of ISO 4217 currency codes with names, symbols, and formatting
+
+2. POPULATE SCRIPT
+   File: projects/ores.sql/populate/dq_currencies_artefact_populate.sql
+   Content: Manually curated SQL VALUES with currency data
+   Format: (iso_code, name, numeric_code, symbol, fraction_symbol, fractions_per_unit,
+            rounding_type, rounding_precision, format, currency_type, flag_key)
+
+3. COMMIT CHANGES
+   git add projects/ores.sql/populate/dq_currencies_artefact_populate.sql
+   git commit -m "[sql] Update currencies artefact populate script"
+
+Note: Fiat currencies are classified as ''fiat.major'' (EUR, USD, GBP, JPY, AUD, CAD, CHF,
+DKK, NOK, NZD, SEK) or ''fiat.emerging'' (all others). Commodity currencies (XAU, XAG, etc.)
+use type ''commodity''. SDR uses type ''supranational''.'
+);
+
+select ores.upsert_dq_methodology(
+    'GitHub Cryptocurrencies JSON Download',
+    'Cryptocurrency symbol-to-name mappings from crypti/cryptocurrencies GitHub repository',
+    'https://github.com/crypti/cryptocurrencies',
+    'Data Sourcing and Generation Steps:
+
+1. SOURCE DATA DOWNLOAD
+   Repository: https://github.com/crypti/cryptocurrencies
+   File: cryptocurrencies.json
+   Download: curl -o cryptocurrencies.json https://raw.githubusercontent.com/crypti/cryptocurrencies/master/cryptocurrencies.json
+
+2. SAVE TO REPOSITORY
+   Target directory: projects/ores.sql/populate/data/cryptocurrencies/
+   Target file: cryptocurrencies.json
+   Commit: git add projects/ores.sql/populate/data/cryptocurrencies/cryptocurrencies.json
+           git commit -m "[data] Add cryptocurrencies JSON from crypti/cryptocurrencies"
+
+3. GENERATE SQL POPULATE SCRIPT
+   Script: projects/ores.sql/populate/generate_dq_cryptocurrencies_sql.py
+   Command: python3 projects/ores.sql/populate/generate_dq_cryptocurrencies_sql.py
+   Optional arguments:
+     --source-file PATH    Path to cryptocurrencies.json
+     --output-file PATH    Output SQL file path
+   Output: projects/ores.sql/populate/dq_cryptocurrencies_artefact_populate.sql
+
+4. COMMIT GENERATED SQL
+   git add projects/ores.sql/populate/dq_cryptocurrencies_artefact_populate.sql
+   git commit -m "[sql] Regenerate cryptocurrencies populate script"
+
+Note: The script classifies cryptocurrencies as ''crypto.major'' (top 20 by market cap)
+or ''crypto.minor'' (all others). Only crypto.major currencies are populated to production.'
+);
+
+-- =============================================================================
+-- Cleanup
+-- =============================================================================
+
+drop function ores.upsert_dq_methodology(text, text, text, text);
+
+-- =============================================================================
+-- Summary
+-- =============================================================================
+
+select 'dq_methodology' as entity, count(*) as count
+from ores.dq_methodology_tbl
+where valid_to = ores.utility_infinity_timestamp_fn();

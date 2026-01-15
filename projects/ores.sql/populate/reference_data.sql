@@ -21,46 +21,27 @@
 /**
  * Reference Data Population Script
  *
- * Seeds the database with optional reference data:
- * - Country flags (images and tags)
- * - Currencies (ISO 4217)
- * - Currency-image associations
+ * Populates production tables with reference data from DQ staging datasets.
+ * This is a convenience wrapper for standalone use - the same functionality
+ * is included in populate.sql.
  *
- * This data is NOT required for the application to function, but provides
- * useful reference data for users. Run this after creating a database
- * instance if you want pre-populated reference data.
+ * Prerequisites:
+ *   - DQ staging tables must be populated (run populate.sql first, or
+ *     run the individual dq_*_artefact_populate.sql scripts)
  *
  * Usage:
  *   psql -U ores -d your_database -f populate/reference_data.sql
  */
 
+-- Suppress noisy output during population
+\timing off
+\pset tuples_only on
+
 \echo '=== Starting Reference Data Population ==='
 \echo ''
 
--- Flag images and tags
-\echo '--- Flag Data ---'
-\ir assets_load_flags.sql
-\ir assets_flags_populate.sql
-
--- Currencies
-\echo ''
-\echo '--- Currency Data ---'
-\ir refdata_currencies_populate.sql
-\ir assets_currency_images_populate.sql
+-- Populate production tables from DQ staging data
+\ir dq_populate_production.sql
 
 \echo ''
 \echo '=== Reference Data Population Complete ==='
-
--- Summary
-\echo ''
-\echo '--- Summary ---'
-
-select 'Currencies' as entity, count(*) as count
-from ores.refdata_currencies_tbl where valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'Images', count(*)
-from ores.assets_images_tbl where valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'Tags', count(*)
-from ores.assets_tags_tbl where valid_to = ores.utility_infinity_timestamp_fn()
-order by entity;

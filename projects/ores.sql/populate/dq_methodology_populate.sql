@@ -87,6 +87,13 @@ select ores.upsert_dq_methodology(
     'Manual extraction of ISO 4217 currency codes with names, symbols, and formatting details'
 );
 
+select ores.upsert_dq_methodology(
+    'GitHub Cryptocurrencies JSON Download',
+    'Cryptocurrency symbol-to-name mappings from crypti/cryptocurrencies GitHub repository',
+    'https://github.com/crypti/cryptocurrencies',
+    'JSON file containing cryptocurrency symbols and their full names'
+);
+
 -- =============================================================================
 -- Cleanup
 -- =============================================================================

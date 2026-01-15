@@ -77,6 +77,7 @@
 \ir dq_crypto_images_artefact_populate.sql
 \ir dq_countries_artefact_populate.sql
 \ir dq_currencies_artefact_populate.sql
+\ir dq_cryptocurrencies_artefact_populate.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''

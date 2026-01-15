@@ -202,6 +202,29 @@ select ores.upsert_dq_tag(
     'Currency reference data'
 );
 
+select ores.upsert_dq_dataset(
+    'Cryptocurrencies',
+    'Reference Data',
+    'Source',
+    'Actual',
+    'Raw',
+    'GitHub Cryptocurrencies JSON Download',
+    'Cryptocurrencies from crypti/cryptocurrencies',
+    'Cryptocurrency symbols and names from crypti/cryptocurrencies GitHub repository',
+    'GITHUB',
+    'Reference data for cryptocurrency codes',
+    current_date,
+    'MIT'
+);
+
+select ores.upsert_dq_tag(
+    'Cryptocurrencies from crypti/cryptocurrencies',
+    'Cryptocurrencies',
+    'Reference Data',
+    'cryptocurrency',
+    'Cryptocurrency reference data'
+);
+
 -- =============================================================================
 -- Cleanup
 -- =============================================================================

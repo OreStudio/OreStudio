@@ -197,7 +197,62 @@ Qt::ItemFlags ConnectionTreeModel::flags(const QModelIndex& index) const {
     if (!index.isValid())
         return Qt::NoItemFlags;
 
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+
+    // Only the Name column is editable (for inline rename)
+    if (index.column() == Name) {
+        auto* node = nodeFromIndex(index);
+        if (node && node->type != ConnectionTreeNode::Type::Root) {
+            flags |= Qt::ItemIsEditable;
+        }
+    }
+
+    return flags;
+}
+
+bool ConnectionTreeModel::setData(const QModelIndex& index, const QVariant& value,
+    int role) {
+
+    if (!index.isValid() || role != Qt::EditRole || index.column() != Name)
+        return false;
+
+    auto* node = nodeFromIndex(index);
+    if (!node || node->type == ConnectionTreeNode::Type::Root)
+        return false;
+
+    QString newName = value.toString().trimmed();
+    if (newName.isEmpty() || newName == node->name)
+        return false;
+
+    using namespace ores::logging;
+
+    try {
+        if (node->type == ConnectionTreeNode::Type::Folder) {
+            auto folder = manager_->get_folder(node->id);
+            if (folder) {
+                folder->name = newName.toStdString();
+                manager_->update_folder(*folder);
+                node->name = newName;
+                BOOST_LOG_SEV(lg(), info) << "Renamed folder to: " << newName.toStdString();
+            }
+        } else if (node->type == ConnectionTreeNode::Type::Environment) {
+            auto env = manager_->get_environment(node->id);
+            if (env) {
+                env->name = newName.toStdString();
+                manager_->update_environment(*env, std::nullopt);
+                node->name = newName;
+                BOOST_LOG_SEV(lg(), info) << "Renamed connection to: " << newName.toStdString();
+            }
+        }
+
+        emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
+        return true;
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to rename: " << e.what();
+        emit errorOccurred(QString("Failed to rename: %1").arg(e.what()));
+        return false;
+    }
 }
 
 ConnectionTreeNode* ConnectionTreeModel::nodeFromIndex(const QModelIndex& index) const {

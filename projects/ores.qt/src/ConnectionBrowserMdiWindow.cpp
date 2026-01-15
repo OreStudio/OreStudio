@@ -113,7 +113,9 @@ void ConnectionBrowserMdiWindow::setupUI() {
     treeView_ = new QTreeView(this);
     treeView_->setContextMenuPolicy(Qt::CustomContextMenu);
     treeView_->setSelectionMode(QAbstractItemView::SingleSelection);
-    treeView_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    // Enable inline rename via F2 or slow double-click on selected item
+    treeView_->setEditTriggers(QAbstractItemView::EditKeyPressed |
+                                QAbstractItemView::SelectedClicked);
     treeView_->setExpandsOnDoubleClick(false); // We handle double-click ourselves
     treeView_->setUniformRowHeights(true);
     treeView_->setIconSize(QSize(20, 20)); // Larger icons for better visibility

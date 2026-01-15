@@ -130,7 +130,7 @@ configured database name and user."
 (prodigy-define-tag :name 'ui)
 (prodigy-define-tag :name 'debug)
 (prodigy-define-tag :name 'release)
-(prodigy-define-tag ores/checkout-tag)
+(prodigy-define-tag :name ores/checkout-tag)
 
 (prodigy-define-tag
   :name 'comms-service

@@ -19,6 +19,7 @@
  */
 #include "ores.qt/ConnectionItemDelegate.hpp"
 #include "ores.qt/ConnectionTreeModel.hpp"
+#include "ores.qt/ConnectionTypes.hpp"
 
 #include <QPainter>
 #include <QApplication>
@@ -27,18 +28,6 @@
 namespace ores::qt {
 
 namespace {
-
-// Predefined tag colors - consistent with TagSelectorWidget
-const std::vector<QColor> tag_colors = {
-    QColor(59, 130, 246),   // Blue
-    QColor(34, 197, 94),    // Green
-    QColor(234, 179, 8),    // Amber
-    QColor(239, 68, 68),    // Red
-    QColor(168, 85, 247),   // Purple
-    QColor(236, 72, 153),   // Pink
-    QColor(20, 184, 166),   // Teal
-    QColor(249, 115, 22),   // Orange
-};
 
 constexpr int badge_spacing = 4;
 constexpr int badge_padding = 4;
@@ -166,11 +155,6 @@ void ConnectionItemDelegate::drawTagBadge(QPainter* painter, const QRect& rect,
     painter->drawText(rect, Qt::AlignCenter, text);
 
     painter->restore();
-}
-
-QColor ConnectionItemDelegate::colorForTag(const QString& name) const {
-    uint hash = qHash(name);
-    return tag_colors[hash % tag_colors.size()];
 }
 
 }

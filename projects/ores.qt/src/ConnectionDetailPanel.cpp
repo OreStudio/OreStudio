@@ -18,32 +18,18 @@
  *
  */
 #include "ores.qt/ConnectionDetailPanel.hpp"
+#include "ores.qt/ConnectionTypes.hpp"
 #include "ores.connections/service/connection_manager.hpp"
 #include <QHBoxLayout>
 #include <QApplication>
 #include <QMessageBox>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
 namespace {
-
-// Predefined tag colors - consistent with ConnectionItemDelegate
-const std::vector<QColor> tag_colors = {
-    QColor(59, 130, 246),   // Blue
-    QColor(34, 197, 94),    // Green
-    QColor(234, 179, 8),    // Amber
-    QColor(239, 68, 68),    // Red
-    QColor(168, 85, 247),   // Purple
-    QColor(236, 72, 153),   // Pink
-    QColor(20, 184, 166),   // Teal
-    QColor(249, 115, 22),   // Orange
-};
-
-QColor colorForTag(const QString& name) {
-    uint hash = qHash(name);
-    return tag_colors[hash % tag_colors.size()];
-}
 
 QLabel* createTagBadge(const QString& text, QWidget* parent) {
     auto* badge = new QLabel(text, parent);
@@ -378,25 +364,36 @@ void ConnectionDetailPanel::onTestClicked() {
 
     envTestButton_->setEnabled(false);
     envTestButton_->setText(tr("Testing..."));
-    QApplication::processEvents();
 
     BOOST_LOG_SEV(lg(), info) << "Testing connection to " << host.toStdString()
                               << ":" << port;
 
-    QString error = testCallback_(host, port, username, password);
+    // Run test asynchronously to avoid blocking UI
+    auto* watcher = new QFutureWatcher<QString>(this);
+    connect(watcher, &QFutureWatcher<QString>::finished, this, [this, watcher]() {
+        QString error = watcher->result();
+        watcher->deleteLater();
 
-    envTestButton_->setEnabled(true);
-    envTestButton_->setText(tr("Test"));
+        envTestButton_->setEnabled(true);
+        envTestButton_->setText(tr("Test"));
 
-    if (error.isEmpty()) {
-        QMessageBox::information(this, tr("Test Connection"),
-            tr("Connection successful!"));
-        BOOST_LOG_SEV(lg(), info) << "Connection test successful";
-    } else {
-        QMessageBox::warning(this, tr("Test Connection"),
-            tr("Connection failed: %1").arg(error));
-        BOOST_LOG_SEV(lg(), warn) << "Connection test failed: " << error.toStdString();
-    }
+        if (error.isEmpty()) {
+            QMessageBox::information(this, tr("Test Connection"),
+                tr("Connection successful!"));
+            BOOST_LOG_SEV(lg(), info) << "Connection test successful";
+        } else {
+            QMessageBox::warning(this, tr("Test Connection"),
+                tr("Connection failed: %1").arg(error));
+            BOOST_LOG_SEV(lg(), warn) << "Connection test failed: " << error.toStdString();
+        }
+    });
+
+    QFuture<QString> future = QtConcurrent::run(
+        [cb = testCallback_, host, port, username, password]() {
+            return cb(host, port, username, password);
+        }
+    );
+    watcher->setFuture(future);
 }
 
 }

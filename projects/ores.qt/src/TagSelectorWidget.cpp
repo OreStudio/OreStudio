@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/TagSelectorWidget.hpp"
+#include "ores.qt/ConnectionTypes.hpp"
 #include "ores.connections/service/connection_manager.hpp"
 #include <QLabel>
 #include <QPushButton>
@@ -28,22 +29,6 @@
 #include <algorithm>
 
 namespace ores::qt {
-
-namespace {
-
-// Predefined tag colors - will cycle through based on tag name hash
-const std::vector<QColor> tag_colors = {
-    QColor(59, 130, 246),   // Blue
-    QColor(34, 197, 94),    // Green
-    QColor(234, 179, 8),    // Amber
-    QColor(239, 68, 68),    // Red
-    QColor(168, 85, 247),   // Purple
-    QColor(236, 72, 153),   // Pink
-    QColor(20, 184, 166),   // Teal
-    QColor(249, 115, 22),   // Orange
-};
-
-}
 
 TagSelectorWidget::TagSelectorWidget(connections::service::connection_manager* manager,
                                        QWidget* parent)

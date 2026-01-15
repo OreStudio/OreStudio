@@ -412,8 +412,8 @@ void ConnectionBrowserMdiWindow::editSelected() {
         try {
             auto tags = manager_->get_tags_for_environment(node->id);
             dialog.setTags(tags);
-        } catch (...) {
-            // Ignore tag loading errors
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to load tags for environment: " << e.what();
         }
 
         if (dialog.exec() == QDialog::Accepted) {

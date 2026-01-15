@@ -28,12 +28,12 @@
 #include <QPushButton>
 #include <QDialogButtonBox>
 #include <QCheckBox>
-#include <functional>
 #include <optional>
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/server_environment.hpp"
 #include "ores.connections/domain/tag.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ConnectionTypes.hpp"
 
 namespace ores::qt {
 class TagSelectorWidget;
@@ -44,15 +44,6 @@ class connection_manager;
 }
 
 namespace ores::qt {
-
-/**
- * @brief Callback type for testing connections.
- *
- * Parameters: host, port, username, password
- * Returns: error message if failed, empty string if successful
- */
-using TestConnectionCallback = std::function<QString(
-    const QString& host, int port, const QString& username, const QString& password)>;
 
 /**
  * @brief Dialog for creating and editing server environments (connections).

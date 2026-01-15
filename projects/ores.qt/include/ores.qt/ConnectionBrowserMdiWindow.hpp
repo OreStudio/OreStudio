@@ -26,10 +26,10 @@
 #include <QAction>
 #include <QVBoxLayout>
 #include <QSplitter>
-#include <functional>
 #include <memory>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ConnectionTypes.hpp"
 
 namespace ores::connections::service {
 class connection_manager;
@@ -39,12 +39,6 @@ namespace ores::qt {
 
 class ConnectionTreeModel;
 class ConnectionDetailPanel;
-
-/**
- * @brief Callback type for testing connections.
- */
-using TestConnectionCallback = std::function<QString(
-    const QString& host, int port, const QString& username, const QString& password)>;
 
 /**
  * @brief MDI window for browsing and managing saved server connections.

@@ -22,6 +22,8 @@
 #include "ores.connections/service/connection_manager.hpp"
 #include "ores.security/validation/password_validator.hpp"
 #include <QtWidgets/QApplication>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 #include <QFormLayout>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -343,25 +345,36 @@ void ConnectionDetailDialog::onTestClicked() {
     // Disable test button during test
     testButton_->setEnabled(false);
     testButton_->setText(tr("Testing..."));
-    QApplication::processEvents();
 
     BOOST_LOG_SEV(lg(), info) << "Testing connection to " << host.toStdString()
                               << ":" << port;
 
-    QString error = testCallback_(host, port, username, password);
+    // Run test asynchronously to avoid blocking UI
+    auto* watcher = new QFutureWatcher<QString>(this);
+    connect(watcher, &QFutureWatcher<QString>::finished, this, [this, watcher]() {
+        QString error = watcher->result();
+        watcher->deleteLater();
 
-    testButton_->setEnabled(true);
-    testButton_->setText(tr("Test Connection"));
+        testButton_->setEnabled(true);
+        testButton_->setText(tr("Test Connection"));
 
-    if (error.isEmpty()) {
-        QMessageBox::information(this, tr("Test Connection"),
-            tr("Connection successful!"));
-        BOOST_LOG_SEV(lg(), info) << "Connection test successful";
-    } else {
-        QMessageBox::warning(this, tr("Test Connection"),
-            tr("Connection failed: %1").arg(error));
-        BOOST_LOG_SEV(lg(), warn) << "Connection test failed: " << error.toStdString();
-    }
+        if (error.isEmpty()) {
+            QMessageBox::information(this, tr("Test Connection"),
+                tr("Connection successful!"));
+            BOOST_LOG_SEV(lg(), info) << "Connection test successful";
+        } else {
+            QMessageBox::warning(this, tr("Test Connection"),
+                tr("Connection failed: %1").arg(error));
+            BOOST_LOG_SEV(lg(), warn) << "Connection test failed: " << error.toStdString();
+        }
+    });
+
+    QFuture<QString> future = QtConcurrent::run(
+        [cb = testCallback_, host, port, username, password]() {
+            return cb(host, port, username, password);
+        }
+    );
+    watcher->setFuture(future);
 }
 
 }

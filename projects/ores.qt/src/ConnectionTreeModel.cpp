@@ -179,7 +179,9 @@ QVariant ConnectionTreeModel::data(const QModelIndex& index, int role) const {
                     tagNames.append(QString::fromStdString(tag.name));
                 }
                 return tagNames;
-            } catch (...) {
+            } catch (const std::exception& e) {
+                using namespace ores::logging;
+                BOOST_LOG_SEV(lg(), error) << "Failed to get tags for environment: " << e.what();
                 return QStringList();
             }
         }
@@ -328,7 +330,9 @@ bool ConnectionTreeModel::canDropMimeData(const QMimeData* data, Qt::DropAction 
     boost::uuids::uuid draggedId;
     try {
         draggedId = gen(itemUuidStr.toStdString());
-    } catch (...) {
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(lg(), error) << "Failed to parse UUID from drag data: " << e.what();
         return false;
     }
 

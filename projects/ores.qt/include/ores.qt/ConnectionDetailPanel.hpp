@@ -27,23 +27,17 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QFormLayout>
-#include <functional>
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/folder.hpp"
 #include "ores.connections/domain/server_environment.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ConnectionTypes.hpp"
 
 namespace ores::connections::service {
 class connection_manager;
 }
 
 namespace ores::qt {
-
-/**
- * @brief Callback type for testing connections.
- */
-using TestConnectionCallback = std::function<QString(
-    const QString& host, int port, const QString& username, const QString& password)>;
 
 /**
  * @brief Detail panel showing information about selected connection or folder.

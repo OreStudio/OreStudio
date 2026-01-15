@@ -48,8 +48,6 @@ private:
     void drawTagBadge(QPainter* painter, const QRect& rect,
                       const QString& text, const QColor& backgroundColor) const;
 
-    QColor colorForTag(const QString& name) const;
-
     QFont badgeFont_;
 };
 

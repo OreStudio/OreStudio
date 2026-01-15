@@ -17,17 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_FOLDER_DETAIL_DIALOG_HPP
-#define ORES_QT_FOLDER_DETAIL_DIALOG_HPP
+#ifndef ORES_QT_CONNECTION_DETAIL_PANEL_HPP
+#define ORES_QT_CONNECTION_DETAIL_PANEL_HPP
 
-#include <QDialog>
-#include <QLineEdit>
-#include <QComboBox>
-#include <QPushButton>
-#include <QDialogButtonBox>
-#include <optional>
+#include <QWidget>
+#include <QStackedWidget>
+#include <QLabel>
+#include <QVBoxLayout>
+#include <QFormLayout>
 #include <boost/uuid/uuid.hpp>
 #include "ores.connections/domain/folder.hpp"
+#include "ores.connections/domain/server_environment.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::connections::service {
@@ -37,14 +37,19 @@ class connection_manager;
 namespace ores::qt {
 
 /**
- * @brief Dialog for creating and editing folders.
+ * @brief Detail panel showing read-only information about selected item.
+ *
+ * Displays contextual information based on current selection:
+ * - Empty state: Welcome message with quick actions
+ * - Folder: Name and item count
+ * - Environment: Connection details and tags (read-only)
  */
-class FolderDetailDialog : public QDialog {
+class ConnectionDetailPanel : public QWidget {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.folder_detail_dialog";
+        "ores.qt.connection_detail_panel";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -53,33 +58,42 @@ private:
     }
 
 public:
-    explicit FolderDetailDialog(
+    explicit ConnectionDetailPanel(
         connections::service::connection_manager* manager,
         QWidget* parent = nullptr);
-    ~FolderDetailDialog() override;
+    ~ConnectionDetailPanel() override;
 
-    void setFolder(const connections::domain::folder& folder);
-    void setInitialParent(const std::optional<boost::uuids::uuid>& parentId);
-    connections::domain::folder getFolder() const;
-    bool isAddMode() const { return isAddMode_; }
-
-private slots:
-    void onSaveClicked();
-    void updateSaveButtonState();
+    void showEmptyState();
+    void showFolder(const connections::domain::folder& folder, int itemCount);
+    void showEnvironment(const connections::domain::server_environment& env);
 
 private:
-    void setupUI();
-    void populateParentCombo();
-    bool validateInput();
+    void setupEmptyPage();
+    void setupFolderPage();
+    void setupEnvironmentPage();
+    void updateTagBadges(const boost::uuids::uuid& envId);
 
     connections::service::connection_manager* manager_;
 
-    QLineEdit* nameEdit_;
-    QComboBox* parentCombo_;
-    QDialogButtonBox* buttonBox_;
+    QStackedWidget* stackedWidget_;
 
-    bool isAddMode_{true};
-    boost::uuids::uuid folderId_;
+    // Empty state page
+    QWidget* emptyPage_;
+
+    // Folder page
+    QWidget* folderPage_;
+    QLabel* folderNameLabel_;
+    QLabel* folderItemCountLabel_;
+    QLabel* folderDescriptionLabel_;
+
+    // Environment page
+    QWidget* environmentPage_;
+    QLabel* envNameLabel_;
+    QLabel* envHostLabel_;
+    QLabel* envPortLabel_;
+    QLabel* envUsernameLabel_;
+    QLabel* envDescriptionLabel_;
+    QWidget* envTagsContainer_;
 };
 
 }

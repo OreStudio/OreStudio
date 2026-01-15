@@ -310,6 +310,96 @@ LoginResult ClientManager::connectAndLogin(
     }
 }
 
+LoginResult ClientManager::testConnection(
+    const std::string& host,
+    std::uint16_t port,
+    const std::string& username,
+    const std::string& password) {
+
+    BOOST_LOG_SEV(lg(), info) << "Testing connection to " << host << ":" << port;
+
+    try {
+        comms::net::client_options config{
+            .host = host,
+            .port = port,
+            .client_identifier = "ores-qt-client",
+            .verify_certificate = false,
+            .supported_compression = supported_compression_
+        };
+
+        // Create temporary client for testing (not stored in client_)
+        auto temp_client = std::make_shared<comms::net::client>(
+            config, io_context_->get_executor(), nullptr);
+
+        // Synchronous connect
+        temp_client->connect_sync();
+
+        // Perform Login
+        iam::messaging::login_request request{
+            .username = username,
+            .password = password
+        };
+
+        auto payload = request.serialize();
+        comms::messaging::frame request_frame(
+            comms::messaging::message_type::login_request,
+            0,
+            std::move(payload)
+        );
+
+        auto response_result = temp_client->send_request_sync(std::move(request_frame));
+
+        // Disconnect temporary client immediately
+        temp_client->disconnect();
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "TEST CONNECTION FAILURE: Network error"
+                                       << ", error_code: "
+                                       << static_cast<int>(response_result.error());
+            return {.success = false, .error_message = QString("Network error during login request")};
+        }
+
+        const auto& header = response_result->header();
+
+        // Decompress payload
+        auto response_payload_result = response_result->decompressed_payload();
+        if (!response_payload_result) {
+            BOOST_LOG_SEV(lg(), error) << "TEST CONNECTION FAILURE: Decompression error";
+            return {.success = false, .error_message = QString("Failed to decompress server response")};
+        }
+        const auto& response_payload = *response_payload_result;
+
+        // Check for error response
+        if (header.type == comms::messaging::message_type::error_response) {
+            auto error_resp = comms::messaging::error_response::deserialize(response_payload);
+            if (error_resp) {
+                BOOST_LOG_SEV(lg(), warn) << "TEST CONNECTION FAILURE: " << error_resp->message;
+                return {.success = false, .error_message = QString::fromStdString(error_resp->message)};
+            }
+            return {.success = false, .error_message = QString("Unknown server error")};
+        }
+
+        auto response = iam::messaging::login_response::deserialize(response_payload);
+
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "TEST CONNECTION FAILURE: Invalid response";
+            return {.success = false, .error_message = QString("Invalid login response from server")};
+        }
+
+        if (!response->success) {
+            BOOST_LOG_SEV(lg(), warn) << "TEST CONNECTION FAILURE: " << response->error_message;
+            return {.success = false, .error_message = QString::fromStdString(response->error_message)};
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "TEST CONNECTION SUCCESS for user '" << username << "'";
+        return {.success = true, .error_message = QString()};
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Test connection failed: " << e.what();
+        return {.success = false, .error_message = QString::fromStdString(e.what())};
+    }
+}
+
 SignupResult ClientManager::signup(
     const std::string& host,
     std::uint16_t port,

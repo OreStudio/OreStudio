@@ -24,8 +24,23 @@
 #include <QDialog>
 #include <QLineEdit>
 #include <QSpinBox>
+#include <QComboBox>
 #include <QPushButton>
+#include <functional>
 #include "ores.qt/ClientManager.hpp"
+
+namespace ores::connections::service {
+class connection_manager;
+}
+
+/**
+ * @brief Callback type for unlocking saved connections.
+ *
+ * This callback is invoked when the user clicks the "Unlock" button.
+ * It should prompt for master password and return a connection_manager pointer
+ * if successful, or nullptr if the user cancelled or authentication failed.
+ */
+using UnlockConnectionsCallback = std::function<ores::connections::service::connection_manager*()>;
 
 namespace ores::qt {
 
@@ -51,9 +66,12 @@ public:
     /**
      * @brief Construct LoginDialog.
      * @param clientManager Pointer to the application's client manager.
+     * @param connectionManager Optional pointer to saved connections manager.
      * @param parent Parent widget.
      */
-    explicit LoginDialog(ClientManager* clientManager, QWidget* parent = nullptr);
+    explicit LoginDialog(ClientManager* clientManager,
+                         connections::service::connection_manager* connectionManager = nullptr,
+                         QWidget* parent = nullptr);
     ~LoginDialog() override;
 
     /**
@@ -80,6 +98,14 @@ public:
      */
     void setAutoSubmit(bool enabled) { autoSubmit_ = enabled; }
 
+    /**
+     * @brief Set callback for unlocking saved connections.
+     *
+     * The callback will be invoked when the user clicks the "Unlock" button
+     * to reveal saved connections.
+     */
+    void setUnlockCallback(UnlockConnectionsCallback callback);
+
 protected:
     void showEvent(QShowEvent* event) override;
 
@@ -87,6 +113,8 @@ private slots:
     void onLoginClicked();
     void onLoginResult(const LoginResult& result);
     void onSignUpClicked();
+    void onSavedConnectionSelected(int index);
+    void onUnlockClicked();
 
 signals:
     void loginCompleted(const LoginResult& result);
@@ -94,9 +122,12 @@ signals:
 private:
     void setupUI();
     void enableForm(bool enabled);
+    void populateSavedConnections();
 
 private:
     // UI components
+    QComboBox* saved_connections_combo_;
+    QPushButton* unlock_button_;
     QLineEdit* username_edit_;
     QLineEdit* password_edit_;
     QLineEdit* host_edit_;
@@ -108,6 +139,10 @@ private:
 
     // Dependencies
     ClientManager* clientManager_;
+    connections::service::connection_manager* connectionManager_;
+
+    // Callbacks
+    UnlockConnectionsCallback unlockCallback_;
 
     // Auto-submit mode
     bool autoSubmit_{false};

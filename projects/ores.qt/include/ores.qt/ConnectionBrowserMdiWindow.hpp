@@ -25,9 +25,14 @@
 #include <QToolBar>
 #include <QAction>
 #include <QVBoxLayout>
+#include <QSplitter>
+#include <QMdiArea>
+#include <QMainWindow>
+#include <QList>
 #include <memory>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/ConnectionTypes.hpp"
 
 namespace ores::connections::service {
 class connection_manager;
@@ -36,6 +41,8 @@ class connection_manager;
 namespace ores::qt {
 
 class ConnectionTreeModel;
+class ConnectionDetailPanel;
+class DetachableMdiSubWindow;
 
 /**
  * @brief MDI window for browsing and managing saved server connections.
@@ -64,6 +71,17 @@ public:
 
     QSize sizeHint() const override;
 
+    /**
+     * @brief Set callback for testing connections from dialogs.
+     */
+    void setTestCallback(TestConnectionCallback callback);
+
+    /**
+     * @brief Set MDI area and main window for creating sub-windows.
+     */
+    void setMdiArea(QMdiArea* mdiArea, QMainWindow* mainWindow,
+                    QList<DetachableMdiSubWindow*>* allDetachableWindows);
+
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& errorMessage);
@@ -86,8 +104,7 @@ signals:
 
 public slots:
     void reload();
-    void createFolder();
-    void createConnection();
+    void openAddDialog();
     void editSelected();
     void deleteSelected();
     void connectToSelected();
@@ -102,13 +119,15 @@ private slots:
 private:
     void setupUI();
     void updateActionStates();
+    void updateDetailPanel();
 
     QVBoxLayout* layout_;
+    QSplitter* splitter_;
     QTreeView* treeView_;
+    ConnectionDetailPanel* detailPanel_;
     QToolBar* toolBar_;
 
-    QAction* createFolderAction_;
-    QAction* createConnectionAction_;
+    QAction* addAction_;
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* connectAction_;
@@ -118,6 +137,11 @@ private:
 
     std::unique_ptr<ConnectionTreeModel> model_;
     connections::service::connection_manager* manager_;
+    TestConnectionCallback testCallback_;
+
+    QMdiArea* mdiArea_;
+    QMainWindow* mainWindow_;
+    QList<DetachableMdiSubWindow*>* allDetachableWindows_;
 };
 
 }

@@ -35,6 +35,7 @@ struct folder_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string name;
     std::optional<std::string> parent_id;
+    std::optional<std::string> description;
 };
 
 }

@@ -110,6 +110,25 @@ public:
         const std::string& password);
 
     /**
+     * @brief Test a connection without affecting main client state.
+     *
+     * Creates a temporary connection to verify credentials. Does not
+     * modify the main connection, emit signals, or publish events.
+     * Use this for testing saved connections from dialogs.
+     *
+     * @param host Server hostname
+     * @param port Server port
+     * @param username Login username
+     * @param password Login password
+     * @return LoginResult containing success status and error message
+     */
+    LoginResult testConnection(
+        const std::string& host,
+        std::uint16_t port,
+        const std::string& username,
+        const std::string& password);
+
+    /**
      * @brief Connect to the server and attempt signup.
      *
      * Creates a temporary connection to register a new user account.

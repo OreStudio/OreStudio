@@ -29,7 +29,7 @@ std::ostream& operator<<(std::ostream& s, const std::vector<folder>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ID" << "Name" << "Parent ID" << fort::endr;
+    table << fort::header << "ID" << "Name" << "Parent ID" << "Description" << fort::endr;
 
     for (const auto& f : v) {
         const auto parent_str = f.parent_id
@@ -39,6 +39,7 @@ std::ostream& operator<<(std::ostream& s, const std::vector<folder>& v) {
         table << boost::uuids::to_string(f.id)
               << f.name
               << parent_str
+              << f.description
               << fort::endr;
     }
 

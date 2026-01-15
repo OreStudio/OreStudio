@@ -20,7 +20,9 @@
 #include "ores.qt/ConnectionTreeModel.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.connections/service/connection_manager.hpp"
+#include <QMimeData>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/string_generator.hpp>
 
 namespace ores::qt {
 
@@ -168,6 +170,23 @@ QVariant ConnectionTreeModel::data(const QModelIndex& index, int role) const {
     case IsFolderRole:
         return node->type == ConnectionTreeNode::Type::Folder;
 
+    case TagsRole:
+        if (node->type == ConnectionTreeNode::Type::Environment) {
+            try {
+                auto tags = manager_->get_tags_for_environment(node->id);
+                QStringList tagNames;
+                for (const auto& tag : tags) {
+                    tagNames.append(QString::fromStdString(tag.name));
+                }
+                return tagNames;
+            } catch (const std::exception& e) {
+                using namespace ores::logging;
+                BOOST_LOG_SEV(lg(), error) << "Failed to get tags for environment: " << e.what();
+                return QStringList();
+            }
+        }
+        return QStringList();
+
     default:
         return QVariant();
     }
@@ -195,9 +214,204 @@ QVariant ConnectionTreeModel::headerData(int section, Qt::Orientation orientatio
 
 Qt::ItemFlags ConnectionTreeModel::flags(const QModelIndex& index) const {
     if (!index.isValid())
-        return Qt::NoItemFlags;
+        return Qt::ItemIsDropEnabled; // Allow dropping on empty area (root)
 
-    return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    Qt::ItemFlags flags = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+
+    auto* node = nodeFromIndex(index);
+    if (node && node->type != ConnectionTreeNode::Type::Root) {
+        // Items can be dragged
+        flags |= Qt::ItemIsDragEnabled;
+
+        // Folders can accept drops
+        if (node->type == ConnectionTreeNode::Type::Folder) {
+            flags |= Qt::ItemIsDropEnabled;
+        }
+
+        // Only the Name column is editable (for inline rename)
+        if (index.column() == Name) {
+            flags |= Qt::ItemIsEditable;
+        }
+    }
+
+    return flags;
+}
+
+bool ConnectionTreeModel::setData(const QModelIndex& index, const QVariant& value,
+    int role) {
+
+    if (!index.isValid() || role != Qt::EditRole || index.column() != Name)
+        return false;
+
+    auto* node = nodeFromIndex(index);
+    if (!node || node->type == ConnectionTreeNode::Type::Root)
+        return false;
+
+    QString newName = value.toString().trimmed();
+    if (newName.isEmpty() || newName == node->name)
+        return false;
+
+    using namespace ores::logging;
+
+    try {
+        if (node->type == ConnectionTreeNode::Type::Folder) {
+            auto folder = manager_->get_folder(node->id);
+            if (folder) {
+                folder->name = newName.toStdString();
+                manager_->update_folder(*folder);
+                node->name = newName;
+                BOOST_LOG_SEV(lg(), info) << "Renamed folder to: " << newName.toStdString();
+            }
+        } else if (node->type == ConnectionTreeNode::Type::Environment) {
+            auto env = manager_->get_environment(node->id);
+            if (env) {
+                env->name = newName.toStdString();
+                manager_->update_environment(*env, std::nullopt);
+                node->name = newName;
+                BOOST_LOG_SEV(lg(), info) << "Renamed connection to: " << newName.toStdString();
+            }
+        }
+
+        emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
+        return true;
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to rename: " << e.what();
+        emit errorOccurred(QString("Failed to rename: %1").arg(e.what()));
+        return false;
+    }
+}
+
+Qt::DropActions ConnectionTreeModel::supportedDropActions() const {
+    return Qt::MoveAction;
+}
+
+QStringList ConnectionTreeModel::mimeTypes() const {
+    return {"application/x-ores-connection-item"};
+}
+
+QMimeData* ConnectionTreeModel::mimeData(const QModelIndexList& indexes) const {
+    if (indexes.isEmpty())
+        return nullptr;
+
+    // Use first index (single selection mode)
+    const QModelIndex& index = indexes.first();
+    auto* node = nodeFromIndex(index);
+    if (!node || node->type == ConnectionTreeNode::Type::Root)
+        return nullptr;
+
+    auto* mimeData = new QMimeData();
+    QString data = QString("%1:%2")
+        .arg(node->type == ConnectionTreeNode::Type::Folder ? "folder" : "env")
+        .arg(QString::fromStdString(boost::uuids::to_string(node->id)));
+    mimeData->setData("application/x-ores-connection-item", data.toUtf8());
+    return mimeData;
+}
+
+bool ConnectionTreeModel::canDropMimeData(const QMimeData* data, Qt::DropAction action,
+    int /*row*/, int /*column*/, const QModelIndex& parent) const {
+
+    if (!data || action != Qt::MoveAction)
+        return false;
+
+    if (!data->hasFormat("application/x-ores-connection-item"))
+        return false;
+
+    // Parse dragged item
+    QString itemData = QString::fromUtf8(data->data("application/x-ores-connection-item"));
+    QStringList parts = itemData.split(':');
+    if (parts.size() != 2)
+        return false;
+
+    QString itemType = parts[0];
+    QString itemUuidStr = parts[1];
+
+    boost::uuids::string_generator gen;
+    boost::uuids::uuid draggedId;
+    try {
+        draggedId = gen(itemUuidStr.toStdString());
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(lg(), error) << "Failed to parse UUID from drag data: " << e.what();
+        return false;
+    }
+
+    // Get target folder (if dropping on a folder)
+    std::optional<boost::uuids::uuid> targetFolderId;
+    if (parent.isValid()) {
+        auto* targetNode = nodeFromIndex(parent);
+        if (!targetNode || targetNode->type != ConnectionTreeNode::Type::Folder)
+            return false;
+        targetFolderId = targetNode->id;
+
+        // Prevent dropping a folder onto itself or its descendants
+        if (itemType == "folder") {
+            auto* checkNode = targetNode;
+            while (checkNode) {
+                if (checkNode->id == draggedId)
+                    return false;
+                checkNode = checkNode->parent;
+            }
+        }
+    }
+
+    return true;
+}
+
+bool ConnectionTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action,
+    int /*row*/, int /*column*/, const QModelIndex& parent) {
+
+    if (!canDropMimeData(data, action, 0, 0, parent))
+        return false;
+
+    using namespace ores::logging;
+
+    QString itemData = QString::fromUtf8(data->data("application/x-ores-connection-item"));
+    QStringList parts = itemData.split(':');
+    QString itemType = parts[0];
+    QString itemUuidStr = parts[1];
+
+    boost::uuids::string_generator gen;
+    boost::uuids::uuid itemId = gen(itemUuidStr.toStdString());
+
+    // Determine target folder
+    std::optional<boost::uuids::uuid> targetFolderId;
+    if (parent.isValid()) {
+        auto* targetNode = nodeFromIndex(parent);
+        if (targetNode && targetNode->type == ConnectionTreeNode::Type::Folder) {
+            targetFolderId = targetNode->id;
+        }
+    }
+
+    try {
+        if (itemType == "folder") {
+            auto folder = manager_->get_folder(itemId);
+            if (folder) {
+                folder->parent_id = targetFolderId;
+                manager_->update_folder(*folder);
+                BOOST_LOG_SEV(lg(), info) << "Moved folder '"
+                    << folder->name << "' to "
+                    << (targetFolderId ? boost::uuids::to_string(*targetFolderId) : "root");
+            }
+        } else {
+            auto env = manager_->get_environment(itemId);
+            if (env) {
+                env->folder_id = targetFolderId;
+                manager_->update_environment(*env, std::nullopt);
+                BOOST_LOG_SEV(lg(), info) << "Moved connection '"
+                    << env->name << "' to "
+                    << (targetFolderId ? boost::uuids::to_string(*targetFolderId) : "root");
+            }
+        }
+
+        refresh();
+        return true;
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to move item: " << e.what();
+        emit errorOccurred(QString("Failed to move item: %1").arg(e.what()));
+        return false;
+    }
 }
 
 ConnectionTreeNode* ConnectionTreeModel::nodeFromIndex(const QModelIndex& index) const {

@@ -240,6 +240,15 @@ private:
      */
     void performDisconnectCleanup();
 
+    /**
+     * @brief Initializes the connection manager if not already done.
+     *
+     * Prompts for master password if required. Returns true if the connection
+     * manager was successfully initialized, false if the user cancelled or
+     * an error occurred.
+     */
+    bool initializeConnectionManager();
+
 private:
     /** @brief Auto-generated UI elements from MainWindow.ui */
     Ui::MainWindow* ui_;

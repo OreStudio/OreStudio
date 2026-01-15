@@ -297,6 +297,10 @@ $$ language plpgsql;
  *
  * IMPORTANT: Ensure images are populated first if you want image_id
  * references to resolve correctly.
+ *
+ * NOTE: For countries, 'upsert' mode behaves like 'insert_only' because
+ * if an alpha2_code already exists, we skip it. The first dataset to
+ * claim a code wins.
  */
 create or replace function ores.dq_populate_countries(
     p_dataset_id uuid,
@@ -308,7 +312,6 @@ returns table (
 ) as $$
 declare
     v_inserted bigint := 0;
-    v_updated bigint := 0;
     v_skipped bigint := 0;
     v_deleted bigint := 0;
     v_dataset_name text;
@@ -340,6 +343,7 @@ begin
     end if;
 
     -- Process each country from DQ dataset
+    -- Skip countries where the alpha2_code already exists
     for r in
         select
             dq.alpha2_code,
@@ -347,16 +351,16 @@ begin
             dq.numeric_code,
             dq.name,
             dq.official_name,
-            dq.image_id,
-            existing.alpha2_code as existing_code
+            dq.image_id
         from ores.dq_countries_artefact_tbl dq
-        left join ores.refdata_countries_tbl existing
-            on existing.alpha2_code = dq.alpha2_code
-            and existing.valid_to = ores.utility_infinity_timestamp_fn()
         where dq.dataset_id = p_dataset_id
+          and not exists (
+              select 1 from ores.refdata_countries_tbl existing
+              where existing.alpha2_code = dq.alpha2_code
+                and existing.valid_to = ores.utility_infinity_timestamp_fn()
+          )
     loop
         -- Resolve image_id: check if image exists in assets_images_tbl
-        -- (either by same UUID or by matching key via DQ lookup)
         if r.image_id is not null then
             select image_id into v_resolved_image_id
             from ores.assets_images_tbl
@@ -372,40 +376,33 @@ begin
             v_resolved_image_id := null;
         end if;
 
-        if r.existing_code is null then
-            -- Insert new country
-            insert into ores.refdata_countries_tbl (
-                alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id,
-                modified_by, change_reason_code, change_commentary
-            ) values (
-                r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name, v_resolved_image_id,
-                'dq_population', 'system.external_data_import',
-                'Imported from DQ dataset: ' || v_dataset_name
-            );
-            v_inserted := v_inserted + 1;
-
-        elsif p_mode = 'upsert' then
-            -- Update existing country
-            insert into ores.refdata_countries_tbl (
-                alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id,
-                modified_by, change_reason_code, change_commentary
-            ) values (
-                r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name, v_resolved_image_id,
-                'dq_population', 'system.external_data_import',
-                'Updated from DQ dataset: ' || v_dataset_name
-            );
-            v_updated := v_updated + 1;
-
-        else
-            v_skipped := v_skipped + 1;
-        end if;
+        -- Insert new country
+        insert into ores.refdata_countries_tbl (
+            alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name, v_resolved_image_id,
+            'dq_population', 'system.external_data_import',
+            'Imported from DQ dataset: ' || v_dataset_name
+        );
+        v_inserted := v_inserted + 1;
     end loop;
+
+    -- Count skipped (alpha2_codes that already existed)
+    select count(*) into v_skipped
+    from ores.dq_countries_artefact_tbl dq
+    where dq.dataset_id = p_dataset_id
+      and exists (
+          select 1 from ores.refdata_countries_tbl existing
+          where existing.alpha2_code = dq.alpha2_code
+            and existing.valid_to = ores.utility_infinity_timestamp_fn()
+      );
 
     -- Return summary
     return query
     select 'inserted'::text, v_inserted
-    union all select 'updated'::text, v_updated
     union all select 'skipped'::text, v_skipped
+    where v_skipped > 0
     union all select 'deleted'::text, v_deleted
     where v_deleted > 0;
 end;
@@ -456,6 +453,10 @@ $$ language plpgsql;
  *
  * IMPORTANT: Ensure images are populated first if you want image_id
  * references to resolve correctly.
+ *
+ * NOTE: For currencies, 'upsert' mode behaves like 'insert_only' because
+ * if an iso_code already exists (e.g., fiat 'BAM' vs crypto 'BAM'),
+ * we skip it. The first dataset to claim a code wins.
  */
 create or replace function ores.dq_populate_currencies(
     p_dataset_id uuid,
@@ -467,7 +468,6 @@ returns table (
 ) as $$
 declare
     v_inserted bigint := 0;
-    v_updated bigint := 0;
     v_skipped bigint := 0;
     v_deleted bigint := 0;
     v_dataset_name text;
@@ -499,6 +499,7 @@ begin
     end if;
 
     -- Process each currency from DQ dataset
+    -- Skip currencies where the iso_code already exists
     for r in
         select
             dq.iso_code,
@@ -511,13 +512,14 @@ begin
             dq.rounding_precision,
             dq.format,
             dq.currency_type,
-            dq.image_id,
-            existing.iso_code as existing_code
+            dq.image_id
         from ores.dq_currencies_artefact_tbl dq
-        left join ores.refdata_currencies_tbl existing
-            on existing.iso_code = dq.iso_code
-            and existing.valid_to = ores.utility_infinity_timestamp_fn()
         where dq.dataset_id = p_dataset_id
+          and not exists (
+              select 1 from ores.refdata_currencies_tbl existing
+              where existing.iso_code = dq.iso_code
+                and existing.valid_to = ores.utility_infinity_timestamp_fn()
+          )
     loop
         -- Resolve image_id
         if r.image_id is not null then
@@ -534,44 +536,35 @@ begin
             v_resolved_image_id := null;
         end if;
 
-        if r.existing_code is null then
-            -- Insert new currency
-            insert into ores.refdata_currencies_tbl (
-                iso_code, version, name, numeric_code, symbol, fraction_symbol,
-                fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id,
-                modified_by, change_reason_code, change_commentary
-            ) values (
-                r.iso_code, 0, r.name, r.numeric_code, r.symbol, r.fraction_symbol,
-                r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.currency_type, v_resolved_image_id,
-                'dq_population', 'system.external_data_import',
-                'Imported from DQ dataset: ' || v_dataset_name
-            );
-            v_inserted := v_inserted + 1;
-
-        elsif p_mode = 'upsert' then
-            -- Update existing currency
-            insert into ores.refdata_currencies_tbl (
-                iso_code, version, name, numeric_code, symbol, fraction_symbol,
-                fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id,
-                modified_by, change_reason_code, change_commentary
-            ) values (
-                r.iso_code, 0, r.name, r.numeric_code, r.symbol, r.fraction_symbol,
-                r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.currency_type, v_resolved_image_id,
-                'dq_population', 'system.external_data_import',
-                'Updated from DQ dataset: ' || v_dataset_name
-            );
-            v_updated := v_updated + 1;
-
-        else
-            v_skipped := v_skipped + 1;
-        end if;
+        -- Insert new currency
+        insert into ores.refdata_currencies_tbl (
+            iso_code, version, name, numeric_code, symbol, fraction_symbol,
+            fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id,
+            modified_by, change_reason_code, change_commentary
+        ) values (
+            r.iso_code, 0, r.name, r.numeric_code, r.symbol, r.fraction_symbol,
+            r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.currency_type, v_resolved_image_id,
+            'dq_population', 'system.external_data_import',
+            'Imported from DQ dataset: ' || v_dataset_name
+        );
+        v_inserted := v_inserted + 1;
     end loop;
+
+    -- Count skipped (iso_codes that already existed)
+    select count(*) into v_skipped
+    from ores.dq_currencies_artefact_tbl dq
+    where dq.dataset_id = p_dataset_id
+      and exists (
+          select 1 from ores.refdata_currencies_tbl existing
+          where existing.iso_code = dq.iso_code
+            and existing.valid_to = ores.utility_infinity_timestamp_fn()
+      );
 
     -- Return summary
     return query
     select 'inserted'::text, v_inserted
-    union all select 'updated'::text, v_updated
     union all select 'skipped'::text, v_skipped
+    where v_skipped > 0
     union all select 'deleted'::text, v_deleted
     where v_deleted > 0;
 end;

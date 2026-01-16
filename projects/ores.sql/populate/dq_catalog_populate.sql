@@ -27,6 +27,7 @@
  * Catalogs:
  * - ISO Standards: International standards for currencies, countries
  * - Cryptocurrency: Digital asset reference data and visual assets
+ * - FpML Standards: FpML coding schemes for OTC derivatives
  */
 
 set schema 'ores';
@@ -78,6 +79,12 @@ select ores.upsert_dq_catalog(
     'Cryptocurrency',
     'Digital asset reference data including cryptocurrency symbols, names, and icon imagery from community-maintained repositories.',
     'Digital Assets Team'
+);
+
+select ores.upsert_dq_catalog(
+    'FpML Standards',
+    'Financial products Markup Language (FpML) coding schemes and reference data for OTC derivatives trading. Includes non-ISO currencies, business centers, and other FpML-defined code lists.',
+    'Reference Data Team'
 );
 
 -- =============================================================================

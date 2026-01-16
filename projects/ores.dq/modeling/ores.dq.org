@@ -6,7 +6,8 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
 
-Data quality infrastructure for tracking and ensuring data integrity in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+Implements the [[id:A19D2750-D97D-09A4-BD2B-5218D9654E56][Data Quality]] infrastructure for tracking and ensuring data
+integrity in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
 
 * Component Architecture
 
@@ -16,23 +17,9 @@ Diagram:
 #+caption: ORE Studio Data Quality Component Diagram
 [[file:ores.dq.png][file:ores.dq.png]]
 
-Provides comprehensive data quality management capabilities for ORE Studio
-components. Key domain concepts:
+* Facets
 
-| Concept           | Description                                                                                                             |
-|-------------------+-------------------------------------------------------------------------------------------------------------------------|
-| Dataset           | A logical collection of sample records (e.g., a set of trades, portfolios, or market data snapshots).                   |
-| Record            | An individual row or entity within a dataset (optional granularity; lineage may be tracked at dataset or record level). |
-| Provenance        | The origin of the data—external vendor, internal system, or synthetic generator.                                        |
-| Classification    | Categorizes the nature of the data for compliance and usage control.                                                    |
-| Lineage           | Directed acyclic graph (DAG) linking derived data to its upstream sources.                                              |
-| Temporal Context  | Captures both business time (as_of_date) and system time (ingestion_timestamp), supporting bi-temporal reasoning.       |
-| Data Passport     | A self-contained metadata manifest (relational or document-based) that answers the 5 Ws of data governance.             |
-| Quality metrics   | Define and store validation rules and quality measurements.                                                             |
-| Change Management | Maintain history of data changes (who did what, when and for what reason.                                               |
-| Data profiling    | Store statistical metadata about data characteristics.                                                                  |
-
-The component is organized into the following facets:
+The component is organised into the following facets:
 
 | Facet      | Description                                 |
 |------------+---------------------------------------------|

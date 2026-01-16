@@ -215,6 +215,31 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_dataset(
+    'FpML Standards',
+    'Currencies',
+    'Reference Data',
+    'FPML_NON_ISO_CURRENCY',
+    'Source',
+    'Actual',
+    'Raw',
+    'FpML Genericode Download',
+    'FpML Non-ISO Currencies',
+    'Non-ISO currency codes from FpML coding scheme (version 1-1). Includes offshore currencies (CNH, CNT) and historical currencies (MCF, SML, VAL).',
+    'FPML',
+    'Reference data for non-ISO currency codes used in derivatives trading',
+    '2023-11-03'::date,
+    null
+);
+
+select ores.upsert_dq_tag(
+    'FpML Non-ISO Currencies',
+    'Currencies',
+    'Reference Data',
+    'currency',
+    'Non-ISO currency reference data'
+);
+
+select ores.upsert_dq_dataset(
     'Cryptocurrency',
     'Cryptocurrencies',
     'Reference Data',

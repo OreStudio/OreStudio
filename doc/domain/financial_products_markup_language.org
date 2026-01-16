@@ -1,0 +1,26 @@
+:PROPERTIES:
+:ID: FCC3BBA5-DFA3-17F4-69B3-B7958C05B1F8
+:ROAM_ALIASES: FPML
+:END:
+#+title: Financial products Markup Language
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+As [[https://en.wikipedia.org/wiki/FpML][per Wikipedia]]:
+
+#+begin_quote
+FpML (Financial products Markup Language) is a business information exchange
+standard based on Extensible Markup Language (XML) that enables
+business-to-business over-the-counter (OTC) financial derivative transactions
+online by following W3C standards.[1]
+
+The standard is managed by the International Swaps and Derivatives Association
+(ISDA) on behalf of a community of investment banks that make up the OTC
+derivatives industry.[2][3] All categories of privately negotiated derivatives
+will eventually be included within the standard.
+
+FpML is distinct from similar financial standards such as SWIFT and FIX because
+it does not specify a network or transport mechanism.
+#+end_quote

@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 1A95DFA1-932C-B094-4653-BFCAD266C2AD
+:END:
+#+title: Coding Schemes
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+[[id:FCC3BBA5-DFA3-17F4-69B3-B7958C05B1F8][FPML]] concept which we make use of extensively. It is [[https://www.fpml.org/spec/coding-scheme/][defined as]]:
+
+#+begin_quote
+A number of data elements defined in FpML are restricted to holding one of a
+limited set of possible values, e.g. currency, business calendar locations, etc.
+Such restricted sets of values are frequently referred to as domains.In FpML,
+two different codings of domains are used. Domains that are small and not
+expected to change during the life of the specification are coded using XML
+schema enumerations. These domains are described elsewhere, in particular in the
+fpml-enum schema file. Other domains are coded using a strategy that has been
+defined by the Architecture Working Group, referred to as 'Schemes'. Each Scheme
+is associated with a URI. Coding Schemes can be categorized as one of the
+following:
+
+- An external coding Scheme, which has a well-known URI. In this case the URI is
+  assigned by an external body, and may or may not have its own versioning, date
+  syntax and semantics. The external body may be an open standards organization,
+  or it may be a market participant. It's worth stating that a scheme provides
+  alternate identifiers for one identity. However it is not used to identify
+  things other than the identity of the thing that contains it.
+- An external coding Scheme, which does not have a well-known URI. In this case
+  FpML assigns a URI as a proxy to refer to the concept of the external Scheme,
+  but this URI will not be versioned or dated
+- An FpML-defined coding Scheme. In this case the Scheme is fully under FpML
+  control and the URI will change reflecting newer versions and revisions as the
+  scheme evolves and changes.
+#+end_quote

@@ -1,0 +1,72 @@
+:PROPERTIES:
+:ID: A19D2750-D97D-09A4-BD2B-5218D9654E56
+:ROAM_ALIASES: DQ
+:END:
+#+title: Data Quality
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Data Quality (DQ) is the measure of how well a dataset satisfies the
+requirements of its intended business use. In financial markets, high-quality
+data is defined as being accurate, complete, timely, and traceable, ensuring
+that automated trading decisions and risk calculations are based on a "single
+version of the truth" rather than corrupted or ambiguous artefacts.
+
+* The Standard Dimensions - The "DQ 6"
+
+There are six industry-standard dimensions used by [[https://en.wikipedia.org/wiki/ISO_8000][ISO 8000]] and [[https://en.wikipedia.org/wiki/Data_Management_Association][DAMA]]:
+
+- *Accuracy*: The degree to which data values match the "Golden Source" (e.g.,
+  a Bloomberg price vs. your sample).
+- *Completeness*: The presence of all mandatory attributes (e.g., no missing
+  ISIN or Strike Price).
+- *Consistency*: The absence of contradictions across different tables or
+  systems (e.g., USD/EUR rate is the same in your "Sample" and "Derived"
+  tables).
+- *Timeliness*: The readiness of data for its specific window (e.g., "T+0"
+  real-time vs. "T+1" end-of-day).
+- *Validity*: Adherence to business rules and formats (e.g., Currency codes must
+  follow ISO 4217).
+- *Uniqueness*: Ensuring no duplicate records exist for the same entity and
+  timestamp.
+
+* Relevant Industry bodies and standards
+
+** DAMA-DMBOK (Data Management Body of Knowledge)
+
+- Focus: Best practices and principles for managing data as a strategic asset
+  (including Data Governance, Data Quality, Data Modeling, etc.).
+- Role: Provides detailed practices for Data Architecture, encompassing data
+  modeling and integration, and defines how these elements align with specific
+  business requirements.
+
+** TOGAF (The Open Group Architecture Framework)
+
+- Focus: Design, planning, implementation, and governance of Enterprise
+  Architecture, ensuring IT alignment with strategic business goals.
+- Role: Features a dedicated Data Architecture phase (Phase C), which leverages
+  DAMA principles to build a scalable data ecosystem that fits within the
+  broader organizational structure.
+
+* Key domain concepts
+
+- *Dataset*: A logical collection of sample records (e.g., a set of trades,
+  portfolios, or market data snapshots).
+- *Record*: An individual row or entity within a dataset (optional granularity;
+  lineage may be tracked at dataset or record level).
+- *Provenance*: The origin of the data—external vendor, internal system, or
+  synthetic generator.
+- *Classification*: Categorizes the nature of the data for compliance and usage
+  control.
+- *Lineage*: Directed acyclic graph (DAG) linking derived data to its upstream
+  sources.
+- *Temporal Context*: Captures both business time (=as_of_date=) and system time
+  (=ingestion_timestamp=), supporting bi-temporal reasoning.
+- *Data Passport*: A self-contained metadata manifest (relational or
+  document-based) that answers the 5 Ws of data governance.
+- *Quality metrics*: Define and store validation rules and quality measurements.
+- *Change Management*: Maintain history of data changes (who did what, when and
+  for what reason.
+- *Data profiling*: Store statistical metadata about data characteristics.
+- [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]]

@@ -56,6 +56,15 @@ create table if not exists "ores"."dq_coding_scheme_tbl" (
     check ("valid_from" < "valid_to")
 );
 
+-- Unique indexes for current records
+create unique index if not exists dq_coding_scheme_version_uniq_idx
+on "ores"."dq_coding_scheme_tbl" (code, version)
+where valid_to = ores.utility_infinity_timestamp_fn();
+
+create unique index if not exists dq_coding_scheme_code_uniq_idx
+on "ores"."dq_coding_scheme_tbl" (code)
+where valid_to = ores.utility_infinity_timestamp_fn();
+
 -- Index for looking up schemes by subject area
 create index if not exists dq_coding_scheme_subject_area_idx
 on "ores"."dq_coding_scheme_tbl" (subject_area_name, domain_name)
@@ -68,19 +77,9 @@ where valid_to = ores.utility_infinity_timestamp_fn() and uri is not null;
 
 create or replace function ores.dq_coding_scheme_insert_fn()
 returns trigger as $$
+declare
+    current_version integer;
 begin
-    if NEW.valid_from is null then
-        NEW.valid_from := current_timestamp;
-    end if;
-
-    if NEW.valid_to is null then
-        NEW.valid_to := ores.utility_infinity_timestamp_fn();
-    end if;
-
-    if NEW.version is null then
-        NEW.version := 0;
-    end if;
-
     -- Validate subject_area/domain FK
     if not exists (
         select 1 from ores.dq_subject_area_tbl
@@ -90,6 +89,38 @@ begin
     ) then
         raise exception 'Invalid subject_area_name/domain_name: %/%. Subject area must exist.', NEW.subject_area_name, NEW.domain_name
         using errcode = '23503';
+    end if;
+
+    select version into current_version
+    from "ores"."dq_coding_scheme_tbl"
+    where code = NEW.code
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if found then
+        -- This insert is an update. Check version and increment.
+        if NEW.version != 0 and NEW.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                NEW.version, current_version
+                using errcode = 'P0002';
+        end if;
+        NEW.version = current_version + 1;
+
+        -- Close the old record.
+        update "ores"."dq_coding_scheme_tbl"
+        set valid_to = current_timestamp
+        where code = NEW.code
+          and valid_to = ores.utility_infinity_timestamp_fn()
+          and valid_from < current_timestamp;
+    else
+        -- This is a new record.
+        NEW.version = 1;
+    end if;
+
+    NEW.valid_from = current_timestamp;
+    NEW.valid_to = ores.utility_infinity_timestamp_fn();
+
+    if NEW.modified_by is null or NEW.modified_by = '' then
+        NEW.modified_by = current_user;
     end if;
 
     NEW.change_reason_code := ores.refdata_validate_change_reason_fn(NEW.change_reason_code);

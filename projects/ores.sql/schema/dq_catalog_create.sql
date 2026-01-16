@@ -48,19 +48,49 @@ create table if not exists "ores"."dq_catalog_tbl" (
     check ("valid_from" < "valid_to")
 );
 
+create unique index if not exists dq_catalog_version_uniq_idx
+on "ores"."dq_catalog_tbl" (name, version)
+where valid_to = ores.utility_infinity_timestamp_fn();
+
+create unique index if not exists dq_catalog_name_uniq_idx
+on "ores"."dq_catalog_tbl" (name)
+where valid_to = ores.utility_infinity_timestamp_fn();
+
 create or replace function ores.dq_catalog_insert_fn()
 returns trigger as $$
+declare
+    current_version integer;
 begin
-    if NEW.valid_from is null then
-        NEW.valid_from := current_timestamp;
+    select version into current_version
+    from "ores"."dq_catalog_tbl"
+    where name = NEW.name
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if found then
+        -- This insert is an update. Check version and increment.
+        if NEW.version != 0 and NEW.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                NEW.version, current_version
+                using errcode = 'P0002';
+        end if;
+        NEW.version = current_version + 1;
+
+        -- Close the old record.
+        update "ores"."dq_catalog_tbl"
+        set valid_to = current_timestamp
+        where name = NEW.name
+          and valid_to = ores.utility_infinity_timestamp_fn()
+          and valid_from < current_timestamp;
+    else
+        -- This is a new record.
+        NEW.version = 1;
     end if;
 
-    if NEW.valid_to is null then
-        NEW.valid_to := ores.utility_infinity_timestamp_fn();
-    end if;
+    NEW.valid_from = current_timestamp;
+    NEW.valid_to = ores.utility_infinity_timestamp_fn();
 
-    if NEW.version is null then
-        NEW.version := 0;
+    if NEW.modified_by is null or NEW.modified_by = '' then
+        NEW.modified_by = current_user;
     end if;
 
     NEW.change_reason_code := ores.refdata_validate_change_reason_fn(NEW.change_reason_code);

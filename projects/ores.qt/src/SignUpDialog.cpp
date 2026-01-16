@@ -18,157 +18,267 @@
  *
  */
 #include "ores.qt/SignUpDialog.hpp"
-
-#include <QVBoxLayout>
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.utility/version/version.hpp"
 #include <QHBoxLayout>
-#include <QFormLayout>
-#include <QSizePolicy>
+#include <QVBoxLayout>
+#include <QKeyEvent>
 #include <QRegularExpression>
 #include <QtConcurrent>
 #include <QFutureWatcher>
-#include "ores.qt/IconUtils.hpp"
-#include "ores.qt/MessageBoxHelper.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-SignUpDialog::SignUpDialog(ClientManager* clientManager, QWidget* parent)
-    : QDialog(parent),
-      username_edit_(new QLineEdit(this)),
-      email_edit_(new QLineEdit(this)),
-      password_edit_(new QLineEdit(this)),
-      confirm_password_edit_(new QLineEdit(this)),
-      host_edit_(new QLineEdit(this)),
-      port_spinbox_(new QSpinBox(this)),
-      signup_button_(new QPushButton("Sign Up", this)),
-      cancel_button_(new QPushButton("Cancel", this)),
-      status_label_(new QLabel(this)),
-      clientManager_(clientManager) {
+namespace {
 
+const QString panelStyle = R"(
+    QWidget#mainPanel {
+        background-color: #1A1A1A;
+    }
+)";
+
+const QString titleStyle = R"(
+    QLabel {
+        background: transparent;
+        color: #ffffff;
+        font-size: 28px;
+        font-weight: bold;
+        letter-spacing: 2px;
+    }
+)";
+
+const QString subtitleStyle = R"(
+    QLabel {
+        background: transparent;
+        color: #707070;
+        font-size: 12px;
+    }
+)";
+
+const QString inputFieldStyle = R"(
+    QLineEdit {
+        background-color: #2d2d2d;
+        border: 1px solid #3d3d3d;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-size: 13px;
+        color: #ffffff;
+    }
+    QLineEdit:focus {
+        border-color: #5a5a5a;
+        background-color: #333333;
+    }
+    QLineEdit::placeholder {
+        color: #707070;
+    }
+)";
+
+const QString inputFieldMatchStyle = R"(
+    QLineEdit {
+        background-color: #2d2d2d;
+        border: 2px solid #4CAF50;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-size: 13px;
+        color: #ffffff;
+    }
+    QLineEdit:focus {
+        border-color: #4CAF50;
+        background-color: #333333;
+    }
+)";
+
+const QString inputFieldMismatchStyle = R"(
+    QLineEdit {
+        background-color: #2d2d2d;
+        border: 2px solid #FF9800;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-size: 13px;
+        color: #ffffff;
+    }
+    QLineEdit:focus {
+        border-color: #FF9800;
+        background-color: #333333;
+    }
+)";
+
+const QString spinBoxStyle = R"(
+    QSpinBox {
+        background-color: #2d2d2d;
+        border: 1px solid #3d3d3d;
+        border-radius: 4px;
+        padding: 8px 12px;
+        font-size: 13px;
+        color: #ffffff;
+    }
+    QSpinBox:focus {
+        border-color: #5a5a5a;
+        background-color: #333333;
+    }
+)";
+
+const QString signUpButtonStyle = R"(
+    QPushButton {
+        background-color: #3d3d3d;
+        color: #ffffff;
+        border: none;
+        border-radius: 4px;
+        padding: 10px 24px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    QPushButton:hover {
+        background-color: #4a4a4a;
+    }
+    QPushButton:pressed {
+        background-color: #333333;
+    }
+    QPushButton:disabled {
+        background-color: #2a2a2a;
+        color: #555555;
+    }
+)";
+
+const QString checkboxStyle = R"(
+    QCheckBox {
+        background: transparent;
+        color: #909090;
+        font-size: 12px;
+        spacing: 6px;
+    }
+    QCheckBox::indicator {
+        width: 14px;
+        height: 14px;
+        border: 1px solid #3d3d3d;
+        border-radius: 2px;
+        background-color: #2d2d2d;
+    }
+    QCheckBox::indicator:checked {
+        background-color: #4a4a4a;
+        border-color: #5a5a5a;
+    }
+)";
+
+const QString linkButtonStyle = R"(
+    QPushButton {
+        background: transparent;
+        border: none;
+        color: #909090;
+        font-size: 12px;
+        padding: 0;
+    }
+    QPushButton:hover {
+        color: #ffffff;
+        text-decoration: underline;
+    }
+)";
+
+const QString fieldLabelStyle = R"(
+    QLabel {
+        background: transparent;
+        color: #909090;
+        font-size: 10px;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+)";
+
+const QString versionStyle = R"(
+    QLabel {
+        background: transparent;
+        color: #505050;
+        font-size: 9px;
+    }
+)";
+
+const QString statusStyle = R"(
+    QLabel {
+        background: transparent;
+        color: #707070;
+        font-size: 11px;
+        font-style: italic;
+    }
+)";
+
+}
+
+SignUpDialog::SignUpDialog(QWidget* parent)
+    : QWidget(parent) {
     setupUI();
 
-    // Connect signals
-    connect(signup_button_, &QPushButton::clicked, this, &SignUpDialog::onSignUpClicked);
-    connect(cancel_button_, &QPushButton::clicked, this, &QDialog::reject);
-    connect(this, &SignUpDialog::signupCompleted,
-            this, &SignUpDialog::onSignUpResult);
-
-    // Register SignupResult for cross-thread signal/slot
+    // Register result types for cross-thread signal/slot
     qRegisterMetaType<SignupResult>("SignupResult");
+    qRegisterMetaType<LoginResult>("LoginResult");
 }
 
-SignUpDialog::~SignUpDialog() {
+SignUpDialog::~SignUpDialog() = default;
+
+QSize SignUpDialog::sizeHint() const {
+    return {400, 620};
 }
 
-void SignUpDialog::setupUI() {
-    BOOST_LOG_SEV(lg(), debug) << "Setting up UI.";
-
-    setWindowTitle("Sign Up for ORE Studio");
-    setModal(true);
-    setMinimumWidth(500);
-    setFixedWidth(500);
-    setSizeGripEnabled(false);
-
-    // Create form layout
-    auto* form_layout = new QFormLayout();
-    form_layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
-
-    // Username field
-    username_edit_->setPlaceholderText("Choose a username");
-    form_layout->addRow("Username:", username_edit_);
-
-    // Email field
-    email_edit_->setPlaceholderText("Enter your email address");
-    form_layout->addRow("Email:", email_edit_);
-
-    // Password field
-    password_edit_->setEchoMode(QLineEdit::Password);
-    password_edit_->setPlaceholderText("Choose a password (min 12 chars)");
-    form_layout->addRow("Password:", password_edit_);
-
-    // Confirm password field
-    confirm_password_edit_->setEchoMode(QLineEdit::Password);
-    confirm_password_edit_->setPlaceholderText("Confirm your password");
-    form_layout->addRow("Confirm Password:", confirm_password_edit_);
-
-    // Server host field
-    host_edit_->setText("localhost");
-    host_edit_->setPlaceholderText("Server hostname or IP");
-    form_layout->addRow("Server Host:", host_edit_);
-
-    // Server port field
-    port_spinbox_->setRange(1, 65535);
-    port_spinbox_->setValue(55555);
-    port_spinbox_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    port_spinbox_->setMinimumWidth(username_edit_->minimumSizeHint().width());
-    form_layout->addRow("Server Port:", port_spinbox_);
-
-    // Status label
-    status_label_->setWordWrap(true);
-    status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
-
-    // Set icons on buttons
-    const QColor iconColor(220, 220, 220);
-    signup_button_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_person_add_20_regular.svg", iconColor));
-    cancel_button_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
-
-    // Button layout
-    auto* button_layout = new QHBoxLayout();
-    button_layout->addStretch();
-    button_layout->addWidget(cancel_button_);
-    button_layout->addWidget(signup_button_);
-
-    // Main layout
-    auto* main_layout = new QVBoxLayout(this);
-    main_layout->addLayout(form_layout);
-    main_layout->addWidget(status_label_);
-    main_layout->addSpacing(10);
-    main_layout->addLayout(button_layout);
-
-    // Set default button
-    signup_button_->setDefault(true);
-
-    // Connect password fields for match indicator
-    connect(password_edit_, &QLineEdit::textChanged, this,
-        &SignUpDialog::updatePasswordMatchIndicator);
-    connect(confirm_password_edit_, &QLineEdit::textChanged, this,
-        &SignUpDialog::updatePasswordMatchIndicator);
+void SignUpDialog::keyPressEvent(QKeyEvent* event) {
+    if (event->key() == Qt::Key_Escape) {
+        emit closeRequested();
+    } else {
+        QWidget::keyPressEvent(event);
+    }
 }
 
-void SignUpDialog::setServerInfo(const QString& host, int port) {
-    host_edit_->setText(host);
-    port_spinbox_->setValue(port);
+void SignUpDialog::setServer(const QString& server) {
+    hostEdit_->setText(server);
+}
+
+void SignUpDialog::setPort(int port) {
+    portSpinBox_->setValue(port);
+}
+
+QString SignUpDialog::getServer() const {
+    return hostEdit_->text().trimmed();
+}
+
+int SignUpDialog::getPort() const {
+    return portSpinBox_->value();
+}
+
+void SignUpDialog::setClientManager(ClientManager* clientManager) {
+    clientManager_ = clientManager;
+}
+
+QString SignUpDialog::getRegisteredUsername() const {
+    return registeredUsername_;
 }
 
 void SignUpDialog::enableForm(bool enabled) {
-    BOOST_LOG_SEV(lg(), trace) << "Enable form: " << enabled;
-
-    username_edit_->setEnabled(enabled);
-    email_edit_->setEnabled(enabled);
-    password_edit_->setEnabled(enabled);
-    confirm_password_edit_->setEnabled(enabled);
-    host_edit_->setEnabled(enabled);
-    port_spinbox_->setEnabled(enabled);
-    signup_button_->setEnabled(enabled);
+    usernameEdit_->setEnabled(enabled);
+    emailEdit_->setEnabled(enabled);
+    passwordEdit_->setEnabled(enabled);
+    confirmPasswordEdit_->setEnabled(enabled);
+    hostEdit_->setEnabled(enabled);
+    portSpinBox_->setEnabled(enabled);
+    signUpButton_->setEnabled(enabled);
+    loginButton_->setEnabled(enabled);
 }
 
 bool SignUpDialog::validateInput() {
-    const auto username = username_edit_->text().trimmed();
-    const auto email = email_edit_->text().trimmed();
-    const auto password = password_edit_->text();
-    const auto confirmPassword = confirm_password_edit_->text();
-    const auto host = host_edit_->text().trimmed();
+    const auto username = usernameEdit_->text().trimmed();
+    const auto email = emailEdit_->text().trimmed();
+    const auto password = passwordEdit_->text();
+    const auto confirmPassword = confirmPasswordEdit_->text();
+    const auto host = hostEdit_->text().trimmed();
 
     if (username.isEmpty()) {
         MessageBoxHelper::warning(this, "Invalid Input", "Please enter a username.");
-        username_edit_->setFocus();
+        usernameEdit_->setFocus();
         return false;
     }
 
     if (email.isEmpty()) {
         MessageBoxHelper::warning(this, "Invalid Input", "Please enter an email address.");
-        email_edit_->setFocus();
+        emailEdit_->setFocus();
         return false;
     }
 
@@ -176,35 +286,232 @@ bool SignUpDialog::validateInput() {
     if (!emailRegex.match(email).hasMatch()) {
         MessageBoxHelper::warning(this, "Invalid Input",
             "Please enter a valid email address.");
-        email_edit_->setFocus();
+        emailEdit_->setFocus();
         return false;
     }
 
     if (password.isEmpty()) {
         MessageBoxHelper::warning(this, "Invalid Input", "Please enter a password.");
-        password_edit_->setFocus();
+        passwordEdit_->setFocus();
+        return false;
+    }
+
+    if (password.length() < 12) {
+        MessageBoxHelper::warning(this, "Invalid Input",
+            "Password must be at least 12 characters long.");
+        passwordEdit_->setFocus();
         return false;
     }
 
     if (password != confirmPassword) {
         MessageBoxHelper::warning(this, "Invalid Input",
             "Passwords do not match. Please try again.");
-        confirm_password_edit_->setFocus();
-        confirm_password_edit_->selectAll();
+        confirmPasswordEdit_->setFocus();
+        confirmPasswordEdit_->selectAll();
         return false;
     }
 
     if (host.isEmpty()) {
         MessageBoxHelper::warning(this, "Invalid Input", "Please enter a server host.");
-        host_edit_->setFocus();
+        hostEdit_->setFocus();
         return false;
     }
 
     return true;
 }
 
+void SignUpDialog::setupUI() {
+    auto* mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
+
+    // Main panel
+    auto* mainPanel = new QWidget(this);
+    mainPanel->setObjectName("mainPanel");
+    mainPanel->setStyleSheet(panelStyle);
+    setupPanel(mainPanel);
+
+    mainLayout->addWidget(mainPanel);
+}
+
+void SignUpDialog::setupPanel(QWidget* parent) {
+    auto* layout = new QVBoxLayout(parent);
+    layout->setContentsMargins(36, 20, 36, 16);
+    layout->setSpacing(0);
+
+    layout->addStretch(1);
+
+    // Title - CREATE ACCOUNT
+    titleLabel_ = new QLabel("CREATE ACCOUNT", parent);
+    titleLabel_->setStyleSheet(titleStyle);
+    layout->addWidget(titleLabel_, 0, Qt::AlignCenter);
+
+    layout->addSpacing(4);
+
+    // Subtitle
+    auto* subtitleLabel = new QLabel("Join ORE Studio", parent);
+    subtitleLabel->setStyleSheet(subtitleStyle);
+    layout->addWidget(subtitleLabel, 0, Qt::AlignCenter);
+
+    layout->addSpacing(20);
+
+    // Username field
+    auto* usernameLabel = new QLabel("USERNAME", parent);
+    usernameLabel->setStyleSheet(fieldLabelStyle);
+    layout->addWidget(usernameLabel);
+    layout->addSpacing(4);
+
+    usernameEdit_ = new QLineEdit(parent);
+    usernameEdit_->setPlaceholderText("Choose a username");
+    usernameEdit_->setStyleSheet(inputFieldStyle);
+    usernameEdit_->setFixedHeight(36);
+    layout->addWidget(usernameEdit_);
+
+    layout->addSpacing(10);
+
+    // Email field
+    auto* emailLabel = new QLabel("EMAIL", parent);
+    emailLabel->setStyleSheet(fieldLabelStyle);
+    layout->addWidget(emailLabel);
+    layout->addSpacing(4);
+
+    emailEdit_ = new QLineEdit(parent);
+    emailEdit_->setPlaceholderText("Enter your email address");
+    emailEdit_->setStyleSheet(inputFieldStyle);
+    emailEdit_->setFixedHeight(36);
+    layout->addWidget(emailEdit_);
+
+    layout->addSpacing(10);
+
+    // Password field
+    auto* passwordLabel = new QLabel("PASSWORD", parent);
+    passwordLabel->setStyleSheet(fieldLabelStyle);
+    layout->addWidget(passwordLabel);
+    layout->addSpacing(4);
+
+    passwordEdit_ = new QLineEdit(parent);
+    passwordEdit_->setPlaceholderText("Choose a password (min 12 chars)");
+    passwordEdit_->setEchoMode(QLineEdit::Password);
+    passwordEdit_->setStyleSheet(inputFieldStyle);
+    passwordEdit_->setFixedHeight(36);
+    layout->addWidget(passwordEdit_);
+
+    layout->addSpacing(10);
+
+    // Confirm password field
+    auto* confirmLabel = new QLabel("CONFIRM PASSWORD", parent);
+    confirmLabel->setStyleSheet(fieldLabelStyle);
+    layout->addWidget(confirmLabel);
+    layout->addSpacing(4);
+
+    confirmPasswordEdit_ = new QLineEdit(parent);
+    confirmPasswordEdit_->setPlaceholderText("Confirm your password");
+    confirmPasswordEdit_->setEchoMode(QLineEdit::Password);
+    confirmPasswordEdit_->setStyleSheet(inputFieldStyle);
+    confirmPasswordEdit_->setFixedHeight(36);
+    layout->addWidget(confirmPasswordEdit_);
+
+    // Connect password fields for match indicator
+    connect(passwordEdit_, &QLineEdit::textChanged,
+            this, &SignUpDialog::updatePasswordMatchIndicator);
+    connect(confirmPasswordEdit_, &QLineEdit::textChanged,
+            this, &SignUpDialog::updatePasswordMatchIndicator);
+
+    // Show password checkbox
+    layout->addSpacing(8);
+    showPasswordCheck_ = new QCheckBox("Show passwords", parent);
+    showPasswordCheck_->setStyleSheet(checkboxStyle);
+    connect(showPasswordCheck_, &QCheckBox::toggled,
+            this, &SignUpDialog::onShowPasswordToggled);
+    layout->addWidget(showPasswordCheck_);
+
+    layout->addSpacing(10);
+
+    // Server field
+    auto* hostLabel = new QLabel("SERVER", parent);
+    hostLabel->setStyleSheet(fieldLabelStyle);
+    layout->addWidget(hostLabel);
+    layout->addSpacing(4);
+
+    hostEdit_ = new QLineEdit(parent);
+    hostEdit_->setPlaceholderText("localhost");
+    hostEdit_->setText("localhost");
+    hostEdit_->setStyleSheet(inputFieldStyle);
+    hostEdit_->setFixedHeight(32);
+    layout->addWidget(hostEdit_);
+
+    layout->addSpacing(8);
+
+    auto* portLabel = new QLabel("PORT", parent);
+    portLabel->setStyleSheet(fieldLabelStyle);
+    layout->addWidget(portLabel);
+    layout->addSpacing(4);
+
+    portSpinBox_ = new QSpinBox(parent);
+    portSpinBox_->setRange(1, 65535);
+    portSpinBox_->setValue(55555);
+    portSpinBox_->setStyleSheet(spinBoxStyle);
+    portSpinBox_->setFixedHeight(32);
+    layout->addWidget(portSpinBox_);
+
+    layout->addSpacing(10);
+
+    // Status label
+    statusLabel_ = new QLabel(parent);
+    statusLabel_->setStyleSheet(statusStyle);
+    statusLabel_->setAlignment(Qt::AlignCenter);
+    layout->addWidget(statusLabel_);
+
+    layout->addSpacing(4);
+
+    // Sign up button
+    signUpButton_ = new QPushButton("Create Account", parent);
+    signUpButton_->setStyleSheet(signUpButtonStyle);
+    signUpButton_->setFixedHeight(40);
+    signUpButton_->setCursor(Qt::PointingHandCursor);
+    connect(signUpButton_, &QPushButton::clicked,
+            this, &SignUpDialog::onSignUpClicked);
+    layout->addWidget(signUpButton_);
+
+    layout->addSpacing(12);
+
+    // Login row
+    auto* loginRow = new QHBoxLayout();
+    loginRow->setAlignment(Qt::AlignCenter);
+    loginLabel_ = new QLabel("Already have an account?", parent);
+    loginLabel_->setStyleSheet("QLabel { background: transparent; color: #707070; font-size: 12px; }");
+
+    loginButton_ = new QPushButton("Log in", parent);
+    loginButton_->setStyleSheet(linkButtonStyle);
+    loginButton_->setCursor(Qt::PointingHandCursor);
+    connect(loginButton_, &QPushButton::clicked,
+            this, &SignUpDialog::onLoginClicked);
+
+    loginRow->addWidget(loginLabel_);
+    loginRow->addWidget(loginButton_);
+    layout->addLayout(loginRow);
+
+    layout->addStretch(1);
+
+    // Version info at bottom
+    QString versionText = QString("v%1  %2")
+        .arg(ORES_VERSION)
+        .arg(QString::fromStdString(ORES_BUILD_INFO));
+    auto* versionLabel = new QLabel(versionText, parent);
+    versionLabel->setStyleSheet(versionStyle);
+    layout->addWidget(versionLabel, 0, Qt::AlignCenter);
+
+    layout->addSpacing(4);
+
+    auto* copyrightLabel = new QLabel(QString::fromUtf8("\u00A9 2025 ORE Studio"), parent);
+    copyrightLabel->setStyleSheet(versionStyle);
+    layout->addWidget(copyrightLabel, 0, Qt::AlignCenter);
+
+    layout->addSpacing(8);
+}
+
 void SignUpDialog::onSignUpClicked() {
-    BOOST_LOG_SEV(lg(), trace) << "On sign up was clicked.";
+    BOOST_LOG_SEV(lg(), trace) << "Sign up button clicked";
 
     if (!clientManager_) {
         MessageBoxHelper::critical(this, "Internal Error", "Client manager not initialized");
@@ -215,16 +522,16 @@ void SignUpDialog::onSignUpClicked() {
         return;
     }
 
-    const auto username = username_edit_->text().trimmed();
-    const auto email = email_edit_->text().trimmed();
-    const auto password = password_edit_->text();
-    const auto host = host_edit_->text().trimmed();
-    const auto port = static_cast<std::uint16_t>(port_spinbox_->value());
+    const auto username = usernameEdit_->text().trimmed();
+    const auto email = emailEdit_->text().trimmed();
+    const auto password = passwordEdit_->text();
+    const auto host = hostEdit_->text().trimmed();
+    const auto port = static_cast<std::uint16_t>(portSpinBox_->value());
 
     // Disable form during registration
     enableForm(false);
-    status_label_->setText("Creating account...");
-    status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
+    statusLabel_->setText("Creating account...");
+    statusLabel_->setStyleSheet(statusStyle);
 
     // Perform signup asynchronously via ClientManager
     auto* watcher = new QFutureWatcher<SignupResult>(this);
@@ -232,7 +539,7 @@ void SignUpDialog::onSignUpClicked() {
             [this, watcher]() {
         const auto result = watcher->result();
         watcher->deleteLater();
-        emit signupCompleted(result);
+        onSignUpResult(result);
     });
 
     QFuture<SignupResult> future = QtConcurrent::run(
@@ -247,51 +554,102 @@ void SignUpDialog::onSignUpClicked() {
 }
 
 void SignUpDialog::onSignUpResult(const SignupResult& result) {
-    BOOST_LOG_SEV(lg(), debug) << "On signup result called.";
+    BOOST_LOG_SEV(lg(), debug) << "Signup result received";
+
     if (result.success) {
-        BOOST_LOG_SEV(lg(), info) << "Signup was successful for user: "
+        BOOST_LOG_SEV(lg(), info) << "Signup successful for user: "
                                   << result.username.toStdString();
 
-        registered_username_ = result.username;
-        status_label_->setText("Account created successfully!");
-        status_label_->setStyleSheet("QLabel { color: #0a0; }");
+        registeredUsername_ = result.username;
+        emit signupSucceeded(result.username);
 
-        MessageBoxHelper::information(this, "Sign Up Successful",
-            QString("Your account '%1' has been created. You can now log in with your credentials.")
-                .arg(result.username));
+        // Auto-login with the credentials we just used
+        statusLabel_->setText("Account created! Logging in...");
+        statusLabel_->setStyleSheet("QLabel { background: transparent; color: #4CAF50; font-size: 11px; }");
 
-        accept();  // Close dialog with success
+        const auto username = usernameEdit_->text().trimmed();
+        const auto password = passwordEdit_->text();
+        const auto host = hostEdit_->text().trimmed();
+        const auto port = static_cast<std::uint16_t>(portSpinBox_->value());
+
+        auto* watcher = new QFutureWatcher<LoginResult>(this);
+        connect(watcher, &QFutureWatcher<LoginResult>::finished,
+                [this, watcher]() {
+            const auto loginResult = watcher->result();
+            watcher->deleteLater();
+            onLoginResult(loginResult);
+        });
+
+        QFuture<LoginResult> future = QtConcurrent::run(
+            [this, host, port, username, password]() -> LoginResult {
+                return clientManager_->connectAndLogin(
+                    host.toStdString(), port, username.toStdString(), password.toStdString());
+            }
+        );
+
+        watcher->setFuture(future);
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Signup failed: "
                                   << result.error_message.toStdString();
 
         enableForm(true);
-        status_label_->setText("");
+        statusLabel_->setText("");
 
+        emit signupFailed(result.error_message);
         MessageBoxHelper::critical(this, "Sign Up Failed",
             QString("Account creation failed: %1").arg(result.error_message));
     }
 }
 
+void SignUpDialog::onLoginResult(const LoginResult& result) {
+    BOOST_LOG_SEV(lg(), debug) << "Auto-login result received";
+
+    if (result.success) {
+        BOOST_LOG_SEV(lg(), info) << "Auto-login successful for user: "
+                                  << registeredUsername_.toStdString();
+
+        statusLabel_->setText("Login successful!");
+        emit loginSucceeded(registeredUsername_);
+        emit closeRequested();
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Auto-login failed: "
+                                  << result.error_message.toStdString();
+
+        // Auto-login failed, but signup succeeded - let user know they can login manually
+        enableForm(true);
+        statusLabel_->setText("");
+
+        MessageBoxHelper::warning(this, "Auto-Login Failed",
+            QString("Your account was created successfully, but automatic login failed: %1\n\n"
+                    "Please close this dialog and log in manually.")
+                .arg(result.error_message));
+    }
+}
+
+void SignUpDialog::onLoginClicked() {
+    emit loginRequested();
+}
+
+void SignUpDialog::onShowPasswordToggled(bool checked) {
+    const auto mode = checked ? QLineEdit::Normal : QLineEdit::Password;
+    passwordEdit_->setEchoMode(mode);
+    confirmPasswordEdit_->setEchoMode(mode);
+}
+
 void SignUpDialog::updatePasswordMatchIndicator() {
-    const QString password = password_edit_->text();
-    const QString confirmPassword = confirm_password_edit_->text();
+    const QString password = passwordEdit_->text();
+    const QString confirmPassword = confirmPasswordEdit_->text();
 
     // Only show indicator when confirm field has content
     if (confirmPassword.isEmpty()) {
-        // Reset to default style
-        confirm_password_edit_->setStyleSheet("");
+        confirmPasswordEdit_->setStyleSheet(inputFieldStyle);
         return;
     }
 
     if (password == confirmPassword) {
-        // Green border for matching passwords
-        confirm_password_edit_->setStyleSheet(
-            "QLineEdit { border: 2px solid #4CAF50; }");
+        confirmPasswordEdit_->setStyleSheet(inputFieldMatchStyle);
     } else {
-        // Orange/red border for non-matching passwords
-        confirm_password_edit_->setStyleSheet(
-            "QLineEdit { border: 2px solid #FF9800; }");
+        confirmPasswordEdit_->setStyleSheet(inputFieldMismatchStyle);
     }
 }
 

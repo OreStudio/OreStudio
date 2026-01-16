@@ -17,88 +17,139 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_SIGNUPDIALOG_HPP
-#define ORES_QT_SIGNUPDIALOG_HPP
+#ifndef ORES_QT_SIGNUP_DIALOG_HPP
+#define ORES_QT_SIGNUP_DIALOG_HPP
 
-#include <QLabel>
-#include <QDialog>
+#include <QWidget>
+#include <QKeyEvent>
 #include <QLineEdit>
-#include <QSpinBox>
 #include <QPushButton>
+#include <QLabel>
+#include <QCheckBox>
+#include <QSpinBox>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
 
 /**
- * @brief Dialog for user self-registration.
+ * @brief Sign up dialog with dark theme.
  *
- * Presents a signup form with username, email, password, and server fields.
- * Delegates registration logic to the provided ClientManager.
+ * Provides a clean registration form matching the LoginDialog style.
+ * Includes username, email, password with confirmation, and server fields.
  */
-class SignUpDialog : public QDialog {
+class SignUpDialog : public QWidget {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name = "ores.qt.signup_dialog";
 
-    static auto& lg() {
+    [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(logger_name);
         return instance;
     }
 
 public:
-    /**
-     * @brief Construct SignUpDialog.
-     * @param clientManager Pointer to the application's client manager.
-     * @param parent Parent widget.
-     */
-    explicit SignUpDialog(ClientManager* clientManager, QWidget* parent = nullptr);
+    explicit SignUpDialog(QWidget* parent = nullptr);
     ~SignUpDialog() override;
 
-    /**
-     * @brief Set the server host and port fields.
-     *
-     * Useful when opening from LoginDialog to pre-fill server info.
-     */
-    void setServerInfo(const QString& host, int port);
+    QSize sizeHint() const override;
 
     /**
-     * @brief Get the registered username after successful signup.
-     * @return The username that was registered.
+     * @brief Set the server/host field value.
      */
-    QString getRegisteredUsername() const { return registered_username_; }
+    void setServer(const QString& server);
+
+    /**
+     * @brief Set the port field value.
+     */
+    void setPort(int port);
+
+    /**
+     * @brief Get the current server/host field value.
+     */
+    QString getServer() const;
+
+    /**
+     * @brief Get the current port field value.
+     */
+    int getPort() const;
+
+    /**
+     * @brief Set the client manager for performing signup.
+     */
+    void setClientManager(ClientManager* clientManager);
+
+    /**
+     * @brief Get the username that was registered.
+     */
+    QString getRegisteredUsername() const;
+
+protected:
+    void keyPressEvent(QKeyEvent* event) override;
+
+signals:
+    /**
+     * @brief Emitted when signup and auto-login succeed.
+     */
+    void loginSucceeded(const QString& username);
+
+    /**
+     * @brief Emitted when signup succeeds (before auto-login).
+     */
+    void signupSucceeded(const QString& username);
+
+    /**
+     * @brief Emitted when signup fails.
+     */
+    void signupFailed(const QString& errorMessage);
+
+    /**
+     * @brief Emitted when user wants to go back to login.
+     */
+    void loginRequested();
+
+    /**
+     * @brief Emitted when the widget should be closed.
+     */
+    void closeRequested();
 
 private slots:
     void onSignUpClicked();
+    void onLoginClicked();
+    void onShowPasswordToggled(bool checked);
     void onSignUpResult(const SignupResult& result);
+    void onLoginResult(const LoginResult& result);
     void updatePasswordMatchIndicator();
-
-signals:
-    void signupCompleted(const SignupResult& result);
 
 private:
     void setupUI();
+    void setupPanel(QWidget* parent);
     void enableForm(bool enabled);
     bool validateInput();
 
-private:
-    // UI components
-    QLineEdit* username_edit_;
-    QLineEdit* email_edit_;
-    QLineEdit* password_edit_;
-    QLineEdit* confirm_password_edit_;
-    QLineEdit* host_edit_;
-    QSpinBox* port_spinbox_;
-    QPushButton* signup_button_;
-    QPushButton* cancel_button_;
-    QLabel* status_label_;
+    // UI elements
+    QLabel* titleLabel_;
+    QLineEdit* usernameEdit_;
+    QLineEdit* emailEdit_;
+    QLineEdit* passwordEdit_;
+    QLineEdit* confirmPasswordEdit_;
+    QCheckBox* showPasswordCheck_;
+    QPushButton* signUpButton_;
+    QPushButton* loginButton_;
+    QLabel* loginLabel_;
+    QLabel* statusLabel_;
+
+    // Server fields
+    QLineEdit* hostEdit_;
+    QSpinBox* portSpinBox_;
 
     // Dependencies
-    ClientManager* clientManager_;
+    ClientManager* clientManager_{nullptr};
 
     // Result tracking
-    QString registered_username_;
+    QString registeredUsername_;
 };
 
 }

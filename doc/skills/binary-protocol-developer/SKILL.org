@@ -36,14 +36,15 @@ communication in ORE Studio.
 The ORE Studio binary protocol is organized into subsystems, each with a
 dedicated message type range:
 
-| Subsystem   | Range           | Example                                                                 |
-|-------------+-----------------+-------------------------------------------------------------------------|
-| Core        | 0x0000 - 0x0FFF | handshake, error, ping/pong, subscribe, notification                    |
-| Refdata     | 0x1000 - 0x1FFF | currencies, currency history, countries                                 |
-| IAM         | 0x2000 - 0x2FFF | login, accounts, lock/unlock, rbac, signup, sessions, change management |
-| Variability | 0x3000 - 0x3FFF | feature flags, feature flag history                                     |
-| Assets      | 0x4000 - 0x4FFF | images, image management                                                |
-| Telemetry   | 0x5000 - 0x5FFF | log records, telemetry stats                                            |
+| Subsystem   | Range           | Example                                                    |
+|-------------+-----------------+------------------------------------------------------------|
+| Core        | 0x0000 - 0x0FFF | handshake, error, ping/pong, subscribe, notification       |
+| Refdata     | 0x1000 - 0x1FFF | currencies, currency history, countries                    |
+| IAM         | 0x2000 - 0x2FFF | login, accounts, lock/unlock, rbac, signup, sessions       |
+| Variability | 0x3000 - 0x3FFF | feature flags, feature flag history                        |
+| Assets      | 0x4000 - 0x4FFF | images, image management                                   |
+| Telemetry   | 0x5000 - 0x5FFF | log records, telemetry stats                               |
+| DQ          | 0x6000 - 0x6FFF | catalogs, datasets, coding schemes, dimensions, change mgmt|
 
 Protocol definitions are located in:
 

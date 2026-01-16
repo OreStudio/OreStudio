@@ -141,7 +141,7 @@ select ores.upsert_dq_dataset(
 
 select ores.upsert_dq_dataset(
     'ISO Standards',
-    'Country Flags',
+    'Countries',
     'Reference Data',
     'ISO_3166_1_ALPHA_2',
     'Source',
@@ -158,7 +158,7 @@ select ores.upsert_dq_dataset(
 
 select ores.upsert_dq_tag(
     'Country Flags from lipis/flag-icons',
-    'Country Flags',
+    'Countries',
     'Reference Data',
     'flag',
     'Country and region flag images'
@@ -168,7 +168,7 @@ select ores.upsert_dq_dataset(
     'Cryptocurrency',
     'Cryptocurrencies',
     'Reference Data',
-    null,
+    'NONE',
     'Source',
     'Actual',
     'Raw',
@@ -218,7 +218,7 @@ select ores.upsert_dq_dataset(
     'Cryptocurrency',
     'Cryptocurrencies',
     'Reference Data',
-    null,
+    'NONE',
     'Source',
     'Actual',
     'Raw',

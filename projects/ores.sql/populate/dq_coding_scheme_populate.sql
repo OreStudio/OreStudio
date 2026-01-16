@@ -213,6 +213,17 @@ select ores.upsert_dq_coding_scheme(
     'ISO 4217 currency codes. Three-letter alphabetic codes (e.g., USD, EUR, GBP) and three-digit numeric codes for currencies. The universal standard for currency identification in financial transactions.'
 );
 
+-- General schemes (internal - placeholder)
+select ores.upsert_dq_coding_scheme(
+    'NONE',
+    'No Coding Scheme',
+    'internal',
+    'General',
+    'Reference Data',
+    null,
+    'Placeholder for datasets that do not follow a formal coding scheme. Used when data uses ad-hoc or proprietary identifiers without a standardized format.'
+);
+
 -- =============================================================================
 -- Cleanup
 -- =============================================================================

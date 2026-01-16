@@ -1,0 +1,81 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.dq/repository/catalog_mapper.hpp"
+
+#include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.dq/domain/catalog_json_io.hpp" // IWYU pragma: keep.
+
+namespace ores::dq::repository {
+
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+domain::catalog
+catalog_mapper::map(const catalog_entity& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+
+    domain::catalog r;
+    r.version = v.version;
+    r.name = v.name.value();
+    r.description = v.description;
+    r.owner = v.owner;
+    r.recorded_by = v.modified_by;
+    r.change_commentary = v.change_commentary;
+    r.recorded_at = timestamp_to_timepoint(v.valid_from);
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    return r;
+}
+
+catalog_entity
+catalog_mapper::map(const domain::catalog& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
+
+    catalog_entity r;
+    r.name = v.name;
+    r.version = v.version;
+    r.description = v.description;
+    r.owner = v.owner;
+    r.modified_by = v.recorded_by;
+    r.change_commentary = v.change_commentary;
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    return r;
+}
+
+std::vector<domain::catalog>
+catalog_mapper::map(const std::vector<catalog_entity>& v) {
+    return map_vector<catalog_entity, domain::catalog>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "db entities");
+}
+
+std::vector<catalog_entity>
+catalog_mapper::map(const std::vector<domain::catalog>& v) {
+    return map_vector<domain::catalog, catalog_entity>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "domain entities");
+}
+
+}

@@ -19,7 +19,6 @@
  */
 #include "ores.dq/generators/methodology_generator.hpp"
 
-#include <random>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
@@ -30,19 +29,16 @@ using ores::utility::uuid::uuid_v7_generator;
 
 domain::methodology generate_synthetic_methodology() {
     static uuid_v7_generator uuid_gen;
-    static std::bernoulli_distribution bool_dist(0.5);
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
 
     domain::methodology r;
     r.version = 1;
     r.id = uuid_gen();
     r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
-    if (bool_dist(gen)) {
+    if (faker::datatype::boolean()) {
         r.logic_reference = "https://example.org/logic/" + std::string(faker::word::noun());
     }
-    if (bool_dist(gen)) {
+    if (faker::datatype::boolean()) {
         r.implementation_details = std::string(faker::lorem::paragraph());
     }
     r.recorded_by = std::string(faker::internet::username());

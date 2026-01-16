@@ -19,22 +19,17 @@
  */
 #include "ores.dq/generators/catalog_generator.hpp"
 
-#include <random>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 
 namespace ores::dq::generators {
 
 domain::catalog generate_synthetic_catalog() {
-    static std::bernoulli_distribution bool_dist(0.5);
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-
     domain::catalog r;
     r.version = 1;
     r.name = std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
-    if (bool_dist(gen)) {
+    if (faker::datatype::boolean()) {
         r.owner = faker::company::companyName();
     }
     r.recorded_by = std::string(faker::internet::username());

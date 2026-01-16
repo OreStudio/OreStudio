@@ -34,7 +34,7 @@ std::string convert_to_table(const std::vector<dataset>& v) {
           << "Lineage Depth" << "As Of Date" << "Version" << fort::endr;
 
     for (const auto& d : v) {
-        const auto as_of = std::format("{:%Y-%m-%d}", d.as_of_date);
+        const auto as_of = std::format("{:%F}", d.as_of_date);
         table << boost::uuids::to_string(d.id) << d.name << d.subject_area_name
               << d.domain_name << d.origin_code << d.nature_code << d.treatment_code
               << d.lineage_depth << as_of << d.version << fort::endr;

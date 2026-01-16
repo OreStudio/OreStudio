@@ -19,7 +19,6 @@
  */
 #include "ores.dq/generators/dataset_generator.hpp"
 
-#include <random>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
@@ -30,37 +29,32 @@ using ores::utility::uuid::uuid_v7_generator;
 
 domain::dataset generate_synthetic_dataset() {
     static uuid_v7_generator uuid_gen;
-    static std::bernoulli_distribution bool_dist(0.5);
-    static std::uniform_int_distribution<> depth_dist(0, 5);
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
 
     domain::dataset r;
     r.version = 1;
     r.id = uuid_gen();
-    if (bool_dist(gen)) {
+    if (faker::datatype::boolean()) {
         r.catalog_name = std::string(faker::word::noun());
     }
     r.subject_area_name = std::string(faker::word::noun());
     r.domain_name = std::string(faker::word::noun());
-    if (bool_dist(gen)) {
+    if (faker::datatype::boolean()) {
         r.coding_scheme_code = std::string(faker::word::noun()) + "_" + std::string(faker::word::noun());
     }
     r.origin_code = std::string(faker::word::noun());
     r.nature_code = std::string(faker::word::noun());
     r.treatment_code = std::string(faker::word::noun());
-    if (bool_dist(gen)) {
+    if (faker::datatype::boolean()) {
         r.methodology_id = uuid_gen();
     }
     r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
     r.source_system_id = std::string(faker::word::noun()) + "_system";
     r.business_context = std::string(faker::lorem::sentence());
-    r.lineage_depth = depth_dist(gen);
+    r.lineage_depth = faker::number::integer(0, 5);
     r.ingestion_timestamp = utility::faker::datetime::past_timepoint();
-    const auto dp = std::chrono::floor<std::chrono::days>(r.ingestion_timestamp);
-    r.as_of_date = std::chrono::year_month_day{dp};
-    if (bool_dist(gen)) {
+    r.as_of_date = std::chrono::floor<std::chrono::days>(r.ingestion_timestamp);
+    if (faker::datatype::boolean()) {
         r.license_info = "MIT License";
     }
     r.recorded_by = std::string(faker::internet::username());

@@ -19,17 +19,12 @@
  */
 #include "ores.dq/generators/coding_scheme_generator.hpp"
 
-#include <random>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/faker/datetime.hpp"
 
 namespace ores::dq::generators {
 
 domain::coding_scheme generate_synthetic_coding_scheme() {
-    static std::bernoulli_distribution bool_dist(0.5);
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
-
     domain::coding_scheme r;
     r.version = 1;
     r.code = std::string(faker::word::noun()) + "_" + std::string(faker::word::noun());
@@ -37,7 +32,7 @@ domain::coding_scheme generate_synthetic_coding_scheme() {
     r.authority_type = std::string(faker::word::noun());
     r.subject_area_name = std::string(faker::word::noun());
     r.domain_name = std::string(faker::word::noun());
-    if (bool_dist(gen)) {
+    if (faker::datatype::boolean()) {
         r.uri = "https://example.org/schemes/" + r.code;
     }
     r.description = std::string(faker::lorem::sentence());

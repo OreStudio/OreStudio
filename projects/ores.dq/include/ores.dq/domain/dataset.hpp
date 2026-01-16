@@ -50,7 +50,7 @@ struct dataset final {
     std::string business_context;
     std::optional<boost::uuids::uuid> upstream_derivation_id;
     int lineage_depth = 0;
-    std::chrono::year_month_day as_of_date;
+    std::chrono::system_clock::time_point as_of_date;
     std::chrono::system_clock::time_point ingestion_timestamp;
     std::optional<std::string> license_info;
     std::string recorded_by;

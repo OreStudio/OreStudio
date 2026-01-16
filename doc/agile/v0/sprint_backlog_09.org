@@ -17,47 +17,47 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-16 Fri 16:26], for Friday, January 16, 2026.
+#+CAPTION: Clock summary at [2026-01-16 Fri 17:23], for Friday, January 16, 2026.
 |       | <75>                                               |        |      |      |       |
 | Tags  | Headline                                           | Time   |      |      |     % |
 |-------+----------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                       | *7:32* |      |      | 100.0 |
+|       | *Total time*                                       | *8:28* |      |      | 100.0 |
 |-------+----------------------------------------------------+--------+------+------+-------|
-|       | Stories                                            | 7:32   |      |      | 100.0 |
-|       | Active                                             |        | 7:32 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |        |      | 0:32 |   7.1 |
-| infra | OCR scan notebooks for this sprint                 |        |      | 1:33 |  20.6 |
-| code  | Disconnect shows reconnect message                 |        |      | 1:55 |  25.4 |
-| code  | Add UI support for data sets                       |        |      | 3:12 |  42.5 |
-| code  | Implement party related entities at database level |        |      | 0:20 |   4.4 |
+|       | Stories                                            | 8:28   |      |      | 100.0 |
+|       | Active                                             |        | 8:28 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |        |      | 0:32 |   6.3 |
+| infra | OCR scan notebooks for this sprint                 |        |      | 1:33 |  18.3 |
+| code  | Disconnect shows reconnect message                 |        |      | 1:55 |  22.6 |
+| code  | Add UI support for data sets                       |        |      | 4:08 |  48.8 |
+| code  | Implement party related entities at database level |        |      | 0:20 |   3.9 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-16 Fri 16:26]
+#+CAPTION: Clock summary at [2026-01-16 Fri 17:23]
 |       | <75>                                               |         |       |      |       |
 | Tags  | Headline                                           | Time    |       |      |     % |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                       | *47:12* |       |      | 100.0 |
+|       | *Total time*                                       | *48:08* |       |      | 100.0 |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                            | 47:12   |       |      | 100.0 |
-|       | Active                                             |         | 47:12 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       | 2:11 |   4.6 |
-| infra | OCR scan notebooks for this sprint                 |         |       | 6:46 |  14.3 |
+|       | Stories                                            | 48:08   |       |      | 100.0 |
+|       | Active                                             |         | 48:08 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 2:11 |   4.5 |
+| infra | OCR scan notebooks for this sprint                 |         |       | 6:46 |  14.1 |
 | infra | Clean up system models and component models        |         |       | 0:28 |   1.0 |
-| code  | Add missing entities to CLI                        |         |       | 1:55 |   4.1 |
+| code  | Add missing entities to CLI                        |         |       | 1:55 |   4.0 |
 | infra | Refactor PR related skills                         |         |       | 0:18 |   0.6 |
-| code  | Fix valgrind errors in nightly                     |         |       | 1:25 |   3.0 |
+| code  | Fix valgrind errors in nightly                     |         |       | 1:25 |   2.9 |
 | code  | Create security module                             |         |       | 1:23 |   2.9 |
 | code  | Prodigy should support multiple environments       |         |       | 0:19 |   0.7 |
-| code  | Add named environment sets                         |         |       | 4:17 |   9.1 |
+| code  | Add named environment sets                         |         |       | 4:17 |   8.9 |
 | code  | Rename risk to refdata                             |         |       | 0:43 |   1.5 |
-| code  | Prefix database entities with component            |         |       | 3:15 |   6.9 |
-| code  | Implement data quality                             |         |       | 9:42 |  20.6 |
-| code  | Improvements to connection browser                 |         |       | 2:05 |   4.4 |
-| code  | Disconnect shows reconnect message                 |         |       | 2:24 |   5.1 |
-| infra | Refactor documentation                             |         |       | 6:29 |  13.7 |
-| code  | Add UI support for data sets                       |         |       | 3:12 |   6.8 |
+| code  | Prefix database entities with component            |         |       | 3:15 |   6.8 |
+| code  | Implement data quality                             |         |       | 9:42 |  20.2 |
+| code  | Improvements to connection browser                 |         |       | 2:05 |   4.3 |
+| code  | Disconnect shows reconnect message                 |         |       | 2:24 |   5.0 |
+| infra | Refactor documentation                             |         |       | 6:29 |  13.5 |
+| code  | Add UI support for data sets                       |         |       | 4:08 |   8.6 |
 | code  | Implement party related entities at database level |         |       | 0:20 |   0.7 |
 #+end:
 
@@ -817,6 +817,7 @@ Highlights:
 
 *** STARTED Add UI support for data sets                               :code:
     :LOGBOOK:
+    CLOCK: [2026-01-16 Fri 16:27]--[2026-01-16 Fri 17:23] =>  0:56
     CLOCK: [2026-01-16 Fri 15:20]--[2026-01-16 Fri 16:26] =>  1:06
     CLOCK: [2026-01-16 Fri 14:07]--[2026-01-16 Fri 15:01] =>  0:54
     CLOCK: [2026-01-16 Fri 13:02]--[2026-01-16 Fri 14:06] =>  1:04
@@ -825,58 +826,152 @@ Highlights:
 
 We did all of the database work but we cannot visualise the datasets.
 
-We need to check this issue across all triggers:
+Notes
+
+- we need to check this issue across all triggers: inconsistent versioning.
+  Done.
+
+**** UI Work
+
+Gemini:
 
 #+begin_quote
-The dq_catalog_insert_fn trigger function only sets default values for new rows.
-It doesn't handle versioning for updates when a new row is inserted for an
-existing catalog name. This is inconsistent with other temporal tables in the
-system, like dq_change_reasons_tbl, which have triggers that automatically
-handle version incrementing and closing of the old record.
+Data Librarian" is an excellent name. In financial institutions, the role of a
+Data Librarian (or Data Steward) is exactly what you are describing: someone who
+curates, catalogs, and ensures the provenance of "information books" (datasets)
+within the "library" (the trading system).
 
-This inconsistency can make the system harder to maintain and use correctly, as
-developers need to remember which tables support 'upsert-by-insert' and which
-require manual handling of temporal updates. To improve consistency, consider
-adding logic to handle updates, similar to dq_change_reasons_insert_fn.
+To manage the types you've created, the UI needs to handle Hierarchical
+Relationships (Domain > Subject Area) and Metadata Tagging (Dimensions & Coding
+Schemes).
 
-create or replace function ores.dq_catalog_insert_fn()
-returns trigger as $$
-declare
-    current_version integer;
-begin
-    if NEW.valid_from is null then
-        NEW.valid_from := current_timestamp;
-    end if;
+1. UI Conceptual Layout: The interface should be split into three functional
+   zones:
+   - The Stacks (Navigation): A sidebar for the hierarchy (Domain > Subject Area
+     > Catalog).
+   - The Registry (Workspace): The main area to define Dimensions (Origin,
+     Nature, Treatment) and Methodologies.
+   - The Archive (Dataset View): The specific view for individual Datasets and
+     their Lineage.
+2. Dashboard Component: "The Collection Manager"This is where you would manage
+   your Dimensions and Coding Schemes.
 
-    if NEW.valid_to is null then
-        NEW.valid_to := ores.utility_infinity_timestamp_fn();
-    end if;
+[[./mock_ui_data_quality.png]]
 
-    select version into current_version
-    from "ores"."dq_catalog_tbl"
-    where name = NEW.name
-      and valid_to = ores.utility_infinity_timestamp_fn();
+- Detailed View: "Dataset Accession Card" When you create or edit a Dataset
+  (UUID), the UI should present a "card" that forces the user to satisfy the
+  Lineage requirements you defined.
 
-    if found then
-        -- This insert is an update. Increment version and close old record.
-        NEW.version = current_version + 1;
-        update "ores"."dq_catalog_tbl"
-        set valid_to = NEW.valid_from
-        where name = NEW.name
-          and valid_to = ores.utility_infinity_timestamp_fn();
-    else
-        -- This is a new record.
-        if NEW.version is null then
-            NEW.version := 0;
-        end if;
-    end if;
+  - Name: GBP_USD_STRESS_SCENARIO_01
+  - UUID: 550e8400-e29b-41d4-a716-446655440000
+    Catalog: Fixed Income Sample
+    Sets***
 
-    NEW.change_reason_code := ores.refdata_validate_change_reason_fn(NEW.change_reason_code);
+- Classification Section (The Dimensions)
+  - Origin: Vendor (Bloomberg)
+  - Nature: Hybrid (Real + Synthetic)
+  - Treatment: Normalized
 
-    return NEW;
-end;
-$$ language plpgsql;
+- Lineage & Methodology (The "Trace")
+  - Methodology: Monte_Carlo_Volatility_Shift_v2 [View Code]
+  - Upstream Source: REF_CCY_BASE_LIVE
+  - Derivation Logic: "Applied 20% haircut to base spot rates for stress
+    testing."
+
+4. UI Nomenclature Suggestions: Since you are calling the tool Data Librarian,
+   lean into the metaphor to make the UI intuitive:
+   - Librarian: Catalog. The CollectionA curated group of related works.
+   - Dataset: The Volume. An individual instance of data.
+   - Methodology: The Formula. How the data was "written" or derived.
+   - Origin/Nature: Attributes. The "edition" details of the data.
+   - Coding Scheme: The Index. How the data is filed (ISIN, RIC, etc.).
+
+5. Metadata Sidecar Logic: In your UI, you should have a "Lineage Visualizer"
+   tab for every Dataset. This is crucial for your requirement of "adequately
+   traced to a source." It should show a flow diagram:
+
+   Source (Origin) -> Methodology (Treatment) -> Target (Dataset)
 #+end_quote
+
+Grok:
+
+#+begin_src ascii
+┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+│  Data Librarian                                      v0.9.2  [Dark Theme]  User: M.Craveiro  │
+├───────────────┬──────────────────────────────────────────────────────────────────────────────┤
+│  Stacks       │  Collection Manager  (The Registry)                                          │
+│  (Navigation) │                                                                              │
+│               │  ┌──────────────────────────────────────────────────────────────┐            │
+│  ▼ Domains    │  │ Dimensions & Coding Schemes Catalog                     ▼    │            │
+│               │  │                                                              │            │
+│  ┌──────────┐ │  │  [ + New Dimension ]   [ + New Coding Scheme ]               │            │
+│  │ Fixed    │ │  ├──────────────────────────────────────────────────────────────┤            │
+│  │ Income   │ │  │ Name               │ Type      │ Scope          │ Status     │            │
+│  │          │ │  │────────────────────┼───────────┼────────────────┼────────────│            │
+│  │  ▼       │ │  │ Origin             │ Enum      │ Global         │ Locked     │            │
+│  │ Subject  │ │  │   • Vendor         │           │                │            │            │
+│  │ Areas    │ │  │   • Internal       │           │                │            │            │
+│  │          │ │  │   • Market         │           │                │            │            │
+│  │  ┌─────┐ │ │  │ Nature             │ Enum      │ Global         │ Active     │            │
+│  │  │Rates│ │ │  │   • Raw            │           │                │            │            │
+│  │  │     │ │ │  │   • Normalized     │           │                │            │            │
+│  │  │     │ │ │  │   • Hybrid         │           │                │            │            │
+│  │  │Stres│ │ │  │ Treatment          │ Enum      │ Global         │ Active     │            │
+│  │  │Scen.│ │ │  │   • As-is          │           │                │            │            │
+│  │  └─────┘ │ │  │   • Cleaned        │           │                │            │            │
+│  │          │ │  │   • Normalized     │           │                │            │            │
+│  │  Catalog │ │  │ RIC                │ Coding    │ Security       │ Active     │            │
+│  │   ▼      │ │  │ ISIN               │ Coding    │ Security       │ Active     │            │
+│  │ Fixed    │ │  │ Bloomberg Ticker   │ Coding    │ Security       │ Deprecated │            │
+│  │ Income   │ │  └──────────────────────────────────────────────────────────────┘            │
+│  │ Sample   │ │                                                                              │
+│  └──────────┘ │                                                                              │
+│               │  ┌───────────────────────────────┐   ┌───────────────────────────────┐       │
+│               │  │ Recently Accessed Volumes     │   │ Recently Modified Formulas    │       │
+│               │  │ • GBP_USD_STRESS_SCENARIO_01  │   │ • Monte_Carlo_Volatility_Shift│       │
+│               │  │ • EUR_IR_CURVE_2025_Q4        │   │   _v2                         │       │
+│               │  │ • US_TREASURY_PAR_CURVE_D     │   │ • FX_FWD_POINT_BOOTSTRAP_v3   │       │
+│               │  └───────────────────────────────┘   └───────────────────────────────┘       │
+├───────────────┴──────────────────────────────────────────────────────────────────────────────┤
+│  Dataset Accession Card – GBP_USD_STRESS_SCENARIO_01                                 [Close] │
+├──────────────────────────────────────────────────────────────────────────────────────────────┤
+│ UUID:    550e8400-e29b-41d4-a716-446655440000                                         [Copy] │
+│ Catalog: Fixed Income Sample                                                                 │
+│ Volume Name: GBP_USD_STRESS_SCENARIO_01                                                      │
+│                                                                                              │
+│ ┌─────────────────────────────┐ ┌─────────────────────────────┐ ┌──────────────────────┐     │
+│ │ Classification (Dimensions) │ │        The Trace            │ │     Metadata         │     │
+│ │                             │ │   (Lineage & Methodology)   │ │     Sidecar          │     │
+│ │ Origin    : Vendor          │ │ Methodology                 │ │ Version      : 1.2   │     │
+│ │           : Bloomberg       │ │   Monte_Carlo_Volatility_   │ │ Status       : Prod  │     │
+│ │ Nature    : Hybrid          │ │   Shift_v2       [View Code]│ │ Owner     : Rates    │     │
+│ │           : Real + Synthetic│ │                             │ │ Last Modified: 2026- │     │
+│ │ Treatment : Normalized      │ │ Upstream Sources            │ │ 01-14 11:42          │     │
+│ │                             │ │   • REF_CCY_BASE_LIVE       │ └──────────────────────┘     │
+│ └─────────────────────────────┘ │   • USD_IR_CURVE_SOY_2025   │                              │
+│                                 │                             │                              │
+│                                 │ Derivation Summary          │                              │
+│                                 │ "Applied 20% haircut to     │                              │
+│                                 │  base spot rates for stress │                              │
+│                                 │  testing purposes"          │                              │
+│                                 └─────────────────────────────┘                              │
+├──────────────────────────────────────────────────────────────────────────────────────────────┤
+│ Lineage Visualizer (Flow)                                             [Export SVG / PNG]     │
+│                                                                                              │
+│     ┌────────────────────┐          ┌────────────────────────────┐         ┌───────────────┐ │
+│     │   Bloomberg        │          │ Monte_Carlo_Volatility_    │         │ GBP_USD_STRESS│ │
+│     │ REF_CCY_BASE_LIVE  │ ────────►│ Shift_v2                   │ ───────►│ _SCENARIO_01  │ │
+│     │ (Live spot rates)  │   1:1    │ 20% volatility haircut     │  1:1    │ (Stress vol   │ │
+│     └────────────────────┘          └────────────────────────────┘         │ surface)      │ │
+│                                                                            └───────────────┘ │
+│                                                                                              │
+│ [ + Add upstream ]     [ Show full provenance tree ]     [ Show data quality gates ]         │
+└──────────────────────────────────────────────────────────────────────────────────────────────┘
+#+end_src
+
+HF:
+
+[[./mock_data_librarian_hf.png]]
 
 **** Data catalog work
 
@@ -955,7 +1050,7 @@ Highlights:
 The first step of this work is to get the entities to work at the database
 schema level.
 
-** Table Structure: party
+**** Table Structure: party
 
 | Field Name           | Data Type   | Constraints     | Commentary                                                                                        |
 |----------------------+-------------+-----------------+---------------------------------------------------------------------------------------------------|

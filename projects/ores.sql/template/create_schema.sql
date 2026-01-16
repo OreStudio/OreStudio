@@ -96,6 +96,7 @@ grant create on schema ores to ores;
 \ir ../schema/dq_catalog_create.sql
 \ir ../schema/dq_data_domain_create.sql
 \ir ../schema/dq_subject_area_create.sql
+\ir ../schema/dq_coding_scheme_create.sql
 \ir ../schema/dq_origin_dimension_create.sql
 \ir ../schema/dq_nature_dimension_create.sql
 \ir ../schema/dq_treatment_dimension_create.sql

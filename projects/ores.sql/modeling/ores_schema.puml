@@ -390,6 +390,27 @@ package "dq" #E1F5FE {
     Examples: currencies, countries, images.
     end note
 
+    entity dq_coding_scheme_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        * name : text
+        * subject_area_name : text <<FK>>
+        * domain_name : text <<FK>>
+        uri : text
+        * description : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    note right of dq_coding_scheme_tbl
+    FPML coding schemes for entity identification.
+    Examples: LEI, BIC, ISO 4217, ISO 3166.
+    end note
+
     entity dq_nature_dimension_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         * valid_from : timestamptz <<PK>>
@@ -646,6 +667,7 @@ refdata_countries_tbl }o--o| assets_images_tbl : "displayed as"
 dq_catalog_tbl ||--o{ dq_dataset_tbl : "groups"
 dq_data_domain_tbl ||--o{ dq_subject_area_tbl : "contains"
 dq_subject_area_tbl ||--o{ dq_dataset_tbl : "classifies"
+dq_subject_area_tbl ||--o{ dq_coding_scheme_tbl : "defines"
 
 ' dq dimension relationships
 dq_origin_dimension_tbl ||--o{ dq_dataset_tbl : "describes origin"
@@ -673,6 +695,7 @@ dq_change_reasons_tbl ||--o{ variability_feature_flags_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ dq_catalog_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ dq_data_domain_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ dq_subject_area_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_coding_scheme_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ dq_nature_dimension_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ dq_origin_dimension_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ dq_treatment_dimension_tbl : "reason for"

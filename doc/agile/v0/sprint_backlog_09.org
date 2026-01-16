@@ -17,46 +17,53 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-15 Thu 21:44], for Thursday, January 15, 2026.
-|       | <75>                               |        |      |      |       |
-| Tags  | Headline                           | Time   |      |      |     % |
-|-------+------------------------------------+--------+------+------+-------|
-|       | *Total time*                       | *8:24* |      |      | 100.0 |
-|-------+------------------------------------+--------+------+------+-------|
-|       | Stories                            | 8:24   |      |      | 100.0 |
-|       | Active                             |        | 8:24 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint |        |      | 2:01 |  24.0 |
-| code  | Implement data quality             |        |      | 6:23 |  76.0 |
+#+CAPTION: Clock summary at [2026-01-16 Fri 16:26], for Friday, January 16, 2026.
+|       | <75>                                               |        |      |      |       |
+| Tags  | Headline                                           | Time   |      |      |     % |
+|-------+----------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                       | *7:32* |      |      | 100.0 |
+|-------+----------------------------------------------------+--------+------+------+-------|
+|       | Stories                                            | 7:32   |      |      | 100.0 |
+|       | Active                                             |        | 7:32 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |        |      | 0:32 |   7.1 |
+| infra | OCR scan notebooks for this sprint                 |        |      | 1:33 |  20.6 |
+| code  | Disconnect shows reconnect message                 |        |      | 1:55 |  25.4 |
+| code  | Add UI support for data sets                       |        |      | 3:12 |  42.5 |
+| code  | Implement party related entities at database level |        |      | 0:20 |   4.4 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-15 Thu 21:44]
-|       | <75>                                         |         |       |      |       |
-| Tags  | Headline                                     | Time    |       |      |     % |
-|-------+----------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                 | *36:42* |       |      | 100.0 |
-|-------+----------------------------------------------+---------+-------+------+-------|
-|       | Stories                                      | 36:42   |       |      | 100.0 |
-|       | Active                                       |         | 36:42 |      | 100.0 |
-| agile | Sprint and product backlog refinement        |         |       | 1:39 |   4.5 |
-| infra | OCR scan notebooks for this sprint           |         |       | 4:49 |  13.1 |
-| infra | Clean up system models and component models  |         |       | 0:28 |   1.3 |
-| code  | Add missing entities to CLI                  |         |       | 1:55 |   5.2 |
-| infra | Refactor PR related skills                   |         |       | 0:18 |   0.8 |
-| code  | Fix valgrind errors in nightly               |         |       | 1:25 |   3.9 |
-| code  | Create security module                       |         |       | 1:23 |   3.8 |
-| code  | Prodigy should support multiple environments |         |       | 0:19 |   0.9 |
-| code  | Add named environment sets                   |         |       | 4:17 |  11.7 |
-| code  | Rename risk to refdata                       |         |       | 0:43 |   2.0 |
-| code  | Prefix database entities with component      |         |       | 3:15 |   8.9 |
-| code  | Implement data quality                       |         |       | 9:42 |  26.4 |
-| infra | Refactor documentation                       |         |       | 6:29 |  17.7 |
+#+CAPTION: Clock summary at [2026-01-16 Fri 16:26]
+|       | <75>                                               |         |       |      |       |
+| Tags  | Headline                                           | Time    |       |      |     % |
+|-------+----------------------------------------------------+---------+-------+------+-------|
+|       | *Total time*                                       | *47:12* |       |      | 100.0 |
+|-------+----------------------------------------------------+---------+-------+------+-------|
+|       | Stories                                            | 47:12   |       |      | 100.0 |
+|       | Active                                             |         | 47:12 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 2:11 |   4.6 |
+| infra | OCR scan notebooks for this sprint                 |         |       | 6:46 |  14.3 |
+| infra | Clean up system models and component models        |         |       | 0:28 |   1.0 |
+| code  | Add missing entities to CLI                        |         |       | 1:55 |   4.1 |
+| infra | Refactor PR related skills                         |         |       | 0:18 |   0.6 |
+| code  | Fix valgrind errors in nightly                     |         |       | 1:25 |   3.0 |
+| code  | Create security module                             |         |       | 1:23 |   2.9 |
+| code  | Prodigy should support multiple environments       |         |       | 0:19 |   0.7 |
+| code  | Add named environment sets                         |         |       | 4:17 |   9.1 |
+| code  | Rename risk to refdata                             |         |       | 0:43 |   1.5 |
+| code  | Prefix database entities with component            |         |       | 3:15 |   6.9 |
+| code  | Implement data quality                             |         |       | 9:42 |  20.6 |
+| code  | Improvements to connection browser                 |         |       | 2:05 |   4.4 |
+| code  | Disconnect shows reconnect message                 |         |       | 2:24 |   5.1 |
+| infra | Refactor documentation                             |         |       | 6:29 |  13.7 |
+| code  | Add UI support for data sets                       |         |       | 3:12 |   6.8 |
+| code  | Implement party related entities at database level |         |       | 0:20 |   0.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
-    CLOCK: [2026-01-16 Fri 11:04]--[2026-01-16 Fri 11:15] =>  0:11
+    CLOCK: [2026-01-16 Fri 11:04]--[2026-01-16 Fri 11:36] =>  0:32
     CLOCK: [2026-01-11 Sun 22:00]--[2026-01-11 Sun 23:39] =>  1:39
     :END:
 
@@ -808,13 +815,161 @@ Highlights:
   and observations related to the 'Clean up seed data' task.
 #+end_quote
 
+*** STARTED Add UI support for data sets                               :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-16 Fri 15:20]--[2026-01-16 Fri 16:26] =>  1:06
+    CLOCK: [2026-01-16 Fri 14:07]--[2026-01-16 Fri 15:01] =>  0:54
+    CLOCK: [2026-01-16 Fri 13:02]--[2026-01-16 Fri 14:06] =>  1:04
+    CLOCK: [2026-01-16 Fri 11:37]--[2026-01-16 Fri 11:45] =>  0:08
+    :END:
+
+We did all of the database work but we cannot visualise the datasets.
+
+We need to check this issue across all triggers:
+
+#+begin_quote
+The dq_catalog_insert_fn trigger function only sets default values for new rows.
+It doesn't handle versioning for updates when a new row is inserted for an
+existing catalog name. This is inconsistent with other temporal tables in the
+system, like dq_change_reasons_tbl, which have triggers that automatically
+handle version incrementing and closing of the old record.
+
+This inconsistency can make the system harder to maintain and use correctly, as
+developers need to remember which tables support 'upsert-by-insert' and which
+require manual handling of temporal updates. To improve consistency, consider
+adding logic to handle updates, similar to dq_change_reasons_insert_fn.
+
+create or replace function ores.dq_catalog_insert_fn()
+returns trigger as $$
+declare
+    current_version integer;
+begin
+    if NEW.valid_from is null then
+        NEW.valid_from := current_timestamp;
+    end if;
+
+    if NEW.valid_to is null then
+        NEW.valid_to := ores.utility_infinity_timestamp_fn();
+    end if;
+
+    select version into current_version
+    from "ores"."dq_catalog_tbl"
+    where name = NEW.name
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if found then
+        -- This insert is an update. Increment version and close old record.
+        NEW.version = current_version + 1;
+        update "ores"."dq_catalog_tbl"
+        set valid_to = NEW.valid_from
+        where name = NEW.name
+          and valid_to = ores.utility_infinity_timestamp_fn();
+    else
+        -- This is a new record.
+        if NEW.version is null then
+            NEW.version := 0;
+        end if;
+    end if;
+
+    NEW.change_reason_code := ores.refdata_validate_change_reason_fn(NEW.change_reason_code);
+
+    return NEW;
+end;
+$$ language plpgsql;
+#+end_quote
+
+**** Data catalog work
+
+#+begin_quote
+This pull request significantly enhances the data quality management framework
+by introducing a new dq_catalog entity, which serves as a high-level grouping
+mechanism for related datasets. Concurrently, it undertakes a major refactoring
+of the Entity-Relationship (ER) diagram, standardizing table naming conventions,
+reorganizing entities into component-based packages, and incorporating a
+comprehensive set of data quality entities, as well as new telemetry and
+geolocation domains. These changes aim to improve data organization, clarity,
+and the overall structural integrity of the database schema.
+
+Highlights:
+
+- New Data Quality Catalog Entity: Introduced dq_catalog_tbl as a top-level
+  grouping mechanism for datasets within the data quality domain, allowing for
+  logical organization of related data.
+- ER Diagram Standardization and Expansion: The Entity-Relationship (ER) diagram
+  (ores_schema.puml) has undergone a major overhaul, implementing a consistent
+  <component>_<entity>_tbl naming convention across all tables and reorganizing
+  packages by component prefix (e.g., iam, assets, refdata, variability, dq,
+  telemetry, geo).
+- Comprehensive Data Quality Entities: All missing Data Quality (DQ) entities,
+  including dimensions (nature, origin, treatment), methodology, dataset, and
+  various artefact tables, have been added to the ER diagram, enhancing the data
+  quality framework.
+- Integration of Telemetry and Geolocation Domains: New telemetry and
+  geolocation domains, along with their respective tables (telemetry_logs_tbl
+  and geo_ip2country_tbl), have been integrated into the ER diagram.
+- Dataset Assignment to Catalogs: Initial population scripts for dq_catalog_tbl
+  have been added, creating 'ISO Standards' and 'Cryptocurrency' catalogs, and
+  existing datasets are now assigned to these new catalogs.
+#+end_quote
+
+**** Domain types
+
+#+begin_quote
+This pull request significantly expands the data quality (DQ) infrastructure by
+introducing a comprehensive set of domain types designed to manage and track
+data integrity. It establishes foundational structures for organizing data,
+defining classification schemes, and documenting processing methodologies. The
+integration of FpML reference data further enriches the system's ability to
+handle complex financial data, while new data generators streamline testing
+workflows. These changes collectively enhance the robustness and traceability of
+data within the system.
+
+Highlights:
+
+- New Data Quality Domain Types: Introduced 10 new domain types for Data Quality
+  (DQ) database entities, including data_domain, subject_area, catalog,
+  coding_scheme_authority_type, coding_scheme, origin_dimension,
+  nature_dimension, treatment_dimension, methodology, and dataset. These types
+  support JSON I/O and table I/O.
+- FpML Reference Data Integration: Incorporated FpML non-ISO currencies,
+  business centers, and business processes reference data. This includes new XML
+  data files and corresponding SQL population scripts to integrate these
+  financial standards into the DQ system.
+- Synthetic Data Generators: Added test data generators for all new DQ domain
+  types using faker-cxx, facilitating the creation of synthetic data for testing
+  and development purposes.
+- Date Serialization Support: Implemented a year_month_day reflector to enable
+  proper serialization of std::chrono::year_month_day objects with reflect-cpp,
+  ensuring consistent date handling.
+- Enhanced Data Quality Documentation: Expanded documentation for data quality
+  concepts, including the 'DQ 6' standard dimensions (Accuracy, Completeness,
+  Consistency, Timeliness, Validity, Uniqueness) and relevant industry bodies
+  like DAMA-DMBOK and TOGAF.
+#+end_quote
+
 *** STARTED Implement party related entities at database level         :code:
     :LOGBOOK:
-    CLOCK: [2026-01-16 Fri 11:16]
+    CLOCK: [2026-01-16 Fri 11:16]--[2026-01-16 Fri 11:36] =>  0:20
     :END:
 
 The first step of this work is to get the entities to work at the database
 schema level.
+
+** Table Structure: party
+
+| Field Name           | Data Type   | Constraints     | Commentary                                                                                        |
+|----------------------+-------------+-----------------+---------------------------------------------------------------------------------------------------|
+| =party_id=           | Integer     | PK, Auto-Inc    | Internal surrogate key for database performance and foreign key stability.                        |
+| =tenant_id=          | Integer     | FK (tenant)     | The "Owner" of this record. Ensures GigaBank's client list isn't visible to AlphaHedge.           |
+| =party_name=         | String(255) | Not Null        | The full legal name of the entity (e.g., "Barclays Bank PLC").                                    |
+| =short_name=         | String(50)  | Unique          | A mnemonic or "Ticker" style name used for quick UI displays (e.g., "BARC-LDN").                  |
+| =lei=                | String(20)  | Unique/Null     | The ISO 17442 Legal Entity Identifier. Critical for regulatory reporting and GLEIF integration.   |
+| =is_internal=        | Boolean     | Default: False  | Flag: If TRUE, this party represents a branch or entity belonging to the Tenant (The Bank).       |
+| =party_type_id=      | Integer     | FK (scheme)     | Categorizes the entity: Bank, Hedge Fund, Corporate, Central Bank, or Exchange.                   |
+| =postal_address=     | Text        |                 | Used for generating legal confirmations and settlement instructions.                              |
+| =business_center_id= | Integer     | FK (scheme)     | Links to an FpML Business Center (e.g., GBLO, USNY). Determines holiday calendars for settlement. |
+| =status=             | Enum        | Active/Inactive | Controls whether trades can be booked against this entity.                                        |
+| =created_at=         | Timestamp   |                 | Audit trail for when the entity was onboarded.                                                    |
 
 *** Add a "is alive" message                                           :code:
 

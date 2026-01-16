@@ -176,15 +176,6 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionConnectionBrowser, &QAction::triggered, this,
         &MainWindow::onConnectionBrowserTriggered);
 
-    // Temporary: Add modern login button to toolbar for testing
-    auto* modernLoginAction = new QAction("Modern Login", this);
-    modernLoginAction->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_person_20_regular.svg", iconColor));
-    connect(modernLoginAction, &QAction::triggered, this,
-        &MainWindow::onModernLoginTriggered);
-    ui_->toolBar->addSeparator();
-    ui_->toolBar->addAction(modernLoginAction);
-
     // Connect Window menu actions
     connect(ui_->ActionDetachAll, &QAction::triggered, this,
         &MainWindow::onDetachAllTriggered);

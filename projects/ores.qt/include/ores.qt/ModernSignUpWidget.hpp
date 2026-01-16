@@ -91,7 +91,12 @@ protected:
 
 signals:
     /**
-     * @brief Emitted when signup succeeds.
+     * @brief Emitted when signup and auto-login succeed.
+     */
+    void loginSucceeded(const QString& username);
+
+    /**
+     * @brief Emitted when signup succeeds (before auto-login).
      */
     void signupSucceeded(const QString& username);
 
@@ -115,6 +120,7 @@ private slots:
     void onLoginClicked();
     void onShowPasswordToggled(bool checked);
     void onSignUpResult(const SignupResult& result);
+    void onLoginResult(const LoginResult& result);
     void updatePasswordMatchIndicator();
 
 private:

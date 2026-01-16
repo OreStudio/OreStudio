@@ -209,8 +209,9 @@ ModernSignUpWidget::ModernSignUpWidget(QWidget* parent)
     : QWidget(parent) {
     setupUI();
 
-    // Register SignupResult for cross-thread signal/slot
+    // Register result types for cross-thread signal/slot
     qRegisterMetaType<SignupResult>("SignupResult");
+    qRegisterMetaType<LoginResult>("LoginResult");
 }
 
 ModernSignUpWidget::~ModernSignUpWidget() = default;
@@ -560,15 +561,33 @@ void ModernSignUpWidget::onSignUpResult(const SignupResult& result) {
                                   << result.username.toStdString();
 
         registeredUsername_ = result.username;
-        statusLabel_->setText("Account created successfully!");
+        emit signupSucceeded(result.username);
+
+        // Auto-login with the credentials we just used
+        statusLabel_->setText("Account created! Logging in...");
         statusLabel_->setStyleSheet("QLabel { background: transparent; color: #4CAF50; font-size: 11px; }");
 
-        MessageBoxHelper::information(this, "Sign Up Successful",
-            QString("Your account '%1' has been created. You can now log in with your credentials.")
-                .arg(result.username));
+        const auto username = usernameEdit_->text().trimmed();
+        const auto password = passwordEdit_->text();
+        const auto host = hostEdit_->text().trimmed();
+        const auto port = static_cast<std::uint16_t>(portSpinBox_->value());
 
-        emit signupSucceeded(result.username);
-        emit closeRequested();
+        auto* watcher = new QFutureWatcher<LoginResult>(this);
+        connect(watcher, &QFutureWatcher<LoginResult>::finished,
+                [this, watcher]() {
+            const auto loginResult = watcher->result();
+            watcher->deleteLater();
+            onLoginResult(loginResult);
+        });
+
+        QFuture<LoginResult> future = QtConcurrent::run(
+            [this, host, port, username, password]() -> LoginResult {
+                return clientManager_->connectAndLogin(
+                    host.toStdString(), port, username.toStdString(), password.toStdString());
+            }
+        );
+
+        watcher->setFuture(future);
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Signup failed: "
                                   << result.error_message.toStdString();
@@ -579,6 +598,31 @@ void ModernSignUpWidget::onSignUpResult(const SignupResult& result) {
         emit signupFailed(result.error_message);
         MessageBoxHelper::critical(this, "Sign Up Failed",
             QString("Account creation failed: %1").arg(result.error_message));
+    }
+}
+
+void ModernSignUpWidget::onLoginResult(const LoginResult& result) {
+    BOOST_LOG_SEV(lg(), debug) << "Auto-login result received";
+
+    if (result.success) {
+        BOOST_LOG_SEV(lg(), info) << "Auto-login successful for user: "
+                                  << registeredUsername_.toStdString();
+
+        statusLabel_->setText("Login successful!");
+        emit loginSucceeded(registeredUsername_);
+        emit closeRequested();
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Auto-login failed: "
+                                  << result.error_message.toStdString();
+
+        // Auto-login failed, but signup succeeded - let user know they can login manually
+        enableForm(true);
+        statusLabel_->setText("");
+
+        MessageBoxHelper::warning(this, "Auto-Login Failed",
+            QString("Your account was created successfully, but automatic login failed: %1\n\n"
+                    "Please close this dialog and log in manually.")
+                .arg(result.error_message));
     }
 }
 

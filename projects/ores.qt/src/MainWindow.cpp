@@ -1490,11 +1490,40 @@ void MainWindow::onModernLoginTriggered() {
         connect(signupWidget, &ModernSignUpWidget::closeRequested,
                 signupWindow, &QWidget::close);
 
-        // When signup succeeds, show message and close
-        connect(signupWidget, &ModernSignUpWidget::signupSucceeded,
+        // When auto-login after signup succeeds, update application state
+        connect(signupWidget, &ModernSignUpWidget::loginSucceeded,
                 this, [this](const QString& username) {
+            BOOST_LOG_SEV(lg(), info) << "Auto-login after signup succeeded for user: "
+                                       << username.toStdString();
+
+            username_ = username.toStdString();
+
+            // Update controllers with new username
+            if (currencyController_) {
+                currencyController_->setUsername(username);
+            }
+            if (countryController_) {
+                countryController_->setUsername(username);
+            }
+            if (accountController_) {
+                accountController_->setUsername(username);
+            }
+            if (roleController_) {
+                roleController_->setUsername(username);
+            }
+            if (featureFlagController_) {
+                featureFlagController_->setUsername(username);
+            }
+            if (changeReasonCategoryController_) {
+                changeReasonCategoryController_->setUsername(username);
+            }
+            if (changeReasonController_) {
+                changeReasonController_->setUsername(username);
+            }
+
+            updateWindowTitle();
             ui_->statusbar->showMessage(
-                QString("Account '%1' created successfully. You can now log in.").arg(username));
+                QString("Account '%1' created and logged in successfully.").arg(username));
         });
 
         // When user wants to go back to login

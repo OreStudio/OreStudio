@@ -725,7 +725,19 @@ It should be possible to associate any entity with one or more tags and then do
 a search by tags on that entity type. For example, tag a set of currencies as
 emerging markets and then search by that.
 
-Labels versus tags:
+Merged stories:
+
+*Currencies should have tags*
+
+Examples:
+
+- metals, emerging markets
+- continent as a tag
+- crypto
+
+At present we are overloading the currency type field.
+
+**** Analysis Labels versus tags
 
 #+begin_src markdown
 That is an **excellent question** that gets to the heart of cloud governance and

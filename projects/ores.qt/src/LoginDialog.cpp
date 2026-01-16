@@ -153,14 +153,22 @@ void LoginDialog::setupRightPanel(QWidget* parent) {
     layout->setSpacing(0);
 
     layout->addStretch(1);
+    setupHeader(layout, parent);
+    setupAuthFields(layout, parent);
+    setupServerFields(layout, parent);
+    setupActions(layout, parent);
+    layout->addStretch(1);
+    setupFooter(layout, parent);
+}
 
-    // Title - ORE Studio
+void LoginDialog::setupHeader(QVBoxLayout* layout, QWidget* parent) {
     loginTitleLabel_ = new QLabel("ORE STUDIO", parent);
     loginTitleLabel_->setStyleSheet(titleStyle);
     layout->addWidget(loginTitleLabel_, 0, Qt::AlignCenter);
-
     layout->addSpacing(24);
+}
 
+void LoginDialog::setupAuthFields(QVBoxLayout* layout, QWidget* parent) {
     // Username field
     auto* usernameLabel = new QLabel("USERNAME", parent);
     usernameLabel->setStyleSheet(dialog_styles::field_label);
@@ -205,7 +213,9 @@ void LoginDialog::setupRightPanel(QWidget* parent) {
     layout->addLayout(optionsRow);
 
     layout->addSpacing(12);
+}
 
+void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     // Server label row with saved connections button
     auto* serverLabelRow = new QHBoxLayout();
     serverLabelRow->setSpacing(4);
@@ -255,7 +265,9 @@ void LoginDialog::setupRightPanel(QWidget* parent) {
     layout->addWidget(portSpinBox_);
 
     layout->addSpacing(12);
+}
 
+void LoginDialog::setupActions(QVBoxLayout* layout, QWidget* parent) {
     // Status label
     statusLabel_ = new QLabel(parent);
     statusLabel_->setStyleSheet(dialog_styles::status);
@@ -290,10 +302,9 @@ void LoginDialog::setupRightPanel(QWidget* parent) {
     signUpRow->addWidget(signUpLabel_);
     signUpRow->addWidget(signUpButton_);
     layout->addLayout(signUpRow);
+}
 
-    layout->addStretch(1);
-
-    // Version info at bottom
+void LoginDialog::setupFooter(QVBoxLayout* layout, QWidget* parent) {
     QString versionText = QString("v%1  %2")
         .arg(ORES_VERSION)
         .arg(QString::fromStdString(ORES_BUILD_INFO));

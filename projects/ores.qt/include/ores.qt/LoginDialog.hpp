@@ -30,6 +30,7 @@
 #include <QComboBox>
 #include <QSpinBox>
 #include <QMenu>
+#include <QVBoxLayout>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -137,6 +138,11 @@ private:
     void setupUI();
     void setupLeftPanel(QWidget* parent);
     void setupRightPanel(QWidget* parent);
+    void setupHeader(QVBoxLayout* layout, QWidget* parent);
+    void setupAuthFields(QVBoxLayout* layout, QWidget* parent);
+    void setupServerFields(QVBoxLayout* layout, QWidget* parent);
+    void setupActions(QVBoxLayout* layout, QWidget* parent);
+    void setupFooter(QVBoxLayout* layout, QWidget* parent);
     void enableForm(bool enabled);
 
     // UI elements

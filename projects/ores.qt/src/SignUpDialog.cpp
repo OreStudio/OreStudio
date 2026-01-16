@@ -34,6 +34,8 @@ using namespace ores::logging;
 
 namespace {
 
+constexpr int min_password_length = 12;
+
 const QString titleStyle = R"(
     QLabel {
         background: transparent;
@@ -137,9 +139,10 @@ bool SignUpDialog::validateInput() {
         return false;
     }
 
-    if (password.length() < 12) {
+    if (password.length() < min_password_length) {
         MessageBoxHelper::warning(this, "Invalid Input",
-            "Password must be at least 12 characters long.");
+            QString("Password must be at least %1 characters long.")
+                .arg(min_password_length));
         passwordEdit_->setFocus();
         return false;
     }
@@ -231,7 +234,8 @@ void SignUpDialog::setupPanel(QWidget* parent) {
     layout->addSpacing(4);
 
     passwordEdit_ = new QLineEdit(parent);
-    passwordEdit_->setPlaceholderText("Choose a password (min 12 chars)");
+    passwordEdit_->setPlaceholderText(
+        QString("Choose a password (min %1 chars)").arg(min_password_length));
     passwordEdit_->setEchoMode(QLineEdit::Password);
     passwordEdit_->setStyleSheet(dialog_styles::input_field);
     passwordEdit_->setFixedHeight(36);

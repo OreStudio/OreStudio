@@ -56,6 +56,7 @@
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2026-01-16 Fri 11:04]--[2026-01-16 Fri 11:15] =>  0:11
     CLOCK: [2026-01-11 Sun 22:00]--[2026-01-11 Sun 23:39] =>  1:39
     :END:
 
@@ -207,6 +208,7 @@ print(p)
 
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2026-01-16 Fri 09:30]--[2026-01-16 Fri 11:03] =>  1:33
     CLOCK: [2026-01-15 Thu 23:31]--[2026-01-15 Thu 23:55] =>  0:24
     CLOCK: [2026-01-15 Thu 09:47]--[2026-01-15 Thu 11:30] =>  1:43
     CLOCK: [2026-01-15 Thu 09:28]--[2026-01-15 Thu 09:46] =>  0:18
@@ -718,6 +720,54 @@ Constraints & Validation Rules
 - no tags support.
 - login dialog should support connections from connection browser.
 
+*** COMPLETED Modernise login dialog                                   :code:
+
+#+begin_quote
+This pull request significantly overhauls the user authentication experience by
+introducing new, dark-themed login and signup dialogs. These dialogs are now
+modeless MDI subwindows, improving workflow and integration within the
+application. Key enhancements include automatic login after successful
+registration, a dropdown for quick access to saved connections, and a refreshed
+visual design.
+
+Highlights:
+
+- Modernized Login and Sign Up Dialogs: Introduced new dark-themed, modeless
+  LoginDialog and SignUpDialog widgets, replacing older modal designs for a more
+  integrated user experience.
+- Streamlined User Registration: Implemented an auto-login feature that
+  automatically authenticates a user after successful registration, reducing
+  friction in the onboarding process.
+- Enhanced Connection Management: Added a saved connections dropdown within the
+  login dialog, allowing users to quickly select and connect to previously
+  configured servers.
+- MDI Subwindow Integration: The new login and sign-up dialogs are now presented
+  as MDI subwindows, providing better window management and a more flexible UI
+  layout.
+#+end_quote
+
+*** COMPLETED History should have a revert button                      :code:
+
+*Rationale*: Implemented.
+
+It should be possible to choose a given version and ask the system to revert the
+currency to that version. It just makes an update with a new version to look
+like that version. It should also be possible to open at version. It shows the
+edit dialog in "read only mode" with the entity at that version. The tool bar
+should indicate this. It should also have a revert in that dialog.
+
+*** COMPLETED Disconnect shows reconnect message                       :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-15 Thu 23:31]--[2026-01-16 Fri 01:55] =>  2:24
+    :END:
+
+*Rationale*: implemented.
+
+When you click disconnect the status bar says "Reconnecting to server".
+
+We can see but not edit. Also, test permissions to make sure they are being
+enforced.
+
 *** STARTED Refactor documentation                                    :infra:
     :LOGBOOK:
     CLOCK: [2026-01-13 Tue 15:01]--[2026-01-13 Tue 16:02] =>  1:01
@@ -758,15 +808,13 @@ Highlights:
   and observations related to the 'Clean up seed data' task.
 #+end_quote
 
-*** STARTED Modernise login dialog                                     :code:
+*** STARTED Implement party related entities at database level         :code:
     :LOGBOOK:
-    CLOCK: [2026-01-15 Thu 23:56]
+    CLOCK: [2026-01-16 Fri 11:16]
     :END:
 
-See if we can make it look a bit better.
-
-- we should make the server/host the tenant. use hosts file to support multiple
-  host names.
+The first step of this work is to get the entities to work at the database
+schema level.
 
 *** Add a "is alive" message                                           :code:
 
@@ -778,13 +826,6 @@ good idea.
 Notes:
 
 - could tell client if registration / sign-up is supported.
-
-*** Add an image browser                                               :code:
-
-At present we can't add or remove images.
-
-- update existing image browser to show tags and allow switching them on and
-  off.
 
 *** Add UI for bootstrapping from Qt                                   :code:
 
@@ -1627,43 +1668,6 @@ the code.
 - Description: Harare, Zimbabwe
 
 
-*** Geo-location tests fail for some IP Addresses                      :code:
-
-Error is probably happening because the range is not supposed to be used.
-
-#+begin_src xml
-<Catch2TestRun name="ores.geo.tests" rng-seed="3117545047" xml-format-version="3" catch2-version="3.12.0">
-  <TestCase name="geolocation_result_default_construction" tags="[service][#geolocation_service_tests]" filename="/home/marco/Development/OreStudio/OreStudio.local1/projects/ores.geo/tests/geolocation_service_tests.cpp" line="38">
-    <OverallResult success="true" skips="0" durationInSeconds="1.00031"/>
-  </TestCase>
-  <TestCase name="lookup_with_boost_asio_address" tags="[service][#geolocation_service_tests]" filename="/home/marco/Development/OreStudio/OreStudio.local1/projects/ores.geo/tests/geolocation_service_tests.cpp" line="90">
-    <Expression success="false" type="CHECK" filename="/home/marco/Development/OreStudio/OreStudio.local1/projects/ores.geo/tests/geolocation_service_tests.cpp" line="102">
-      <Original>
-        result.error() == geolocation_error::address_not_found
-      </Original>
-      <Expanded>
-        2 == 1
-      </Expanded>
-    </Expression>
-    <OverallResult success="false" skips="0" durationInSeconds="1.00013"/>
-  </TestCase>
-#+end_src
-
-We don't see anything in the logs:
-
-#+begin_src logview
-2026-01-09 19:16:19.370327 [INFO] [ores.testing.test_database_manager] Database context created successfully
-2026-01-09 19:16:19.370360 [DEBUG] [ores.geo.service.geolocation_service] Geolocation lookup for 10.0.0.1. SQL: SELECT country_code FROM ores.geoip_lookup('10.0.0.1'::inet)
-2026-01-09 19:16:19.386331 [DEBUG] [ores.geo.service.geolocation_service] Geolocation lookup for 10.0.0.1. Total rows: 0
-2026-01-09 19:16:19.386475 [INFO] [ores.geo.tests] Lookup result for boost::asio::ip::address
-2026-01-09 19:16:19.386695 [DEBUG] [catch2] Section ended: lookup_with_boost_asio_address (assertions: 1)
-2026-01-09 19:16:19.386741 [INFO] [catch2] Test case ended: lookup_with_boost_asio_address - PASSED
-2026-01-09 19:16:19.386767 [INFO] [catch2]   Assertions: 1 passed, 0 failed, 1 total
-#+end_src
-
-We should write the assertions in the logs.
-
-
 *** Business unit entity                                               :code:
 
 Represents internal organizational units (e.g., desks, departments, branches).
@@ -1680,44 +1684,6 @@ Supports hierarchical structure.
 
 business_centre may be null (for example, we may want to have global desk and
 then London desk.
-
-*** Contact information entity                                         :code:
-
-Contact Information is a container that groups various ways to reach an entity.
-
-Contact Information can be associated with either a Party (at the legal entity
-level) or a BusinessUnit (at the desk/operational level). To build a robust
-trading system, your database should support a polymorphic or flexible link to
-handle this.
-
-The Logic of the Link:
-
-- Link to Party: Used for Legal and Regulatory contact details. This is the
-  "Head Office" address, the legal service of process address, or the general
-  firm-wide contact for the LEI.
-- Link to Business Unit: Used for Execution and Operational contact details.
-  This is where your "Machine" or "Human" actually lives. It links the trader or
-  algo to a specific desk's phone number, email, and—most importantly—its
-  Business Center (Holiday Calendar).
-
-**** Type: Contact Information
-
-This is the main container for how to reach a party or person.
-
-- address (Complex): The physical location.
-- phone (String): Multiple entries allowed (Work, Mobile, Fax).
-- email (String): Electronic mail addresses.
-- webPage (String): The entity's URL.
-
-**** Type: Address
-
-The physical street address structure.
-
-- streetAddress (Complex): Usually a list of strings (Line 1, Line 2, etc.).
-- city (String): The city or municipality.
-- state (String): The state, province, or region.
-- country (Scheme): An ISO 3166 2-letter country code (e.g., US, GB).
-- postalCode (String): The ZIP or Postcode.
 
 *** Book and Portfolio entities                                        :code:
 
@@ -1817,6 +1783,85 @@ Combined Hierarchy Rules (Refined):
 | Permissioning       | Trade permission → granted on book_id. View/Analyze permission → granted on portfolio_id (includes subtree)   |
 | Accounting Boundary | P&L, capital, and ledger entries are computed per Book, then rolled up through Portfolios in aggregation_ccy. |
 
+*** Accounts need to have a human or robot field                       :code:
+
+Look for correct terminology (actor type?).
+
+*** Geo-location tests fail for some IP Addresses                      :code:
+
+Error is probably happening because the range is not supposed to be used.
+
+#+begin_src xml
+<Catch2TestRun name="ores.geo.tests" rng-seed="3117545047" xml-format-version="3" catch2-version="3.12.0">
+  <TestCase name="geolocation_result_default_construction" tags="[service][#geolocation_service_tests]" filename="/home/marco/Development/OreStudio/OreStudio.local1/projects/ores.geo/tests/geolocation_service_tests.cpp" line="38">
+    <OverallResult success="true" skips="0" durationInSeconds="1.00031"/>
+  </TestCase>
+  <TestCase name="lookup_with_boost_asio_address" tags="[service][#geolocation_service_tests]" filename="/home/marco/Development/OreStudio/OreStudio.local1/projects/ores.geo/tests/geolocation_service_tests.cpp" line="90">
+    <Expression success="false" type="CHECK" filename="/home/marco/Development/OreStudio/OreStudio.local1/projects/ores.geo/tests/geolocation_service_tests.cpp" line="102">
+      <Original>
+        result.error() == geolocation_error::address_not_found
+      </Original>
+      <Expanded>
+        2 == 1
+      </Expanded>
+    </Expression>
+    <OverallResult success="false" skips="0" durationInSeconds="1.00013"/>
+  </TestCase>
+#+end_src
+
+We don't see anything in the logs:
+
+#+begin_src logview
+2026-01-09 19:16:19.370327 [INFO] [ores.testing.test_database_manager] Database context created successfully
+2026-01-09 19:16:19.370360 [DEBUG] [ores.geo.service.geolocation_service] Geolocation lookup for 10.0.0.1. SQL: SELECT country_code FROM ores.geoip_lookup('10.0.0.1'::inet)
+2026-01-09 19:16:19.386331 [DEBUG] [ores.geo.service.geolocation_service] Geolocation lookup for 10.0.0.1. Total rows: 0
+2026-01-09 19:16:19.386475 [INFO] [ores.geo.tests] Lookup result for boost::asio::ip::address
+2026-01-09 19:16:19.386695 [DEBUG] [catch2] Section ended: lookup_with_boost_asio_address (assertions: 1)
+2026-01-09 19:16:19.386741 [INFO] [catch2] Test case ended: lookup_with_boost_asio_address - PASSED
+2026-01-09 19:16:19.386767 [INFO] [catch2]   Assertions: 1 passed, 0 failed, 1 total
+#+end_src
+
+We should write the assertions in the logs.
+
+
+*** Contact information entity                                         :code:
+
+Contact Information is a container that groups various ways to reach an entity.
+
+Contact Information can be associated with either a Party (at the legal entity
+level) or a BusinessUnit (at the desk/operational level). To build a robust
+trading system, your database should support a polymorphic or flexible link to
+handle this.
+
+The Logic of the Link:
+
+- Link to Party: Used for Legal and Regulatory contact details. This is the
+  "Head Office" address, the legal service of process address, or the general
+  firm-wide contact for the LEI.
+- Link to Business Unit: Used for Execution and Operational contact details.
+  This is where your "Machine" or "Human" actually lives. It links the trader or
+  algo to a specific desk's phone number, email, and—most importantly—its
+  Business Center (Holiday Calendar).
+
+**** Type: Contact Information
+
+This is the main container for how to reach a party or person.
+
+- address (Complex): The physical location.
+- phone (String): Multiple entries allowed (Work, Mobile, Fax).
+- email (String): Electronic mail addresses.
+- webPage (String): The entity's URL.
+
+**** Type: Address
+
+The physical street address structure.
+
+- streetAddress (Complex): Usually a list of strings (Line 1, Line 2, etc.).
+- city (String): The city or municipality.
+- state (String): The state, province, or region.
+- country (Scheme): An ISO 3166 2-letter country code (e.g., US, GB).
+- postalCode (String): The ZIP or Postcode.
+
 *** Add support for staging                                            :code:
 
 - on import, are we importing one currency at a time? should import the entire
@@ -1868,10 +1913,6 @@ story.
   target version.
 - in the history diff, add a "from version" combo which shows either latest or
   previous.
-
-*** Accounts need to have a human or robot field                       :code:
-
-Look for correct terminology (actor type?).
 
 *** Add a flag for human readable time                                 :code:
 
@@ -1973,14 +2014,6 @@ Links:
   loading and managing plug-ins."
 - [[https://github.com/commschamp/cc_tools_qt/wiki/How-to-Use-CommsChampion-Tools][How to Use CommsChampion Tools]]: screenshots of the UI to explore the protocol.
 
-*** History should have a revert button                                :code:
-
-It should be possible to choose a given version and ask the system to revert the
-currency to that version. It just makes an update with a new version to look
-like that version. It should also be possible to open at version. It shows the
-edit dialog in "read only mode" with the entity at that version. The tool bar
-should indicate this. It should also have a revert in that dialog.
-
 *** Assorted UI polish work                                            :code:
 
 Break these down into their own stories:
@@ -2006,9 +2039,23 @@ Tasks:
 - Pass =telemetry_context= through message handlers in ores.iam, ores.refdata, etc.
 - Add spans for database operations in ores.database.
 
+*** Add a data library or collection                                   :code:
+
+Datasets are logically related. We should have collections of datasets designed
+to work together.
+
 *** Add widget to manage assets                                        :code:
 
 We can't upload flags etc.
+
+Merged stories:
+
+*Add an image browser*
+
+At present we can't add or remove images.
+
+- update existing image browser to show tags and allow switching them on and
+  off.
 
 *** Missing session properties                                         :code:
 
@@ -2057,13 +2104,6 @@ Problems:
 2026-01-07 12:16:15.579585 [DEBUG] [ores.iam.repository.login_info_mapper] Mapped db entities.
 #+end_src
 
-*** Disconnect shows reconnect message                                 :code:
-
-When you click disconnect the status bar says "Reconnecting to server".
-
-We can see but not edit. Also, test permissions to make sure they are being
-enforced.
-
 *** Add a dashboard for users                                          :code:
 
 As per screenshots:
@@ -2090,9 +2130,6 @@ At present we are only listening for details in the main dialogs (accounts,
 currencies). It would be nice to be able to listen to events in the details
 dialogs. however, it needs to listen to events only for that specific entity
 (e.g. currency pair, account etc). Not sure we are setup for this.
-
-
-
 
 * Footer
 

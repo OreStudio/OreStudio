@@ -19,7 +19,7 @@
  */
 
 /**
- * Data Quality Scheme Population Script
+ * Data Quality Coding Scheme Population Script
  *
  * Seeds the database with coding/identification schemes based on FPML concepts.
  * This script is idempotent.
@@ -28,6 +28,11 @@
  * - Parties: LEI, BIC, and other party identification schemes
  * - Currencies: ISO 4217 currency code scheme
  * - Countries: ISO 3166 country code scheme
+ *
+ * Authority types:
+ * - official: ISO and other formal standards bodies
+ * - industry: De facto standards from industry bodies (SWIFT, DTCC, FINRA)
+ * - internal: Proprietary identifiers
  */
 
 set schema 'ores';
@@ -40,6 +45,7 @@ set schema 'ores';
 create or replace function ores.upsert_dq_coding_scheme(
     p_code text,
     p_name text,
+    p_authority_type text,
     p_subject_area_name text,
     p_domain_name text,
     p_uri text,
@@ -51,31 +57,32 @@ begin
         where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
         insert into ores.dq_coding_scheme_tbl (
-            code, version, name, subject_area_name, domain_name, uri, description,
+            code, version, name, authority_type, subject_area_name, domain_name, uri, description,
             modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
         values (
-            p_code, 0, p_name, p_subject_area_name, p_domain_name, p_uri, p_description,
-            'system', 'system.new_record', 'System seed data - data quality scheme',
+            p_code, 0, p_name, p_authority_type, p_subject_area_name, p_domain_name, p_uri, p_description,
+            'system', 'system.new_record', 'System seed data - coding scheme',
             current_timestamp, ores.utility_infinity_timestamp_fn()
         );
-        raise notice 'Created data quality scheme: %', p_code;
+        raise notice 'Created coding scheme: %', p_code;
     else
-        raise notice 'Data quality scheme already exists: %', p_code;
+        raise notice 'Coding scheme already exists: %', p_code;
     end if;
 end;
 $$ language plpgsql;
 
 -- =============================================================================
--- Data Quality Schemes
+-- Data Quality Coding Schemes
 -- =============================================================================
 
-\echo '--- Data Quality Schemes ---'
+\echo '--- Data Quality Coding Schemes ---'
 
--- Party identification schemes
+-- Party identification schemes (official - ISO standards)
 select ores.upsert_dq_coding_scheme(
     'LEI',
     'Legal Entity Identifier',
+    'official',
     'Parties',
     'Reference Data',
     'http://www.fpml.org/coding-scheme/external/iso17442',
@@ -85,6 +92,7 @@ select ores.upsert_dq_coding_scheme(
 select ores.upsert_dq_coding_scheme(
     'BIC',
     'Business Identifier Code',
+    'official',
     'Parties',
     'Reference Data',
     'http://www.fpml.org/coding-scheme/external/iso9362',
@@ -94,6 +102,7 @@ select ores.upsert_dq_coding_scheme(
 select ores.upsert_dq_coding_scheme(
     'MIC',
     'Market Identifier Code',
+    'official',
     'Parties',
     'Reference Data',
     'http://www.fpml.org/coding-scheme/external/iso10383',
@@ -101,8 +110,20 @@ select ores.upsert_dq_coding_scheme(
 );
 
 select ores.upsert_dq_coding_scheme(
+    'NATIONAL_ID',
+    'National Identifier',
+    'official',
+    'Parties',
+    'Reference Data',
+    'http://www.fpml.org/coding-scheme/external/national-id',
+    'National identifiers (e.g., passport number, tax ID, SIREN, ORI, national ID card). Covers MiFID II client identification requirements.'
+);
+
+-- Party identification schemes (industry - regulatory/consortium standards)
+select ores.upsert_dq_coding_scheme(
     'CEDB',
     'CFTC Entity Directory',
+    'industry',
     'Parties',
     'Reference Data',
     'http://www.fpml.org/coding-scheme/external/cedb',
@@ -110,35 +131,9 @@ select ores.upsert_dq_coding_scheme(
 );
 
 select ores.upsert_dq_coding_scheme(
-    'NATURAL_PERSON',
-    'Natural Person',
-    'Parties',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/external/person-id',
-    'Generic identifier for individuals (e.g., employee ID, trader ID). Not standardized; value interpreted contextually.'
-);
-
-select ores.upsert_dq_coding_scheme(
-    'NATIONAL_ID',
-    'National Identifier',
-    'Parties',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/external/national-id',
-    'National identifiers (e.g., passport number, tax ID, SIREN, ORI, national ID card). Covers MiFID II client identification requirements.'
-);
-
-select ores.upsert_dq_coding_scheme(
-    'INTERNAL',
-    'Internal',
-    'Parties',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/external/party-id-internal',
-    'Proprietary/internal system identifiers (e.g., client ID in your OMS, CRM, or clearing system).'
-);
-
-select ores.upsert_dq_coding_scheme(
     'ACER',
     'EU Agency for Energy Regulation',
+    'industry',
     'Parties',
     'Reference Data',
     'http://www.fpml.org/coding-scheme/external/acer-code',
@@ -148,6 +143,7 @@ select ores.upsert_dq_coding_scheme(
 select ores.upsert_dq_coding_scheme(
     'DTCC',
     'Depository Trust & Clearing Corporation Participant ID',
+    'industry',
     'Parties',
     'Reference Data',
     null,
@@ -157,16 +153,39 @@ select ores.upsert_dq_coding_scheme(
 select ores.upsert_dq_coding_scheme(
     'MPID',
     'Market Participant Identifier',
+    'industry',
     'Parties',
     'Reference Data',
     null,
     'Also known as AII (ATS Identification Indicator). A four-character alphanumeric code assigned by FINRA to broker-dealers and alternative trading systems (ATSs) operating in U.S. equities markets. Used to identify the originating or executing firm in trade reports (e.g., in OATS, TRACE, or consolidated tape reporting). Required for all SEC-registered trading venues and participants in U.S. equity and options markets.'
 );
 
--- Country identification schemes
+-- Party identification schemes (internal - proprietary)
+select ores.upsert_dq_coding_scheme(
+    'NATURAL_PERSON',
+    'Natural Person',
+    'internal',
+    'Parties',
+    'Reference Data',
+    'http://www.fpml.org/coding-scheme/external/person-id',
+    'Generic identifier for individuals (e.g., employee ID, trader ID). Not standardized; value interpreted contextually.'
+);
+
+select ores.upsert_dq_coding_scheme(
+    'INTERNAL',
+    'Internal',
+    'internal',
+    'Parties',
+    'Reference Data',
+    'http://www.fpml.org/coding-scheme/external/party-id-internal',
+    'Proprietary/internal system identifiers (e.g., client ID in your OMS, CRM, or clearing system).'
+);
+
+-- Country identification schemes (official - ISO standards)
 select ores.upsert_dq_coding_scheme(
     'ISO_3166_1_ALPHA_2',
     'ISO 3166-1 Alpha-2 Country Code',
+    'official',
     'Countries',
     'Reference Data',
     'http://www.fpml.org/coding-scheme/external/iso3166-1-alpha-2',
@@ -176,16 +195,18 @@ select ores.upsert_dq_coding_scheme(
 select ores.upsert_dq_coding_scheme(
     'ISO_3166_1_ALPHA_3',
     'ISO 3166-1 Alpha-3 Country Code',
+    'official',
     'Countries',
     'Reference Data',
     'http://www.fpml.org/coding-scheme/external/iso3166-1-alpha-3',
     'ISO 3166-1 alpha-3 country codes. Three-letter codes (e.g., USA, GBR, DEU) for countries and dependent territories. More descriptive than alpha-2 codes.'
 );
 
--- Currency identification schemes
+-- Currency identification schemes (official - ISO standards)
 select ores.upsert_dq_coding_scheme(
     'ISO_4217',
     'ISO 4217 Currency Code',
+    'official',
     'Currencies',
     'Reference Data',
     'http://www.fpml.org/coding-scheme/external/iso4217',
@@ -196,7 +217,7 @@ select ores.upsert_dq_coding_scheme(
 -- Cleanup
 -- =============================================================================
 
-drop function ores.upsert_dq_coding_scheme(text, text, text, text, text, text);
+drop function ores.upsert_dq_coding_scheme(text, text, text, text, text, text, text);
 
 -- =============================================================================
 -- Summary
@@ -205,6 +226,6 @@ drop function ores.upsert_dq_coding_scheme(text, text, text, text, text, text);
 \echo ''
 \echo '--- Summary ---'
 
-select 'Data Quality Schemes' as entity, count(*) as count
+select 'Coding Schemes' as entity, count(*) as count
 from ores.dq_coding_scheme_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

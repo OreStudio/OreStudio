@@ -29,6 +29,7 @@
 \ir ./drop/dq_nature_dimension_drop.sql
 \ir ./drop/dq_origin_dimension_drop.sql
 \ir ./drop/dq_coding_scheme_drop.sql
+\ir ./drop/dq_coding_scheme_authority_type_drop.sql
 \ir ./drop/dq_subject_area_drop.sql
 \ir ./drop/dq_data_domain_drop.sql
 \ir ./drop/dq_catalog_drop.sql

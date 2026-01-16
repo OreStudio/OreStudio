@@ -39,6 +39,7 @@ create table if not exists "ores"."dq_coding_scheme_tbl" (
     "code" text not null,
     "version" integer not null,
     "name" text not null,
+    "authority_type" text not null,
     "subject_area_name" text not null,
     "domain_name" text not null,
     "uri" text,
@@ -75,11 +76,26 @@ create index if not exists dq_coding_scheme_uri_idx
 on "ores"."dq_coding_scheme_tbl" (uri)
 where valid_to = ores.utility_infinity_timestamp_fn() and uri is not null;
 
+-- Index for looking up schemes by authority type
+create index if not exists dq_coding_scheme_authority_type_idx
+on "ores"."dq_coding_scheme_tbl" (authority_type)
+where valid_to = ores.utility_infinity_timestamp_fn();
+
 create or replace function ores.dq_coding_scheme_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
+    -- Validate authority_type FK
+    if not exists (
+        select 1 from ores.dq_coding_scheme_authority_type_tbl
+        where code = NEW.authority_type
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid authority_type: %. Authority type must exist.', NEW.authority_type
+        using errcode = '23503';
+    end if;
+
     -- Validate subject_area/domain FK
     if not exists (
         select 1 from ores.dq_subject_area_tbl

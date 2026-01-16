@@ -70,9 +70,14 @@
 \echo '--- Data Quality Subject Areas ---'
 \ir dq_subject_area_populate.sql
 
--- Data Quality Schemes
+-- Data Quality Coding Scheme Authority Types
 \echo ''
-\echo '--- Data Quality Schemes ---'
+\echo '--- Data Quality Coding Scheme Authority Types ---'
+\ir dq_coding_scheme_authority_type_populate.sql
+
+-- Data Quality Coding Schemes
+\echo ''
+\echo '--- Data Quality Coding Schemes ---'
 \ir dq_coding_scheme_populate.sql
 
 -- Data Quality Methodologies
@@ -174,6 +179,9 @@ from ores.dq_data_domain_tbl where valid_to = ores.utility_infinity_timestamp_fn
 union all
 select 'Data Quality Subject Areas', count(*)
 from ores.dq_subject_area_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'DQ Coding Scheme Authority Types', count(*)
+from ores.dq_coding_scheme_authority_type_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Data Quality Coding Schemes', count(*)
 from ores.dq_coding_scheme_tbl where valid_to = ores.utility_infinity_timestamp_fn()

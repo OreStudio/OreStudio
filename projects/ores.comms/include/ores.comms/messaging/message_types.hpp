@@ -184,8 +184,14 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // subject_area CRUD (0x6010-0x6019), dataset CRUD (0x6020-0x6027),
 // methodology CRUD (0x6028-0x602F), coding_scheme CRUD (0x6030-0x6041),
 // dimension CRUD (nature/origin/treatment) (0x6050-0x6067).
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 21;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 4;
+//
+// Version 22.0 moves change_reason and change_reason_category messages from
+// IAM subsystem (0x2050-0x2061) to DQ subsystem (0x6070-0x6081). This is a
+// breaking change as the message type IDs have changed. Change management is
+// now properly located in the Data Quality subsystem alongside other DQ types.
+// The dq_message_handler now handles all DQ messages including change reasons.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 22;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -318,26 +324,6 @@ enum class message_type {
     get_active_sessions_request = 0x2044,
     get_active_sessions_response = 0x2045,
 
-    // Change management messages (0x2050 - 0x206F)
-    get_change_reason_categories_request = 0x2050,
-    get_change_reason_categories_response = 0x2051,
-    get_change_reasons_request = 0x2052,
-    get_change_reasons_response = 0x2053,
-    get_change_reasons_by_category_request = 0x2054,
-    get_change_reasons_by_category_response = 0x2055,
-    save_change_reason_request = 0x2056,
-    save_change_reason_response = 0x2057,
-    delete_change_reason_request = 0x2058,
-    delete_change_reason_response = 0x2059,
-    get_change_reason_history_request = 0x205A,
-    get_change_reason_history_response = 0x205B,
-    save_change_reason_category_request = 0x205C,
-    save_change_reason_category_response = 0x205D,
-    delete_change_reason_category_request = 0x205E,
-    delete_change_reason_category_response = 0x205F,
-    get_change_reason_category_history_request = 0x2060,
-    get_change_reason_category_history_response = 0x2061,
-
     // Variability subsystem messages (0x3000 - 0x3FFF)
     get_feature_flags_request = 0x3000,  // Renamed from list_feature_flags in v21.0
     get_feature_flags_response = 0x3001,
@@ -461,6 +447,27 @@ enum class message_type {
     delete_treatment_dimension_response = 0x6065,
     get_treatment_dimension_history_request = 0x6066,
     get_treatment_dimension_history_response = 0x6067,
+
+    // Change Management (change_reason, change_reason_category) (0x6070 - 0x6081)
+    // Moved from IAM subsystem (0x2050-0x2061) in v22.0
+    get_change_reason_categories_request = 0x6070,
+    get_change_reason_categories_response = 0x6071,
+    get_change_reasons_request = 0x6072,
+    get_change_reasons_response = 0x6073,
+    get_change_reasons_by_category_request = 0x6074,
+    get_change_reasons_by_category_response = 0x6075,
+    save_change_reason_request = 0x6076,
+    save_change_reason_response = 0x6077,
+    delete_change_reason_request = 0x6078,
+    delete_change_reason_response = 0x6079,
+    get_change_reason_history_request = 0x607A,
+    get_change_reason_history_response = 0x607B,
+    save_change_reason_category_request = 0x607C,
+    save_change_reason_category_response = 0x607D,
+    delete_change_reason_category_request = 0x607E,
+    delete_change_reason_category_response = 0x607F,
+    get_change_reason_category_history_request = 0x6080,
+    get_change_reason_category_history_response = 0x6081,
 
     last_value
 };

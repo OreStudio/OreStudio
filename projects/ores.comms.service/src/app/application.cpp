@@ -30,6 +30,7 @@
 #include "ores.refdata/eventing/currency_changed_event.hpp"
 #include "ores.refdata/eventing/country_changed_event.hpp"
 #include "ores.iam/messaging/registrar.hpp"
+#include "ores.dq/messaging/registrar.hpp"
 #include "ores.iam/eventing/account_changed_event.hpp"
 #include "ores.dq/eventing/change_reason_changed_event.hpp"
 #include "ores.dq/eventing/change_reason_category_changed_event.hpp"
@@ -295,6 +296,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     ores::variability::messaging::registrar::register_handlers(*srv, ctx);
     ores::assets::messaging::registrar::register_handlers(*srv, ctx);
     ores::telemetry::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
+    ores::dq::messaging::registrar::register_handlers(*srv, ctx);
 
     // Register subscription handler for subscribe/unsubscribe/list_event_channels messages
     auto subscription_handler =

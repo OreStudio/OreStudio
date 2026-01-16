@@ -234,6 +234,7 @@ package "refdata" #FFF3E0 {
         * rounding_precision : integer
         * format : text
         * currency_type : text
+        coding_scheme_code : text <<FK>>
         image_id : uuid <<FK>>
         * modified_by : text
         * change_reason_code : text <<FK>>
@@ -246,6 +247,7 @@ package "refdata" #FFF3E0 {
     ISO 4217 currency definitions.
     Includes formatting rules and
     optional flag image reference.
+    coding_scheme_code tracks data provenance.
     end note
 
     entity refdata_countries_tbl <<temporal>> #C6F0D8 {
@@ -258,6 +260,7 @@ package "refdata" #FFF3E0 {
         * numeric_code : text
         * name : text
         * official_name : text
+        coding_scheme_code : text <<FK>>
         image_id : uuid <<FK>>
         * modified_by : text
         * change_reason_code : text <<FK>>
@@ -268,6 +271,7 @@ package "refdata" #FFF3E0 {
     ISO 3166-1 country definitions.
     Includes alpha-2, alpha-3, and numeric codes.
     Optional flag image reference.
+    coding_scheme_code tracks data provenance.
     end note
 }
 
@@ -682,6 +686,10 @@ assets_tags_tbl ||--o{ assets_image_tags_tbl : "applied to"
 ' refdata to assets relationships
 refdata_currencies_tbl }o--o| assets_images_tbl : "displayed as"
 refdata_countries_tbl }o--o| assets_images_tbl : "displayed as"
+
+' refdata to dq coding scheme relationships
+dq_coding_scheme_tbl ||--o{ refdata_currencies_tbl : "identifies"
+dq_coding_scheme_tbl ||--o{ refdata_countries_tbl : "identifies"
 
 ' dq hierarchy relationships
 dq_catalog_tbl ||--o{ dq_dataset_tbl : "groups"

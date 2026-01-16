@@ -31,14 +31,53 @@ namespace ores::dq::domain {
  * @brief Describes a methodology for data processing or transformation.
  */
 struct methodology final {
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
     int version = 0;
+
+    /**
+     * @brief UUID uniquely identifying this methodology.
+     *
+     * This is the surrogate key for the methodology.
+     */
     boost::uuids::uuid id;
+
+    /**
+     * @brief Human-readable name for the methodology.
+     */
     std::string name;
+
+    /**
+     * @brief Detailed description of the methodology's purpose and approach.
+     */
     std::string description;
+
+    /**
+     * @brief Optional reference to external documentation of the methodology logic.
+     *
+     * Typically a URL or document reference.
+     */
     std::optional<std::string> logic_reference;
+
+    /**
+     * @brief Optional details about how the methodology is implemented.
+     */
     std::optional<std::string> implementation_details;
+
+    /**
+     * @brief Username of the person who last modified this methodology.
+     */
     std::string recorded_by;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
     std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     */
     std::chrono::system_clock::time_point recorded_at;
 };
 

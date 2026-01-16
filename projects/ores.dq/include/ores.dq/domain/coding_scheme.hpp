@@ -34,16 +34,68 @@ namespace ores::dq::domain {
  * the FPML coding-scheme concept.
  */
 struct coding_scheme final {
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
     int version = 0;
+
+    /**
+     * @brief Unique code identifying this coding scheme.
+     *
+     * This is the natural key for the scheme.
+     * Examples: "ISO_4217", "SWIFT_BIC", "LEI".
+     */
     std::string code;
+
+    /**
+     * @brief Human-readable name for the coding scheme.
+     */
     std::string name;
+
+    /**
+     * @brief Type of authority that maintains this scheme.
+     *
+     * Links to coding_scheme_authority_type for categorization.
+     */
     std::string authority_type;
+
+    /**
+     * @brief Subject area this scheme belongs to.
+     *
+     * Links to subject_area for organizational structure.
+     */
     std::string subject_area_name;
+
+    /**
+     * @brief Data domain this scheme applies to.
+     *
+     * Links to data_domain for domain categorization.
+     */
     std::string domain_name;
+
+    /**
+     * @brief Optional URI pointing to the official scheme definition.
+     */
     std::optional<std::string> uri;
+
+    /**
+     * @brief Human-readable description of the coding scheme's purpose.
+     */
     std::string description;
+
+    /**
+     * @brief Username of the person who last modified this scheme.
+     */
     std::string recorded_by;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
     std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     */
     std::chrono::system_clock::time_point recorded_at;
 };
 

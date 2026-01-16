@@ -29,57 +29,15 @@ soft deletes via validity period closure.
 
 Change tracking: Most entities include change_reason_code
 and change_commentary for audit trail support.
+
+Table naming: <component>_<entity>_tbl
 end note
 
 '
-' ==================== Change Management Domain ====================
+' ==================== iam (Identity & Access Management) ====================
 '
-package "Change Management" #FFF8E1 {
-    entity change_reason_categories <<temporal>> #C6F0D8 {
-        * code : text <<PK>>
-        * valid_from : timestamptz <<PK>>
-        * valid_to : timestamptz <<PK>>
-        --
-        * version : integer
-        * description : text
-        * modified_by : text
-        * change_commentary : text
-    }
-
-    note right of change_reason_categories
-    Groups change reasons into logical categories.
-    Examples: static_data, trade, market_data.
-    Determines which reasons apply to which entity types.
-    end note
-
-    entity change_reasons <<temporal>> #C6F0D8 {
-        * code : text <<PK>>
-        * valid_from : timestamptz <<PK>>
-        * valid_to : timestamptz <<PK>>
-        --
-        * version : integer
-        * description : text
-        * category_code : text <<FK>>
-        * applies_to_amend : boolean
-        * applies_to_delete : boolean
-        * requires_commentary : boolean
-        * display_order : integer
-        * modified_by : text
-        * change_commentary : text
-    }
-
-    note right of change_reasons
-    Defines reasons for record changes.
-    Namespaced format: "category.reason_name"
-    Examples: system.new, static_data.front_office_error.
-    end note
-}
-
-'
-' ==================== IAM Domain ====================
-'
-package "IAM (Identity & Access Management)" #E8F4FD {
-    entity accounts <<temporal>> #C6F0D8 {
+package "iam" #E8F4FD {
+    entity iam_accounts_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         --
         * version : integer
@@ -95,13 +53,13 @@ package "IAM (Identity & Access Management)" #E8F4FD {
         * valid_to : timestamptz
     }
 
-    note right of accounts
+    note right of iam_accounts_tbl
     User accounts with authentication credentials.
     Supports optimistic locking via version field.
     Username and email unique for current records.
     end note
 
-    entity login_info #F7E5FF {
+    entity iam_login_info_tbl #F7E5FF {
         * account_id : uuid <<PK, FK>>
         --
         * last_ip : inet
@@ -113,13 +71,13 @@ package "IAM (Identity & Access Management)" #E8F4FD {
         * password_reset_required : integer
     }
 
-    note right of login_info
+    note right of iam_login_info_tbl
     Security tracking for login attempts.
     Current-state table (no temporal versioning).
     Tracks failed attempts and lock status.
     end note
 
-    entity sessions <<temporal>> #C6F0D8 {
+    entity iam_sessions_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         * start_time : timestamptz <<PK>>
         --
@@ -134,18 +92,13 @@ package "IAM (Identity & Access Management)" #E8F4FD {
         * country_code : text
     }
 
-    note right of sessions
+    note right of iam_sessions_tbl
     User session tracking with country-level geolocation.
     Designed for TimescaleDB hypertable.
     Partitioned by start_time.
     end note
-}
 
-'
-' ==================== RBAC Domain ====================
-'
-package "RBAC (Role-Based Access Control)" #FFF3E0 {
-    entity roles <<temporal>> #C6F0D8 {
+    entity iam_roles_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         --
         * version : integer
@@ -158,12 +111,12 @@ package "RBAC (Role-Based Access Control)" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of roles
+    note right of iam_roles_tbl
     Named roles for grouping permissions.
     Examples: admin, viewer, editor.
     end note
 
-    entity permissions <<temporal>> #C6F0D8 {
+    entity iam_permissions_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         --
         * code : text <<unique>>
@@ -172,13 +125,13 @@ package "RBAC (Role-Based Access Control)" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note right of permissions
+    note right of iam_permissions_tbl
     Fine-grained permission codes.
     System-defined constants from bootstrap data.
     No change tracking (not user-editable).
     end note
 
-    entity account_roles <<junction>> #ECECEC {
+    entity iam_account_roles_tbl <<junction>> #ECECEC {
         * account_id : uuid <<PK, FK>>
         * role_id : uuid <<PK, FK>>
         * valid_from : timestamptz <<PK>>
@@ -190,12 +143,12 @@ package "RBAC (Role-Based Access Control)" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note bottom of account_roles
+    note bottom of iam_account_roles_tbl
     Many-to-many: accounts to roles.
     Tracks who assigned the role.
     end note
 
-    entity role_permissions <<junction>> #ECECEC {
+    entity iam_role_permissions_tbl <<junction>> #ECECEC {
         * role_id : uuid <<PK, FK>>
         * permission_id : uuid <<PK, FK>>
         * valid_from : timestamptz <<PK>>
@@ -203,16 +156,16 @@ package "RBAC (Role-Based Access Control)" #FFF3E0 {
         * valid_to : timestamptz
     }
 
-    note bottom of role_permissions
+    note bottom of iam_role_permissions_tbl
     Many-to-many: roles to permissions.
     end note
 }
 
 '
-' ==================== Assets & Reference Data Domain ====================
+' ==================== assets ====================
 '
-package "Assets & Reference Data" #F3E5F5 {
-    entity images <<temporal>> #C6F0D8 {
+package "assets" #F3E5F5 {
+    entity assets_images_tbl <<temporal>> #C6F0D8 {
         * image_id : uuid <<PK>>
         --
         * version : integer
@@ -226,12 +179,12 @@ package "Assets & Reference Data" #F3E5F5 {
         * valid_to : timestamptz
     }
 
-    note right of images
+    note right of assets_images_tbl
     SVG image storage.
     Key provides human-readable lookup.
     end note
 
-    entity tags <<temporal>> #C6F0D8 {
+    entity assets_tags_tbl <<temporal>> #C6F0D8 {
         * tag_id : uuid <<PK>>
         --
         * version : integer
@@ -244,12 +197,12 @@ package "Assets & Reference Data" #F3E5F5 {
         * valid_to : timestamptz
     }
 
-    note right of tags
+    note right of assets_tags_tbl
     Categories for images.
     Examples: flag, currency, commodity.
     end note
 
-    entity image_tags <<junction>> #ECECEC {
+    entity assets_image_tags_tbl <<junction>> #ECECEC {
         * image_id : uuid <<PK, FK>>
         * tag_id : uuid <<PK, FK>>
         * valid_from : timestamptz <<PK>>
@@ -259,11 +212,16 @@ package "Assets & Reference Data" #F3E5F5 {
         * valid_to : timestamptz
     }
 
-    note bottom of image_tags
+    note bottom of assets_image_tags_tbl
     Many-to-many: images to tags.
     end note
+}
 
-    entity currencies <<temporal>> #C6F0D8 {
+'
+' ==================== refdata (Reference Data) ====================
+'
+package "refdata" #FFF3E0 {
+    entity refdata_currencies_tbl <<temporal>> #C6F0D8 {
         * iso_code : text <<PK>>
         --
         * version : integer
@@ -284,13 +242,13 @@ package "Assets & Reference Data" #F3E5F5 {
         * valid_to : timestamptz
     }
 
-    note right of currencies
+    note right of refdata_currencies_tbl
     ISO 4217 currency definitions.
     Includes formatting rules and
     optional flag image reference.
     end note
 
-    entity countries <<temporal>> #C6F0D8 {
+    entity refdata_countries_tbl <<temporal>> #C6F0D8 {
         * alpha2_code : text <<PK>>
         * valid_from : timestamptz <<PK>>
         * valid_to : timestamptz <<PK>>
@@ -306,7 +264,7 @@ package "Assets & Reference Data" #F3E5F5 {
         * change_commentary : text
     }
 
-    note right of countries
+    note right of refdata_countries_tbl
     ISO 3166-1 country definitions.
     Includes alpha-2, alpha-3, and numeric codes.
     Optional flag image reference.
@@ -314,10 +272,10 @@ package "Assets & Reference Data" #F3E5F5 {
 }
 
 '
-' ==================== Variability Domain ====================
+' ==================== variability (Feature Flags) ====================
 '
-package "Variability (Feature Flags)" #E8F5E9 {
-    entity feature_flags <<temporal>> #C6F0D8 {
+package "variability" #E8F5E9 {
+    entity variability_feature_flags_tbl <<temporal>> #C6F0D8 {
         * name : text <<PK>>
         --
         * version : integer
@@ -330,9 +288,315 @@ package "Variability (Feature Flags)" #E8F5E9 {
         * valid_to : timestamptz
     }
 
-    note right of feature_flags
+    note right of variability_feature_flags_tbl
     Feature toggles for runtime configuration.
     Uses name as natural key.
+    end note
+}
+
+'
+' ==================== dq (Data Quality) ====================
+'
+package "dq" #E1F5FE {
+    entity dq_change_reason_categories_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        * description : text
+        * modified_by : text
+        * change_commentary : text
+    }
+
+    note right of dq_change_reason_categories_tbl
+    Groups change reasons into logical categories.
+    Examples: static_data, trade, market_data.
+    Determines which reasons apply to which entity types.
+    end note
+
+    entity dq_change_reasons_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        * description : text
+        * category_code : text <<FK>>
+        * applies_to_amend : boolean
+        * applies_to_delete : boolean
+        * requires_commentary : boolean
+        * display_order : integer
+        * modified_by : text
+        * change_commentary : text
+    }
+
+    note right of dq_change_reasons_tbl
+    Defines reasons for record changes.
+    Namespaced format: "category.reason_name"
+    Examples: system.new, static_data.front_office_error.
+    end note
+
+    entity dq_data_domain_tbl <<temporal>> #C6F0D8 {
+        * name : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        * description : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    note right of dq_data_domain_tbl
+    High-level data classification.
+    Examples: reference_data, market_data, trade_data.
+    end note
+
+    entity dq_subject_area_tbl <<temporal>> #C6F0D8 {
+        * name : text <<PK>>
+        * domain_name : text <<PK, FK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        * description : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    note right of dq_subject_area_tbl
+    Sub-classification within a data domain.
+    Examples: currencies, countries, images.
+    end note
+
+    entity dq_nature_dimension_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    note right of dq_nature_dimension_tbl
+    Describes the nature of data.
+    Examples: raw, cleansed, derived.
+    end note
+
+    entity dq_origin_dimension_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    note right of dq_origin_dimension_tbl
+    Describes the origin of data.
+    Examples: vendor, internal, regulatory.
+    end note
+
+    entity dq_treatment_dimension_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    note right of dq_treatment_dimension_tbl
+    Describes how data should be treated.
+    Examples: golden, provisional, deprecated.
+    end note
+
+    entity dq_methodology_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        * name : text <<unique>>
+        * description : text
+        logic_reference : text
+        implementation_details : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    note right of dq_methodology_tbl
+    Describes transformation/derivation logic.
+    Links to documentation and implementation.
+    end note
+
+    entity dq_dataset_tbl <<temporal>> #C6F0D8 {
+        * id : uuid <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        * subject_area_name : text <<FK>>
+        * domain_name : text <<FK>>
+        * origin_code : text <<FK>>
+        * nature_code : text <<FK>>
+        * treatment_code : text <<FK>>
+        methodology_id : uuid <<FK>>
+        * name : text
+        * description : text
+        * source_system_id : text
+        * business_context : text
+        upstream_derivation_id : uuid <<FK>>
+        * lineage_depth : integer
+        * as_of_date : date
+        * ingestion_timestamp : timestamptz
+        license_info : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    note right of dq_dataset_tbl
+    Central dataset registry with full lineage.
+    Tracks provenance via upstream_derivation_id.
+    lineage_depth auto-calculated from hierarchy.
+    end note
+
+    entity dq_currencies_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * iso_code : text
+        --
+        * version : integer
+        * name : text
+        * numeric_code : text
+        * symbol : text
+        * fraction_symbol : text
+        * fractions_per_unit : integer
+        * rounding_type : text
+        * rounding_precision : integer
+        * format : text
+        * currency_type : text
+        image_id : uuid
+    }
+
+    note bottom of dq_currencies_artefact_tbl
+    Snapshot of currency data for a dataset.
+    Non-temporal - immutable once ingested.
+    end note
+
+    entity dq_countries_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * alpha2_code : text
+        --
+        * version : integer
+        * alpha3_code : text
+        * numeric_code : text
+        * name : text
+        * official_name : text
+        image_id : uuid
+    }
+
+    note bottom of dq_countries_artefact_tbl
+    Snapshot of country data for a dataset.
+    Non-temporal - immutable once ingested.
+    end note
+
+    entity dq_images_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * image_id : uuid
+        --
+        * version : integer
+        * key : text
+        * description : text
+        * svg_data : text
+    }
+
+    note bottom of dq_images_artefact_tbl
+    Snapshot of image data for a dataset.
+    Non-temporal - immutable once ingested.
+    end note
+
+    entity dq_tags_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * tag_id : uuid
+        --
+        * version : integer
+        * name : text
+        * description : text
+    }
+
+    note bottom of dq_tags_artefact_tbl
+    Snapshot of tag data for a dataset.
+    Non-temporal - immutable once ingested.
+    end note
+
+    entity dq_image_tags_artefact_tbl <<junction>> #ECECEC {
+        * dataset_id : uuid <<FK>>
+        * image_id : uuid
+        * tag_id : uuid
+    }
+
+    note bottom of dq_image_tags_artefact_tbl
+    Snapshot of image-tag relationships.
+    Non-temporal - immutable once ingested.
+    end note
+}
+
+'
+' ==================== telemetry ====================
+'
+package "telemetry" #FCE4EC {
+    entity telemetry_logs_tbl #F7E5FF {
+        * id : uuid <<PK>>
+        * timestamp : timestamptz <<PK>>
+        --
+        * source : text
+        * source_name : text
+        session_id : uuid <<FK>>
+        account_id : uuid <<FK>>
+        * level : text
+        component : text
+        * message : text
+        tag : text
+        * recorded_at : timestamptz
+    }
+
+    note right of telemetry_logs_tbl
+    Application log entries.
+    Designed for TimescaleDB hypertable.
+    Partitioned by timestamp.
+    end note
+}
+
+'
+' ==================== geo (Geolocation) ====================
+'
+package "geo" #FFF9C4 {
+    entity geo_ip2country_tbl #F7E5FF {
+        * ip_range : int8range <<PK>>
+        --
+        * country_code : text
+    }
+
+    note right of geo_ip2country_tbl
+    IP range to country code mapping.
+    Uses GiST index for fast lookups.
     end note
 }
 
@@ -340,34 +604,63 @@ package "Variability (Feature Flags)" #E8F5E9 {
 ' ==================== Relationships ====================
 '
 
-' Change Management relationships
-change_reason_categories ||--o{ change_reasons : "contains"
+' dq change management relationships
+dq_change_reason_categories_tbl ||--o{ dq_change_reasons_tbl : "contains"
 
-' IAM relationships
-accounts ||--o| login_info : "has"
-accounts ||--o{ sessions : "creates"
+' iam relationships
+iam_accounts_tbl ||--o| iam_login_info_tbl : "has"
+iam_accounts_tbl ||--o{ iam_sessions_tbl : "creates"
+iam_accounts_tbl ||--o{ iam_account_roles_tbl : "assigned"
+iam_roles_tbl ||--o{ iam_account_roles_tbl : "granted to"
+iam_roles_tbl ||--o{ iam_role_permissions_tbl : "has"
+iam_permissions_tbl ||--o{ iam_role_permissions_tbl : "included in"
 
-' RBAC relationships
-accounts ||--o{ account_roles : "assigned"
-roles ||--o{ account_roles : "granted to"
-roles ||--o{ role_permissions : "has"
-permissions ||--o{ role_permissions : "included in"
+' assets relationships
+assets_images_tbl ||--o{ assets_image_tags_tbl : "tagged with"
+assets_tags_tbl ||--o{ assets_image_tags_tbl : "applied to"
 
-' Assets & Reference Data relationships
-images ||--o{ image_tags : "tagged with"
-tags ||--o{ image_tags : "applied to"
-currencies }o--o| images : "displayed as"
-countries }o--o| images : "displayed as"
+' refdata to assets relationships
+refdata_currencies_tbl }o--o| assets_images_tbl : "displayed as"
+refdata_countries_tbl }o--o| assets_images_tbl : "displayed as"
+
+' dq hierarchy relationships
+dq_data_domain_tbl ||--o{ dq_subject_area_tbl : "contains"
+dq_subject_area_tbl ||--o{ dq_dataset_tbl : "classifies"
+
+' dq dimension relationships
+dq_origin_dimension_tbl ||--o{ dq_dataset_tbl : "describes origin"
+dq_nature_dimension_tbl ||--o{ dq_dataset_tbl : "describes nature"
+dq_treatment_dimension_tbl ||--o{ dq_dataset_tbl : "describes treatment"
+dq_methodology_tbl ||--o{ dq_dataset_tbl : "applied to"
+dq_dataset_tbl ||--o{ dq_dataset_tbl : "derives from"
+
+' dq artefact relationships
+dq_dataset_tbl ||--o{ dq_currencies_artefact_tbl : "contains"
+dq_dataset_tbl ||--o{ dq_countries_artefact_tbl : "contains"
+dq_dataset_tbl ||--o{ dq_images_artefact_tbl : "contains"
+dq_dataset_tbl ||--o{ dq_tags_artefact_tbl : "contains"
+dq_dataset_tbl ||--o{ dq_image_tags_artefact_tbl : "contains"
 
 ' Change tracking relationships (logical - not enforced FKs in all cases)
-change_reasons ||--o{ accounts : "reason for"
-change_reasons ||--o{ roles : "reason for"
-change_reasons ||--o{ currencies : "reason for"
-change_reasons ||--o{ countries : "reason for"
-change_reasons ||--o{ feature_flags : "reason for"
-change_reasons ||--o{ images : "reason for"
-change_reasons ||--o{ tags : "reason for"
-change_reasons ||--o{ account_roles : "reason for"
+dq_change_reasons_tbl ||--o{ iam_accounts_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ iam_roles_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ iam_account_roles_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ assets_images_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ assets_tags_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_currencies_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_countries_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ variability_feature_flags_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_data_domain_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_subject_area_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_nature_dimension_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_origin_dimension_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_treatment_dimension_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_methodology_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_dataset_tbl : "reason for"
+
+' telemetry relationships
+iam_accounts_tbl ||--o{ telemetry_logs_tbl : "generates"
+iam_sessions_tbl ||--o{ telemetry_logs_tbl : "generates"
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores_schema.puml"

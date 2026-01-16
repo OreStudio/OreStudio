@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/LoginDialog.hpp"
+#include "ores.qt/DialogStyles.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ChangePasswordDialog.hpp"
@@ -34,12 +35,6 @@ using namespace ores::logging;
 
 namespace {
 
-const QString panelStyle = R"(
-    QWidget#mainPanel {
-        background-color: #1A1A1A;
-    }
-)";
-
 const QString titleStyle = R"(
     QLabel {
         background: transparent;
@@ -47,137 +42,6 @@ const QString titleStyle = R"(
         font-size: 32px;
         font-weight: bold;
         letter-spacing: 2px;
-    }
-)";
-
-const QString inputFieldStyle = R"(
-    QLineEdit {
-        background-color: #2d2d2d;
-        border: 1px solid #3d3d3d;
-        border-radius: 4px;
-        padding: 8px 12px;
-        font-size: 13px;
-        color: #ffffff;
-    }
-    QLineEdit:focus {
-        border-color: #5a5a5a;
-        background-color: #333333;
-    }
-    QLineEdit::placeholder {
-        color: #707070;
-    }
-)";
-
-const QString spinBoxStyle = R"(
-    QSpinBox {
-        background-color: #2d2d2d;
-        border: 1px solid #3d3d3d;
-        border-radius: 4px;
-        padding: 8px 12px;
-        font-size: 13px;
-        color: #ffffff;
-    }
-    QSpinBox:focus {
-        border-color: #5a5a5a;
-        background-color: #333333;
-    }
-)";
-
-const QString loginButtonStyle = R"(
-    QPushButton {
-        background-color: #3d3d3d;
-        color: #ffffff;
-        border: none;
-        border-radius: 4px;
-        padding: 10px 24px;
-        font-size: 14px;
-        font-weight: bold;
-    }
-    QPushButton:hover {
-        background-color: #4a4a4a;
-    }
-    QPushButton:pressed {
-        background-color: #333333;
-    }
-    QPushButton:disabled {
-        background-color: #2a2a2a;
-        color: #555555;
-    }
-)";
-
-const QString checkboxStyle = R"(
-    QCheckBox {
-        background: transparent;
-        color: #909090;
-        font-size: 12px;
-        spacing: 6px;
-    }
-    QCheckBox::indicator {
-        width: 14px;
-        height: 14px;
-        border: 1px solid #3d3d3d;
-        border-radius: 2px;
-        background-color: #2d2d2d;
-    }
-    QCheckBox::indicator:checked {
-        background-color: #4a4a4a;
-        border-color: #5a5a5a;
-    }
-)";
-
-const QString linkButtonStyle = R"(
-    QPushButton {
-        background: transparent;
-        border: none;
-        color: #909090;
-        font-size: 12px;
-        padding: 0;
-    }
-    QPushButton:hover {
-        color: #ffffff;
-        text-decoration: underline;
-    }
-)";
-
-const QString fieldLabelStyle = R"(
-    QLabel {
-        background: transparent;
-        color: #909090;
-        font-size: 10px;
-        font-weight: bold;
-        letter-spacing: 1px;
-    }
-)";
-
-const QString versionStyle = R"(
-    QLabel {
-        background: transparent;
-        color: #505050;
-        font-size: 9px;
-    }
-)";
-
-const QString statusStyle = R"(
-    QLabel {
-        background: transparent;
-        color: #707070;
-        font-size: 11px;
-        font-style: italic;
-    }
-)";
-
-const QString savedConnectionsButtonStyle = R"(
-    QToolButton {
-        background: transparent;
-        border: none;
-        padding: 2px;
-    }
-    QToolButton:hover {
-        background-color: #2d2d2d;
-        border-radius: 2px;
-    }
-    QToolButton::menu-indicator {
-        image: none;
     }
 )";
 
@@ -273,7 +137,7 @@ void LoginDialog::setupUI() {
     // Main panel
     auto* mainPanel = new QWidget(this);
     mainPanel->setObjectName("mainPanel");
-    mainPanel->setStyleSheet(panelStyle);
+    mainPanel->setStyleSheet(dialog_styles::panel);
     setupRightPanel(mainPanel);
 
     mainLayout->addWidget(mainPanel);
@@ -299,13 +163,13 @@ void LoginDialog::setupRightPanel(QWidget* parent) {
 
     // Username field
     auto* usernameLabel = new QLabel("USERNAME", parent);
-    usernameLabel->setStyleSheet(fieldLabelStyle);
+    usernameLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(usernameLabel);
     layout->addSpacing(4);
 
     usernameEdit_ = new QLineEdit(parent);
     usernameEdit_->setPlaceholderText("Enter your username");
-    usernameEdit_->setStyleSheet(inputFieldStyle);
+    usernameEdit_->setStyleSheet(dialog_styles::input_field);
     usernameEdit_->setFixedHeight(36);
     layout->addWidget(usernameEdit_);
 
@@ -313,14 +177,14 @@ void LoginDialog::setupRightPanel(QWidget* parent) {
 
     // Password field
     auto* passwordLabel = new QLabel("PASSWORD", parent);
-    passwordLabel->setStyleSheet(fieldLabelStyle);
+    passwordLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(passwordLabel);
     layout->addSpacing(4);
 
     passwordEdit_ = new QLineEdit(parent);
     passwordEdit_->setPlaceholderText("Enter your password");
     passwordEdit_->setEchoMode(QLineEdit::Password);
-    passwordEdit_->setStyleSheet(inputFieldStyle);
+    passwordEdit_->setStyleSheet(dialog_styles::input_field);
     passwordEdit_->setFixedHeight(36);
     layout->addWidget(passwordEdit_);
 
@@ -328,12 +192,12 @@ void LoginDialog::setupRightPanel(QWidget* parent) {
     layout->addSpacing(8);
     auto* optionsRow = new QHBoxLayout();
     showPasswordCheck_ = new QCheckBox("Show password", parent);
-    showPasswordCheck_->setStyleSheet(checkboxStyle);
+    showPasswordCheck_->setStyleSheet(dialog_styles::checkbox);
     connect(showPasswordCheck_, &QCheckBox::toggled,
             this, &LoginDialog::onShowPasswordToggled);
 
     rememberMeCheck_ = new QCheckBox("Remember me", parent);
-    rememberMeCheck_->setStyleSheet(checkboxStyle);
+    rememberMeCheck_->setStyleSheet(dialog_styles::checkbox);
 
     optionsRow->addWidget(showPasswordCheck_);
     optionsRow->addStretch();
@@ -347,7 +211,7 @@ void LoginDialog::setupRightPanel(QWidget* parent) {
     serverLabelRow->setSpacing(4);
 
     auto* hostLabel = new QLabel("SERVER", parent);
-    hostLabel->setStyleSheet(fieldLabelStyle);
+    hostLabel->setStyleSheet(dialog_styles::field_label);
     serverLabelRow->addWidget(hostLabel);
 
     // Saved connections button (icon only)
@@ -355,7 +219,7 @@ void LoginDialog::setupRightPanel(QWidget* parent) {
     savedConnectionsButton_->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_server_link_20_filled.svg", QColor("#909090")));
     savedConnectionsButton_->setIconSize(QSize(14, 14));
-    savedConnectionsButton_->setStyleSheet(savedConnectionsButtonStyle);
+    savedConnectionsButton_->setStyleSheet(dialog_styles::saved_connections_button);
     savedConnectionsButton_->setToolTip(tr("Saved connections"));
     savedConnectionsButton_->setCursor(Qt::PointingHandCursor);
     savedConnectionsButton_->setPopupMode(QToolButton::InstantPopup);
@@ -372,21 +236,21 @@ void LoginDialog::setupRightPanel(QWidget* parent) {
     hostEdit_ = new QLineEdit(parent);
     hostEdit_->setPlaceholderText("localhost");
     hostEdit_->setText("localhost");
-    hostEdit_->setStyleSheet(inputFieldStyle);
+    hostEdit_->setStyleSheet(dialog_styles::input_field);
     hostEdit_->setFixedHeight(32);
     layout->addWidget(hostEdit_);
 
     layout->addSpacing(8);
 
     auto* portLabel = new QLabel("PORT", parent);
-    portLabel->setStyleSheet(fieldLabelStyle);
+    portLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(portLabel);
     layout->addSpacing(4);
 
     portSpinBox_ = new QSpinBox(parent);
     portSpinBox_->setRange(1, 65535);
     portSpinBox_->setValue(55555);
-    portSpinBox_->setStyleSheet(spinBoxStyle);
+    portSpinBox_->setStyleSheet(dialog_styles::spin_box);
     portSpinBox_->setFixedHeight(32);
     layout->addWidget(portSpinBox_);
 
@@ -394,7 +258,7 @@ void LoginDialog::setupRightPanel(QWidget* parent) {
 
     // Status label
     statusLabel_ = new QLabel(parent);
-    statusLabel_->setStyleSheet(statusStyle);
+    statusLabel_->setStyleSheet(dialog_styles::status);
     statusLabel_->setAlignment(Qt::AlignCenter);
     layout->addWidget(statusLabel_);
 
@@ -402,7 +266,7 @@ void LoginDialog::setupRightPanel(QWidget* parent) {
 
     // Login button
     loginButton_ = new QPushButton("Login", parent);
-    loginButton_->setStyleSheet(loginButtonStyle);
+    loginButton_->setStyleSheet(dialog_styles::primary_button);
     loginButton_->setFixedHeight(40);
     loginButton_->setCursor(Qt::PointingHandCursor);
     connect(loginButton_, &QPushButton::clicked,
@@ -418,7 +282,7 @@ void LoginDialog::setupRightPanel(QWidget* parent) {
     signUpLabel_->setStyleSheet("QLabel { background: transparent; color: #707070; font-size: 12px; }");
 
     signUpButton_ = new QPushButton("Register", parent);
-    signUpButton_->setStyleSheet(linkButtonStyle);
+    signUpButton_->setStyleSheet(dialog_styles::link_button);
     signUpButton_->setCursor(Qt::PointingHandCursor);
     connect(signUpButton_, &QPushButton::clicked,
             this, &LoginDialog::onSignUpClicked);
@@ -434,13 +298,13 @@ void LoginDialog::setupRightPanel(QWidget* parent) {
         .arg(ORES_VERSION)
         .arg(QString::fromStdString(ORES_BUILD_INFO));
     auto* versionLabel = new QLabel(versionText, parent);
-    versionLabel->setStyleSheet(versionStyle);
+    versionLabel->setStyleSheet(dialog_styles::version);
     layout->addWidget(versionLabel, 0, Qt::AlignCenter);
 
     layout->addSpacing(4);
 
     auto* copyrightLabel = new QLabel(QString::fromUtf8("\u00A9 2025 ORE Studio"), parent);
-    copyrightLabel->setStyleSheet(versionStyle);
+    copyrightLabel->setStyleSheet(dialog_styles::version);
     layout->addWidget(copyrightLabel, 0, Qt::AlignCenter);
 
     layout->addSpacing(8);
@@ -481,7 +345,7 @@ void LoginDialog::onLoginClicked() {
     // Disable form during connection
     enableForm(false);
     statusLabel_->setText("Connecting to server...");
-    statusLabel_->setStyleSheet(statusStyle);
+    statusLabel_->setStyleSheet(dialog_styles::status);
 
     // Perform login asynchronously via ClientManager
     auto* watcher = new QFutureWatcher<LoginResult>(this);

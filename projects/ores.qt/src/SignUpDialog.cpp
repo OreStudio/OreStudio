@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/SignUpDialog.hpp"
+#include "ores.qt/DialogStyles.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.utility/version/version.hpp"
 #include <QHBoxLayout>
@@ -33,12 +34,6 @@ using namespace ores::logging;
 
 namespace {
 
-const QString panelStyle = R"(
-    QWidget#mainPanel {
-        background-color: #1A1A1A;
-    }
-)";
-
 const QString titleStyle = R"(
     QLabel {
         background: transparent;
@@ -46,160 +41,6 @@ const QString titleStyle = R"(
         font-size: 28px;
         font-weight: bold;
         letter-spacing: 2px;
-    }
-)";
-
-const QString subtitleStyle = R"(
-    QLabel {
-        background: transparent;
-        color: #707070;
-        font-size: 12px;
-    }
-)";
-
-const QString inputFieldStyle = R"(
-    QLineEdit {
-        background-color: #2d2d2d;
-        border: 1px solid #3d3d3d;
-        border-radius: 4px;
-        padding: 8px 12px;
-        font-size: 13px;
-        color: #ffffff;
-    }
-    QLineEdit:focus {
-        border-color: #5a5a5a;
-        background-color: #333333;
-    }
-    QLineEdit::placeholder {
-        color: #707070;
-    }
-)";
-
-const QString inputFieldMatchStyle = R"(
-    QLineEdit {
-        background-color: #2d2d2d;
-        border: 2px solid #4CAF50;
-        border-radius: 4px;
-        padding: 8px 12px;
-        font-size: 13px;
-        color: #ffffff;
-    }
-    QLineEdit:focus {
-        border-color: #4CAF50;
-        background-color: #333333;
-    }
-)";
-
-const QString inputFieldMismatchStyle = R"(
-    QLineEdit {
-        background-color: #2d2d2d;
-        border: 2px solid #FF9800;
-        border-radius: 4px;
-        padding: 8px 12px;
-        font-size: 13px;
-        color: #ffffff;
-    }
-    QLineEdit:focus {
-        border-color: #FF9800;
-        background-color: #333333;
-    }
-)";
-
-const QString spinBoxStyle = R"(
-    QSpinBox {
-        background-color: #2d2d2d;
-        border: 1px solid #3d3d3d;
-        border-radius: 4px;
-        padding: 8px 12px;
-        font-size: 13px;
-        color: #ffffff;
-    }
-    QSpinBox:focus {
-        border-color: #5a5a5a;
-        background-color: #333333;
-    }
-)";
-
-const QString signUpButtonStyle = R"(
-    QPushButton {
-        background-color: #3d3d3d;
-        color: #ffffff;
-        border: none;
-        border-radius: 4px;
-        padding: 10px 24px;
-        font-size: 14px;
-        font-weight: bold;
-    }
-    QPushButton:hover {
-        background-color: #4a4a4a;
-    }
-    QPushButton:pressed {
-        background-color: #333333;
-    }
-    QPushButton:disabled {
-        background-color: #2a2a2a;
-        color: #555555;
-    }
-)";
-
-const QString checkboxStyle = R"(
-    QCheckBox {
-        background: transparent;
-        color: #909090;
-        font-size: 12px;
-        spacing: 6px;
-    }
-    QCheckBox::indicator {
-        width: 14px;
-        height: 14px;
-        border: 1px solid #3d3d3d;
-        border-radius: 2px;
-        background-color: #2d2d2d;
-    }
-    QCheckBox::indicator:checked {
-        background-color: #4a4a4a;
-        border-color: #5a5a5a;
-    }
-)";
-
-const QString linkButtonStyle = R"(
-    QPushButton {
-        background: transparent;
-        border: none;
-        color: #909090;
-        font-size: 12px;
-        padding: 0;
-    }
-    QPushButton:hover {
-        color: #ffffff;
-        text-decoration: underline;
-    }
-)";
-
-const QString fieldLabelStyle = R"(
-    QLabel {
-        background: transparent;
-        color: #909090;
-        font-size: 10px;
-        font-weight: bold;
-        letter-spacing: 1px;
-    }
-)";
-
-const QString versionStyle = R"(
-    QLabel {
-        background: transparent;
-        color: #505050;
-        font-size: 9px;
-    }
-)";
-
-const QString statusStyle = R"(
-    QLabel {
-        background: transparent;
-        color: #707070;
-        font-size: 11px;
-        font-style: italic;
     }
 )";
 
@@ -328,7 +169,7 @@ void SignUpDialog::setupUI() {
     // Main panel
     auto* mainPanel = new QWidget(this);
     mainPanel->setObjectName("mainPanel");
-    mainPanel->setStyleSheet(panelStyle);
+    mainPanel->setStyleSheet(dialog_styles::panel);
     setupPanel(mainPanel);
 
     mainLayout->addWidget(mainPanel);
@@ -350,20 +191,20 @@ void SignUpDialog::setupPanel(QWidget* parent) {
 
     // Subtitle
     auto* subtitleLabel = new QLabel("Join ORE Studio", parent);
-    subtitleLabel->setStyleSheet(subtitleStyle);
+    subtitleLabel->setStyleSheet(dialog_styles::subtitle);
     layout->addWidget(subtitleLabel, 0, Qt::AlignCenter);
 
     layout->addSpacing(20);
 
     // Username field
     auto* usernameLabel = new QLabel("USERNAME", parent);
-    usernameLabel->setStyleSheet(fieldLabelStyle);
+    usernameLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(usernameLabel);
     layout->addSpacing(4);
 
     usernameEdit_ = new QLineEdit(parent);
     usernameEdit_->setPlaceholderText("Choose a username");
-    usernameEdit_->setStyleSheet(inputFieldStyle);
+    usernameEdit_->setStyleSheet(dialog_styles::input_field);
     usernameEdit_->setFixedHeight(36);
     layout->addWidget(usernameEdit_);
 
@@ -371,13 +212,13 @@ void SignUpDialog::setupPanel(QWidget* parent) {
 
     // Email field
     auto* emailLabel = new QLabel("EMAIL", parent);
-    emailLabel->setStyleSheet(fieldLabelStyle);
+    emailLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(emailLabel);
     layout->addSpacing(4);
 
     emailEdit_ = new QLineEdit(parent);
     emailEdit_->setPlaceholderText("Enter your email address");
-    emailEdit_->setStyleSheet(inputFieldStyle);
+    emailEdit_->setStyleSheet(dialog_styles::input_field);
     emailEdit_->setFixedHeight(36);
     layout->addWidget(emailEdit_);
 
@@ -385,14 +226,14 @@ void SignUpDialog::setupPanel(QWidget* parent) {
 
     // Password field
     auto* passwordLabel = new QLabel("PASSWORD", parent);
-    passwordLabel->setStyleSheet(fieldLabelStyle);
+    passwordLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(passwordLabel);
     layout->addSpacing(4);
 
     passwordEdit_ = new QLineEdit(parent);
     passwordEdit_->setPlaceholderText("Choose a password (min 12 chars)");
     passwordEdit_->setEchoMode(QLineEdit::Password);
-    passwordEdit_->setStyleSheet(inputFieldStyle);
+    passwordEdit_->setStyleSheet(dialog_styles::input_field);
     passwordEdit_->setFixedHeight(36);
     layout->addWidget(passwordEdit_);
 
@@ -400,14 +241,14 @@ void SignUpDialog::setupPanel(QWidget* parent) {
 
     // Confirm password field
     auto* confirmLabel = new QLabel("CONFIRM PASSWORD", parent);
-    confirmLabel->setStyleSheet(fieldLabelStyle);
+    confirmLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(confirmLabel);
     layout->addSpacing(4);
 
     confirmPasswordEdit_ = new QLineEdit(parent);
     confirmPasswordEdit_->setPlaceholderText("Confirm your password");
     confirmPasswordEdit_->setEchoMode(QLineEdit::Password);
-    confirmPasswordEdit_->setStyleSheet(inputFieldStyle);
+    confirmPasswordEdit_->setStyleSheet(dialog_styles::input_field);
     confirmPasswordEdit_->setFixedHeight(36);
     layout->addWidget(confirmPasswordEdit_);
 
@@ -420,7 +261,7 @@ void SignUpDialog::setupPanel(QWidget* parent) {
     // Show password checkbox
     layout->addSpacing(8);
     showPasswordCheck_ = new QCheckBox("Show passwords", parent);
-    showPasswordCheck_->setStyleSheet(checkboxStyle);
+    showPasswordCheck_->setStyleSheet(dialog_styles::checkbox);
     connect(showPasswordCheck_, &QCheckBox::toggled,
             this, &SignUpDialog::onShowPasswordToggled);
     layout->addWidget(showPasswordCheck_);
@@ -429,28 +270,28 @@ void SignUpDialog::setupPanel(QWidget* parent) {
 
     // Server field
     auto* hostLabel = new QLabel("SERVER", parent);
-    hostLabel->setStyleSheet(fieldLabelStyle);
+    hostLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(hostLabel);
     layout->addSpacing(4);
 
     hostEdit_ = new QLineEdit(parent);
     hostEdit_->setPlaceholderText("localhost");
     hostEdit_->setText("localhost");
-    hostEdit_->setStyleSheet(inputFieldStyle);
+    hostEdit_->setStyleSheet(dialog_styles::input_field);
     hostEdit_->setFixedHeight(32);
     layout->addWidget(hostEdit_);
 
     layout->addSpacing(8);
 
     auto* portLabel = new QLabel("PORT", parent);
-    portLabel->setStyleSheet(fieldLabelStyle);
+    portLabel->setStyleSheet(dialog_styles::field_label);
     layout->addWidget(portLabel);
     layout->addSpacing(4);
 
     portSpinBox_ = new QSpinBox(parent);
     portSpinBox_->setRange(1, 65535);
     portSpinBox_->setValue(55555);
-    portSpinBox_->setStyleSheet(spinBoxStyle);
+    portSpinBox_->setStyleSheet(dialog_styles::spin_box);
     portSpinBox_->setFixedHeight(32);
     layout->addWidget(portSpinBox_);
 
@@ -458,7 +299,7 @@ void SignUpDialog::setupPanel(QWidget* parent) {
 
     // Status label
     statusLabel_ = new QLabel(parent);
-    statusLabel_->setStyleSheet(statusStyle);
+    statusLabel_->setStyleSheet(dialog_styles::status);
     statusLabel_->setAlignment(Qt::AlignCenter);
     layout->addWidget(statusLabel_);
 
@@ -466,7 +307,7 @@ void SignUpDialog::setupPanel(QWidget* parent) {
 
     // Sign up button
     signUpButton_ = new QPushButton("Create Account", parent);
-    signUpButton_->setStyleSheet(signUpButtonStyle);
+    signUpButton_->setStyleSheet(dialog_styles::primary_button);
     signUpButton_->setFixedHeight(40);
     signUpButton_->setCursor(Qt::PointingHandCursor);
     connect(signUpButton_, &QPushButton::clicked,
@@ -482,7 +323,7 @@ void SignUpDialog::setupPanel(QWidget* parent) {
     loginLabel_->setStyleSheet("QLabel { background: transparent; color: #707070; font-size: 12px; }");
 
     loginButton_ = new QPushButton("Log in", parent);
-    loginButton_->setStyleSheet(linkButtonStyle);
+    loginButton_->setStyleSheet(dialog_styles::link_button);
     loginButton_->setCursor(Qt::PointingHandCursor);
     connect(loginButton_, &QPushButton::clicked,
             this, &SignUpDialog::onLoginClicked);
@@ -498,13 +339,13 @@ void SignUpDialog::setupPanel(QWidget* parent) {
         .arg(ORES_VERSION)
         .arg(QString::fromStdString(ORES_BUILD_INFO));
     auto* versionLabel = new QLabel(versionText, parent);
-    versionLabel->setStyleSheet(versionStyle);
+    versionLabel->setStyleSheet(dialog_styles::version);
     layout->addWidget(versionLabel, 0, Qt::AlignCenter);
 
     layout->addSpacing(4);
 
     auto* copyrightLabel = new QLabel(QString::fromUtf8("\u00A9 2025 ORE Studio"), parent);
-    copyrightLabel->setStyleSheet(versionStyle);
+    copyrightLabel->setStyleSheet(dialog_styles::version);
     layout->addWidget(copyrightLabel, 0, Qt::AlignCenter);
 
     layout->addSpacing(8);
@@ -531,7 +372,7 @@ void SignUpDialog::onSignUpClicked() {
     // Disable form during registration
     enableForm(false);
     statusLabel_->setText("Creating account...");
-    statusLabel_->setStyleSheet(statusStyle);
+    statusLabel_->setStyleSheet(dialog_styles::status);
 
     // Perform signup asynchronously via ClientManager
     auto* watcher = new QFutureWatcher<SignupResult>(this);
@@ -642,14 +483,14 @@ void SignUpDialog::updatePasswordMatchIndicator() {
 
     // Only show indicator when confirm field has content
     if (confirmPassword.isEmpty()) {
-        confirmPasswordEdit_->setStyleSheet(inputFieldStyle);
+        confirmPasswordEdit_->setStyleSheet(dialog_styles::input_field);
         return;
     }
 
     if (password == confirmPassword) {
-        confirmPasswordEdit_->setStyleSheet(inputFieldMatchStyle);
+        confirmPasswordEdit_->setStyleSheet(dialog_styles::input_field_match);
     } else {
-        confirmPasswordEdit_->setStyleSheet(inputFieldMismatchStyle);
+        confirmPasswordEdit_->setStyleSheet(dialog_styles::input_field_mismatch);
     }
 }
 

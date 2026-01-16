@@ -21,6 +21,7 @@
 create table if not exists "ores"."dq_dataset_tbl" (
     "id" uuid not null,
     "version" integer not null,
+    "catalog_name" text,
     "subject_area_name" text not null,
     "domain_name" text not null,
     "origin_code" text not null,
@@ -69,6 +70,15 @@ begin
     end if;
 
     -- Validate foreign key references
+    if NEW.catalog_name is not null and not exists (
+        select 1 from ores.dq_catalog_tbl
+        where name = NEW.catalog_name
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid catalog_name: %. Catalog must exist.', NEW.catalog_name
+        using errcode = '23503';
+    end if;
+
     if not exists (
         select 1 from ores.dq_subject_area_tbl
         where name = NEW.subject_area_name

@@ -93,6 +93,7 @@ grant create on schema ores to ores;
 \ir ../schema/geo_ip2country_create.sql
 
 -- Data Quality tables
+\ir ../schema/dq_catalog_create.sql
 \ir ../schema/dq_data_domain_create.sql
 \ir ../schema/dq_subject_area_create.sql
 \ir ../schema/dq_origin_dimension_create.sql

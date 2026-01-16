@@ -337,6 +337,24 @@ package "dq" #E1F5FE {
     Examples: system.new, static_data.front_office_error.
     end note
 
+    entity dq_catalog_tbl <<temporal>> #C6F0D8 {
+        * name : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        * description : text
+        owner : text
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    note right of dq_catalog_tbl
+    Named collection of related datasets.
+    Examples: ISO Standards, Cryptocurrency.
+    end note
+
     entity dq_data_domain_tbl <<temporal>> #C6F0D8 {
         * name : text <<PK>>
         * valid_from : timestamptz <<PK>>
@@ -452,6 +470,7 @@ package "dq" #E1F5FE {
         * valid_to : timestamptz <<PK>>
         --
         * version : integer
+        catalog_name : text <<FK>>
         * subject_area_name : text <<FK>>
         * domain_name : text <<FK>>
         * origin_code : text <<FK>>
@@ -624,6 +643,7 @@ refdata_currencies_tbl }o--o| assets_images_tbl : "displayed as"
 refdata_countries_tbl }o--o| assets_images_tbl : "displayed as"
 
 ' dq hierarchy relationships
+dq_catalog_tbl ||--o{ dq_dataset_tbl : "groups"
 dq_data_domain_tbl ||--o{ dq_subject_area_tbl : "contains"
 dq_subject_area_tbl ||--o{ dq_dataset_tbl : "classifies"
 
@@ -650,6 +670,7 @@ dq_change_reasons_tbl ||--o{ assets_tags_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ refdata_currencies_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ refdata_countries_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ variability_feature_flags_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_catalog_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ dq_data_domain_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ dq_subject_area_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ dq_nature_dimension_tbl : "reason for"

@@ -48,6 +48,11 @@
 \echo '--- Change Control ---'
 \ir dq_change_reasons_populate.sql
 
+-- Data Quality Catalogs
+\echo ''
+\echo '--- Data Quality Catalogs ---'
+\ir dq_catalog_populate.sql
+
 -- Data Quality Data Domains
 \echo ''
 \echo '--- Data Quality Data Domains ---'
@@ -155,6 +160,9 @@ from ores.dq_nature_dimension_tbl where valid_to = ores.utility_infinity_timesta
 union all
 select 'Data Quality Treatment Dimensions', count(*)
 from ores.dq_treatment_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Catalogs', count(*)
+from ores.dq_catalog_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Data Quality Data Domains', count(*)
 from ores.dq_data_domain_tbl where valid_to = ores.utility_infinity_timestamp_fn()

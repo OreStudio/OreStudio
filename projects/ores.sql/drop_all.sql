@@ -30,6 +30,7 @@
 \ir ./drop/dq_origin_dimension_drop.sql
 \ir ./drop/dq_subject_area_drop.sql
 \ir ./drop/dq_data_domain_drop.sql
+\ir ./drop/dq_catalog_drop.sql
 
 -- Assets
 \ir ./drop/assets_image_tags_drop.sql

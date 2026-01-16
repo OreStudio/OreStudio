@@ -301,6 +301,8 @@ $$ language plpgsql;
  * NOTE: For countries, 'upsert' mode behaves like 'insert_only' because
  * if an alpha2_code already exists, we skip it. The first dataset to
  * claim a code wins.
+ *
+ * The coding_scheme_code is copied from the dataset to track data provenance.
  */
 create or replace function ores.dq_populate_countries(
     p_dataset_id uuid,
@@ -315,11 +317,12 @@ declare
     v_skipped bigint := 0;
     v_deleted bigint := 0;
     v_dataset_name text;
+    v_coding_scheme_code text;
     r record;
     v_resolved_image_id uuid;
 begin
-    -- Validate dataset exists
-    select name into v_dataset_name
+    -- Validate dataset exists and get metadata
+    select name, coding_scheme_code into v_dataset_name, v_coding_scheme_code
     from ores.dq_dataset_tbl
     where id = p_dataset_id
       and valid_to = ores.utility_infinity_timestamp_fn();
@@ -376,12 +379,14 @@ begin
             v_resolved_image_id := null;
         end if;
 
-        -- Insert new country
+        -- Insert new country with coding_scheme_code from dataset
         insert into ores.refdata_countries_tbl (
-            alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id,
+            alpha2_code, version, alpha3_code, numeric_code, name, official_name,
+            coding_scheme_code, image_id,
             modified_by, change_reason_code, change_commentary
         ) values (
-            r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name, v_resolved_image_id,
+            r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name,
+            v_coding_scheme_code, v_resolved_image_id,
             'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         );
@@ -463,6 +468,8 @@ $$ language plpgsql;
  * NOTE: For currencies, 'upsert' mode behaves like 'insert_only' because
  * if an iso_code already exists (e.g., fiat 'BAM' vs crypto 'BAM'),
  * we skip it. The first dataset to claim a code wins.
+ *
+ * The coding_scheme_code is copied from the dataset to track data provenance.
  */
 create or replace function ores.dq_populate_currencies(
     p_dataset_id uuid,
@@ -478,11 +485,12 @@ declare
     v_skipped bigint := 0;
     v_deleted bigint := 0;
     v_dataset_name text;
+    v_coding_scheme_code text;
     r record;
     v_resolved_image_id uuid;
 begin
-    -- Validate dataset exists
-    select name into v_dataset_name
+    -- Validate dataset exists and get metadata
+    select name, coding_scheme_code into v_dataset_name, v_coding_scheme_code
     from ores.dq_dataset_tbl
     where id = p_dataset_id
       and valid_to = ores.utility_infinity_timestamp_fn();
@@ -545,14 +553,16 @@ begin
             v_resolved_image_id := null;
         end if;
 
-        -- Insert new currency
+        -- Insert new currency with coding_scheme_code from dataset
         insert into ores.refdata_currencies_tbl (
             iso_code, version, name, numeric_code, symbol, fraction_symbol,
-            fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id,
+            fractions_per_unit, rounding_type, rounding_precision, format, currency_type,
+            coding_scheme_code, image_id,
             modified_by, change_reason_code, change_commentary
         ) values (
             r.iso_code, 0, r.name, r.numeric_code, r.symbol, r.fraction_symbol,
-            r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.currency_type, v_resolved_image_id,
+            r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.currency_type,
+            v_coding_scheme_code, v_resolved_image_id,
             'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         );

@@ -255,27 +255,62 @@ create table if not exists "ores"."{component}_{entity}_tbl" (
 3. *Unique indexes* for current records:
 
 #+begin_src sql
+-- Version uniqueness index (required for optimistic concurrency)
+create unique index if not exists {component}_{entity}_version_uniq_idx
+on "ores"."{component}_{entity}_tbl" ({pk_column}, version)
+where valid_to = ores.utility_infinity_timestamp_fn();
+
+-- Natural key uniqueness index (if applicable)
 create unique index if not exists {component}_{entity}_{column}_uniq_idx
 on "ores"."{component}_{entity}_tbl" ({column})
 where valid_to = ores.utility_infinity_timestamp_fn();
 #+end_src
 
-4. *Insert trigger function* for temporal versioning and validation:
+4. *Insert trigger function* for upsert-by-insert with optimistic concurrency:
+
+The trigger function implements:
+- *Upsert-by-insert*: Inserting a record with the same PK automatically closes
+  the old record and creates a new version
+- *Optimistic concurrency*: Version conflict detection prevents lost updates
+- *Version starts at 1*: First version of a record is version 1
+- *Forced timestamps*: =valid_from= and =valid_to= are always set by the trigger
 
 #+begin_src sql
 create or replace function ores.{component}_{entity}_insert_fn()
 returns trigger as $$
+declare
+    current_version integer;
 begin
-    if NEW.valid_from is null then
-        NEW.valid_from := current_timestamp;
+    select version into current_version
+    from "ores"."{component}_{entity}_tbl"
+    where {pk_column} = NEW.{pk_column}
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if found then
+        -- This is an update (record with same PK exists)
+        if NEW.version != 0 and NEW.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                NEW.version, current_version
+                using errcode = 'P0002';
+        end if;
+        NEW.version = current_version + 1;
+
+        -- Close the old record
+        update "ores"."{component}_{entity}_tbl"
+        set valid_to = current_timestamp
+        where {pk_column} = NEW.{pk_column}
+          and valid_to = ores.utility_infinity_timestamp_fn()
+          and valid_from < current_timestamp;
+    else
+        -- This is a new record
+        NEW.version = 1;
     end if;
 
-    if NEW.valid_to is null then
-        NEW.valid_to := ores.utility_infinity_timestamp_fn();
-    end if;
+    NEW.valid_from = current_timestamp;
+    NEW.valid_to = ores.utility_infinity_timestamp_fn();
 
-    if NEW.version is null then
-        NEW.version := 0;
+    if NEW.modified_by is null or NEW.modified_by = '' then
+        NEW.modified_by = current_user;
     end if;
 
     -- Validate change_reason_code (raises exception if invalid)
@@ -376,6 +411,11 @@ drop function if exists ores.{component}_{entity}_notify_fn();
 
 For reference data, create =projects/ores.sql/populate/{component}_{entity}_populate.sql=:
 
+Note: The insert trigger automatically manages =version=, =valid_from=, and
+=valid_to=. Population scripts should pass =0= for version (which tells the
+trigger to use default behavior) and can omit the temporal columns since the
+trigger will set them.
+
 #+begin_src sql
 set schema 'ores';
 
@@ -393,14 +433,14 @@ begin
     ) then
         insert into ores.{component}_{entity}_tbl (
             id, version, field1, field2,
-            modified_by, change_reason_code, change_commentary,
-            valid_from, valid_to
+            modified_by, change_reason_code, change_commentary
         )
         values (
             gen_random_uuid(), 0, p_field1, p_field2,
-            'system', 'system.new_record', 'System seed data',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
+            'system', 'system.new_record', 'System seed data'
         );
+        -- Note: version will be set to 1 by the trigger (first version)
+        -- valid_from and valid_to are also set by the trigger
         raise notice 'Created {entity}: %', p_field1;
     else
         raise notice '{entity} already exists: %', p_field1;

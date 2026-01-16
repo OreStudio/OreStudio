@@ -67,6 +67,11 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Add a system clock                                                 :code:
+
+At present we are using "now". We should have a ores function for this so that
+we can time travel if required.
+
 *** Implement entity history in shell                                  :code:
 
 We need to add a command in shell to show entity history.

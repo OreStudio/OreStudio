@@ -65,8 +65,10 @@ $$ language plpgsql;
 
 -- Helper function to create a dataset
 create or replace function ores.upsert_dq_dataset(
+    p_catalog_name text,
     p_subject_area_name text,
     p_domain_name text,
+    p_coding_scheme_code text,
     p_origin_code text,
     p_nature_code text,
     p_treatment_code text,
@@ -94,14 +96,16 @@ begin
           and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
         insert into ores.dq_dataset_tbl (
-            id, version, subject_area_name, domain_name, origin_code, nature_code, treatment_code, methodology_id,
+            id, version, catalog_name, subject_area_name, domain_name, coding_scheme_code,
+            origin_code, nature_code, treatment_code, methodology_id,
             name, description, source_system_id, business_context,
             upstream_derivation_id, lineage_depth, as_of_date, ingestion_timestamp, license_info,
             modified_by, change_reason_code, change_commentary,
             valid_from, valid_to
         )
         values (
-            gen_random_uuid(), 0, p_subject_area_name, p_domain_name, p_origin_code, p_nature_code, p_treatment_code, v_methodology_id,
+            gen_random_uuid(), 0, p_catalog_name, p_subject_area_name, p_domain_name, p_coding_scheme_code,
+            p_origin_code, p_nature_code, p_treatment_code, v_methodology_id,
             p_name, p_description, p_source_system_id, p_business_context,
             null, 0, p_as_of_date, current_timestamp, p_license_info,
             'system', 'system.new_record', 'System seed data',
@@ -119,8 +123,10 @@ $$ language plpgsql;
 -- =============================================================================
 
 select ores.upsert_dq_dataset(
+    'ISO Standards',
     'Countries',
     'Reference Data',
+    'ISO_3166_1_ALPHA_2',
     'Source',
     'Actual',
     'Raw',
@@ -134,8 +140,10 @@ select ores.upsert_dq_dataset(
 );
 
 select ores.upsert_dq_dataset(
+    'ISO Standards',
     'Countries',
     'Reference Data',
+    'ISO_3166_1_ALPHA_2',
     'Source',
     'Actual',
     'Raw',
@@ -157,8 +165,10 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_dataset(
+    'Cryptocurrency',
     'Cryptocurrencies',
     'Reference Data',
+    'NONE',
     'Source',
     'Actual',
     'Raw',
@@ -180,8 +190,10 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_dataset(
+    'ISO Standards',
     'Currencies',
     'Reference Data',
+    'ISO_4217',
     'Source',
     'Actual',
     'Raw',
@@ -203,8 +215,10 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_dataset(
+    'Cryptocurrency',
     'Cryptocurrencies',
     'Reference Data',
+    'NONE',
     'Source',
     'Actual',
     'Raw',
@@ -229,7 +243,7 @@ select ores.upsert_dq_tag(
 -- Cleanup
 -- =============================================================================
 
-drop function ores.upsert_dq_dataset(text, text, text, text, text, text, text, text, text, text, date, text);
+drop function ores.upsert_dq_dataset(text, text, text, text, text, text, text, text, text, text, text, text, date, text);
 drop function ores.upsert_dq_tag(text, text, text, text, text);
 
 -- =============================================================================

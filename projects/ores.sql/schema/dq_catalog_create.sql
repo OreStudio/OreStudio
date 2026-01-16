@@ -18,10 +18,23 @@
  *
  */
 
-create table if not exists "ores"."dq_data_domain_tbl" (
+/**
+ * Data Quality Catalog Table
+ *
+ * A catalog is a named collection of related datasets. It provides a
+ * high-level grouping mechanism for datasets that share a common theme,
+ * source, or purpose.
+ *
+ * Examples:
+ * - "ISO Standards" - Contains ISO 3166 countries, ISO 4217 currencies
+ * - "Cryptocurrency" - Contains crypto reference data and icons
+ */
+
+create table if not exists "ores"."dq_catalog_tbl" (
     "name" text not null,
     "version" integer not null,
     "description" text not null,
+    "owner" text,
     "modified_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
@@ -35,25 +48,26 @@ create table if not exists "ores"."dq_data_domain_tbl" (
     check ("valid_from" < "valid_to")
 );
 
-create unique index if not exists dq_data_domain_version_uniq_idx
-on "ores"."dq_data_domain_tbl" (name, version)
+create unique index if not exists dq_catalog_version_uniq_idx
+on "ores"."dq_catalog_tbl" (name, version)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_data_domain_name_uniq_idx
-on "ores"."dq_data_domain_tbl" (name)
+create unique index if not exists dq_catalog_name_uniq_idx
+on "ores"."dq_catalog_tbl" (name)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create or replace function ores.dq_data_domain_insert_fn()
+create or replace function ores.dq_catalog_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "ores"."dq_data_domain_tbl"
+    from "ores"."dq_catalog_tbl"
     where name = NEW.name
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if found then
+        -- This insert is an update. Check version and increment.
         if NEW.version != 0 and NEW.version != current_version then
             raise exception 'Version conflict: expected version %, but current version is %',
                 NEW.version, current_version
@@ -61,12 +75,14 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "ores"."dq_data_domain_tbl"
+        -- Close the old record.
+        update "ores"."dq_catalog_tbl"
         set valid_to = current_timestamp
         where name = NEW.name
           and valid_to = ores.utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
+        -- This is a new record.
         NEW.version = 1;
     end if;
 
@@ -83,13 +99,13 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_data_domain_insert_trg
-before insert on "ores"."dq_data_domain_tbl"
-for each row execute function ores.dq_data_domain_insert_fn();
+create or replace trigger dq_catalog_insert_trg
+before insert on "ores"."dq_catalog_tbl"
+for each row execute function ores.dq_catalog_insert_fn();
 
-create or replace rule dq_data_domain_delete_rule as
-on delete to "ores"."dq_data_domain_tbl" do instead
-    update "ores"."dq_data_domain_tbl"
+create or replace rule dq_catalog_delete_rule as
+on delete to "ores"."dq_catalog_tbl" do instead
+    update "ores"."dq_catalog_tbl"
     set valid_to = current_timestamp
     where name = OLD.name
       and valid_to = ores.utility_infinity_timestamp_fn();

@@ -48,6 +48,11 @@
 \echo '--- Change Control ---'
 \ir dq_change_reasons_populate.sql
 
+-- Data Quality Catalogs
+\echo ''
+\echo '--- Data Quality Catalogs ---'
+\ir dq_catalog_populate.sql
+
 -- Data Quality Data Domains
 \echo ''
 \echo '--- Data Quality Data Domains ---'
@@ -64,6 +69,16 @@
 \echo ''
 \echo '--- Data Quality Subject Areas ---'
 \ir dq_subject_area_populate.sql
+
+-- Data Quality Coding Scheme Authority Types
+\echo ''
+\echo '--- Data Quality Coding Scheme Authority Types ---'
+\ir dq_coding_scheme_authority_type_populate.sql
+
+-- Data Quality Coding Schemes
+\echo ''
+\echo '--- Data Quality Coding Schemes ---'
+\ir dq_coding_scheme_populate.sql
 
 -- Data Quality Methodologies
 \echo ''
@@ -156,11 +171,20 @@ union all
 select 'Data Quality Treatment Dimensions', count(*)
 from ores.dq_treatment_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
+select 'Data Quality Catalogs', count(*)
+from ores.dq_catalog_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
 select 'Data Quality Data Domains', count(*)
 from ores.dq_data_domain_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Data Quality Subject Areas', count(*)
 from ores.dq_subject_area_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'DQ Coding Scheme Authority Types', count(*)
+from ores.dq_coding_scheme_authority_type_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Data Quality Coding Schemes', count(*)
+from ores.dq_coding_scheme_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Data Quality Datasets', count(*)
 from ores.dq_dataset_tbl where valid_to = ores.utility_infinity_timestamp_fn()

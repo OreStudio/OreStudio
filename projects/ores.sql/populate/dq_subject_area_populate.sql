@@ -101,6 +101,18 @@ select ores.upsert_dq_subject_area(
     'Cryptocurrency reference data including icons and metadata.'
 );
 
+select ores.upsert_dq_subject_area(
+    'Reference Data',
+    'Parties',
+    'Party identification schemes and reference data for legal entities and financial institutions.'
+);
+
+select ores.upsert_dq_subject_area(
+    'Reference Data',
+    'General',
+    'Cross-cutting reference data not specific to a particular domain.'
+);
+
 -- =============================================================================
 -- Cleanup
 -- =============================================================================

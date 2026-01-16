@@ -18,39 +18,53 @@
  *
  */
 
-create table if not exists "ores"."dq_data_domain_tbl" (
-    "name" text not null,
+/**
+ * Coding Scheme Authority Type Table
+ *
+ * Classifies coding schemes by the authority or governance level behind them.
+ * This helps distinguish between formal standards, industry conventions, and
+ * proprietary identifiers.
+ *
+ * Values:
+ * - official: Formal standards from recognized standards bodies (ISO, IEEE, etc.)
+ * - industry: De facto standards widely adopted in the market but not formally standardized
+ * - internal: Proprietary or organization-specific identifiers
+ */
+
+create table if not exists "ores"."dq_coding_scheme_authority_type_tbl" (
+    "code" text not null,
     "version" integer not null,
+    "name" text not null,
     "description" text not null,
     "modified_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (name, valid_from, valid_to),
+    primary key (code, valid_from, valid_to),
     exclude using gist (
-        name WITH =,
+        code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to")
 );
 
-create unique index if not exists dq_data_domain_version_uniq_idx
-on "ores"."dq_data_domain_tbl" (name, version)
+create unique index if not exists dq_coding_scheme_authority_type_version_uniq_idx
+on "ores"."dq_coding_scheme_authority_type_tbl" (code, version)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_data_domain_name_uniq_idx
-on "ores"."dq_data_domain_tbl" (name)
+create unique index if not exists dq_coding_scheme_authority_type_code_uniq_idx
+on "ores"."dq_coding_scheme_authority_type_tbl" (code)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create or replace function ores.dq_data_domain_insert_fn()
+create or replace function ores.dq_coding_scheme_authority_type_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "ores"."dq_data_domain_tbl"
-    where name = NEW.name
+    from "ores"."dq_coding_scheme_authority_type_tbl"
+    where code = NEW.code
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if found then
@@ -61,9 +75,9 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "ores"."dq_data_domain_tbl"
+        update "ores"."dq_coding_scheme_authority_type_tbl"
         set valid_to = current_timestamp
-        where name = NEW.name
+        where code = NEW.code
           and valid_to = ores.utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
@@ -83,13 +97,13 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_data_domain_insert_trg
-before insert on "ores"."dq_data_domain_tbl"
-for each row execute function ores.dq_data_domain_insert_fn();
+create or replace trigger dq_coding_scheme_authority_type_insert_trg
+before insert on "ores"."dq_coding_scheme_authority_type_tbl"
+for each row execute function ores.dq_coding_scheme_authority_type_insert_fn();
 
-create or replace rule dq_data_domain_delete_rule as
-on delete to "ores"."dq_data_domain_tbl" do instead
-    update "ores"."dq_data_domain_tbl"
+create or replace rule dq_coding_scheme_authority_type_delete_rule as
+on delete to "ores"."dq_coding_scheme_authority_type_tbl" do instead
+    update "ores"."dq_coding_scheme_authority_type_tbl"
     set valid_to = current_timestamp
-    where name = OLD.name
+    where code = OLD.code
       and valid_to = ores.utility_infinity_timestamp_fn();

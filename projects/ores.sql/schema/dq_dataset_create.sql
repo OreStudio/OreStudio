@@ -21,8 +21,10 @@
 create table if not exists "ores"."dq_dataset_tbl" (
     "id" uuid not null,
     "version" integer not null,
+    "catalog_name" text,
     "subject_area_name" text not null,
     "domain_name" text not null,
+    "coding_scheme_code" text,
     "origin_code" text not null,
     "nature_code" text not null,
     "treatment_code" text not null,
@@ -53,22 +55,25 @@ create unique index if not exists dq_dataset_name_uniq_idx
 on "ores"."dq_dataset_tbl" (name, subject_area_name, domain_name)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
+create unique index if not exists dq_dataset_version_uniq_idx
+on "ores"."dq_dataset_tbl" (id, version)
+where valid_to = ores.utility_infinity_timestamp_fn();
+
 create or replace function ores.dq_dataset_insert_fn()
 returns trigger as $$
+declare
+    current_version integer;
 begin
-    if NEW.valid_from is null then
-        NEW.valid_from := current_timestamp;
-    end if;
-
-    if NEW.valid_to is null then
-        NEW.valid_to := ores.utility_infinity_timestamp_fn();
-    end if;
-
-    if NEW.version is null then
-        NEW.version := 0;
-    end if;
-
     -- Validate foreign key references
+    if NEW.catalog_name is not null and not exists (
+        select 1 from ores.dq_catalog_tbl
+        where name = NEW.catalog_name
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid catalog_name: %. Catalog must exist.', NEW.catalog_name
+        using errcode = '23503';
+    end if;
+
     if not exists (
         select 1 from ores.dq_subject_area_tbl
         where name = NEW.subject_area_name
@@ -76,6 +81,15 @@ begin
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid subject_area_name/domain_name: %/%. Subject area must exist.', NEW.subject_area_name, NEW.domain_name
+        using errcode = '23503';
+    end if;
+
+    if NEW.coding_scheme_code is not null and not exists (
+        select 1 from ores.dq_coding_scheme_tbl
+        where code = NEW.coding_scheme_code
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
         using errcode = '23503';
     end if;
 
@@ -124,6 +138,7 @@ begin
         using errcode = '23503';
     end if;
 
+    -- Calculate lineage_depth
     if NEW.upstream_derivation_id is null then
         NEW.lineage_depth := 0;
     else
@@ -131,6 +146,36 @@ begin
                          where id = NEW.upstream_derivation_id
                          and valid_to = ores.utility_infinity_timestamp_fn()), 0) + 1
         into NEW.lineage_depth;
+    end if;
+
+    -- Version management
+    select version into current_version
+    from "ores"."dq_dataset_tbl"
+    where id = NEW.id
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if found then
+        if NEW.version != 0 and NEW.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                NEW.version, current_version
+                using errcode = 'P0002';
+        end if;
+        NEW.version = current_version + 1;
+
+        update "ores"."dq_dataset_tbl"
+        set valid_to = current_timestamp
+        where id = NEW.id
+          and valid_to = ores.utility_infinity_timestamp_fn()
+          and valid_from < current_timestamp;
+    else
+        NEW.version = 1;
+    end if;
+
+    NEW.valid_from = current_timestamp;
+    NEW.valid_to = ores.utility_infinity_timestamp_fn();
+
+    if NEW.modified_by is null or NEW.modified_by = '' then
+        NEW.modified_by = current_user;
     end if;
 
     NEW.change_reason_code := ores.refdata_validate_change_reason_fn(NEW.change_reason_code);

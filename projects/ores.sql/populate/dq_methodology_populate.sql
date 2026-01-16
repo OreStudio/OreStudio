@@ -195,6 +195,38 @@ Note: The script classifies cryptocurrencies as ''crypto.major'' (top 20 by mark
 or ''crypto.minor'' (all others). Only crypto.major currencies are populated to production.'
 );
 
+select ores.upsert_dq_methodology(
+    'FpML Genericode Download',
+    'Data downloaded from FpML coding scheme repository in Genericode XML format',
+    'http://www.fpml.org/coding-scheme/',
+    'Data Sourcing and Generation Steps:
+
+1. SOURCE DATA DOWNLOAD
+   Repository: http://www.fpml.org/coding-scheme/
+   Format: Genericode XML (OASIS standard for code lists)
+   Download: curl -o <scheme-name>.xml http://www.fpml.org/coding-scheme/<scheme-name>.xml
+   Example: curl -o non-iso-currency-1-1.xml http://www.fpml.org/coding-scheme/non-iso-currency-1-1.xml
+
+2. SAVE TO REPOSITORY
+   Target directory: projects/ores.sql/populate/data/<entity-type>/
+   Example: projects/ores.sql/populate/data/currencies/non-iso-currency-1-1.xml
+   Commit: git add projects/ores.sql/populate/data/<entity-type>/<scheme-name>.xml
+           git commit -m "[data] Add FpML <scheme-name> genericode file"
+
+3. GENERATE SQL POPULATE SCRIPT
+   Script: projects/ores.sql/populate/generate_dq_<entity>_sql.py
+   Command: python3 generate_dq_<entity>_sql.py --source-file <scheme>.xml
+   Output: projects/ores.sql/populate/dq_<entity>_artefact_populate.sql
+
+4. COMMIT GENERATED SQL
+   git add projects/ores.sql/populate/dq_<entity>_artefact_populate.sql
+   git commit -m "[sql] Regenerate <entity> artefact populate script from FpML"
+
+Note: FpML Genericode files follow the OASIS CodeList standard. Each file contains
+Code, Source, and Description columns. The CanonicalVersionUri identifies the specific
+version of the coding scheme.'
+);
+
 -- =============================================================================
 -- Cleanup
 -- =============================================================================

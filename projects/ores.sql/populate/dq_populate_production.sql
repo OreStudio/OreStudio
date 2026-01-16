@@ -42,6 +42,7 @@ declare
     v_crypto_icons_dataset_id uuid;
     v_countries_dataset_id uuid;
     v_currencies_dataset_id uuid;
+    v_fpml_currencies_dataset_id uuid;
     v_cryptocurrencies_dataset_id uuid;
     v_result record;
     v_total_inserted bigint := 0;
@@ -102,6 +103,18 @@ begin
         raise exception 'Dataset not found: ISO 4217 Currencies from Wikipedia';
     end if;
 
+    -- FpML non-ISO currencies dataset
+    select id into v_fpml_currencies_dataset_id
+    from ores.dq_dataset_tbl
+    where name = 'FpML Non-ISO Currencies'
+      and subject_area_name = 'Currencies'
+      and domain_name = 'Reference Data'
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_fpml_currencies_dataset_id is null then
+        raise exception 'Dataset not found: FpML Non-ISO Currencies';
+    end if;
+
     -- Cryptocurrencies dataset
     select id into v_cryptocurrencies_dataset_id
     from ores.dq_dataset_tbl
@@ -153,8 +166,16 @@ begin
     -- ==========================================================================
 
     raise notice '';
-    raise notice '--- Populating Fiat Currencies ---';
+    raise notice '--- Populating Fiat Currencies (ISO 4217) ---';
     for v_result in select * from ores.dq_populate_currencies(v_currencies_dataset_id, 'upsert') loop
+        raise notice '  %: %', v_result.action, v_result.record_count;
+        if v_result.action = 'inserted' then v_total_inserted := v_total_inserted + v_result.record_count; end if;
+        if v_result.action = 'updated' then v_total_updated := v_total_updated + v_result.record_count; end if;
+    end loop;
+
+    raise notice '';
+    raise notice '--- Populating Non-ISO Currencies (FpML) ---';
+    for v_result in select * from ores.dq_populate_currencies(v_fpml_currencies_dataset_id, 'upsert') loop
         raise notice '  %: %', v_result.action, v_result.record_count;
         if v_result.action = 'inserted' then v_total_inserted := v_total_inserted + v_result.record_count; end if;
         if v_result.action = 'updated' then v_total_updated := v_total_updated + v_result.record_count; end if;
@@ -204,6 +225,12 @@ from ores.refdata_currencies_tbl where currency_type = 'commodity' and valid_to 
 union all
 select 'Currencies (supranational)', count(*)
 from ores.refdata_currencies_tbl where currency_type = 'supranational' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (fiat.offshore)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'fiat.offshore' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (fiat.historical)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'fiat.historical' and valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Currencies (crypto.major)', count(*)
 from ores.refdata_currencies_tbl where currency_type = 'crypto.major' and valid_to = ores.utility_infinity_timestamp_fn()

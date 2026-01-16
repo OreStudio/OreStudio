@@ -93,6 +93,7 @@
 \ir dq_crypto_images_artefact_populate.sql
 \ir dq_countries_artefact_populate.sql
 \ir dq_currencies_artefact_populate.sql
+\ir dq_fpml_non_iso_currencies_artefact_populate.sql
 \ir dq_cryptocurrencies_artefact_populate.sql
 
 -- RBAC (Role-Based Access Control)
@@ -140,6 +141,12 @@ from ores.refdata_currencies_tbl where currency_type = 'commodity' and valid_to 
 union all
 select 'Currencies (supranational)', count(*)
 from ores.refdata_currencies_tbl where currency_type = 'supranational' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (fiat.offshore)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'fiat.offshore' and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Currencies (fiat.historical)', count(*)
+from ores.refdata_currencies_tbl where currency_type = 'fiat.historical' and valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Currencies (crypto.major)', count(*)
 from ores.refdata_currencies_tbl where currency_type = 'crypto.major' and valid_to = ores.utility_infinity_timestamp_fn()

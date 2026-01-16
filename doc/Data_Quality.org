@@ -67,6 +67,6 @@ There are six industry-standard dimensions used by [[https://en.wikipedia.org/wi
   document-based) that answers the 5 Ws of data governance.
 - *Quality metrics*: Define and store validation rules and quality measurements.
 - *Change Management*: Maintain history of data changes (who did what, when and
-  for what reason.
+  for what reason).
 - *Data profiling*: Store statistical metadata about data characteristics.
 - [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]]

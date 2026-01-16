@@ -41,6 +41,7 @@
 #include <QStandardPaths>
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
+#include "ores.qt/SignUpDialog.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
 #include "ores.qt/CurrencyController.hpp"
@@ -543,68 +544,8 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::onLoginTriggered() {
-    BOOST_LOG_SEV(lg(), debug) << "Login action triggered";
-
-    // If already connected, ask user to disconnect first
-    if (clientManager_ && clientManager_->isConnected()) {
-        auto result = MessageBoxHelper::question(this,
-            tr("Already Connected"),
-            tr("You are already connected to a server. Disconnect and connect to a new server?"),
-            QMessageBox::Yes | QMessageBox::No);
-
-        if (result != QMessageBox::Yes) {
-            return;
-        }
-
-        performDisconnectCleanup();
-    }
-
-    LoginDialog dialog(clientManager_, connectionManager_.get(), this);
-
-    // Set up unlock callback so user can unlock saved connections from login dialog
-    dialog.setUnlockCallback([this]() -> connections::service::connection_manager* {
-        if (initializeConnectionManager()) {
-            return connectionManager_.get();
-        }
-        return nullptr;
-    });
-
-    const int result = dialog.exec();
-
-    if (result == QDialog::Accepted) {
-        username_ = dialog.getUsername();
-
-        // Update controllers with new username if needed
-        if (currencyController_) {
-            currencyController_->setUsername(QString::fromStdString(username_));
-        }
-        if (countryController_) {
-            countryController_->setUsername(QString::fromStdString(username_));
-        }
-        if (accountController_) {
-            accountController_->setUsername(QString::fromStdString(username_));
-        }
-        if (roleController_) {
-            roleController_->setUsername(QString::fromStdString(username_));
-        }
-        if (featureFlagController_) {
-            featureFlagController_->setUsername(QString::fromStdString(username_));
-        }
-        if (changeReasonCategoryController_) {
-            changeReasonCategoryController_->setUsername(QString::fromStdString(username_));
-        }
-        if (changeReasonController_) {
-            changeReasonController_->setUsername(QString::fromStdString(username_));
-        }
-
-        // Update window title with username and server info
-        updateWindowTitle();
-
-        BOOST_LOG_SEV(lg(), info) << "Successfully connected and authenticated.";
-        ui_->statusbar->showMessage("Successfully connected and logged in.");
-    } else {
-        BOOST_LOG_SEV(lg(), warn) << "Login cancelled by user.";
-    }
+    // Delegate to the modeless login dialog implementation
+    onModernLoginTriggered();
 }
 
 void MainWindow::updateMenuState() {
@@ -1325,47 +1266,214 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& environm
     activeConnectionName_ = connectionName;
 
     // Open login dialog pre-filled with connection details
-    LoginDialog dialog(clientManager_, connectionManager_.get(), this);
-    dialog.setConnectionDetails(
-        QString::fromStdString(env->host),
-        env->port,
-        QString::fromStdString(env->username),
-        QString::fromStdString(password));
-
-    // Auto-submit if all credentials are available (including password)
+    auto* loginDialog = new LoginDialog();
+    loginDialog->setClientManager(clientManager_);
+    loginDialog->setServer(QString::fromStdString(env->host));
+    loginDialog->setPort(env->port);
+    loginDialog->setUsername(QString::fromStdString(env->username));
     if (!password.empty()) {
-        dialog.setAutoSubmit(true);
+        loginDialog->setPassword(QString::fromStdString(password));
     }
 
-    const int result = dialog.exec();
+    auto* subWindow = new DetachableMdiSubWindow(this);
+    subWindow->setWidget(loginDialog);
+    subWindow->setWindowTitle(tr("Login"));
+    subWindow->setAttribute(Qt::WA_DeleteOnClose);
+    subWindow->resize(400, 520);
+    subWindow->setWindowFlags(Qt::FramelessWindowHint);
 
-    if (result == QDialog::Accepted) {
-        username_ = dialog.getUsername();
+    mdiArea_->addSubWindow(subWindow);
+    subWindow->show();
 
-        // Update controllers with new username
-        if (currencyController_)
-            currencyController_->setUsername(QString::fromStdString(username_));
-        if (countryController_)
-            countryController_->setUsername(QString::fromStdString(username_));
-        if (accountController_)
-            accountController_->setUsername(QString::fromStdString(username_));
-        if (roleController_)
-            roleController_->setUsername(QString::fromStdString(username_));
-        if (featureFlagController_)
-            featureFlagController_->setUsername(QString::fromStdString(username_));
-        if (changeReasonCategoryController_)
-            changeReasonCategoryController_->setUsername(QString::fromStdString(username_));
-        if (changeReasonController_)
-            changeReasonController_->setUsername(QString::fromStdString(username_));
+    QPoint center = mdiArea_->viewport()->rect().center();
+    subWindow->move(center.x() - subWindow->width() / 2,
+                    center.y() - subWindow->height() / 2);
 
-        updateWindowTitle();
+    connect(loginDialog, &LoginDialog::closeRequested, subWindow, &QWidget::close);
+
+    connect(loginDialog, &LoginDialog::loginSucceeded,
+            this, [this, connectionName](const QString& username) {
+        onLoginSuccess(username);
         ui_->statusbar->showMessage(tr("Connected to %1").arg(connectionName));
-        BOOST_LOG_SEV(lg(), info) << "Connected via saved connection: "
-                                  << connectionName.toStdString();
-    } else {
-        // Login was cancelled, clear the connection name
+    });
+
+    allDetachableWindows_.append(subWindow);
+    connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
+        allDetachableWindows_.removeOne(subWindow);
         activeConnectionName_.clear();
+    });
+}
+
+void MainWindow::onLoginSuccess(const QString& username) {
+    BOOST_LOG_SEV(lg(), info) << "Login succeeded for user: "
+                               << username.toStdString();
+
+    username_ = username.toStdString();
+
+    // Update controllers with new username
+    if (currencyController_) {
+        currencyController_->setUsername(username);
     }
+    if (countryController_) {
+        countryController_->setUsername(username);
+    }
+    if (accountController_) {
+        accountController_->setUsername(username);
+    }
+    if (roleController_) {
+        roleController_->setUsername(username);
+    }
+    if (featureFlagController_) {
+        featureFlagController_->setUsername(username);
+    }
+    if (changeReasonCategoryController_) {
+        changeReasonCategoryController_->setUsername(username);
+    }
+    if (changeReasonController_) {
+        changeReasonController_->setUsername(username);
+    }
+
+    updateWindowTitle();
+}
+
+void MainWindow::showSignUpDialog(const QString& host, int port) {
+    auto* signupWidget = new SignUpDialog();
+    signupWidget->setClientManager(clientManager_);
+    signupWidget->setServer(host);
+    signupWidget->setPort(port);
+
+    auto* signupWindow = new DetachableMdiSubWindow(this);
+    signupWindow->setWidget(signupWidget);
+    signupWindow->setWindowTitle(tr("Create Account"));
+    signupWindow->setAttribute(Qt::WA_DeleteOnClose);
+    signupWindow->resize(400, 620);
+    signupWindow->setWindowFlags(Qt::FramelessWindowHint);
+
+    mdiArea_->addSubWindow(signupWindow);
+    signupWindow->show();
+
+    QPoint center = mdiArea_->viewport()->rect().center();
+    signupWindow->move(center.x() - signupWindow->width() / 2,
+                      center.y() - signupWindow->height() / 2);
+
+    connect(signupWidget, &SignUpDialog::closeRequested,
+            signupWindow, &QWidget::close);
+
+    // When auto-login after signup succeeds, update application state
+    connect(signupWidget, &SignUpDialog::loginSucceeded,
+            this, [this](const QString& username) {
+        onLoginSuccess(username);
+        ui_->statusbar->showMessage(
+            QString("Account '%1' created and logged in successfully.").arg(username));
+    });
+
+    // When user wants to go back to login
+    connect(signupWidget, &SignUpDialog::loginRequested,
+            this, [this, signupWindow]() {
+        signupWindow->close();
+        onModernLoginTriggered();
+    });
+
+    allDetachableWindows_.append(signupWindow);
+    connect(signupWindow, &QObject::destroyed, this, [this, signupWindow]() {
+        allDetachableWindows_.removeOne(signupWindow);
+    });
+}
+
+void MainWindow::onModernLoginTriggered() {
+    BOOST_LOG_SEV(lg(), debug) << "Modern Login action triggered";
+
+    // If already connected, ask user to disconnect first
+    if (clientManager_ && clientManager_->isConnected()) {
+        auto result = MessageBoxHelper::question(this,
+            tr("Already Connected"),
+            tr("You are already connected to a server. Disconnect and connect to a new server?"),
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (result != QMessageBox::Yes) {
+            return;
+        }
+
+        performDisconnectCleanup();
+    }
+
+    auto* loginWidget = new LoginDialog();
+    loginWidget->setClientManager(clientManager_);
+
+    // Create MDI sub-window
+    auto* subWindow = new DetachableMdiSubWindow(this);
+    subWindow->setWidget(loginWidget);
+    subWindow->setWindowTitle(tr("Login"));
+    subWindow->setAttribute(Qt::WA_DeleteOnClose);
+    subWindow->resize(400, 520);
+
+    // Remove window frame for cleaner look
+    subWindow->setWindowFlags(Qt::FramelessWindowHint);
+
+    mdiArea_->addSubWindow(subWindow);
+    subWindow->show();
+
+    // Center in MDI area
+    QPoint center = mdiArea_->viewport()->rect().center();
+    subWindow->move(center.x() - subWindow->width() / 2,
+                    center.y() - subWindow->height() / 2);
+
+    // Connect close signal
+    connect(loginWidget, &LoginDialog::closeRequested, subWindow, &QWidget::close);
+
+    // Connect login success signal to update application state
+    connect(loginWidget, &LoginDialog::loginSucceeded,
+            this, [this](const QString& username) {
+        onLoginSuccess(username);
+        ui_->statusbar->showMessage("Successfully connected and logged in.");
+    });
+
+    // Connect sign up request to open registration widget
+    connect(loginWidget, &LoginDialog::signUpRequested,
+            this, [this, subWindow, loginWidget]() {
+        const QString host = loginWidget->getServer();
+        const int port = loginWidget->getPort();
+        subWindow->close();
+        showSignUpDialog(host, port);
+    });
+
+    // Populate saved connections if connection manager is available
+    if (initializeConnectionManager() && connectionManager_) {
+        auto environments = connectionManager_->get_all_environments();
+        QStringList connectionNames;
+        for (const auto& env : environments) {
+            connectionNames << QString::fromStdString(env.name);
+        }
+        loginWidget->setSavedConnections(connectionNames);
+
+        // Connect saved connection selection
+        connect(loginWidget, &LoginDialog::savedConnectionSelected,
+                this, [this, loginWidget](const QString& name) {
+            if (!connectionManager_) return;
+
+            auto environments = connectionManager_->get_all_environments();
+            for (const auto& env : environments) {
+                if (QString::fromStdString(env.name) == name) {
+                    loginWidget->setServer(QString::fromStdString(env.host));
+                    loginWidget->setPort(env.port);
+                    loginWidget->setUsername(QString::fromStdString(env.username));
+
+                    // Get the saved password (empty if not saved)
+                    auto password = connectionManager_->get_password(env.id);
+                    if (!password.empty()) {
+                        loginWidget->setPassword(QString::fromStdString(password));
+                    }
+                    break;
+                }
+            }
+        });
+    }
+
+    // Track window
+    allDetachableWindows_.append(subWindow);
+    connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
+        allDetachableWindows_.removeOne(subWindow);
+    });
 }
 
 }

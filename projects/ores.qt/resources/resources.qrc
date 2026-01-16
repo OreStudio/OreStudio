@@ -98,5 +98,6 @@
     <file>images/modern-icon.png</file>
     <file>images/ore-studio-background.png</file>
     <file>images/splash-screen.png</file>
+    <file>images/login_screen.png</file>
   </qresource>
 </RCC>

@@ -513,6 +513,7 @@ package "dq" #E1F5FE {
         catalog_name : text <<FK>>
         * subject_area_name : text <<FK>>
         * domain_name : text <<FK>>
+        coding_scheme_code : text <<FK>>
         * origin_code : text <<FK>>
         * nature_code : text <<FK>>
         * treatment_code : text <<FK>>
@@ -688,6 +689,7 @@ dq_data_domain_tbl ||--o{ dq_subject_area_tbl : "contains"
 dq_subject_area_tbl ||--o{ dq_dataset_tbl : "classifies"
 dq_subject_area_tbl ||--o{ dq_coding_scheme_tbl : "defines"
 dq_coding_scheme_authority_type_tbl ||--o{ dq_coding_scheme_tbl : "classifies"
+dq_coding_scheme_tbl ||--o{ dq_dataset_tbl : "identifies"
 
 ' dq dimension relationships
 dq_origin_dimension_tbl ||--o{ dq_dataset_tbl : "describes origin"

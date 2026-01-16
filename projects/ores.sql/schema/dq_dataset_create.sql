@@ -24,6 +24,7 @@ create table if not exists "ores"."dq_dataset_tbl" (
     "catalog_name" text,
     "subject_area_name" text not null,
     "domain_name" text not null,
+    "coding_scheme_code" text,
     "origin_code" text not null,
     "nature_code" text not null,
     "treatment_code" text not null,
@@ -86,6 +87,15 @@ begin
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid subject_area_name/domain_name: %/%. Subject area must exist.', NEW.subject_area_name, NEW.domain_name
+        using errcode = '23503';
+    end if;
+
+    if NEW.coding_scheme_code is not null and not exists (
+        select 1 from ores.dq_coding_scheme_tbl
+        where code = NEW.coding_scheme_code
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
         using errcode = '23503';
     end if;
 

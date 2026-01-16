@@ -37,21 +37,19 @@ create table if not exists "ores"."dq_subject_area_tbl" (
     check ("valid_from" < "valid_to")
 );
 
+create unique index if not exists dq_subject_area_version_uniq_idx
+on "ores"."dq_subject_area_tbl" (name, domain_name, version)
+where valid_to = ores.utility_infinity_timestamp_fn();
+
+create unique index if not exists dq_subject_area_name_uniq_idx
+on "ores"."dq_subject_area_tbl" (name, domain_name)
+where valid_to = ores.utility_infinity_timestamp_fn();
+
 create or replace function ores.dq_subject_area_insert_fn()
 returns trigger as $$
+declare
+    current_version integer;
 begin
-    if NEW.valid_from is null then
-        NEW.valid_from := current_timestamp;
-    end if;
-
-    if NEW.valid_to is null then
-        NEW.valid_to := ores.utility_infinity_timestamp_fn();
-    end if;
-
-    if NEW.version is null then
-        NEW.version := 0;
-    end if;
-
     -- Validate foreign key reference
     if not exists (
         select 1 from ores.dq_data_domain_tbl
@@ -60,6 +58,37 @@ begin
     ) then
         raise exception 'Invalid domain_name: %. Domain must exist.', NEW.domain_name
         using errcode = '23503';
+    end if;
+
+    select version into current_version
+    from "ores"."dq_subject_area_tbl"
+    where name = NEW.name
+      and domain_name = NEW.domain_name
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if found then
+        if NEW.version != 0 and NEW.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                NEW.version, current_version
+                using errcode = 'P0002';
+        end if;
+        NEW.version = current_version + 1;
+
+        update "ores"."dq_subject_area_tbl"
+        set valid_to = current_timestamp
+        where name = NEW.name
+          and domain_name = NEW.domain_name
+          and valid_to = ores.utility_infinity_timestamp_fn()
+          and valid_from < current_timestamp;
+    else
+        NEW.version = 1;
+    end if;
+
+    NEW.valid_from = current_timestamp;
+    NEW.valid_to = ores.utility_infinity_timestamp_fn();
+
+    if NEW.modified_by is null or NEW.modified_by = '' then
+        NEW.modified_by = current_user;
     end if;
 
     NEW.change_reason_code := ores.refdata_validate_change_reason_fn(NEW.change_reason_code);

@@ -31,6 +31,7 @@ create table if not exists "ores"."refdata_currencies_tbl" (
     "rounding_precision" integer not null,
     "format" text not null,
     "currency_type" text not null,
+    "coding_scheme_code" text,
     "image_id" uuid,
     "modified_by" text not null,
     "change_reason_code" text not null,
@@ -55,6 +56,16 @@ returns trigger as $$
 declare
     current_version integer;
 begin
+    -- Validate foreign key references
+    if NEW.coding_scheme_code is not null and not exists (
+        select 1 from ores.dq_coding_scheme_tbl
+        where code = NEW.coding_scheme_code
+        and valid_to = ores.utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
+        using errcode = '23503';
+    end if;
+
     select version into current_version
     from "ores"."refdata_currencies_tbl"
     where iso_code = new.iso_code

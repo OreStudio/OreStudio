@@ -1293,33 +1293,90 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& environm
 
     connect(loginDialog, &LoginDialog::loginSucceeded,
             this, [this, connectionName](const QString& username) {
-        username_ = username.toStdString();
-
-        if (currencyController_)
-            currencyController_->setUsername(username);
-        if (countryController_)
-            countryController_->setUsername(username);
-        if (accountController_)
-            accountController_->setUsername(username);
-        if (roleController_)
-            roleController_->setUsername(username);
-        if (featureFlagController_)
-            featureFlagController_->setUsername(username);
-        if (changeReasonCategoryController_)
-            changeReasonCategoryController_->setUsername(username);
-        if (changeReasonController_)
-            changeReasonController_->setUsername(username);
-
-        updateWindowTitle();
+        onLoginSuccess(username);
         ui_->statusbar->showMessage(tr("Connected to %1").arg(connectionName));
-        BOOST_LOG_SEV(lg(), info) << "Connected via saved connection: "
-                                  << connectionName.toStdString();
     });
 
     allDetachableWindows_.append(subWindow);
     connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
         allDetachableWindows_.removeOne(subWindow);
         activeConnectionName_.clear();
+    });
+}
+
+void MainWindow::onLoginSuccess(const QString& username) {
+    BOOST_LOG_SEV(lg(), info) << "Login succeeded for user: "
+                               << username.toStdString();
+
+    username_ = username.toStdString();
+
+    // Update controllers with new username
+    if (currencyController_) {
+        currencyController_->setUsername(username);
+    }
+    if (countryController_) {
+        countryController_->setUsername(username);
+    }
+    if (accountController_) {
+        accountController_->setUsername(username);
+    }
+    if (roleController_) {
+        roleController_->setUsername(username);
+    }
+    if (featureFlagController_) {
+        featureFlagController_->setUsername(username);
+    }
+    if (changeReasonCategoryController_) {
+        changeReasonCategoryController_->setUsername(username);
+    }
+    if (changeReasonController_) {
+        changeReasonController_->setUsername(username);
+    }
+
+    updateWindowTitle();
+}
+
+void MainWindow::showSignUpDialog(const QString& host, int port) {
+    auto* signupWidget = new SignUpDialog();
+    signupWidget->setClientManager(clientManager_);
+    signupWidget->setServer(host);
+    signupWidget->setPort(port);
+
+    auto* signupWindow = new DetachableMdiSubWindow(this);
+    signupWindow->setWidget(signupWidget);
+    signupWindow->setWindowTitle(tr("Create Account"));
+    signupWindow->setAttribute(Qt::WA_DeleteOnClose);
+    signupWindow->resize(400, 620);
+    signupWindow->setWindowFlags(Qt::FramelessWindowHint);
+
+    mdiArea_->addSubWindow(signupWindow);
+    signupWindow->show();
+
+    QPoint center = mdiArea_->viewport()->rect().center();
+    signupWindow->move(center.x() - signupWindow->width() / 2,
+                      center.y() - signupWindow->height() / 2);
+
+    connect(signupWidget, &SignUpDialog::closeRequested,
+            signupWindow, &QWidget::close);
+
+    // When auto-login after signup succeeds, update application state
+    connect(signupWidget, &SignUpDialog::loginSucceeded,
+            this, [this](const QString& username) {
+        onLoginSuccess(username);
+        ui_->statusbar->showMessage(
+            QString("Account '%1' created and logged in successfully.").arg(username));
+    });
+
+    // When user wants to go back to login
+    connect(signupWidget, &SignUpDialog::loginRequested,
+            this, [this, signupWindow]() {
+        signupWindow->close();
+        onModernLoginTriggered();
+    });
+
+    allDetachableWindows_.append(signupWindow);
+    connect(signupWindow, &QObject::destroyed, this, [this, signupWindow]() {
+        allDetachableWindows_.removeOne(signupWindow);
     });
 }
 
@@ -1367,120 +1424,17 @@ void MainWindow::onModernLoginTriggered() {
     // Connect login success signal to update application state
     connect(loginWidget, &LoginDialog::loginSucceeded,
             this, [this](const QString& username) {
-        BOOST_LOG_SEV(lg(), info) << "Login succeeded for user: "
-                                   << username.toStdString();
-
-        username_ = username.toStdString();
-
-        // Update controllers with new username
-        if (currencyController_) {
-            currencyController_->setUsername(username);
-        }
-        if (countryController_) {
-            countryController_->setUsername(username);
-        }
-        if (accountController_) {
-            accountController_->setUsername(username);
-        }
-        if (roleController_) {
-            roleController_->setUsername(username);
-        }
-        if (featureFlagController_) {
-            featureFlagController_->setUsername(username);
-        }
-        if (changeReasonCategoryController_) {
-            changeReasonCategoryController_->setUsername(username);
-        }
-        if (changeReasonController_) {
-            changeReasonController_->setUsername(username);
-        }
-
-        // Update window title with username and server info
-        updateWindowTitle();
-
+        onLoginSuccess(username);
         ui_->statusbar->showMessage("Successfully connected and logged in.");
     });
 
     // Connect sign up request to open registration widget
     connect(loginWidget, &LoginDialog::signUpRequested,
             this, [this, subWindow, loginWidget]() {
-        // Get current server info from login widget
         const QString host = loginWidget->getServer();
         const int port = loginWidget->getPort();
-
-        // Close login window
         subWindow->close();
-
-        // Open signup widget
-        auto* signupWidget = new SignUpDialog();
-        signupWidget->setClientManager(clientManager_);
-        signupWidget->setServer(host);
-        signupWidget->setPort(port);
-
-        auto* signupWindow = new DetachableMdiSubWindow(this);
-        signupWindow->setWidget(signupWidget);
-        signupWindow->setWindowTitle(tr("Create Account"));
-        signupWindow->setAttribute(Qt::WA_DeleteOnClose);
-        signupWindow->resize(400, 620);
-        signupWindow->setWindowFlags(Qt::FramelessWindowHint);
-
-        mdiArea_->addSubWindow(signupWindow);
-        signupWindow->show();
-
-        QPoint center = mdiArea_->viewport()->rect().center();
-        signupWindow->move(center.x() - signupWindow->width() / 2,
-                          center.y() - signupWindow->height() / 2);
-
-        connect(signupWidget, &SignUpDialog::closeRequested,
-                signupWindow, &QWidget::close);
-
-        // When auto-login after signup succeeds, update application state
-        connect(signupWidget, &SignUpDialog::loginSucceeded,
-                this, [this](const QString& username) {
-            BOOST_LOG_SEV(lg(), info) << "Auto-login after signup succeeded for user: "
-                                       << username.toStdString();
-
-            username_ = username.toStdString();
-
-            // Update controllers with new username
-            if (currencyController_) {
-                currencyController_->setUsername(username);
-            }
-            if (countryController_) {
-                countryController_->setUsername(username);
-            }
-            if (accountController_) {
-                accountController_->setUsername(username);
-            }
-            if (roleController_) {
-                roleController_->setUsername(username);
-            }
-            if (featureFlagController_) {
-                featureFlagController_->setUsername(username);
-            }
-            if (changeReasonCategoryController_) {
-                changeReasonCategoryController_->setUsername(username);
-            }
-            if (changeReasonController_) {
-                changeReasonController_->setUsername(username);
-            }
-
-            updateWindowTitle();
-            ui_->statusbar->showMessage(
-                QString("Account '%1' created and logged in successfully.").arg(username));
-        });
-
-        // When user wants to go back to login
-        connect(signupWidget, &SignUpDialog::loginRequested,
-                this, [this, signupWindow]() {
-            signupWindow->close();
-            onModernLoginTriggered();
-        });
-
-        allDetachableWindows_.append(signupWindow);
-        connect(signupWindow, &QObject::destroyed, this, [this, signupWindow]() {
-            allDetachableWindows_.removeOne(signupWindow);
-        });
+        showSignUpDialog(host, port);
     });
 
     // Populate saved connections if connection manager is available

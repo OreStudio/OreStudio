@@ -219,7 +219,22 @@ private slots:
 
     void onModernLoginTriggered();
 
+    /**
+     * @brief Handles successful login by updating application state.
+     *
+     * Sets username on all controllers and updates window title.
+     * Called by login dialogs after successful authentication.
+     */
+    void onLoginSuccess(const QString& username);
+
 private:
+    /**
+     * @brief Shows the sign up dialog with pre-filled server info.
+     *
+     * Creates and displays a modeless SignUpDialog in an MDI subwindow.
+     */
+    void showSignUpDialog(const QString& host, int port);
+
     /**
      * @brief Updates menu and toolbar action states based on connection status.
      *

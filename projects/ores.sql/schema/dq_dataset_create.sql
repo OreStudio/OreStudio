@@ -35,7 +35,7 @@ create table if not exists "ores"."dq_dataset_tbl" (
     "business_context" text not null,
     "upstream_derivation_id" uuid,
     "lineage_depth" integer not null,
-    "as_of_date" date not null,
+    "as_of_date" timestamp with time zone not null,
     "ingestion_timestamp" timestamp with time zone not null,
     "license_info" text,
     "modified_by" text not null,

@@ -42,6 +42,7 @@
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
 #include "ores.qt/ModernLoginWidget.hpp"
+#include "ores.qt/ModernSignUpWidget.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
 #include "ores.qt/CurrencyController.hpp"
@@ -1454,6 +1455,59 @@ void MainWindow::onModernLoginTriggered() {
         updateWindowTitle();
 
         ui_->statusbar->showMessage("Successfully connected and logged in.");
+    });
+
+    // Connect sign up request to open registration widget
+    connect(loginWidget, &ModernLoginWidget::signUpRequested,
+            this, [this, subWindow, loginWidget]() {
+        // Get current server info from login widget
+        const QString host = loginWidget->getServer();
+        const int port = loginWidget->getPort();
+
+        // Close login window
+        subWindow->close();
+
+        // Open signup widget
+        auto* signupWidget = new ModernSignUpWidget();
+        signupWidget->setClientManager(clientManager_);
+        signupWidget->setServer(host);
+        signupWidget->setPort(port);
+
+        auto* signupWindow = new DetachableMdiSubWindow(this);
+        signupWindow->setWidget(signupWidget);
+        signupWindow->setWindowTitle(tr("Create Account"));
+        signupWindow->setAttribute(Qt::WA_DeleteOnClose);
+        signupWindow->resize(400, 620);
+        signupWindow->setWindowFlags(Qt::FramelessWindowHint);
+
+        mdiArea_->addSubWindow(signupWindow);
+        signupWindow->show();
+
+        QPoint center = mdiArea_->viewport()->rect().center();
+        signupWindow->move(center.x() - signupWindow->width() / 2,
+                          center.y() - signupWindow->height() / 2);
+
+        connect(signupWidget, &ModernSignUpWidget::closeRequested,
+                signupWindow, &QWidget::close);
+
+        // When signup succeeds, show message and close
+        connect(signupWidget, &ModernSignUpWidget::signupSucceeded,
+                this, [this](const QString& username) {
+            ui_->statusbar->showMessage(
+                QString("Account '%1' created successfully. You can now log in.").arg(username));
+        });
+
+        // When user wants to go back to login
+        connect(signupWidget, &ModernSignUpWidget::loginRequested,
+                this, [this, signupWindow]() {
+            signupWindow->close();
+            onModernLoginTriggered();
+        });
+
+        allDetachableWindows_.append(signupWindow);
+        connect(signupWindow, &QObject::destroyed, this, [this, signupWindow]() {
+            allDetachableWindows_.removeOne(signupWindow);
+        });
     });
 
     // Populate saved connections if connection manager is available

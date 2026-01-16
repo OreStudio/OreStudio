@@ -17,35 +17,32 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_MODERN_LOGIN_WIDGET_HPP
-#define ORES_QT_MODERN_LOGIN_WIDGET_HPP
+#ifndef ORES_QT_MODERN_SIGNUP_WIDGET_HPP
+#define ORES_QT_MODERN_SIGNUP_WIDGET_HPP
 
 #include <QWidget>
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QToolButton>
 #include <QLabel>
 #include <QCheckBox>
-#include <QComboBox>
 #include <QSpinBox>
-#include <QMenu>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
 
 /**
- * @brief Modern login widget with dark theme.
+ * @brief Modern sign up widget with dark theme.
  *
- * Provides a clean login form with username, password, and server fields.
- * Supports saved connections via a dropdown menu.
+ * Provides a clean registration form matching the ModernLoginWidget style.
+ * Includes username, email, password with confirmation, and server fields.
  */
-class ModernLoginWidget : public QWidget {
+class ModernSignUpWidget : public QWidget {
     Q_OBJECT
 
 private:
-    inline static std::string_view logger_name = "ores.qt.modern_login_widget";
+    inline static std::string_view logger_name = "ores.qt.modern_signup_widget";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,15 +51,10 @@ private:
     }
 
 public:
-    explicit ModernLoginWidget(QWidget* parent = nullptr);
-    ~ModernLoginWidget() override;
+    explicit ModernSignUpWidget(QWidget* parent = nullptr);
+    ~ModernSignUpWidget() override;
 
     QSize sizeHint() const override;
-
-    /**
-     * @brief Set the list of saved connection names for the dropdown.
-     */
-    void setSavedConnections(const QStringList& connectionNames);
 
     /**
      * @brief Set the server/host field value.
@@ -75,26 +67,6 @@ public:
     void setPort(int port);
 
     /**
-     * @brief Set the username field value.
-     */
-    void setUsername(const QString& username);
-
-    /**
-     * @brief Set the password field value.
-     */
-    void setPassword(const QString& password);
-
-    /**
-     * @brief Set the client manager for performing login.
-     */
-    void setClientManager(ClientManager* clientManager);
-
-    /**
-     * @brief Get the username that was used for login.
-     */
-    QString getUsername() const;
-
-    /**
      * @brief Get the current server/host field value.
      */
     QString getServer() const;
@@ -104,62 +76,74 @@ public:
      */
     int getPort() const;
 
+    /**
+     * @brief Set the client manager for performing signup.
+     */
+    void setClientManager(ClientManager* clientManager);
+
+    /**
+     * @brief Get the username that was registered.
+     */
+    QString getRegisteredUsername() const;
+
 protected:
     void keyPressEvent(QKeyEvent* event) override;
 
 signals:
     /**
-     * @brief Emitted when login succeeds.
+     * @brief Emitted when signup succeeds.
      */
-    void loginSucceeded(const QString& username);
+    void signupSucceeded(const QString& username);
 
     /**
-     * @brief Emitted when login fails.
+     * @brief Emitted when signup fails.
      */
-    void loginFailed(const QString& errorMessage);
+    void signupFailed(const QString& errorMessage);
 
-    void signUpRequested();
+    /**
+     * @brief Emitted when user wants to go back to login.
+     */
+    void loginRequested();
+
+    /**
+     * @brief Emitted when the widget should be closed.
+     */
     void closeRequested();
 
-    /**
-     * @brief Emitted when user selects a saved connection from the dropdown.
-     */
-    void savedConnectionSelected(const QString& connectionName);
-
 private slots:
-    void onLoginClicked();
     void onSignUpClicked();
-    void onGetStartedClicked();
+    void onLoginClicked();
     void onShowPasswordToggled(bool checked);
-    void onLoginResult(const LoginResult& result);
+    void onSignUpResult(const SignupResult& result);
+    void updatePasswordMatchIndicator();
 
 private:
     void setupUI();
-    void setupLeftPanel(QWidget* parent);
-    void setupRightPanel(QWidget* parent);
+    void setupPanel(QWidget* parent);
     void enableForm(bool enabled);
+    bool validateInput();
 
     // UI elements
-    QLabel* loginTitleLabel_;
+    QLabel* titleLabel_;
     QLineEdit* usernameEdit_;
+    QLineEdit* emailEdit_;
     QLineEdit* passwordEdit_;
+    QLineEdit* confirmPasswordEdit_;
     QCheckBox* showPasswordCheck_;
-    QCheckBox* rememberMeCheck_;
-    QPushButton* loginButton_;
     QPushButton* signUpButton_;
-    QLabel* signUpLabel_;
+    QPushButton* loginButton_;
+    QLabel* loginLabel_;
     QLabel* statusLabel_;
 
     // Server fields
     QLineEdit* hostEdit_;
     QSpinBox* portSpinBox_;
 
-    // Saved connections
-    QToolButton* savedConnectionsButton_;
-    QMenu* savedConnectionsMenu_;
-
     // Dependencies
     ClientManager* clientManager_{nullptr};
+
+    // Result tracking
+    QString registeredUsername_;
 };
 
 }

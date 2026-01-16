@@ -247,6 +247,14 @@ QString ModernLoginWidget::getUsername() const {
     return usernameEdit_->text().trimmed();
 }
 
+QString ModernLoginWidget::getServer() const {
+    return hostEdit_->text().trimmed();
+}
+
+int ModernLoginWidget::getPort() const {
+    return portSpinBox_->value();
+}
+
 void ModernLoginWidget::enableForm(bool enabled) {
     usernameEdit_->setEnabled(enabled);
     passwordEdit_->setEnabled(enabled);

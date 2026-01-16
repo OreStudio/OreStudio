@@ -32,7 +32,7 @@
 #undef MAGIC_ENUM_RANGE_MAX
 #endif
 #define MAGIC_ENUM_RANGE_MIN 0
-#define MAGIC_ENUM_RANGE_MAX 0x6000
+#define MAGIC_ENUM_RANGE_MAX 0x7000
 
 #include <magic_enum/magic_enum.hpp>
 
@@ -176,8 +176,22 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // list_event_channels_request/response (0x0015/0x0016) for querying available
 // event channels that clients can subscribe to. This replaces hardcoded channel
 // lists in clients with server-provided discovery.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 21;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 3;
+//
+// Version 21.4 adds Data Quality (DQ) subsystem messages for managing
+// data organization, datasets, coding schemes, and dimension reference data.
+// New subsystem range: DQ_SUBSYSTEM (0x6000-0x6FFF).
+// New messages: catalog CRUD (0x6000-0x6007), data_domain CRUD (0x6008-0x600F),
+// subject_area CRUD (0x6010-0x6019), dataset CRUD (0x6020-0x6027),
+// methodology CRUD (0x6028-0x602F), coding_scheme CRUD (0x6030-0x6041),
+// dimension CRUD (nature/origin/treatment) (0x6050-0x6067).
+//
+// Version 22.0 moves change_reason and change_reason_category messages from
+// IAM subsystem (0x2050-0x2061) to DQ subsystem (0x6070-0x6081). This is a
+// breaking change as the message type IDs have changed. Change management is
+// now properly located in the Data Quality subsystem alongside other DQ types.
+// The dq_message_handler now handles all DQ messages including change reasons.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 22;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -192,6 +206,8 @@ constexpr std::uint16_t ASSETS_SUBSYSTEM_MIN = 0x4000;
 constexpr std::uint16_t ASSETS_SUBSYSTEM_MAX = 0x4FFF;
 constexpr std::uint16_t TELEMETRY_SUBSYSTEM_MIN = 0x5000;
 constexpr std::uint16_t TELEMETRY_SUBSYSTEM_MAX = 0x5FFF;
+constexpr std::uint16_t DQ_SUBSYSTEM_MIN = 0x6000;
+constexpr std::uint16_t DQ_SUBSYSTEM_MAX = 0x6FFF;
 
 /**
  * @brief Compression algorithm used for payload compression.
@@ -308,26 +324,6 @@ enum class message_type {
     get_active_sessions_request = 0x2044,
     get_active_sessions_response = 0x2045,
 
-    // Change management messages (0x2050 - 0x206F)
-    get_change_reason_categories_request = 0x2050,
-    get_change_reason_categories_response = 0x2051,
-    get_change_reasons_request = 0x2052,
-    get_change_reasons_response = 0x2053,
-    get_change_reasons_by_category_request = 0x2054,
-    get_change_reasons_by_category_response = 0x2055,
-    save_change_reason_request = 0x2056,
-    save_change_reason_response = 0x2057,
-    delete_change_reason_request = 0x2058,
-    delete_change_reason_response = 0x2059,
-    get_change_reason_history_request = 0x205A,
-    get_change_reason_history_response = 0x205B,
-    save_change_reason_category_request = 0x205C,
-    save_change_reason_category_response = 0x205D,
-    delete_change_reason_category_request = 0x205E,
-    delete_change_reason_category_response = 0x205F,
-    get_change_reason_category_history_request = 0x2060,
-    get_change_reason_category_history_response = 0x2061,
-
     // Variability subsystem messages (0x3000 - 0x3FFF)
     get_feature_flags_request = 0x3000,  // Renamed from list_feature_flags in v21.0
     get_feature_flags_response = 0x3001,
@@ -352,6 +348,126 @@ enum class message_type {
     get_telemetry_logs_response = 0x5011,
     get_telemetry_stats_request = 0x5020,
     get_telemetry_stats_response = 0x5021,
+
+    // Data Quality subsystem messages (0x6000 - 0x6FFF)
+    // Data Organization (catalog, data_domain, subject_area) (0x6000 - 0x601F)
+    get_catalogs_request = 0x6000,
+    get_catalogs_response = 0x6001,
+    save_catalog_request = 0x6002,
+    save_catalog_response = 0x6003,
+    delete_catalog_request = 0x6004,
+    delete_catalog_response = 0x6005,
+    get_catalog_history_request = 0x6006,
+    get_catalog_history_response = 0x6007,
+
+    get_data_domains_request = 0x6008,
+    get_data_domains_response = 0x6009,
+    save_data_domain_request = 0x600A,
+    save_data_domain_response = 0x600B,
+    delete_data_domain_request = 0x600C,
+    delete_data_domain_response = 0x600D,
+    get_data_domain_history_request = 0x600E,
+    get_data_domain_history_response = 0x600F,
+
+    get_subject_areas_request = 0x6010,
+    get_subject_areas_response = 0x6011,
+    get_subject_areas_by_domain_request = 0x6012,
+    get_subject_areas_by_domain_response = 0x6013,
+    save_subject_area_request = 0x6014,
+    save_subject_area_response = 0x6015,
+    delete_subject_area_request = 0x6016,
+    delete_subject_area_response = 0x6017,
+    get_subject_area_history_request = 0x6018,
+    get_subject_area_history_response = 0x6019,
+
+    // Dataset and Methodology (0x6020 - 0x602F)
+    get_datasets_request = 0x6020,
+    get_datasets_response = 0x6021,
+    save_dataset_request = 0x6022,
+    save_dataset_response = 0x6023,
+    delete_dataset_request = 0x6024,
+    delete_dataset_response = 0x6025,
+    get_dataset_history_request = 0x6026,
+    get_dataset_history_response = 0x6027,
+
+    get_methodologies_request = 0x6028,
+    get_methodologies_response = 0x6029,
+    save_methodology_request = 0x602A,
+    save_methodology_response = 0x602B,
+    delete_methodology_request = 0x602C,
+    delete_methodology_response = 0x602D,
+    get_methodology_history_request = 0x602E,
+    get_methodology_history_response = 0x602F,
+
+    // Coding Scheme (0x6030 - 0x6047)
+    get_coding_schemes_request = 0x6030,
+    get_coding_schemes_response = 0x6031,
+    get_coding_schemes_by_authority_type_request = 0x6032,
+    get_coding_schemes_by_authority_type_response = 0x6033,
+    save_coding_scheme_request = 0x6034,
+    save_coding_scheme_response = 0x6035,
+    delete_coding_scheme_request = 0x6036,
+    delete_coding_scheme_response = 0x6037,
+    get_coding_scheme_history_request = 0x6038,
+    get_coding_scheme_history_response = 0x6039,
+
+    get_coding_scheme_authority_types_request = 0x603A,
+    get_coding_scheme_authority_types_response = 0x603B,
+    save_coding_scheme_authority_type_request = 0x603C,
+    save_coding_scheme_authority_type_response = 0x603D,
+    delete_coding_scheme_authority_type_request = 0x603E,
+    delete_coding_scheme_authority_type_response = 0x603F,
+    get_coding_scheme_authority_type_history_request = 0x6040,
+    get_coding_scheme_authority_type_history_response = 0x6041,
+
+    // Dimensions (nature, origin, treatment) (0x6050 - 0x606F)
+    get_nature_dimensions_request = 0x6050,
+    get_nature_dimensions_response = 0x6051,
+    save_nature_dimension_request = 0x6052,
+    save_nature_dimension_response = 0x6053,
+    delete_nature_dimension_request = 0x6054,
+    delete_nature_dimension_response = 0x6055,
+    get_nature_dimension_history_request = 0x6056,
+    get_nature_dimension_history_response = 0x6057,
+
+    get_origin_dimensions_request = 0x6058,
+    get_origin_dimensions_response = 0x6059,
+    save_origin_dimension_request = 0x605A,
+    save_origin_dimension_response = 0x605B,
+    delete_origin_dimension_request = 0x605C,
+    delete_origin_dimension_response = 0x605D,
+    get_origin_dimension_history_request = 0x605E,
+    get_origin_dimension_history_response = 0x605F,
+
+    get_treatment_dimensions_request = 0x6060,
+    get_treatment_dimensions_response = 0x6061,
+    save_treatment_dimension_request = 0x6062,
+    save_treatment_dimension_response = 0x6063,
+    delete_treatment_dimension_request = 0x6064,
+    delete_treatment_dimension_response = 0x6065,
+    get_treatment_dimension_history_request = 0x6066,
+    get_treatment_dimension_history_response = 0x6067,
+
+    // Change Management (change_reason, change_reason_category) (0x6070 - 0x6081)
+    // Moved from IAM subsystem (0x2050-0x2061) in v22.0
+    get_change_reason_categories_request = 0x6070,
+    get_change_reason_categories_response = 0x6071,
+    get_change_reasons_request = 0x6072,
+    get_change_reasons_response = 0x6073,
+    get_change_reasons_by_category_request = 0x6074,
+    get_change_reasons_by_category_response = 0x6075,
+    save_change_reason_request = 0x6076,
+    save_change_reason_response = 0x6077,
+    delete_change_reason_request = 0x6078,
+    delete_change_reason_response = 0x6079,
+    get_change_reason_history_request = 0x607A,
+    get_change_reason_history_response = 0x607B,
+    save_change_reason_category_request = 0x607C,
+    save_change_reason_category_response = 0x607D,
+    delete_change_reason_category_request = 0x607E,
+    delete_change_reason_category_response = 0x607F,
+    get_change_reason_category_history_request = 0x6080,
+    get_change_reason_category_history_response = 0x6081,
 
     last_value
 };

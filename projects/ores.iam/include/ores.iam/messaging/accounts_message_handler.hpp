@@ -28,7 +28,6 @@
 #include "ores.iam/service/account_service.hpp"
 #include "ores.iam/service/account_setup_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
-#include "ores.dq/service/change_management_service.hpp"
 #include "ores.iam/repository/session_repository.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
@@ -389,96 +388,6 @@ private:
     handle_get_active_sessions_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
-    // =========================================================================
-    // Change Management Handlers
-    // =========================================================================
-
-    /**
-     * @brief Handle get_change_reason_categories_request message.
-     *
-     * Requires authentication. Returns all change reason categories.
-     */
-    handler_result
-    handle_get_change_reason_categories_request(
-        std::span<const std::byte> payload,
-        const std::string& remote_address);
-
-    /**
-     * @brief Handle get_change_reasons_request message.
-     *
-     * Requires authentication. Returns all change reasons.
-     */
-    handler_result
-    handle_get_change_reasons_request(std::span<const std::byte> payload,
-        const std::string& remote_address);
-
-    /**
-     * @brief Handle get_change_reasons_by_category_request message.
-     *
-     * Requires authentication. Returns change reasons for a category.
-     */
-    handler_result
-    handle_get_change_reasons_by_category_request(
-        std::span<const std::byte> payload,
-        const std::string& remote_address);
-
-    /**
-     * @brief Handle save_change_reason_request message.
-     *
-     * Requires authentication and change_reasons:write permission.
-     */
-    handler_result
-    handle_save_change_reason_request(std::span<const std::byte> payload,
-        const std::string& remote_address);
-
-    /**
-     * @brief Handle delete_change_reason_request message.
-     *
-     * Requires authentication and change_reasons:delete permission.
-     */
-    handler_result
-    handle_delete_change_reason_request(std::span<const std::byte> payload,
-        const std::string& remote_address);
-
-    /**
-     * @brief Handle get_change_reason_history_request message.
-     *
-     * Requires authentication. Returns all versions of a change reason.
-     */
-    handler_result
-    handle_get_change_reason_history_request(std::span<const std::byte> payload,
-        const std::string& remote_address);
-
-    /**
-     * @brief Handle save_change_reason_category_request message.
-     *
-     * Requires authentication and change_reason_categories:write permission.
-     */
-    handler_result
-    handle_save_change_reason_category_request(
-        std::span<const std::byte> payload,
-        const std::string& remote_address);
-
-    /**
-     * @brief Handle delete_change_reason_category_request message.
-     *
-     * Requires authentication and change_reason_categories:delete permission.
-     */
-    handler_result
-    handle_delete_change_reason_category_request(
-        std::span<const std::byte> payload,
-        const std::string& remote_address);
-
-    /**
-     * @brief Handle get_change_reason_category_history_request message.
-     *
-     * Requires authentication. Returns all versions of a category.
-     */
-    handler_result
-    handle_get_change_reason_category_history_request(
-        std::span<const std::byte> payload,
-        const std::string& remote_address);
-
     service::account_service service_;
     database::context ctx_;
     std::shared_ptr<variability::service::system_flags_service> system_flags_;
@@ -487,7 +396,6 @@ private:
     service::account_setup_service setup_service_;
     repository::session_repository session_repo_;
     std::shared_ptr<geo::service::geolocation_service> geo_service_;
-    dq::service::change_management_service change_management_service_;
 };
 
 }

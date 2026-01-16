@@ -61,7 +61,8 @@ target_link_libraries(${lib_target_name}
         ores.telemetry.lib
         ores.database.lib  # Required for telemetry repository compiled here
         ores.utility.lib
-        ores.geo.lib)
+        ores.geo.lib
+        ores.dq.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

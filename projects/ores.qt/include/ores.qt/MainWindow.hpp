@@ -217,6 +217,9 @@ private slots:
     void onConnectionConnectRequested(const boost::uuids::uuid& environmentId,
                                        const QString& connectionName);
 
+    // Temporary - for testing modern login widget
+    void onModernLoginTriggered();
+
 private:
     /**
      * @brief Updates menu and toolbar action states based on connection status.

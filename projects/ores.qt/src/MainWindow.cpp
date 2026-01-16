@@ -41,6 +41,7 @@
 #include <QStandardPaths>
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
+#include "ores.qt/ModernLoginWidget.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
 #include "ores.qt/CurrencyController.hpp"
@@ -174,6 +175,15 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ExitAction, &QAction::triggered, this, &QMainWindow::close);
     connect(ui_->ActionConnectionBrowser, &QAction::triggered, this,
         &MainWindow::onConnectionBrowserTriggered);
+
+    // Temporary: Add modern login button to toolbar for testing
+    auto* modernLoginAction = new QAction("Modern Login", this);
+    modernLoginAction->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_person_20_regular.svg", iconColor));
+    connect(modernLoginAction, &QAction::triggered, this,
+        &MainWindow::onModernLoginTriggered);
+    ui_->toolBar->addSeparator();
+    ui_->toolBar->addAction(modernLoginAction);
 
     // Connect Window menu actions
     connect(ui_->ActionDetachAll, &QAction::triggered, this,
@@ -1366,6 +1376,123 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& environm
         // Login was cancelled, clear the connection name
         activeConnectionName_.clear();
     }
+}
+
+void MainWindow::onModernLoginTriggered() {
+    BOOST_LOG_SEV(lg(), debug) << "Modern Login action triggered";
+
+    // If already connected, ask user to disconnect first
+    if (clientManager_ && clientManager_->isConnected()) {
+        auto result = MessageBoxHelper::question(this,
+            tr("Already Connected"),
+            tr("You are already connected to a server. Disconnect and connect to a new server?"),
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (result != QMessageBox::Yes) {
+            return;
+        }
+
+        performDisconnectCleanup();
+    }
+
+    auto* loginWidget = new ModernLoginWidget();
+    loginWidget->setClientManager(clientManager_);
+
+    // Create MDI sub-window
+    auto* subWindow = new DetachableMdiSubWindow(this);
+    subWindow->setWidget(loginWidget);
+    subWindow->setWindowTitle(tr("Login"));
+    subWindow->setAttribute(Qt::WA_DeleteOnClose);
+    subWindow->resize(400, 520);
+
+    // Remove window frame for cleaner look
+    subWindow->setWindowFlags(Qt::FramelessWindowHint);
+
+    mdiArea_->addSubWindow(subWindow);
+    subWindow->show();
+
+    // Center in MDI area
+    QPoint center = mdiArea_->viewport()->rect().center();
+    subWindow->move(center.x() - subWindow->width() / 2,
+                    center.y() - subWindow->height() / 2);
+
+    // Connect close signal
+    connect(loginWidget, &ModernLoginWidget::closeRequested, subWindow, &QWidget::close);
+
+    // Connect login success signal to update application state
+    connect(loginWidget, &ModernLoginWidget::loginSucceeded,
+            this, [this](const QString& username) {
+        BOOST_LOG_SEV(lg(), info) << "Login succeeded for user: "
+                                   << username.toStdString();
+
+        username_ = username.toStdString();
+
+        // Update controllers with new username
+        if (currencyController_) {
+            currencyController_->setUsername(username);
+        }
+        if (countryController_) {
+            countryController_->setUsername(username);
+        }
+        if (accountController_) {
+            accountController_->setUsername(username);
+        }
+        if (roleController_) {
+            roleController_->setUsername(username);
+        }
+        if (featureFlagController_) {
+            featureFlagController_->setUsername(username);
+        }
+        if (changeReasonCategoryController_) {
+            changeReasonCategoryController_->setUsername(username);
+        }
+        if (changeReasonController_) {
+            changeReasonController_->setUsername(username);
+        }
+
+        // Update window title with username and server info
+        updateWindowTitle();
+
+        ui_->statusbar->showMessage("Successfully connected and logged in.");
+    });
+
+    // Populate saved connections if connection manager is available
+    if (initializeConnectionManager() && connectionManager_) {
+        auto environments = connectionManager_->get_all_environments();
+        QStringList connectionNames;
+        for (const auto& env : environments) {
+            connectionNames << QString::fromStdString(env.name);
+        }
+        loginWidget->setSavedConnections(connectionNames);
+
+        // Connect saved connection selection
+        connect(loginWidget, &ModernLoginWidget::savedConnectionSelected,
+                this, [this, loginWidget](const QString& name) {
+            if (!connectionManager_) return;
+
+            auto environments = connectionManager_->get_all_environments();
+            for (const auto& env : environments) {
+                if (QString::fromStdString(env.name) == name) {
+                    loginWidget->setServer(QString::fromStdString(env.host));
+                    loginWidget->setPort(env.port);
+                    loginWidget->setUsername(QString::fromStdString(env.username));
+
+                    // Get the saved password (empty if not saved)
+                    auto password = connectionManager_->get_password(env.id);
+                    if (!password.empty()) {
+                        loginWidget->setPassword(QString::fromStdString(password));
+                    }
+                    break;
+                }
+            }
+        });
+    }
+
+    // Track window
+    allDetachableWindows_.append(subWindow);
+    connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
+        allDetachableWindows_.removeOne(subWindow);
+    });
 }
 
 }

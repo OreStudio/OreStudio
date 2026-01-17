@@ -26,7 +26,7 @@ namespace ores::dq::service {
 using namespace ores::logging;
 
 coding_scheme_service::coding_scheme_service(context ctx)
-    : coding_scheme_repo_(ctx) {}
+    : coding_scheme_repo_(ctx), authority_type_repo_(ctx) {}
 
 // ============================================================================
 // Coding Scheme Management
@@ -112,6 +112,83 @@ std::vector<domain::coding_scheme>
 coding_scheme_service::get_coding_scheme_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for coding scheme: " << code;
     return coding_scheme_repo_.read_all(code);
+}
+
+// ============================================================================
+// Coding Scheme Authority Type Management
+// ============================================================================
+
+std::vector<domain::coding_scheme_authority_type>
+coding_scheme_service::list_authority_types() {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all coding scheme authority types";
+    return authority_type_repo_.read_latest();
+}
+
+std::optional<domain::coding_scheme_authority_type>
+coding_scheme_service::find_authority_type(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding coding scheme authority type: " << code;
+    auto types = authority_type_repo_.read_latest(code);
+    if (types.empty()) {
+        return std::nullopt;
+    }
+    return types.front();
+}
+
+domain::coding_scheme_authority_type
+coding_scheme_service::create_authority_type(
+    const domain::coding_scheme_authority_type& authority_type) {
+    BOOST_LOG_SEV(lg(), debug) << "Creating coding scheme authority type: "
+                               << authority_type.code;
+
+    if (authority_type.code.empty()) {
+        throw std::invalid_argument(
+            "Coding scheme authority type code cannot be empty");
+    }
+
+    auto existing = find_authority_type(authority_type.code);
+    if (existing) {
+        throw std::runtime_error(
+            "Coding scheme authority type already exists: " + authority_type.code);
+    }
+
+    authority_type_repo_.write(authority_type);
+    BOOST_LOG_SEV(lg(), info) << "Created coding scheme authority type: "
+                              << authority_type.code;
+
+    auto created = find_authority_type(authority_type.code);
+    if (!created) {
+        throw std::runtime_error(
+            "Failed to retrieve created coding scheme authority type");
+    }
+    return *created;
+}
+
+void coding_scheme_service::update_authority_type(
+    const domain::coding_scheme_authority_type& authority_type) {
+    BOOST_LOG_SEV(lg(), debug) << "Updating coding scheme authority type: "
+                               << authority_type.code;
+
+    if (authority_type.code.empty()) {
+        throw std::invalid_argument(
+            "Coding scheme authority type code cannot be empty");
+    }
+
+    authority_type_repo_.write(authority_type);
+    BOOST_LOG_SEV(lg(), info) << "Updated coding scheme authority type: "
+                              << authority_type.code;
+}
+
+void coding_scheme_service::remove_authority_type(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing coding scheme authority type: " << code;
+    authority_type_repo_.remove(code);
+    BOOST_LOG_SEV(lg(), info) << "Removed coding scheme authority type: " << code;
+}
+
+std::vector<domain::coding_scheme_authority_type>
+coding_scheme_service::get_authority_type_history(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for coding scheme authority type: "
+                               << code;
+    return authority_type_repo_.read_all(code);
 }
 
 }

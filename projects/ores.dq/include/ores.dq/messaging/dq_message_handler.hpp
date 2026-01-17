@@ -191,6 +191,26 @@ private:
         const std::string& remote_address);
 
     // =========================================================================
+    // Data Domain Handlers
+    // =========================================================================
+
+    handler_result
+    handle_get_data_domains_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_save_data_domain_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_delete_data_domain_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_data_domain_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // =========================================================================
     // Subject Area Handlers
     // =========================================================================
 
@@ -277,6 +297,30 @@ private:
 
     handler_result
     handle_get_coding_scheme_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // =========================================================================
+    // Coding Scheme Authority Type Handlers
+    // =========================================================================
+
+    handler_result
+    handle_get_coding_scheme_authority_types_request(
+        std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_save_coding_scheme_authority_type_request(
+        std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_delete_coding_scheme_authority_type_request(
+        std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_coding_scheme_authority_type_history_request(
+        std::span<const std::byte> payload,
         const std::string& remote_address);
 
     // =========================================================================

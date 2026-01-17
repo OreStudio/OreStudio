@@ -477,10 +477,16 @@ enum class message_type {
  *
  * Uses magic_enum to provide human-readable enum names with hex values in logs.
  * Example: "get_currencies_request (0x1001)" instead of just "0x1001"
+ * If magic_enum cannot resolve the name, shows "[unknown]" prefix.
  */
 inline std::ostream& operator<<(std::ostream& os, message_type mt) {
-    return os << magic_enum::enum_name(mt)
-              << " (0x" << std::hex << static_cast<std::uint16_t>(mt) << std::dec << ")";
+    auto name = magic_enum::enum_name(mt);
+    if (name.empty()) {
+        os << "[unknown]";
+    } else {
+        os << name;
+    }
+    return os << " (0x" << std::hex << static_cast<std::uint16_t>(mt) << std::dec << ")";
 }
 
 /**

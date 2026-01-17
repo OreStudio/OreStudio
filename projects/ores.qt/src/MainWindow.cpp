@@ -51,6 +51,11 @@
 #include "ores.qt/FeatureFlagController.hpp"
 #include "ores.qt/ChangeReasonCategoryController.hpp"
 #include "ores.qt/ChangeReasonController.hpp"
+#include "ores.qt/OriginDimensionController.hpp"
+#include "ores.qt/NatureDimensionController.hpp"
+#include "ores.qt/TreatmentDimensionController.hpp"
+#include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
+#include "ores.qt/DataDomainController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -135,6 +140,16 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
     ui_->ActionChangeReasons->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_note_edit_20_regular.svg", iconColor));
+    ui_->ActionOriginDimensions->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+    ui_->ActionNatureDimensions->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+    ui_->ActionTreatmentDimensions->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+    ui_->ActionCodingSchemeAuthorityTypes->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
+    ui_->ActionDataDomains->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_folder_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(
@@ -372,6 +387,36 @@ MainWindow::MainWindow(QWidget* parent) :
             changeReasonController_->showListWindow();
     });
 
+    // Connect Origin Dimensions action to controller
+    connect(ui_->ActionOriginDimensions, &QAction::triggered, this, [this]() {
+        if (originDimensionController_)
+            originDimensionController_->showListWindow();
+    });
+
+    // Connect Nature Dimensions action to controller
+    connect(ui_->ActionNatureDimensions, &QAction::triggered, this, [this]() {
+        if (natureDimensionController_)
+            natureDimensionController_->showListWindow();
+    });
+
+    // Connect Treatment Dimensions action to controller
+    connect(ui_->ActionTreatmentDimensions, &QAction::triggered, this, [this]() {
+        if (treatmentDimensionController_)
+            treatmentDimensionController_->showListWindow();
+    });
+
+    // Connect Coding Scheme Authority Types action to controller
+    connect(ui_->ActionCodingSchemeAuthorityTypes, &QAction::triggered, this, [this]() {
+        if (codingSchemeAuthorityTypeController_)
+            codingSchemeAuthorityTypeController_->showListWindow();
+    });
+
+    // Connect Data Domains action to controller
+    connect(ui_->ActionDataDomains, &QAction::triggered, this, [this]() {
+        if (dataDomainController_)
+            dataDomainController_->showListWindow();
+    });
+
     // Initially disable data-related actions until logged in
     updateMenuState();
 
@@ -562,10 +607,18 @@ void MainWindow::updateMenuState() {
     // System menu enabled when connected - permission checks happen server-side via RBAC
     ui_->menuSystem->menuAction()->setEnabled(isConnected);
     ui_->ActionAccounts->setEnabled(isConnected);
+
+    // Data Quality menu enabled when connected
+    ui_->menuDataQuality->menuAction()->setEnabled(isConnected);
     ui_->ActionRoles->setEnabled(isConnected);
     ui_->ActionFeatureFlags->setEnabled(isConnected);
     ui_->ActionChangeReasonCategories->setEnabled(isConnected);
     ui_->ActionChangeReasons->setEnabled(isConnected);
+    ui_->ActionOriginDimensions->setEnabled(isConnected);
+    ui_->ActionNatureDimensions->setEnabled(isConnected);
+    ui_->ActionTreatmentDimensions->setEnabled(isConnected);
+    ui_->ActionCodingSchemeAuthorityTypes->setEnabled(isConnected);
+    ui_->ActionDataDomains->setEnabled(isConnected);
 
     // My Account and My Sessions menu items are enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
@@ -695,6 +748,81 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
     connect(changeReasonController_.get(), &ChangeReasonController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create origin dimension controller
+    originDimensionController_ = std::make_unique<OriginDimensionController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect origin dimension controller signals to status bar
+    connect(originDimensionController_.get(), &OriginDimensionController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(originDimensionController_.get(), &OriginDimensionController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create nature dimension controller
+    natureDimensionController_ = std::make_unique<NatureDimensionController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect nature dimension controller signals to status bar
+    connect(natureDimensionController_.get(), &NatureDimensionController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(natureDimensionController_.get(), &NatureDimensionController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create treatment dimension controller
+    treatmentDimensionController_ = std::make_unique<TreatmentDimensionController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect treatment dimension controller signals to status bar
+    connect(treatmentDimensionController_.get(), &TreatmentDimensionController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(treatmentDimensionController_.get(), &TreatmentDimensionController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create coding scheme authority type controller
+    codingSchemeAuthorityTypeController_ = std::make_unique<CodingSchemeAuthorityTypeController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect coding scheme authority type controller signals to status bar
+    connect(codingSchemeAuthorityTypeController_.get(), &CodingSchemeAuthorityTypeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(codingSchemeAuthorityTypeController_.get(), &CodingSchemeAuthorityTypeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create data domain controller
+    dataDomainController_ = std::make_unique<DataDomainController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect data domain controller signals to status bar
+    connect(dataDomainController_.get(), &DataDomainController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(dataDomainController_.get(), &DataDomainController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
@@ -1331,6 +1459,21 @@ void MainWindow::onLoginSuccess(const QString& username) {
     }
     if (changeReasonController_) {
         changeReasonController_->setUsername(username);
+    }
+    if (originDimensionController_) {
+        originDimensionController_->setUsername(username);
+    }
+    if (natureDimensionController_) {
+        natureDimensionController_->setUsername(username);
+    }
+    if (treatmentDimensionController_) {
+        treatmentDimensionController_->setUsername(username);
+    }
+    if (codingSchemeAuthorityTypeController_) {
+        codingSchemeAuthorityTypeController_->setUsername(username);
+    }
+    if (dataDomainController_) {
+        dataDomainController_->setUsername(username);
     }
 
     updateWindowTitle();

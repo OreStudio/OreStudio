@@ -57,6 +57,11 @@ class RoleController;
 class FeatureFlagController;
 class ChangeReasonCategoryController;
 class ChangeReasonController;
+class OriginDimensionController;
+class NatureDimensionController;
+class TreatmentDimensionController;
+class CodingSchemeAuthorityTypeController;
+class DataDomainController;
 class ImageCache;
 class ChangeReasonCache;
 
@@ -355,6 +360,46 @@ private:
      * Only accessible to admin users.
      */
     std::unique_ptr<ChangeReasonController> changeReasonController_;
+
+    /**
+     * @brief Controller managing origin dimension windows.
+     *
+     * Created after successful login, handles origin dimension list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<OriginDimensionController> originDimensionController_;
+
+    /**
+     * @brief Controller managing nature dimension windows.
+     *
+     * Created after successful login, handles nature dimension list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<NatureDimensionController> natureDimensionController_;
+
+    /**
+     * @brief Controller managing treatment dimension windows.
+     *
+     * Created after successful login, handles treatment dimension list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<TreatmentDimensionController> treatmentDimensionController_;
+
+    /**
+     * @brief Controller managing coding scheme authority type windows.
+     *
+     * Created after successful login, handles authority type list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<CodingSchemeAuthorityTypeController> codingSchemeAuthorityTypeController_;
+
+    /**
+     * @brief Controller managing data domain windows.
+     *
+     * Created after successful login, handles data domain list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<DataDomainController> dataDomainController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

@@ -153,7 +153,7 @@ public:
 
 signals:
     void dataLoaded();
-    void loadError(const QString& error_message);
+    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onDataLoaded();
@@ -163,6 +163,8 @@ private:
         bool success;
         std::vector<<component>::domain::<entity>> entries;
         std::uint64_t total_count;
+        QString error_message;
+        QString error_details;
     };
 
     void fetch_data();
@@ -188,8 +190,67 @@ The implementation should:
 
 1. Use =QtConcurrent::run= for async data fetching.
 2. Use =QPointer<Client<Entity>Model>= in lambdas for safety.
-3. Use =beginResetModel()= / =endResetModel()= when replacing data.
-4. Log operations at appropriate levels (debug for start, info for success, error for failures).
+3. Use =exception_helper::wrap_async_fetch= to catch exceptions inside the lambda (before Qt can wrap them in =QUnhandledException=).
+4. Use =beginResetModel()= / =endResetModel()= when replacing data.
+5. Log operations at appropriate levels (debug for start, info for success, error for failures).
+
+**** Async fetch pattern with exception handling
+
+#+begin_src cpp
+#include "ores.qt/ExceptionHelper.hpp"
+
+void Client<Entity>Model::fetch_data() {
+    QPointer<Client<Entity>Model> self = this;
+
+    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+            if (!self || !self->clientManager_) {
+                return {.success = false, .entries = {}, .total_count = 0,
+                        .error_message = "Model was destroyed",
+                        .error_details = {}};
+            }
+
+            // Build and send request...
+            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+            if (!response_result) {
+                return {.success = false, .entries = {}, .total_count = 0,
+                        .error_message = "Failed to send request",
+                        .error_details = {}};
+            }
+
+            // Deserialize response...
+            return {.success = true,
+                    .entries = std::move(response->entries),
+                    .total_count = response->total_count,
+                    .error_message = {}, .error_details = {}};
+        }, "<entity>s");  // Entity name for error messages
+    });
+
+    watcher_->setFuture(future);
+}
+
+void Client<Entity>Model::onDataLoaded() {
+    is_fetching_ = false;
+
+    const auto result = watcher_->result();
+
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch <entity>s: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
+        return;
+    }
+
+    beginResetModel();
+    entries_ = std::move(result.entries);
+    total_available_count_ = result.total_count;
+    endResetModel();
+
+    emit dataLoaded();
+}
+#+end_src
+
+The =wrap_async_fetch= template catches any =std::exception= thrown inside the lambda and populates the =error_message= and =error_details= fields with full =boost::diagnostic_information=. This preserves exception details that would otherwise be lost when Qt wraps exceptions in =QUnhandledException=.
 
 *** Commit message
 
@@ -275,7 +336,7 @@ public slots:
 
 private slots:
     void onDataLoaded();
-    void onLoadError(const QString& error);
+    void onLoadError(const QString& error_message, const QString& details = {});
     void onSelectionChanged();
     void onRowDoubleClicked(const QModelIndex& index);
     void onConnectionStateChanged();
@@ -644,10 +705,13 @@ void <Entity>DetailDialog::onFieldChanged() {
 **** Async save pattern
 
 #+begin_src cpp
+#include "ores.qt/ExceptionHelper.hpp"
+
 // Define a result struct for the async operation
 struct SaveResult {
     bool success;
-    std::string message;
+    QString error_message;
+    QString error_details;
 };
 
 void <Entity>DetailDialog::onSaveClicked() {
@@ -660,18 +724,31 @@ void <Entity>DetailDialog::onSaveClicked() {
 
     QPointer<<Entity>DetailDialog> self = this;
     QFuture<SaveResult> future = QtConcurrent::run([self, entity]() -> SaveResult {
-        if (!self) return {false, "Dialog closed"};
+        return exception_helper::wrap_async_fetch<SaveResult>([&]() -> SaveResult {
+            if (!self) {
+                return {.success = false,
+                        .error_message = "Dialog closed",
+                        .error_details = {}};
+            }
 
-        // Build and send request...
-        return {response->success, response->message};
+            // Build and send request...
+            auto response = /* deserialize response */;
+            if (!response->success) {
+                return {.success = false,
+                        .error_message = QString::fromStdString(response->message),
+                        .error_details = {}};
+            }
+
+            return {.success = true, .error_message = {}, .error_details = {}};
+        }, "<entity>");
     });
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
     connect(watcher, &QFutureWatcher<SaveResult>::finished, self, [self, watcher]() {
-        auto [success, message] = watcher->result();
+        const auto result = watcher->result();
         watcher->deleteLater();
 
-        if (success) {
+        if (result.success) {
             self->isDirty_ = false;
             emit self->isDirtyChanged(false);
 
@@ -684,7 +761,10 @@ void <Entity>DetailDialog::onSaveClicked() {
             // Close parent MDI window
             // ...
         } else {
-            emit self->errorMessage(tr("Save failed: %1").arg(QString::fromStdString(message)));
+            BOOST_LOG_SEV(lg(), error) << "Save failed: "
+                                       << result.error_message.toStdString();
+            MessageBoxHelper::critical(self, tr("Save Error"),
+                result.error_message, result.error_details);
         }
     });
 
@@ -914,35 +994,46 @@ Create a Qt Designer =.ui= file with:
 **** Async history loading
 
 #+begin_src cpp
+#include "ores.qt/ExceptionHelper.hpp"
+
 // Define a result struct for consistency with other async patterns
 struct HistoryResult {
     bool success;
-    std::string error_message;
     std::vector<<component>::domain::<entity>> entries;
+    QString error_message;
+    QString error_details;
 };
 
 void <Entity>HistoryDialog::loadHistory() {
     QPointer<<Entity>HistoryDialog> self = this;
 
     QFuture<HistoryResult> future = QtConcurrent::run([self]() -> HistoryResult {
-        if (!self || !self->clientManager_) {
-            return {false, "Dialog closed or no client", {}};
-        }
+        return exception_helper::wrap_async_fetch<HistoryResult>([&]() -> HistoryResult {
+            if (!self || !self->clientManager_) {
+                return {.success = false, .entries = {},
+                        .error_message = "Dialog closed or no client",
+                        .error_details = {}};
+            }
 
-        // Build and send history request...
-        return {true, "", history_entries};
+            // Build and send history request...
+            return {.success = true, .entries = std::move(history_entries),
+                    .error_message = {}, .error_details = {}};
+        }, "<entity> history");
     });
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);
     connect(watcher, &QFutureWatcher<HistoryResult>::finished, self, [self, watcher]() {
-        auto result = watcher->result();
+        const auto result = watcher->result();
         watcher->deleteLater();
 
         if (result.success) {
             self->history_ = std::move(result.entries);
             self->onHistoryLoaded();
         } else {
-            self->onHistoryLoadError(QString::fromStdString(result.error_message));
+            BOOST_LOG_SEV(lg(), error) << "History load failed: "
+                                       << result.error_message.toStdString();
+            MessageBoxHelper::critical(self, tr("Load Error"),
+                result.error_message, result.error_details);
         }
     });
 

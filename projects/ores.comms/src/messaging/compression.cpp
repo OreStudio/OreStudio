@@ -108,6 +108,9 @@ decompress(std::span<const std::byte> data, compression_type type) {
 
     try {
         std::vector<char> decompressed;
+        // Reserve a reasonable initial size to reduce reallocations
+        decompressed.reserve(std::min(data.size() * 4, MAX_DECOMPRESSED_SIZE));
+
         io::filtering_streambuf<io::input> in;
 
         switch (type) {
@@ -127,8 +130,20 @@ decompress(std::span<const std::byte> data, compression_type type) {
         io::array_source source(reinterpret_cast<const char*>(data.data()), data.size());
         in.push(source);
 
-        io::back_insert_device<std::vector<char>> sink(decompressed);
-        io::copy(in, sink);
+        // Read in chunks to check size limit
+        constexpr std::size_t chunk_size = 64 * 1024; // 64KB chunks
+        std::vector<char> chunk(chunk_size);
+        std::streamsize bytes_read;
+
+        while ((bytes_read = io::read(in, chunk.data(), chunk_size)) > 0) {
+            if (decompressed.size() + static_cast<std::size_t>(bytes_read) > MAX_DECOMPRESSED_SIZE) {
+                BOOST_LOG_SEV(lg(), error) << "Decompressed size exceeds limit of "
+                                           << MAX_DECOMPRESSED_SIZE << " bytes";
+                return std::unexpected(error_code::limit_exceeded);
+            }
+            decompressed.insert(decompressed.end(), chunk.begin(),
+                                chunk.begin() + bytes_read);
+        }
 
         std::vector<std::byte> result(decompressed.size());
         std::memcpy(result.data(), decompressed.data(), decompressed.size());
@@ -136,6 +151,9 @@ decompress(std::span<const std::byte> data, compression_type type) {
         BOOST_LOG_SEV(lg(), debug) << "Decompressed " << data.size() << " bytes to "
                                    << result.size() << " bytes using " << type;
         return result;
+    } catch (const std::bad_alloc&) {
+        BOOST_LOG_SEV(lg(), error) << "Decompression failed: out of memory";
+        return std::unexpected(error_code::limit_exceeded);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Decompression failed: " << e.what();
         return std::unexpected(error_code::decompression_failed);

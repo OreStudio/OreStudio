@@ -29,6 +29,14 @@
 namespace ores::comms::messaging {
 
 /**
+ * @brief Maximum allowed size for decompressed data (16 MB).
+ *
+ * This limit prevents memory exhaustion attacks where corrupted or malicious
+ * compressed data claims an enormous uncompressed size.
+ */
+constexpr std::size_t MAX_DECOMPRESSED_SIZE = 16 * 1024 * 1024;
+
+/**
  * @brief Compress data using the specified algorithm.
  *
  * @param data The data to compress

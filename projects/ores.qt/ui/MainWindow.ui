@@ -61,6 +61,12 @@
     <addaction name="ActionChangeReasonCategories"/>
     <addaction name="ActionChangeReasons"/>
    </widget>
+   <widget class="QMenu" name="menuDataQuality">
+    <property name="title">
+     <string>&amp;Data Quality</string>
+    </property>
+    <addaction name="ActionOriginDimensions"/>
+   </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
      <string>&amp;Window</string>
@@ -96,6 +102,7 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuRefereceData"/>
+   <addaction name="menuDataQuality"/>
    <addaction name="menuSystem"/>
    <addaction name="menuTelemetry"/>
    <addaction name="menuWindow"/>
@@ -349,6 +356,18 @@
    </property>
    <property name="toolTip">
     <string>Manage saved server connections</string>
+   </property>
+  </action>
+  <action name="ActionOriginDimensions">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_database_20_regular.svg</normaloff>:/icons/ic_fluent_database_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Origin Dimensions</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage origin dimensions (Source, Derived, External)</string>
    </property>
   </action>
  </widget>

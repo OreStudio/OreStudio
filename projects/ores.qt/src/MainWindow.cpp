@@ -51,6 +51,7 @@
 #include "ores.qt/FeatureFlagController.hpp"
 #include "ores.qt/ChangeReasonCategoryController.hpp"
 #include "ores.qt/ChangeReasonController.hpp"
+#include "ores.qt/OriginDimensionController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -135,6 +136,8 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
     ui_->ActionChangeReasons->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_note_edit_20_regular.svg", iconColor));
+    ui_->ActionOriginDimensions->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(
@@ -372,6 +375,12 @@ MainWindow::MainWindow(QWidget* parent) :
             changeReasonController_->showListWindow();
     });
 
+    // Connect Origin Dimensions action to controller
+    connect(ui_->ActionOriginDimensions, &QAction::triggered, this, [this]() {
+        if (originDimensionController_)
+            originDimensionController_->showListWindow();
+    });
+
     // Initially disable data-related actions until logged in
     updateMenuState();
 
@@ -562,10 +571,14 @@ void MainWindow::updateMenuState() {
     // System menu enabled when connected - permission checks happen server-side via RBAC
     ui_->menuSystem->menuAction()->setEnabled(isConnected);
     ui_->ActionAccounts->setEnabled(isConnected);
+
+    // Data Quality menu enabled when connected
+    ui_->menuDataQuality->menuAction()->setEnabled(isConnected);
     ui_->ActionRoles->setEnabled(isConnected);
     ui_->ActionFeatureFlags->setEnabled(isConnected);
     ui_->ActionChangeReasonCategories->setEnabled(isConnected);
     ui_->ActionChangeReasons->setEnabled(isConnected);
+    ui_->ActionOriginDimensions->setEnabled(isConnected);
 
     // My Account and My Sessions menu items are enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
@@ -695,6 +708,21 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
     connect(changeReasonController_.get(), &ChangeReasonController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create origin dimension controller
+    originDimensionController_ = std::make_unique<OriginDimensionController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect origin dimension controller signals to status bar
+    connect(originDimensionController_.get(), &OriginDimensionController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(originDimensionController_.get(), &OriginDimensionController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
@@ -1331,6 +1359,9 @@ void MainWindow::onLoginSuccess(const QString& username) {
     }
     if (changeReasonController_) {
         changeReasonController_->setUsername(username);
+    }
+    if (originDimensionController_) {
+        originDimensionController_->setUsername(username);
     }
 
     updateWindowTitle();

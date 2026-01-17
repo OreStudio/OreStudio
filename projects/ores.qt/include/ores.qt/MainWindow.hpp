@@ -57,6 +57,7 @@ class RoleController;
 class FeatureFlagController;
 class ChangeReasonCategoryController;
 class ChangeReasonController;
+class OriginDimensionController;
 class ImageCache;
 class ChangeReasonCache;
 
@@ -355,6 +356,14 @@ private:
      * Only accessible to admin users.
      */
     std::unique_ptr<ChangeReasonController> changeReasonController_;
+
+    /**
+     * @brief Controller managing origin dimension windows.
+     *
+     * Created after successful login, handles origin dimension list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<OriginDimensionController> originDimensionController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

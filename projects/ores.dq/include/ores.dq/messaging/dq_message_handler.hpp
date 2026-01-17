@@ -26,6 +26,9 @@
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.dq/service/change_management_service.hpp"
+#include "ores.dq/service/data_organization_service.hpp"
+#include "ores.dq/service/dataset_service.hpp"
+#include "ores.dq/service/coding_scheme_service.hpp"
 
 namespace ores::dq::messaging {
 
@@ -34,15 +37,10 @@ namespace ores::dq::messaging {
  *
  * Processes messages in the DQ subsystem range (0x6000-0x6FFF).
  * Currently handles change management messages:
- * - get_change_reason_categories_request: Retrieves all change reason categories
- * - get_change_reasons_request: Retrieves all change reasons
- * - get_change_reasons_by_category_request: Retrieves reasons for a category
- * - save_change_reason_request: Creates or updates a change reason
- * - delete_change_reason_request: Deletes change reason(s)
- * - get_change_reason_history_request: Retrieves version history for a reason
- * - save_change_reason_category_request: Creates or updates a category
- * - delete_change_reason_category_request: Deletes category(ies)
- * - get_change_reason_category_history_request: Retrieves version history
+ * - Change management: categories and reasons CRUD
+ * - Data organization: catalogs and subject areas CRUD
+ * - Datasets and methodologies CRUD
+ * - Coding schemes CRUD
  */
 class dq_message_handler final : public comms::messaging::message_handler {
 private:
@@ -171,6 +169,115 @@ private:
         std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    // =========================================================================
+    // Catalog Handlers
+    // =========================================================================
+
+    handler_result
+    handle_get_catalogs_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_save_catalog_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_delete_catalog_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_catalog_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // =========================================================================
+    // Subject Area Handlers
+    // =========================================================================
+
+    handler_result
+    handle_get_subject_areas_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_subject_areas_by_domain_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_save_subject_area_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_delete_subject_area_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_subject_area_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // =========================================================================
+    // Dataset Handlers
+    // =========================================================================
+
+    handler_result
+    handle_get_datasets_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_save_dataset_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_delete_dataset_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_dataset_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // =========================================================================
+    // Methodology Handlers
+    // =========================================================================
+
+    handler_result
+    handle_get_methodologies_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_save_methodology_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_delete_methodology_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_methodology_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // =========================================================================
+    // Coding Scheme Handlers
+    // =========================================================================
+
+    handler_result
+    handle_get_coding_schemes_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_coding_schemes_by_authority_type_request(
+        std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_save_coding_scheme_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_delete_coding_scheme_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_coding_scheme_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     /**
      * @brief Result type for authentication checks.
      *
@@ -197,6 +304,9 @@ private:
     database::context ctx_;
     std::shared_ptr<comms::service::auth_session_service> sessions_;
     service::change_management_service change_management_service_;
+    service::data_organization_service data_organization_service_;
+    service::dataset_service dataset_service_;
+    service::coding_scheme_service coding_scheme_service_;
 };
 
 }

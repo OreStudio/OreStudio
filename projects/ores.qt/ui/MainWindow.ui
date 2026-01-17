@@ -71,6 +71,7 @@
     <addaction name="separator"/>
     <addaction name="ActionCodingSchemeAuthorityTypes"/>
     <addaction name="ActionDataDomains"/>
+    <addaction name="ActionSubjectAreas"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -421,6 +422,18 @@
    </property>
    <property name="toolTip">
     <string>Manage data domains (Reference Data, Market Data, etc.)</string>
+   </property>
+  </action>
+  <action name="ActionSubjectAreas">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_table_20_regular.svg</normaloff>:/icons/ic_fluent_table_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Subject Areas</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage subject areas within data domains</string>
    </property>
   </action>
  </widget>

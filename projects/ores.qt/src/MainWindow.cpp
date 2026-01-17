@@ -57,6 +57,7 @@
 #include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
 #include "ores.qt/DataDomainController.hpp"
 #include "ores.qt/SubjectAreaController.hpp"
+#include "ores.qt/CatalogController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -424,6 +425,12 @@ MainWindow::MainWindow(QWidget* parent) :
             subjectAreaController_->showListWindow();
     });
 
+    // Connect Catalogs action to controller
+    connect(ui_->ActionCatalogs, &QAction::triggered, this, [this]() {
+        if (catalogController_)
+            catalogController_->showListWindow();
+    });
+
     // Initially disable data-related actions until logged in
     updateMenuState();
 
@@ -627,6 +634,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionCodingSchemeAuthorityTypes->setEnabled(isConnected);
     ui_->ActionDataDomains->setEnabled(isConnected);
     ui_->ActionSubjectAreas->setEnabled(isConnected);
+    ui_->ActionCatalogs->setEnabled(isConnected);
 
     // My Account and My Sessions menu items are enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
@@ -846,6 +854,21 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
     connect(subjectAreaController_.get(), &SubjectAreaController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create catalog controller
+    catalogController_ = std::make_unique<CatalogController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect catalog controller signals to status bar
+    connect(catalogController_.get(), &CatalogController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(catalogController_.get(), &CatalogController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
@@ -1500,6 +1523,9 @@ void MainWindow::onLoginSuccess(const QString& username) {
     }
     if (subjectAreaController_) {
         subjectAreaController_->setUsername(username);
+    }
+    if (catalogController_) {
+        catalogController_->setUsername(username);
     }
 
     updateWindowTitle();

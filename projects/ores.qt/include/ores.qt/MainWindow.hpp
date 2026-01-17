@@ -64,6 +64,9 @@ class CodingSchemeAuthorityTypeController;
 class DataDomainController;
 class SubjectAreaController;
 class CatalogController;
+class CodingSchemeController;
+class MethodologyController;
+class DatasetController;
 class ImageCache;
 class ChangeReasonCache;
 
@@ -418,6 +421,30 @@ private:
      * and history windows.
      */
     std::unique_ptr<CatalogController> catalogController_;
+
+    /**
+     * @brief Controller managing coding scheme windows.
+     *
+     * Created after successful login, handles coding scheme list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<CodingSchemeController> codingSchemeController_;
+
+    /**
+     * @brief Controller managing methodology windows.
+     *
+     * Created after successful login, handles methodology list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<MethodologyController> methodologyController_;
+
+    /**
+     * @brief Controller managing dataset windows.
+     *
+     * Created after successful login, handles dataset list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<DatasetController> datasetController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

@@ -58,6 +58,9 @@
 #include "ores.qt/DataDomainController.hpp"
 #include "ores.qt/SubjectAreaController.hpp"
 #include "ores.qt/CatalogController.hpp"
+#include "ores.qt/CodingSchemeController.hpp"
+#include "ores.qt/MethodologyController.hpp"
+#include "ores.qt/DatasetController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -152,6 +155,12 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
     ui_->ActionDataDomains->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_folder_20_regular.svg", iconColor));
+    ui_->ActionCodingSchemes->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_code_20_regular.svg", iconColor));
+    ui_->ActionMethodologies->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_book_20_regular.svg", iconColor));
+    ui_->ActionDatasets->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(
@@ -431,6 +440,24 @@ MainWindow::MainWindow(QWidget* parent) :
             catalogController_->showListWindow();
     });
 
+    // Connect Coding Schemes action to controller
+    connect(ui_->ActionCodingSchemes, &QAction::triggered, this, [this]() {
+        if (codingSchemeController_)
+            codingSchemeController_->showListWindow();
+    });
+
+    // Connect Methodologies action to controller
+    connect(ui_->ActionMethodologies, &QAction::triggered, this, [this]() {
+        if (methodologyController_)
+            methodologyController_->showListWindow();
+    });
+
+    // Connect Datasets action to controller
+    connect(ui_->ActionDatasets, &QAction::triggered, this, [this]() {
+        if (datasetController_)
+            datasetController_->showListWindow();
+    });
+
     // Initially disable data-related actions until logged in
     updateMenuState();
 
@@ -635,6 +662,9 @@ void MainWindow::updateMenuState() {
     ui_->ActionDataDomains->setEnabled(isConnected);
     ui_->ActionSubjectAreas->setEnabled(isConnected);
     ui_->ActionCatalogs->setEnabled(isConnected);
+    ui_->ActionCodingSchemes->setEnabled(isConnected);
+    ui_->ActionMethodologies->setEnabled(isConnected);
+    ui_->ActionDatasets->setEnabled(isConnected);
 
     // My Account and My Sessions menu items are enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
@@ -869,6 +899,51 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
     connect(catalogController_.get(), &CatalogController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create coding scheme controller
+    codingSchemeController_ = std::make_unique<CodingSchemeController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect coding scheme controller signals to status bar
+    connect(codingSchemeController_.get(), &CodingSchemeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(codingSchemeController_.get(), &CodingSchemeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create methodology controller
+    methodologyController_ = std::make_unique<MethodologyController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect methodology controller signals to status bar
+    connect(methodologyController_.get(), &MethodologyController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(methodologyController_.get(), &MethodologyController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create dataset controller
+    datasetController_ = std::make_unique<DatasetController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect dataset controller signals to status bar
+    connect(datasetController_.get(), &DatasetController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(datasetController_.get(), &DatasetController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
@@ -1526,6 +1601,15 @@ void MainWindow::onLoginSuccess(const QString& username) {
     }
     if (catalogController_) {
         catalogController_->setUsername(username);
+    }
+    if (codingSchemeController_) {
+        codingSchemeController_->setUsername(username);
+    }
+    if (methodologyController_) {
+        methodologyController_->setUsername(username);
+    }
+    if (datasetController_) {
+        datasetController_->setUsername(username);
     }
 
     updateWindowTitle();

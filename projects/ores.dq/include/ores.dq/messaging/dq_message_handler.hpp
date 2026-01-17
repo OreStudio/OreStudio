@@ -29,6 +29,7 @@
 #include "ores.dq/service/data_organization_service.hpp"
 #include "ores.dq/service/dataset_service.hpp"
 #include "ores.dq/service/coding_scheme_service.hpp"
+#include "ores.dq/service/dimension_service.hpp"
 
 namespace ores::dq::messaging {
 
@@ -278,6 +279,66 @@ private:
     handle_get_coding_scheme_history_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    // =========================================================================
+    // Nature Dimension Handlers
+    // =========================================================================
+
+    handler_result
+    handle_get_nature_dimensions_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_save_nature_dimension_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_delete_nature_dimension_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_nature_dimension_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // =========================================================================
+    // Origin Dimension Handlers
+    // =========================================================================
+
+    handler_result
+    handle_get_origin_dimensions_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_save_origin_dimension_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_delete_origin_dimension_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_origin_dimension_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // =========================================================================
+    // Treatment Dimension Handlers
+    // =========================================================================
+
+    handler_result
+    handle_get_treatment_dimensions_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_save_treatment_dimension_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_delete_treatment_dimension_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_treatment_dimension_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     /**
      * @brief Result type for authentication checks.
      *
@@ -307,6 +368,7 @@ private:
     service::data_organization_service data_organization_service_;
     service::dataset_service dataset_service_;
     service::coding_scheme_service coding_scheme_service_;
+    service::dimension_service dimension_service_;
 };
 
 }

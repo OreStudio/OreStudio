@@ -24,6 +24,7 @@
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.dq/messaging/dataset_protocol.hpp"
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
+#include "ores.dq/messaging/dimension_protocol.hpp"
 
 namespace ores::dq::messaging {
 
@@ -36,7 +37,8 @@ dq_message_handler::dq_message_handler(database::context ctx,
       change_management_service_(ctx),
       data_organization_service_(ctx),
       dataset_service_(ctx),
-      coding_scheme_service_(ctx) {}
+      coding_scheme_service_(ctx),
+      dimension_service_(ctx) {}
 
 dq_message_handler::handler_result
 dq_message_handler::handle_message(message_type type,
@@ -118,6 +120,36 @@ dq_message_handler::handle_message(message_type type,
         co_return co_await handle_delete_coding_scheme_request(payload, remote_address);
     case message_type::get_coding_scheme_history_request:
         co_return co_await handle_get_coding_scheme_history_request(payload, remote_address);
+
+    // Nature dimension messages
+    case message_type::get_nature_dimensions_request:
+        co_return co_await handle_get_nature_dimensions_request(payload, remote_address);
+    case message_type::save_nature_dimension_request:
+        co_return co_await handle_save_nature_dimension_request(payload, remote_address);
+    case message_type::delete_nature_dimension_request:
+        co_return co_await handle_delete_nature_dimension_request(payload, remote_address);
+    case message_type::get_nature_dimension_history_request:
+        co_return co_await handle_get_nature_dimension_history_request(payload, remote_address);
+
+    // Origin dimension messages
+    case message_type::get_origin_dimensions_request:
+        co_return co_await handle_get_origin_dimensions_request(payload, remote_address);
+    case message_type::save_origin_dimension_request:
+        co_return co_await handle_save_origin_dimension_request(payload, remote_address);
+    case message_type::delete_origin_dimension_request:
+        co_return co_await handle_delete_origin_dimension_request(payload, remote_address);
+    case message_type::get_origin_dimension_history_request:
+        co_return co_await handle_get_origin_dimension_history_request(payload, remote_address);
+
+    // Treatment dimension messages
+    case message_type::get_treatment_dimensions_request:
+        co_return co_await handle_get_treatment_dimensions_request(payload, remote_address);
+    case message_type::save_treatment_dimension_request:
+        co_return co_await handle_save_treatment_dimension_request(payload, remote_address);
+    case message_type::delete_treatment_dimension_request:
+        co_return co_await handle_delete_treatment_dimension_request(payload, remote_address);
+    case message_type::get_treatment_dimension_history_request:
+        co_return co_await handle_get_treatment_dimension_history_request(payload, remote_address);
 
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown DQ message type " << type;
@@ -1258,6 +1290,453 @@ handle_get_coding_scheme_history_request(std::span<const std::byte> payload,
                                   << request.code;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to get coding scheme history: "
+                                   << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Nature Dimension Handlers
+// ============================================================================
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_nature_dimensions_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_nature_dimensions_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List nature dimensions");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_nature_dimensions_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_nature_dimensions_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto dimensions = dimension_service_.list_nature_dimensions();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << dimensions.size()
+                              << " nature dimensions.";
+
+    get_nature_dimensions_response response{.dimensions = std::move(dimensions)};
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_save_nature_dimension_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_nature_dimension_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Save nature dimension");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = save_nature_dimension_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_nature_dimension_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    save_nature_dimension_response response;
+    try {
+        auto existing = dimension_service_.find_nature_dimension(
+            request.dimension.code);
+        if (existing) {
+            dimension_service_.update_nature_dimension(request.dimension);
+        } else {
+            dimension_service_.create_nature_dimension(request.dimension);
+        }
+        response.success = true;
+        response.message = "Nature dimension saved successfully.";
+        BOOST_LOG_SEV(lg(), info) << "Saved nature dimension: "
+                                  << request.dimension.code;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to save nature dimension: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_delete_nature_dimension_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_nature_dimension_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Delete nature dimension");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = delete_nature_dimension_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_nature_dimension_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    delete_nature_dimension_response response;
+    for (const auto& code : request.codes) {
+        delete_nature_dimension_result result;
+        result.code = code;
+        try {
+            dimension_service_.remove_nature_dimension(code);
+            result.success = true;
+            result.message = "Deleted successfully.";
+            BOOST_LOG_SEV(lg(), info) << "Deleted nature dimension: " << code;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to delete nature dimension "
+                                       << code << ": " << e.what();
+            result.success = false;
+            result.message = e.what();
+        }
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_nature_dimension_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_nature_dimension_history_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Get nature dimension history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_nature_dimension_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_nature_dimension_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    get_nature_dimension_history_response response;
+    try {
+        response.versions = dimension_service_.get_nature_dimension_history(
+            request.code);
+        response.success = true;
+        response.message = "";
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
+                                  << " versions for nature dimension: "
+                                  << request.code;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get nature dimension history: "
+                                   << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Origin Dimension Handlers
+// ============================================================================
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_origin_dimensions_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_origin_dimensions_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List origin dimensions");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_origin_dimensions_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_origin_dimensions_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto dimensions = dimension_service_.list_origin_dimensions();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << dimensions.size()
+                              << " origin dimensions.";
+
+    get_origin_dimensions_response response{.dimensions = std::move(dimensions)};
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_save_origin_dimension_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_origin_dimension_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Save origin dimension");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = save_origin_dimension_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_origin_dimension_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    save_origin_dimension_response response;
+    try {
+        auto existing = dimension_service_.find_origin_dimension(
+            request.dimension.code);
+        if (existing) {
+            dimension_service_.update_origin_dimension(request.dimension);
+        } else {
+            dimension_service_.create_origin_dimension(request.dimension);
+        }
+        response.success = true;
+        response.message = "Origin dimension saved successfully.";
+        BOOST_LOG_SEV(lg(), info) << "Saved origin dimension: "
+                                  << request.dimension.code;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to save origin dimension: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_delete_origin_dimension_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_origin_dimension_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Delete origin dimension");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = delete_origin_dimension_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_origin_dimension_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    delete_origin_dimension_response response;
+    for (const auto& code : request.codes) {
+        delete_origin_dimension_result result;
+        result.code = code;
+        try {
+            dimension_service_.remove_origin_dimension(code);
+            result.success = true;
+            result.message = "Deleted successfully.";
+            BOOST_LOG_SEV(lg(), info) << "Deleted origin dimension: " << code;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to delete origin dimension "
+                                       << code << ": " << e.what();
+            result.success = false;
+            result.message = e.what();
+        }
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_origin_dimension_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_origin_dimension_history_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Get origin dimension history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_origin_dimension_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_origin_dimension_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    get_origin_dimension_history_response response;
+    try {
+        response.versions = dimension_service_.get_origin_dimension_history(
+            request.code);
+        response.success = true;
+        response.message = "";
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
+                                  << " versions for origin dimension: "
+                                  << request.code;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get origin dimension history: "
+                                   << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Treatment Dimension Handlers
+// ============================================================================
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_treatment_dimensions_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_treatment_dimensions_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List treatment dimensions");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_treatment_dimensions_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_treatment_dimensions_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto dimensions = dimension_service_.list_treatment_dimensions();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << dimensions.size()
+                              << " treatment dimensions.";
+
+    get_treatment_dimensions_response response{.dimensions = std::move(dimensions)};
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_save_treatment_dimension_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_treatment_dimension_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Save treatment dimension");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = save_treatment_dimension_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_treatment_dimension_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    save_treatment_dimension_response response;
+    try {
+        auto existing = dimension_service_.find_treatment_dimension(
+            request.dimension.code);
+        if (existing) {
+            dimension_service_.update_treatment_dimension(request.dimension);
+        } else {
+            dimension_service_.create_treatment_dimension(request.dimension);
+        }
+        response.success = true;
+        response.message = "Treatment dimension saved successfully.";
+        BOOST_LOG_SEV(lg(), info) << "Saved treatment dimension: "
+                                  << request.dimension.code;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to save treatment dimension: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_delete_treatment_dimension_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_treatment_dimension_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Delete treatment dimension");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = delete_treatment_dimension_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_treatment_dimension_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    delete_treatment_dimension_response response;
+    for (const auto& code : request.codes) {
+        delete_treatment_dimension_result result;
+        result.code = code;
+        try {
+            dimension_service_.remove_treatment_dimension(code);
+            result.success = true;
+            result.message = "Deleted successfully.";
+            BOOST_LOG_SEV(lg(), info) << "Deleted treatment dimension: " << code;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to delete treatment dimension "
+                                       << code << ": " << e.what();
+            result.success = false;
+            result.message = e.what();
+        }
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_treatment_dimension_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_treatment_dimension_history_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Get treatment dimension history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_treatment_dimension_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_treatment_dimension_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    get_treatment_dimension_history_response response;
+    try {
+        response.versions = dimension_service_.get_treatment_dimension_history(
+            request.code);
+        response.success = true;
+        response.message = "";
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
+                                  << " versions for treatment dimension: "
+                                  << request.code;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get treatment dimension history: "
                                    << e.what();
         response.success = false;
         response.message = e.what();

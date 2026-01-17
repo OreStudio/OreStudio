@@ -83,8 +83,11 @@ public:
         }
 
         return server_error_info{
-            .message = QString::fromStdString(err_resp->message),
-            .details = QString("Error code: %1")
+            .message = QString("Server error: %1")
+                .arg(QString::fromStdString(err_resp->message)),
+            .details = QString("Error code: %1 (%2)")
+                .arg(QString::fromStdString(
+                    ores::utility::serialization::to_string(err_resp->code)))
                 .arg(static_cast<int>(err_resp->code))
         };
     }

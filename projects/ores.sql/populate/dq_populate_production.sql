@@ -57,7 +57,7 @@ begin
 
     -- Country flags dataset
     select id into v_flags_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = 'Country Flags from lipis/flag-icons'
       and subject_area_name = 'Countries'
       and domain_name = 'Reference Data'
@@ -69,7 +69,7 @@ begin
 
     -- Cryptocurrency icons dataset
     select id into v_crypto_icons_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = 'Cryptocurrency Icons from spothq/cryptocurrency-icons'
       and subject_area_name = 'Cryptocurrencies'
       and domain_name = 'Reference Data'
@@ -81,7 +81,7 @@ begin
 
     -- Countries dataset
     select id into v_countries_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = 'ISO 3166 Countries from Wikipedia'
       and subject_area_name = 'Countries'
       and domain_name = 'Reference Data'
@@ -93,7 +93,7 @@ begin
 
     -- Fiat currencies dataset
     select id into v_currencies_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = 'ISO 4217 Currencies from Wikipedia'
       and subject_area_name = 'Currencies'
       and domain_name = 'Reference Data'
@@ -105,7 +105,7 @@ begin
 
     -- FpML non-ISO currencies dataset
     select id into v_fpml_currencies_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = 'FpML Non-ISO Currencies'
       and subject_area_name = 'Currencies'
       and domain_name = 'Reference Data'
@@ -117,7 +117,7 @@ begin
 
     -- Cryptocurrencies dataset
     select id into v_cryptocurrencies_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = 'Cryptocurrencies from crypti/cryptocurrencies'
       and subject_area_name = 'Cryptocurrencies'
       and domain_name = 'Reference Data'

@@ -18,7 +18,7 @@
  *
  */
 
-create table if not exists "ores"."dq_origin_dimension_tbl" (
+create table if not exists "ores"."dq_origin_dimensions_tbl" (
     "code" text not null,
     "version" integer not null,
     "name" text not null,
@@ -36,21 +36,21 @@ create table if not exists "ores"."dq_origin_dimension_tbl" (
     check ("valid_from" < "valid_to")
 );
 
-create unique index if not exists dq_origin_dimension_version_uniq_idx
-on "ores"."dq_origin_dimension_tbl" (code, version)
+create unique index if not exists dq_origin_dimensions_version_uniq_idx
+on "ores"."dq_origin_dimensions_tbl" (code, version)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_origin_dimension_code_uniq_idx
-on "ores"."dq_origin_dimension_tbl" (code)
+create unique index if not exists dq_origin_dimensions_code_uniq_idx
+on "ores"."dq_origin_dimensions_tbl" (code)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create or replace function ores.dq_origin_dimension_insert_fn()
+create or replace function ores.dq_origin_dimensions_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "ores"."dq_origin_dimension_tbl"
+    from "ores"."dq_origin_dimensions_tbl"
     where code = NEW.code
       and valid_to = ores.utility_infinity_timestamp_fn();
 
@@ -62,7 +62,7 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "ores"."dq_origin_dimension_tbl"
+        update "ores"."dq_origin_dimensions_tbl"
         set valid_to = current_timestamp
         where code = NEW.code
           and valid_to = ores.utility_infinity_timestamp_fn()
@@ -84,13 +84,13 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_origin_dimension_insert_trg
-before insert on "ores"."dq_origin_dimension_tbl"
-for each row execute function ores.dq_origin_dimension_insert_fn();
+create or replace trigger dq_origin_dimensions_insert_trg
+before insert on "ores"."dq_origin_dimensions_tbl"
+for each row execute function ores.dq_origin_dimensions_insert_fn();
 
-create or replace rule dq_origin_dimension_delete_rule as
-on delete to "ores"."dq_origin_dimension_tbl" do instead
-    update "ores"."dq_origin_dimension_tbl"
+create or replace rule dq_origin_dimensions_delete_rule as
+on delete to "ores"."dq_origin_dimensions_tbl" do instead
+    update "ores"."dq_origin_dimensions_tbl"
     set valid_to = current_timestamp
     where code = OLD.code
       and valid_to = ores.utility_infinity_timestamp_fn();

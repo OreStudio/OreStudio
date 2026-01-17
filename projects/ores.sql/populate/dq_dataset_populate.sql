@@ -37,7 +37,7 @@ declare
 begin
     -- Get dataset ID
     select id into v_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = p_dataset_name
       and subject_area_name = p_subject_area_name
       and domain_name = p_domain_name
@@ -64,7 +64,7 @@ end;
 $$ language plpgsql;
 
 -- Helper function to create a dataset
-create or replace function ores.upsert_dq_dataset(
+create or replace function ores.upsert_dq_datasets(
     p_catalog_name text,
     p_subject_area_name text,
     p_domain_name text,
@@ -84,18 +84,18 @@ declare
     v_methodology_id uuid;
 begin
     -- Get methodology ID (only table that still uses UUID PK)
-    select id into v_methodology_id from ores.dq_methodology_tbl where name = p_methodology_name and valid_to = ores.utility_infinity_timestamp_fn();
+    select id into v_methodology_id from ores.dq_methodologies_tbl where name = p_methodology_name and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_methodology_id is null then raise exception 'Methodology not found: %', p_methodology_name; end if;
 
     if not exists (
-        select 1 from ores.dq_dataset_tbl
+        select 1 from ores.dq_datasets_tbl
         where name = p_name
           and subject_area_name = p_subject_area_name
           and domain_name = p_domain_name
           and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
-        insert into ores.dq_dataset_tbl (
+        insert into ores.dq_datasets_tbl (
             id, version, catalog_name, subject_area_name, domain_name, coding_scheme_code,
             origin_code, nature_code, treatment_code, methodology_id,
             name, description, source_system_id, business_context,
@@ -111,9 +111,9 @@ begin
             'system', 'system.new_record', 'System seed data',
             current_timestamp, ores.utility_infinity_timestamp_fn()
         );
-        raise notice 'Created dq_dataset: %', p_name;
+        raise notice 'Created dq_datasets: %', p_name;
     else
-        raise notice 'dq_dataset already exists: %', p_name;
+        raise notice 'dq_datasets already exists: %', p_name;
     end if;
 end;
 $$ language plpgsql;
@@ -122,7 +122,7 @@ $$ language plpgsql;
 -- Seed Data
 -- =============================================================================
 
-select ores.upsert_dq_dataset(
+select ores.upsert_dq_datasets(
     'ISO Standards',
     'Countries',
     'Reference Data',
@@ -139,7 +139,7 @@ select ores.upsert_dq_dataset(
     'CC BY-SA 3.0'
 );
 
-select ores.upsert_dq_dataset(
+select ores.upsert_dq_datasets(
     'ISO Standards',
     'Countries',
     'Reference Data',
@@ -164,7 +164,7 @@ select ores.upsert_dq_tag(
     'Country and region flag images'
 );
 
-select ores.upsert_dq_dataset(
+select ores.upsert_dq_datasets(
     'Cryptocurrency',
     'Cryptocurrencies',
     'Reference Data',
@@ -189,7 +189,7 @@ select ores.upsert_dq_tag(
     'Cryptocurrency icon images'
 );
 
-select ores.upsert_dq_dataset(
+select ores.upsert_dq_datasets(
     'ISO Standards',
     'Currencies',
     'Reference Data',
@@ -214,7 +214,7 @@ select ores.upsert_dq_tag(
     'Currency reference data'
 );
 
-select ores.upsert_dq_dataset(
+select ores.upsert_dq_datasets(
     'FpML Standards',
     'Currencies',
     'Reference Data',
@@ -239,7 +239,7 @@ select ores.upsert_dq_tag(
     'Non-ISO currency reference data'
 );
 
-select ores.upsert_dq_dataset(
+select ores.upsert_dq_datasets(
     'Cryptocurrency',
     'Cryptocurrencies',
     'Reference Data',
@@ -268,15 +268,15 @@ select ores.upsert_dq_tag(
 -- Cleanup
 -- =============================================================================
 
-drop function ores.upsert_dq_dataset(text, text, text, text, text, text, text, text, text, text, text, text, date, text);
+drop function ores.upsert_dq_datasets(text, text, text, text, text, text, text, text, text, text, text, text, date, text);
 drop function ores.upsert_dq_tag(text, text, text, text, text);
 
 -- =============================================================================
 -- Summary
 -- =============================================================================
 
-select 'dq_dataset' as entity, count(*) as count
-from ores.dq_dataset_tbl
+select 'dq_datasets' as entity, count(*) as count
+from ores.dq_datasets_tbl
 where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'dq_tags_artefact', count(*)

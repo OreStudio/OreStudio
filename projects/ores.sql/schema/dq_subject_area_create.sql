@@ -18,7 +18,7 @@
  *
  */
 
-create table if not exists "ores"."dq_subject_area_tbl" (
+create table if not exists "ores"."dq_subject_areas_tbl" (
     "name" text not null,
     "version" integer not null,
     "domain_name" text not null,
@@ -37,22 +37,22 @@ create table if not exists "ores"."dq_subject_area_tbl" (
     check ("valid_from" < "valid_to")
 );
 
-create unique index if not exists dq_subject_area_version_uniq_idx
-on "ores"."dq_subject_area_tbl" (name, domain_name, version)
+create unique index if not exists dq_subject_areas_version_uniq_idx
+on "ores"."dq_subject_areas_tbl" (name, domain_name, version)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_subject_area_name_uniq_idx
-on "ores"."dq_subject_area_tbl" (name, domain_name)
+create unique index if not exists dq_subject_areas_name_uniq_idx
+on "ores"."dq_subject_areas_tbl" (name, domain_name)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create or replace function ores.dq_subject_area_insert_fn()
+create or replace function ores.dq_subject_areas_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     -- Validate foreign key reference
     if not exists (
-        select 1 from ores.dq_data_domain_tbl
+        select 1 from ores.dq_data_domains_tbl
         where name = NEW.domain_name
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
@@ -61,7 +61,7 @@ begin
     end if;
 
     select version into current_version
-    from "ores"."dq_subject_area_tbl"
+    from "ores"."dq_subject_areas_tbl"
     where name = NEW.name
       and domain_name = NEW.domain_name
       and valid_to = ores.utility_infinity_timestamp_fn();
@@ -74,7 +74,7 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "ores"."dq_subject_area_tbl"
+        update "ores"."dq_subject_areas_tbl"
         set valid_to = current_timestamp
         where name = NEW.name
           and domain_name = NEW.domain_name
@@ -97,13 +97,13 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_subject_area_insert_trg
-before insert on "ores"."dq_subject_area_tbl"
-for each row execute function ores.dq_subject_area_insert_fn();
+create or replace trigger dq_subject_areas_insert_trg
+before insert on "ores"."dq_subject_areas_tbl"
+for each row execute function ores.dq_subject_areas_insert_fn();
 
-create or replace rule dq_subject_area_delete_rule as
-on delete to "ores"."dq_subject_area_tbl" do instead
-    update "ores"."dq_subject_area_tbl"
+create or replace rule dq_subject_areas_delete_rule as
+on delete to "ores"."dq_subject_areas_tbl" do instead
+    update "ores"."dq_subject_areas_tbl"
     set valid_to = current_timestamp
     where name = OLD.name
       and domain_name = OLD.domain_name

@@ -64,11 +64,26 @@ and C++ code.
 | Unique index      | =_uniq_idx=     | =iam_accounts_username_uniq_idx=       |
 | GiST index        | =_gist_idx=     | =iam_accounts_validity_gist_idx=       |
 
+** Entity name conventions
+
+Entity names in tables should use the *plural form*:
+
+| Singular | Plural        | Example Table Name          |
+|----------+---------------+-----------------------------|
+| account  | accounts      | =iam_accounts_tbl=          |
+| currency | currencies    | =refdata_currencies_tbl=    |
+| dataset  | datasets      | =dq_datasets_tbl=           |
+| scheme   | schemes       | =dq_coding_schemes_tbl=     |
+| category | categories    | =dq_change_reason_categories_tbl= |
+
+This convention ensures consistency and makes it clear that tables contain
+collections of entities.
+
 ** Full naming patterns
 
 | Entity             | Pattern                                          |
 |--------------------+--------------------------------------------------|
-| Table              | ={component}_{entity}_tbl=                       |
+| Table              | ={component}_{entities}_tbl= (plural)            |
 | Insert trigger     | ={component}_{entity}_insert_trg=                |
 | Notify trigger     | ={component}_{entity}_notify_trg=                |
 | Insert function    | ={component}_{entity}_insert_fn()=               |

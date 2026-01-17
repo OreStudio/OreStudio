@@ -37,17 +37,17 @@ set schema 'ores';
 -- =============================================================================
 
 -- Helper function to insert a data quality treatment dimension if it doesn't exist
-create or replace function ores.upsert_dq_treatment_dimension(
+create or replace function ores.upsert_dq_treatment_dimensions(
     p_code text,
     p_name text,
     p_description text
 ) returns void as $$
 begin
     if not exists (
-        select 1 from ores.dq_treatment_dimension_tbl
+        select 1 from ores.dq_treatment_dimensions_tbl
         where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
-        insert into ores.dq_treatment_dimension_tbl (
+        insert into ores.dq_treatment_dimensions_tbl (
             code, version, name, description,
             modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
@@ -69,19 +69,19 @@ $$ language plpgsql;
 
 \echo '--- Data Quality Treatment Dimensions ---'
 
-select ores.upsert_dq_treatment_dimension(
+select ores.upsert_dq_treatment_dimensions(
     'Raw',
     'Raw Data',
     'Untouched, identifiable data.'
 );
 
-select ores.upsert_dq_treatment_dimension(
+select ores.upsert_dq_treatment_dimensions(
     'Masked',
     'Masked Data',
     'PII has been redacted or obfuscated (replaces "Obfuscated").'
 );
 
-select ores.upsert_dq_treatment_dimension(
+select ores.upsert_dq_treatment_dimensions(
     'Anonymized',
     'Anonymized Data',
     'Irreversibly altered to prevent re-identification.'
@@ -91,7 +91,7 @@ select ores.upsert_dq_treatment_dimension(
 -- Cleanup
 -- =============================================================================
 
-drop function ores.upsert_dq_treatment_dimension(text, text, text);
+drop function ores.upsert_dq_treatment_dimensions(text, text, text);
 
 -- =============================================================================
 -- Summary
@@ -101,5 +101,5 @@ drop function ores.upsert_dq_treatment_dimension(text, text, text);
 \echo '--- Summary ---'
 
 select 'Data Quality Treatment Dimensions' as entity, count(*) as count
-from ores.dq_treatment_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_treatment_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

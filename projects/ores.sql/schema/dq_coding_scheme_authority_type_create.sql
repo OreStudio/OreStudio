@@ -31,7 +31,7 @@
  * - internal: Proprietary or organization-specific identifiers
  */
 
-create table if not exists "ores"."dq_coding_scheme_authority_type_tbl" (
+create table if not exists "ores"."dq_coding_scheme_authority_types_tbl" (
     "code" text not null,
     "version" integer not null,
     "name" text not null,
@@ -49,21 +49,21 @@ create table if not exists "ores"."dq_coding_scheme_authority_type_tbl" (
     check ("valid_from" < "valid_to")
 );
 
-create unique index if not exists dq_coding_scheme_authority_type_version_uniq_idx
-on "ores"."dq_coding_scheme_authority_type_tbl" (code, version)
+create unique index if not exists dq_coding_scheme_authority_types_version_uniq_idx
+on "ores"."dq_coding_scheme_authority_types_tbl" (code, version)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_coding_scheme_authority_type_code_uniq_idx
-on "ores"."dq_coding_scheme_authority_type_tbl" (code)
+create unique index if not exists dq_coding_scheme_authority_types_code_uniq_idx
+on "ores"."dq_coding_scheme_authority_types_tbl" (code)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create or replace function ores.dq_coding_scheme_authority_type_insert_fn()
+create or replace function ores.dq_coding_scheme_authority_types_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "ores"."dq_coding_scheme_authority_type_tbl"
+    from "ores"."dq_coding_scheme_authority_types_tbl"
     where code = NEW.code
       and valid_to = ores.utility_infinity_timestamp_fn();
 
@@ -75,7 +75,7 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "ores"."dq_coding_scheme_authority_type_tbl"
+        update "ores"."dq_coding_scheme_authority_types_tbl"
         set valid_to = current_timestamp
         where code = NEW.code
           and valid_to = ores.utility_infinity_timestamp_fn()
@@ -97,13 +97,13 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_coding_scheme_authority_type_insert_trg
-before insert on "ores"."dq_coding_scheme_authority_type_tbl"
-for each row execute function ores.dq_coding_scheme_authority_type_insert_fn();
+create or replace trigger dq_coding_scheme_authority_types_insert_trg
+before insert on "ores"."dq_coding_scheme_authority_types_tbl"
+for each row execute function ores.dq_coding_scheme_authority_types_insert_fn();
 
-create or replace rule dq_coding_scheme_authority_type_delete_rule as
-on delete to "ores"."dq_coding_scheme_authority_type_tbl" do instead
-    update "ores"."dq_coding_scheme_authority_type_tbl"
+create or replace rule dq_coding_scheme_authority_types_delete_rule as
+on delete to "ores"."dq_coding_scheme_authority_types_tbl" do instead
+    update "ores"."dq_coding_scheme_authority_types_tbl"
     set valid_to = current_timestamp
     where code = OLD.code
       and valid_to = ores.utility_infinity_timestamp_fn();

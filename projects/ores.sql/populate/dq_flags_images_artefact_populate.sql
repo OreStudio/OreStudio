@@ -39,7 +39,7 @@ declare
 begin
     -- Get the dataset ID using (name, subject_area_name, domain_name)
     select id into v_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = 'Country Flags from lipis/flag-icons'
       and subject_area_name = 'Countries'
       and domain_name = 'Reference Data'

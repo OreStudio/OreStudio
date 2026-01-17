@@ -20,7 +20,7 @@
 
 set schema 'ores';
 
-drop trigger if exists dq_coding_scheme_authority_type_insert_trg on "ores"."dq_coding_scheme_authority_type_tbl";
-drop rule if exists dq_coding_scheme_authority_type_delete_rule on "ores"."dq_coding_scheme_authority_type_tbl";
-drop function if exists ores.dq_coding_scheme_authority_type_insert_fn();
-drop table if exists "ores"."dq_coding_scheme_authority_type_tbl";
+drop trigger if exists dq_coding_scheme_authority_types_insert_trg on "ores"."dq_coding_scheme_authority_types_tbl";
+drop rule if exists dq_coding_scheme_authority_types_delete_rule on "ores"."dq_coding_scheme_authority_types_tbl";
+drop function if exists ores.dq_coding_scheme_authority_types_insert_fn();
+drop table if exists "ores"."dq_coding_scheme_authority_types_tbl";

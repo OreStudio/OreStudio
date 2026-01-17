@@ -36,17 +36,17 @@ set schema 'ores';
 -- =============================================================================
 
 -- Helper function to insert a data quality origin dimension if it doesn't exist
-create or replace function ores.upsert_dq_origin_dimension(
+create or replace function ores.upsert_dq_origin_dimensions(
     p_code text,
     p_name text,
     p_description text
 ) returns void as $$
 begin
     if not exists (
-        select 1 from ores.dq_origin_dimension_tbl
+        select 1 from ores.dq_origin_dimensions_tbl
         where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
-        insert into ores.dq_origin_dimension_tbl (
+        insert into ores.dq_origin_dimensions_tbl (
             code, version, name, description,
             modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
@@ -68,13 +68,13 @@ $$ language plpgsql;
 
 \echo '--- Data Quality Origin Dimensions ---'
 
-select ores.upsert_dq_origin_dimension(
+select ores.upsert_dq_origin_dimensions(
     'Source',
     'Source Data',
     'Raw data ingested directly from the origin.'
 );
 
-select ores.upsert_dq_origin_dimension(
+select ores.upsert_dq_origin_dimensions(
     'Derived',
     'Derived Data',
     'Data transformed, aggregated, or calculated via code.'
@@ -84,7 +84,7 @@ select ores.upsert_dq_origin_dimension(
 -- Cleanup
 -- =============================================================================
 
-drop function ores.upsert_dq_origin_dimension(text, text, text);
+drop function ores.upsert_dq_origin_dimensions(text, text, text);
 
 -- =============================================================================
 -- Summary
@@ -94,5 +94,5 @@ drop function ores.upsert_dq_origin_dimension(text, text, text);
 \echo '--- Summary ---'
 
 select 'Data Quality Origin Dimensions' as entity, count(*) as count
-from ores.dq_origin_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_origin_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

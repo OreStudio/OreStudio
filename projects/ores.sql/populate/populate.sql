@@ -170,31 +170,31 @@ select 'System Flags', count(*)
 from ores.variability_feature_flags_tbl where name like 'system.%' and valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Data Quality Origin Dimensions', count(*)
-from ores.dq_origin_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_origin_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Data Quality Nature Dimensions', count(*)
-from ores.dq_nature_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_nature_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Data Quality Treatment Dimensions', count(*)
-from ores.dq_treatment_dimension_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_treatment_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Data Quality Catalogs', count(*)
-from ores.dq_catalog_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_catalogs_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Data Quality Data Domains', count(*)
-from ores.dq_data_domain_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_data_domains_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Data Quality Subject Areas', count(*)
-from ores.dq_subject_area_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_subject_areas_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'DQ Coding Scheme Authority Types', count(*)
-from ores.dq_coding_scheme_authority_type_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_coding_scheme_authority_types_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Data Quality Coding Schemes', count(*)
-from ores.dq_coding_scheme_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_coding_schemes_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Data Quality Datasets', count(*)
-from ores.dq_dataset_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_datasets_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Data Quality Images', count(*)
 from ores.dq_images_artefact_tbl

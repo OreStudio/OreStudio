@@ -37,17 +37,17 @@ set schema 'ores';
 -- =============================================================================
 
 -- Helper function to insert a catalog if it doesn't exist
-create or replace function ores.upsert_dq_catalog(
+create or replace function ores.upsert_dq_catalogs(
     p_name text,
     p_description text,
     p_owner text default null
 ) returns void as $$
 begin
     if not exists (
-        select 1 from ores.dq_catalog_tbl
+        select 1 from ores.dq_catalogs_tbl
         where name = p_name and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
-        insert into ores.dq_catalog_tbl (
+        insert into ores.dq_catalogs_tbl (
             name, version, description, owner,
             modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
@@ -69,19 +69,19 @@ $$ language plpgsql;
 
 \echo '--- Data Quality Catalogs ---'
 
-select ores.upsert_dq_catalog(
+select ores.upsert_dq_catalogs(
     'ISO Standards',
     'International Organization for Standardization (ISO) reference data including ISO 3166 country codes, ISO 4217 currency codes, and associated flag imagery.',
     'Reference Data Team'
 );
 
-select ores.upsert_dq_catalog(
+select ores.upsert_dq_catalogs(
     'Cryptocurrency',
     'Digital asset reference data including cryptocurrency symbols, names, and icon imagery from community-maintained repositories.',
     'Digital Assets Team'
 );
 
-select ores.upsert_dq_catalog(
+select ores.upsert_dq_catalogs(
     'FpML Standards',
     'Financial products Markup Language (FpML) coding schemes and reference data for OTC derivatives trading. Includes non-ISO currencies, business centers, and other FpML-defined code lists.',
     'Reference Data Team'
@@ -91,7 +91,7 @@ select ores.upsert_dq_catalog(
 -- Cleanup
 -- =============================================================================
 
-drop function ores.upsert_dq_catalog(text, text, text);
+drop function ores.upsert_dq_catalogs(text, text, text);
 
 -- =============================================================================
 -- Summary
@@ -101,5 +101,5 @@ drop function ores.upsert_dq_catalog(text, text, text);
 \echo '--- Summary ---'
 
 select 'Data Quality Catalogs' as entity, count(*) as count
-from ores.dq_catalog_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_catalogs_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

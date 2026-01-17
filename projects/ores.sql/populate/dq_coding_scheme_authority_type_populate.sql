@@ -43,10 +43,10 @@ create or replace function ores.upsert_dq_coding_scheme_authority_type(
 ) returns void as $$
 begin
     if not exists (
-        select 1 from ores.dq_coding_scheme_authority_type_tbl
+        select 1 from ores.dq_coding_scheme_authority_types_tbl
         where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
-        insert into ores.dq_coding_scheme_authority_type_tbl (
+        insert into ores.dq_coding_scheme_authority_types_tbl (
             code, version, name, description,
             modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
@@ -100,5 +100,5 @@ drop function ores.upsert_dq_coding_scheme_authority_type(text, text, text);
 \echo '--- Summary ---'
 
 select 'Coding Scheme Authority Types' as entity, count(*) as count
-from ores.dq_coding_scheme_authority_type_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_coding_scheme_authority_types_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

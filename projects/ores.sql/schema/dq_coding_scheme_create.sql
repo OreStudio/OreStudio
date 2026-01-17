@@ -35,7 +35,7 @@
  * - ISO 3166 for country codes
  */
 
-create table if not exists "ores"."dq_coding_scheme_tbl" (
+create table if not exists "ores"."dq_coding_schemes_tbl" (
     "code" text not null,
     "version" integer not null,
     "name" text not null,
@@ -58,37 +58,37 @@ create table if not exists "ores"."dq_coding_scheme_tbl" (
 );
 
 -- Unique indexes for current records
-create unique index if not exists dq_coding_scheme_version_uniq_idx
-on "ores"."dq_coding_scheme_tbl" (code, version)
+create unique index if not exists dq_coding_schemes_version_uniq_idx
+on "ores"."dq_coding_schemes_tbl" (code, version)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_coding_scheme_code_uniq_idx
-on "ores"."dq_coding_scheme_tbl" (code)
+create unique index if not exists dq_coding_schemes_code_uniq_idx
+on "ores"."dq_coding_schemes_tbl" (code)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
 -- Index for looking up schemes by subject area
-create index if not exists dq_coding_scheme_subject_area_idx
-on "ores"."dq_coding_scheme_tbl" (subject_area_name, domain_name)
+create index if not exists dq_coding_schemes_subject_area_idx
+on "ores"."dq_coding_schemes_tbl" (subject_area_name, domain_name)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
 -- Index for looking up schemes by URI
-create index if not exists dq_coding_scheme_uri_idx
-on "ores"."dq_coding_scheme_tbl" (uri)
+create index if not exists dq_coding_schemes_uri_idx
+on "ores"."dq_coding_schemes_tbl" (uri)
 where valid_to = ores.utility_infinity_timestamp_fn() and uri is not null;
 
 -- Index for looking up schemes by authority type
-create index if not exists dq_coding_scheme_authority_type_idx
-on "ores"."dq_coding_scheme_tbl" (authority_type)
+create index if not exists dq_coding_schemes_authority_type_idx
+on "ores"."dq_coding_schemes_tbl" (authority_type)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create or replace function ores.dq_coding_scheme_insert_fn()
+create or replace function ores.dq_coding_schemes_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     -- Validate authority_type FK
     if not exists (
-        select 1 from ores.dq_coding_scheme_authority_type_tbl
+        select 1 from ores.dq_coding_scheme_authority_types_tbl
         where code = NEW.authority_type
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
@@ -98,7 +98,7 @@ begin
 
     -- Validate subject_area/domain FK
     if not exists (
-        select 1 from ores.dq_subject_area_tbl
+        select 1 from ores.dq_subject_areas_tbl
         where name = NEW.subject_area_name
         and domain_name = NEW.domain_name
         and valid_to = ores.utility_infinity_timestamp_fn()
@@ -108,7 +108,7 @@ begin
     end if;
 
     select version into current_version
-    from "ores"."dq_coding_scheme_tbl"
+    from "ores"."dq_coding_schemes_tbl"
     where code = NEW.code
       and valid_to = ores.utility_infinity_timestamp_fn();
 
@@ -122,7 +122,7 @@ begin
         NEW.version = current_version + 1;
 
         -- Close the old record.
-        update "ores"."dq_coding_scheme_tbl"
+        update "ores"."dq_coding_schemes_tbl"
         set valid_to = current_timestamp
         where code = NEW.code
           and valid_to = ores.utility_infinity_timestamp_fn()
@@ -145,13 +145,13 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_coding_scheme_insert_trg
-before insert on "ores"."dq_coding_scheme_tbl"
-for each row execute function ores.dq_coding_scheme_insert_fn();
+create or replace trigger dq_coding_schemes_insert_trg
+before insert on "ores"."dq_coding_schemes_tbl"
+for each row execute function ores.dq_coding_schemes_insert_fn();
 
-create or replace rule dq_coding_scheme_delete_rule as
-on delete to "ores"."dq_coding_scheme_tbl" do instead
-    update "ores"."dq_coding_scheme_tbl"
+create or replace rule dq_coding_schemes_delete_rule as
+on delete to "ores"."dq_coding_schemes_tbl" do instead
+    update "ores"."dq_coding_schemes_tbl"
     set valid_to = current_timestamp
     where code = OLD.code
       and valid_to = ores.utility_infinity_timestamp_fn();

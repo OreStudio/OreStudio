@@ -20,7 +20,7 @@
 
 set schema 'ores';
 
-drop trigger if exists dq_data_domain_insert_trg on "ores"."dq_data_domain_tbl";
-drop rule if exists dq_data_domain_delete_rule on "ores"."dq_data_domain_tbl";
-drop function if exists ores.dq_data_domain_insert_fn();
-drop table if exists "ores"."dq_data_domain_tbl";
+drop trigger if exists dq_data_domains_insert_trg on "ores"."dq_data_domains_tbl";
+drop rule if exists dq_data_domains_delete_rule on "ores"."dq_data_domains_tbl";
+drop function if exists ores.dq_data_domains_insert_fn();
+drop table if exists "ores"."dq_data_domains_tbl";

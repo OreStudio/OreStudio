@@ -24,7 +24,7 @@ set schema 'ores';
 -- Helper Function
 -- =============================================================================
 
-create or replace function ores.upsert_dq_methodology(
+create or replace function ores.upsert_dq_methodologies(
     p_name text,
     p_description text,
     p_logic_reference text default null,
@@ -34,11 +34,11 @@ declare
     v_id uuid;
 begin
     if not exists (
-        select 1 from ores.dq_methodology_tbl
+        select 1 from ores.dq_methodologies_tbl
         where name = p_name
           and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
-        insert into ores.dq_methodology_tbl (
+        insert into ores.dq_methodologies_tbl (
             id, version, name, description, logic_reference, implementation_details,
             modified_by, change_reason_code, change_commentary,
             valid_from, valid_to
@@ -48,9 +48,9 @@ begin
             'system', 'system.new_record', 'System seed data',
             current_timestamp, ores.utility_infinity_timestamp_fn()
         );
-        raise notice 'Created dq_methodology: %', p_name;
+        raise notice 'Created dq_methodologies: %', p_name;
     else
-        raise notice 'dq_methodology already exists: %', p_name;
+        raise notice 'dq_methodologies already exists: %', p_name;
     end if;
 end;
 $$ language plpgsql;
@@ -59,7 +59,7 @@ $$ language plpgsql;
 -- Seed Data
 -- =============================================================================
 
-select ores.upsert_dq_methodology(
+select ores.upsert_dq_methodologies(
     'Wikipedia ISO 3166 Extraction',
     'Data extracted from Wikipedia page listing ISO 3166 country codes',
     'https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes',
@@ -82,7 +82,7 @@ Note: Countries are linked to flag images via the flag_key field, which matches
 the key in the dq_images_artefact_tbl (e.g., ''gb'' -> gb.svg flag).'
 );
 
-select ores.upsert_dq_methodology(
+select ores.upsert_dq_methodologies(
     'GitHub Flag Icons Download',
     'SVG images downloaded from lipis/flag-icons GitHub repository',
     'https://github.com/lipis/flag-icons',
@@ -109,7 +109,7 @@ select ores.upsert_dq_methodology(
    git commit -m "[sql] Regenerate flag images populate script"'
 );
 
-select ores.upsert_dq_methodology(
+select ores.upsert_dq_methodologies(
     'GitHub Cryptocurrency Icons Download',
     'SVG images downloaded from spothq/cryptocurrency-icons GitHub repository',
     'https://github.com/spothq/cryptocurrency-icons',
@@ -137,7 +137,7 @@ select ores.upsert_dq_methodology(
    git commit -m "[sql] Regenerate cryptocurrency icons populate script"'
 );
 
-select ores.upsert_dq_methodology(
+select ores.upsert_dq_methodologies(
     'Wikipedia ISO 4217 Extraction',
     'Data extracted from Wikipedia page listing ISO 4217 currency codes',
     'https://en.wikipedia.org/wiki/ISO_4217',
@@ -162,7 +162,7 @@ DKK, NOK, NZD, SEK) or ''fiat.emerging'' (all others). Commodity currencies (XAU
 use type ''commodity''. SDR uses type ''supranational''.'
 );
 
-select ores.upsert_dq_methodology(
+select ores.upsert_dq_methodologies(
     'GitHub Cryptocurrencies JSON Download',
     'Cryptocurrency symbol-to-name mappings from crypti/cryptocurrencies GitHub repository',
     'https://github.com/crypti/cryptocurrencies',
@@ -195,7 +195,7 @@ Note: The script classifies cryptocurrencies as ''crypto.major'' (top 20 by mark
 or ''crypto.minor'' (all others). Only crypto.major currencies are populated to production.'
 );
 
-select ores.upsert_dq_methodology(
+select ores.upsert_dq_methodologies(
     'FpML Genericode Download',
     'Data downloaded from FpML coding scheme repository in Genericode XML format',
     'http://www.fpml.org/coding-scheme/',
@@ -231,12 +231,12 @@ version of the coding scheme.'
 -- Cleanup
 -- =============================================================================
 
-drop function ores.upsert_dq_methodology(text, text, text, text);
+drop function ores.upsert_dq_methodologies(text, text, text, text);
 
 -- =============================================================================
 -- Summary
 -- =============================================================================
 
-select 'dq_methodology' as entity, count(*) as count
-from ores.dq_methodology_tbl
+select 'dq_methodologies' as entity, count(*) as count
+from ores.dq_methodologies_tbl
 where valid_to = ores.utility_infinity_timestamp_fn();

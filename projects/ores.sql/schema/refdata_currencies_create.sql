@@ -58,7 +58,7 @@ declare
 begin
     -- Validate foreign key references
     if NEW.coding_scheme_code is not null and not exists (
-        select 1 from ores.dq_coding_scheme_tbl
+        select 1 from ores.dq_coding_schemes_tbl
         where code = NEW.coding_scheme_code
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then

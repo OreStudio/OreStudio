@@ -130,8 +130,8 @@ void SubjectAreaHistoryDialog::loadHistory() {
             return {false, "Dialog closed", {}};
 
         dq::messaging::get_subject_area_history_request request;
-        request.name = name;
-        request.domain_name = domain_name;
+        request.key.name = name;
+        request.key.domain_name = domain_name;
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(

@@ -142,8 +142,7 @@ void ClientCatalogModel::loadData() {
         if (!response)
             return {false, "Invalid server response", {}};
 
-        return {response->success, response->message,
-                std::move(response->catalogs)};
+        return {true, "", std::move(response->catalogs)};
     };
 
     auto* watcher = new QFutureWatcher<LoadResult>(this);

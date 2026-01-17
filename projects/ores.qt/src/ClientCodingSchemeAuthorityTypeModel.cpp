@@ -19,6 +19,7 @@
  */
 #include "ores.qt/ClientCodingSchemeAuthorityTypeModel.hpp"
 
+#include <QColor>
 #include <QtConcurrent>
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"

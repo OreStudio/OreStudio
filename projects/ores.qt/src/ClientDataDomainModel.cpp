@@ -19,6 +19,7 @@
  */
 #include "ores.qt/ClientDataDomainModel.hpp"
 
+#include <QColor>
 #include <QtConcurrent>
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"

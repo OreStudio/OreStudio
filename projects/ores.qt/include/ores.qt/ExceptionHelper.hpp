@@ -20,22 +20,75 @@
 #ifndef ORES_QT_EXCEPTION_HELPER_HPP
 #define ORES_QT_EXCEPTION_HELPER_HPP
 
+#include <optional>
 #include <QString>
 #include <exception>
 #include <boost/exception/diagnostic_information.hpp>
 #include "ores.logging/boost_severity.hpp"
+#include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/messaging/error_protocol.hpp"
 
 namespace ores::qt {
 
 /**
- * @brief Helper class for handling exceptions in async fetch operations.
+ * @brief Result of checking a response frame for server errors.
+ */
+struct server_error_info {
+    QString message;
+    QString details;
+};
+
+/**
+ * @brief Helper class for handling exceptions and server errors in async operations.
  *
- * Provides a standardized way to handle exceptions thrown from QFuture
- * operations, extracting detailed diagnostic information and emitting
- * user-friendly error messages.
+ * Provides standardized handling for:
+ * - Exceptions thrown from QFuture operations
+ * - Server error responses (message_type::error_response)
  */
 class exception_helper final {
 public:
+    /**
+     * @brief Check if a response frame is an error_response and extract the message.
+     *
+     * Call this after receiving a response but before attempting to deserialize
+     * as the expected response type. If the server sent an error_response, this
+     * extracts the human-readable error message.
+     *
+     * @param response The response frame from sendRequest().
+     * @return The error info if this is an error_response, nullopt otherwise.
+     */
+    static std::optional<server_error_info>
+    check_error_response(const comms::messaging::frame& response) {
+        using comms::messaging::message_type;
+        using comms::messaging::error_response;
+
+        if (response.header().type != message_type::error_response) {
+            return std::nullopt;
+        }
+
+        auto payload_result = response.decompressed_payload();
+        if (!payload_result) {
+            return server_error_info{
+                .message = "Server returned an error (failed to decompress)",
+                .details = {}
+            };
+        }
+
+        auto err_resp = error_response::deserialize(*payload_result);
+        if (!err_resp) {
+            return server_error_info{
+                .message = "Server returned an error (failed to parse)",
+                .details = {}
+            };
+        }
+
+        return server_error_info{
+            .message = QString::fromStdString(err_resp->message),
+            .details = QString("Error code: %1")
+                .arg(static_cast<int>(err_resp->code))
+        };
+    }
+
     /**
      * @brief Handles a fetch exception by logging and emitting an error signal.
      *

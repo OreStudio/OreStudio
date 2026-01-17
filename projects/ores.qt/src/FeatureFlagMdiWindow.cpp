@@ -30,6 +30,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/messaging/error_protocol.hpp"
 
 namespace ores::qt {
 
@@ -317,6 +318,22 @@ void FeatureFlagMdiWindow::deleteSelected() {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send delete request";
                 results.push_back({name,
                     {false, "Failed to communicate with server"}});
+                continue;
+            }
+
+            // Check for error response
+            if (response_result->header().type == message_type::error_response) {
+                auto err_payload = response_result->decompressed_payload();
+                std::string error_msg = "Server returned an error";
+                if (err_payload) {
+                    auto err_resp = comms::messaging::error_response::deserialize(*err_payload);
+                    if (err_resp) {
+                        error_msg = err_resp->message;
+                        BOOST_LOG_SEV(lg(), error) << "Server returned error for delete request: "
+                                                   << err_resp->message;
+                    }
+                }
+                results.push_back({name, {false, error_msg}});
                 continue;
             }
 

@@ -29,6 +29,7 @@
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
+#include "ores.comms/messaging/error_protocol.hpp"
 
 namespace ores::qt {
 
@@ -471,6 +472,22 @@ void FeatureFlagController::onRevertFeatureFlag(
     if (!response_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to send revert request";
         emit errorMessage("Failed to communicate with server");
+        return;
+    }
+
+    // Check for error response
+    if (response_result->header().type == comms::messaging::message_type::error_response) {
+        auto err_payload = response_result->decompressed_payload();
+        std::string error_msg = "Server returned an error";
+        if (err_payload) {
+            auto err_resp = comms::messaging::error_response::deserialize(*err_payload);
+            if (err_resp) {
+                error_msg = err_resp->message;
+                BOOST_LOG_SEV(lg(), error) << "Server returned error for revert request: "
+                                           << err_resp->message;
+            }
+        }
+        emit errorMessage(QString::fromStdString(error_msg));
         return;
     }
 

@@ -144,6 +144,15 @@ void ClientDatasetModel::refresh() {
                         .error_details = {}};
             }
 
+            // Check for server error response
+            if (auto err = exception_helper::check_error_response(*response_result)) {
+                BOOST_LOG_SEV(lg(), error) << "Server error: "
+                                           << err->message.toStdString();
+                return {.success = false, .datasets = {},
+                        .error_message = err->message,
+                        .error_details = err->details};
+            }
+
             auto payload_result = response_result->decompressed_payload();
             if (!payload_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";

@@ -19,7 +19,11 @@
  */
 #include "ores.dq/messaging/dq_message_handler.hpp"
 
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.dq/messaging/change_management_protocol.hpp"
+#include "ores.dq/messaging/data_organization_protocol.hpp"
+#include "ores.dq/messaging/dataset_protocol.hpp"
+#include "ores.dq/messaging/coding_scheme_protocol.hpp"
 
 namespace ores::dq::messaging {
 
@@ -29,7 +33,10 @@ using comms::messaging::message_type;
 dq_message_handler::dq_message_handler(database::context ctx,
     std::shared_ptr<comms::service::auth_session_service> sessions)
     : ctx_(ctx), sessions_(std::move(sessions)),
-      change_management_service_(ctx) {}
+      change_management_service_(ctx),
+      data_organization_service_(ctx),
+      dataset_service_(ctx),
+      coding_scheme_service_(ctx) {}
 
 dq_message_handler::handler_result
 dq_message_handler::handle_message(message_type type,
@@ -57,6 +64,61 @@ dq_message_handler::handle_message(message_type type,
         co_return co_await handle_delete_change_reason_category_request(payload, remote_address);
     case message_type::get_change_reason_category_history_request:
         co_return co_await handle_get_change_reason_category_history_request(payload, remote_address);
+
+    // Catalog messages
+    case message_type::get_catalogs_request:
+        co_return co_await handle_get_catalogs_request(payload, remote_address);
+    case message_type::save_catalog_request:
+        co_return co_await handle_save_catalog_request(payload, remote_address);
+    case message_type::delete_catalog_request:
+        co_return co_await handle_delete_catalog_request(payload, remote_address);
+    case message_type::get_catalog_history_request:
+        co_return co_await handle_get_catalog_history_request(payload, remote_address);
+
+    // Subject area messages
+    case message_type::get_subject_areas_request:
+        co_return co_await handle_get_subject_areas_request(payload, remote_address);
+    case message_type::get_subject_areas_by_domain_request:
+        co_return co_await handle_get_subject_areas_by_domain_request(payload, remote_address);
+    case message_type::save_subject_area_request:
+        co_return co_await handle_save_subject_area_request(payload, remote_address);
+    case message_type::delete_subject_area_request:
+        co_return co_await handle_delete_subject_area_request(payload, remote_address);
+    case message_type::get_subject_area_history_request:
+        co_return co_await handle_get_subject_area_history_request(payload, remote_address);
+
+    // Dataset messages
+    case message_type::get_datasets_request:
+        co_return co_await handle_get_datasets_request(payload, remote_address);
+    case message_type::save_dataset_request:
+        co_return co_await handle_save_dataset_request(payload, remote_address);
+    case message_type::delete_dataset_request:
+        co_return co_await handle_delete_dataset_request(payload, remote_address);
+    case message_type::get_dataset_history_request:
+        co_return co_await handle_get_dataset_history_request(payload, remote_address);
+
+    // Methodology messages
+    case message_type::get_methodologies_request:
+        co_return co_await handle_get_methodologies_request(payload, remote_address);
+    case message_type::save_methodology_request:
+        co_return co_await handle_save_methodology_request(payload, remote_address);
+    case message_type::delete_methodology_request:
+        co_return co_await handle_delete_methodology_request(payload, remote_address);
+    case message_type::get_methodology_history_request:
+        co_return co_await handle_get_methodology_history_request(payload, remote_address);
+
+    // Coding scheme messages
+    case message_type::get_coding_schemes_request:
+        co_return co_await handle_get_coding_schemes_request(payload, remote_address);
+    case message_type::get_coding_schemes_by_authority_type_request:
+        co_return co_await handle_get_coding_schemes_by_authority_type_request(payload, remote_address);
+    case message_type::save_coding_scheme_request:
+        co_return co_await handle_save_coding_scheme_request(payload, remote_address);
+    case message_type::delete_coding_scheme_request:
+        co_return co_await handle_delete_coding_scheme_request(payload, remote_address);
+    case message_type::get_coding_scheme_history_request:
+        co_return co_await handle_get_coding_scheme_history_request(payload, remote_address);
+
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown DQ message type " << type;
         co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
@@ -409,6 +471,793 @@ handle_get_change_reason_category_history_request(std::span<const std::byte> pay
                                   << request.code;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to get change reason category history: "
+                                   << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Catalog Handlers
+// ============================================================================
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_catalogs_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_catalogs_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address, "List catalogs");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_catalogs_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_catalogs_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto catalogs = data_organization_service_.list_catalogs();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << catalogs.size() << " catalogs.";
+
+    get_catalogs_response response{.catalogs = std::move(catalogs)};
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_save_catalog_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_catalog_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address, "Save catalog");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = save_catalog_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_catalog_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    save_catalog_response response;
+    try {
+        auto existing = data_organization_service_.find_catalog(request.catalog.name);
+        if (existing) {
+            data_organization_service_.update_catalog(request.catalog);
+        } else {
+            data_organization_service_.create_catalog(request.catalog);
+        }
+        response.success = true;
+        response.message = "Catalog saved successfully.";
+        BOOST_LOG_SEV(lg(), info) << "Saved catalog: " << request.catalog.name;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to save catalog: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_delete_catalog_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_catalog_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address, "Delete catalog");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = delete_catalog_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_catalog_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    delete_catalog_response response;
+    for (const auto& name : request.names) {
+        delete_catalog_result result;
+        result.name = name;
+        try {
+            data_organization_service_.remove_catalog(name);
+            result.success = true;
+            result.message = "Deleted successfully.";
+            BOOST_LOG_SEV(lg(), info) << "Deleted catalog: " << name;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to delete catalog " << name
+                                       << ": " << e.what();
+            result.success = false;
+            result.message = e.what();
+        }
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_catalog_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_catalog_history_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Get catalog history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_catalog_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_catalog_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    get_catalog_history_response response;
+    try {
+        response.versions = data_organization_service_.get_catalog_history(request.name);
+        response.success = true;
+        response.message = "";
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
+                                  << " versions for catalog: " << request.name;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get catalog history: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Subject Area Handlers
+// ============================================================================
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_subject_areas_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_subject_areas_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List subject areas");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_subject_areas_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_subject_areas_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto subject_areas = data_organization_service_.list_subject_areas();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << subject_areas.size()
+                              << " subject areas.";
+
+    get_subject_areas_response response{.subject_areas = std::move(subject_areas)};
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_subject_areas_by_domain_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_subject_areas_by_domain_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List subject areas by domain");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_subject_areas_by_domain_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_subject_areas_by_domain_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    auto subject_areas = data_organization_service_.list_subject_areas_by_domain(
+        request.domain_name);
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << subject_areas.size()
+                              << " subject areas for domain: " << request.domain_name;
+
+    get_subject_areas_by_domain_response response{
+        .subject_areas = std::move(subject_areas)
+    };
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_save_subject_area_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_subject_area_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Save subject area");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = save_subject_area_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_subject_area_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    save_subject_area_response response;
+    try {
+        auto existing = data_organization_service_.find_subject_area(
+            request.subject_area.name, request.subject_area.domain_name);
+        if (existing) {
+            data_organization_service_.update_subject_area(request.subject_area);
+        } else {
+            data_organization_service_.create_subject_area(request.subject_area);
+        }
+        response.success = true;
+        response.message = "Subject area saved successfully.";
+        BOOST_LOG_SEV(lg(), info) << "Saved subject area: "
+                                  << request.subject_area.name;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to save subject area: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_delete_subject_area_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_subject_area_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Delete subject area");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = delete_subject_area_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_subject_area_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    delete_subject_area_response response;
+    for (const auto& key : request.keys) {
+        delete_subject_area_result result;
+        result.key = key;
+        try {
+            data_organization_service_.remove_subject_area(key.name, key.domain_name);
+            result.success = true;
+            result.message = "Deleted successfully.";
+            BOOST_LOG_SEV(lg(), info) << "Deleted subject area: " << key.name;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to delete subject area "
+                                       << key.name << ": " << e.what();
+            result.success = false;
+            result.message = e.what();
+        }
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_subject_area_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_subject_area_history_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Get subject area history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_subject_area_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_subject_area_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    get_subject_area_history_response response;
+    try {
+        response.versions = data_organization_service_.get_subject_area_history(
+            request.key.name, request.key.domain_name);
+        response.success = true;
+        response.message = "";
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
+                                  << " versions for subject area: "
+                                  << request.key.name;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get subject area history: "
+                                   << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Dataset Handlers
+// ============================================================================
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_datasets_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_datasets_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address, "List datasets");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_datasets_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_datasets_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto datasets = dataset_service_.list_datasets();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << datasets.size() << " datasets.";
+
+    get_datasets_response response{.datasets = std::move(datasets)};
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_save_dataset_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_dataset_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address, "Save dataset");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = save_dataset_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_dataset_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    save_dataset_response response;
+    try {
+        auto existing = dataset_service_.find_dataset(request.dataset.id);
+        if (existing) {
+            dataset_service_.update_dataset(request.dataset);
+        } else {
+            dataset_service_.create_dataset(request.dataset);
+        }
+        response.success = true;
+        response.message = "Dataset saved successfully.";
+        BOOST_LOG_SEV(lg(), info) << "Saved dataset: " << request.dataset.id;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to save dataset: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_delete_dataset_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_dataset_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address, "Delete dataset");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = delete_dataset_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_dataset_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    delete_dataset_response response;
+    for (const auto& id : request.ids) {
+        delete_dataset_result result;
+        result.id = id;
+        try {
+            dataset_service_.remove_dataset(id);
+            result.success = true;
+            result.message = "Deleted successfully.";
+            BOOST_LOG_SEV(lg(), info) << "Deleted dataset: " << id;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to delete dataset "
+                                       << id << ": " << e.what();
+            result.success = false;
+            result.message = e.what();
+        }
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_dataset_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_dataset_history_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Get dataset history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_dataset_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_dataset_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    get_dataset_history_response response;
+    try {
+        response.versions = dataset_service_.get_dataset_history(request.id);
+        response.success = true;
+        response.message = "";
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
+                                  << " versions for dataset: " << request.id;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get dataset history: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Methodology Handlers
+// ============================================================================
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_methodologies_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_methodologies_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List methodologies");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_methodologies_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_methodologies_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto methodologies = dataset_service_.list_methodologies();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << methodologies.size()
+                              << " methodologies.";
+
+    get_methodologies_response response{.methodologies = std::move(methodologies)};
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_save_methodology_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_methodology_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Save methodology");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = save_methodology_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_methodology_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    save_methodology_response response;
+    try {
+        auto existing = dataset_service_.find_methodology(request.methodology.id);
+        if (existing) {
+            dataset_service_.update_methodology(request.methodology);
+        } else {
+            dataset_service_.create_methodology(request.methodology);
+        }
+        response.success = true;
+        response.message = "Methodology saved successfully.";
+        BOOST_LOG_SEV(lg(), info) << "Saved methodology: "
+                                  << request.methodology.id;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to save methodology: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_delete_methodology_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_methodology_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Delete methodology");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = delete_methodology_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_methodology_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    delete_methodology_response response;
+    for (const auto& id : request.ids) {
+        delete_methodology_result result;
+        result.id = id;
+        try {
+            dataset_service_.remove_methodology(id);
+            result.success = true;
+            result.message = "Deleted successfully.";
+            BOOST_LOG_SEV(lg(), info) << "Deleted methodology: " << id;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to delete methodology "
+                                       << id << ": " << e.what();
+            result.success = false;
+            result.message = e.what();
+        }
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_methodology_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_methodology_history_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Get methodology history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_methodology_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_methodology_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    get_methodology_history_response response;
+    try {
+        response.versions = dataset_service_.get_methodology_history(request.id);
+        response.success = true;
+        response.message = "";
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
+                                  << " versions for methodology: " << request.id;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get methodology history: "
+                                   << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Coding Scheme Handlers
+// ============================================================================
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_coding_schemes_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_coding_schemes_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List coding schemes");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_coding_schemes_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_coding_schemes_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto schemes = coding_scheme_service_.list_coding_schemes();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << schemes.size()
+                              << " coding schemes.";
+
+    get_coding_schemes_response response{.schemes = std::move(schemes)};
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_coding_schemes_by_authority_type_request(
+    std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_coding_schemes_by_authority_type_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List coding schemes by authority type");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result =
+        get_coding_schemes_by_authority_type_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_coding_schemes_by_authority_type_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    auto schemes = coding_scheme_service_.list_coding_schemes_by_authority_type(
+        request.authority_type);
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << schemes.size()
+                              << " coding schemes for authority type: "
+                              << request.authority_type;
+
+    get_coding_schemes_by_authority_type_response response{
+        .schemes = std::move(schemes)
+    };
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_save_coding_scheme_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_coding_scheme_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Save coding scheme");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = save_coding_scheme_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_coding_scheme_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    save_coding_scheme_response response;
+    try {
+        auto existing = coding_scheme_service_.find_coding_scheme(
+            request.scheme.code);
+        if (existing) {
+            coding_scheme_service_.update_coding_scheme(request.scheme);
+        } else {
+            coding_scheme_service_.create_coding_scheme(request.scheme);
+        }
+        response.success = true;
+        response.message = "Coding scheme saved successfully.";
+        BOOST_LOG_SEV(lg(), info) << "Saved coding scheme: "
+                                  << request.scheme.code;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to save coding scheme: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_delete_coding_scheme_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_coding_scheme_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Delete coding scheme");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = delete_coding_scheme_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_coding_scheme_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    delete_coding_scheme_response response;
+    for (const auto& code : request.codes) {
+        delete_coding_scheme_result result;
+        result.code = code;
+        try {
+            coding_scheme_service_.remove_coding_scheme(code);
+            result.success = true;
+            result.message = "Deleted successfully.";
+            BOOST_LOG_SEV(lg(), info) << "Deleted coding scheme: " << code;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to delete coding scheme "
+                                       << code << ": " << e.what();
+            result.success = false;
+            result.message = e.what();
+        }
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_coding_scheme_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_coding_scheme_history_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Get coding scheme history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_coding_scheme_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_coding_scheme_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    get_coding_scheme_history_response response;
+    try {
+        response.versions = coding_scheme_service_.get_coding_scheme_history(
+            request.code);
+        response.success = true;
+        response.message = "";
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
+                                  << " versions for coding scheme: "
+                                  << request.code;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get coding scheme history: "
                                    << e.what();
         response.success = false;
         response.message = e.what();

@@ -119,11 +119,23 @@ void MessageBoxHelper::critical(
     QWidget* parent,
     const QString& title,
     const QString& text) {
+    critical(parent, title, text, QString());
+}
+
+void MessageBoxHelper::critical(
+    QWidget* parent,
+    const QString& title,
+    const QString& text,
+    const QString& detailedText) {
 
     QMessageBox msgBox(parent);
     msgBox.setWindowTitle(title);
     msgBox.setText(text);
     msgBox.setStandardButtons(QMessageBox::Ok);
+
+    if (!detailedText.isEmpty()) {
+        msgBox.setDetailedText(detailedText);
+    }
 
     // Use error icon for critical errors
     const QColor iconColor(220, 220, 220);

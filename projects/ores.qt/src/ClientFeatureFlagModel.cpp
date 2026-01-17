@@ -21,6 +21,7 @@
 
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
@@ -170,7 +171,17 @@ void ClientFeatureFlagModel::refresh() {
 
 void ClientFeatureFlagModel::onFeatureFlagsLoaded() {
     is_fetching_ = false;
-    auto result = watcher_->result();
+
+    FetchResult result;
+    try {
+        result = watcher_->result();
+    } catch (const std::exception& e) {
+        exception_helper::handle_fetch_exception(e, tr("feature flags"), lg(),
+            [this](const QString& msg, const QString& details) {
+                emit loadError(msg, details);
+            });
+        return;
+    }
 
     if (!result.success) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load feature flags";

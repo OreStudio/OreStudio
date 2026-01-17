@@ -139,8 +139,11 @@ void DataDomainMdiWindow::onDataLoaded() {
     updateActionStates();
 }
 
-void DataDomainMdiWindow::onLoadError(const QString& error_message) {
+void DataDomainMdiWindow::onLoadError(const QString& error_message,
+                                       const QString& details) {
+    BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
+    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
 }
 
 void DataDomainMdiWindow::onRowDoubleClicked(const QModelIndex& index) {

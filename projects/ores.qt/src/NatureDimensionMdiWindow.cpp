@@ -177,9 +177,11 @@ void NatureDimensionMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 nature dimensions").arg(model_->rowCount()));
 }
 
-void NatureDimensionMdiWindow::onLoadError(const QString& error_message) {
+void NatureDimensionMdiWindow::onLoadError(const QString& error_message,
+                                            const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
+    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
 }
 
 void NatureDimensionMdiWindow::onSelectionChanged() {

@@ -22,6 +22,7 @@
 #include <QtConcurrent>
 #include <QBrush>
 #include "ores.dq/messaging/dimension_protocol.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
@@ -178,7 +179,17 @@ void ClientOriginDimensionModel::refresh() {
 void ClientOriginDimensionModel::onDimensionsLoaded() {
     is_fetching_ = false;
 
-    auto result = watcher_->result();
+    FetchResult result;
+    try {
+        result = watcher_->result();
+    } catch (const std::exception& e) {
+        exception_helper::handle_fetch_exception(e, tr("origin dimensions"), lg(),
+            [this](const QString& msg, const QString& details) {
+                emit loadError(msg, details);
+            });
+        return;
+    }
+
     if (!result.success) {
         emit loadError("Failed to fetch origin dimensions from server");
         return;

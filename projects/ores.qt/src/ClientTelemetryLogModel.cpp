@@ -22,6 +22,7 @@
 #include <QtConcurrent>
 #include <QDateTime>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.telemetry/messaging/telemetry_protocol.hpp"
 
@@ -239,7 +240,17 @@ void ClientTelemetryLogModel::fetch_logs() {
 void ClientTelemetryLogModel::onLogsLoaded() {
     is_fetching_ = false;
 
-    auto result = watcher_->result();
+    FetchResult result;
+    try {
+        result = watcher_->result();
+    } catch (const std::exception& e) {
+        exception_helper::handle_fetch_exception(e, tr("telemetry logs"), lg(),
+            [this](const QString& msg, const QString& details) {
+                emit loadError(msg, details);
+            });
+        return;
+    }
+
     if (result.success) {
         beginResetModel();
         total_available_count_ = result.total_count;

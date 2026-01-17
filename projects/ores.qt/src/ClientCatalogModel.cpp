@@ -23,6 +23,7 @@
 #include <QColor>
 #include <QFutureWatcher>
 #include <QtConcurrent>
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -148,7 +149,19 @@ void ClientCatalogModel::loadData() {
     auto* watcher = new QFutureWatcher<LoadResult>(this);
     connect(watcher, &QFutureWatcher<LoadResult>::finished, this,
             [self, watcher]() {
-        auto result = watcher->result();
+        LoadResult result;
+        try {
+            result = watcher->result();
+        } catch (const std::exception& e) {
+            watcher->deleteLater();
+            if (self) {
+                exception_helper::handle_fetch_exception(e, self->tr("catalogs"), lg(),
+                    [&self](const QString& msg, const QString& details) {
+                        emit self->errorOccurred(msg, details);
+                    });
+            }
+            return;
+        }
         watcher->deleteLater();
 
         if (!self) return;

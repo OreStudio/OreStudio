@@ -97,7 +97,7 @@ signals:
     /**
      * @brief Emitted when an error occurs during data loading.
      */
-    void loadError(const QString& error_message);
+    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onCategoriesLoaded();

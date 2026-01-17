@@ -66,6 +66,19 @@ public:
         const QString& text);
 
     /**
+     * @brief Show a critical error dialog with expandable technical details
+     * @param parent Parent widget
+     * @param title Dialog title
+     * @param text Dialog message
+     * @param detailedText Technical details shown in expandable section
+     */
+    static void critical(
+        QWidget* parent,
+        const QString& title,
+        const QString& text,
+        const QString& detailedText);
+
+    /**
      * @brief Show an information dialog with custom Fluent icon
      * @param parent Parent widget
      * @param title Dialog title

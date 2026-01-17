@@ -21,6 +21,7 @@
 
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/dataset_protocol.hpp"
@@ -150,7 +151,17 @@ void ClientDatasetModel::refresh() {
 
 void ClientDatasetModel::onDatasetsLoaded() {
     is_fetching_ = false;
-    auto result = watcher_->result();
+
+    FetchResult result;
+    try {
+        result = watcher_->result();
+    } catch (const std::exception& e) {
+        exception_helper::handle_fetch_exception(e, tr("datasets"), lg(),
+            [this](const QString& msg, const QString& details) {
+                emit loadError(msg, details);
+            });
+        return;
+    }
 
     if (result.success) {
         beginResetModel();

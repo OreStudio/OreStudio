@@ -82,7 +82,7 @@ public slots:
 
 private slots:
     void onDataLoaded();
-    void onLoadError(const QString& error_message);
+    void onLoadError(const QString& error_message, const QString& details = {});
     void onSelectionChanged();
     void onDoubleClicked(const QModelIndex& index);
 

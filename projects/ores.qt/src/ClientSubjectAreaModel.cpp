@@ -21,6 +21,7 @@
 
 #include <QtConcurrent>
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -134,7 +135,17 @@ void ClientSubjectAreaModel::refresh() {
 
 void ClientSubjectAreaModel::onSubjectAreasLoaded() {
     is_fetching_ = false;
-    auto result = watcher_->result();
+
+    FetchResult result;
+    try {
+        result = watcher_->result();
+    } catch (const std::exception& e) {
+        exception_helper::handle_fetch_exception(e, tr("subject areas"), lg(),
+            [this](const QString& msg, const QString& details) {
+                emit loadError(msg, details);
+            });
+        return;
+    }
 
     if (result.success) {
         beginResetModel();

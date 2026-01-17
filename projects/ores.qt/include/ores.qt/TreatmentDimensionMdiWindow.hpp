@@ -62,7 +62,7 @@ signals:
 
 private slots:
     void onDataLoaded();
-    void onLoadError(const QString& error_message);
+    void onLoadError(const QString& error_message, const QString& details = {});
     void onRowDoubleClicked(const QModelIndex& index);
     void onAddClicked();
     void onEditClicked();

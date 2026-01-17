@@ -89,7 +89,7 @@ private slots:
     void onSessionSelected(QTreeWidgetItem* item, int column);
     void onLogSelected(const QModelIndex& current, const QModelIndex& previous);
     void onLogsLoaded();
-    void onLoadError(const QString& error_message);
+    void onLoadError(const QString& error_message, const QString& details = {});
     void onConnectionStateChanged();
 
 private:

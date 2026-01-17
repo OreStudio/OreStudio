@@ -24,6 +24,7 @@
 #include <unordered_map>
 #include <QtConcurrent>
 #include <QColor>
+#include "ores.qt/ExceptionHelper.hpp"
 #include <QDateTime>
 #include <QFont>
 #include <boost/uuid/uuid_io.hpp>
@@ -252,7 +253,17 @@ void ClientAccountModel::onAccountsLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "On accounts loaded event.";
     is_fetching_ = false;
 
-    auto result = watcher_->result();
+    FetchResult result;
+    try {
+        result = watcher_->result();
+    } catch (const std::exception& e) {
+        exception_helper::handle_fetch_exception(e, tr("accounts"), lg(),
+            [this](const QString& msg, const QString& details) {
+                emit loadError(msg, details);
+            });
+        return;
+    }
+
     if (result.success) {
         total_available_count_ = result.total_available_count;
 

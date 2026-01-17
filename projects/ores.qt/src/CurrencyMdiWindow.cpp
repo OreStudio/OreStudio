@@ -349,12 +349,13 @@ void CurrencyMdiWindow::onDataLoaded() {
     }
 }
 
-void CurrencyMdiWindow::onLoadError(const QString& error_message) {
+void CurrencyMdiWindow::onLoadError(const QString& error_message,
+                                     const QString& details) {
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading currencies: "
                               << error_message.toStdString();
 
-    MessageBoxHelper::critical(this, "Load Error", error_message);
+    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
 }
 
 void CurrencyMdiWindow::onRowDoubleClicked(const QModelIndex& index) {

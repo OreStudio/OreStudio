@@ -24,8 +24,8 @@
 #include <QFutureWatcher>
 #include <QHeaderView>
 #include <QDateTime>
-#include <QMessageBox>
 #include <QBrush>
+#include "ores.qt/MessageBoxHelper.hpp"
 #include <QRegularExpression>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
@@ -542,9 +542,11 @@ void TelemetryMdiWindow::onLogsLoaded() {
     emit statusChanged(tr("Loaded %1 log entries").arg(logModel_->rowCount()));
 }
 
-void TelemetryMdiWindow::onLoadError(const QString& error_message) {
+void TelemetryMdiWindow::onLoadError(const QString& error_message,
+                                      const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
+    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
 }
 
 void TelemetryMdiWindow::onConnectionStateChanged() {

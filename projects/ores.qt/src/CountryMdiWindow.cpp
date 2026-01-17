@@ -280,12 +280,13 @@ void CountryMdiWindow::onDataLoaded() {
     }
 }
 
-void CountryMdiWindow::onLoadError(const QString& error_message) {
+void CountryMdiWindow::onLoadError(const QString& error_message,
+                                    const QString& details) {
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading countries: "
                               << error_message.toStdString();
 
-    MessageBoxHelper::critical(this, "Load Error", error_message);
+    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
 }
 
 void CountryMdiWindow::onRowDoubleClicked(const QModelIndex& index) {

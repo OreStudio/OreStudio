@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.iam/messaging/authorization_protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -147,7 +148,17 @@ void ClientRoleModel::onRolesLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "On roles loaded event.";
     is_fetching_ = false;
 
-    auto result = watcher_->result();
+    FetchResult result;
+    try {
+        result = watcher_->result();
+    } catch (const std::exception& e) {
+        exception_helper::handle_fetch_exception(e, tr("roles"), lg(),
+            [this](const QString& msg, const QString& details) {
+                emit loadError(msg, details);
+            });
+        return;
+    }
+
     if (result.success) {
         beginResetModel();
         roles_ = std::move(result.roles);

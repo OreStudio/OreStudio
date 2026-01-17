@@ -71,7 +71,7 @@ public:
 
 signals:
     void dataLoaded();
-    void loadError(const QString& error_message);
+    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onAuthorityTypesLoaded();

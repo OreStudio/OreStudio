@@ -62,6 +62,7 @@ class NatureDimensionController;
 class TreatmentDimensionController;
 class CodingSchemeAuthorityTypeController;
 class DataDomainController;
+class SubjectAreaController;
 class ImageCache;
 class ChangeReasonCache;
 
@@ -400,6 +401,14 @@ private:
      * and history windows.
      */
     std::unique_ptr<DataDomainController> dataDomainController_;
+
+    /**
+     * @brief Controller managing subject area windows.
+     *
+     * Created after successful login, handles subject area list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<SubjectAreaController> subjectAreaController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

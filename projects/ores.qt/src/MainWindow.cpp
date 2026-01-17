@@ -56,6 +56,7 @@
 #include "ores.qt/TreatmentDimensionController.hpp"
 #include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
 #include "ores.qt/DataDomainController.hpp"
+#include "ores.qt/SubjectAreaController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -417,6 +418,12 @@ MainWindow::MainWindow(QWidget* parent) :
             dataDomainController_->showListWindow();
     });
 
+    // Connect Subject Areas action to controller
+    connect(ui_->ActionSubjectAreas, &QAction::triggered, this, [this]() {
+        if (subjectAreaController_)
+            subjectAreaController_->showListWindow();
+    });
+
     // Initially disable data-related actions until logged in
     updateMenuState();
 
@@ -619,6 +626,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionTreatmentDimensions->setEnabled(isConnected);
     ui_->ActionCodingSchemeAuthorityTypes->setEnabled(isConnected);
     ui_->ActionDataDomains->setEnabled(isConnected);
+    ui_->ActionSubjectAreas->setEnabled(isConnected);
 
     // My Account and My Sessions menu items are enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
@@ -823,6 +831,21 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
     connect(dataDomainController_.get(), &DataDomainController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create subject area controller
+    subjectAreaController_ = std::make_unique<SubjectAreaController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect subject area controller signals to status bar
+    connect(subjectAreaController_.get(), &SubjectAreaController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(subjectAreaController_.get(), &SubjectAreaController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
@@ -1474,6 +1497,9 @@ void MainWindow::onLoginSuccess(const QString& username) {
     }
     if (dataDomainController_) {
         dataDomainController_->setUsername(username);
+    }
+    if (subjectAreaController_) {
+        subjectAreaController_->setUsername(username);
     }
 
     updateWindowTitle();

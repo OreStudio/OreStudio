@@ -25,12 +25,12 @@
 #include <QtWidgets/QHeaderView>
 #include <QMessageBox>
 #include <QSortFilterProxyModel>
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/FeatureFlagItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
-#include "ores.comms/messaging/error_protocol.hpp"
 
 namespace ores::qt {
 
@@ -322,18 +322,10 @@ void FeatureFlagMdiWindow::deleteSelected() {
             }
 
             // Check for error response
-            if (response_result->header().type == message_type::error_response) {
-                auto err_payload = response_result->decompressed_payload();
-                std::string error_msg = "Server returned an error";
-                if (err_payload) {
-                    auto err_resp = comms::messaging::error_response::deserialize(*err_payload);
-                    if (err_resp) {
-                        error_msg = err_resp->message;
-                        BOOST_LOG_SEV(lg(), error) << "Server returned error for delete request: "
-                                                   << err_resp->message;
-                    }
-                }
-                results.push_back({name, {false, error_msg}});
+            if (auto err = exception_helper::check_error_response(*response_result)) {
+                BOOST_LOG_SEV(lg(), error) << "Server returned error for delete request: "
+                                           << err->message.toStdString();
+                results.push_back({name, {false, err->message.toStdString()}});
                 continue;
             }
 

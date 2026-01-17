@@ -39,11 +39,11 @@
 #include <QImage>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/AccountItemDelegate.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.iam/messaging/account_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
-#include "ores.comms/messaging/error_protocol.hpp"
 
 namespace ores::qt {
 
@@ -413,18 +413,10 @@ void AccountMdiWindow::deleteSelected() {
             }
 
             // Check for error response
-            if (response_result->header().type == message_type::error_response) {
-                auto err_payload = response_result->decompressed_payload();
-                std::string error_msg = "Server returned an error";
-                if (err_payload) {
-                    auto err_resp = comms::messaging::error_response::deserialize(*err_payload);
-                    if (err_resp) {
-                        error_msg = err_resp->message;
-                        BOOST_LOG_SEV(lg(), error) << "Server returned error for delete request: "
-                                                   << err_resp->message;
-                    }
-                }
-                results.push_back({account_id, {false, error_msg}});
+            if (auto err = exception_helper::check_error_response(*response_result)) {
+                BOOST_LOG_SEV(lg(), error) << "Server returned error for delete request: "
+                                           << err->message.toStdString();
+                results.push_back({account_id, {false, err->message.toStdString()}});
                 continue;
             }
 
@@ -586,20 +578,12 @@ void AccountMdiWindow::lockSelected() {
         }
 
         // Check for error response
-        if (response_result->header().type == message_type::error_response) {
-            auto err_payload = response_result->decompressed_payload();
-            std::string error_msg = "Server returned an error";
-            if (err_payload) {
-                auto err_resp = comms::messaging::error_response::deserialize(*err_payload);
-                if (err_resp) {
-                    error_msg = err_resp->message;
-                    BOOST_LOG_SEV(lg(), error) << "Server returned error for lock request: "
-                                               << err_resp->message;
-                }
-            }
+        if (auto err = exception_helper::check_error_response(*response_result)) {
+            BOOST_LOG_SEV(lg(), error) << "Server returned error for lock request: "
+                                       << err->message.toStdString();
             LockResult error_results;
             for (const auto& id : account_ids) {
-                error_results.push_back({id, false, error_msg});
+                error_results.push_back({id, false, err->message.toStdString()});
             }
             return error_results;
         }
@@ -759,20 +743,12 @@ void AccountMdiWindow::unlockSelected() {
         }
 
         // Check for error response
-        if (response_result->header().type == message_type::error_response) {
-            auto err_payload = response_result->decompressed_payload();
-            std::string error_msg = "Server returned an error";
-            if (err_payload) {
-                auto err_resp = comms::messaging::error_response::deserialize(*err_payload);
-                if (err_resp) {
-                    error_msg = err_resp->message;
-                    BOOST_LOG_SEV(lg(), error) << "Server returned error for unlock request: "
-                                               << err_resp->message;
-                }
-            }
+        if (auto err = exception_helper::check_error_response(*response_result)) {
+            BOOST_LOG_SEV(lg(), error) << "Server returned error for unlock request: "
+                                       << err->message.toStdString();
             UnlockResult error_results;
             for (const auto& id : account_ids) {
-                error_results.push_back({id, false, error_msg});
+                error_results.push_back({id, false, err->message.toStdString()});
             }
             return error_results;
         }
@@ -956,20 +932,12 @@ void AccountMdiWindow::resetPasswordSelected() {
         }
 
         // Check for error response
-        if (response_result->header().type == message_type::error_response) {
-            auto err_payload = response_result->decompressed_payload();
-            std::string error_msg = "Server returned an error";
-            if (err_payload) {
-                auto err_resp = comms::messaging::error_response::deserialize(*err_payload);
-                if (err_resp) {
-                    error_msg = err_resp->message;
-                    BOOST_LOG_SEV(lg(), error) << "Server returned error for reset password request: "
-                                               << err_resp->message;
-                }
-            }
+        if (auto err = exception_helper::check_error_response(*response_result)) {
+            BOOST_LOG_SEV(lg(), error) << "Server returned error for reset password request: "
+                                       << err->message.toStdString();
             ResetResult error_results;
             for (const auto& id : account_ids) {
-                error_results.push_back({id, false, error_msg});
+                error_results.push_back({id, false, err->message.toStdString()});
             }
             return error_results;
         }

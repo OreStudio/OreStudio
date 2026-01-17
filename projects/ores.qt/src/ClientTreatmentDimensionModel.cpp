@@ -20,6 +20,7 @@
 #include "ores.qt/ClientTreatmentDimensionModel.hpp"
 
 #include <QtConcurrent>
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/dimension_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"

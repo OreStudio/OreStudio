@@ -53,6 +53,7 @@
 #include "ores.qt/ChangeReasonController.hpp"
 #include "ores.qt/OriginDimensionController.hpp"
 #include "ores.qt/NatureDimensionController.hpp"
+#include "ores.qt/TreatmentDimensionController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -140,6 +141,8 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionOriginDimensions->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_database_20_regular.svg", iconColor));
     ui_->ActionNatureDimensions->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+    ui_->ActionTreatmentDimensions->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_database_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
@@ -390,6 +393,12 @@ MainWindow::MainWindow(QWidget* parent) :
             natureDimensionController_->showListWindow();
     });
 
+    // Connect Treatment Dimensions action to controller
+    connect(ui_->ActionTreatmentDimensions, &QAction::triggered, this, [this]() {
+        if (treatmentDimensionController_)
+            treatmentDimensionController_->showListWindow();
+    });
+
     // Initially disable data-related actions until logged in
     updateMenuState();
 
@@ -589,6 +598,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionChangeReasons->setEnabled(isConnected);
     ui_->ActionOriginDimensions->setEnabled(isConnected);
     ui_->ActionNatureDimensions->setEnabled(isConnected);
+    ui_->ActionTreatmentDimensions->setEnabled(isConnected);
 
     // My Account and My Sessions menu items are enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
@@ -748,6 +758,21 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
     connect(natureDimensionController_.get(), &NatureDimensionController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create treatment dimension controller
+    treatmentDimensionController_ = std::make_unique<TreatmentDimensionController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect treatment dimension controller signals to status bar
+    connect(treatmentDimensionController_.get(), &TreatmentDimensionController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(treatmentDimensionController_.get(), &TreatmentDimensionController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
@@ -1390,6 +1415,9 @@ void MainWindow::onLoginSuccess(const QString& username) {
     }
     if (natureDimensionController_) {
         natureDimensionController_->setUsername(username);
+    }
+    if (treatmentDimensionController_) {
+        treatmentDimensionController_->setUsername(username);
     }
 
     updateWindowTitle();

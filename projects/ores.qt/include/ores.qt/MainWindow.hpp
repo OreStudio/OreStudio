@@ -59,6 +59,7 @@ class ChangeReasonCategoryController;
 class ChangeReasonController;
 class OriginDimensionController;
 class NatureDimensionController;
+class TreatmentDimensionController;
 class ImageCache;
 class ChangeReasonCache;
 
@@ -373,6 +374,14 @@ private:
      * and history windows.
      */
     std::unique_ptr<NatureDimensionController> natureDimensionController_;
+
+    /**
+     * @brief Controller managing treatment dimension windows.
+     *
+     * Created after successful login, handles treatment dimension list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<TreatmentDimensionController> treatmentDimensionController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

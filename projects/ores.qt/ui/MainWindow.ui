@@ -67,6 +67,7 @@
     </property>
     <addaction name="ActionOriginDimensions"/>
     <addaction name="ActionNatureDimensions"/>
+    <addaction name="ActionTreatmentDimensions"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -381,6 +382,18 @@
    </property>
    <property name="toolTip">
     <string>Manage nature dimensions (Asset, Liability, etc.)</string>
+   </property>
+  </action>
+  <action name="ActionTreatmentDimensions">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_database_20_regular.svg</normaloff>:/icons/ic_fluent_database_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Treatment Dimensions</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage treatment dimensions (Raw, Cleansed, Enriched, etc.)</string>
    </property>
   </action>
  </widget>

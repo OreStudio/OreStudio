@@ -204,7 +204,7 @@ void CatalogMdiWindow::onDeleteClicked() {
             return {false, "Window closed"};
 
         dq::messaging::delete_catalog_request request;
-        request.name = name;
+        request.names.push_back(name);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -225,7 +225,10 @@ void CatalogMdiWindow::onDeleteClicked() {
         if (!response)
             return {false, "Invalid server response"};
 
-        return {response->success, response->message};
+        if (response->results.empty())
+            return {false, "No result returned"};
+
+        return {response->results[0].success, response->results[0].message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(this);

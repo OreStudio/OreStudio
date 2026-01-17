@@ -198,40 +198,54 @@ void ClientTelemetryLogModel::fetch_logs() {
     QFuture<FetchResult> future =
         QtConcurrent::run([self, session_id, start, end, min_level,
                           msg_filter, offset, limit]() -> FetchResult {
-            if (!self) return {false, {}, 0};
+            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+                if (!self || !self->clientManager_) {
+                    return {.success = false, .entries = {}, .total_count = 0,
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            telemetry::messaging::get_telemetry_logs_request request;
-            request.query.start_time = start;
-            request.query.end_time = end;
-            request.query.session_id = session_id;
-            request.query.min_level = min_level;
-            request.query.message_contains = msg_filter;
-            request.query.offset = offset;
-            request.query.limit = limit;
+                telemetry::messaging::get_telemetry_logs_request request;
+                request.query.start_time = start;
+                request.query.end_time = end;
+                request.query.session_id = session_id;
+                request.query.min_level = min_level;
+                request.query.message_contains = msg_filter;
+                request.query.offset = offset;
+                request.query.limit = limit;
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetching telemetry logs with offset="
-                                       << offset << ", limit=" << limit;
+                BOOST_LOG_SEV(lg(), debug) << "Fetching telemetry logs with offset="
+                                           << offset << ", limit=" << limit;
 
-            auto result = self->clientManager_->
-                process_authenticated_request(std::move(request));
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
 
-            if (!result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to fetch telemetry logs: "
-                                           << comms::net::to_string(result.error());
-                return {false, {}, 0};
-            }
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch telemetry logs: "
+                                               << comms::net::to_string(result.error());
+                    return {.success = false, .entries = {}, .total_count = 0,
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch telemetry logs: " + comms::net::to_string(result.error())),
+                            .error_details = {}};
+                }
 
-            if (!result->success) {
-                BOOST_LOG_SEV(lg(), error) << "Server returned error: "
-                                           << result->message;
-                return {false, {}, 0};
-            }
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server returned error: "
+                                               << result->message;
+                    return {.success = false, .entries = {}, .total_count = 0,
+                            .error_message = QString::fromStdString(
+                                "Server error: " + result->message),
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Received " << result->entries.size()
-                                       << " log entries, total: "
-                                       << result->total_count;
+                BOOST_LOG_SEV(lg(), debug) << "Received " << result->entries.size()
+                                           << " log entries, total: "
+                                           << result->total_count;
 
-            return {true, std::move(result->entries), result->total_count};
+                return {.success = true, .entries = std::move(result->entries),
+                        .total_count = result->total_count,
+                        .error_message = {}, .error_details = {}};
+            }, "telemetry logs");
         });
 
     watcher_->setFuture(future);
@@ -240,31 +254,24 @@ void ClientTelemetryLogModel::fetch_logs() {
 void ClientTelemetryLogModel::onLogsLoaded() {
     is_fetching_ = false;
 
-    FetchResult result;
-    try {
-        result = watcher_->result();
-    } catch (const std::exception& e) {
-        exception_helper::handle_fetch_exception(e, tr("telemetry logs"), lg(),
-            [this](const QString& msg, const QString& details) {
-                emit loadError(msg, details);
-            });
+    const auto result = watcher_->result();
+
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch telemetry logs: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
         return;
     }
 
-    if (result.success) {
-        beginResetModel();
-        total_available_count_ = result.total_count;
-        entries_ = std::move(result.entries);
-        endResetModel();
+    beginResetModel();
+    total_available_count_ = result.total_count;
+    entries_ = std::move(result.entries);
+    endResetModel();
 
-        BOOST_LOG_SEV(lg(), info) << "Loaded " << entries_.size()
-                                  << " log entries. Total available: "
-                                  << total_available_count_;
-        emit dataLoaded();
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Telemetry logs request failed.";
-        emit loadError(tr("Failed to load telemetry logs from server"));
-    }
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << entries_.size()
+                              << " log entries. Total available: "
+                              << total_available_count_;
+    emit dataLoaded();
 }
 
 }

@@ -86,6 +86,8 @@ private:
     struct FetchResult {
         bool success;
         std::vector<dq::domain::methodology> methodologies;
+        QString error_message;
+        QString error_details;
     };
 
     ClientManager* clientManager_;

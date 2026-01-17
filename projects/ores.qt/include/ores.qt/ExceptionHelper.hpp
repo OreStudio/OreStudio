@@ -69,6 +69,40 @@ public:
 
         emit_error(message, details);
     }
+
+    /**
+     * @brief Wraps an async fetch operation to capture exceptions before Qt can wrap them.
+     *
+     * This function catches exceptions inside the async task (before Qt's
+     * exception handling), capturing full diagnostic information. The result
+     * type must have the following fields:
+     * - bool success
+     * - QString error_message
+     * - QString error_details
+     *
+     * @tparam ResultType The FetchResult type (must have success, error_message, error_details).
+     * @tparam FetchFunc Callable that returns ResultType.
+     * @param fetch_func The function that performs the actual fetch.
+     * @param entity_name The name of the entity being fetched (for error messages).
+     * @return ResultType with success=false and error fields populated on exception.
+     */
+    template<typename ResultType, typename FetchFunc>
+    static ResultType wrap_async_fetch(
+        FetchFunc&& fetch_func,
+        const QString& entity_name) {
+
+        try {
+            return fetch_func();
+        } catch (const std::exception& e) {
+            ResultType result{};
+            result.success = false;
+            result.error_message = QString("Failed to fetch %1 from server.")
+                .arg(entity_name);
+            result.error_details = QString::fromStdString(
+                boost::diagnostic_information(e));
+            return result;
+        }
+    }
 };
 
 }

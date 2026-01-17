@@ -84,6 +84,8 @@ private:
     struct FetchResult {
         bool success;
         std::vector<dq::domain::treatment_dimension> dimensions;
+        QString error_message;
+        QString error_details;
     };
 
     ClientManager* clientManager_;

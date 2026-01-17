@@ -172,6 +172,8 @@ private:
         bool success;
         std::vector<refdata::domain::country> countries;
         std::uint32_t total_available_count;
+        QString error_message;
+        QString error_details;
     };
 
     /**

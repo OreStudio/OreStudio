@@ -153,6 +153,8 @@ private:
         bool success;
         std::vector<telemetry::domain::telemetry_log_entry> entries;
         std::uint64_t total_count;
+        QString error_message;
+        QString error_details;
     };
 
     void fetch_logs();

@@ -110,6 +110,8 @@ private:
     struct FetchResult {
         bool success;
         std::vector<variability::domain::feature_flags> flags;
+        QString error_message;
+        QString error_details;
     };
 
     ClientManager* clientManager_;

@@ -227,30 +227,40 @@ void ClientCurrencyModel::fetch_currencies(std::uint32_t offset,
 
     QFuture<FutureWatcherResult> future =
         QtConcurrent::run([self, offset, limit]() -> FutureWatcherResult {
-            BOOST_LOG_SEV(lg(), debug) << "Making a currencies request with offset="
-                                       << offset << ", limit=" << limit;
-            if (!self) return {false, {}, 0};
+            return exception_helper::wrap_async_fetch<FutureWatcherResult>([&]() -> FutureWatcherResult {
+                BOOST_LOG_SEV(lg(), debug) << "Making a currencies request with offset="
+                                           << offset << ", limit=" << limit;
+                if (!self || !self->clientManager_) {
+                    return {.success = false, .currencies = {}, .total_available_count = 0,
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            // Fetch currencies using typed request
-            refdata::messaging::get_currencies_request request;
-            request.offset = offset;
-            request.limit = limit;
+                // Fetch currencies using typed request
+                refdata::messaging::get_currencies_request request;
+                request.offset = offset;
+                request.limit = limit;
 
-            auto result = self->clientManager_->
-                process_authenticated_request(std::move(request));
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
 
-            if (!result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to fetch currencies: "
-                                           << comms::net::to_string(result.error());
-                return {false, {}, 0};
-            }
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch currencies: "
+                                               << comms::net::to_string(result.error());
+                    return {.success = false, .currencies = {}, .total_available_count = 0,
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch currencies: " + comms::net::to_string(result.error())),
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Received " << result->currencies.size()
-                                       << " currencies, total available: "
-                                       << result->total_available_count;
+                BOOST_LOG_SEV(lg(), debug) << "Received " << result->currencies.size()
+                                           << " currencies, total available: "
+                                           << result->total_available_count;
 
-            return {true, std::move(result->currencies),
-                    result->total_available_count};
+                return {.success = true, .currencies = std::move(result->currencies),
+                        .total_available_count = result->total_available_count,
+                        .error_message = {}, .error_details = {}};
+            }, "currencies");
         });
 
      watcher_->setFuture(future);
@@ -260,18 +270,16 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "On currencies loaded event.";
     is_fetching_ = false;
 
-    FetchResult result;
-    try {
-        result = watcher_->result();
-    } catch (const std::exception& e) {
-        exception_helper::handle_fetch_exception(e, tr("currencies"), lg(),
-            [this](const QString& msg, const QString& details) {
-                emit loadError(msg, details);
-            });
+    const auto result = watcher_->result();
+
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch currencies: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
         return;
     }
 
-    if (result.success) {
+    {
         total_available_count_ = result.total_available_count;
 
         // Build set of existing ISO codes for duplicate detection
@@ -321,9 +329,6 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
                                   << ", Total available: " << total_available_count_;
 
         emit dataLoaded();
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Currencies request failed: no response.";
-        emit loadError(tr("Failed to load currencies from server"));
     }
 }
 

@@ -111,6 +111,8 @@ private:
     struct FetchResult {
         bool success;
         std::vector<dq::domain::origin_dimension> dimensions;
+        QString error_message;
+        QString error_details;
     };
 
     ClientManager* clientManager_;

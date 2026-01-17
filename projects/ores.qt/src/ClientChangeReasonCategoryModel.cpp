@@ -132,41 +132,52 @@ void ClientChangeReasonCategoryModel::refresh() {
     QPointer<ClientChangeReasonCategoryModel> self = this;
 
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        if (!self || !self->clientManager_) {
-            return {false, {}};
-        }
+        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+            if (!self || !self->clientManager_) {
+                return {.success = false, .categories = {},
+                        .error_message = "Model was destroyed",
+                        .error_details = {}};
+            }
 
-        dq::messaging::get_change_reason_categories_request request;
-        auto payload = request.serialize();
+            dq::messaging::get_change_reason_categories_request request;
+            auto payload = request.serialize();
 
-        frame request_frame(
-            message_type::get_change_reason_categories_request,
-            0, std::move(payload)
-        );
+            frame request_frame(
+                message_type::get_change_reason_categories_request,
+                0, std::move(payload)
+            );
 
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
-        if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-            return {false, {}};
-        }
+            auto response_result = self->clientManager_->sendRequest(
+                std::move(request_frame));
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                return {.success = false, .categories = {},
+                        .error_message = "Failed to send request",
+                        .error_details = {}};
+            }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-            return {false, {}};
-        }
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+                return {.success = false, .categories = {},
+                        .error_message = "Failed to decompress response",
+                        .error_details = {}};
+            }
 
-        auto response = dq::messaging::get_change_reason_categories_response::
-            deserialize(*payload_result);
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-            return {false, {}};
-        }
+            auto response = dq::messaging::get_change_reason_categories_response::
+                deserialize(*payload_result);
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+                return {.success = false, .categories = {},
+                        .error_message = "Failed to deserialize response",
+                        .error_details = {}};
+            }
 
-        BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->categories.size()
-                                   << " categories";
-        return {true, std::move(response->categories)};
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->categories.size()
+                                       << " change reason categories";
+            return {.success = true, .categories = std::move(response->categories),
+                    .error_message = {}, .error_details = {}};
+        }, "change reason categories");
     });
 
     watcher_->setFuture(future);
@@ -175,19 +186,12 @@ void ClientChangeReasonCategoryModel::refresh() {
 void ClientChangeReasonCategoryModel::onCategoriesLoaded() {
     is_fetching_ = false;
 
-    FetchResult result;
-    try {
-        result = watcher_->result();
-    } catch (const std::exception& e) {
-        exception_helper::handle_fetch_exception(e, tr("change reason categories"), lg(),
-            [this](const QString& msg, const QString& details) {
-                emit loadError(msg, details);
-            });
-        return;
-    }
+    const auto result = watcher_->result();
 
     if (!result.success) {
-        emit loadError("Failed to fetch categories from server");
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch change reason categories: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
         return;
     }
 
@@ -198,7 +202,7 @@ void ClientChangeReasonCategoryModel::onCategoriesLoaded() {
     update_recent_categories();
     last_reload_time_ = QDateTime::currentDateTime();
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << categories_.size() << " categories";
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << categories_.size() << " change reason categories";
     emit dataLoaded();
 }
 

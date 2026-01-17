@@ -213,29 +213,39 @@ void ClientCountryModel::fetch_countries(std::uint32_t offset,
 
     QFuture<FetchResult> future =
         QtConcurrent::run([self, offset, limit]() -> FetchResult {
-            BOOST_LOG_SEV(lg(), debug) << "Making a countries request with offset="
-                                       << offset << ", limit=" << limit;
-            if (!self) return {false, {}, 0};
+            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug) << "Making a countries request with offset="
+                                           << offset << ", limit=" << limit;
+                if (!self || !self->clientManager_) {
+                    return {.success = false, .countries = {}, .total_available_count = 0,
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            refdata::messaging::get_countries_request request;
-            request.offset = offset;
-            request.limit = limit;
+                refdata::messaging::get_countries_request request;
+                request.offset = offset;
+                request.limit = limit;
 
-            auto result = self->clientManager_->
-                process_authenticated_request(std::move(request));
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
 
-            if (!result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to fetch countries: "
-                                           << comms::net::to_string(result.error());
-                return {false, {}, 0};
-            }
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch countries: "
+                                               << comms::net::to_string(result.error());
+                    return {.success = false, .countries = {}, .total_available_count = 0,
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch countries: " + comms::net::to_string(result.error())),
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Received " << result->countries.size()
-                                       << " countries, total available: "
-                                       << result->total_available_count;
+                BOOST_LOG_SEV(lg(), debug) << "Received " << result->countries.size()
+                                           << " countries, total available: "
+                                           << result->total_available_count;
 
-            return {true, std::move(result->countries),
-                    result->total_available_count};
+                return {.success = true, .countries = std::move(result->countries),
+                        .total_available_count = result->total_available_count,
+                        .error_message = {}, .error_details = {}};
+            }, "countries");
         });
 
      watcher_->setFuture(future);
@@ -245,18 +255,16 @@ void ClientCountryModel::onCountriesLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "On countries loaded event.";
     is_fetching_ = false;
 
-    FetchResult result;
-    try {
-        result = watcher_->result();
-    } catch (const std::exception& e) {
-        exception_helper::handle_fetch_exception(e, tr("countries"), lg(),
-            [this](const QString& msg, const QString& details) {
-                emit loadError(msg, details);
-            });
+    const auto result = watcher_->result();
+
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch countries: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
         return;
     }
 
-    if (result.success) {
+    {
         total_available_count_ = result.total_available_count;
 
         // Build set of existing alpha-2 codes for duplicate detection
@@ -303,9 +311,6 @@ void ClientCountryModel::onCountriesLoaded() {
                                   << ", Total available: " << total_available_count_;
 
         emit dataLoaded();
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Countries request failed: no response.";
-        emit loadError(tr("Failed to load countries from server"));
     }
 }
 

@@ -101,64 +101,78 @@ void ClientDataDomainModel::refresh() {
     is_fetching_ = true;
     BOOST_LOG_SEV(lg(), debug) << "Fetching data domains...";
 
-    auto task = [cm = clientManager_]() -> FetchResult {
-        dq::messaging::get_data_domains_request request;
-        auto payload = request.serialize();
+    QPointer<ClientDataDomainModel> self = this;
 
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_data_domains_request,
-            0, std::move(payload));
+    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+            if (!self || !self->clientManager_) {
+                return {.success = false, .domains = {},
+                        .error_message = "Model was destroyed",
+                        .error_details = {}};
+            }
 
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) {
-            return {false, {}};
-        }
+            dq::messaging::get_data_domains_request request;
+            auto payload = request.serialize();
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, {}};
-        }
+            comms::messaging::frame request_frame(
+                comms::messaging::message_type::get_data_domains_request,
+                0, std::move(payload));
 
-        auto response = dq::messaging::get_data_domains_response::deserialize(
-            *payload_result);
-        if (!response) {
-            return {false, {}};
-        }
+            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                return {.success = false, .domains = {},
+                        .error_message = "Failed to send request",
+                        .error_details = {}};
+            }
 
-        return {true, std::move(response->domains)};
-    };
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+                return {.success = false, .domains = {},
+                        .error_message = "Failed to decompress response",
+                        .error_details = {}};
+            }
 
-    watcher_->setFuture(QtConcurrent::run(task));
+            auto response = dq::messaging::get_data_domains_response::deserialize(
+                *payload_result);
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+                return {.success = false, .domains = {},
+                        .error_message = "Failed to deserialize response",
+                        .error_details = {}};
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->domains.size()
+                                       << " data domains";
+            return {.success = true, .domains = std::move(response->domains),
+                    .error_message = {}, .error_details = {}};
+        }, "data domains");
+    });
+
+    watcher_->setFuture(future);
 }
 
 void ClientDataDomainModel::onDomainsLoaded() {
     is_fetching_ = false;
 
-    FetchResult result;
-    try {
-        result = watcher_->result();
-    } catch (const std::exception& e) {
-        exception_helper::handle_fetch_exception(e, tr("data domains"), lg(),
-            [this](const QString& msg, const QString& details) {
-                emit loadError(msg, details);
-            });
+    const auto result = watcher_->result();
+
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch data domains: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
         return;
     }
 
-    if (result.success) {
-        beginResetModel();
-        auto old_domains = std::move(domains_);
-        domains_ = std::move(result.domains);
-        update_recent_domains();
-        endResetModel();
+    beginResetModel();
+    domains_ = std::move(result.domains);
+    update_recent_domains();
+    endResetModel();
 
-        BOOST_LOG_SEV(lg(), debug) << "Loaded " << domains_.size()
-                                   << " data domains";
-        emit dataLoaded();
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load data domains";
-        emit loadError(tr("Failed to load data domains"));
-    }
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << domains_.size()
+                               << " data domains";
+    emit dataLoaded();
 }
 
 const dq::domain::data_domain* ClientDataDomainModel::getDomain(

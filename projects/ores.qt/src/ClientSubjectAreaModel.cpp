@@ -103,63 +103,78 @@ void ClientSubjectAreaModel::refresh() {
     is_fetching_ = true;
     BOOST_LOG_SEV(lg(), debug) << "Fetching subject areas...";
 
-    auto task = [cm = clientManager_]() -> FetchResult {
-        dq::messaging::get_subject_areas_request request;
-        auto payload = request.serialize();
+    QPointer<ClientSubjectAreaModel> self = this;
 
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_subject_areas_request,
-            0, std::move(payload));
+    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+            if (!self || !self->clientManager_) {
+                return {.success = false, .subject_areas = {},
+                        .error_message = "Model was destroyed",
+                        .error_details = {}};
+            }
 
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) {
-            return {false, {}};
-        }
+            dq::messaging::get_subject_areas_request request;
+            auto payload = request.serialize();
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, {}};
-        }
+            comms::messaging::frame request_frame(
+                comms::messaging::message_type::get_subject_areas_request,
+                0, std::move(payload));
 
-        auto response = dq::messaging::get_subject_areas_response::deserialize(
-            *payload_result);
-        if (!response) {
-            return {false, {}};
-        }
+            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                return {.success = false, .subject_areas = {},
+                        .error_message = "Failed to send request",
+                        .error_details = {}};
+            }
 
-        return {true, std::move(response->subject_areas)};
-    };
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+                return {.success = false, .subject_areas = {},
+                        .error_message = "Failed to decompress response",
+                        .error_details = {}};
+            }
 
-    watcher_->setFuture(QtConcurrent::run(task));
+            auto response = dq::messaging::get_subject_areas_response::deserialize(
+                *payload_result);
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+                return {.success = false, .subject_areas = {},
+                        .error_message = "Failed to deserialize response",
+                        .error_details = {}};
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->subject_areas.size()
+                                       << " subject areas";
+            return {.success = true, .subject_areas = std::move(response->subject_areas),
+                    .error_message = {}, .error_details = {}};
+        }, "subject areas");
+    });
+
+    watcher_->setFuture(future);
 }
 
 void ClientSubjectAreaModel::onSubjectAreasLoaded() {
     is_fetching_ = false;
 
-    FetchResult result;
-    try {
-        result = watcher_->result();
-    } catch (const std::exception& e) {
-        exception_helper::handle_fetch_exception(e, tr("subject areas"), lg(),
-            [this](const QString& msg, const QString& details) {
-                emit loadError(msg, details);
-            });
+    const auto result = watcher_->result();
+
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch subject areas: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
         return;
     }
 
-    if (result.success) {
-        beginResetModel();
-        subject_areas_ = std::move(result.subject_areas);
-        update_recent_subject_areas();
-        endResetModel();
+    beginResetModel();
+    subject_areas_ = std::move(result.subject_areas);
+    update_recent_subject_areas();
+    endResetModel();
 
-        BOOST_LOG_SEV(lg(), debug) << "Loaded " << subject_areas_.size()
-                                   << " subject areas";
-        emit dataLoaded();
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load subject areas";
-        emit loadError(tr("Failed to load subject areas"));
-    }
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << subject_areas_.size()
+                               << " subject areas";
+    emit dataLoaded();
 }
 
 const dq::domain::subject_area* ClientSubjectAreaModel::getSubjectArea(

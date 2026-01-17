@@ -111,6 +111,8 @@ private:
     struct FetchResult {
         bool success;
         std::vector<iam::domain::role> roles;
+        QString error_message;
+        QString error_details;
     };
 
     using FutureWatcherResult = FetchResult;

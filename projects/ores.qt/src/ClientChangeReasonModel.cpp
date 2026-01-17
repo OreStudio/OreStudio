@@ -148,41 +148,52 @@ void ClientChangeReasonModel::refresh() {
     QPointer<ClientChangeReasonModel> self = this;
 
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        if (!self || !self->clientManager_) {
-            return {false, {}};
-        }
+        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+            if (!self || !self->clientManager_) {
+                return {.success = false, .reasons = {},
+                        .error_message = "Model was destroyed",
+                        .error_details = {}};
+            }
 
-        dq::messaging::get_change_reasons_request request;
-        auto payload = request.serialize();
+            dq::messaging::get_change_reasons_request request;
+            auto payload = request.serialize();
 
-        frame request_frame(
-            message_type::get_change_reasons_request,
-            0, std::move(payload)
-        );
+            frame request_frame(
+                message_type::get_change_reasons_request,
+                0, std::move(payload)
+            );
 
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
-        if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-            return {false, {}};
-        }
+            auto response_result = self->clientManager_->sendRequest(
+                std::move(request_frame));
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                return {.success = false, .reasons = {},
+                        .error_message = "Failed to send request",
+                        .error_details = {}};
+            }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-            return {false, {}};
-        }
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+                return {.success = false, .reasons = {},
+                        .error_message = "Failed to decompress response",
+                        .error_details = {}};
+            }
 
-        auto response = dq::messaging::get_change_reasons_response::
-            deserialize(*payload_result);
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-            return {false, {}};
-        }
+            auto response = dq::messaging::get_change_reasons_response::
+                deserialize(*payload_result);
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+                return {.success = false, .reasons = {},
+                        .error_message = "Failed to deserialize response",
+                        .error_details = {}};
+            }
 
-        BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->reasons.size()
-                                   << " reasons";
-        return {true, std::move(response->reasons)};
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->reasons.size()
+                                       << " change reasons";
+            return {.success = true, .reasons = std::move(response->reasons),
+                    .error_message = {}, .error_details = {}};
+        }, "change reasons");
     });
 
     watcher_->setFuture(future);
@@ -191,19 +202,12 @@ void ClientChangeReasonModel::refresh() {
 void ClientChangeReasonModel::onReasonsLoaded() {
     is_fetching_ = false;
 
-    FetchResult result;
-    try {
-        result = watcher_->result();
-    } catch (const std::exception& e) {
-        exception_helper::handle_fetch_exception(e, tr("change reasons"), lg(),
-            [this](const QString& msg, const QString& details) {
-                emit loadError(msg, details);
-            });
-        return;
-    }
+    const auto result = watcher_->result();
 
     if (!result.success) {
-        emit loadError("Failed to fetch reasons from server");
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch change reasons: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
         return;
     }
 
@@ -214,7 +218,7 @@ void ClientChangeReasonModel::onReasonsLoaded() {
     update_recent_reasons();
     last_reload_time_ = QDateTime::currentDateTime();
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << reasons_.size() << " reasons";
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << reasons_.size() << " change reasons";
     emit dataLoaded();
 }
 

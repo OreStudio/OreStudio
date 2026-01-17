@@ -107,64 +107,78 @@ void ClientMethodologyModel::refresh() {
     is_fetching_ = true;
     BOOST_LOG_SEV(lg(), debug) << "Fetching methodologies...";
 
-    auto task = [cm = clientManager_]() -> FetchResult {
-        dq::messaging::get_methodologies_request request;
-        auto payload = request.serialize();
+    QPointer<ClientMethodologyModel> self = this;
 
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_methodologies_request,
-            0, std::move(payload));
+    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+            if (!self || !self->clientManager_) {
+                return {.success = false, .methodologies = {},
+                        .error_message = "Model was destroyed",
+                        .error_details = {}};
+            }
 
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) {
-            return {false, {}};
-        }
+            dq::messaging::get_methodologies_request request;
+            auto payload = request.serialize();
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, {}};
-        }
+            comms::messaging::frame request_frame(
+                comms::messaging::message_type::get_methodologies_request,
+                0, std::move(payload));
 
-        auto response = dq::messaging::get_methodologies_response::deserialize(
-            *payload_result);
-        if (!response) {
-            return {false, {}};
-        }
+            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                return {.success = false, .methodologies = {},
+                        .error_message = "Failed to send request",
+                        .error_details = {}};
+            }
 
-        return {true, std::move(response->methodologies)};
-    };
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+                return {.success = false, .methodologies = {},
+                        .error_message = "Failed to decompress response",
+                        .error_details = {}};
+            }
 
-    watcher_->setFuture(QtConcurrent::run(task));
+            auto response = dq::messaging::get_methodologies_response::deserialize(
+                *payload_result);
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+                return {.success = false, .methodologies = {},
+                        .error_message = "Failed to deserialize response",
+                        .error_details = {}};
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->methodologies.size()
+                                       << " methodologies";
+            return {.success = true, .methodologies = std::move(response->methodologies),
+                    .error_message = {}, .error_details = {}};
+        }, "methodologies");
+    });
+
+    watcher_->setFuture(future);
 }
 
 void ClientMethodologyModel::onMethodologiesLoaded() {
     is_fetching_ = false;
 
-    FetchResult result;
-    try {
-        result = watcher_->result();
-    } catch (const std::exception& e) {
-        exception_helper::handle_fetch_exception(e, tr("methodologies"), lg(),
-            [this](const QString& msg, const QString& details) {
-                emit loadError(msg, details);
-            });
+    const auto result = watcher_->result();
+
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch methodologies: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
         return;
     }
 
-    if (result.success) {
-        beginResetModel();
-        auto old_methodologies = std::move(methodologies_);
-        methodologies_ = std::move(result.methodologies);
-        update_recent_methodologies();
-        endResetModel();
+    beginResetModel();
+    methodologies_ = std::move(result.methodologies);
+    update_recent_methodologies();
+    endResetModel();
 
-        BOOST_LOG_SEV(lg(), debug) << "Loaded " << methodologies_.size()
-                                   << " methodologies";
-        emit dataLoaded();
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load methodologies";
-        emit loadError(tr("Failed to load methodologies"));
-    }
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << methodologies_.size()
+                               << " methodologies";
+    emit dataLoaded();
 }
 
 const dq::domain::methodology* ClientMethodologyModel::getMethodology(

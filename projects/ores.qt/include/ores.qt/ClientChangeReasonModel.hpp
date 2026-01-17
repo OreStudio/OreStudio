@@ -114,6 +114,8 @@ private:
     struct FetchResult {
         bool success;
         std::vector<dq::domain::change_reason> reasons;
+        QString error_message;
+        QString error_details;
     };
 
     ClientManager* clientManager_;

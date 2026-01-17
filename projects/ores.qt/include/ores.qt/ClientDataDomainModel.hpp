@@ -83,6 +83,8 @@ private:
     struct FetchResult {
         bool success;
         std::vector<dq::domain::data_domain> domains;
+        QString error_message;
+        QString error_details;
     };
 
     ClientManager* clientManager_;

@@ -119,64 +119,78 @@ void ClientDatasetModel::refresh() {
     is_fetching_ = true;
     BOOST_LOG_SEV(lg(), debug) << "Fetching datasets...";
 
-    auto task = [cm = clientManager_]() -> FetchResult {
-        dq::messaging::get_datasets_request request;
-        auto payload = request.serialize();
+    QPointer<ClientDatasetModel> self = this;
 
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_datasets_request,
-            0, std::move(payload));
+    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+            if (!self || !self->clientManager_) {
+                return {.success = false, .datasets = {},
+                        .error_message = "Model was destroyed",
+                        .error_details = {}};
+            }
 
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) {
-            return {false, {}};
-        }
+            dq::messaging::get_datasets_request request;
+            auto payload = request.serialize();
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, {}};
-        }
+            comms::messaging::frame request_frame(
+                comms::messaging::message_type::get_datasets_request,
+                0, std::move(payload));
 
-        auto response = dq::messaging::get_datasets_response::deserialize(
-            *payload_result);
-        if (!response) {
-            return {false, {}};
-        }
+            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                return {.success = false, .datasets = {},
+                        .error_message = "Failed to send request",
+                        .error_details = {}};
+            }
 
-        return {true, std::move(response->datasets)};
-    };
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+                return {.success = false, .datasets = {},
+                        .error_message = "Failed to decompress response",
+                        .error_details = {}};
+            }
 
-    watcher_->setFuture(QtConcurrent::run(task));
+            auto response = dq::messaging::get_datasets_response::deserialize(
+                *payload_result);
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+                return {.success = false, .datasets = {},
+                        .error_message = "Failed to deserialize response",
+                        .error_details = {}};
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->datasets.size()
+                                       << " datasets";
+            return {.success = true, .datasets = std::move(response->datasets),
+                    .error_message = {}, .error_details = {}};
+        }, "datasets");
+    });
+
+    watcher_->setFuture(future);
 }
 
 void ClientDatasetModel::onDatasetsLoaded() {
     is_fetching_ = false;
 
-    FetchResult result;
-    try {
-        result = watcher_->result();
-    } catch (const std::exception& e) {
-        exception_helper::handle_fetch_exception(e, tr("datasets"), lg(),
-            [this](const QString& msg, const QString& details) {
-                emit loadError(msg, details);
-            });
+    const auto result = watcher_->result();
+
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch datasets: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
         return;
     }
 
-    if (result.success) {
-        beginResetModel();
-        auto old_datasets = std::move(datasets_);
-        datasets_ = std::move(result.datasets);
-        update_recent_datasets();
-        endResetModel();
+    beginResetModel();
+    datasets_ = std::move(result.datasets);
+    update_recent_datasets();
+    endResetModel();
 
-        BOOST_LOG_SEV(lg(), debug) << "Loaded " << datasets_.size()
-                                   << " datasets";
-        emit dataLoaded();
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load datasets";
-        emit loadError(tr("Failed to load datasets"));
-    }
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << datasets_.size()
+                               << " datasets";
+    emit dataLoaded();
 }
 
 const dq::domain::dataset* ClientDatasetModel::getDataset(

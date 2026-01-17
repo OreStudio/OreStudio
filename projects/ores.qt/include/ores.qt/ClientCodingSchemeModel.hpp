@@ -87,6 +87,8 @@ private:
     struct FetchResult {
         bool success;
         std::vector<dq::domain::coding_scheme> schemes;
+        QString error_message;
+        QString error_details;
     };
 
     ClientManager* clientManager_;

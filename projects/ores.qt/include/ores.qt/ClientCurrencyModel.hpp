@@ -236,6 +236,8 @@ private:
         bool success;
         std::vector<refdata::domain::currency> currencies;
         std::uint32_t total_available_count;
+        QString error_message;
+        QString error_details;
     };
 
     using FutureWatcherResult = FetchResult;

@@ -92,6 +92,8 @@ private:
     struct FetchResult {
         bool success;
         std::vector<dq::domain::dataset> datasets;
+        QString error_message;
+        QString error_details;
     };
 
     ClientManager* clientManager_;

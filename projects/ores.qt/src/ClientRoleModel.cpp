@@ -121,24 +121,34 @@ void ClientRoleModel::refresh() {
 
     QFuture<FutureWatcherResult> future =
         QtConcurrent::run([self]() -> FutureWatcherResult {
-            BOOST_LOG_SEV(lg(), debug) << "Making a roles request";
-            if (!self) return {false, {}};
+            return exception_helper::wrap_async_fetch<FutureWatcherResult>([&]() -> FutureWatcherResult {
+                BOOST_LOG_SEV(lg(), debug) << "Making a roles request";
+                if (!self || !self->clientManager_) {
+                    return {.success = false, .roles = {},
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            iam::messaging::list_roles_request request;
+                iam::messaging::list_roles_request request;
 
-            auto result = self->clientManager_->
-                process_authenticated_request(std::move(request));
+                auto result = self->clientManager_->
+                    process_authenticated_request(std::move(request));
 
-            if (!result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to fetch roles: "
-                                           << comms::net::to_string(result.error());
-                return {false, {}};
-            }
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch roles: "
+                                               << comms::net::to_string(result.error());
+                    return {.success = false, .roles = {},
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch roles: " + comms::net::to_string(result.error())),
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Received " << result->roles.size()
-                                       << " roles";
+                BOOST_LOG_SEV(lg(), debug) << "Received " << result->roles.size()
+                                           << " roles";
 
-            return {true, std::move(result->roles)};
+                return {.success = true, .roles = std::move(result->roles),
+                        .error_message = {}, .error_details = {}};
+            }, "roles");
         });
 
      watcher_->setFuture(future);
@@ -148,34 +158,27 @@ void ClientRoleModel::onRolesLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "On roles loaded event.";
     is_fetching_ = false;
 
-    FetchResult result;
-    try {
-        result = watcher_->result();
-    } catch (const std::exception& e) {
-        exception_helper::handle_fetch_exception(e, tr("roles"), lg(),
-            [this](const QString& msg, const QString& details) {
-                emit loadError(msg, details);
-            });
+    const auto result = watcher_->result();
+
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch roles: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
         return;
     }
 
-    if (result.success) {
-        beginResetModel();
-        roles_ = std::move(result.roles);
+    beginResetModel();
+    roles_ = std::move(result.roles);
 
-        // Sort by name
-        std::ranges::sort(roles_, [](auto const& a, auto const& b) {
-            return a.name < b.name;
-        });
-        endResetModel();
+    // Sort by name
+    std::ranges::sort(roles_, [](auto const& a, auto const& b) {
+        return a.name < b.name;
+    });
+    endResetModel();
 
-        BOOST_LOG_SEV(lg(), info) << "Loaded " << roles_.size() << " roles";
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << roles_.size() << " roles";
 
-        emit dataLoaded();
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Roles request failed.";
-        emit loadError(tr("Failed to load roles from server"));
-    }
+    emit dataLoaded();
 }
 
 const iam::domain::role* ClientRoleModel::getRole(int row) const {

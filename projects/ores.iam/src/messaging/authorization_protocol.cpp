@@ -156,7 +156,7 @@ std::expected<list_roles_response, ores::utility::serialization::error_code>
 list_roles_response::deserialize(std::span<const std::byte> data) {
     list_roles_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     const auto count = *count_result;
 
@@ -208,7 +208,7 @@ std::expected<list_permissions_response, ores::utility::serialization::error_cod
 list_permissions_response::deserialize(std::span<const std::byte> data) {
     list_permissions_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     const auto count = *count_result;
 
@@ -394,7 +394,7 @@ std::expected<get_account_roles_response, ores::utility::serialization::error_co
 get_account_roles_response::deserialize(std::span<const std::byte> data) {
     get_account_roles_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     const auto count = *count_result;
 
@@ -453,7 +453,7 @@ std::expected<get_account_permissions_response, ores::utility::serialization::er
 get_account_permissions_response::deserialize(std::span<const std::byte> data) {
     get_account_permissions_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     const auto count = *count_result;
 

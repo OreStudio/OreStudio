@@ -213,7 +213,7 @@ get_accounts_response::deserialize(std::span<const std::byte> data) {
     response.total_available_count = *total_result;
 
     // Read account count in this response
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }
@@ -292,7 +292,7 @@ std::expected<unlock_account_request, ores::utility::serialization::error_code>
 unlock_account_request::deserialize(std::span<const std::byte> data) {
     unlock_account_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     const auto count = *count_result;
 
@@ -333,7 +333,7 @@ std::expected<unlock_account_response, ores::utility::serialization::error_code>
 unlock_account_response::deserialize(std::span<const std::byte> data) {
     unlock_account_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     const auto count = *count_result;
 
@@ -429,7 +429,7 @@ std::expected<lock_account_request, ores::utility::serialization::error_code>
 lock_account_request::deserialize(std::span<const std::byte> data) {
     lock_account_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     const auto count = *count_result;
 
@@ -470,7 +470,7 @@ std::expected<lock_account_response, ores::utility::serialization::error_code>
 lock_account_response::deserialize(std::span<const std::byte> data) {
     lock_account_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     const auto count = *count_result;
 
@@ -515,7 +515,7 @@ std::expected<reset_password_request, ores::utility::serialization::error_code>
 reset_password_request::deserialize(std::span<const std::byte> data) {
     reset_password_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     const auto count = *count_result;
 
@@ -556,7 +556,7 @@ std::expected<reset_password_response, ores::utility::serialization::error_code>
 reset_password_response::deserialize(std::span<const std::byte> data) {
     reset_password_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     const auto count = *count_result;
 

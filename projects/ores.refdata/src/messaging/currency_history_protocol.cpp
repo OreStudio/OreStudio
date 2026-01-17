@@ -229,7 +229,7 @@ get_currency_history_response::deserialize(std::span<const std::byte> data) {
     response.history.iso_code = *iso_code_result;
 
     // Read version count
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 

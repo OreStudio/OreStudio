@@ -209,7 +209,7 @@ std::expected<get_coding_schemes_response, error_code>
 get_coding_schemes_response::deserialize(std::span<const std::byte> data) {
     get_coding_schemes_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -263,7 +263,7 @@ std::expected<get_coding_schemes_by_authority_type_response, error_code>
 get_coding_schemes_by_authority_type_response::deserialize(std::span<const std::byte> data) {
     get_coding_schemes_by_authority_type_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -349,7 +349,7 @@ std::expected<delete_coding_scheme_request, error_code>
 delete_coding_scheme_request::deserialize(std::span<const std::byte> data) {
     delete_coding_scheme_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -383,7 +383,7 @@ std::expected<delete_coding_scheme_response, error_code>
 delete_coding_scheme_response::deserialize(std::span<const std::byte> data) {
     delete_coding_scheme_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -459,7 +459,7 @@ get_coding_scheme_history_response::deserialize(std::span<const std::byte> data)
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -512,7 +512,7 @@ std::expected<get_coding_scheme_authority_types_response, error_code>
 get_coding_scheme_authority_types_response::deserialize(std::span<const std::byte> data) {
     get_coding_scheme_authority_types_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -598,7 +598,7 @@ std::expected<delete_coding_scheme_authority_type_request, error_code>
 delete_coding_scheme_authority_type_request::deserialize(std::span<const std::byte> data) {
     delete_coding_scheme_authority_type_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -632,7 +632,7 @@ std::expected<delete_coding_scheme_authority_type_response, error_code>
 delete_coding_scheme_authority_type_response::deserialize(std::span<const std::byte> data) {
     delete_coding_scheme_authority_type_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -708,7 +708,7 @@ get_coding_scheme_authority_type_history_response::deserialize(std::span<const s
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 

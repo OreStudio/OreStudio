@@ -162,7 +162,7 @@ delete_currency_request::deserialize(std::span<const std::byte> data) {
     delete_currency_request request;
 
     // Read count
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }
@@ -212,7 +212,7 @@ delete_currency_response::deserialize(std::span<const std::byte> data) {
     delete_currency_response response;
 
     // Read count
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }
@@ -309,7 +309,7 @@ get_currencies_response::deserialize(std::span<const std::byte> data) {
     response.total_available_count = *total_result;
 
     // Read currency count in this response
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }

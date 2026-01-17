@@ -336,7 +336,7 @@ std::expected<get_datasets_response, error_code>
 get_datasets_response::deserialize(std::span<const std::byte> data) {
     get_datasets_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -422,7 +422,7 @@ std::expected<delete_dataset_request, error_code>
 delete_dataset_request::deserialize(std::span<const std::byte> data) {
     delete_dataset_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -456,7 +456,7 @@ std::expected<delete_dataset_response, error_code>
 delete_dataset_response::deserialize(std::span<const std::byte> data) {
     delete_dataset_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -532,7 +532,7 @@ get_dataset_history_response::deserialize(std::span<const std::byte> data) {
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -585,7 +585,7 @@ std::expected<get_methodologies_response, error_code>
 get_methodologies_response::deserialize(std::span<const std::byte> data) {
     get_methodologies_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -671,7 +671,7 @@ std::expected<delete_methodology_request, error_code>
 delete_methodology_request::deserialize(std::span<const std::byte> data) {
     delete_methodology_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -705,7 +705,7 @@ std::expected<delete_methodology_response, error_code>
 delete_methodology_response::deserialize(std::span<const std::byte> data) {
     delete_methodology_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -781,7 +781,7 @@ get_methodology_history_response::deserialize(std::span<const std::byte> data) {
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 

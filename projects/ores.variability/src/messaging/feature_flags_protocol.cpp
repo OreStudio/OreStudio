@@ -77,7 +77,7 @@ std::expected<get_feature_flags_response, ores::utility::serialization::error_co
 get_feature_flags_response::deserialize(std::span<const std::byte> data) {
     get_feature_flags_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }
@@ -322,7 +322,7 @@ get_feature_flag_history_response::deserialize(std::span<const std::byte> data) 
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 

@@ -258,7 +258,7 @@ std::expected<get_catalogs_response, error_code>
 get_catalogs_response::deserialize(std::span<const std::byte> data) {
     get_catalogs_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -344,7 +344,7 @@ std::expected<delete_catalog_request, error_code>
 delete_catalog_request::deserialize(std::span<const std::byte> data) {
     delete_catalog_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -378,7 +378,7 @@ std::expected<delete_catalog_response, error_code>
 delete_catalog_response::deserialize(std::span<const std::byte> data) {
     delete_catalog_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -454,7 +454,7 @@ get_catalog_history_response::deserialize(std::span<const std::byte> data) {
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -507,7 +507,7 @@ std::expected<get_data_domains_response, error_code>
 get_data_domains_response::deserialize(std::span<const std::byte> data) {
     get_data_domains_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -593,7 +593,7 @@ std::expected<delete_data_domain_request, error_code>
 delete_data_domain_request::deserialize(std::span<const std::byte> data) {
     delete_data_domain_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -627,7 +627,7 @@ std::expected<delete_data_domain_response, error_code>
 delete_data_domain_response::deserialize(std::span<const std::byte> data) {
     delete_data_domain_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -703,7 +703,7 @@ get_data_domain_history_response::deserialize(std::span<const std::byte> data) {
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -756,7 +756,7 @@ std::expected<get_subject_areas_response, error_code>
 get_subject_areas_response::deserialize(std::span<const std::byte> data) {
     get_subject_areas_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -810,7 +810,7 @@ std::expected<get_subject_areas_by_domain_response, error_code>
 get_subject_areas_by_domain_response::deserialize(std::span<const std::byte> data) {
     get_subject_areas_by_domain_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -901,7 +901,7 @@ std::expected<delete_subject_area_request, error_code>
 delete_subject_area_request::deserialize(std::span<const std::byte> data) {
     delete_subject_area_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -935,7 +935,7 @@ std::expected<delete_subject_area_response, error_code>
 delete_subject_area_response::deserialize(std::span<const std::byte> data) {
     delete_subject_area_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -1011,7 +1011,7 @@ get_subject_area_history_response::deserialize(std::span<const std::byte> data) 
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 

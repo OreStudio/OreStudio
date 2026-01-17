@@ -288,7 +288,7 @@ std::expected<list_sessions_response, ores::utility::serialization::error_code>
 list_sessions_response::deserialize(std::span<const std::byte> data) {
     list_sessions_response response;
 
-    auto count = reader::read_uint32(data);
+    auto count = reader::read_count(data);
     if (!count) return std::unexpected(count.error());
 
     response.sessions.reserve(*count);
@@ -359,7 +359,7 @@ std::expected<get_session_statistics_response, ores::utility::serialization::err
 get_session_statistics_response::deserialize(std::span<const std::byte> data) {
     get_session_statistics_response response;
 
-    auto count = reader::read_uint32(data);
+    auto count = reader::read_count(data);
     if (!count) return std::unexpected(count.error());
 
     response.statistics.reserve(*count);
@@ -409,7 +409,7 @@ std::expected<get_active_sessions_response, ores::utility::serialization::error_
 get_active_sessions_response::deserialize(std::span<const std::byte> data) {
     get_active_sessions_response response;
 
-    auto count = reader::read_uint32(data);
+    auto count = reader::read_count(data);
     if (!count) return std::unexpected(count.error());
 
     response.sessions.reserve(*count);

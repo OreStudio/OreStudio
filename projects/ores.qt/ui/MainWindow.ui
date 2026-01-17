@@ -68,6 +68,8 @@
     <addaction name="ActionOriginDimensions"/>
     <addaction name="ActionNatureDimensions"/>
     <addaction name="ActionTreatmentDimensions"/>
+    <addaction name="separator"/>
+    <addaction name="ActionCodingSchemeAuthorityTypes"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -394,6 +396,18 @@
    </property>
    <property name="toolTip">
     <string>Manage treatment dimensions (Raw, Cleansed, Enriched, etc.)</string>
+   </property>
+  </action>
+  <action name="ActionCodingSchemeAuthorityTypes">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_tag_20_regular.svg</normaloff>:/icons/ic_fluent_tag_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Coding Scheme &amp;Authority Types</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage coding scheme authority types (ISO, NIST, etc.)</string>
    </property>
   </action>
  </widget>

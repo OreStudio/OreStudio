@@ -54,6 +54,7 @@
 #include "ores.qt/OriginDimensionController.hpp"
 #include "ores.qt/NatureDimensionController.hpp"
 #include "ores.qt/TreatmentDimensionController.hpp"
+#include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -144,6 +145,8 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_database_20_regular.svg", iconColor));
     ui_->ActionTreatmentDimensions->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+    ui_->ActionCodingSchemeAuthorityTypes->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(
@@ -399,6 +402,12 @@ MainWindow::MainWindow(QWidget* parent) :
             treatmentDimensionController_->showListWindow();
     });
 
+    // Connect Coding Scheme Authority Types action to controller
+    connect(ui_->ActionCodingSchemeAuthorityTypes, &QAction::triggered, this, [this]() {
+        if (codingSchemeAuthorityTypeController_)
+            codingSchemeAuthorityTypeController_->showListWindow();
+    });
+
     // Initially disable data-related actions until logged in
     updateMenuState();
 
@@ -599,6 +608,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionOriginDimensions->setEnabled(isConnected);
     ui_->ActionNatureDimensions->setEnabled(isConnected);
     ui_->ActionTreatmentDimensions->setEnabled(isConnected);
+    ui_->ActionCodingSchemeAuthorityTypes->setEnabled(isConnected);
 
     // My Account and My Sessions menu items are enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
@@ -773,6 +783,21 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
     connect(treatmentDimensionController_.get(), &TreatmentDimensionController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create coding scheme authority type controller
+    codingSchemeAuthorityTypeController_ = std::make_unique<CodingSchemeAuthorityTypeController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect coding scheme authority type controller signals to status bar
+    connect(codingSchemeAuthorityTypeController_.get(), &CodingSchemeAuthorityTypeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(codingSchemeAuthorityTypeController_.get(), &CodingSchemeAuthorityTypeController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
@@ -1418,6 +1443,9 @@ void MainWindow::onLoginSuccess(const QString& username) {
     }
     if (treatmentDimensionController_) {
         treatmentDimensionController_->setUsername(username);
+    }
+    if (codingSchemeAuthorityTypeController_) {
+        codingSchemeAuthorityTypeController_->setUsername(username);
     }
 
     updateWindowTitle();

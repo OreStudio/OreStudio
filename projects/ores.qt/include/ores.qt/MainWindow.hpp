@@ -60,6 +60,7 @@ class ChangeReasonController;
 class OriginDimensionController;
 class NatureDimensionController;
 class TreatmentDimensionController;
+class CodingSchemeAuthorityTypeController;
 class ImageCache;
 class ChangeReasonCache;
 
@@ -382,6 +383,14 @@ private:
      * and history windows.
      */
     std::unique_ptr<TreatmentDimensionController> treatmentDimensionController_;
+
+    /**
+     * @brief Controller managing coding scheme authority type windows.
+     *
+     * Created after successful login, handles authority type list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<CodingSchemeAuthorityTypeController> codingSchemeAuthorityTypeController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

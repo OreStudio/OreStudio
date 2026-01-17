@@ -70,6 +70,7 @@
     <addaction name="ActionTreatmentDimensions"/>
     <addaction name="separator"/>
     <addaction name="ActionCodingSchemeAuthorityTypes"/>
+    <addaction name="ActionDataDomains"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -408,6 +409,18 @@
    </property>
    <property name="toolTip">
     <string>Manage coding scheme authority types (ISO, NIST, etc.)</string>
+   </property>
+  </action>
+  <action name="ActionDataDomains">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_folder_20_regular.svg</normaloff>:/icons/ic_fluent_folder_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Data Domains</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage data domains (Reference Data, Market Data, etc.)</string>
    </property>
   </action>
  </widget>

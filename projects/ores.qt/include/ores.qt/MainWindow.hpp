@@ -61,6 +61,7 @@ class OriginDimensionController;
 class NatureDimensionController;
 class TreatmentDimensionController;
 class CodingSchemeAuthorityTypeController;
+class DataDomainController;
 class ImageCache;
 class ChangeReasonCache;
 
@@ -391,6 +392,14 @@ private:
      * and history windows.
      */
     std::unique_ptr<CodingSchemeAuthorityTypeController> codingSchemeAuthorityTypeController_;
+
+    /**
+     * @brief Controller managing data domain windows.
+     *
+     * Created after successful login, handles data domain list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<DataDomainController> dataDomainController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

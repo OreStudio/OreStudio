@@ -55,6 +55,7 @@
 #include "ores.qt/NatureDimensionController.hpp"
 #include "ores.qt/TreatmentDimensionController.hpp"
 #include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
+#include "ores.qt/DataDomainController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -147,6 +148,8 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_database_20_regular.svg", iconColor));
     ui_->ActionCodingSchemeAuthorityTypes->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
+    ui_->ActionDataDomains->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_folder_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(
@@ -408,6 +411,12 @@ MainWindow::MainWindow(QWidget* parent) :
             codingSchemeAuthorityTypeController_->showListWindow();
     });
 
+    // Connect Data Domains action to controller
+    connect(ui_->ActionDataDomains, &QAction::triggered, this, [this]() {
+        if (dataDomainController_)
+            dataDomainController_->showListWindow();
+    });
+
     // Initially disable data-related actions until logged in
     updateMenuState();
 
@@ -609,6 +618,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionNatureDimensions->setEnabled(isConnected);
     ui_->ActionTreatmentDimensions->setEnabled(isConnected);
     ui_->ActionCodingSchemeAuthorityTypes->setEnabled(isConnected);
+    ui_->ActionDataDomains->setEnabled(isConnected);
 
     // My Account and My Sessions menu items are enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
@@ -798,6 +808,21 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
     connect(codingSchemeAuthorityTypeController_.get(), &CodingSchemeAuthorityTypeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create data domain controller
+    dataDomainController_ = std::make_unique<DataDomainController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect data domain controller signals to status bar
+    connect(dataDomainController_.get(), &DataDomainController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(dataDomainController_.get(), &DataDomainController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
@@ -1446,6 +1471,9 @@ void MainWindow::onLoginSuccess(const QString& username) {
     }
     if (codingSchemeAuthorityTypeController_) {
         codingSchemeAuthorityTypeController_->setUsername(username);
+    }
+    if (dataDomainController_) {
+        dataDomainController_->setUsername(username);
     }
 
     updateWindowTitle();

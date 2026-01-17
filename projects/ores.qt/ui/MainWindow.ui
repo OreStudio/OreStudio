@@ -66,6 +66,7 @@
      <string>&amp;Data Quality</string>
     </property>
     <addaction name="ActionOriginDimensions"/>
+    <addaction name="ActionNatureDimensions"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -368,6 +369,18 @@
    </property>
    <property name="toolTip">
     <string>Manage origin dimensions (Source, Derived, External)</string>
+   </property>
+  </action>
+  <action name="ActionNatureDimensions">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_database_20_regular.svg</normaloff>:/icons/ic_fluent_database_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Nature Dimensions</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage nature dimensions (Asset, Liability, etc.)</string>
    </property>
   </action>
  </widget>

@@ -52,6 +52,7 @@
 #include "ores.qt/ChangeReasonCategoryController.hpp"
 #include "ores.qt/ChangeReasonController.hpp"
 #include "ores.qt/OriginDimensionController.hpp"
+#include "ores.qt/NatureDimensionController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -137,6 +138,8 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionChangeReasons->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_note_edit_20_regular.svg", iconColor));
     ui_->ActionOriginDimensions->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+    ui_->ActionNatureDimensions->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_database_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
@@ -381,6 +384,12 @@ MainWindow::MainWindow(QWidget* parent) :
             originDimensionController_->showListWindow();
     });
 
+    // Connect Nature Dimensions action to controller
+    connect(ui_->ActionNatureDimensions, &QAction::triggered, this, [this]() {
+        if (natureDimensionController_)
+            natureDimensionController_->showListWindow();
+    });
+
     // Initially disable data-related actions until logged in
     updateMenuState();
 
@@ -579,6 +588,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionChangeReasonCategories->setEnabled(isConnected);
     ui_->ActionChangeReasons->setEnabled(isConnected);
     ui_->ActionOriginDimensions->setEnabled(isConnected);
+    ui_->ActionNatureDimensions->setEnabled(isConnected);
 
     // My Account and My Sessions menu items are enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);
@@ -723,6 +733,21 @@ void MainWindow::createControllers() {
         ui_->statusbar->showMessage(message);
     });
     connect(originDimensionController_.get(), &OriginDimensionController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+
+    // Create nature dimension controller
+    natureDimensionController_ = std::make_unique<NatureDimensionController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        allDetachableWindows_, this);
+
+    // Connect nature dimension controller signals to status bar
+    connect(natureDimensionController_.get(), &NatureDimensionController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(natureDimensionController_.get(), &NatureDimensionController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
@@ -1362,6 +1387,9 @@ void MainWindow::onLoginSuccess(const QString& username) {
     }
     if (originDimensionController_) {
         originDimensionController_->setUsername(username);
+    }
+    if (natureDimensionController_) {
+        natureDimensionController_->setUsername(username);
     }
 
     updateWindowTitle();

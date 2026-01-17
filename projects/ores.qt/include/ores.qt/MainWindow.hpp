@@ -58,6 +58,7 @@ class FeatureFlagController;
 class ChangeReasonCategoryController;
 class ChangeReasonController;
 class OriginDimensionController;
+class NatureDimensionController;
 class ImageCache;
 class ChangeReasonCache;
 
@@ -364,6 +365,14 @@ private:
      * and history windows.
      */
     std::unique_ptr<OriginDimensionController> originDimensionController_;
+
+    /**
+     * @brief Controller managing nature dimension windows.
+     *
+     * Created after successful login, handles nature dimension list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<NatureDimensionController> natureDimensionController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

@@ -72,6 +72,7 @@
     <addaction name="ActionCodingSchemeAuthorityTypes"/>
     <addaction name="ActionDataDomains"/>
     <addaction name="ActionSubjectAreas"/>
+    <addaction name="ActionCatalogs"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -434,6 +435,18 @@
    </property>
    <property name="toolTip">
     <string>Manage subject areas within data domains</string>
+   </property>
+  </action>
+  <action name="ActionCatalogs">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_library_20_regular.svg</normaloff>:/icons/ic_fluent_library_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Catalogs</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage catalogs for organizing datasets</string>
    </property>
   </action>
  </widget>

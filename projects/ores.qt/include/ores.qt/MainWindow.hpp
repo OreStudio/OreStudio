@@ -63,6 +63,7 @@ class TreatmentDimensionController;
 class CodingSchemeAuthorityTypeController;
 class DataDomainController;
 class SubjectAreaController;
+class CatalogController;
 class ImageCache;
 class ChangeReasonCache;
 
@@ -409,6 +410,14 @@ private:
      * and history windows.
      */
     std::unique_ptr<SubjectAreaController> subjectAreaController_;
+
+    /**
+     * @brief Controller managing catalog windows.
+     *
+     * Created after successful login, handles catalog list, detail,
+     * and history windows.
+     */
+    std::unique_ptr<CatalogController> catalogController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

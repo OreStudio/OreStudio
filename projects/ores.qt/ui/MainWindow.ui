@@ -70,9 +70,13 @@
     <addaction name="ActionTreatmentDimensions"/>
     <addaction name="separator"/>
     <addaction name="ActionCodingSchemeAuthorityTypes"/>
+    <addaction name="ActionCodingSchemes"/>
+    <addaction name="ActionMethodologies"/>
+    <addaction name="separator"/>
     <addaction name="ActionDataDomains"/>
     <addaction name="ActionSubjectAreas"/>
     <addaction name="ActionCatalogs"/>
+    <addaction name="ActionDatasets"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -447,6 +451,42 @@
    </property>
    <property name="toolTip">
     <string>Manage catalogs for organizing datasets</string>
+   </property>
+  </action>
+  <action name="ActionCodingSchemes">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_code_20_regular.svg</normaloff>:/icons/ic_fluent_code_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Codin&amp;g Schemes</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage coding schemes (LEI, ISIN, etc.)</string>
+   </property>
+  </action>
+  <action name="ActionMethodologies">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_book_20_regular.svg</normaloff>:/icons/ic_fluent_book_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Methodologies</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage data processing methodologies</string>
+   </property>
+  </action>
+  <action name="ActionDatasets">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_database_20_regular.svg</normaloff>:/icons/ic_fluent_database_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Da&amp;tasets</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage datasets with data quality metadata</string>
    </property>
   </action>
  </widget>

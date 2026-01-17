@@ -31,7 +31,7 @@ const std::string tags("[domain]");
 }
 
 using namespace ores::synthetic::domain;
-using namespace ores::utility::log;
+using namespace ores::logging;
 
 TEST_CASE("create_stub", tags) {
     auto lg(make_logger(test_suite));

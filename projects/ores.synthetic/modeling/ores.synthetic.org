@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: DC252F72-1BB0-4CC8-B558-C191FFA5E826
+:END:
+#+title: ORE Studio Synthetic Data Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Provides core functionality for generating synthetic DQ data catalogs for
+[[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Synthetic Data Generation Component Diagram
+#+caption: ORE Studio Synthetic Data Component Diagram
+[[file:ores.synthetic.png][file:ores.synthetic.png]]
+
+This module provides infrastructure for generating synthetic data catalogs for
+Data Quality (DQ) testing and development purposes. Key features include:
+
+- Synthetic catalog generation: Create realistic test data structures
+- DQ integration: Compatible with ores.dq component catalog formats
+- Pattern-based generation: Support for various data types and patterns
+- Test data support: Enable development without exposing sensitive information
+
+The module is organized into namespaces: domain (core entities for synthetic
+data generation), service (generation logic), and generators (test data
+factories).
+
+* Domain Types
+
+| Type   | Description                                      |
+|--------+--------------------------------------------------|
+| =stub= | Placeholder type to be replaced during development |
+
+* Dependencies
+
+| Component  | Description                                   |
+|------------+-----------------------------------------------|
+| =ores.dq=  | Data Quality component for catalog structures |
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

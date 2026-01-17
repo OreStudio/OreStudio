@@ -1,0 +1,46 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+!pragma layout smetana
+
+title ores.synthetic - Synthetic Data Generation Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "Provides core functionality for generating\nsynthetic DQ data catalogs." as ores_synthetic_note
+    synthetic --- ores_synthetic_note
+    namespace synthetic #F2F2F2 {
+        namespace domain #F2F2F2 {
+            ' Stub domain class - to be replaced with actual domain types
+            class stub #F7E5FF {
+                +{field} version : int
+            }
+
+            note top of stub
+            Stub domain type.
+            To be replaced with actual
+            synthetic data generation types.
+            end note
+        }
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.synthetic.puml"
+' End:
+@enduml

@@ -447,6 +447,67 @@ not from fields in the request. This prevents identity forgery attacks.
 Always perform authorization checks in the message handler, not in the client.
 The server is the authority for access control decisions.
 
+*** Passing authorization_service to message handlers
+
+Message handlers that perform write, delete, or sensitive operations should
+receive =auth_service= for RBAC permission checks:
+
+1. Update the registrar to accept =auth_service=:
+
+#+begin_src cpp
+// In registrar.hpp
+#include "ores.iam/service/authorization_service.hpp"
+
+static void register_handlers(comms::net::server& server,
+    database::context ctx,
+    std::shared_ptr<iam::service::authorization_service> auth_service);
+#+end_src
+
+2. Update the message handler constructor:
+
+#+begin_src cpp
+// In message_handler.hpp
+#include "ores.iam/service/authorization_service.hpp"
+
+message_handler(database::context ctx,
+    std::shared_ptr<comms::service::auth_session_service> sessions,
+    std::shared_ptr<iam::service::authorization_service> auth_service);
+
+private:
+    std::shared_ptr<iam::service::authorization_service> auth_service_;
+#+end_src
+
+3. Pass =auth_service= when creating the handler:
+
+#+begin_src cpp
+// In registrar.cpp
+auto handler = std::make_shared<message_handler>(
+    std::move(ctx), server.sessions(), std::move(auth_service));
+#+end_src
+
+4. Update the call site in =application.cpp=:
+
+#+begin_src cpp
+ores::COMPONENT::messaging::registrar::register_handlers(*srv, ctx, auth_service);
+#+end_src
+
+5. Add the =ores.iam= dependency to CMakeLists.txt:
+
+#+begin_src cmake
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        ores.iam.lib
+        # ... other dependencies
+)
+#+end_src
+
+*Warning*: Before adding =ores.iam.lib= as a dependency, check
+=projects/modeling/ores.puml= for the current dependency graph. If IAM already
+depends on your component (directly or transitively), adding this dependency
+will create a circular dependency that breaks the build. In such cases, defer
+authorization to a higher layer (e.g., handle it in the service application
+that hosts both components).
+
 ** Sensitive data
 
 Never include passwords or secrets in plain text in protocol messages. Use

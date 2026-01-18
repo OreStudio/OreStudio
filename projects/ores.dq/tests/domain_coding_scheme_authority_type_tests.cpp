@@ -48,6 +48,8 @@ TEST_CASE("create_coding_scheme_authority_type_with_valid_fields", tags) {
     CHECK(sut.version == 1);
     CHECK(sut.code == "ISO");
     CHECK(sut.description == "International Organization for Standardization");
+    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.change_commentary == "Initial creation");
 }
 
 TEST_CASE("coding_scheme_authority_type_convert_single_to_table", tags) {
@@ -65,5 +67,8 @@ TEST_CASE("coding_scheme_authority_type_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
+    CHECK(table.find("Code") != std::string::npos);
+    CHECK(table.find("Description") != std::string::npos);
     CHECK(table.find("ISDA") != std::string::npos);
+    CHECK(table.find("International Swaps and Derivatives Association") != std::string::npos);
 }

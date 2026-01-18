@@ -20,10 +20,10 @@
 #include "ores.refdata/domain/currency.hpp"
 
 #include <array>
-#include <chrono>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/faker/datetime.hpp"
 #include "ores.refdata/domain/currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/currency_table.hpp"
 
@@ -32,16 +32,7 @@ namespace {
 const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[domain]");
 
-std::chrono::system_clock::time_point make_timepoint(int year, int month, int day) {
-    std::tm tm = {};
-    tm.tm_year = year - 1900;
-    tm.tm_mon = month - 1;
-    tm.tm_mday = day;
-    tm.tm_hour = 0;
-    tm.tm_min = 0;
-    tm.tm_sec = 0;
-    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
-}
+using ores::utility::faker::datetime;
 
 }
 
@@ -63,7 +54,7 @@ TEST_CASE("create_currency_with_valid_fields", tags) {
     ccy.format = "%3% %1$.2f";
     ccy.currency_type = "Fiat";
     ccy.recorded_by = "admin";
-    ccy.recorded_at = make_timepoint(2025, 1, 1);
+    ccy.recorded_at = datetime::make_timepoint(2025, 1, 1);
 
     BOOST_LOG_SEV(lg, debug) << "Currency: " << ccy;
 
@@ -258,7 +249,7 @@ TEST_CASE("currency_convert_single_to_table", tags) {
     ccy.format = "%3% %1$.2f";
     ccy.currency_type = "Fiat";
     ccy.recorded_by = "admin";
-    ccy.recorded_at = make_timepoint(2025, 1, 1);
+    ccy.recorded_at = datetime::make_timepoint(2025, 1, 1);
 
     auto table = convert_to_table(ccy);
 

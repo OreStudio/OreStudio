@@ -54,6 +54,8 @@ TEST_CASE("create_methodology_with_valid_fields", tags) {
     CHECK(sut.description == "Calculates simple moving average over a time window");
     CHECK(sut.logic_reference == "https://docs.example.com/moving-average");
     CHECK(sut.implementation_details == "Uses 30-day rolling window");
+    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.change_commentary == "Initial creation");
 }
 
 TEST_CASE("methodology_convert_single_to_table", tags) {
@@ -72,5 +74,8 @@ TEST_CASE("methodology_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
+    CHECK(table.find("Name") != std::string::npos);
+    CHECK(table.find("Description") != std::string::npos);
     CHECK(table.find("Data Validation") != std::string::npos);
+    CHECK(table.find("Validates data against schema rules") != std::string::npos);
 }

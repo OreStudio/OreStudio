@@ -24,27 +24,18 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/faker/datetime.hpp"
 
 namespace {
 
 const std::string test_suite("ores.assets.tests");
 const std::string tags("[assets_protocol]");
 
+using ores::utility::faker::datetime;
+
 boost::uuids::uuid make_uuid(const std::string& s) {
     static boost::uuids::string_generator gen;
     return gen(s);
-}
-
-std::chrono::system_clock::time_point make_timepoint(int year, int month, int day,
-    int hour = 0, int min = 0, int sec = 0) {
-    std::tm tm = {};
-    tm.tm_year = year - 1900;
-    tm.tm_mon = month - 1;
-    tm.tm_mday = day;
-    tm.tm_hour = hour;
-    tm.tm_min = min;
-    tm.tm_sec = sec;
-    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
 }
 
 }
@@ -155,7 +146,7 @@ TEST_CASE("get_images_response_roundtrip_single_image", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing get_images_response roundtrip with single image";
 
     const auto uuid1 = make_uuid("00000000-0000-0000-0000-000000000001");
-    const auto time1 = make_timepoint(2025, 1, 1);
+    const auto time1 = datetime::make_timepoint(2025, 1, 1);
 
     get_images_response original;
     original.images.push_back({
@@ -188,8 +179,8 @@ TEST_CASE("get_images_response_roundtrip_multiple_images", tags) {
 
     const auto uuid1 = make_uuid("00000000-0000-0000-0000-000000000001");
     const auto uuid2 = make_uuid("00000000-0000-0000-0000-000000000002");
-    const auto time1 = make_timepoint(2025, 1, 1);
-    const auto time2 = make_timepoint(2025, 1, 2, 12);
+    const auto time1 = datetime::make_timepoint(2025, 1, 1);
+    const auto time2 = datetime::make_timepoint(2025, 1, 2, 12);
 
     get_images_response original;
     original.images.push_back({
@@ -227,7 +218,7 @@ TEST_CASE("get_images_response_roundtrip_with_unicode", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing get_images_response roundtrip with unicode content";
 
     const auto uuid1 = make_uuid("00000000-0000-0000-0000-000000000003");
-    const auto time1 = make_timepoint(2025, 1, 1);
+    const auto time1 = datetime::make_timepoint(2025, 1, 1);
 
     get_images_response original;
     original.images.push_back({
@@ -254,7 +245,7 @@ TEST_CASE("get_images_response_stream_operator", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing get_images_response stream operator";
 
     const auto uuid1 = make_uuid("00000000-0000-0000-0000-000000000001");
-    const auto time1 = make_timepoint(2025, 1, 1);
+    const auto time1 = datetime::make_timepoint(2025, 1, 1);
 
     get_images_response response;
     response.images.push_back({
@@ -296,7 +287,7 @@ TEST_CASE("get_images_response_deserialize_truncated_data", tags) {
     BOOST_LOG_SEV(lg, info) << "Testing get_images_response deserialization with truncated data";
 
     const auto uuid1 = make_uuid("00000000-0000-0000-0000-000000000001");
-    const auto time1 = make_timepoint(2025, 1, 1);
+    const auto time1 = datetime::make_timepoint(2025, 1, 1);
 
     get_images_response original;
     original.images.push_back({

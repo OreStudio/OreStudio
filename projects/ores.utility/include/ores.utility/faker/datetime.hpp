@@ -43,6 +43,23 @@ public:
      * Returns a string in the format "YYYY-MM-DD HH:MM:SS".
      */
     static std::string past_string();
+
+    /**
+     * @brief Creates a time_point from date/time components.
+     *
+     * Uses C++20's timezone-agnostic sys_days for deterministic results
+     * across different environments.
+     *
+     * @param year The year (e.g., 2025)
+     * @param month The month (1-12)
+     * @param day The day (1-31)
+     * @param hour The hour (0-23, default 0)
+     * @param min The minute (0-59, default 0)
+     * @param sec The second (0-59, default 0)
+     * @return A time_point representing the specified UTC datetime.
+     */
+    static std::chrono::system_clock::time_point make_timepoint(
+        int year, int month, int day, int hour = 0, int min = 0, int sec = 0);
 };
 
 }

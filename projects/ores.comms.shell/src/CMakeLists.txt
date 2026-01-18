@@ -44,6 +44,7 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
     PRIVATE
         ores.iam.lib
+        ores.dq.lib
         ores.variability.lib
         ores.refdata.lib
         ores.comms.lib

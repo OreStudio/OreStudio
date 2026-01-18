@@ -20,7 +20,6 @@
 #ifndef ORES_DQ_MESSAGING_REGISTRAR_HPP
 #define ORES_DQ_MESSAGING_REGISTRAR_HPP
 
-#include <memory>
 #include "ores.comms/net/server.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"

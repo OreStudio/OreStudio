@@ -22,6 +22,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/faker/datetime.hpp"
 #include "ores.refdata/domain/currency.hpp"
 
 namespace {
@@ -29,16 +30,7 @@ namespace {
 const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[csv]");
 
-std::chrono::system_clock::time_point make_timepoint(int year, int month, int day) {
-    std::tm tm = {};
-    tm.tm_year = year - 1900;
-    tm.tm_mon = month - 1;
-    tm.tm_mday = day;
-    tm.tm_hour = 12;
-    tm.tm_min = 0;
-    tm.tm_sec = 0;
-    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
-}
+using ores::utility::faker::datetime;
 
 }
 
@@ -80,7 +72,7 @@ TEST_CASE("export_single_currency_produces_valid_csv", tags) {
     ccy.format = "%3% %1$.2f";
     ccy.currency_type = "Fiat";
     ccy.recorded_by = "admin";
-    ccy.recorded_at = make_timepoint(2025, 1, 15);
+    ccy.recorded_at = datetime::make_timepoint(2025, 1, 15);
 
     std::vector<currency> currencies = {ccy};
     std::string result = exporter::export_currency_config(currencies);
@@ -113,7 +105,7 @@ TEST_CASE("export_multiple_currencies_produces_multiple_rows", tags) {
     usd.format = "%3% %1$.2f";
     usd.currency_type = "Fiat";
     usd.recorded_by = "admin";
-    usd.recorded_at = make_timepoint(2025, 1, 15);
+    usd.recorded_at = datetime::make_timepoint(2025, 1, 15);
     currencies.push_back(usd);
 
     currency eur;
@@ -128,7 +120,7 @@ TEST_CASE("export_multiple_currencies_produces_multiple_rows", tags) {
     eur.format = "%3% %1$.2f";
     eur.currency_type = "Fiat";
     eur.recorded_by = "admin";
-    eur.recorded_at = make_timepoint(2025, 1, 15);
+    eur.recorded_at = datetime::make_timepoint(2025, 1, 15);
     currencies.push_back(eur);
 
     currency jpy;
@@ -143,7 +135,7 @@ TEST_CASE("export_multiple_currencies_produces_multiple_rows", tags) {
     jpy.format = "%3% %1$.0f";
     jpy.currency_type = "Fiat";
     jpy.recorded_by = "admin";
-    jpy.recorded_at = make_timepoint(2025, 1, 15);
+    jpy.recorded_at = datetime::make_timepoint(2025, 1, 15);
     currencies.push_back(jpy);
 
     std::string result = exporter::export_currency_config(currencies);
@@ -173,7 +165,7 @@ TEST_CASE("export_currency_with_comma_in_name_is_escaped", tags) {
     ccy.format = "%3% %1$.2f";
     ccy.currency_type = "Test";
     ccy.recorded_by = "admin";
-    ccy.recorded_at = make_timepoint(2025, 1, 15);
+    ccy.recorded_at = datetime::make_timepoint(2025, 1, 15);
 
     std::vector<currency> currencies = {ccy};
     std::string result = exporter::export_currency_config(currencies);
@@ -199,7 +191,7 @@ TEST_CASE("export_currency_with_quotes_in_name_is_escaped", tags) {
     ccy.format = "%3% %1$.2f";
     ccy.currency_type = "Test";
     ccy.recorded_by = "admin";
-    ccy.recorded_at = make_timepoint(2025, 1, 15);
+    ccy.recorded_at = datetime::make_timepoint(2025, 1, 15);
 
     std::vector<currency> currencies = {ccy};
     std::string result = exporter::export_currency_config(currencies);
@@ -225,7 +217,7 @@ TEST_CASE("export_currency_with_newline_in_description_is_escaped", tags) {
     ccy.format = "%3% %1$.2f";
     ccy.currency_type = "Test";
     ccy.recorded_by = "admin";
-    ccy.recorded_at = make_timepoint(2025, 1, 15);
+    ccy.recorded_at = datetime::make_timepoint(2025, 1, 15);
 
     std::vector<currency> currencies = {ccy};
     std::string result = exporter::export_currency_config(currencies);
@@ -312,7 +304,7 @@ TEST_CASE("csv_output_ends_with_newline", tags) {
     ccy.format = "%3% %1$.2f";
     ccy.currency_type = "Fiat";
     ccy.recorded_by = "admin";
-    ccy.recorded_at = make_timepoint(2025, 1, 15);
+    ccy.recorded_at = datetime::make_timepoint(2025, 1, 15);
 
     std::vector<currency> currencies = {ccy};
     std::string result = exporter::export_currency_config(currencies);
@@ -338,7 +330,7 @@ TEST_CASE("export_currency_with_empty_fields", tags) {
     ccy.format = "";
     ccy.currency_type = "";
     ccy.recorded_by = "";
-    ccy.recorded_at = make_timepoint(2025, 1, 15);
+    ccy.recorded_at = datetime::make_timepoint(2025, 1, 15);
 
     std::vector<currency> currencies = {ccy};
     std::string result = exporter::export_currency_config(currencies);

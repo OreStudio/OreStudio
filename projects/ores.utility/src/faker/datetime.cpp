@@ -45,4 +45,12 @@ std::string datetime::past_string() {
     return std::format("{:%Y-%m-%d %H:%M:%S}", tp);
 }
 
+std::chrono::system_clock::time_point datetime::make_timepoint(
+    int y, int m, int d, int hour, int min, int sec) {
+    using namespace std::chrono;
+    return sys_days{year_month_day{year{y}, month{static_cast<unsigned>(m)},
+        day{static_cast<unsigned>(d)}}} + hours{hour} + minutes{min} +
+        seconds{sec};
+}
+
 }

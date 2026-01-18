@@ -21,55 +21,25 @@
 #ifndef ORES_DQ_DOMAIN_CHANGE_REASON_CONSTANTS_HPP
 #define ORES_DQ_DOMAIN_CHANGE_REASON_CONSTANTS_HPP
 
-#include <string_view>
-
-namespace ores::dq::domain::change_reason_constants {
-
 /**
- * @brief Change reason codes used throughout the system.
+ * @file change_reason_constants.hpp
+ * @brief Backward compatibility header.
  *
- * These codes must match entries in the change_reasons database table.
+ * The change reason constants have been moved to ores.database to break a
+ * circular dependency between ores.dq and ores.iam. This header provides
+ * a namespace alias for backward compatibility.
  */
-namespace codes {
+#include "ores.database/domain/change_reason_constants.hpp"
+
+namespace ores::dq::domain {
 
 /**
- * @brief Used when creating new records in the system.
+ * @brief Alias for backward compatibility.
  *
- * Applied automatically by service layer when entities are first created.
+ * Use ores::database::domain::change_reason_constants directly in new code.
  */
-constexpr std::string_view new_record = "system.new_record";
+namespace change_reason_constants = ores::database::domain::change_reason_constants;
 
-/**
- * @brief Used for updates that don't change material business data.
- *
- * Examples: password changes, email updates, touch operations (version bump
- * without field changes).
- */
-constexpr std::string_view non_material_update = "common.non_material_update";
-
-} // namespace codes
-
-/**
- * @brief Change reason category codes.
- *
- * Categories group related change reasons together.
- */
-namespace categories {
-
-/**
- * @brief Common reasons applicable to most entity types.
- *
- * Used as the default category when fetching reasons for amendments.
- */
-constexpr std::string_view common = "common";
-
-/**
- * @brief System-generated reasons not typically shown to users.
- */
-constexpr std::string_view system = "system";
-
-} // namespace categories
-
-} // namespace ores::dq::domain::change_reason_constants
+} // namespace ores::dq::domain
 
 #endif

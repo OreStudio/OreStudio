@@ -55,6 +55,8 @@ TEST_CASE("create_coding_scheme_with_valid_fields", tags) {
     CHECK(sut.subject_area_name == "Currencies");
     CHECK(sut.domain_name == "Reference Data");
     CHECK(sut.uri == "https://www.iso.org/iso-4217-currency-codes.html");
+    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.change_commentary == "Initial creation");
 }
 
 TEST_CASE("coding_scheme_convert_single_to_table", tags) {
@@ -75,5 +77,8 @@ TEST_CASE("coding_scheme_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
+    CHECK(table.find("Code") != std::string::npos);
+    CHECK(table.find("Description") != std::string::npos);
     CHECK(table.find("ISO-3166") != std::string::npos);
+    CHECK(table.find("ISO 3166 country codes") != std::string::npos);
 }

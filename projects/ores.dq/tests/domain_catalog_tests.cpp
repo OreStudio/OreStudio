@@ -50,6 +50,8 @@ TEST_CASE("create_catalog_with_valid_fields", tags) {
     CHECK(sut.name == "ISO Standards");
     CHECK(sut.description == "Datasets conforming to ISO standards");
     CHECK(sut.owner == "Standards Team");
+    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.change_commentary == "Initial creation");
 }
 
 TEST_CASE("catalog_convert_single_to_table", tags) {
@@ -67,5 +69,8 @@ TEST_CASE("catalog_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
+    CHECK(table.find("Name") != std::string::npos);
+    CHECK(table.find("Description") != std::string::npos);
     CHECK(table.find("FpML Standards") != std::string::npos);
+    CHECK(table.find("FpML-based financial products") != std::string::npos);
 }

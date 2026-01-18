@@ -22,7 +22,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/lexical_cast.hpp>
-#include "ores.dq/domain/change_reason_constants.hpp"
+#include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.iam/domain/permission.hpp"
 #include "ores.iam/domain/role.hpp"
 #include "ores.iam/messaging/protocol.hpp"
@@ -36,7 +36,7 @@ namespace ores::iam::messaging {
 
 using namespace ores::logging;
 using comms::messaging::message_type;
-namespace reason = dq::domain::change_reason_constants;
+namespace reason = database::domain::change_reason_constants;
 
 accounts_message_handler::accounts_message_handler(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,

@@ -973,6 +973,35 @@ HF:
 
 [[./mock_data_librarian_hf.png]]
 
+**** Subject areas
+
+#+begin_quote
+This pull request significantly enhances the application's data organization
+capabilities by introducing a new module for managing Subject Areas. It provides
+a structured way to define and track subject areas, complete with dedicated user
+interfaces for detailed viewing, editing, and a robust version history system.
+This integration improves the overall data governance and traceability within
+the application.
+
+Highlights:
+
+- New Subject Area Management Feature: Introduced a comprehensive system for
+  managing 'Subject Areas', allowing users to create, view, edit, delete, and
+  track the history of subject areas within data domains.
+- Dedicated Controller and UI Components: Added a new SubjectAreaController to
+  manage the lifecycle of subject area-related windows, along with
+  SubjectAreaDetailDialog for individual subject area operations and
+  SubjectAreaHistoryDialog for viewing version history and changes.
+- Main Window Integration: The main application window (MainWindow) has been
+  updated to include and initialize the SubjectAreaController, connect its
+  signals to the status bar, and enable a new 'Subject Areas' action in the
+  menu, making the feature accessible upon successful login.
+- Version History and Revert Functionality: The SubjectAreaHistoryDialog
+  provides a detailed view of a subject area's changes over time, including who
+  made the change, when, and a commentary. It also enables opening read-only
+  versions and reverting to previous states.
+#+end_quote
+
 **** Address review comments
 
 #+begin_quote

@@ -34,6 +34,16 @@
 #include "ores.iam/eventing/account_changed_event.hpp"
 #include "ores.dq/eventing/change_reason_changed_event.hpp"
 #include "ores.dq/eventing/change_reason_category_changed_event.hpp"
+#include "ores.dq/eventing/origin_dimension_changed_event.hpp"
+#include "ores.dq/eventing/nature_dimension_changed_event.hpp"
+#include "ores.dq/eventing/treatment_dimension_changed_event.hpp"
+#include "ores.dq/eventing/catalog_changed_event.hpp"
+#include "ores.dq/eventing/dataset_changed_event.hpp"
+#include "ores.dq/eventing/methodology_changed_event.hpp"
+#include "ores.dq/eventing/coding_scheme_changed_event.hpp"
+#include "ores.dq/eventing/coding_scheme_authority_type_changed_event.hpp"
+#include "ores.dq/eventing/data_domain_changed_event.hpp"
+#include "ores.dq/eventing/subject_area_changed_event.hpp"
 #include "ores.iam/eventing/role_changed_event.hpp"
 #include "ores.iam/eventing/permission_changed_event.hpp"
 #include "ores.assets/eventing/assets_changed_event.hpp"
@@ -178,6 +188,46 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         event_source, "ores.dq.change_reason_category", "ores_change_reason_categories",
         *channel_registry, "Change reason category data modified");
     eventing::service::registrar::register_mapping<
+        dq::eventing::origin_dimension_changed_event>(
+        event_source, "ores.dq.origin_dimension", "ores_origin_dimensions",
+        *channel_registry, "Origin dimension data modified");
+    eventing::service::registrar::register_mapping<
+        dq::eventing::nature_dimension_changed_event>(
+        event_source, "ores.dq.nature_dimension", "ores_nature_dimensions",
+        *channel_registry, "Nature dimension data modified");
+    eventing::service::registrar::register_mapping<
+        dq::eventing::treatment_dimension_changed_event>(
+        event_source, "ores.dq.treatment_dimension", "ores_treatment_dimensions",
+        *channel_registry, "Treatment dimension data modified");
+    eventing::service::registrar::register_mapping<
+        dq::eventing::catalog_changed_event>(
+        event_source, "ores.dq.catalog", "ores_catalogs",
+        *channel_registry, "Catalog data modified");
+    eventing::service::registrar::register_mapping<
+        dq::eventing::dataset_changed_event>(
+        event_source, "ores.dq.dataset", "ores_datasets",
+        *channel_registry, "Dataset data modified");
+    eventing::service::registrar::register_mapping<
+        dq::eventing::methodology_changed_event>(
+        event_source, "ores.dq.methodology", "ores_methodologies",
+        *channel_registry, "Methodology data modified");
+    eventing::service::registrar::register_mapping<
+        dq::eventing::coding_scheme_changed_event>(
+        event_source, "ores.dq.coding_scheme", "ores_coding_schemes",
+        *channel_registry, "Coding scheme data modified");
+    eventing::service::registrar::register_mapping<
+        dq::eventing::coding_scheme_authority_type_changed_event>(
+        event_source, "ores.dq.coding_scheme_authority_type", "ores_coding_scheme_authority_types",
+        *channel_registry, "Coding scheme authority type data modified");
+    eventing::service::registrar::register_mapping<
+        dq::eventing::data_domain_changed_event>(
+        event_source, "ores.dq.data_domain", "ores_data_domains",
+        *channel_registry, "Data domain data modified");
+    eventing::service::registrar::register_mapping<
+        dq::eventing::subject_area_changed_event>(
+        event_source, "ores.dq.subject_area", "ores_subject_areas",
+        *channel_registry, "Subject area data modified");
+    eventing::service::registrar::register_mapping<
         iam::eventing::role_changed_event>(
         event_source, "ores.iam.role", "ores_roles",
         *channel_registry, "Role data modified");
@@ -248,6 +298,86 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                 dq::eventing::change_reason_category_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
                                      e.category_codes);
+        });
+
+    auto origin_dimension_sub = event_bus.subscribe<dq::eventing::origin_dimension_changed_event>(
+        [&subscription_mgr](const dq::eventing::origin_dimension_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                dq::eventing::origin_dimension_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.codes);
+        });
+
+    auto nature_dimension_sub = event_bus.subscribe<dq::eventing::nature_dimension_changed_event>(
+        [&subscription_mgr](const dq::eventing::nature_dimension_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                dq::eventing::nature_dimension_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.codes);
+        });
+
+    auto treatment_dimension_sub = event_bus.subscribe<dq::eventing::treatment_dimension_changed_event>(
+        [&subscription_mgr](const dq::eventing::treatment_dimension_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                dq::eventing::treatment_dimension_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.codes);
+        });
+
+    auto catalog_sub = event_bus.subscribe<dq::eventing::catalog_changed_event>(
+        [&subscription_mgr](const dq::eventing::catalog_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                dq::eventing::catalog_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.names);
+        });
+
+    auto dataset_sub = event_bus.subscribe<dq::eventing::dataset_changed_event>(
+        [&subscription_mgr](const dq::eventing::dataset_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                dq::eventing::dataset_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.ids);
+        });
+
+    auto methodology_sub = event_bus.subscribe<dq::eventing::methodology_changed_event>(
+        [&subscription_mgr](const dq::eventing::methodology_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                dq::eventing::methodology_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.ids);
+        });
+
+    auto coding_scheme_sub = event_bus.subscribe<dq::eventing::coding_scheme_changed_event>(
+        [&subscription_mgr](const dq::eventing::coding_scheme_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                dq::eventing::coding_scheme_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.codes);
+        });
+
+    auto coding_scheme_authority_type_sub = event_bus.subscribe<dq::eventing::coding_scheme_authority_type_changed_event>(
+        [&subscription_mgr](const dq::eventing::coding_scheme_authority_type_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                dq::eventing::coding_scheme_authority_type_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.codes);
+        });
+
+    auto data_domain_sub = event_bus.subscribe<dq::eventing::data_domain_changed_event>(
+        [&subscription_mgr](const dq::eventing::data_domain_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                dq::eventing::data_domain_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.names);
+        });
+
+    auto subject_area_sub = event_bus.subscribe<dq::eventing::subject_area_changed_event>(
+        [&subscription_mgr](const dq::eventing::subject_area_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                dq::eventing::subject_area_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.keys);
         });
 
     auto role_sub = event_bus.subscribe<iam::eventing::role_changed_event>(

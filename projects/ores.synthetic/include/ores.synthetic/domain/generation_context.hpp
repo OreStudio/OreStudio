@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_DOMAIN_GENERATION_CONTEXT_HPP
 #define ORES_SYNTHETIC_DOMAIN_GENERATION_CONTEXT_HPP
 
+#include <array>
 #include <chrono>
 #include <cstdint>
 #include <random>
@@ -74,6 +75,16 @@ public:
             throw std::out_of_range("Cannot pick from an empty vector.");
         }
         std::uniform_int_distribution<std::size_t> dist(0, items.size() - 1);
+        return items[dist(engine_)];
+    }
+
+    /**
+     * @brief Picks a random element from an array.
+     */
+    template<typename T, std::size_t N>
+    const T& pick(const std::array<T, N>& items) {
+        static_assert(N > 0, "Cannot pick from an empty array.");
+        std::uniform_int_distribution<std::size_t> dist(0, N - 1);
         return items[dist(engine_)];
     }
 

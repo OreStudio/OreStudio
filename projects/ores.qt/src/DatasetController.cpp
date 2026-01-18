@@ -110,6 +110,14 @@ void DatasetController::closeAllWindows() {
     listMdiSubWindow_ = nullptr;
 }
 
+void DatasetController::reloadListWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "reloadListWindow called";
+
+    if (listWindow_) {
+        listWindow_->reload();
+    }
+}
+
 void DatasetController::onShowDetails(const dq::domain::dataset& dataset) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << dataset.id;
     showDetailWindow(dataset);
@@ -143,9 +151,7 @@ void DatasetController::showAddWindow() {
     connect(detailDialog, &DatasetDetailDialog::datasetSaved,
             this, [this](const boost::uuids::uuid& id) {
         BOOST_LOG_SEV(lg(), info) << "Dataset saved: " << id;
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -188,16 +194,12 @@ void DatasetController::showDetailWindow(const dq::domain::dataset& dataset) {
     connect(detailDialog, &DatasetDetailDialog::datasetSaved,
             this, [this](const boost::uuids::uuid& id) {
         BOOST_LOG_SEV(lg(), info) << "Dataset saved: " << id;
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
     connect(detailDialog, &DatasetDetailDialog::datasetDeleted,
             this, [this, key](const boost::uuids::uuid& id) {
         BOOST_LOG_SEV(lg(), info) << "Dataset deleted: " << id;
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntityDeleted();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -350,9 +352,7 @@ void DatasetController::onRevertVersion(
             this, [this](const boost::uuids::uuid& id) {
         BOOST_LOG_SEV(lg(), info) << "Dataset reverted: " << id;
         emit statusMessage(QString("Dataset reverted successfully"));
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     const QColor iconColor(220, 220, 220);

@@ -193,6 +193,14 @@ void CurrencyController::closeAllWindows() {
     }
 }
 
+void CurrencyController::reloadListWindow() {
+    if (currencyListWindow_) {
+        if (auto* widget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget())) {
+            widget->reload();
+        }
+    }
+}
+
 void CurrencyController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new currency requested";
     const QColor iconColor(220, 220, 220);

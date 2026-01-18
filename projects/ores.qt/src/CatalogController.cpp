@@ -109,6 +109,12 @@ void CatalogController::closeAllWindows() {
     listMdiSubWindow_ = nullptr;
 }
 
+void CatalogController::reloadListWindow() {
+    if (listWindow_) {
+        listWindow_->reload();
+    }
+}
+
 void CatalogController::onShowDetails(const dq::domain::catalog& catalog) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << catalog.name;
     showDetailWindow(catalog);
@@ -142,9 +148,7 @@ void CatalogController::showAddWindow() {
     connect(detailDialog, &CatalogDetailDialog::catalogSaved,
             this, [this](const QString& name) {
         BOOST_LOG_SEV(lg(), info) << "Catalog saved: " << name.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -186,16 +190,12 @@ void CatalogController::showDetailWindow(const dq::domain::catalog& catalog) {
     connect(detailDialog, &CatalogDetailDialog::catalogSaved,
             this, [this](const QString& name) {
         BOOST_LOG_SEV(lg(), info) << "Catalog saved: " << name.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
     connect(detailDialog, &CatalogDetailDialog::catalogDeleted,
             this, [this, key](const QString& name) {
         BOOST_LOG_SEV(lg(), info) << "Catalog deleted: " << name.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntityDeleted();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -348,9 +348,7 @@ void CatalogController::onRevertVersion(const dq::domain::catalog& catalog) {
         BOOST_LOG_SEV(lg(), info) << "Catalog reverted: " << name.toStdString();
         emit statusMessage(
             QString("Catalog '%1' reverted successfully").arg(name));
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     const QColor iconColor(220, 220, 220);

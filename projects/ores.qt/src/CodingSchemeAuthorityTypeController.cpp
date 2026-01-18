@@ -109,6 +109,12 @@ void CodingSchemeAuthorityTypeController::closeAllWindows() {
     listMdiSubWindow_ = nullptr;
 }
 
+void CodingSchemeAuthorityTypeController::reloadListWindow() {
+    if (listWindow_) {
+        listWindow_->reload();
+    }
+}
+
 void CodingSchemeAuthorityTypeController::onShowDetails(
     const dq::domain::coding_scheme_authority_type& authorityType) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << authorityType.code;
@@ -142,9 +148,7 @@ void CodingSchemeAuthorityTypeController::showAddWindow() {
     connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::authorityTypeSaved,
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Authority type saved: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -188,16 +192,12 @@ void CodingSchemeAuthorityTypeController::showDetailWindow(
     connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::authorityTypeSaved,
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Authority type saved: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
     connect(detailDialog, &CodingSchemeAuthorityTypeDetailDialog::authorityTypeDeleted,
             this, [this, key](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Authority type deleted: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntityDeleted();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -349,9 +349,7 @@ void CodingSchemeAuthorityTypeController::onRevertVersion(
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Authority type reverted: " << code.toStdString();
         emit statusMessage(QString("Authority type '%1' reverted successfully").arg(code));
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     const QColor iconColor(220, 220, 220);

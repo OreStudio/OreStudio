@@ -115,6 +115,13 @@ void NatureDimensionController::closeAllWindows() {
     listMdiSubWindow_ = nullptr;
 }
 
+void NatureDimensionController::reloadListWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "reloadListWindow called";
+    if (listWindow_) {
+        listWindow_->reload();
+    }
+}
+
 void NatureDimensionController::onShowDetails(
     const dq::domain::nature_dimension& dimension) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << dimension.code;
@@ -148,9 +155,7 @@ void NatureDimensionController::showAddWindow() {
     connect(detailDialog, &NatureDimensionDetailDialog::dimensionSaved,
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Nature dimension saved: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -194,16 +199,12 @@ void NatureDimensionController::showDetailWindow(
     connect(detailDialog, &NatureDimensionDetailDialog::dimensionSaved,
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Nature dimension saved: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
     connect(detailDialog, &NatureDimensionDetailDialog::dimensionDeleted,
             this, [this, key](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Nature dimension deleted: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntityDeleted();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -370,9 +371,7 @@ void NatureDimensionController::onRevertVersion(
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Nature dimension reverted: " << code.toStdString();
         emit statusMessage(QString("Nature dimension '%1' reverted successfully").arg(code));
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     const QColor iconColor(220, 220, 220);

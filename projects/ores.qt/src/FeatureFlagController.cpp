@@ -160,6 +160,12 @@ void FeatureFlagController::closeAllWindows() {
     listMdiSubWindow_ = nullptr;
 }
 
+void FeatureFlagController::reloadListWindow() {
+    if (listWindow_) {
+        listWindow_->reload();
+    }
+}
+
 void FeatureFlagController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), debug) << "Add new feature flag requested";
     showDetailWindow({}, true);
@@ -252,7 +258,7 @@ void FeatureFlagController::onFeatureFlagDeleted(const QString& name) {
 void FeatureFlagController::refreshListWindow() {
     if (listWindow_) {
         BOOST_LOG_SEV(lg(), debug) << "Refreshing feature flags list";
-        listWindow_->reload();
+        handleEntitySaved();
     }
 }
 

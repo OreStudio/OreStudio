@@ -171,6 +171,14 @@ void AccountController::closeAllWindows() {
     }
 }
 
+void AccountController::reloadListWindow() {
+    if (accountListWindow_) {
+        if (auto* widget = qobject_cast<AccountMdiWindow*>(accountListWindow_->widget())) {
+            widget->reload();
+        }
+    }
+}
+
 void AccountController::onNotificationReceived(
     const QString& eventType, const QDateTime& timestamp,
     const QStringList& entityIds) {

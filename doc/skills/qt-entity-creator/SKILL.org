@@ -1165,17 +1165,13 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
-        QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);
 
     ~<Entity>Controller() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
-
-signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& message);
+    void reloadListWindow() override;
 
 private slots:
     void onAddNewRequested();
@@ -1192,9 +1188,8 @@ private:
                           bool createMode, bool readOnly = false,
                           int versionNumber = 0);
 
-    QList<DetachableMdiSubWindow*>& allDetachableWindows_;
-    QPointer<DetachableMdiSubWindow> listWindow_;
-    QPointer<<Entity>MdiWindow> listWidget_;
+    <Entity>MdiWindow* listWindow_;
+    DetachableMdiSubWindow* listMdiSubWindow_;
 };
 
 }
@@ -1209,7 +1204,8 @@ private:
 #+begin_src cpp
 <Entity>Controller::<Entity>Controller(/* params */)
     : EntityController(mainWindow, mdiArea, clientManager, username, parent),
-      allDetachableWindows_(allDetachableWindows) {
+      listWindow_(nullptr),
+      listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "<Entity> controller created";
 
@@ -1238,50 +1234,72 @@ private:
 #+begin_src cpp
 void <Entity>Controller::showListWindow() {
     // Reuse existing window if available
-    if (listWindow_) {
-        bring_window_to_front(listWindow_);
+    if (listMdiSubWindow_) {
+        bring_window_to_front(listMdiSubWindow_);
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new <entity> MDI window";
+    const QColor iconColor = color_constants::icon_color;
 
     // Create widget
-    auto* widget = new <Entity>MdiWindow(clientManager_, username_, nullptr);
-    listWidget_ = widget;
+    listWindow_ = new <Entity>MdiWindow(clientManager_, username_, nullptr);
 
     // Connect signals
-    connect(widget, &<Entity>MdiWindow::statusChanged,
-            this, [this](const QString& msg) { emit statusMessage(msg); });
-    connect(widget, &<Entity>MdiWindow::errorOccurred,
-            this, [this](const QString& err) { emit errorMessage(err); });
-    connect(widget, &<Entity>MdiWindow::addNewRequested,
+    connect(listWindow_, &<Entity>MdiWindow::statusChanged,
+            this, &<Entity>Controller::statusMessage);
+    connect(listWindow_, &<Entity>MdiWindow::errorOccurred,
+            this, &<Entity>Controller::errorMessage);
+    connect(listWindow_, &<Entity>MdiWindow::addNewRequested,
             this, &<Entity>Controller::onAddNewRequested);
-    connect(widget, &<Entity>MdiWindow::show<Entity>Details,
+    connect(listWindow_, &<Entity>MdiWindow::show<Entity>Details,
             this, &<Entity>Controller::onShow<Entity>Details);
-    connect(widget, &<Entity>MdiWindow::show<Entity>History,
+    connect(listWindow_, &<Entity>MdiWindow::show<Entity>History,
             this, &<Entity>Controller::onShow<Entity>History);
-    connect(widget, &<Entity>MdiWindow::<entity>Deleted,
-            this, &<Entity>Controller::on<Entity>Deleted);
 
     // Wrap in MDI sub-window
-    listWindow_ = new DetachableMdiSubWindow();
-    listWindow_->setAttribute(Qt::WA_DeleteOnClose);
-    listWindow_->setWidget(widget);
-    listWindow_->setWindowTitle(tr("<Entity>s"));
-    listWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_<icon>_20_regular.svg", color_constants::icon_color));
+    listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
+    listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    listMdiSubWindow_->setWidget(listWindow_);
+    listMdiSubWindow_->setWindowTitle(tr("<Entity>s"));
+    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_<icon>_20_regular.svg", iconColor));
+
+    register_detachable_window(listMdiSubWindow_);
 
     // Track destruction
-    connect(listWindow_, &QObject::destroyed, this, [this]() {
+    connect(listMdiSubWindow_, &QObject::destroyed, this, [this]() {
         listWindow_ = nullptr;
-        listWidget_ = nullptr;
+        listMdiSubWindow_ = nullptr;
     });
 
-    mdiArea_->addSubWindow(listWindow_);
-    allDetachableWindows_.append(listWindow_);
-    listWindow_->show();
+    mdiArea_->addSubWindow(listMdiSubWindow_);
+    listMdiSubWindow_->adjustSize();
+    listMdiSubWindow_->show();
 
-    widget->reload();
+    listWindow_->reload();
+}
+
+void <Entity>Controller::closeAllWindows() {
+    BOOST_LOG_SEV(lg(), debug) << "closeAllWindows called";
+
+    // Close all managed windows
+    QList<QString> keys = managed_windows_.keys();
+    for (const QString& key : keys) {
+        if (auto* window = managed_windows_.value(key)) {
+            window->close();
+        }
+    }
+    managed_windows_.clear();
+
+    listWindow_ = nullptr;
+    listMdiSubWindow_ = nullptr;
+}
+
+void <Entity>Controller::reloadListWindow() {
+    if (listWindow_) {
+        listWindow_->reload();
+    }
 }
 #+end_src
 
@@ -1311,7 +1329,24 @@ void <Entity>Controller::showDetailWindow(
         detailDialog->set<Entity>(*entity);
     }
 
-    // Connect signals...
+    // Connect status/error signals
+    connect(detailDialog, &<Entity>DetailDialog::statusMessage,
+            this, &<Entity>Controller::statusMessage);
+    connect(detailDialog, &<Entity>DetailDialog::errorMessage,
+            this, &<Entity>Controller::errorMessage);
+
+    // Connect entity-specific signals - use handleEntitySaved/handleEntityDeleted
+    // for centralized reload control
+    connect(detailDialog, &<Entity>DetailDialog::<entity>Saved,
+            this, [this](const QString& id) {
+        BOOST_LOG_SEV(lg(), info) << "<Entity> saved: " << id.toStdString();
+        handleEntitySaved();  // Respects autoReloadOnSave_ flag
+    });
+    connect(detailDialog, &<Entity>DetailDialog::<entity>Deleted,
+            this, [this, windowKey](const QString& id) {
+        BOOST_LOG_SEV(lg(), info) << "<Entity> deleted: " << id.toStdString();
+        handleEntityDeleted();  // Respects autoReloadOnSave_ flag
+    });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -1320,18 +1355,26 @@ void <Entity>Controller::showDetailWindow(
         : tr("<Entity>: %1").arg(/* identifier */));
     detailWindow->setWindowIcon(/* ... */);
 
-    track_window(windowKey, detailWindow);
-    allDetachableWindows_.append(detailWindow);
+    register_detachable_window(detailWindow);
 
     connect(detailWindow, &QObject::destroyed, this, [this, windowKey]() {
-        untrack_window(windowKey);
-        // ...
+        managed_windows_.remove(windowKey);
     });
 
+    managed_windows_[windowKey] = detailWindow;
+
+    // Wire dialog close signal to window close
+    connect_dialog_close(detailDialog, detailWindow);
+
     // Use the helper to show the window (handles MDI add, sizing, detach)
-    show_managed_window(detailWindow, listWindow_);
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 #+end_src
+
+The =handleEntitySaved()= and =handleEntityDeleted()= methods are defined in
+=EntityController= and respect the =autoReloadOnSave_= flag. By default,
+auto-reload is disabled. Controllers should NOT call =listWindow_->reload()=
+directly; instead, use these centralized methods for consistent behavior.
 
 The =show_managed_window= method signature:
 
@@ -1434,8 +1477,13 @@ In =MainWindow.cpp= constructor:
 #+begin_src cpp
 // Create controller
 <entity>Controller_ = new <Entity>Controller(
-    this, mdiArea_, clientManager_, username_,
-    allDetachableWindows_, this);
+    this, mdiArea_, clientManager_, username_, this);
+
+// Connect signals from controller to MainWindow
+connect(<entity>Controller_, &<Entity>Controller::detachableWindowCreated,
+        this, &MainWindow::onDetachableWindowCreated);
+connect(<entity>Controller_, &<Entity>Controller::detachableWindowDestroyed,
+        this, &MainWindow::onDetachableWindowDestroyed);
 
 // Connect signals
 connect(<entity>Controller_, &<Entity>Controller::statusMessage,

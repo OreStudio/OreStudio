@@ -87,6 +87,8 @@ public:
      */
     void closeAllWindows() override;
 
+    void reloadListWindow() override;
+
 private slots:
     /**
      * @brief Handles request to show role details.

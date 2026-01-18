@@ -62,6 +62,7 @@ public:
 
     void showListWindow() override;
     void closeAllWindows() override;
+    void reloadListWindow() override;
 
 private slots:
     void onAddNewRequested();

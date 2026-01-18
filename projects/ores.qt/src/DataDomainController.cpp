@@ -109,6 +109,12 @@ void DataDomainController::closeAllWindows() {
     listMdiSubWindow_ = nullptr;
 }
 
+void DataDomainController::reloadListWindow() {
+    if (listWindow_) {
+        listWindow_->reload();
+    }
+}
+
 void DataDomainController::onShowDetails(
     const dq::domain::data_domain& domain) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << domain.name;
@@ -142,9 +148,7 @@ void DataDomainController::showAddWindow() {
     connect(detailDialog, &DataDomainDetailDialog::domainSaved,
             this, [this](const QString& name) {
         BOOST_LOG_SEV(lg(), info) << "Data domain saved: " << name.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -188,16 +192,12 @@ void DataDomainController::showDetailWindow(
     connect(detailDialog, &DataDomainDetailDialog::domainSaved,
             this, [this](const QString& name) {
         BOOST_LOG_SEV(lg(), info) << "Data domain saved: " << name.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
     connect(detailDialog, &DataDomainDetailDialog::domainDeleted,
             this, [this, key](const QString& name) {
         BOOST_LOG_SEV(lg(), info) << "Data domain deleted: " << name.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntityDeleted();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -349,9 +349,7 @@ void DataDomainController::onRevertVersion(
             this, [this](const QString& name) {
         BOOST_LOG_SEV(lg(), info) << "Data domain reverted: " << name.toStdString();
         emit statusMessage(QString("Data domain '%1' reverted successfully").arg(name));
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     const QColor iconColor(220, 220, 220);

@@ -115,4 +115,16 @@ void EntityController::register_detachable_window(DetachableMdiSubWindow* window
     });
 }
 
+void EntityController::handleEntitySaved() {
+    if (autoReloadOnSave_) {
+        reloadListWindow();
+    }
+}
+
+void EntityController::handleEntityDeleted() {
+    if (autoReloadOnSave_) {
+        reloadListWindow();
+    }
+}
+
 }

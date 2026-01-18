@@ -179,6 +179,14 @@ void CountryController::closeAllWindows() {
     }
 }
 
+void CountryController::reloadListWindow() {
+    if (countryListWindow_) {
+        if (auto* widget = qobject_cast<CountryMdiWindow*>(countryListWindow_->widget())) {
+            widget->reload();
+        }
+    }
+}
+
 void CountryController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new country requested";
     const QColor iconColor(220, 220, 220);

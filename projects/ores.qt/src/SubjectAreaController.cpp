@@ -109,6 +109,12 @@ void SubjectAreaController::closeAllWindows() {
     listMdiSubWindow_ = nullptr;
 }
 
+void SubjectAreaController::reloadListWindow() {
+    if (listWindow_) {
+        listWindow_->reload();
+    }
+}
+
 void SubjectAreaController::onShowDetails(
     const dq::domain::subject_area& subject_area) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << subject_area.name
@@ -148,9 +154,7 @@ void SubjectAreaController::showAddWindow() {
             this, [this](const QString& name, const QString& domain_name) {
         BOOST_LOG_SEV(lg(), info) << "Subject area saved: " << name.toStdString()
                                   << " in domain: " << domain_name.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -198,17 +202,13 @@ void SubjectAreaController::showDetailWindow(
     connect(detailDialog, &SubjectAreaDetailDialog::subjectAreaSaved,
             this, [this](const QString& name, const QString& domain_name) {
         BOOST_LOG_SEV(lg(), info) << "Subject area saved: " << name.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
     connect(detailDialog, &SubjectAreaDetailDialog::subjectAreaDeleted,
             this, [this, key](const QString& name, const QString& domain_name) {
         BOOST_LOG_SEV(lg(), info) << "Subject area deleted: "
                                   << name.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntityDeleted();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -371,9 +371,7 @@ void SubjectAreaController::onRevertVersion(
                                   << name.toStdString();
         emit statusMessage(
             QString("Subject area '%1' reverted successfully").arg(name));
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     const QColor iconColor(220, 220, 220);

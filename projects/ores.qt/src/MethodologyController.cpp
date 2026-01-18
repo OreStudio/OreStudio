@@ -110,6 +110,12 @@ void MethodologyController::closeAllWindows() {
     listMdiSubWindow_ = nullptr;
 }
 
+void MethodologyController::reloadListWindow() {
+    if (listWindow_) {
+        listWindow_->reload();
+    }
+}
+
 void MethodologyController::onShowDetails(const dq::domain::methodology& methodology) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << methodology.id;
     showDetailWindow(methodology);
@@ -142,9 +148,7 @@ void MethodologyController::showAddWindow() {
     connect(detailDialog, &MethodologyDetailDialog::methodologySaved,
             this, [this](const boost::uuids::uuid& id) {
         BOOST_LOG_SEV(lg(), info) << "Methodology saved: " << id;
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -186,16 +190,12 @@ void MethodologyController::showDetailWindow(const dq::domain::methodology& meth
     connect(detailDialog, &MethodologyDetailDialog::methodologySaved,
             this, [this](const boost::uuids::uuid& id) {
         BOOST_LOG_SEV(lg(), info) << "Methodology saved: " << id;
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
     connect(detailDialog, &MethodologyDetailDialog::methodologyDeleted,
             this, [this, key](const boost::uuids::uuid& id) {
         BOOST_LOG_SEV(lg(), info) << "Methodology deleted: " << id;
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntityDeleted();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -346,9 +346,7 @@ void MethodologyController::onRevertVersion(
             this, [this](const boost::uuids::uuid& id) {
         BOOST_LOG_SEV(lg(), info) << "Methodology reverted: " << id;
         emit statusMessage(QString("Methodology reverted successfully"));
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     const QColor iconColor(220, 220, 220);

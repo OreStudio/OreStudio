@@ -109,6 +109,12 @@ void CodingSchemeController::closeAllWindows() {
     listMdiSubWindow_ = nullptr;
 }
 
+void CodingSchemeController::reloadListWindow() {
+    if (listWindow_) {
+        listWindow_->reload();
+    }
+}
+
 void CodingSchemeController::onShowDetails(const dq::domain::coding_scheme& scheme) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << scheme.code;
     showDetailWindow(scheme);
@@ -142,9 +148,7 @@ void CodingSchemeController::showAddWindow() {
     connect(detailDialog, &CodingSchemeDetailDialog::schemeSaved,
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Coding scheme saved: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -187,16 +191,12 @@ void CodingSchemeController::showDetailWindow(const dq::domain::coding_scheme& s
     connect(detailDialog, &CodingSchemeDetailDialog::schemeSaved,
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Coding scheme saved: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
     connect(detailDialog, &CodingSchemeDetailDialog::schemeDeleted,
             this, [this, key](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Coding scheme deleted: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntityDeleted();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -350,9 +350,7 @@ void CodingSchemeController::onRevertVersion(
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Coding scheme reverted: " << code.toStdString();
         emit statusMessage(QString("Coding scheme '%1' reverted successfully").arg(code));
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     const QColor iconColor(220, 220, 220);

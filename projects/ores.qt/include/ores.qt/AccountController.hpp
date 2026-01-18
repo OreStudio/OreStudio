@@ -108,6 +108,8 @@ public:
      */
     void closeAllWindows() override;
 
+    void reloadListWindow() override;
+
 private slots:
     /**
      * @brief Handles request to add a new account.

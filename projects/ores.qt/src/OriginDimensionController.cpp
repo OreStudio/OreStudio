@@ -115,6 +115,12 @@ void OriginDimensionController::closeAllWindows() {
     listMdiSubWindow_ = nullptr;
 }
 
+void OriginDimensionController::reloadListWindow() {
+    if (listWindow_) {
+        listWindow_->reload();
+    }
+}
+
 void OriginDimensionController::onShowDetails(
     const dq::domain::origin_dimension& dimension) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << dimension.code;
@@ -148,9 +154,7 @@ void OriginDimensionController::showAddWindow() {
     connect(detailDialog, &OriginDimensionDetailDialog::dimensionSaved,
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Origin dimension saved: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -194,16 +198,12 @@ void OriginDimensionController::showDetailWindow(
     connect(detailDialog, &OriginDimensionDetailDialog::dimensionSaved,
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Origin dimension saved: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
     connect(detailDialog, &OriginDimensionDetailDialog::dimensionDeleted,
             this, [this, key](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Origin dimension deleted: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntityDeleted();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -370,9 +370,7 @@ void OriginDimensionController::onRevertVersion(
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Origin dimension reverted: " << code.toStdString();
         emit statusMessage(QString("Origin dimension '%1' reverted successfully").arg(code));
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     const QColor iconColor(220, 220, 220);

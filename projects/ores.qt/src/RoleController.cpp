@@ -114,6 +114,14 @@ void RoleController::closeAllWindows() {
     }
 }
 
+void RoleController::reloadListWindow() {
+    if (roleListWindow_) {
+        if (auto* widget = qobject_cast<RoleMdiWindow*>(roleListWindow_->widget())) {
+            widget->reload();
+        }
+    }
+}
+
 void RoleController::onShowRoleDetails(const iam::domain::role& role) {
     BOOST_LOG_SEV(lg(), info) << "Showing role details for: " << role.name;
 

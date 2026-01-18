@@ -84,6 +84,14 @@ public:
      */
     virtual void closeAllWindows() = 0;
 
+    /**
+     * @brief Sets whether the list window should auto-reload after save/delete.
+     *
+     * Default is false (no auto-reload). This can be used to implement a
+     * user-configurable auto-reload preference in the future.
+     */
+    void setAutoReloadOnSave(bool enabled) { autoReloadOnSave_ = enabled; }
+
 signals:
     /** @brief Emitted when a status message should be shown to the user. */
     void statusMessage(const QString& message);
@@ -172,6 +180,28 @@ protected:
      */
     void register_detachable_window(DetachableMdiSubWindow* window);
 
+    /**
+     * @brief Reloads the list window.
+     * Must be implemented by derived classes.
+     */
+    virtual void reloadListWindow() = 0;
+
+    /**
+     * @brief Called when an entity is saved.
+     *
+     * If autoReloadOnSave_ is true, this will reload the list window.
+     * Call this from derived class signal handlers connected to entity saved signals.
+     */
+    void handleEntitySaved();
+
+    /**
+     * @brief Called when an entity is deleted.
+     *
+     * If autoReloadOnSave_ is true, this will reload the list window.
+     * Call this from derived class signal handlers connected to entity deleted signals.
+     */
+    void handleEntityDeleted();
+
 protected:
     QMainWindow* mainWindow_;
     QMdiArea* mdiArea_;
@@ -180,6 +210,9 @@ protected:
 
     /** @brief Map of active windows indexed by unique key. */
     QMap<QString, DetachableMdiSubWindow*> managed_windows_;
+
+    /** @brief Whether to auto-reload the list window after save/delete. Default: false. */
+    bool autoReloadOnSave_ = false;
 };
 
 }

@@ -156,6 +156,12 @@ void ChangeReasonCategoryController::closeAllWindows() {
     listMdiSubWindow_ = nullptr;
 }
 
+void ChangeReasonCategoryController::reloadListWindow() {
+    if (listWindow_) {
+        listWindow_->reload();
+    }
+}
+
 void ChangeReasonCategoryController::onShowDetails(
     const dq::domain::change_reason_category& category) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << category.code;

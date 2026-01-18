@@ -48,6 +48,8 @@ TEST_CASE("create_data_domain_with_valid_fields", tags) {
     CHECK(sut.version == 1);
     CHECK(sut.name == "Reference Data");
     CHECK(sut.description == "Static reference data like currencies and countries");
+    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.change_commentary == "Initial creation");
 }
 
 TEST_CASE("data_domain_convert_single_to_table", tags) {
@@ -65,5 +67,8 @@ TEST_CASE("data_domain_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
+    CHECK(table.find("Name") != std::string::npos);
+    CHECK(table.find("Description") != std::string::npos);
     CHECK(table.find("Market Data") != std::string::npos);
+    CHECK(table.find("Real-time and historical market prices") != std::string::npos);
 }

@@ -48,6 +48,8 @@ TEST_CASE("create_treatment_dimension_with_valid_fields", tags) {
     CHECK(sut.version == 1);
     CHECK(sut.code == "live");
     CHECK(sut.description == "Production data for operational use");
+    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.change_commentary == "Initial creation");
 }
 
 TEST_CASE("treatment_dimension_convert_single_to_table", tags) {
@@ -65,5 +67,8 @@ TEST_CASE("treatment_dimension_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
+    CHECK(table.find("Code") != std::string::npos);
+    CHECK(table.find("Description") != std::string::npos);
     CHECK(table.find("test") != std::string::npos);
+    CHECK(table.find("Test data for validation purposes") != std::string::npos);
 }

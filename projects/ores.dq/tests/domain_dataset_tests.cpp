@@ -19,10 +19,10 @@
  */
 #include "ores.dq/domain/dataset.hpp"
 
-#include <chrono>
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/faker/datetime.hpp"
 #include "ores.dq/domain/dataset_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq/domain/dataset_table.hpp"
 
@@ -31,17 +31,7 @@ namespace {
 const std::string_view test_suite("ores.dq.tests");
 const std::string tags("[domain]");
 
-std::chrono::system_clock::time_point make_timepoint(
-    int year, int month, int day, int hour = 0, int min = 0, int sec = 0) {
-    std::tm tm = {};
-    tm.tm_year = year - 1900;
-    tm.tm_mon = month - 1;
-    tm.tm_mday = day;
-    tm.tm_hour = hour;
-    tm.tm_min = min;
-    tm.tm_sec = sec;
-    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
-}
+using ores::utility::faker::datetime;
 
 }
 
@@ -66,8 +56,8 @@ TEST_CASE("create_dataset_with_valid_fields", tags) {
     sut.source_system_id = "ISO";
     sut.business_context = "Reference currency data";
     sut.lineage_depth = 0;
-    sut.as_of_date = make_timepoint(2023, 1, 1);
-    sut.ingestion_timestamp = make_timepoint(2023, 1, 1);
+    sut.as_of_date = datetime::make_timepoint(2023, 1, 1);
+    sut.ingestion_timestamp = datetime::make_timepoint(2023, 1, 1);
     sut.recorded_by = "admin";
     sut.change_commentary = "Initial creation";
     BOOST_LOG_SEV(lg, info) << "Dataset: " << sut;
@@ -101,8 +91,8 @@ TEST_CASE("dataset_convert_single_to_table", tags) {
     ds.description = "ISO 3166 country codes";
     ds.source_system_id = "ISO";
     ds.business_context = "Reference country data";
-    ds.as_of_date = make_timepoint(2023, 1, 1);
-    ds.ingestion_timestamp = make_timepoint(2023, 1, 1);
+    ds.as_of_date = datetime::make_timepoint(2023, 1, 1);
+    ds.ingestion_timestamp = datetime::make_timepoint(2023, 1, 1);
     ds.recorded_by = "system";
 
     std::vector<dataset> datasets = {ds};
@@ -136,8 +126,8 @@ TEST_CASE("dataset_with_lineage", tags) {
     derived.business_context = "Enhanced currency reference";
     derived.upstream_derivation_id = source_id;
     derived.lineage_depth = 1;
-    derived.as_of_date = make_timepoint(2023, 1, 1);
-    derived.ingestion_timestamp = make_timepoint(2023, 1, 1);
+    derived.as_of_date = datetime::make_timepoint(2023, 1, 1);
+    derived.ingestion_timestamp = datetime::make_timepoint(2023, 1, 1);
     derived.recorded_by = "etl_process";
 
     BOOST_LOG_SEV(lg, info) << "Derived dataset: " << derived;

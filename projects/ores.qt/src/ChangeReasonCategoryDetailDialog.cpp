@@ -417,15 +417,13 @@ void ChangeReasonCategoryDetailDialog::onSaveClicked() {
         if (success) {
             BOOST_LOG_SEV(lg(), debug) << "Category saved successfully";
 
-            emit self->statusMessage(QString("Successfully saved category: %1")
-                .arg(QString::fromStdString(categoryToSave.code)));
-
             self->isDirty_ = false;
             emit self->isDirtyChanged(false);
             self->updateSaveButtonState();
 
             emit self->categorySaved(QString::fromStdString(categoryToSave.code));
-            self->requestClose();
+            self->notifySaveSuccess(tr("Category '%1' saved")
+                .arg(QString::fromStdString(categoryToSave.code)));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Category save failed: " << message;
             emit self->errorMessage(QString("Failed to save category: %1")

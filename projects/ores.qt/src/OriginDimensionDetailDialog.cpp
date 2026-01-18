@@ -220,16 +220,8 @@ void OriginDimensionDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Origin dimension saved successfully";
             QString code = QString::fromStdString(self->dimension_.code);
-            emit self->statusMessage(QString("Origin dimension '%1' saved").arg(code));
             emit self->dimensionSaved(code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-
-            // If this was create mode, switch to edit mode
-            if (self->createMode_) {
-                self->setCreateMode(false);
-                self->ui_->metadataGroup->setVisible(true);
-            }
+            self->notifySaveSuccess(tr("Origin dimension '%1' saved").arg(code));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);

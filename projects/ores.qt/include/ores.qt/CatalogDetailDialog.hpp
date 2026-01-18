@@ -58,8 +58,6 @@ public:
     void setReadOnly(bool readOnly);
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& message);
     void catalogSaved(const QString& name);
     void catalogDeleted(const QString& name);
 

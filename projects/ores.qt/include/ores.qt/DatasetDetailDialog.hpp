@@ -57,8 +57,6 @@ public:
     void loadLookupData();
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& error);
     void datasetSaved(const boost::uuids::uuid& id);
     void datasetDeleted(const boost::uuids::uuid& id);
 

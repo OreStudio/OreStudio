@@ -146,9 +146,8 @@ void TreatmentDimensionDetailDialog::onSaveClicked() {
         if (!self) return;
 
         if (result.success) {
-            emit self->statusMessage(tr("Treatment dimension saved successfully"));
             emit self->dimensionSaved(code);
-            self->requestClose();
+            self->notifySaveSuccess(tr("Treatment dimension '%1' saved").arg(code));
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }

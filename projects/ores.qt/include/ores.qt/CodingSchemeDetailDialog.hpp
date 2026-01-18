@@ -56,8 +56,6 @@ public:
     void loadLookupData();
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& error);
     void schemeSaved(const QString& code);
     void schemeDeleted(const QString& code);
 

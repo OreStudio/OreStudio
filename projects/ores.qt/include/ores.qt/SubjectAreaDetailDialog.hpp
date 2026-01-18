@@ -62,8 +62,6 @@ public:
     void loadDomains();
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& error);
     void subjectAreaSaved(const QString& name, const QString& domain_name);
     void subjectAreaDeleted(const QString& name, const QString& domain_name);
 

@@ -398,9 +398,6 @@ void AccountDetailDialog::onSaveClicked() {
                 BOOST_LOG_SEV(lg(), debug) << "Account created successfully: "
                                            << message;
 
-                emit self->statusMessage(QString("Successfully created account: %1")
-                    .arg(QString::fromStdString(username)));
-
                 self->isDirty_ = false;
                 emit self->isDirtyChanged(false);
                 self->updateSaveResetButtonState();
@@ -415,8 +412,8 @@ void AccountDetailDialog::onSaveClicked() {
                     BOOST_LOG_SEV(lg(), warn) << "Failed to parse account ID";
                 }
 
-                // Close window after successful creation
-                self->requestClose();
+                self->notifySaveSuccess(tr("Account '%1' created")
+                    .arg(QString::fromStdString(username)));
             } else {
                 BOOST_LOG_SEV(lg(), error) << "Account creation failed: " << message;
                 emit self->errorMessage(QString("Failed to create account: %1")
@@ -485,16 +482,13 @@ void AccountDetailDialog::onSaveClicked() {
             if (success) {
                 BOOST_LOG_SEV(lg(), debug) << "Account updated successfully";
 
-                emit self->statusMessage(QString("Successfully updated account"));
-
                 self->isDirty_ = false;
                 emit self->isDirtyChanged(false);
                 self->updateSaveResetButtonState();
 
                 emit self->accountUpdated(account_id);
 
-                // Close window after successful update
-                self->requestClose();
+                self->notifySaveSuccess(tr("Account updated"));
             } else {
                 BOOST_LOG_SEV(lg(), error) << "Account update failed: " << message;
                 emit self->errorMessage(QString("Failed to update account: %1")

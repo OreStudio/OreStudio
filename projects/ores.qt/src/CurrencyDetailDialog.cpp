@@ -459,9 +459,6 @@ void CurrencyDetailDialog::onSaveClicked() {
         if (success) {
             BOOST_LOG_SEV(lg(), debug) << "Currency saved successfully.";
 
-            emit self->statusMessage(QString("Successfully saved currency: %1")
-                .arg(QString::fromStdString(currency.iso_code)));
-
             self->pendingImageId_.clear();
 
             self->isDirty_ = false;
@@ -469,15 +466,14 @@ void CurrencyDetailDialog::onSaveClicked() {
             emit self->isDirtyChanged(false);
             self->updateSaveResetButtonState();
 
+            QString code = QString::fromStdString(currency.iso_code);
             if (self->isAddMode_) {
-                emit self->currencyCreated(
-                    QString::fromStdString(currency.iso_code));
+                emit self->currencyCreated(code);
             } else {
-                emit self->currencyUpdated(
-                    QString::fromStdString(currency.iso_code));
+                emit self->currencyUpdated(code);
             }
 
-            self->requestClose();
+            self->notifySaveSuccess(tr("Currency '%1' saved").arg(code));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Currency save failed: " << message;
             emit self->errorMessage(QString("Failed to save currency: %1")

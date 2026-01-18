@@ -74,8 +74,6 @@ public:
     bool isReadOnly() const { return isReadOnly_; }
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& message);
     void isDirtyChanged(bool dirty);
     void featureFlagSaved(const QString& name);
     void featureFlagDeleted(const QString& name);

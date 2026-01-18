@@ -219,9 +219,8 @@ void SubjectAreaDetailDialog::onSaveClicked() {
         if (!self) return;
 
         if (result.success) {
-            emit self->statusMessage(tr("Subject area saved successfully"));
             emit self->subjectAreaSaved(name, domain_name);
-            self->requestClose();
+            self->notifySaveSuccess(tr("Subject area '%1' saved").arg(name));
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }

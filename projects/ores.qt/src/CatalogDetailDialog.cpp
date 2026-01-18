@@ -163,9 +163,8 @@ void CatalogDetailDialog::onSaveClicked() {
 
         if (result.success) {
             QString name = QString::fromStdString(self->catalog_.name);
-            emit self->statusMessage(
-                tr("Catalog '%1' saved successfully").arg(name));
             emit self->catalogSaved(name);
+            self->notifySaveSuccess(tr("Catalog '%1' saved").arg(name));
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }

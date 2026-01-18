@@ -55,8 +55,6 @@ public:
     void setReadOnly(bool readOnly);
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& error);
     void authorityTypeSaved(const QString& code);
     void authorityTypeDeleted(const QString& code);
 

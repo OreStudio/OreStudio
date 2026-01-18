@@ -482,15 +482,13 @@ void ChangeReasonDetailDialog::onSaveClicked() {
         if (success) {
             BOOST_LOG_SEV(lg(), debug) << "Change reason saved successfully";
 
-            emit self->statusMessage(QString("Successfully saved change reason: %1")
-                .arg(QString::fromStdString(reasonToSave.code)));
-
             self->isDirty_ = false;
             emit self->isDirtyChanged(false);
             self->updateSaveButtonState();
 
             emit self->changeReasonSaved(QString::fromStdString(reasonToSave.code));
-            self->requestClose();
+            self->notifySaveSuccess(tr("Change reason '%1' saved")
+                .arg(QString::fromStdString(reasonToSave.code)));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Change reason save failed: " << message;
             emit self->errorMessage(QString("Failed to save change reason: %1")

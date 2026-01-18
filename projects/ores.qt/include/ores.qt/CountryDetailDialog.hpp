@@ -114,8 +114,6 @@ signals:
     void countryUpdated(const QString& alpha2_code);
     void countryCreated(const QString& alpha2_code);
     void countryDeleted(const QString& alpha2_code);
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& message);
     void isDirtyChanged(bool isDirty);
 
     /**

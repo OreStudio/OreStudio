@@ -136,9 +136,8 @@ void DataDomainDetailDialog::onSaveClicked() {
         if (!self) return;
 
         if (result.success) {
-            emit self->statusMessage(tr("Data domain saved successfully"));
             emit self->domainSaved(name);
-            self->requestClose();
+            self->notifySaveSuccess(tr("Data domain '%1' saved").arg(name));
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }

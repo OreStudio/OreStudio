@@ -160,9 +160,8 @@ void MethodologyDetailDialog::onSaveClicked() {
         if (!self) return;
 
         if (result.success) {
-            emit self->statusMessage(tr("Methodology saved successfully"));
             emit self->methodologySaved(methodologyId);
-            self->requestClose();
+            self->notifySaveSuccess(tr("Methodology saved"));
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }

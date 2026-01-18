@@ -386,9 +386,6 @@ void CountryDetailDialog::onSaveClicked() {
         if (success) {
             BOOST_LOG_SEV(lg(), debug) << "Country saved successfully.";
 
-            emit self->statusMessage(QString("Successfully saved country: %1")
-                .arg(QString::fromStdString(country.alpha2_code)));
-
             self->pendingImageId_.clear();
 
             self->isDirty_ = false;
@@ -396,15 +393,14 @@ void CountryDetailDialog::onSaveClicked() {
             emit self->isDirtyChanged(false);
             self->updateSaveResetButtonState();
 
+            QString code = QString::fromStdString(country.alpha2_code);
             if (self->isAddMode_) {
-                emit self->countryCreated(
-                    QString::fromStdString(country.alpha2_code));
+                emit self->countryCreated(code);
             } else {
-                emit self->countryUpdated(
-                    QString::fromStdString(country.alpha2_code));
+                emit self->countryUpdated(code);
             }
 
-            self->requestClose();
+            self->notifySaveSuccess(tr("Country '%1' saved").arg(code));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Country save failed: " << message;
             emit self->errorMessage(QString("Failed to save country: %1")

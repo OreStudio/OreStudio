@@ -142,8 +142,6 @@ signals:
     void accountUpdated(const boost::uuids::uuid& account_id);
     void accountCreated(const boost::uuids::uuid& account_id);
     void accountDeleted(const boost::uuids::uuid& account_id);
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& message);
     void isDirtyChanged(bool isDirty);
 
     /**

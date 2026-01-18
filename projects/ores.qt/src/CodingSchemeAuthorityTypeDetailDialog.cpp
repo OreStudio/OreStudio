@@ -146,9 +146,8 @@ void CodingSchemeAuthorityTypeDetailDialog::onSaveClicked() {
         if (!self) return;
 
         if (result.success) {
-            emit self->statusMessage(tr("Authority type saved successfully"));
             emit self->authorityTypeSaved(code);
-            self->requestClose();
+            self->notifySaveSuccess(tr("Authority type '%1' saved").arg(code));
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }

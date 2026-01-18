@@ -115,8 +115,6 @@ signals:
     void currencyUpdated(const QString& iso_code);
     void currencyCreated(const QString& iso_code);
     void currencyDeleted(const QString& iso_code);
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& message);
     void isDirtyChanged(bool isDirty);
 
     /**

@@ -564,9 +564,8 @@ void DatasetDetailDialog::onSaveClicked() {
         if (!self) return;
 
         if (result.success) {
-            emit self->statusMessage(tr("Dataset saved successfully"));
             emit self->datasetSaved(datasetId);
-            self->requestClose();
+            self->notifySaveSuccess(tr("Dataset saved"));
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }

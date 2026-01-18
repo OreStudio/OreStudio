@@ -301,9 +301,8 @@ void CodingSchemeDetailDialog::onSaveClicked() {
         if (!self) return;
 
         if (result.success) {
-            emit self->statusMessage(tr("Coding scheme saved successfully"));
             emit self->schemeSaved(code);
-            self->requestClose();
+            self->notifySaveSuccess(tr("Coding scheme '%1' saved").arg(code));
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }

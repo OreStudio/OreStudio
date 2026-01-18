@@ -55,8 +55,6 @@ public:
     void setReadOnly(bool readOnly);
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& error);
     void domainSaved(const QString& name);
     void domainDeleted(const QString& name);
 

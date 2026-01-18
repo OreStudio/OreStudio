@@ -79,8 +79,6 @@ public:
     void clearDialog();
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& message);
 
 private:
     void populatePermissionsList();

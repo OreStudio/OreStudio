@@ -540,9 +540,9 @@ Create the dialog for creating, editing, and viewing entity details.
 #ifndef ORES_QT_<ENTITY>_DETAIL_DIALOG_HPP
 #define ORES_QT_<ENTITY>_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include <QToolBar>
 #include <memory>
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "<component>/domain/<entity>.hpp"
@@ -551,7 +551,15 @@ namespace Ui { class <Entity>DetailDialog; }
 
 namespace ores::qt {
 
-class <Entity>DetailDialog : public QWidget {
+/**
+ * @brief Detail dialog for viewing and editing <entity> records.
+ *
+ * Inherits from DetailDialogBase which provides:
+ * - statusMessage/errorMessage signals
+ * - requestClose() for decoupled window closing
+ * - notifySaveSuccess() helper for consistent post-save behavior
+ */
+class <Entity>DetailDialog : public DetailDialogBase {
     Q_OBJECT
 
 private:
@@ -582,11 +590,9 @@ public:
     void showVersionNavActions(bool visible);
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& message);
+    // Note: statusMessage and errorMessage are inherited from DetailDialogBase
     void isDirtyChanged(bool isDirty);
-    void <entity>Created(const QString& id);
-    void <entity>Updated(const QString& id);
+    void <entity>Saved(const QString& id);  // Emitted for both create and update
     void <entity>Deleted(const QString& id);
     void revertRequested(const <component>::domain::<entity>& entity);
 
@@ -749,20 +755,16 @@ void <Entity>DetailDialog::onSaveClicked() {
         watcher->deleteLater();
 
         if (result.success) {
-            self->isDirty_ = false;
-            emit self->isDirtyChanged(false);
+            // Emit entity-specific signal first
+            emit self-><entity>Saved(self->identifier());
 
-            if (self->isAddMode_) {
-                emit self-><entity>Created(self->identifier());
-            } else {
-                emit self-><entity>Updated(self->identifier());
-            }
-
-            // Close parent MDI window
-            // ...
+            // Then use base class helper to emit status and close dialog
+            self->notifySaveSuccess(
+                tr("<Entity> '%1' saved").arg(self->identifier()));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: "
                                        << result.error_message.toStdString();
+            emit self->errorMessage(result.error_message);
             MessageBoxHelper::critical(self, tr("Save Error"),
                 result.error_message, result.error_details);
         }

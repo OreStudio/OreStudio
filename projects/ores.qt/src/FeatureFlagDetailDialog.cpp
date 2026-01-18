@@ -284,15 +284,13 @@ void FeatureFlagDetailDialog::onSaveClicked() {
         if (success) {
             BOOST_LOG_SEV(lg(), debug) << "Feature flag saved successfully";
 
-            emit self->statusMessage(QString("Successfully saved feature flag: %1")
-                .arg(QString::fromStdString(flagToSave.name)));
-
             self->isDirty_ = false;
             emit self->isDirtyChanged(false);
             self->updateSaveButtonState();
 
             emit self->featureFlagSaved(QString::fromStdString(flagToSave.name));
-            self->requestClose();
+            self->notifySaveSuccess(tr("Feature flag '%1' saved")
+                .arg(QString::fromStdString(flagToSave.name)));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Feature flag save failed: " << message;
             emit self->errorMessage(QString("Failed to save feature flag: %1")

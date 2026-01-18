@@ -55,8 +55,6 @@ public:
     void setReadOnly(bool readOnly);
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& error);
     void dimensionSaved(const QString& code);
     void dimensionDeleted(const QString& code);
 

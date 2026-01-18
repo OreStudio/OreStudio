@@ -29,11 +29,27 @@ namespace ores::qt {
  *
  * Provides common functionality for detail dialogs including:
  * - closeRequested signal for decoupled window closing
- * - requestClose() method to emit the signal
+ * - statusMessage signal for status bar updates
+ * - requestClose() method to emit the closeRequested signal
+ * - notifySaveSuccess() helper for consistent post-save behavior
  *
  * This allows dialogs to request closure without knowing about their
  * container (e.g., DetachableMdiSubWindow). The controller wires the
  * closeRequested signal to the container's close slot.
+ *
+ * ## Save Success Pattern
+ *
+ * After a successful save operation, dialogs should:
+ * 1. Emit their entity-specific "saved" signal (e.g., dimensionSaved)
+ * 2. Call notifySaveSuccess() with a status message
+ *
+ * Example:
+ * @code
+ * if (result.success) {
+ *     emit dimensionSaved(code);
+ *     notifySaveSuccess(tr("Dimension '%1' saved").arg(code));
+ * }
+ * @endcode
  */
 class DetailDialogBase : public QWidget {
     Q_OBJECT
@@ -51,6 +67,18 @@ signals:
      */
     void closeRequested();
 
+    /**
+     * @brief Emitted to show a status message in the status bar.
+     *
+     * Controllers should connect this signal to the main window's status bar.
+     */
+    void statusMessage(const QString& message);
+
+    /**
+     * @brief Emitted when an error occurs that should be shown to the user.
+     */
+    void errorMessage(const QString& message);
+
 protected:
     /**
      * @brief Request closure of the container window.
@@ -59,6 +87,22 @@ protected:
      * decoupling between the dialog and its container.
      */
     void requestClose() { emit closeRequested(); }
+
+    /**
+     * @brief Notify that a save operation completed successfully.
+     *
+     * This method handles the common post-save behavior:
+     * 1. Emits statusMessage with the provided message
+     * 2. Closes the dialog via requestClose()
+     *
+     * Call this after emitting any entity-specific "saved" signal.
+     *
+     * @param message Status message to display (e.g., "Currency 'USD' saved")
+     */
+    void notifySaveSuccess(const QString& message) {
+        emit statusMessage(message);
+        requestClose();
+    }
 };
 
 }

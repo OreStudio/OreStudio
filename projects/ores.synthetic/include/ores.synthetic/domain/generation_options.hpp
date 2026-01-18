@@ -23,6 +23,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::synthetic::domain {
 
@@ -84,6 +86,17 @@ struct generation_options final {
      * @brief Number of DQ datasets to generate.
      */
     std::size_t dataset_count = 20;
+
+    /**
+     * @brief Catalog dependencies to declare for the generated catalog.
+     *
+     * Each string is the name of a catalog that the generated catalog
+     * depends on. These will be stamped on the generated synthetic_catalog
+     * for use during injection.
+     *
+     * Example: {"ISO Reference Data", "Core DQ Dimensions"}
+     */
+    std::vector<std::string> dependencies;
 };
 
 }

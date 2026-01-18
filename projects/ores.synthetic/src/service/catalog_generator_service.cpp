@@ -346,6 +346,9 @@ catalog_generator_service::generate(const domain::generation_options& options) {
         result.datasets.push_back(ds);
     }
 
+    // Stamp dependencies from options onto the result
+    result.dependencies = options.dependencies;
+
     return result;
 }
 

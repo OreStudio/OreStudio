@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_DOMAIN_SYNTHETIC_CATALOG_HPP
 #define ORES_SYNTHETIC_DOMAIN_SYNTHETIC_CATALOG_HPP
 
+#include <string>
 #include <vector>
 #include "ores.dq/domain/catalog.hpp"
 #include "ores.dq/domain/dataset.hpp"
@@ -104,6 +105,15 @@ struct synthetic_catalog final {
      * @brief DQ datasets with proper references to other entities.
      */
     std::vector<dq::domain::dataset> datasets;
+
+    /**
+     * @brief Names of catalogs this synthetic catalog depends on.
+     *
+     * When injecting this catalog, these dependencies must be satisfied
+     * first. Each string is a catalog name that will be resolved at
+     * injection time.
+     */
+    std::vector<std::string> dependencies;
 };
 
 }

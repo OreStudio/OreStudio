@@ -9,10 +9,110 @@
 
 This facet provides instructions on how to create tests for a domain type.
 
-Create comprehensive tests for the new domain type under =projects/COMPONENT.tests/=:
+Create comprehensive tests for the new domain type under =projects/COMPONENT/tests/=:
 
 1. Domain tests: test JSON and table serialization
 2. Generator tests: verify generator produces valid instances
 3. Repository tests: test all CRUD operations
 
 Follow the test patterns in [[proj:projects/ores.iam/tests][projects/ores.iam/tests]].
+
+* Domain test requirements
+
+** Assert all set fields
+
+When testing domain object creation, add CHECK assertions for *all* fields that
+are set on the test object, not just a subset. This ensures all fields are being
+assigned correctly.
+
+#+begin_src cpp
+TEST_CASE("create_entity_with_valid_fields", tags) {
+    auto lg(make_logger(test_suite));
+
+    entity sut;
+    sut.version = 1;
+    sut.name = "Test Entity";
+    sut.description = "Test description";
+    sut.recorded_by = "admin";
+    sut.change_commentary = "Initial creation";
+    BOOST_LOG_SEV(lg, info) << "Entity: " << sut;
+
+    // Assert ALL fields that were set
+    CHECK(sut.version == 1);
+    CHECK(sut.name == "Test Entity");
+    CHECK(sut.description == "Test description");
+    CHECK(sut.recorded_by == "admin");              // Don't forget audit fields
+    CHECK(sut.change_commentary == "Initial creation");
+}
+#+end_src
+
+** Table conversion tests
+
+When testing table conversion, verify that the output includes:
+
+1. Expected table headers (column names)
+2. Expected field values from the test data
+
+#+begin_src cpp
+TEST_CASE("entity_convert_single_to_table", tags) {
+    auto lg(make_logger(test_suite));
+
+    entity e;
+    e.name = "Test Name";
+    e.description = "Test description";
+    // ... other fields ...
+
+    std::vector<entity> entities = {e};
+    auto table = convert_to_table(entities);
+
+    BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
+
+    CHECK(!table.empty());
+    // Check for headers
+    CHECK(table.find("Name") != std::string::npos);
+    CHECK(table.find("Description") != std::string::npos);
+    // Check for field values
+    CHECK(table.find("Test Name") != std::string::npos);
+    CHECK(table.find("Test description") != std::string::npos);
+}
+#+end_src
+
+** Use fixed time points for determinism
+
+For fields with =std::chrono::system_clock::time_point= type, use fixed time
+values instead of =system_clock::now()=. This makes tests deterministic and
+repeatable.
+
+Add a =make_timepoint= helper to the anonymous namespace:
+
+#+begin_src cpp
+namespace {
+
+const std::string_view test_suite("ores.COMPONENT.tests");
+const std::string tags("[domain]");
+
+std::chrono::system_clock::time_point make_timepoint(
+    int year, int month, int day, int hour = 0, int min = 0, int sec = 0) {
+    std::tm tm = {};
+    tm.tm_year = year - 1900;
+    tm.tm_mon = month - 1;
+    tm.tm_mday = day;
+    tm.tm_hour = hour;
+    tm.tm_min = min;
+    tm.tm_sec = sec;
+    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+}
+
+}
+#+end_src
+
+Then use it in tests:
+
+#+begin_src cpp
+// Good: deterministic, repeatable
+sut.as_of_date = make_timepoint(2023, 1, 1);
+sut.ingestion_timestamp = make_timepoint(2023, 1, 1, 12, 30);
+
+// Bad: non-deterministic, value changes on each run
+sut.as_of_date = std::chrono::system_clock::now();
+#+end_src

@@ -393,18 +393,26 @@ iam --> security
 dq --> eventing
 dq --> database
 dq --> utility
+dq --> comms
+dq --> iam
 
 ' Dependencies - Shell to Foundation/Domain/Infrastructure
 shell --> telemetry
 shell --> variability
 shell --> iam
 shell --> comms
+shell --> refdata
+shell --> utility
 
 ' Dependencies - Applications to all layers
 cli --> telemetry
 cli --> variability
 cli --> iam
 cli --> refdata
+cli --> comms
+cli --> database
+cli --> security
+cli --> utility
 
 qt --> telemetry
 qt --> iam
@@ -412,6 +420,11 @@ qt --> refdata
 qt --> comms
 qt --> eventing
 qt --> assets
+qt --> connections
+qt --> dq
+qt --> security
+qt --> utility
+qt --> variability
 
 service --> telemetry
 service --> database
@@ -421,6 +434,9 @@ service --> comms
 service --> eventing
 service --> assets
 service --> geo
+service --> dq
+service --> variability
+service --> utility
 
 httpserver --> http
 httpserver --> iam
@@ -438,6 +454,7 @@ wt --> refdata
 wt --> variability
 wt --> telemetry
 wt --> platform
+wt --> utility
 
 analyser --> comms
 analyser --> utility

@@ -242,23 +242,7 @@ void CurrencyController::onAddNewRequested() {
             self->allDetachableWindows_.removeAll(detailWindow);
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If the parent currency list window is detached, detach this window too
-    // and position it near the parent
-    if (currencyListWindow_ && currencyListWindow_->isDetached()) {
-        detailWindow->show();  // Show first so geometry is valid
-        detailWindow->detach();
-
-        // Position near parent with offset
-        QPoint parentPos = currencyListWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else
-        detailWindow->show();
+    show_managed_window(detailWindow, currencyListWindow_);
 }
 
 void CurrencyController::onShowCurrencyDetails(
@@ -324,24 +308,7 @@ void CurrencyController::onShowCurrencyDetails(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If the parent currency list window is detached, detach this window too
-    // and position it near the parent
-    if (currencyListWindow_ && currencyListWindow_->isDetached()) {
-        detailWindow->show();  // Show first so geometry is valid
-        detailWindow->detach();
-
-        // Position near parent with offset
-        QPoint parentPos = currencyListWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, currencyListWindow_);
 }
 
 void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
@@ -405,24 +372,7 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
         }
     });
 
-    mdiArea_->addSubWindow(historyWindow);
-    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
-    historyWindow->setWindowFlags(historyWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    historyWindow->adjustSize();
-
-    // If the parent currency list window is detached, detach this window too
-    // and position it near the parent
-    if (currencyListWindow_ && currencyListWindow_->isDetached()) {
-        historyWindow->show();  // Show first so geometry is valid
-        historyWindow->detach();
-
-        // Position near parent with offset
-        QPoint parentPos = currencyListWindow_->pos();
-        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        historyWindow->show();
-    }
+    show_managed_window(historyWindow, currencyListWindow_);
 }
 
 void CurrencyController::onNotificationReceived(
@@ -549,22 +499,7 @@ void CurrencyController::onOpenCurrencyVersion(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If the parent currency list window is detached, detach this window too
-    if (currencyListWindow_ && currencyListWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-
-        QPoint parentPos = currencyListWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, currencyListWindow_);
 }
 
 void CurrencyController::onRevertCurrency(const refdata::domain::currency& currency) {

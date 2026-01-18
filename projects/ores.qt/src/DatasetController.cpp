@@ -166,19 +166,7 @@ void DatasetController::showAddWindow() {
             self->allDetachableWindows_.removeAll(detailWindow);
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 void DatasetController::showDetailWindow(const dq::domain::dataset& dataset) {
@@ -240,19 +228,7 @@ void DatasetController::showDetailWindow(const dq::domain::dataset& dataset) {
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 void DatasetController::showHistoryWindow(const boost::uuids::uuid& id) {
@@ -306,17 +282,7 @@ void DatasetController::showHistoryWindow(const boost::uuids::uuid& id) {
         }
     });
 
-    mdiArea_->addSubWindow(historyWindow);
-    historyWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        historyWindow->show();
-        historyWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        historyWindow->show();
-    }
+    show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
 void DatasetController::onOpenVersion(
@@ -371,19 +337,7 @@ void DatasetController::onOpenVersion(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 60, parentPos.y() + 60);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
 void DatasetController::onRevertVersion(
@@ -429,19 +383,7 @@ void DatasetController::onRevertVersion(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 }

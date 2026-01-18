@@ -1283,6 +1283,66 @@ void <Entity>Controller::showListWindow() {
 }
 #+end_src
 
+**** Showing detail and history windows
+
+Use the =show_managed_window= helper from =EntityController= to present detail
+and history windows. This helper handles adding to MDI, removing the maximize
+button, sizing, and detaching if the list window is detached:
+
+#+begin_src cpp
+void <Entity>Controller::showDetailWindow(
+    const <component>::domain::<entity>* entity,
+    bool createMode, bool readOnly, int versionNumber) {
+
+    const QString windowKey = build_window_key("details",
+        entity ? QString::fromStdString(entity->identifier()) : "new");
+
+    if (try_reuse_window(windowKey)) {
+        return;
+    }
+
+    auto* detailDialog = new <Entity>DetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setCreateMode(createMode);
+    if (entity) {
+        detailDialog->set<Entity>(*entity);
+    }
+
+    // Connect signals...
+
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(createMode ? tr("New <Entity>")
+        : tr("<Entity>: %1").arg(/* identifier */));
+    detailWindow->setWindowIcon(/* ... */);
+
+    track_window(windowKey, detailWindow);
+    allDetachableWindows_.append(detailWindow);
+
+    connect(detailWindow, &QObject::destroyed, this, [this, windowKey]() {
+        untrack_window(windowKey);
+        // ...
+    });
+
+    // Use the helper to show the window (handles MDI add, sizing, detach)
+    show_managed_window(detailWindow, listWindow_);
+}
+#+end_src
+
+The =show_managed_window= method signature:
+
+#+begin_src cpp
+void show_managed_window(DetachableMdiSubWindow* window,
+    DetachableMdiSubWindow* referenceWindow = nullptr,
+    QPoint offset = QPoint(30, 30));
+#+end_src
+
+- =window=: The window to show
+- =referenceWindow=: Optional window to follow detach state from (typically =listWindow_=)
+- =offset=: Position offset when detaching (default 30,30, use 60,60 for nested windows)
+
 **** Notification handling
 
 #+begin_src cpp

@@ -247,21 +247,35 @@ namespace ores #F2F2F2 {
             +~EntityController()
             +{abstract} showListWindow() void
             +setClientManager(ClientManager* clientManager, const QString& username) void
+            +setUsername(const QString& username) void
             +{abstract} closeAllWindows() void
             #statusMessage(const QString& message)
             #errorMessage(const QString& message)
+            #build_window_key(const QString& windowType, const QString& identifier) QString
+            #try_reuse_window(const QString& key) bool
+            #bring_window_to_front(DetachableMdiSubWindow* window) void
+            #track_window(const QString& key, DetachableMdiSubWindow* window) void
+            #untrack_window(const QString& key) void
+            #show_managed_window(DetachableMdiSubWindow* window, DetachableMdiSubWindow* referenceWindow, QPoint offset) void
             #{field} mainWindow_ QMainWindow*
             #{field} mdiArea_ QMdiArea*
             #{field} clientManager_ ClientManager*
             #{field} username_ QString
+            #{field} managed_windows_ QMap<QString, DetachableMdiSubWindow*>
         }
         note top of EntityController
         Base class for entity-specific controllers.
 
-        - mainWindow_: Parent main window
-        - mdiArea_: MDI area for windows
-        - clientManager_: Client manager for network operations
-        - username_: Logged-in username
+        Provides common window management functionality:
+        - Window tracking and reuse via managed_windows_
+        - Detach-aware window presentation via show_managed_window
+        - Window key generation for unique identification
+
+        Key methods:
+        - show_managed_window: Adds window to MDI, handles sizing
+          and detaching if reference window is detached
+        - try_reuse_window: Reactivates existing window if available
+        - track/untrack_window: Window lifecycle management
         end note
 
         class CurrencyController #ECECEC {

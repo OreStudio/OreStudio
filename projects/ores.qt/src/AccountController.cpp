@@ -285,12 +285,7 @@ void AccountController::onShowAccountHistory(const QString& username) {
         }
     });
 
-    mdiArea_->addSubWindow(historyWindow);
-    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
-    historyWindow->setWindowFlags(historyWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    historyWindow->adjustSize();
-    historyWindow->show();
+    show_managed_window(historyWindow, accountListWindow_);
 
     // Load the history data
     historyDialog->loadHistory();
@@ -335,12 +330,7 @@ void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId
         }
     });
 
-    mdiArea_->addSubWindow(sessionWindow);
-    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
-    sessionWindow->setWindowFlags(sessionWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    sessionWindow->adjustSize();
-    sessionWindow->show();
+    show_managed_window(sessionWindow, accountListWindow_);
 
     // Load the session data for this account
     sessionDialog->setAccount(accountId, username);
@@ -419,13 +409,7 @@ void AccountController::showDetailWindow(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-
-    // Disable maximize button (account details is a fixed-size form)
-    detailWindow->setWindowFlags(detailWindow->windowFlags() & ~Qt::WindowMaximizeButtonHint);
-
-    detailWindow->adjustSize();
-    detailWindow->show();
+    show_managed_window(detailWindow, accountListWindow_);
 }
 
 void AccountController::onOpenAccountVersion(
@@ -476,13 +460,7 @@ void AccountController::onOpenAccountVersion(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-
-    // Disable maximize button (account details is a fixed-size form)
-    detailWindow->setWindowFlags(detailWindow->windowFlags() & ~Qt::WindowMaximizeButtonHint);
-
-    detailWindow->adjustSize();
-    detailWindow->show();
+    show_managed_window(detailWindow, accountListWindow_);
 }
 
 void AccountController::onRevertAccount(const iam::domain::account& account) {

@@ -80,4 +80,20 @@ void EntityController::untrack_window(const QString& key) {
     managed_windows_.remove(key);
 }
 
+void EntityController::show_managed_window(DetachableMdiSubWindow* window,
+    DetachableMdiSubWindow* referenceWindow, QPoint offset) {
+    mdiArea_->addSubWindow(window);
+    window->setWindowFlags(window->windowFlags() & ~Qt::WindowMaximizeButtonHint);
+    window->adjustSize();
+
+    if (referenceWindow && referenceWindow->isDetached()) {
+        window->show();
+        window->detach();
+        QPoint parentPos = referenceWindow->pos();
+        window->move(parentPos.x() + offset.x(), parentPos.y() + offset.y());
+    } else {
+        window->show();
+    }
+}
+
 }

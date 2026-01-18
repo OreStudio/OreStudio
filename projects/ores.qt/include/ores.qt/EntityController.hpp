@@ -121,6 +121,22 @@ protected:
      */
     void untrack_window(const QString& key);
 
+    /**
+     * @brief Shows a window in the MDI area, handling detach state.
+     *
+     * This method adds the window to the MDI area, removes the maximize button,
+     * adjusts the size, and shows the window. If a reference window is provided
+     * and is detached, the new window will also be detached and positioned
+     * relative to the reference window.
+     *
+     * @param window The window to show.
+     * @param referenceWindow Optional window to follow detach state from.
+     * @param offset Position offset when detaching (default 30,30).
+     */
+    void show_managed_window(DetachableMdiSubWindow* window,
+        DetachableMdiSubWindow* referenceWindow = nullptr,
+        QPoint offset = QPoint(30, 30));
+
 protected:
     QMainWindow* mainWindow_;
     QMdiArea* mdiArea_;

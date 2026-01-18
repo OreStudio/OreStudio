@@ -227,21 +227,7 @@ void CountryController::onAddNewRequested() {
             self->allDetachableWindows_.removeAll(detailWindow);
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If the parent country list window is detached, detach this window too
-    if (countryListWindow_ && countryListWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-
-        QPoint parentPos = countryListWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, countryListWindow_);
 }
 
 void CountryController::onShowCountryDetails(
@@ -307,21 +293,7 @@ void CountryController::onShowCountryDetails(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If the parent country list window is detached, detach this window too
-    if (countryListWindow_ && countryListWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-
-        QPoint parentPos = countryListWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, countryListWindow_);
 }
 
 void CountryController::onShowCountryHistory(const QString& alpha2Code) {
@@ -383,19 +355,7 @@ void CountryController::onShowCountryHistory(const QString& alpha2Code) {
         }
     });
 
-    mdiArea_->addSubWindow(historyWindow);
-    historyWindow->adjustSize();
-
-    // If the parent country list window is detached, detach this window too
-    if (countryListWindow_ && countryListWindow_->isDetached()) {
-        historyWindow->show();
-        historyWindow->detach();
-
-        QPoint parentPos = countryListWindow_->pos();
-        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        historyWindow->show();
-    }
+    show_managed_window(historyWindow, countryListWindow_);
 }
 
 void CountryController::onNotificationReceived(
@@ -533,22 +493,7 @@ void CountryController::onOpenCountryVersion(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If the parent country list window is detached, detach this window too
-    if (countryListWindow_ && countryListWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-
-        QPoint parentPos = countryListWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, countryListWindow_);
 }
 
 void CountryController::onRevertCountry(const refdata::domain::country& country) {

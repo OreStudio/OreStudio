@@ -165,19 +165,7 @@ void MethodologyController::showAddWindow() {
             self->allDetachableWindows_.removeAll(detailWindow);
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 void MethodologyController::showDetailWindow(const dq::domain::methodology& methodology) {
@@ -238,19 +226,7 @@ void MethodologyController::showDetailWindow(const dq::domain::methodology& meth
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 void MethodologyController::showHistoryWindow(const boost::uuids::uuid& id) {
@@ -304,17 +280,7 @@ void MethodologyController::showHistoryWindow(const boost::uuids::uuid& id) {
         }
     });
 
-    mdiArea_->addSubWindow(historyWindow);
-    historyWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        historyWindow->show();
-        historyWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        historyWindow->show();
-    }
+    show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
 void MethodologyController::onOpenVersion(
@@ -368,19 +334,7 @@ void MethodologyController::onOpenVersion(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 60, parentPos.y() + 60);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
 void MethodologyController::onRevertVersion(
@@ -425,19 +379,7 @@ void MethodologyController::onRevertVersion(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 }

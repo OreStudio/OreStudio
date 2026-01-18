@@ -212,20 +212,7 @@ void ChangeReasonCategoryController::showAddWindow() {
             self->allDetachableWindows_.removeAll(detailWindow);
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If parent list is detached, detach this too
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 void ChangeReasonCategoryController::showDetailWindow(
@@ -288,20 +275,7 @@ void ChangeReasonCategoryController::showDetailWindow(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If parent list is detached, detach this too
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 void ChangeReasonCategoryController::onNotificationReceived(
@@ -379,19 +353,7 @@ void ChangeReasonCategoryController::showHistoryWindow(const QString& code) {
         }
     });
 
-    mdiArea_->addSubWindow(historyWindow);
-    historyWindow->adjustSize();
-
-    // If the parent list window is detached, detach this window too
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        historyWindow->show();
-        historyWindow->detach();
-
-        QPoint parentPos = listMdiSubWindow_->pos();
-        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        historyWindow->show();
-    }
+    show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
 void ChangeReasonCategoryController::onOpenVersion(
@@ -446,19 +408,7 @@ void ChangeReasonCategoryController::onOpenVersion(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 60, parentPos.y() + 60);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
 void ChangeReasonCategoryController::onRevertVersion(
@@ -505,19 +455,7 @@ void ChangeReasonCategoryController::onRevertVersion(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 }

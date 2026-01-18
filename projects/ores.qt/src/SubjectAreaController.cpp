@@ -171,19 +171,7 @@ void SubjectAreaController::showAddWindow() {
             self->allDetachableWindows_.removeAll(detailWindow);
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 void SubjectAreaController::showDetailWindow(
@@ -251,19 +239,7 @@ void SubjectAreaController::showDetailWindow(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 void SubjectAreaController::showHistoryWindow(const QString& name,
@@ -324,18 +300,7 @@ void SubjectAreaController::showHistoryWindow(const QString& name,
         }
     });
 
-    mdiArea_->addSubWindow(historyWindow);
-    historyWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        historyWindow->show();
-        historyWindow->detach();
-
-        QPoint parentPos = listMdiSubWindow_->pos();
-        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        historyWindow->show();
-    }
+    show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
 void SubjectAreaController::onOpenVersion(
@@ -391,19 +356,7 @@ void SubjectAreaController::onOpenVersion(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 60, parentPos.y() + 60);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
 void SubjectAreaController::onRevertVersion(
@@ -452,19 +405,7 @@ void SubjectAreaController::onRevertVersion(
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 }

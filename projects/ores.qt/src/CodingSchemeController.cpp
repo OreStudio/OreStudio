@@ -45,42 +45,16 @@ CodingSchemeController::CodingSchemeController(
     ClientManager* clientManager,
     const QString& username,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username,
+                       coding_scheme_event_name, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "CodingSchemeController created";
-
-    if (clientManager_) {
-        connect(clientManager_, &ClientManager::notificationReceived,
-                this, &CodingSchemeController::onNotificationReceived);
-
-        connect(clientManager_, &ClientManager::connected,
-                this, [this]() {
-            BOOST_LOG_SEV(lg(), info) << "Subscribing to coding scheme change events";
-            clientManager_->subscribeToEvent(std::string{coding_scheme_event_name});
-        });
-
-        connect(clientManager_, &ClientManager::reconnected,
-                this, [this]() {
-            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to coding scheme change events";
-            clientManager_->subscribeToEvent(std::string{coding_scheme_event_name});
-        });
-
-        if (clientManager_->isConnected()) {
-            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to events";
-            clientManager_->subscribeToEvent(std::string{coding_scheme_event_name});
-        }
-    }
 }
 
-CodingSchemeController::~CodingSchemeController() {
-    BOOST_LOG_SEV(lg(), debug) << "CodingSchemeController destroyed";
-
-    if (clientManager_) {
-        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from coding scheme change events";
-        clientManager_->unsubscribeFromEvent(std::string{coding_scheme_event_name});
-    }
+EntityListMdiWindow* CodingSchemeController::listWindow() const {
+    return listWindow_;
 }
 
 void CodingSchemeController::showListWindow() {
@@ -401,24 +375,6 @@ void CodingSchemeController::onRevertVersion(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
-}
-
-void CodingSchemeController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds) {
-
-    if (eventType != QString::fromStdString(std::string{coding_scheme_event_name})) {
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Received coding scheme change notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString()
-                              << " with " << entityIds.size() << " IDs";
-
-    if (listWindow_) {
-        listWindow_->markAsStale();
-        BOOST_LOG_SEV(lg(), debug) << "Marked coding scheme list as stale";
-    }
 }
 
 }

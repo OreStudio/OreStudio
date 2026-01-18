@@ -45,42 +45,16 @@ NatureDimensionController::NatureDimensionController(
     ClientManager* clientManager,
     const QString& username,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username,
+                       nature_dimension_event_name, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "NatureDimensionController created";
-
-    if (clientManager_) {
-        connect(clientManager_, &ClientManager::notificationReceived,
-                this, &NatureDimensionController::onNotificationReceived);
-
-        connect(clientManager_, &ClientManager::connected,
-                this, [this]() {
-            BOOST_LOG_SEV(lg(), info) << "Subscribing to nature dimension change events";
-            clientManager_->subscribeToEvent(std::string{nature_dimension_event_name});
-        });
-
-        connect(clientManager_, &ClientManager::reconnected,
-                this, [this]() {
-            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to nature dimension change events";
-            clientManager_->subscribeToEvent(std::string{nature_dimension_event_name});
-        });
-
-        if (clientManager_->isConnected()) {
-            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to events";
-            clientManager_->subscribeToEvent(std::string{nature_dimension_event_name});
-        }
-    }
 }
 
-NatureDimensionController::~NatureDimensionController() {
-    BOOST_LOG_SEV(lg(), debug) << "NatureDimensionController destroyed";
-
-    if (clientManager_) {
-        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from nature dimension change events";
-        clientManager_->unsubscribeFromEvent(std::string{nature_dimension_event_name});
-    }
+EntityListMdiWindow* NatureDimensionController::listWindow() const {
+    return listWindow_;
 }
 
 void NatureDimensionController::showListWindow() {
@@ -263,24 +237,6 @@ void NatureDimensionController::showDetailWindow(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
-}
-
-void NatureDimensionController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds) {
-
-    if (eventType != QString::fromStdString(std::string{nature_dimension_event_name})) {
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Received nature dimension change notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString()
-                              << " with " << entityIds.size() << " codes";
-
-    if (listWindow_) {
-        listWindow_->markAsStale();
-        BOOST_LOG_SEV(lg(), debug) << "Marked nature dimension list as stale";
-    }
 }
 
 void NatureDimensionController::showHistoryWindow(const QString& code) {

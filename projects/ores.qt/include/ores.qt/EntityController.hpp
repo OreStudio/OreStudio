@@ -24,14 +24,20 @@
 #include <QMainWindow>
 #include <QMdiArea>
 #include <QString>
+#include <QStringList>
+#include <QDateTime>
 #include <QMap>
 #include <memory>
+#include <string>
+#include <string_view>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
 
 class DetachableMdiSubWindow;
+class EntityListMdiWindow;
 
 /**
  * @brief Abstract base class for entity controllers.
@@ -44,6 +50,15 @@ class DetachableMdiSubWindow;
 class EntityController : public QObject {
     Q_OBJECT
 
+private:
+    inline static std::string_view logger_name = "ores.qt.entity_controller";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     /**
      * @brief Constructs an entity controller.
@@ -51,6 +66,8 @@ public:
      * @param mdiArea MDI area for displaying windows.
      * @param clientManager Client manager for network operations.
      * @param username Currently logged in user.
+     * @param eventName Event name to subscribe to for change notifications.
+     *        Pass empty string_view to disable event subscription.
      * @param parent QObject parent.
      */
     EntityController(
@@ -58,9 +75,10 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
+        std::string_view eventName = {},
         QObject* parent = nullptr);
 
-    virtual ~EntityController() = default;
+    ~EntityController() override;
 
     /**
      * @brief Updates the client manager and username (e.g. after re-login).
@@ -181,6 +199,16 @@ protected:
     void register_detachable_window(DetachableMdiSubWindow* window);
 
     /**
+     * @brief Returns the list window for marking as stale on notifications.
+     *
+     * Override in derived classes to return the list window pointer.
+     * This is used by the base class onNotificationReceived to call markAsStale().
+     *
+     * @return Pointer to the list window, or nullptr if not available.
+     */
+    virtual EntityListMdiWindow* listWindow() const { return nullptr; }
+
+    /**
      * @brief Reloads the list window.
      * Must be implemented by derived classes.
      */
@@ -202,6 +230,20 @@ protected:
      */
     void handleEntityDeleted();
 
+private slots:
+    /**
+     * @brief Handles notification from the server about entity changes.
+     *
+     * Filters by event type and calls markAsStale() on the list window.
+     */
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds);
+
+private:
+    void setupEventSubscription();
+    void teardownEventSubscription();
+
 protected:
     QMainWindow* mainWindow_;
     QMdiArea* mdiArea_;
@@ -213,6 +255,10 @@ protected:
 
     /** @brief Whether to auto-reload the list window after save/delete. Default: false. */
     bool autoReloadOnSave_ = false;
+
+private:
+    /** @brief Event name to subscribe to, or empty if no subscription. */
+    std::string eventName_;
 };
 
 }

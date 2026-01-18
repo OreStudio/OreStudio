@@ -48,7 +48,7 @@ ChangeReasonController::ChangeReasonController(
     const QString& username,
     ChangeReasonCache* changeReasonCache,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr),
       changeReasonCache_(changeReasonCache) {

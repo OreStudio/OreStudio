@@ -45,47 +45,12 @@ OriginDimensionController::OriginDimensionController(
     ClientManager* clientManager,
     const QString& username,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username,
+          origin_dimension_event_name, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "OriginDimensionController created";
-
-    // Connect to notification signal from ClientManager
-    if (clientManager_) {
-        connect(clientManager_, &ClientManager::notificationReceived,
-                this, &OriginDimensionController::onNotificationReceived);
-
-        // Subscribe to events when connected
-        connect(clientManager_, &ClientManager::connected,
-                this, [this]() {
-            BOOST_LOG_SEV(lg(), info) << "Subscribing to origin dimension change events";
-            clientManager_->subscribeToEvent(std::string{origin_dimension_event_name});
-        });
-
-        // Re-subscribe after reconnection
-        connect(clientManager_, &ClientManager::reconnected,
-                this, [this]() {
-            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to origin dimension change events";
-            clientManager_->subscribeToEvent(std::string{origin_dimension_event_name});
-        });
-
-        // If already connected, subscribe now
-        if (clientManager_->isConnected()) {
-            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to events";
-            clientManager_->subscribeToEvent(std::string{origin_dimension_event_name});
-        }
-    }
-}
-
-OriginDimensionController::~OriginDimensionController() {
-    BOOST_LOG_SEV(lg(), debug) << "OriginDimensionController destroyed";
-
-    // Unsubscribe from events
-    if (clientManager_) {
-        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from origin dimension change events";
-        clientManager_->unsubscribeFromEvent(std::string{origin_dimension_event_name});
-    }
 }
 
 void OriginDimensionController::showListWindow() {
@@ -269,25 +234,6 @@ void OriginDimensionController::showDetailWindow(
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void OriginDimensionController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds) {
-
-    if (eventType != QString::fromStdString(std::string{origin_dimension_event_name})) {
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Received origin dimension change notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString()
-                              << " with " << entityIds.size() << " codes";
-
-    // Mark the list window as stale
-    if (listWindow_) {
-        listWindow_->markAsStale();
-        BOOST_LOG_SEV(lg(), debug) << "Marked origin dimension list as stale";
-    }
-}
-
 void OriginDimensionController::showHistoryWindow(const QString& code) {
     BOOST_LOG_SEV(lg(), info) << "Opening history window for origin dimension: "
                               << code.toStdString();
@@ -436,6 +382,10 @@ void OriginDimensionController::onRevertVersion(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
+}
+
+EntityListMdiWindow* OriginDimensionController::listWindow() const {
+    return listWindow_;
 }
 
 }

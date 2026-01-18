@@ -21,20 +21,92 @@
 
 #include <QPointer>
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {
+
+using namespace ores::logging;
 
 EntityController::EntityController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
+    std::string_view eventName,
     QObject* parent)
     : QObject(parent),
       mainWindow_(mainWindow),
       mdiArea_(mdiArea),
       clientManager_(clientManager),
-      username_(username) {
+      username_(username),
+      eventName_(eventName) {
+
+    if (!eventName_.empty()) {
+        setupEventSubscription();
+    }
+}
+
+EntityController::~EntityController() {
+    if (!eventName_.empty()) {
+        teardownEventSubscription();
+    }
+}
+
+void EntityController::setupEventSubscription() {
+    if (!clientManager_ || eventName_.empty()) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Setting up event subscription for: "
+                               << eventName_;
+
+    connect(clientManager_, &ClientManager::notificationReceived,
+            this, &EntityController::onNotificationReceived);
+
+    connect(clientManager_, &ClientManager::connected,
+            this, [this]() {
+        BOOST_LOG_SEV(lg(), info) << "Subscribing to " << eventName_ << " events";
+        clientManager_->subscribeToEvent(eventName_);
+    });
+
+    connect(clientManager_, &ClientManager::reconnected,
+            this, [this]() {
+        BOOST_LOG_SEV(lg(), info) << "Re-subscribing to " << eventName_ << " events";
+        clientManager_->subscribeToEvent(eventName_);
+    });
+
+    if (clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to "
+                                  << eventName_ << " events";
+        clientManager_->subscribeToEvent(eventName_);
+    }
+}
+
+void EntityController::teardownEventSubscription() {
+    if (!clientManager_ || eventName_.empty()) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from " << eventName_ << " events";
+    clientManager_->unsubscribeFromEvent(eventName_);
+}
+
+void EntityController::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
+
+    if (eventType != QString::fromStdString(eventName_)) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Received " << eventName_ << " notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " entities";
+
+    if (auto* window = listWindow(); window != nullptr) {
+        window->markAsStale();
+        BOOST_LOG_SEV(lg(), debug) << "Marked list window as stale";
+    }
 }
 
 void EntityController::setClientManager(ClientManager* clientManager,

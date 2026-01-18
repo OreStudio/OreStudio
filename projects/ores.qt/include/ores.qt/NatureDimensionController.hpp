@@ -58,7 +58,6 @@ public:
         ClientManager* clientManager,
         const QString& username,
         QObject* parent = nullptr);
-    ~NatureDimensionController() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -68,13 +67,13 @@ signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
+protected:
+    EntityListMdiWindow* listWindow() const override;
+
 private slots:
     void onShowDetails(const dq::domain::nature_dimension& dimension);
     void onAddNewRequested();
     void onShowHistory(const QString& code);
-    void onNotificationReceived(const QString& eventType,
-                                const QDateTime& timestamp,
-                                const QStringList& entityIds);
     void onRevertVersion(const dq::domain::nature_dimension& dimension);
     void onOpenVersion(const dq::domain::nature_dimension& dimension,
                        int versionNumber);

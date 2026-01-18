@@ -35,7 +35,7 @@ RoleController::RoleController(
     ClientManager* clientManager,
     const QString& username,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
       roleListWindow_(nullptr) {
     BOOST_LOG_SEV(lg(), debug) << "Role controller created";
 }

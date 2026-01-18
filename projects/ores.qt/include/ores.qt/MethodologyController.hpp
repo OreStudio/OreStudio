@@ -22,8 +22,6 @@
 
 #include <QMdiArea>
 #include <QMainWindow>
-#include <QDateTime>
-#include <QStringList>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientManager.hpp"
@@ -55,7 +53,6 @@ public:
         ClientManager* clientManager,
         const QString& username,
         QObject* parent = nullptr);
-    ~MethodologyController() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -71,9 +68,9 @@ private slots:
     void onShowHistory(const boost::uuids::uuid& id);
     void onRevertVersion(const dq::domain::methodology& methodology);
     void onOpenVersion(const dq::domain::methodology& methodology, int versionNumber);
-    void onNotificationReceived(const QString& eventType,
-                                const QDateTime& timestamp,
-                                const QStringList& entityIds);
+
+protected:
+    EntityListMdiWindow* listWindow() const override;
 
 private:
     void showAddWindow();

@@ -34,7 +34,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 namespace {
-    constexpr std::string_view coding_scheme_authority_type_event_name =
+    constexpr std::string_view authority_type_event_name =
         eventing::domain::event_traits<
             dq::eventing::coding_scheme_authority_type_changed_event>::name;
 }
@@ -45,42 +45,15 @@ CodingSchemeAuthorityTypeController::CodingSchemeAuthorityTypeController(
     ClientManager* clientManager,
     const QString& username,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username, authority_type_event_name, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "CodingSchemeAuthorityTypeController created";
-
-    if (clientManager_) {
-        connect(clientManager_, &ClientManager::notificationReceived,
-                this, &CodingSchemeAuthorityTypeController::onNotificationReceived);
-
-        connect(clientManager_, &ClientManager::connected,
-                this, [this]() {
-            BOOST_LOG_SEV(lg(), info) << "Subscribing to coding scheme authority type change events";
-            clientManager_->subscribeToEvent(std::string{coding_scheme_authority_type_event_name});
-        });
-
-        connect(clientManager_, &ClientManager::reconnected,
-                this, [this]() {
-            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to coding scheme authority type change events";
-            clientManager_->subscribeToEvent(std::string{coding_scheme_authority_type_event_name});
-        });
-
-        if (clientManager_->isConnected()) {
-            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to events";
-            clientManager_->subscribeToEvent(std::string{coding_scheme_authority_type_event_name});
-        }
-    }
 }
 
-CodingSchemeAuthorityTypeController::~CodingSchemeAuthorityTypeController() {
-    BOOST_LOG_SEV(lg(), debug) << "CodingSchemeAuthorityTypeController destroyed";
-
-    if (clientManager_) {
-        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from coding scheme authority type change events";
-        clientManager_->unsubscribeFromEvent(std::string{coding_scheme_authority_type_event_name});
-    }
+EntityListMdiWindow* CodingSchemeAuthorityTypeController::listWindow() const {
+    return listWindow_;
 }
 
 void CodingSchemeAuthorityTypeController::showListWindow() {
@@ -400,24 +373,6 @@ void CodingSchemeAuthorityTypeController::onRevertVersion(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
-}
-
-void CodingSchemeAuthorityTypeController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds) {
-
-    if (eventType != QString::fromStdString(std::string{coding_scheme_authority_type_event_name})) {
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Received coding scheme authority type change notification at "
-                              << timestamp.toString(Qt::ISODate).toStdString()
-                              << " with " << entityIds.size() << " IDs";
-
-    if (listWindow_) {
-        listWindow_->markAsStale();
-        BOOST_LOG_SEV(lg(), debug) << "Marked coding scheme authority type list as stale";
-    }
 }
 
 }

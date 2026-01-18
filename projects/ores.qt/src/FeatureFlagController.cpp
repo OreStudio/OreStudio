@@ -48,7 +48,7 @@ FeatureFlagController::FeatureFlagController(
     ClientManager* clientManager,
     const QString& username,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 

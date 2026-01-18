@@ -54,7 +54,7 @@ AccountController::AccountController(
     ClientManager* clientManager,
     const QString& username,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
       accountListWindow_(nullptr) {
     BOOST_LOG_SEV(lg(), debug) << "Account controller created";
 

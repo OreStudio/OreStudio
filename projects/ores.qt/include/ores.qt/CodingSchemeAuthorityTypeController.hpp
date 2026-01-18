@@ -22,8 +22,6 @@
 
 #include <QMdiArea>
 #include <QMainWindow>
-#include <QDateTime>
-#include <QStringList>
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -54,7 +52,6 @@ public:
         ClientManager* clientManager,
         const QString& username,
         QObject* parent = nullptr);
-    ~CodingSchemeAuthorityTypeController() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -71,9 +68,9 @@ private slots:
     void onRevertVersion(const dq::domain::coding_scheme_authority_type& authorityType);
     void onOpenVersion(const dq::domain::coding_scheme_authority_type& authorityType,
                        int versionNumber);
-    void onNotificationReceived(const QString& eventType,
-                                const QDateTime& timestamp,
-                                const QStringList& entityIds);
+
+protected:
+    EntityListMdiWindow* listWindow() const override;
 
 private:
     void showAddWindow();

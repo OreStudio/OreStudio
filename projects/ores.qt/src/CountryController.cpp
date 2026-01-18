@@ -51,7 +51,7 @@ CountryController::CountryController(
     ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
       imageCache_(imageCache),
       changeReasonCache_(changeReasonCache),
       countryListWindow_(nullptr) {

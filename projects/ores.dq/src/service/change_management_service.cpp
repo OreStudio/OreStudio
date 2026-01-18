@@ -68,6 +68,9 @@ change_management_service::find_category(const std::string& code) {
 
 void change_management_service::save_category(
     const domain::change_reason_category& category) {
+    if (category.code.empty()) {
+        throw std::invalid_argument("Category code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving change reason category: "
                                << category.code;
     category_repo_.write(category);
@@ -140,6 +143,9 @@ change_management_service::find_reason(const std::string& code) {
 
 void change_management_service::save_reason(
     const domain::change_reason& reason) {
+    if (reason.code.empty()) {
+        throw std::invalid_argument("Reason code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving change reason: " << reason.code;
     reason_repo_.write(reason);
     BOOST_LOG_SEV(lg(), info) << "Saved change reason: " << reason.code;

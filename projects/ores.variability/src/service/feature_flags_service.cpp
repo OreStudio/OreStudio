@@ -51,6 +51,9 @@ std::vector<domain::feature_flags> feature_flags_service::get_all_feature_flags(
 }
 
 void feature_flags_service::save_feature_flag(const domain::feature_flags& flag) {
+    if (flag.name.empty()) {
+        throw std::invalid_argument("Feature flag name cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), info) << "Saving feature flag: " << flag.name
                               << ", enabled: " << (flag.enabled ? "true" : "false");
 

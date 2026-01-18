@@ -48,6 +48,9 @@ dimension_service::find_nature_dimension(const std::string& code) {
 }
 
 void dimension_service::save_nature_dimension(const domain::nature_dimension& dimension) {
+    if (dimension.code.empty()) {
+        throw std::invalid_argument("Nature dimension code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving nature dimension: " << dimension.code;
     nature_repo_.write(dimension);
     BOOST_LOG_SEV(lg(), info) << "Saved nature dimension: " << dimension.code;
@@ -85,6 +88,9 @@ dimension_service::find_origin_dimension(const std::string& code) {
 }
 
 void dimension_service::save_origin_dimension(const domain::origin_dimension& dimension) {
+    if (dimension.code.empty()) {
+        throw std::invalid_argument("Origin dimension code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving origin dimension: " << dimension.code;
     origin_repo_.write(dimension);
     BOOST_LOG_SEV(lg(), info) << "Saved origin dimension: " << dimension.code;
@@ -122,6 +128,9 @@ dimension_service::find_treatment_dimension(const std::string& code) {
 }
 
 void dimension_service::save_treatment_dimension(const domain::treatment_dimension& dimension) {
+    if (dimension.code.empty()) {
+        throw std::invalid_argument("Treatment dimension code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving treatment dimension: " << dimension.code;
     treatment_repo_.write(dimension);
     BOOST_LOG_SEV(lg(), info) << "Saved treatment dimension: " << dimension.code;

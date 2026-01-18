@@ -32,7 +32,8 @@ create table if not exists "ores"."dq_data_domains_tbl" (
         name WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to")
+    check ("valid_from" < "valid_to"),
+    check ("name" <> '')
 );
 
 create unique index if not exists dq_data_domains_version_uniq_idx

@@ -68,6 +68,9 @@ coding_scheme_service::find_coding_scheme(const std::string& code) {
 }
 
 void coding_scheme_service::save_coding_scheme(const domain::coding_scheme& scheme) {
+    if (scheme.code.empty()) {
+        throw std::invalid_argument("Coding scheme code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving coding scheme: " << scheme.code;
     coding_scheme_repo_.write(scheme);
     BOOST_LOG_SEV(lg(), info) << "Saved coding scheme: " << scheme.code;
@@ -107,6 +110,9 @@ coding_scheme_service::find_authority_type(const std::string& code) {
 
 void coding_scheme_service::save_authority_type(
     const domain::coding_scheme_authority_type& authority_type) {
+    if (authority_type.code.empty()) {
+        throw std::invalid_argument("Authority type code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving coding scheme authority type: "
                                << authority_type.code;
     authority_type_repo_.write(authority_type);

@@ -60,6 +60,9 @@ dataset_service::find_dataset(const boost::uuids::uuid& id) {
 }
 
 void dataset_service::save_dataset(const domain::dataset& dataset) {
+    if (dataset.id.is_nil()) {
+        throw std::invalid_argument("Dataset ID cannot be nil.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving dataset: " << dataset.id;
     dataset_repo_.write(dataset);
     BOOST_LOG_SEV(lg(), info) << "Saved dataset: " << dataset.id;
@@ -108,6 +111,9 @@ dataset_service::find_methodology(const boost::uuids::uuid& id) {
 }
 
 void dataset_service::save_methodology(const domain::methodology& methodology) {
+    if (methodology.id.is_nil()) {
+        throw std::invalid_argument("Methodology ID cannot be nil.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving methodology: " << methodology.id;
     methodology_repo_.write(methodology);
     BOOST_LOG_SEV(lg(), info) << "Saved methodology: " << methodology.id;

@@ -60,6 +60,9 @@ data_organization_service::find_catalog(const std::string& name) {
 }
 
 void data_organization_service::save_catalog(const domain::catalog& catalog) {
+    if (catalog.name.empty()) {
+        throw std::invalid_argument("Catalog name cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving catalog: " << catalog.name;
     catalog_repo_.write(catalog);
     BOOST_LOG_SEV(lg(), info) << "Saved catalog: " << catalog.name;
@@ -98,6 +101,9 @@ data_organization_service::find_data_domain(const std::string& name) {
 
 void data_organization_service::save_data_domain(
     const domain::data_domain& data_domain) {
+    if (data_domain.name.empty()) {
+        throw std::invalid_argument("Data domain name cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving data domain: " << data_domain.name;
     data_domain_repo_.write(data_domain);
     BOOST_LOG_SEV(lg(), info) << "Saved data domain: " << data_domain.name;
@@ -159,6 +165,12 @@ data_organization_service::find_subject_area(const std::string& name,
 
 void data_organization_service::save_subject_area(
     const domain::subject_area& subject_area) {
+    if (subject_area.name.empty()) {
+        throw std::invalid_argument("Subject area name cannot be empty.");
+    }
+    if (subject_area.domain_name.empty()) {
+        throw std::invalid_argument("Subject area domain name cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving subject area: " << subject_area.name
                                << " in domain: " << subject_area.domain_name;
     subject_area_repo_.write(subject_area);

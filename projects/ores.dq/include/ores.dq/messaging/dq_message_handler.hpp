@@ -25,7 +25,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
-#include "ores.iam/service/authorization_service.hpp"
 #include "ores.dq/service/change_management_service.hpp"
 #include "ores.dq/service/data_organization_service.hpp"
 #include "ores.dq/service/dataset_service.hpp"
@@ -59,11 +58,9 @@ public:
      *
      * @param ctx Database context for repository access
      * @param sessions Shared auth session service for authentication
-     * @param auth_service Shared authorization service for RBAC permission checks
      */
     dq_message_handler(database::context ctx,
-        std::shared_ptr<comms::service::auth_session_service> sessions,
-        std::shared_ptr<iam::service::authorization_service> auth_service);
+        std::shared_ptr<comms::service::auth_session_service> sessions);
 
     using handler_result = boost::asio::awaitable<
         std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
@@ -411,7 +408,6 @@ private:
 
     database::context ctx_;
     std::shared_ptr<comms::service::auth_session_service> sessions_;
-    std::shared_ptr<iam::service::authorization_service> auth_service_;
     service::change_management_service change_management_service_;
     service::data_organization_service data_organization_service_;
     service::dataset_service dataset_service_;

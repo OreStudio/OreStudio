@@ -394,12 +394,12 @@ dq --> eventing
 dq --> database
 dq --> utility
 dq --> comms
-dq --> iam
 
 ' Dependencies - Shell to Foundation/Domain/Infrastructure
 shell --> telemetry
 shell --> variability
 shell --> iam
+shell --> dq
 shell --> comms
 shell --> refdata
 shell --> utility
@@ -408,6 +408,7 @@ shell --> utility
 cli --> telemetry
 cli --> variability
 cli --> iam
+cli --> dq
 cli --> refdata
 cli --> comms
 cli --> database

@@ -813,6 +813,7 @@ Highlights:
 
 *** STARTED Add UI support for data sets                               :code:
     :LOGBOOK:
+    CLOCK: [2026-01-18 Sun 08:40]
     CLOCK: [2026-01-17 Sat 22:28]--[2026-01-17 Sat 22:47] =>  0:19
     CLOCK: [2026-01-17 Sat 18:10]--[2026-01-17 Sat 22:27] =>  4:17
     CLOCK: [2026-01-16 Fri 16:27]--[2026-01-16 Fri 17:23] =>  0:56
@@ -970,6 +971,41 @@ Grok:
 HF:
 
 [[./mock_data_librarian_hf.png]]
+
+
+**** Messaging
+
+#+begin_quote
+This pull request significantly expands the ORE Studio binary protocol by
+integrating a new Data Quality (DQ) subsystem. This enhancement provides robust
+messaging capabilities for managing a wide array of data quality entities,
+centralizing related functionalities. The changes also involve a re-architecture
+of existing change management features, moving them into the new DQ domain,
+which necessitates a protocol version update to ensure compatibility and reflect
+the breaking nature of this re-organization.
+
+Highlights:
+
+- New Data Quality (DQ) Subsystem: A dedicated subsystem (0x6000-0x6FFF) has
+  been introduced to the ORE Studio binary protocol to manage Data Quality
+  related messages and entities.
+- Comprehensive DQ Messaging Protocols: New messaging protocols are added to
+  support CRUD (Create, Read, Update, Delete) and history operations for various
+  data quality entities, including catalogs, data domains, subject areas,
+  datasets, methodologies, coding schemes, and dimensions (nature, origin,
+  treatment).
+- Migration of Change Management Messages: Existing change management messages
+  (for change reasons and categories) have been relocated from the IAM subsystem
+  (0x2050-0x2061) to the new DQ subsystem (0x6070-0x6081). This is a breaking
+  change in message type IDs.
+- Binary Protocol Version Update: The ORE Studio binary protocol version has
+  been incremented from 21.3 to 22.0 to reflect the introduction of the new DQ
+  subsystem and the breaking changes associated with message re-organization.
+- Dedicated DQ Message Handling: A new dq_message_handler and its registrar have
+  been implemented to process all incoming messages within the new Data Quality
+  subsystem, ensuring proper routing and business logic execution for DQ-related
+  requests.
+#+end_quote
 
 **** Data catalog work
 

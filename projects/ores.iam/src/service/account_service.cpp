@@ -22,7 +22,7 @@
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include "ores.dq/domain/change_reason_constants.hpp"
+#include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
 #include "ores.security/validation/password_validator.hpp"
 #include "ores.security/validation/email_validator.hpp"
@@ -30,7 +30,7 @@
 namespace ores::iam::service {
 
 using namespace ores::logging;
-namespace reason = dq::domain::change_reason_constants;
+namespace reason = database::domain::change_reason_constants;
 namespace crypto = ores::security::crypto;
 namespace validation = ores::security::validation;
 

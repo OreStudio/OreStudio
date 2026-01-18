@@ -29,13 +29,6 @@ using namespace ores::logging;
 dataset_service::dataset_service(context ctx)
     : dataset_repo_(ctx), methodology_repo_(ctx) {}
 
-void dataset_service::ensure_non_nil(const boost::uuids::uuid& id,
-                                     std::string_view entity_type) {
-    if (id.is_nil()) {
-        throw std::invalid_argument(std::string(entity_type) + " ID cannot be nil");
-    }
-}
-
 // ============================================================================
 // Dataset Management
 // ============================================================================
@@ -66,36 +59,14 @@ dataset_service::find_dataset(const boost::uuids::uuid& id) {
     return datasets.front();
 }
 
-domain::dataset
-dataset_service::create_dataset(const domain::dataset& dataset) {
-    BOOST_LOG_SEV(lg(), debug) << "Creating dataset: " << dataset.id;
-    ensure_non_nil(dataset.id, "Dataset");
-
-    if (find_dataset(dataset.id)) {
-        throw std::runtime_error("Dataset already exists: " +
-                                 boost::uuids::to_string(dataset.id));
-    }
-
+void dataset_service::save_dataset(const domain::dataset& dataset) {
+    BOOST_LOG_SEV(lg(), debug) << "Saving dataset: " << dataset.id;
     dataset_repo_.write(dataset);
-    BOOST_LOG_SEV(lg(), info) << "Created dataset: " << dataset.id;
-
-    auto created = find_dataset(dataset.id);
-    if (!created) {
-        throw std::runtime_error("Failed to retrieve created dataset");
-    }
-    return *created;
-}
-
-void dataset_service::update_dataset(const domain::dataset& dataset) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating dataset: " << dataset.id;
-    ensure_non_nil(dataset.id, "Dataset");
-    dataset_repo_.write(dataset);
-    BOOST_LOG_SEV(lg(), info) << "Updated dataset: " << dataset.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved dataset: " << dataset.id;
 }
 
 void dataset_service::remove_dataset(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing dataset: " << id;
-    ensure_non_nil(id, "Dataset");
     dataset_repo_.remove(id);
     BOOST_LOG_SEV(lg(), info) << "Removed dataset: " << id;
 }
@@ -136,37 +107,14 @@ dataset_service::find_methodology(const boost::uuids::uuid& id) {
     return methodologies.front();
 }
 
-domain::methodology
-dataset_service::create_methodology(const domain::methodology& methodology) {
-    BOOST_LOG_SEV(lg(), debug) << "Creating methodology: " << methodology.id;
-    ensure_non_nil(methodology.id, "Methodology");
-
-    auto existing = find_methodology(methodology.id);
-    if (existing) {
-        throw std::runtime_error("Methodology already exists: " +
-                                 boost::uuids::to_string(methodology.id));
-    }
-
+void dataset_service::save_methodology(const domain::methodology& methodology) {
+    BOOST_LOG_SEV(lg(), debug) << "Saving methodology: " << methodology.id;
     methodology_repo_.write(methodology);
-    BOOST_LOG_SEV(lg(), info) << "Created methodology: " << methodology.id;
-
-    auto created = find_methodology(methodology.id);
-    if (!created) {
-        throw std::runtime_error("Failed to retrieve created methodology");
-    }
-    return *created;
-}
-
-void dataset_service::update_methodology(const domain::methodology& methodology) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating methodology: " << methodology.id;
-    ensure_non_nil(methodology.id, "Methodology");
-    methodology_repo_.write(methodology);
-    BOOST_LOG_SEV(lg(), info) << "Updated methodology: " << methodology.id;
+    BOOST_LOG_SEV(lg(), info) << "Saved methodology: " << methodology.id;
 }
 
 void dataset_service::remove_methodology(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing methodology: " << id;
-    ensure_non_nil(id, "Methodology");
     methodology_repo_.remove(id);
     BOOST_LOG_SEV(lg(), info) << "Removed methodology: " << id;
 }

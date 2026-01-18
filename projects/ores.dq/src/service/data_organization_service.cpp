@@ -59,38 +59,10 @@ data_organization_service::find_catalog(const std::string& name) {
     return catalogs.front();
 }
 
-domain::catalog
-data_organization_service::create_catalog(const domain::catalog& catalog) {
-    BOOST_LOG_SEV(lg(), debug) << "Creating catalog: " << catalog.name;
-
-    if (catalog.name.empty()) {
-        throw std::invalid_argument("Catalog name cannot be empty");
-    }
-
-    auto existing = find_catalog(catalog.name);
-    if (existing) {
-        throw std::runtime_error("Catalog already exists: " + catalog.name);
-    }
-
+void data_organization_service::save_catalog(const domain::catalog& catalog) {
+    BOOST_LOG_SEV(lg(), debug) << "Saving catalog: " << catalog.name;
     catalog_repo_.write(catalog);
-    BOOST_LOG_SEV(lg(), info) << "Created catalog: " << catalog.name;
-
-    auto created = find_catalog(catalog.name);
-    if (!created) {
-        throw std::runtime_error("Failed to retrieve created catalog");
-    }
-    return *created;
-}
-
-void data_organization_service::update_catalog(const domain::catalog& catalog) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating catalog: " << catalog.name;
-
-    if (catalog.name.empty()) {
-        throw std::invalid_argument("Catalog name cannot be empty");
-    }
-
-    catalog_repo_.write(catalog);
-    BOOST_LOG_SEV(lg(), info) << "Updated catalog: " << catalog.name;
+    BOOST_LOG_SEV(lg(), info) << "Saved catalog: " << catalog.name;
 }
 
 void data_organization_service::remove_catalog(const std::string& name) {
@@ -124,40 +96,11 @@ data_organization_service::find_data_domain(const std::string& name) {
     return domains.front();
 }
 
-domain::data_domain
-data_organization_service::create_data_domain(
+void data_organization_service::save_data_domain(
     const domain::data_domain& data_domain) {
-    BOOST_LOG_SEV(lg(), debug) << "Creating data domain: " << data_domain.name;
-
-    if (data_domain.name.empty()) {
-        throw std::invalid_argument("Data domain name cannot be empty");
-    }
-
-    auto existing = find_data_domain(data_domain.name);
-    if (existing) {
-        throw std::runtime_error("Data domain already exists: " + data_domain.name);
-    }
-
+    BOOST_LOG_SEV(lg(), debug) << "Saving data domain: " << data_domain.name;
     data_domain_repo_.write(data_domain);
-    BOOST_LOG_SEV(lg(), info) << "Created data domain: " << data_domain.name;
-
-    auto created = find_data_domain(data_domain.name);
-    if (!created) {
-        throw std::runtime_error("Failed to retrieve created data domain");
-    }
-    return *created;
-}
-
-void data_organization_service::update_data_domain(
-    const domain::data_domain& data_domain) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating data domain: " << data_domain.name;
-
-    if (data_domain.name.empty()) {
-        throw std::invalid_argument("Data domain name cannot be empty");
-    }
-
-    data_domain_repo_.write(data_domain);
-    BOOST_LOG_SEV(lg(), info) << "Updated data domain: " << data_domain.name;
+    BOOST_LOG_SEV(lg(), info) << "Saved data domain: " << data_domain.name;
 }
 
 void data_organization_service::remove_data_domain(const std::string& name) {
@@ -214,51 +157,12 @@ data_organization_service::find_subject_area(const std::string& name,
     return subject_areas.front();
 }
 
-domain::subject_area
-data_organization_service::create_subject_area(
+void data_organization_service::save_subject_area(
     const domain::subject_area& subject_area) {
-    BOOST_LOG_SEV(lg(), debug) << "Creating subject area: " << subject_area.name
+    BOOST_LOG_SEV(lg(), debug) << "Saving subject area: " << subject_area.name
                                << " in domain: " << subject_area.domain_name;
-
-    if (subject_area.name.empty()) {
-        throw std::invalid_argument("Subject area name cannot be empty");
-    }
-    if (subject_area.domain_name.empty()) {
-        throw std::invalid_argument("Domain name cannot be empty");
-    }
-
-    auto existing = find_subject_area(subject_area.name,
-                                      subject_area.domain_name);
-    if (existing) {
-        throw std::runtime_error("Subject area already exists: " +
-                                 subject_area.name + " in domain " +
-                                 subject_area.domain_name);
-    }
-
     subject_area_repo_.write(subject_area);
-    BOOST_LOG_SEV(lg(), info) << "Created subject area: " << subject_area.name;
-
-    auto created = find_subject_area(subject_area.name, subject_area.domain_name);
-    if (!created) {
-        throw std::runtime_error("Failed to retrieve created subject area");
-    }
-    return *created;
-}
-
-void data_organization_service::update_subject_area(
-    const domain::subject_area& subject_area) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating subject area: " << subject_area.name
-                               << " in domain: " << subject_area.domain_name;
-
-    if (subject_area.name.empty()) {
-        throw std::invalid_argument("Subject area name cannot be empty");
-    }
-    if (subject_area.domain_name.empty()) {
-        throw std::invalid_argument("Domain name cannot be empty");
-    }
-
-    subject_area_repo_.write(subject_area);
-    BOOST_LOG_SEV(lg(), info) << "Updated subject area: " << subject_area.name;
+    BOOST_LOG_SEV(lg(), info) << "Saved subject area: " << subject_area.name;
 }
 
 void data_organization_service::remove_subject_area(

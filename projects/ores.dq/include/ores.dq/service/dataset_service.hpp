@@ -87,20 +87,11 @@ public:
     std::optional<domain::dataset> find_dataset(const boost::uuids::uuid& id);
 
     /**
-     * @brief Creates a new dataset.
+     * @brief Saves a dataset (creates or updates).
      *
-     * @param dataset The dataset to create
-     * @return The created dataset
-     * @throws std::runtime_error if dataset already exists
+     * @param dataset The dataset to save
      */
-    domain::dataset create_dataset(const domain::dataset& dataset);
-
-    /**
-     * @brief Updates an existing dataset.
-     *
-     * @param dataset The dataset with updated values
-     */
-    void update_dataset(const domain::dataset& dataset);
+    void save_dataset(const domain::dataset& dataset);
 
     /**
      * @brief Removes a dataset.
@@ -145,20 +136,11 @@ public:
     find_methodology(const boost::uuids::uuid& id);
 
     /**
-     * @brief Creates a new methodology.
+     * @brief Saves a methodology (creates or updates).
      *
-     * @param methodology The methodology to create
-     * @return The created methodology
-     * @throws std::runtime_error if methodology already exists
+     * @param methodology The methodology to save
      */
-    domain::methodology create_methodology(const domain::methodology& methodology);
-
-    /**
-     * @brief Updates an existing methodology.
-     *
-     * @param methodology The methodology with updated values
-     */
-    void update_methodology(const domain::methodology& methodology);
+    void save_methodology(const domain::methodology& methodology);
 
     /**
      * @brief Removes a methodology.
@@ -177,8 +159,6 @@ public:
     get_methodology_history(const boost::uuids::uuid& id);
 
 private:
-    void ensure_non_nil(const boost::uuids::uuid& id, std::string_view entity_type);
-
     repository::dataset_repository dataset_repo_;
     repository::methodology_repository methodology_repo_;
 };

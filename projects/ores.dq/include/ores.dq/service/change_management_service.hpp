@@ -88,22 +88,11 @@ public:
     find_category(const std::string& code);
 
     /**
-     * @brief Creates a new change reason category.
+     * @brief Saves a change reason category (creates or updates).
      *
-     * @param category The category to create
-     * @return The created category
-     * @throws std::invalid_argument if code is empty
-     * @throws std::runtime_error if category already exists
+     * @param category The category to save
      */
-    domain::change_reason_category create_category(
-        const domain::change_reason_category& category);
-
-    /**
-     * @brief Updates an existing change reason category.
-     *
-     * @param category The category with updated values
-     */
-    void update_category(const domain::change_reason_category& category);
+    void save_category(const domain::change_reason_category& category);
 
     /**
      * @brief Removes a change reason category.
@@ -153,20 +142,11 @@ public:
     std::optional<domain::change_reason> find_reason(const std::string& code);
 
     /**
-     * @brief Creates a new change reason.
+     * @brief Saves a change reason (creates or updates).
      *
-     * @param reason The change reason to create
-     * @return The created reason
-     * @throws std::runtime_error if the category_code doesn't exist
+     * @param reason The reason to save
      */
-    domain::change_reason create_reason(const domain::change_reason& reason);
-
-    /**
-     * @brief Updates an existing change reason.
-     *
-     * @param reason The reason with updated values
-     */
-    void update_reason(const domain::change_reason& reason);
+    void save_reason(const domain::change_reason& reason);
 
     /**
      * @brief Removes a change reason.

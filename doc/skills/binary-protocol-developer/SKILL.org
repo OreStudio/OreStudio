@@ -381,6 +381,52 @@ case message_type::action_resource_request:
     co_return co_await handle_action_resource_request(payload, remote_address);
 #+end_src
 
+*** Message handler as thin dispatcher
+
+Message handlers should be *thin dispatchers* that delegate business logic to
+the service layer. They should:
+
+1. Deserialize the request payload
+2. Call the appropriate service method
+3. Build and serialize the response
+
+*DO NOT* implement business logic (such as upsert decisions) in the message
+handler. For save operations, call the service's =save_*= method directly - the
+service layer handles upsert semantics via the repository:
+
+#+begin_src cpp
+// CORRECT: Thin dispatcher - delegates to service
+handler_result message_handler::handle_save_entity_request(
+    std::span<const std::byte> payload, const std::string& remote_address) {
+
+    auto request = save_entity_request::deserialize(payload);
+    if (!request) {
+        co_return make_error_response(request.error());
+    }
+
+    service_.save_entity(request->entity);  // Service handles upsert
+
+    save_entity_response response;
+    response.success = true;
+    co_return make_response(response);
+}
+#+end_src
+
+#+begin_src cpp
+// WRONG: Business logic in message handler
+handler_result message_handler::handle_save_entity_request(
+    std::span<const std::byte> payload, const std::string& remote_address) {
+
+    // DON'T do this - upsert logic belongs in service layer
+    auto existing = service_.find_entity(request->entity.id);
+    if (existing) {
+        service_.update_entity(request->entity);  // Wrong pattern
+    } else {
+        service_.create_entity(request->entity);  // Wrong pattern
+    }
+}
+#+end_src
+
 ** Step 7: Update protocol version
 
 After making changes, update the version in =message_types.hpp=:

@@ -67,39 +67,10 @@ coding_scheme_service::find_coding_scheme(const std::string& code) {
     return schemes.front();
 }
 
-domain::coding_scheme
-coding_scheme_service::create_coding_scheme(const domain::coding_scheme& scheme) {
-    BOOST_LOG_SEV(lg(), debug) << "Creating coding scheme: " << scheme.code;
-
-    if (scheme.code.empty()) {
-        throw std::invalid_argument("Coding scheme code cannot be empty");
-    }
-
-    auto existing = find_coding_scheme(scheme.code);
-    if (existing) {
-        throw std::runtime_error("Coding scheme already exists: " + scheme.code);
-    }
-
+void coding_scheme_service::save_coding_scheme(const domain::coding_scheme& scheme) {
+    BOOST_LOG_SEV(lg(), debug) << "Saving coding scheme: " << scheme.code;
     coding_scheme_repo_.write(scheme);
-    BOOST_LOG_SEV(lg(), info) << "Created coding scheme: " << scheme.code;
-
-    auto created = find_coding_scheme(scheme.code);
-    if (!created) {
-        throw std::runtime_error("Failed to retrieve created coding scheme");
-    }
-    return *created;
-}
-
-void coding_scheme_service::update_coding_scheme(
-    const domain::coding_scheme& scheme) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating coding scheme: " << scheme.code;
-
-    if (scheme.code.empty()) {
-        throw std::invalid_argument("Coding scheme code cannot be empty");
-    }
-
-    coding_scheme_repo_.write(scheme);
-    BOOST_LOG_SEV(lg(), info) << "Updated coding scheme: " << scheme.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved coding scheme: " << scheme.code;
 }
 
 void coding_scheme_service::remove_coding_scheme(const std::string& code) {
@@ -134,47 +105,12 @@ coding_scheme_service::find_authority_type(const std::string& code) {
     return types.front();
 }
 
-domain::coding_scheme_authority_type
-coding_scheme_service::create_authority_type(
+void coding_scheme_service::save_authority_type(
     const domain::coding_scheme_authority_type& authority_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Creating coding scheme authority type: "
+    BOOST_LOG_SEV(lg(), debug) << "Saving coding scheme authority type: "
                                << authority_type.code;
-
-    if (authority_type.code.empty()) {
-        throw std::invalid_argument(
-            "Coding scheme authority type code cannot be empty");
-    }
-
-    auto existing = find_authority_type(authority_type.code);
-    if (existing) {
-        throw std::runtime_error(
-            "Coding scheme authority type already exists: " + authority_type.code);
-    }
-
     authority_type_repo_.write(authority_type);
-    BOOST_LOG_SEV(lg(), info) << "Created coding scheme authority type: "
-                              << authority_type.code;
-
-    auto created = find_authority_type(authority_type.code);
-    if (!created) {
-        throw std::runtime_error(
-            "Failed to retrieve created coding scheme authority type");
-    }
-    return *created;
-}
-
-void coding_scheme_service::update_authority_type(
-    const domain::coding_scheme_authority_type& authority_type) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating coding scheme authority type: "
-                               << authority_type.code;
-
-    if (authority_type.code.empty()) {
-        throw std::invalid_argument(
-            "Coding scheme authority type code cannot be empty");
-    }
-
-    authority_type_repo_.write(authority_type);
-    BOOST_LOG_SEV(lg(), info) << "Updated coding scheme authority type: "
+    BOOST_LOG_SEV(lg(), info) << "Saved coding scheme authority type: "
                               << authority_type.code;
 }
 

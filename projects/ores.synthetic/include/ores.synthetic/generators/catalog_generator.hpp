@@ -17,23 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.synthetic/domain/stub.hpp"
+#ifndef ORES_SYNTHETIC_GENERATORS_CATALOG_GENERATOR_HPP
+#define ORES_SYNTHETIC_GENERATORS_CATALOG_GENERATOR_HPP
 
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
+#include <vector>
+#include "ores.dq/domain/catalog.hpp"
 
-namespace {
+namespace ores::synthetic::generators {
 
-const std::string test_suite("ores.synthetic.tests");
-const std::string tags("[domain]");
+/**
+ * @brief Generates a synthetic DQ catalog.
+ *
+ * Creates a catalog with randomly generated name, description, and
+ * optional owner suitable for testing DQ functionality.
+ */
+dq::domain::catalog generate_synthetic_catalog();
+
+/**
+ * @brief Generates N synthetic DQ catalogs.
+ *
+ * @param n Number of catalogs to generate.
+ * @return Vector of synthetic catalogs.
+ */
+std::vector<dq::domain::catalog>
+generate_synthetic_catalogs(std::size_t n);
 
 }
 
-using namespace ores::synthetic::domain;
-using namespace ores::logging;
-
-TEST_CASE("create_stub", tags) {
-    auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, warn) << stub_function();
-}
+#endif

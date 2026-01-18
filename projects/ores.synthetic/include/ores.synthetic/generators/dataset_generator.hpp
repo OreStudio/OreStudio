@@ -17,21 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_DOMAIN_STUB_HPP
-#define ORES_SYNTHETIC_DOMAIN_STUB_HPP
+#ifndef ORES_SYNTHETIC_GENERATORS_DATASET_GENERATOR_HPP
+#define ORES_SYNTHETIC_GENERATORS_DATASET_GENERATOR_HPP
 
-#include <string>
+#include <vector>
+#include "ores.dq/domain/dataset.hpp"
 
-namespace ores::synthetic::domain {
+namespace ores::synthetic::generators {
 
 /**
- * @brief Stub to be removed.
+ * @brief Generates a synthetic DQ dataset.
+ *
+ * Creates a complete dataset with randomly generated metadata including
+ * name, description, source system, business context, and lineage info.
  */
-struct stub final {
-    int version = 0;
-};
+dq::domain::dataset generate_synthetic_dataset();
 
-std::string stub_function();
+/**
+ * @brief Generates N synthetic DQ datasets.
+ *
+ * @param n Number of datasets to generate.
+ * @return Vector of synthetic datasets.
+ */
+std::vector<dq::domain::dataset>
+generate_synthetic_datasets(std::size_t n);
 
 }
 

@@ -32,6 +32,7 @@
 \ir ./drop/dq_coding_scheme_authority_type_drop.sql
 \ir ./drop/dq_subject_area_drop.sql
 \ir ./drop/dq_data_domain_drop.sql
+\ir ./drop/dq_catalog_dependency_drop.sql
 \ir ./drop/dq_catalog_drop.sql
 
 -- Assets

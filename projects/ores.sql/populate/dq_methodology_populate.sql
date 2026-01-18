@@ -227,6 +227,36 @@ Code, Source, and Description columns. The CanonicalVersionUri identifies the sp
 version of the coding scheme.'
 );
 
+select ores.upsert_dq_methodologies(
+    'Synthetic Data Generation',
+    'Test data generated programmatically using the ores.synthetic library with seeded random generation',
+    'https://github.com/cieslarmichal/faker-cxx',
+    'Data Generation Approach:
+
+1. LIBRARY
+   Component: ores.synthetic
+   Dependencies: faker-cxx library for realistic random data generation
+
+2. GENERATION PROCESS
+   - Uses seeded random number generator for reproducibility
+   - Generates coherent datasets with proper entity relationships
+   - All foreign key references point to valid entities
+   - Timestamps and audit fields populated consistently
+
+3. REPRODUCIBILITY
+   - Same seed produces identical output
+   - Seed value should be tracked by caller for reproducibility
+   - Default uses random seed if not specified
+
+4. USAGE
+   Code: ores::synthetic::service::catalog_generator_service
+   Options: ores::synthetic::domain::generation_options
+
+Note: This methodology is used for all programmatically generated test data.
+The specific seed and generation parameters are tracked separately from
+the methodology itself.'
+);
+
 -- =============================================================================
 -- Cleanup
 -- =============================================================================

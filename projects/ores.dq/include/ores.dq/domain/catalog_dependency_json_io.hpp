@@ -17,21 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SYNTHETIC_DOMAIN_STUB_HPP
-#define ORES_SYNTHETIC_DOMAIN_STUB_HPP
+#ifndef ORES_DQ_DOMAIN_CATALOG_DEPENDENCY_JSON_IO_HPP
+#define ORES_DQ_DOMAIN_CATALOG_DEPENDENCY_JSON_IO_HPP
 
-#include <string>
+#include <iosfwd>
+#include "ores.dq/domain/catalog_dependency.hpp"
 
-namespace ores::synthetic::domain {
+namespace ores::dq::domain {
 
 /**
- * @brief Stub to be removed.
+ * @brief Dumps the catalog dependency object to a stream in JSON format.
  */
-struct stub final {
-    int version = 0;
-};
-
-std::string stub_function();
+std::ostream& operator<<(std::ostream& s, const catalog_dependency& v);
 
 }
 

@@ -17,23 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.synthetic/domain/stub.hpp"
+#ifndef ORES_SYNTHETIC_GENERATORS_DATASET_GENERATOR_HPP
+#define ORES_SYNTHETIC_GENERATORS_DATASET_GENERATOR_HPP
 
-#include <catch2/catch_test_macros.hpp>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.logging/make_logger.hpp"
+#include <vector>
+#include "ores.dq/domain/dataset.hpp"
 
-namespace {
+namespace ores::synthetic::generators {
 
-const std::string test_suite("ores.synthetic.tests");
-const std::string tags("[domain]");
+/**
+ * @brief Generates a synthetic DQ dataset.
+ *
+ * Creates a complete dataset with randomly generated metadata including
+ * name, description, source system, business context, and lineage info.
+ */
+dq::domain::dataset generate_synthetic_dataset();
+
+/**
+ * @brief Generates N synthetic DQ datasets.
+ *
+ * @param n Number of datasets to generate.
+ * @return Vector of synthetic datasets.
+ */
+std::vector<dq::domain::dataset>
+generate_synthetic_datasets(std::size_t n);
 
 }
 
-using namespace ores::synthetic::domain;
-using namespace ores::logging;
-
-TEST_CASE("create_stub", tags) {
-    auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, warn) << stub_function();
-}
+#endif

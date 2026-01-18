@@ -24,7 +24,6 @@
 #include <vector>
 #include "ores.dq/domain/catalog.hpp"
 #include "ores.dq/domain/dataset.hpp"
-#include "ores.dq/domain/methodology.hpp"
 #include "ores.dq/domain/subject_area.hpp"
 #include "ores.dq/domain/data_domain.hpp"
 #include "ores.dq/domain/origin_dimension.hpp"
@@ -47,8 +46,10 @@ namespace ores::synthetic::domain {
  * - DQ catalogs for organizing datasets
  * - Data domains and subject areas for classification
  * - Dimension values (origin, nature, treatment)
- * - Methodologies for data processing
  * - DQ datasets with proper inter-entity references
+ *
+ * Note: Methodologies are not generated - datasets should reference the
+ * well-known "Synthetic Data Generation" methodology by ID.
  */
 struct synthetic_catalog final {
     /**
@@ -95,11 +96,6 @@ struct synthetic_catalog final {
      * @brief Treatment dimensions for processing classification.
      */
     std::vector<dq::domain::treatment_dimension> treatment_dimensions;
-
-    /**
-     * @brief Methodologies for data processing approaches.
-     */
-    std::vector<dq::domain::methodology> methodologies;
 
     /**
      * @brief DQ datasets with proper references to other entities.

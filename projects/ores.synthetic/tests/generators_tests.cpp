@@ -20,7 +20,6 @@
 #include "ores.synthetic/generators/account_generator.hpp"
 #include "ores.synthetic/generators/catalog_generator.hpp"
 #include "ores.synthetic/generators/dataset_generator.hpp"
-#include "ores.synthetic/generators/methodology_generator.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -130,33 +129,4 @@ TEST_CASE("generate_synthetic_datasets_creates_multiple", generators_tags) {
     }
 
     BOOST_LOG_SEV(lg, info) << "Generated " << count << " datasets";
-}
-
-TEST_CASE("generate_synthetic_methodology_creates_valid_methodology", generators_tags) {
-    auto lg(make_logger(test_suite));
-    auto methodology = generate_synthetic_methodology();
-
-    CHECK(methodology.version == 1);
-    CHECK(!methodology.id.is_nil());
-    CHECK(!methodology.name.empty());
-    CHECK(!methodology.description.empty());
-    CHECK(!methodology.recorded_by.empty());
-    CHECK(methodology.change_commentary == "Synthetic test data");
-
-    BOOST_LOG_SEV(lg, info) << "Generated methodology: " << methodology.name;
-}
-
-TEST_CASE("generate_synthetic_methodologies_creates_multiple", generators_tags) {
-    auto lg(make_logger(test_suite));
-    const std::size_t count = 5;
-    auto methodologies = generate_synthetic_methodologies(count);
-
-    CHECK(methodologies.size() == count);
-
-    for (const auto& methodology : methodologies) {
-        CHECK(!methodology.id.is_nil());
-        CHECK(!methodology.name.empty());
-    }
-
-    BOOST_LOG_SEV(lg, info) << "Generated " << count << " methodologies";
 }

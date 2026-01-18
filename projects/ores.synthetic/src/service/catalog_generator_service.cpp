@@ -99,17 +99,6 @@ const std::array<std::pair<std::string, std::string>, 4> treatment_data = {{
     {"AGGREGATED", "Summarized or rolled-up data"}
 }};
 
-const std::array<std::pair<std::string, std::string>, 8> methodology_data = {{
-    {"Mark-to-Market", "Standard mark-to-market valuation methodology"},
-    {"FIFO Costing", "First-in-first-out cost basis calculation"},
-    {"VWAP", "Volume-weighted average price calculation"},
-    {"Time Decay", "Time-based depreciation methodology"},
-    {"Linear Interpolation", "Linear interpolation for missing data points"},
-    {"Moving Average", "Rolling window average calculation"},
-    {"Risk Attribution", "Multi-factor risk attribution methodology"},
-    {"PnL Attribution", "Profit and loss attribution to risk factors"}
-}};
-
 const std::array<std::string, 20> dataset_names = {{
     "Currency Reference Data",
     "Country Master File",
@@ -260,28 +249,6 @@ catalog_generator_service::generate(const domain::generation_options& options) {
         result.treatment_dimensions.push_back(td);
     }
 
-    // Generate methodologies
-    for (std::size_t i = 0; i < options.methodology_count && i < methodology_data.size(); ++i) {
-        dq::domain::methodology meth;
-        meth.version = 1;
-        meth.id = ctx.generate_uuid();
-        meth.name = methodology_data[i].first;
-        meth.description = methodology_data[i].second;
-        if (ctx.random_bool(0.6)) {
-            std::ostringstream oss;
-            oss << "https://docs.example.com/methodologies/"
-                << std::to_string(i + 1);
-            meth.logic_reference = oss.str();
-        }
-        if (ctx.random_bool(0.5)) {
-            meth.implementation_details = "Implemented using standard algorithms and validated against industry benchmarks.";
-        }
-        meth.recorded_by = pick_username();
-        meth.change_commentary = "Initial methodology definition";
-        meth.recorded_at = ctx.past_timepoint();
-        result.methodologies.push_back(meth);
-    }
-
     // Generate datasets with proper references
     for (std::size_t i = 0; i < options.dataset_count && i < dataset_names.size(); ++i) {
         dq::domain::dataset ds;
@@ -314,9 +281,9 @@ catalog_generator_service::generate(const domain::generation_options& options) {
             ds.treatment_code = ctx.pick(result.treatment_dimensions).code;
         }
 
-        // Optional methodology link
-        if (ctx.random_bool(0.4) && !result.methodologies.empty()) {
-            ds.methodology_id = ctx.pick(result.methodologies).id;
+        // Link to methodology if provided
+        if (options.methodology_id) {
+            ds.methodology_id = *options.methodology_id;
         }
 
         ds.name = dataset_names[i];

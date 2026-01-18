@@ -25,6 +25,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <boost/uuid/uuid.hpp>
 
 namespace ores::synthetic::domain {
 
@@ -78,9 +79,15 @@ struct generation_options final {
     std::size_t treatment_dimension_count = 4;
 
     /**
-     * @brief Number of methodologies to generate.
+     * @brief Optional methodology ID to link to generated datasets.
+     *
+     * If provided, all generated datasets will reference this methodology.
+     * Typically this would be the ID of the "Synthetic Data Generation"
+     * methodology, looked up by name before calling the generator.
+     *
+     * If not provided, datasets will not have a methodology linked.
      */
-    std::size_t methodology_count = 5;
+    std::optional<boost::uuids::uuid> methodology_id;
 
     /**
      * @brief Number of DQ datasets to generate.

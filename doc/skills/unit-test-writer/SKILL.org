@@ -182,7 +182,7 @@ Domain tests typically include:
        const std::string json_output = os.str();
 
        CHECK(!json_output.empty());
-       CHECK(json_output.find("expected_field") != std::string::npos);
+       CHECK(json_output.contains("expected_field"));
    }
    #+end_src
 
@@ -291,6 +291,16 @@ Use appropriate tags for test categorization:
 9. **No SECTION**: Do not use Catch2 =SECTION= blocks. Create separate =TEST_CASE= for
    each scenario instead. SECTIONs make it harder to identify which test failed in
    the logs because the test case name alone doesn't indicate the failing section.
+10. **String containment**: Use C++23's =std::string::contains()= method instead of
+    =find() != std::string::npos= for substring checks. It's cleaner and more readable:
+
+    #+begin_src cpp
+    // Good: Use contains()
+    CHECK(output.contains("expected"));
+
+    // Bad: Avoid npos pattern
+    CHECK(output.find("expected") != std::string::npos);
+    #+end_src
 
 * Artefacts                                                        :noexport:
 

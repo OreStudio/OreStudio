@@ -50,6 +50,8 @@ TEST_CASE("create_subject_area_with_valid_fields", tags) {
     CHECK(sut.name == "Currencies");
     CHECK(sut.domain_name == "Reference Data");
     CHECK(sut.description == "Currency codes and related information");
+    CHECK(sut.recorded_by == "admin");
+    CHECK(sut.change_commentary == "Initial creation");
 }
 
 TEST_CASE("subject_area_convert_single_to_table", tags) {
@@ -68,5 +70,8 @@ TEST_CASE("subject_area_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
-    CHECK(table.find("Countries") != std::string::npos);
+    CHECK(table.contains("Name"));
+    CHECK(table.contains("Description"));
+    CHECK(table.contains("Countries"));
+    CHECK(table.contains("Country codes and geographic data"));
 }

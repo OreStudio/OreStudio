@@ -24,25 +24,15 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
-#include <iomanip>
-#include <chrono>
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/faker/datetime.hpp"
 
 namespace {
 
 const std::string_view test_suite("ores.iam.tests");
 const std::string tags("[domain]");
 
-std::chrono::system_clock::time_point make_timepoint(int year, int month, int day, int hour = 0) {
-    std::tm tm = {};
-    tm.tm_year = year - 1900;
-    tm.tm_mon = month - 1;
-    tm.tm_mday = day;
-    tm.tm_hour = hour;
-    tm.tm_min = 0;
-    tm.tm_sec = 0;
-    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
-}
+using ores::utility::faker::datetime;
 
 }
 
@@ -52,7 +42,7 @@ using namespace ores::logging;
 TEST_CASE("create_account_role_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto expected_time = make_timepoint(2025, 1, 15, 10);
+    const auto expected_time = datetime::make_timepoint(2025, 1, 15, 10);
     account_role sut;
     sut.account_id = boost::uuids::random_generator()();
     sut.role_id = boost::uuids::random_generator()();
@@ -78,7 +68,7 @@ TEST_CASE("create_account_role_with_specific_uuids", tags) {
     sut.account_id = account_uuid;
     sut.role_id = role_uuid;
     sut.assigned_by = "system";
-    sut.assigned_at = make_timepoint(2025, 1, 1);
+    sut.assigned_at = datetime::make_timepoint(2025, 1, 1);
     BOOST_LOG_SEV(lg, info) << "Account role - account_id: " << sut.account_id
         << ", role_id: " << sut.role_id << ", assigned_by: " << sut.assigned_by;
 
@@ -98,7 +88,7 @@ TEST_CASE("account_role_same_account_multiple_roles", tags) {
         ar.account_id = account_id;
         ar.role_id = boost::uuids::random_generator()();
         ar.assigned_by = "admin";
-        ar.assigned_at = make_timepoint(2025, 1, 15 + i, 10);
+        ar.assigned_at = datetime::make_timepoint(2025, 1, 15 + i, 10);
         assignments.push_back(ar);
         BOOST_LOG_SEV(lg, info) << "Account role " << i << " - account_id: "
             << ar.account_id << ", role_id: " << ar.role_id;
@@ -121,7 +111,7 @@ TEST_CASE("account_role_same_role_multiple_accounts", tags) {
         ar.account_id = boost::uuids::random_generator()();
         ar.role_id = role_id;
         ar.assigned_by = "admin";
-        ar.assigned_at = make_timepoint(2025, 1, 15, 10 + i);
+        ar.assigned_at = datetime::make_timepoint(2025, 1, 15, 10 + i);
         assignments.push_back(ar);
         BOOST_LOG_SEV(lg, info) << "Account role " << i << " - account_id: "
             << ar.account_id << ", role_id: " << ar.role_id;
@@ -140,7 +130,7 @@ TEST_CASE("create_account_role_with_faker", tags) {
     sut.account_id = boost::uuids::random_generator()();
     sut.role_id = boost::uuids::random_generator()();
     sut.assigned_by = std::string(faker::internet::username());
-    sut.assigned_at = make_timepoint(
+    sut.assigned_at = datetime::make_timepoint(
         2025,
         faker::number::integer(1, 12),
         faker::number::integer(1, 28),
@@ -163,7 +153,7 @@ TEST_CASE("create_multiple_random_account_roles", tags) {
         sut.role_id = boost::uuids::random_generator()();
         sut.assigned_by = std::string(faker::person::firstName()) + " " +
             std::string(faker::person::lastName());
-        sut.assigned_at = make_timepoint(2025, 1, faker::number::integer(1, 28), 10);
+        sut.assigned_at = datetime::make_timepoint(2025, 1, faker::number::integer(1, 28), 10);
         BOOST_LOG_SEV(lg, info) << "Account role " << i << " - account_id: "
             << sut.account_id << ", role_id: " << sut.role_id
             << ", assigned_by: " << sut.assigned_by;
@@ -199,7 +189,7 @@ TEST_CASE("account_role_assignment_with_different_assigners", tags) {
         sut.account_id = boost::uuids::random_generator()();
         sut.role_id = boost::uuids::random_generator()();
         sut.assigned_by = assigner;
-        sut.assigned_at = make_timepoint(2025, 1, 15, 10);
+        sut.assigned_at = datetime::make_timepoint(2025, 1, 15, 10);
         BOOST_LOG_SEV(lg, info) << "Account role assigned by: " << sut.assigned_by;
 
         CHECK(sut.assigned_by == assigner);

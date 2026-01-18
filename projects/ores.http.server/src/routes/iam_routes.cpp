@@ -25,7 +25,7 @@
 #include "ores.http/domain/jwt_claims.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/account_json.hpp"
-#include "ores.dq/domain/change_reason_constants.hpp"
+#include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.iam/domain/role_json.hpp"
 #include "ores.iam/domain/permission_json.hpp"
 #include "ores.iam/domain/permission.hpp"
@@ -48,7 +48,7 @@ namespace ores::http_server::routes {
 using namespace ores::logging;
 using namespace ores::http::domain;
 namespace asio = boost::asio;
-namespace reason = dq::domain::change_reason_constants;
+namespace reason = database::domain::change_reason_constants;
 
 iam_routes::iam_routes(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,

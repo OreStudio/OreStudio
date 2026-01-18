@@ -57,6 +57,7 @@ TEST_CASE("create_change_reason_with_valid_fields", tags) {
     CHECK(sut.applies_to_delete == false);
     CHECK(sut.requires_commentary == true);
     CHECK(sut.display_order == 10);
+    CHECK(sut.recorded_by == "admin");
 }
 
 TEST_CASE("change_reason_convert_single_to_table", tags) {
@@ -75,5 +76,8 @@ TEST_CASE("change_reason_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
-    CHECK(table.find("system.new") != std::string::npos);
+    CHECK(table.contains("Code"));
+    CHECK(table.contains("Description"));
+    CHECK(table.contains("system.new"));
+    CHECK(table.contains("Initial record creation"));
 }

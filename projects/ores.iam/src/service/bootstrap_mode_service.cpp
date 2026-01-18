@@ -21,13 +21,13 @@
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 
 #include <algorithm>
-#include "ores.dq/domain/change_reason_constants.hpp"
+#include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.iam/domain/role.hpp"
 
 namespace ores::iam::service {
 
 using namespace ores::logging;
-namespace reason = dq::domain::change_reason_constants;
+namespace reason = database::domain::change_reason_constants;
 
 bootstrap_mode_service::bootstrap_mode_service(database::context ctx,
     std::shared_ptr<authorization_service> auth_service)

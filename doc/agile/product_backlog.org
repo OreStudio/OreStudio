@@ -67,6 +67,23 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Add claude continuous learning skill                               :code:
+
+#+begin_quote
+Every time you use an AI coding agent, it starts from zero. You spend an hour
+debugging some obscure error, the agent figures it out, session ends. Next time
+you hit the same issue? Another hour.
+
+This skill fixes that. When Claude Code discovers something non-obvious (a
+debugging technique, a workaround, some project-specific pattern), it saves that
+knowledge as a new skill. Next time a similar problem comes up, the skill gets
+loaded automatically.
+#+end_quote
+
+Links:
+
+- [[https://github.com/blader/claude-code-continuous-learning-skill][GH: claude-code-continuous-learning-skill]]
+
 *** Add a system clock                                                 :code:
 
 At present we are using "now". We should have a ores function for this so that

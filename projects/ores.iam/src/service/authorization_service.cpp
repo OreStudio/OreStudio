@@ -23,7 +23,7 @@
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
-#include "ores.dq/domain/change_reason_constants.hpp"
+#include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.iam/domain/permission.hpp"
 #include "ores.iam/eventing/role_assigned_event.hpp"
 #include "ores.iam/eventing/role_revoked_event.hpp"
@@ -32,7 +32,7 @@
 namespace ores::iam::service {
 
 using namespace ores::logging;
-namespace reason = dq::domain::change_reason_constants;
+namespace reason = database::domain::change_reason_constants;
 
 authorization_service::authorization_service(context ctx, event_bus* event_bus)
     : permission_repo_(ctx),
@@ -311,14 +311,14 @@ authorization_service::get_effective_permissions(
 
 bool authorization_service::has_permission(
     const boost::uuids::uuid& account_id,
-    const std::string& permission_code) {
+    std::string_view permission_code) {
     auto permissions = get_effective_permissions(account_id);
     return check_permission(permissions, permission_code);
 }
 
 bool authorization_service::check_permission(
     const std::vector<std::string>& permissions,
-    const std::string& required_permission) {
+    std::string_view required_permission) {
     // Precondition: permissions vector must be sorted (guaranteed by
     // get_effective_permissions which uses ORDER BY in the SQL query)
 

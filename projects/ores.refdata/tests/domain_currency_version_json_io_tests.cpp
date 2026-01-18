@@ -20,10 +20,10 @@
 #include "ores.refdata/domain/currency_version.hpp"
 #include "ores.refdata/domain/currency_version_history.hpp"
 
-#include <chrono>
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/faker/datetime.hpp"
 #include "ores.refdata/domain/currency_version_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata/domain/currency_version_history_json_io.hpp" // IWYU pragma: keep.
 
@@ -32,16 +32,7 @@ namespace {
 const std::string_view test_suite("ores.refdata.tests");
 const std::string tags("[domain][json]");
 
-std::chrono::system_clock::time_point make_timepoint(int year, int month, int day) {
-    std::tm tm = {};
-    tm.tm_year = year - 1900;
-    tm.tm_mon = month - 1;
-    tm.tm_mday = day;
-    tm.tm_hour = 12;
-    tm.tm_min = 0;
-    tm.tm_sec = 0;
-    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
-}
+using ores::utility::faker::datetime;
 
 }
 
@@ -65,10 +56,10 @@ TEST_CASE("currency_version_serialization_to_json", tags) {
     cv.data.format = "%3% %1$.2f";
     cv.data.currency_type = "Fiat";
     cv.data.recorded_by = "admin";
-    cv.data.recorded_at = make_timepoint(2025, 1, 15);
+    cv.data.recorded_at = datetime::make_timepoint(2025, 1, 15);
     cv.version_number = 3;
     cv.recorded_by = "system";
-    cv.recorded_at = make_timepoint(2025, 1, 20);
+    cv.recorded_at = datetime::make_timepoint(2025, 1, 20);
     cv.change_summary = "Updated symbol format";
 
     BOOST_LOG_SEV(lg, info) << "Currency version: " << cv;
@@ -100,10 +91,10 @@ TEST_CASE("currency_version_json_with_all_fields", tags) {
     cv.data.format = "%3% %1$.2f";
     cv.data.currency_type = "Fiat";
     cv.data.recorded_by = "admin";
-    cv.data.recorded_at = make_timepoint(2025, 2, 1);
+    cv.data.recorded_at = datetime::make_timepoint(2025, 2, 1);
     cv.version_number = 1;
     cv.recorded_by = "creator";
-    cv.recorded_at = make_timepoint(2025, 2, 1);
+    cv.recorded_at = datetime::make_timepoint(2025, 2, 1);
     cv.change_summary = "Created currency";
 
     std::ostringstream os;
@@ -171,10 +162,10 @@ TEST_CASE("currency_version_history_serialization_to_json", tags) {
     v1.data.format = "%3% %1$.2f";
     v1.data.currency_type = "Fiat";
     v1.data.recorded_by = "admin";
-    v1.data.recorded_at = make_timepoint(2025, 1, 1);
+    v1.data.recorded_at = datetime::make_timepoint(2025, 1, 1);
     v1.version_number = 1;
     v1.recorded_by = "admin";
-    v1.recorded_at = make_timepoint(2025, 1, 1);
+    v1.recorded_at = datetime::make_timepoint(2025, 1, 1);
     v1.change_summary = "Created currency";
     cvh.versions.push_back(v1);
 
@@ -190,10 +181,10 @@ TEST_CASE("currency_version_history_serialization_to_json", tags) {
     v2.data.format = "%3% %1$.2f";
     v2.data.currency_type = "Fiat";
     v2.data.recorded_by = "editor";
-    v2.data.recorded_at = make_timepoint(2025, 1, 15);
+    v2.data.recorded_at = datetime::make_timepoint(2025, 1, 15);
     v2.version_number = 2;
     v2.recorded_by = "editor";
-    v2.recorded_at = make_timepoint(2025, 1, 15);
+    v2.recorded_at = datetime::make_timepoint(2025, 1, 15);
     v2.change_summary = "Updated name";
     cvh.versions.push_back(v2);
 

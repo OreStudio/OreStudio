@@ -17,44 +17,44 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-17 Sat 22:47], for Saturday, January 17, 2026.
+#+CAPTION: Clock summary at [2026-01-18 Sun 10:12], for Sunday, January 18, 2026.
 |      | <75>                         |        |      |      |       |
 | Tags | Headline                     | Time   |      |      |     % |
 |------+------------------------------+--------+------+------+-------|
-|      | *Total time*                 | *4:36* |      |      | 100.0 |
+|      | *Total time*                 | *1:32* |      |      | 100.0 |
 |------+------------------------------+--------+------+------+-------|
-|      | Stories                      | 4:36   |      |      | 100.0 |
-|      | Active                       |        | 4:36 |      | 100.0 |
-| code | Add UI support for data sets |        |      | 4:36 | 100.0 |
+|      | Stories                      | 1:32   |      |      | 100.0 |
+|      | Active                       |        | 1:32 |      | 100.0 |
+| code | Add UI support for data sets |        |      | 1:32 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-17 Sat 22:47]
-|       | <75>                                               |         |       |      |       |
-| Tags  | Headline                                           | Time    |       |      |     % |
-|-------+----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                       | *52:44* |       |      | 100.0 |
-|-------+----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                            | 52:44   |       |      | 100.0 |
-|       | Active                                             |         | 52:44 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       | 2:11 |   4.1 |
-| infra | OCR scan notebooks for this sprint                 |         |       | 6:46 |  12.8 |
-| infra | Clean up system models and component models        |         |       | 0:28 |   0.9 |
-| code  | Add missing entities to CLI                        |         |       | 1:55 |   3.6 |
-| infra | Refactor PR related skills                         |         |       | 0:18 |   0.6 |
-| code  | Fix valgrind errors in nightly                     |         |       | 1:25 |   2.7 |
-| code  | Create security module                             |         |       | 1:23 |   2.6 |
-| code  | Prodigy should support multiple environments       |         |       | 0:19 |   0.6 |
-| code  | Add named environment sets                         |         |       | 4:17 |   8.1 |
-| code  | Rename risk to refdata                             |         |       | 0:43 |   1.4 |
-| code  | Prefix database entities with component            |         |       | 3:15 |   6.2 |
-| code  | Implement data quality                             |         |       | 9:42 |  18.4 |
-| code  | Improvements to connection browser                 |         |       | 2:05 |   4.0 |
-| code  | Disconnect shows reconnect message                 |         |       | 2:24 |   4.6 |
-| infra | Refactor documentation                             |         |       | 6:29 |  12.3 |
-| code  | Add UI support for data sets                       |         |       | 8:44 |  16.6 |
-| code  | Implement party related entities at database level |         |       | 0:20 |   0.6 |
+#+CAPTION: Clock summary at [2026-01-18 Sun 10:12]
+|       | <75>                                               |         |       |       |       |
+| Tags  | Headline                                           | Time    |       |       |     % |
+|-------+----------------------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                                       | *54:16* |       |       | 100.0 |
+|-------+----------------------------------------------------+---------+-------+-------+-------|
+|       | Stories                                            | 54:16   |       |       | 100.0 |
+|       | Active                                             |         | 54:16 |       | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       |  2:11 |   4.0 |
+| infra | OCR scan notebooks for this sprint                 |         |       |  6:46 |  12.5 |
+| infra | Clean up system models and component models        |         |       |  0:28 |   0.9 |
+| code  | Add missing entities to CLI                        |         |       |  1:55 |   3.5 |
+| infra | Refactor PR related skills                         |         |       |  0:18 |   0.6 |
+| code  | Fix valgrind errors in nightly                     |         |       |  1:25 |   2.6 |
+| code  | Create security module                             |         |       |  1:23 |   2.5 |
+| code  | Prodigy should support multiple environments       |         |       |  0:19 |   0.6 |
+| code  | Add named environment sets                         |         |       |  4:17 |   7.9 |
+| code  | Rename risk to refdata                             |         |       |  0:43 |   1.3 |
+| code  | Prefix database entities with component            |         |       |  3:15 |   6.0 |
+| code  | Implement data quality                             |         |       |  9:42 |  17.9 |
+| code  | Improvements to connection browser                 |         |       |  2:05 |   3.8 |
+| code  | Disconnect shows reconnect message                 |         |       |  2:24 |   4.4 |
+| infra | Refactor documentation                             |         |       |  6:29 |  11.9 |
+| code  | Add UI support for data sets                       |         |       | 10:16 |  18.9 |
+| code  | Implement party related entities at database level |         |       |  0:20 |   0.6 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -813,6 +813,7 @@ Highlights:
 
 *** STARTED Add UI support for data sets                               :code:
     :LOGBOOK:
+    CLOCK: [2026-01-18 Sun 08:40]--[2026-01-18 Sun 10:12] =>  1:32
     CLOCK: [2026-01-17 Sat 22:28]--[2026-01-17 Sat 22:47] =>  0:19
     CLOCK: [2026-01-17 Sat 18:10]--[2026-01-17 Sat 22:27] =>  4:17
     CLOCK: [2026-01-16 Fri 16:27]--[2026-01-16 Fri 17:23] =>  0:56
@@ -970,6 +971,77 @@ Grok:
 HF:
 
 [[./mock_data_librarian_hf.png]]
+
+**** Address review comments
+
+#+begin_quote
+This pull request significantly enhances the system's test suite and
+architectural design. It improves the quality and determinism of Data Quality
+(DQ) domain type tests through more thorough assertions and fixed time point
+generation. Crucially, it addresses and resolves a circular dependency between
+the DQ and Identity and Access Management (IAM) components by centralizing
+shared constants, leading to a more robust and maintainable codebase. The
+changes also include updates to internal documentation and system diagrams to
+reflect these structural improvements.
+
+Highlights:
+
+- Improved Test Assertions for DQ Domain Types: Enhanced test assertions for
+  Data Quality (DQ) domain types, including explicit checks for audit fields
+  like 'recorded_by' and 'change_commentary', as well as verification of table
+  headers and field values in table conversion tests.
+- Deterministic Time Values in Tests: Introduced a 'make_timepoint' helper
+  function to generate fixed, deterministic time values for
+  'std::chrono::system_clock::time_point' fields in tests, ensuring
+  repeatability and reliability.
+- Updated Skill Documentation: Added new guidance to skill documentation for
+  binary protocol developers and domain type creators, covering best practices
+  for passing authorization services to message handlers and comprehensive
+  domain type testing.
+- Circular Dependency Resolution: Resolved a circular dependency between the
+  'ores.dq' and 'ores.iam' components by relocating the
+  'change_reason_constants.hpp' header to the more foundational 'ores.database'
+  module, improving architectural modularity.
+- System Model and CMake Dependency Updates: Synchronized the system model
+  diagrams ('ores.puml') and CMake configurations across various projects
+  ('ores.cli', 'ores.comms.shell', 'ores.dq', 'ores.iam') to accurately reflect
+  the updated component dependencies, particularly concerning the DQ subsystem
+  and the centralized change reason constants.
+#+end_quote
+
+**** Messaging
+
+#+begin_quote
+This pull request significantly expands the ORE Studio binary protocol by
+integrating a new Data Quality (DQ) subsystem. This enhancement provides robust
+messaging capabilities for managing a wide array of data quality entities,
+centralizing related functionalities. The changes also involve a re-architecture
+of existing change management features, moving them into the new DQ domain,
+which necessitates a protocol version update to ensure compatibility and reflect
+the breaking nature of this re-organization.
+
+Highlights:
+
+- New Data Quality (DQ) Subsystem: A dedicated subsystem (0x6000-0x6FFF) has
+  been introduced to the ORE Studio binary protocol to manage Data Quality
+  related messages and entities.
+- Comprehensive DQ Messaging Protocols: New messaging protocols are added to
+  support CRUD (Create, Read, Update, Delete) and history operations for various
+  data quality entities, including catalogs, data domains, subject areas,
+  datasets, methodologies, coding schemes, and dimensions (nature, origin,
+  treatment).
+- Migration of Change Management Messages: Existing change management messages
+  (for change reasons and categories) have been relocated from the IAM subsystem
+  (0x2050-0x2061) to the new DQ subsystem (0x6070-0x6081). This is a breaking
+  change in message type IDs.
+- Binary Protocol Version Update: The ORE Studio binary protocol version has
+  been incremented from 21.3 to 22.0 to reflect the introduction of the new DQ
+  subsystem and the breaking changes associated with message re-organization.
+- Dedicated DQ Message Handling: A new dq_message_handler and its registrar have
+  been implemented to process all incoming messages within the new Data Quality
+  subsystem, ensuring proper routing and business logic execution for DQ-related
+  requests.
+#+end_quote
 
 **** Data catalog work
 

@@ -47,6 +47,7 @@ TEST_CASE("create_change_reason_category_with_valid_fields", tags) {
     CHECK(sut.version == 1);
     CHECK(sut.code == "static_data");
     CHECK(sut.description == "Static/reference data changes");
+    CHECK(sut.recorded_by == "admin");
 }
 
 TEST_CASE("change_reason_category_convert_single_to_table", tags) {
@@ -64,5 +65,8 @@ TEST_CASE("change_reason_category_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
-    CHECK(table.find("system") != std::string::npos);
+    CHECK(table.contains("Code"));
+    CHECK(table.contains("Description"));
+    CHECK(table.contains("system"));
+    CHECK(table.contains("System-level operations"));
 }

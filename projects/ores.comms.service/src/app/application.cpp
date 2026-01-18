@@ -296,7 +296,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     ores::variability::messaging::registrar::register_handlers(*srv, ctx);
     ores::assets::messaging::registrar::register_handlers(*srv, ctx);
     ores::telemetry::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
-    ores::dq::messaging::registrar::register_handlers(*srv, ctx);
+    ores::dq::messaging::registrar::register_handlers(*srv, ctx, auth_service);
 
     // Register subscription handler for subscribe/unsubscribe/list_event_channels messages
     auto subscription_handler =

@@ -20,10 +20,10 @@
 #ifndef ORES_DQ_MESSAGING_REGISTRAR_HPP
 #define ORES_DQ_MESSAGING_REGISTRAR_HPP
 
-#include <memory>
 #include "ores.comms/net/server.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.iam/service/authorization_service.hpp"
 
 namespace ores::dq::messaging {
 
@@ -35,6 +35,7 @@ namespace ores::dq::messaging {
  *
  * @param server The server to register handlers with
  * @param ctx Database context for repository access
+ * @param auth_service Authorization service for permission checks
  */
 class registrar {
 private:
@@ -47,7 +48,8 @@ private:
 
 public:
     static void register_handlers(comms::net::server& server,
-        database::context ctx);
+        database::context ctx,
+        std::shared_ptr<iam::service::authorization_service> auth_service);
 };
 
 }

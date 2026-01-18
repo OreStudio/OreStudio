@@ -95,6 +95,66 @@ namespace permissions {
     constexpr auto roles_assign = "roles:assign";
     constexpr auto roles_revoke = "roles:revoke";
 
+    // Data Quality - Change reasons
+    constexpr auto change_reasons_read = "change_reasons:read";
+    constexpr auto change_reasons_write = "change_reasons:write";
+    constexpr auto change_reasons_delete = "change_reasons:delete";
+
+    // Data Quality - Change reason categories
+    constexpr auto change_reason_categories_read = "change_reason_categories:read";
+    constexpr auto change_reason_categories_write = "change_reason_categories:write";
+    constexpr auto change_reason_categories_delete = "change_reason_categories:delete";
+
+    // Data Quality - Catalogs
+    constexpr auto catalogs_read = "catalogs:read";
+    constexpr auto catalogs_write = "catalogs:write";
+    constexpr auto catalogs_delete = "catalogs:delete";
+
+    // Data Quality - Data domains
+    constexpr auto data_domains_read = "data_domains:read";
+    constexpr auto data_domains_write = "data_domains:write";
+    constexpr auto data_domains_delete = "data_domains:delete";
+
+    // Data Quality - Subject areas
+    constexpr auto subject_areas_read = "subject_areas:read";
+    constexpr auto subject_areas_write = "subject_areas:write";
+    constexpr auto subject_areas_delete = "subject_areas:delete";
+
+    // Data Quality - Datasets
+    constexpr auto datasets_read = "datasets:read";
+    constexpr auto datasets_write = "datasets:write";
+    constexpr auto datasets_delete = "datasets:delete";
+
+    // Data Quality - Methodologies
+    constexpr auto methodologies_read = "methodologies:read";
+    constexpr auto methodologies_write = "methodologies:write";
+    constexpr auto methodologies_delete = "methodologies:delete";
+
+    // Data Quality - Coding schemes
+    constexpr auto coding_schemes_read = "coding_schemes:read";
+    constexpr auto coding_schemes_write = "coding_schemes:write";
+    constexpr auto coding_schemes_delete = "coding_schemes:delete";
+
+    // Data Quality - Coding scheme authority types
+    constexpr auto coding_scheme_authority_types_read = "coding_scheme_authority_types:read";
+    constexpr auto coding_scheme_authority_types_write = "coding_scheme_authority_types:write";
+    constexpr auto coding_scheme_authority_types_delete = "coding_scheme_authority_types:delete";
+
+    // Data Quality - Nature dimensions
+    constexpr auto nature_dimensions_read = "nature_dimensions:read";
+    constexpr auto nature_dimensions_write = "nature_dimensions:write";
+    constexpr auto nature_dimensions_delete = "nature_dimensions:delete";
+
+    // Data Quality - Origin dimensions
+    constexpr auto origin_dimensions_read = "origin_dimensions:read";
+    constexpr auto origin_dimensions_write = "origin_dimensions:write";
+    constexpr auto origin_dimensions_delete = "origin_dimensions:delete";
+
+    // Data Quality - Treatment dimensions
+    constexpr auto treatment_dimensions_read = "treatment_dimensions:read";
+    constexpr auto treatment_dimensions_write = "treatment_dimensions:write";
+    constexpr auto treatment_dimensions_delete = "treatment_dimensions:delete";
+
     // Wildcard - grants all permissions
     constexpr auto all = "*";
 }

@@ -403,10 +403,20 @@ on delete to "ores"."{component}_{entity}_tbl" do instead
 
 Follow the pattern in =projects/ores.sql/schema/iam_accounts_create.sql=.
 
-** Step 2: Create notification trigger (if needed)
+** Step 2: Create notification trigger
 
-If the table needs real-time change notifications, create
-=projects/ores.sql/schema/{component}_{entity}_notify_trigger.sql=:
+Create a notification trigger to enable real-time UI updates when data changes.
+This is *required* for all entities that will be displayed in the Qt UI, as it
+forms the first stage of the event pipeline:
+
+#+begin_example
+Database Trigger (pg_notify) → Event Source → Event Bus → Clients
+#+end_example
+
+Without the trigger, clients won't receive change notifications and their UI
+will become stale without any indication.
+
+Create =projects/ores.sql/schema/{component}_{entity}_notify_trigger.sql=:
 
 #+begin_src sql
 create or replace function ores.{component}_{entity}_notify_fn()
@@ -458,7 +468,7 @@ drop function if exists ores.{component}_{entity}_insert_fn();
 drop table if exists "ores"."{component}_{entity}_tbl";
 #+end_src
 
-If you created a notify trigger, also create
+Also create the notify trigger drop script
 =projects/ores.sql/drop/{component}_{entity}_notify_trigger_drop.sql=:
 
 #+begin_src sql

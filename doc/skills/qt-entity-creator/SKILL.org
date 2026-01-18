@@ -25,6 +25,8 @@ Prerequisites:
 - The domain type must already exist (see [[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]] skill)
 - The messaging protocol for CRUD operations must exist (see [[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][binary-protocol-developer]] skill)
 - The server-side handlers must be implemented
+- *If real-time updates are needed*: The eventing infrastructure must exist (see
+  "Eventing Infrastructure" section in [[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][binary-protocol-developer]] skill)
 
 
 * How to use this skill
@@ -1200,6 +1202,15 @@ private:
 *** Implementation patterns
 
 **** Constructor - event subscription
+
+*Important:* The event subscription code below requires the eventing infrastructure
+to be in place. Before implementing this, ensure:
+1. Database notification trigger exists (see [[id:7e4c9d3a-2f1b-4e5c-8d6a-9f2e3c4b5a6d][sql-schema-creator]] skill)
+2. Event type is defined with =event_traits= specialization
+3. Event is registered in comms service =application.cpp=
+
+For details, see the "Eventing Infrastructure" section in the
+[[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][binary-protocol-developer]] skill.
 
 #+begin_src cpp
 <Entity>Controller::<Entity>Controller(/* params */)

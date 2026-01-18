@@ -20,6 +20,7 @@
 #include "ores.dq/messaging/dq_message_handler.hpp"
 
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.iam/domain/permission.hpp"
 #include "ores.dq/messaging/change_management_protocol.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.dq/messaging/dataset_protocol.hpp"
@@ -32,8 +33,10 @@ using namespace ores::logging;
 using comms::messaging::message_type;
 
 dq_message_handler::dq_message_handler(database::context ctx,
-    std::shared_ptr<comms::service::auth_session_service> sessions)
+    std::shared_ptr<comms::service::auth_session_service> sessions,
+    std::shared_ptr<iam::service::authorization_service> auth_service)
     : ctx_(ctx), sessions_(std::move(sessions)),
+      auth_service_(std::move(auth_service)),
       change_management_service_(ctx),
       data_organization_service_(ctx),
       dataset_service_(ctx),
@@ -192,6 +195,30 @@ dq_message_handler::get_authenticated_session(
     return *session;
 }
 
+dq_message_handler::auth_check_result
+dq_message_handler::check_authorization(
+    const std::string& remote_address,
+    std::string_view permission,
+    std::string_view operation_name) {
+
+    auto session_result = get_authenticated_session(remote_address, operation_name);
+    if (!session_result) {
+        return session_result;
+    }
+
+    const auto& session = *session_result;
+    if (!auth_service_->has_permission(session.account_id, permission)) {
+        BOOST_LOG_SEV(lg(), warn) << operation_name
+                                  << " denied: account "
+                                  << session.account_id
+                                  << " lacks permission "
+                                  << permission;
+        return std::unexpected(ores::utility::serialization::error_code::authorization_failed);
+    }
+
+    return session;
+}
+
 // ============================================================================
 // Change Management Handlers
 // ============================================================================
@@ -291,8 +318,8 @@ handle_save_change_reason_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing save_change_reason_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
-        "Save change reason");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::change_reasons_write, "Save change reason");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -333,8 +360,8 @@ handle_delete_change_reason_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_change_reason_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
-        "Delete change reason");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::change_reasons_delete, "Delete change reason");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -412,8 +439,8 @@ handle_save_change_reason_category_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing save_change_reason_category_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
-        "Save change reason category");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::change_reason_categories_write, "Save change reason category");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -456,8 +483,8 @@ handle_delete_change_reason_category_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_change_reason_category_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
-        "Delete change reason category");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::change_reason_categories_delete, "Delete change reason category");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -565,7 +592,8 @@ handle_save_catalog_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing save_catalog_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address, "Save catalog");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::catalogs_write, "Save catalog");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -603,7 +631,8 @@ handle_delete_catalog_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_catalog_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address, "Delete catalog");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::catalogs_delete, "Delete catalog");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -708,8 +737,8 @@ handle_save_data_domain_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing save_data_domain_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
-        "Save data domain");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::data_domains_write, "Save data domain");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -748,8 +777,8 @@ handle_delete_data_domain_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_data_domain_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
-        "Delete data domain");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::data_domains_delete, "Delete data domain");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -884,8 +913,8 @@ handle_save_subject_area_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing save_subject_area_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
-        "Save subject area");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::subject_areas_write, "Save subject area");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -925,8 +954,8 @@ handle_delete_subject_area_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_subject_area_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
-        "Delete subject area");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::subject_areas_delete, "Delete subject area");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -1031,7 +1060,8 @@ handle_save_dataset_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing save_dataset_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address, "Save dataset");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::datasets_write, "Save dataset");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -1069,7 +1099,8 @@ handle_delete_dataset_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_dataset_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address, "Delete dataset");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::datasets_delete, "Delete dataset");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -1173,8 +1204,8 @@ handle_save_methodology_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing save_methodology_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
-        "Save methodology");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::methodologies_write, "Save methodology");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -1213,8 +1244,8 @@ handle_delete_methodology_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_methodology_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
-        "Delete methodology");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::methodologies_delete, "Delete methodology");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -1352,8 +1383,8 @@ handle_save_coding_scheme_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing save_coding_scheme_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
-        "Save coding scheme");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::coding_schemes_write, "Save coding scheme");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -1393,8 +1424,8 @@ handle_delete_coding_scheme_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_coding_scheme_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
-        "Delete coding scheme");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::coding_schemes_delete, "Delete coding scheme");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -1503,8 +1534,8 @@ handle_save_coding_scheme_authority_type_request(std::span<const std::byte> payl
     BOOST_LOG_SEV(lg(), debug) << "Processing save_coding_scheme_authority_type_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
-        "Save coding scheme authority type");
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::coding_scheme_authority_types_write, "Save coding scheme authority type");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
     }
@@ -1545,7 +1576,8 @@ handle_delete_coding_scheme_authority_type_request(std::span<const std::byte> pa
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_coding_scheme_authority_type_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::coding_scheme_authority_types_delete,
         "Delete coding scheme authority type");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
@@ -1653,7 +1685,8 @@ handle_save_nature_dimension_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing save_nature_dimension_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::nature_dimensions_write,
         "Save nature dimension");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
@@ -1694,7 +1727,8 @@ handle_delete_nature_dimension_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_nature_dimension_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::nature_dimensions_delete,
         "Delete nature dimension");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
@@ -1802,7 +1836,8 @@ handle_save_origin_dimension_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing save_origin_dimension_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::origin_dimensions_write,
         "Save origin dimension");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
@@ -1843,7 +1878,8 @@ handle_delete_origin_dimension_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_origin_dimension_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::origin_dimensions_delete,
         "Delete origin dimension");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
@@ -1951,7 +1987,8 @@ handle_save_treatment_dimension_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing save_treatment_dimension_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::treatment_dimensions_write,
         "Save treatment dimension");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());
@@ -1992,7 +2029,8 @@ handle_delete_treatment_dimension_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Processing delete_treatment_dimension_request from "
                                << remote_address;
 
-    auto auth_result = get_authenticated_session(remote_address,
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::treatment_dimensions_delete,
         "Delete treatment dimension");
     if (!auth_result) {
         co_return std::unexpected(auth_result.error());

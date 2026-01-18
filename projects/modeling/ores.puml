@@ -394,6 +394,7 @@ dq --> eventing
 dq --> database
 dq --> utility
 dq --> comms
+dq --> iam
 
 ' Dependencies - Shell to Foundation/Domain/Infrastructure
 shell --> telemetry

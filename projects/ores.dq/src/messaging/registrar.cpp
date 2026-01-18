@@ -27,11 +27,12 @@ namespace ores::dq::messaging {
 using namespace ores::logging;
 
 void registrar::register_handlers(comms::net::server& server,
-    database::context ctx) {
+    database::context ctx,
+    std::shared_ptr<iam::service::authorization_service> auth_service) {
     BOOST_LOG_SEV(lg(), debug) << "Registering DQ message handlers.";
 
     auto handler = std::make_shared<dq_message_handler>(
-        std::move(ctx), server.sessions());
+        std::move(ctx), server.sessions(), std::move(auth_service));
 
     comms::messaging::message_type_range dq_range{
         .min = comms::messaging::DQ_SUBSYSTEM_MIN,

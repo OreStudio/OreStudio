@@ -202,7 +202,7 @@ public:
      * @return true if the account has the permission, false otherwise
      */
     bool has_permission(const boost::uuids::uuid& account_id,
-        const std::string& permission_code);
+        std::string_view permission_code);
 
     /**
      * @brief Checks if the given permissions list satisfies a permission check.
@@ -214,7 +214,7 @@ public:
      * @return true if the permissions satisfy the requirement
      */
     static bool check_permission(const std::vector<std::string>& permissions,
-        const std::string& required_permission);
+        std::string_view required_permission);
 
 private:
     /**

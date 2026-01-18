@@ -311,14 +311,14 @@ authorization_service::get_effective_permissions(
 
 bool authorization_service::has_permission(
     const boost::uuids::uuid& account_id,
-    const std::string& permission_code) {
+    std::string_view permission_code) {
     auto permissions = get_effective_permissions(account_id);
     return check_permission(permissions, permission_code);
 }
 
 bool authorization_service::check_permission(
     const std::vector<std::string>& permissions,
-    const std::string& required_permission) {
+    std::string_view required_permission) {
     // Precondition: permissions vector must be sorted (guaranteed by
     // get_effective_permissions which uses ORDER BY in the SQL query)
 

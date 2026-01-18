@@ -163,7 +163,7 @@ catalog_generator_service::generate(const domain::generation_options& options) {
     }
 
     auto pick_username = [&]() -> const std::string& {
-        return result.accounts[ctx.random_int(0, static_cast<int>(result.accounts.size()) - 1)].username;
+        return ctx.pick(result.accounts).username;
     };
 
     // Generate catalogs
@@ -292,7 +292,7 @@ catalog_generator_service::generate(const domain::generation_options& options) {
              << " domain, sourced from " << ds.origin_code << " systems.";
         ds.description = desc.str();
 
-        ds.source_system_id = source_systems[ctx.random_int(0, static_cast<int>(source_systems.size()) - 1)];
+        ds.source_system_id = ctx.pick(source_systems);
 
         std::ostringstream bctx;
         bctx << "Used for " << ds.subject_area_name << " processing and analysis.";

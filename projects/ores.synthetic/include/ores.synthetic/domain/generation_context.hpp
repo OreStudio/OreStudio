@@ -23,6 +23,7 @@
 #include <chrono>
 #include <cstdint>
 #include <random>
+#include <stdexcept>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 
@@ -69,6 +70,9 @@ public:
      */
     template<typename T>
     const T& pick(const std::vector<T>& items) {
+        if (items.empty()) {
+            throw std::out_of_range("Cannot pick from an empty vector.");
+        }
         std::uniform_int_distribution<std::size_t> dist(0, items.size() - 1);
         return items[dist(engine_)];
     }

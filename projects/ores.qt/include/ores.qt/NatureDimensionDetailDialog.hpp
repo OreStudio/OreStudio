@@ -21,7 +21,6 @@
 #define ORES_QT_NATURE_DIMENSION_DETAIL_DIALOG_HPP
 
 #include <QWidget>
-#include <QPushButton>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/nature_dimension.hpp"
@@ -82,9 +81,6 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
-
-    QPushButton* saveButton_;
-    QPushButton* deleteButton_;
 };
 
 }

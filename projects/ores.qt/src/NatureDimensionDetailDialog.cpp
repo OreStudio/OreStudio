@@ -19,7 +19,6 @@
  */
 #include "ores.qt/NatureDimensionDetailDialog.hpp"
 
-#include <QVBoxLayout>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -38,9 +37,7 @@ using namespace ores::logging;
 NatureDimensionDetailDialog::NatureDimensionDetailDialog(QWidget* parent)
     : QWidget(parent),
       ui_(new Ui::NatureDimensionDetailDialog),
-      clientManager_(nullptr),
-      saveButton_(nullptr),
-      deleteButton_(nullptr) {
+      clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -54,26 +51,17 @@ NatureDimensionDetailDialog::~NatureDimensionDetailDialog() {
 void NatureDimensionDetailDialog::setupUi() {
     const auto& iconColor = color_constants::icon_color;
 
-    auto* buttonLayout = new QHBoxLayout();
-    buttonLayout->addStretch();
+    ui_->saveButton->setIcon(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_save_20_regular.svg", iconColor));
+    ui_->saveButton->setEnabled(false);
 
-    saveButton_ = new QPushButton(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_save_20_regular.svg", iconColor),
-        tr("Save"), this);
-    saveButton_->setEnabled(false);
-
-    deleteButton_ = new QPushButton(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_delete_20_regular.svg", iconColor),
-        tr("Delete"), this);
-
-    buttonLayout->addWidget(saveButton_);
-    buttonLayout->addWidget(deleteButton_);
-    ui_->verticalLayout->addLayout(buttonLayout);
+    ui_->deleteButton->setIcon(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_delete_20_regular.svg", iconColor));
 }
 
 void NatureDimensionDetailDialog::setupConnections() {
-    connect(saveButton_, &QPushButton::clicked, this, &NatureDimensionDetailDialog::onSaveClicked);
-    connect(deleteButton_, &QPushButton::clicked, this, &NatureDimensionDetailDialog::onDeleteClicked);
+    connect(ui_->saveButton, &QPushButton::clicked, this, &NatureDimensionDetailDialog::onSaveClicked);
+    connect(ui_->deleteButton, &QPushButton::clicked, this, &NatureDimensionDetailDialog::onDeleteClicked);
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &NatureDimensionDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this, &NatureDimensionDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QTextEdit::textChanged, this, &NatureDimensionDetailDialog::onFieldChanged);
@@ -95,7 +83,7 @@ void NatureDimensionDetailDialog::setDimension(const dq::domain::nature_dimensio
 void NatureDimensionDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->codeEdit->setReadOnly(!createMode);
-    deleteButton_->setVisible(!createMode);
+    ui_->deleteButton->setVisible(!createMode);
     if (createMode) ui_->metadataGroup->setVisible(false);
     hasChanges_ = false;
     updateSaveButtonState();
@@ -106,8 +94,8 @@ void NatureDimensionDetailDialog::setReadOnly(bool readOnly) {
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
-    saveButton_->setVisible(!readOnly);
-    deleteButton_->setVisible(!readOnly);
+    ui_->saveButton->setVisible(!readOnly);
+    ui_->deleteButton->setVisible(!readOnly);
 }
 
 void NatureDimensionDetailDialog::updateUiFromDimension() {
@@ -138,7 +126,7 @@ void NatureDimensionDetailDialog::onFieldChanged() {
 }
 
 void NatureDimensionDetailDialog::updateSaveButtonState() {
-    saveButton_->setEnabled(hasChanges_ && validateInput() && !readOnly_);
+    ui_->saveButton->setEnabled(hasChanges_ && validateInput() && !readOnly_);
 }
 
 bool NatureDimensionDetailDialog::validateInput() {

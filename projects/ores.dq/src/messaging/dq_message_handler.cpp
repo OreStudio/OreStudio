@@ -32,8 +32,10 @@ using namespace ores::logging;
 using comms::messaging::message_type;
 
 dq_message_handler::dq_message_handler(database::context ctx,
-    std::shared_ptr<comms::service::auth_session_service> sessions)
+    std::shared_ptr<comms::service::auth_session_service> sessions,
+    std::shared_ptr<iam::service::authorization_service> auth_service)
     : ctx_(ctx), sessions_(std::move(sessions)),
+      auth_service_(std::move(auth_service)),
       change_management_service_(ctx),
       data_organization_service_(ctx),
       dataset_service_(ctx),

@@ -501,6 +501,13 @@ target_link_libraries(${lib_target_name}
 )
 #+end_src
 
+*Warning*: Before adding =ores.iam.lib= as a dependency, check
+=projects/modeling/ores.puml= for the current dependency graph. If IAM already
+depends on your component (directly or transitively), adding this dependency
+will create a circular dependency that breaks the build. In such cases, defer
+authorization to a higher layer (e.g., handle it in the service application
+that hosts both components).
+
 ** Sensitive data
 
 Never include passwords or secrets in plain text in protocol messages. Use

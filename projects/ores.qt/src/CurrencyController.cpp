@@ -54,10 +54,8 @@ CurrencyController::CurrencyController(
     ImageCache* imageCache,
     ChangeReasonCache* changeReasonCache,
     const QString& username,
-    QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, parent),
-      allDetachableWindows_(allDetachableWindows),
       imageCache_(imageCache),
       changeReasonCache_(changeReasonCache),
       currencyListWindow_(nullptr) {
@@ -157,7 +155,7 @@ void CurrencyController::showListWindow() {
         ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
 
     // Track window for detach/reattach operations
-    allDetachableWindows_.append(currencyListWindow_);
+    register_detachable_window(currencyListWindow_);
     QPointer<CurrencyController> self = this;
     QPointer<DetachableMdiSubWindow> windowBeingDestroyed = currencyListWindow_;
     // to avoid race conditions with signal processing
@@ -166,9 +164,6 @@ void CurrencyController::showListWindow() {
             if (!self) return;
 
             BOOST_LOG_SEV(lg(), debug) << "Detachable MDI Sub Window destroyed";
-
-            // Remove the window from the list of all detachable windows
-            self->allDetachableWindows_.removeAll(windowBeingDestroyed);
 
             // If the destroyed window is the currency list, nullify the pointer
             if (self->currencyListWindow_ == windowBeingDestroyed)
@@ -234,13 +229,7 @@ void CurrencyController::onAddNewRequested() {
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
 
-    allDetachableWindows_.append(detailWindow);
-    QPointer<CurrencyController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self)
-            self->allDetachableWindows_.removeAll(detailWindow);
-    });
+    register_detachable_window(detailWindow);
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, currencyListWindow_);
@@ -297,14 +286,12 @@ void CurrencyController::onShowCurrencyDetails(
 
     // Track this detail window
     track_window(windowKey, detailWindow);
+    register_detachable_window(detailWindow);
 
-    allDetachableWindows_.append(detailWindow);
     QPointer<CurrencyController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = detailWindow;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });
@@ -362,14 +349,12 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
 
     // Track this history window
     track_window(windowKey, historyWindow);
+    register_detachable_window(historyWindow);
 
-    allDetachableWindows_.append(historyWindow);
     QPointer<CurrencyController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
     connect(historyWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });
@@ -489,14 +474,12 @@ void CurrencyController::onOpenCurrencyVersion(
 
     // Track this version window
     track_window(windowKey, detailWindow);
+    register_detachable_window(detailWindow);
 
-    allDetachableWindows_.append(detailWindow);
     QPointer<CurrencyController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = detailWindow;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });

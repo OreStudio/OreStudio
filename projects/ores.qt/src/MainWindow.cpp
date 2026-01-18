@@ -696,9 +696,9 @@ void MainWindow::createControllers() {
     // Create currency controller
     currencyController_ = std::make_unique<CurrencyController>(
         this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
-        QString::fromStdString(username_), allDetachableWindows_, this);
+        QString::fromStdString(username_), this);
 
-    // Connect controller signals to status bar
+    // Connect controller signals to status bar and window lifecycle
     connect(currencyController_.get(), &CurrencyController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -707,13 +707,17 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(currencyController_.get(), &CurrencyController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(currencyController_.get(), &CurrencyController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create country controller
     countryController_ = std::make_unique<CountryController>(
         this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
-        QString::fromStdString(username_), allDetachableWindows_, this);
+        QString::fromStdString(username_), this);
 
-    // Connect country controller signals to status bar
+    // Connect country controller signals to status bar and window lifecycle
     connect(countryController_.get(), &CountryController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -722,13 +726,16 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(countryController_.get(), &CountryController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(countryController_.get(), &CountryController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create account controller (admin only functionality)
     accountController_ = std::make_unique<AccountController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect account controller signals to status bar
+    // Connect account controller signals to status bar and window lifecycle
     connect(accountController_.get(), &AccountController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -737,13 +744,16 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(accountController_.get(), &AccountController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(accountController_.get(), &AccountController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create role controller (admin only functionality)
     roleController_ = std::make_unique<RoleController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect role controller signals to status bar
+    // Connect role controller signals to status bar and window lifecycle
     connect(roleController_.get(), &RoleController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -752,13 +762,16 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(roleController_.get(), &RoleController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(roleController_.get(), &RoleController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create feature flag controller (admin only functionality)
     featureFlagController_ = std::make_unique<FeatureFlagController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect feature flag controller signals to status bar
+    // Connect feature flag controller signals to status bar and window lifecycle
     connect(featureFlagController_.get(), &FeatureFlagController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -767,13 +780,16 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(featureFlagController_.get(), &FeatureFlagController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(featureFlagController_.get(), &FeatureFlagController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create change reason category controller (admin only functionality)
     changeReasonCategoryController_ = std::make_unique<ChangeReasonCategoryController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect change reason category controller signals to status bar
+    // Connect change reason category controller signals to status bar and window lifecycle
     connect(changeReasonCategoryController_.get(), &ChangeReasonCategoryController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -782,13 +798,17 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(changeReasonCategoryController_.get(), &ChangeReasonCategoryController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(changeReasonCategoryController_.get(), &ChangeReasonCategoryController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create change reason controller (admin only functionality)
     changeReasonController_ = std::make_unique<ChangeReasonController>(
         this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        changeReasonCache_, allDetachableWindows_, this);
+        changeReasonCache_, this);
 
-    // Connect change reason controller signals to status bar
+    // Connect change reason controller signals to status bar and window lifecycle
     connect(changeReasonController_.get(), &ChangeReasonController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -797,13 +817,16 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(changeReasonController_.get(), &ChangeReasonController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(changeReasonController_.get(), &ChangeReasonController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create origin dimension controller
     originDimensionController_ = std::make_unique<OriginDimensionController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect origin dimension controller signals to status bar
+    // Connect origin dimension controller signals to status bar and window lifecycle
     connect(originDimensionController_.get(), &OriginDimensionController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -812,13 +835,16 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(originDimensionController_.get(), &OriginDimensionController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(originDimensionController_.get(), &OriginDimensionController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create nature dimension controller
     natureDimensionController_ = std::make_unique<NatureDimensionController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect nature dimension controller signals to status bar
+    // Connect nature dimension controller signals to status bar and window lifecycle
     connect(natureDimensionController_.get(), &NatureDimensionController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -827,13 +853,16 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(natureDimensionController_.get(), &NatureDimensionController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(natureDimensionController_.get(), &NatureDimensionController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create treatment dimension controller
     treatmentDimensionController_ = std::make_unique<TreatmentDimensionController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect treatment dimension controller signals to status bar
+    // Connect treatment dimension controller signals to status bar and window lifecycle
     connect(treatmentDimensionController_.get(), &TreatmentDimensionController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -842,13 +871,16 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(treatmentDimensionController_.get(), &TreatmentDimensionController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(treatmentDimensionController_.get(), &TreatmentDimensionController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create coding scheme authority type controller
     codingSchemeAuthorityTypeController_ = std::make_unique<CodingSchemeAuthorityTypeController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect coding scheme authority type controller signals to status bar
+    // Connect coding scheme authority type controller signals to status bar and window lifecycle
     connect(codingSchemeAuthorityTypeController_.get(), &CodingSchemeAuthorityTypeController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -857,13 +889,16 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(codingSchemeAuthorityTypeController_.get(), &CodingSchemeAuthorityTypeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(codingSchemeAuthorityTypeController_.get(), &CodingSchemeAuthorityTypeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create data domain controller
     dataDomainController_ = std::make_unique<DataDomainController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect data domain controller signals to status bar
+    // Connect data domain controller signals to status bar and window lifecycle
     connect(dataDomainController_.get(), &DataDomainController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -872,13 +907,16 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(dataDomainController_.get(), &DataDomainController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(dataDomainController_.get(), &DataDomainController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create subject area controller
     subjectAreaController_ = std::make_unique<SubjectAreaController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect subject area controller signals to status bar
+    // Connect subject area controller signals to status bar and window lifecycle
     connect(subjectAreaController_.get(), &SubjectAreaController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -887,13 +925,16 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(subjectAreaController_.get(), &SubjectAreaController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(subjectAreaController_.get(), &SubjectAreaController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create catalog controller
     catalogController_ = std::make_unique<CatalogController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect catalog controller signals to status bar
+    // Connect catalog controller signals to status bar and window lifecycle
     connect(catalogController_.get(), &CatalogController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -902,13 +943,16 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(catalogController_.get(), &CatalogController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(catalogController_.get(), &CatalogController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create coding scheme controller
     codingSchemeController_ = std::make_unique<CodingSchemeController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect coding scheme controller signals to status bar
+    // Connect coding scheme controller signals to status bar and window lifecycle
     connect(codingSchemeController_.get(), &CodingSchemeController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -917,13 +961,16 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(codingSchemeController_.get(), &CodingSchemeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(codingSchemeController_.get(), &CodingSchemeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create methodology controller
     methodologyController_ = std::make_unique<MethodologyController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect methodology controller signals to status bar
+    // Connect methodology controller signals to status bar and window lifecycle
     connect(methodologyController_.get(), &MethodologyController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -932,13 +979,16 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(methodologyController_.get(), &MethodologyController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(methodologyController_.get(), &MethodologyController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create dataset controller
     datasetController_ = std::make_unique<DatasetController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        allDetachableWindows_, this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect dataset controller signals to status bar
+    // Connect dataset controller signals to status bar and window lifecycle
     connect(datasetController_.get(), &DatasetController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -947,6 +997,10 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
+    connect(datasetController_.get(), &DatasetController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(datasetController_.get(), &DatasetController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     BOOST_LOG_SEV(lg(), debug) << "Entity controllers created.";
 }
@@ -1106,6 +1160,16 @@ void MainWindow::onDetachAllTriggered() {
     }
 
     BOOST_LOG_SEV(lg(), debug) << "All windows detached.";
+}
+
+void MainWindow::onDetachableWindowCreated(DetachableMdiSubWindow* window) {
+    if (window) {
+        allDetachableWindows_.append(window);
+    }
+}
+
+void MainWindow::onDetachableWindowDestroyed(DetachableMdiSubWindow* window) {
+    allDetachableWindows_.removeOne(window);
 }
 
 void MainWindow::onWindowMenuAboutToShow() {

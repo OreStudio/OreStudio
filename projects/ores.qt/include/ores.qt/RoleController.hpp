@@ -21,7 +21,6 @@
 #define ORES_QT_ROLE_CONTROLLER_HPP
 
 #include <QPointer>
-#include <QList>
 #include "ores.qt/EntityController.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/role.hpp"
@@ -61,7 +60,6 @@ public:
      * @param mdiArea MDI area where windows will be displayed
      * @param clientManager Client manager for network operations
      * @param username Username of logged-in user
-     * @param allDetachableWindows Reference to MainWindow's window list
      * @param parent QObject parent (for Qt ownership)
      */
     explicit RoleController(
@@ -69,7 +67,6 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
-        QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);
 
     /**
@@ -102,12 +99,6 @@ private slots:
     void onShowRoleDetails(const iam::domain::role& role);
 
 private:
-
-    /**
-     * @brief Reference to MainWindow's list of all detachable windows.
-     */
-    QList<DetachableMdiSubWindow*>& allDetachableWindows_;
-
     /**
      * @brief Weak pointer to the role list window.
      */

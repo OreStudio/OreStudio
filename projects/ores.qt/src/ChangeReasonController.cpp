@@ -47,13 +47,11 @@ ChangeReasonController::ChangeReasonController(
     ClientManager* clientManager,
     const QString& username,
     ChangeReasonCache* changeReasonCache,
-    QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr),
-      changeReasonCache_(changeReasonCache),
-      allDetachableWindows_(allDetachableWindows) {
+      changeReasonCache_(changeReasonCache) {
 
     BOOST_LOG_SEV(lg(), debug) << "ChangeReasonController created";
 
@@ -133,12 +131,11 @@ void ChangeReasonController::showListWindow() {
 
     // Track window
     track_window(key, listMdiSubWindow_);
-    allDetachableWindows_.append(listMdiSubWindow_);
+    register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_, &QObject::destroyed, this, [this, key]() {
         untrack_window(key);
-        allDetachableWindows_.removeOne(listMdiSubWindow_);
         listWindow_ = nullptr;
         listMdiSubWindow_ = nullptr;
     });
@@ -213,13 +210,7 @@ void ChangeReasonController::showAddWindow() {
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_note_edit_20_regular.svg", iconColor));
 
-    allDetachableWindows_.append(detailWindow);
-    QPointer<ChangeReasonController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self)
-            self->allDetachableWindows_.removeAll(detailWindow);
-    });
+    register_detachable_window(detailWindow);
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
@@ -280,14 +271,13 @@ void ChangeReasonController::showDetailWindow(
 
     // Track window
     track_window(key, detailWindow);
-    allDetachableWindows_.append(detailWindow);
+    register_detachable_window(detailWindow);
 
     QPointer<ChangeReasonController> self = this;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow, key]() {
+            [self, key]() {
         if (self) {
             self->untrack_window(key);
-            self->allDetachableWindows_.removeAll(detailWindow);
         }
     });
 
@@ -358,14 +348,12 @@ void ChangeReasonController::showHistoryWindow(const QString& code) {
 
     // Track this history window
     track_window(windowKey, historyWindow);
+    register_detachable_window(historyWindow);
 
-    allDetachableWindows_.append(historyWindow);
     QPointer<ChangeReasonController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
     connect(historyWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });
@@ -414,14 +402,13 @@ void ChangeReasonController::onOpenVersion(
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
 
     track_window(windowKey, detailWindow);
-    allDetachableWindows_.append(detailWindow);
+    register_detachable_window(detailWindow);
 
     QPointer<ChangeReasonController> self = this;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow, windowKey]() {
+            [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
-            self->allDetachableWindows_.removeAll(detailWindow);
         }
     });
 
@@ -470,14 +457,7 @@ void ChangeReasonController::onRevertVersion(
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
 
-    allDetachableWindows_.append(detailWindow);
-    QPointer<ChangeReasonController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self) {
-            self->allDetachableWindows_.removeAll(detailWindow);
-        }
-    });
+    register_detachable_window(detailWindow);
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);

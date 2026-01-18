@@ -18,6 +18,8 @@
  *
  */
 #include "ores.qt/EntityController.hpp"
+
+#include <QPointer>
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
@@ -99,6 +101,18 @@ void EntityController::show_managed_window(DetachableMdiSubWindow* window,
 void EntityController::connect_dialog_close(DetailDialogBase* dialog,
     DetachableMdiSubWindow* window) {
     connect(dialog, &DetailDialogBase::closeRequested, window, &QWidget::close);
+}
+
+void EntityController::register_detachable_window(DetachableMdiSubWindow* window) {
+    emit detachableWindowCreated(window);
+
+    QPointer<EntityController> self = this;
+    QPointer<DetachableMdiSubWindow> windowPtr = window;
+    connect(window, &QObject::destroyed, this, [self, windowPtr]() {
+        if (self && windowPtr) {
+            emit self->detachableWindowDestroyed(windowPtr.data());
+        }
+    });
 }
 
 }

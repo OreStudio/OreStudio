@@ -20,10 +20,8 @@
 #ifndef ORES_QT_CHANGE_REASON_CONTROLLER_HPP
 #define ORES_QT_CHANGE_REASON_CONTROLLER_HPP
 
-#include <QList>
 #include <QDateTime>
 #include "ores.qt/EntityController.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/change_reason.hpp"
 #include "ores.dq/domain/change_reason_category.hpp"
@@ -58,7 +56,6 @@ public:
         ClientManager* clientManager,
         const QString& username,
         ChangeReasonCache* changeReasonCache,
-        QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);
 
     ~ChangeReasonController() override;
@@ -84,7 +81,6 @@ private:
     ChangeReasonMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
     ChangeReasonCache* changeReasonCache_;
-    QList<DetachableMdiSubWindow*>& allDetachableWindows_;
 };
 
 }

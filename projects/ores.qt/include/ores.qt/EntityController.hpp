@@ -91,6 +91,19 @@ signals:
     /** @brief Emitted when an error message should be shown to the user. */
     void errorMessage(const QString& message);
 
+    /**
+     * @brief Emitted when a detachable window is created by this controller.
+     *
+     * MainWindow connects to this signal to track all detachable windows
+     * for the "Reattach All Windows" functionality.
+     */
+    void detachableWindowCreated(DetachableMdiSubWindow* window);
+
+    /**
+     * @brief Emitted when a detachable window managed by this controller is destroyed.
+     */
+    void detachableWindowDestroyed(DetachableMdiSubWindow* window);
+
 protected:
     /**
      * @brief Generates a unique key for tracking windows.
@@ -148,6 +161,16 @@ protected:
      * @param window The container window to close when the dialog requests it.
      */
     void connect_dialog_close(DetailDialogBase* dialog, DetachableMdiSubWindow* window);
+
+    /**
+     * @brief Registers a detachable window and emits detachableWindowCreated signal.
+     *
+     * Call this when creating a new detachable window. Also sets up the
+     * destroyed signal connection to automatically emit detachableWindowDestroyed.
+     *
+     * @param window The window to register.
+     */
+    void register_detachable_window(DetachableMdiSubWindow* window);
 
 protected:
     QMainWindow* mainWindow_;

@@ -53,7 +53,6 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
-        QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);
 
     ~CatalogController() override;
@@ -75,7 +74,6 @@ private:
 
     QPointer<CatalogMdiWindow> listWindow_;
     QPointer<DetachableMdiSubWindow> listMdiSubWindow_;
-    QList<DetachableMdiSubWindow*>& allDetachableWindows_;
 };
 
 }

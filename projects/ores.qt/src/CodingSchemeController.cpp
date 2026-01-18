@@ -36,12 +36,10 @@ CodingSchemeController::CodingSchemeController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
-    QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, parent),
       listWindow_(nullptr),
-      listMdiSubWindow_(nullptr),
-      allDetachableWindows_(allDetachableWindows) {
+      listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "CodingSchemeController created";
 }
@@ -85,11 +83,10 @@ void CodingSchemeController::showListWindow() {
     listMdiSubWindow_->show();
 
     track_window(key, listMdiSubWindow_);
-    allDetachableWindows_.append(listMdiSubWindow_);
+    register_detachable_window(listMdiSubWindow_);
 
     connect(listMdiSubWindow_, &QObject::destroyed, this, [this, key]() {
         untrack_window(key);
-        allDetachableWindows_.removeOne(listMdiSubWindow_);
         listWindow_ = nullptr;
         listMdiSubWindow_ = nullptr;
     });
@@ -157,13 +154,7 @@ void CodingSchemeController::showAddWindow() {
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_code_20_regular.svg", iconColor));
 
-    allDetachableWindows_.append(detailWindow);
-    QPointer<CodingSchemeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self)
-            self->allDetachableWindows_.removeAll(detailWindow);
-    });
+    register_detachable_window(detailWindow);
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
@@ -216,14 +207,13 @@ void CodingSchemeController::showDetailWindow(const dq::domain::coding_scheme& s
         ":/icons/ic_fluent_code_20_regular.svg", iconColor));
 
     track_window(key, detailWindow);
-    allDetachableWindows_.append(detailWindow);
+    register_detachable_window(detailWindow);
 
     QPointer<CodingSchemeController> self = this;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow, key]() {
+            [self, key]() {
         if (self) {
             self->untrack_window(key);
-            self->allDetachableWindows_.removeAll(detailWindow);
         }
     });
 
@@ -272,14 +262,12 @@ void CodingSchemeController::showHistoryWindow(const QString& code) {
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
 
     track_window(windowKey, historyWindow);
+    register_detachable_window(historyWindow);
 
-    allDetachableWindows_.append(historyWindow);
     QPointer<CodingSchemeController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
     connect(historyWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });
@@ -328,14 +316,13 @@ void CodingSchemeController::onOpenVersion(
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
 
     track_window(windowKey, detailWindow);
-    allDetachableWindows_.append(detailWindow);
+    register_detachable_window(detailWindow);
 
     QPointer<CodingSchemeController> self = this;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow, windowKey]() {
+            [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
-            self->allDetachableWindows_.removeAll(detailWindow);
         }
     });
 
@@ -377,14 +364,7 @@ void CodingSchemeController::onRevertVersion(
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
 
-    allDetachableWindows_.append(detailWindow);
-    QPointer<CodingSchemeController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self) {
-            self->allDetachableWindows_.removeAll(detailWindow);
-        }
-    });
+    register_detachable_window(detailWindow);
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);

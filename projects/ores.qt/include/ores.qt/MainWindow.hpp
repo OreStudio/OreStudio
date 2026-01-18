@@ -185,6 +185,26 @@ private slots:
     void onDetachAllTriggered();
 
     /**
+     * @brief Handles creation of a detachable window from an entity controller.
+     *
+     * Adds the window to the allDetachableWindows_ list for tracking.
+     * Connected to EntityController::detachableWindowCreated signal.
+     *
+     * @param window The newly created detachable window.
+     */
+    void onDetachableWindowCreated(DetachableMdiSubWindow* window);
+
+    /**
+     * @brief Handles destruction of a detachable window from an entity controller.
+     *
+     * Removes the window from the allDetachableWindows_ list.
+     * Connected to EntityController::detachableWindowDestroyed signal.
+     *
+     * @param window The window being destroyed.
+     */
+    void onDetachableWindowDestroyed(DetachableMdiSubWindow* window);
+
+    /**
      * @brief Updates the Window menu with the list of currently open windows.
      *
      * Called just before the Window menu is displayed. Removes old window list

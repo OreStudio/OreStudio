@@ -94,6 +94,7 @@ grant create on schema ores to ores;
 
 -- Data Quality tables
 \ir ../schema/dq_catalog_create.sql
+\ir ../schema/dq_catalog_dependency_create.sql
 \ir ../schema/dq_data_domain_create.sql
 \ir ../schema/dq_subject_area_create.sql
 \ir ../schema/dq_coding_scheme_authority_type_create.sql

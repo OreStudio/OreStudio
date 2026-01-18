@@ -21,6 +21,7 @@
 
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
@@ -132,37 +133,61 @@ void ClientFeatureFlagModel::refresh() {
 
     QPointer<ClientFeatureFlagModel> self = this;
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-        if (!self) return {false, {}};
+        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+            if (!self || !self->clientManager_) {
+                return {.success = false, .flags = {},
+                        .error_message = "Model was destroyed",
+                        .error_details = {}};
+            }
 
-        variability::messaging::get_feature_flags_request request;
-        auto payload = request.serialize();
+            variability::messaging::get_feature_flags_request request;
+            auto payload = request.serialize();
 
-        frame request_frame(message_type::get_feature_flags_request,
-            0, std::move(payload));
+            frame request_frame(message_type::get_feature_flags_request,
+                0, std::move(payload));
 
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+            auto response_result = self->clientManager_->sendRequest(
+                std::move(request_frame));
 
-        if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send request";
-            return {false, {}};
-        }
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                return {.success = false, .flags = {},
+                        .error_message = "Failed to send request",
+                        .error_details = {}};
+            }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-            return {false, {}};
-        }
+            // Check for server error response
+            if (auto err = exception_helper::check_error_response(*response_result)) {
+                BOOST_LOG_SEV(lg(), error) << "Server error: "
+                                           << err->message.toStdString();
+                return {.success = false, .flags = {},
+                        .error_message = err->message,
+                        .error_details = err->details};
+            }
 
-        auto response = variability::messaging::get_feature_flags_response::
-            deserialize(*payload_result);
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+                return {.success = false, .flags = {},
+                        .error_message = "Failed to decompress response",
+                        .error_details = {}};
+            }
 
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-            return {false, {}};
-        }
+            auto response = variability::messaging::get_feature_flags_response::
+                deserialize(*payload_result);
 
-        return {true, std::move(response->feature_flags)};
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+                return {.success = false, .flags = {},
+                        .error_message = "Failed to deserialize response",
+                        .error_details = {}};
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->feature_flags.size()
+                                       << " feature flags";
+            return {.success = true, .flags = std::move(response->feature_flags),
+                    .error_message = {}, .error_details = {}};
+        }, "feature flags");
     });
 
     watcher_->setFuture(future);
@@ -170,11 +195,13 @@ void ClientFeatureFlagModel::refresh() {
 
 void ClientFeatureFlagModel::onFeatureFlagsLoaded() {
     is_fetching_ = false;
-    auto result = watcher_->result();
+
+    const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load feature flags";
-        emit loadError("Failed to load feature flags from server");
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch feature flags: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
         return;
     }
 

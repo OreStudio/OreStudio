@@ -123,7 +123,7 @@ submit_log_records_request::deserialize(std::span<const std::byte> data) {
     /*
      * Read record count.
      */
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }

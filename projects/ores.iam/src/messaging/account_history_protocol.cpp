@@ -211,7 +211,7 @@ get_account_history_response::deserialize(std::span<const std::byte> data) {
     response.history.username = *username_result;
 
     // Read version count
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 

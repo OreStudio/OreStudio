@@ -341,7 +341,7 @@ package "dq" #E1F5FE {
     Examples: system.new, static_data.front_office_error.
     end note
 
-    entity dq_catalog_tbl <<temporal>> #C6F0D8 {
+    entity dq_catalogs_tbl <<temporal>> #C6F0D8 {
         * name : text <<PK>>
         * valid_from : timestamptz <<PK>>
         * valid_to : timestamptz <<PK>>
@@ -354,12 +354,12 @@ package "dq" #E1F5FE {
         * change_commentary : text
     }
 
-    note right of dq_catalog_tbl
+    note right of dq_catalogs_tbl
     Named collection of related datasets.
     Examples: ISO Standards, Cryptocurrency.
     end note
 
-    entity dq_data_domain_tbl <<temporal>> #C6F0D8 {
+    entity dq_data_domains_tbl <<temporal>> #C6F0D8 {
         * name : text <<PK>>
         * valid_from : timestamptz <<PK>>
         * valid_to : timestamptz <<PK>>
@@ -371,12 +371,12 @@ package "dq" #E1F5FE {
         * change_commentary : text
     }
 
-    note right of dq_data_domain_tbl
+    note right of dq_data_domains_tbl
     High-level data classification.
     Examples: reference_data, market_data, trade_data.
     end note
 
-    entity dq_subject_area_tbl <<temporal>> #C6F0D8 {
+    entity dq_subject_areas_tbl <<temporal>> #C6F0D8 {
         * name : text <<PK>>
         * domain_name : text <<PK, FK>>
         * valid_from : timestamptz <<PK>>
@@ -389,12 +389,12 @@ package "dq" #E1F5FE {
         * change_commentary : text
     }
 
-    note right of dq_subject_area_tbl
+    note right of dq_subject_areas_tbl
     Sub-classification within a data domain.
     Examples: currencies, countries, images.
     end note
 
-    entity dq_coding_scheme_authority_type_tbl <<temporal>> #C6F0D8 {
+    entity dq_coding_scheme_authority_types_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         * valid_from : timestamptz <<PK>>
         * valid_to : timestamptz <<PK>>
@@ -407,12 +407,12 @@ package "dq" #E1F5FE {
         * change_commentary : text
     }
 
-    note right of dq_coding_scheme_authority_type_tbl
+    note right of dq_coding_scheme_authority_types_tbl
     Classifies coding schemes by authority level.
     Values: official, industry, internal.
     end note
 
-    entity dq_coding_scheme_tbl <<temporal>> #C6F0D8 {
+    entity dq_coding_schemes_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         * valid_from : timestamptz <<PK>>
         * valid_to : timestamptz <<PK>>
@@ -429,12 +429,12 @@ package "dq" #E1F5FE {
         * change_commentary : text
     }
 
-    note right of dq_coding_scheme_tbl
+    note right of dq_coding_schemes_tbl
     FPML coding schemes for entity identification.
     Examples: LEI, BIC, ISO 4217, ISO 3166.
     end note
 
-    entity dq_nature_dimension_tbl <<temporal>> #C6F0D8 {
+    entity dq_nature_dimensions_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         * valid_from : timestamptz <<PK>>
         * valid_to : timestamptz <<PK>>
@@ -447,12 +447,12 @@ package "dq" #E1F5FE {
         * change_commentary : text
     }
 
-    note right of dq_nature_dimension_tbl
+    note right of dq_nature_dimensions_tbl
     Describes the nature of data.
     Examples: raw, cleansed, derived.
     end note
 
-    entity dq_origin_dimension_tbl <<temporal>> #C6F0D8 {
+    entity dq_origin_dimensions_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         * valid_from : timestamptz <<PK>>
         * valid_to : timestamptz <<PK>>
@@ -465,12 +465,12 @@ package "dq" #E1F5FE {
         * change_commentary : text
     }
 
-    note right of dq_origin_dimension_tbl
+    note right of dq_origin_dimensions_tbl
     Describes the origin of data.
     Examples: vendor, internal, regulatory.
     end note
 
-    entity dq_treatment_dimension_tbl <<temporal>> #C6F0D8 {
+    entity dq_treatment_dimensions_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         * valid_from : timestamptz <<PK>>
         * valid_to : timestamptz <<PK>>
@@ -483,12 +483,12 @@ package "dq" #E1F5FE {
         * change_commentary : text
     }
 
-    note right of dq_treatment_dimension_tbl
+    note right of dq_treatment_dimensions_tbl
     Describes how data should be treated.
     Examples: golden, provisional, deprecated.
     end note
 
-    entity dq_methodology_tbl <<temporal>> #C6F0D8 {
+    entity dq_methodologies_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         * valid_from : timestamptz <<PK>>
         * valid_to : timestamptz <<PK>>
@@ -503,12 +503,12 @@ package "dq" #E1F5FE {
         * change_commentary : text
     }
 
-    note right of dq_methodology_tbl
+    note right of dq_methodologies_tbl
     Describes transformation/derivation logic.
     Links to documentation and implementation.
     end note
 
-    entity dq_dataset_tbl <<temporal>> #C6F0D8 {
+    entity dq_datasets_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         * valid_from : timestamptz <<PK>>
         * valid_to : timestamptz <<PK>>
@@ -536,7 +536,7 @@ package "dq" #E1F5FE {
         * change_commentary : text
     }
 
-    note right of dq_dataset_tbl
+    note right of dq_datasets_tbl
     Central dataset registry with full lineage.
     Tracks provenance via upstream_derivation_id.
     lineage_depth auto-calculated from hierarchy.
@@ -688,30 +688,30 @@ refdata_currencies_tbl }o--o| assets_images_tbl : "displayed as"
 refdata_countries_tbl }o--o| assets_images_tbl : "displayed as"
 
 ' refdata to dq coding scheme relationships
-dq_coding_scheme_tbl ||--o{ refdata_currencies_tbl : "identifies"
-dq_coding_scheme_tbl ||--o{ refdata_countries_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_currencies_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_countries_tbl : "identifies"
 
 ' dq hierarchy relationships
-dq_catalog_tbl ||--o{ dq_dataset_tbl : "groups"
-dq_data_domain_tbl ||--o{ dq_subject_area_tbl : "contains"
-dq_subject_area_tbl ||--o{ dq_dataset_tbl : "classifies"
-dq_subject_area_tbl ||--o{ dq_coding_scheme_tbl : "defines"
-dq_coding_scheme_authority_type_tbl ||--o{ dq_coding_scheme_tbl : "classifies"
-dq_coding_scheme_tbl ||--o{ dq_dataset_tbl : "identifies"
+dq_catalogs_tbl ||--o{ dq_datasets_tbl : "groups"
+dq_data_domains_tbl ||--o{ dq_subject_areas_tbl : "contains"
+dq_subject_areas_tbl ||--o{ dq_datasets_tbl : "classifies"
+dq_subject_areas_tbl ||--o{ dq_coding_schemes_tbl : "defines"
+dq_coding_scheme_authority_types_tbl ||--o{ dq_coding_schemes_tbl : "classifies"
+dq_coding_schemes_tbl ||--o{ dq_datasets_tbl : "identifies"
 
 ' dq dimension relationships
-dq_origin_dimension_tbl ||--o{ dq_dataset_tbl : "describes origin"
-dq_nature_dimension_tbl ||--o{ dq_dataset_tbl : "describes nature"
-dq_treatment_dimension_tbl ||--o{ dq_dataset_tbl : "describes treatment"
-dq_methodology_tbl ||--o{ dq_dataset_tbl : "applied to"
-dq_dataset_tbl ||--o{ dq_dataset_tbl : "derives from"
+dq_origin_dimensions_tbl ||--o{ dq_datasets_tbl : "describes origin"
+dq_nature_dimensions_tbl ||--o{ dq_datasets_tbl : "describes nature"
+dq_treatment_dimensions_tbl ||--o{ dq_datasets_tbl : "describes treatment"
+dq_methodologies_tbl ||--o{ dq_datasets_tbl : "applied to"
+dq_datasets_tbl ||--o{ dq_datasets_tbl : "derives from"
 
 ' dq artefact relationships
-dq_dataset_tbl ||--o{ dq_currencies_artefact_tbl : "contains"
-dq_dataset_tbl ||--o{ dq_countries_artefact_tbl : "contains"
-dq_dataset_tbl ||--o{ dq_images_artefact_tbl : "contains"
-dq_dataset_tbl ||--o{ dq_tags_artefact_tbl : "contains"
-dq_dataset_tbl ||--o{ dq_image_tags_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_currencies_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_countries_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_images_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_tags_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_image_tags_artefact_tbl : "contains"
 
 ' Change tracking relationships (logical - not enforced FKs in all cases)
 dq_change_reasons_tbl ||--o{ iam_accounts_tbl : "reason for"
@@ -722,16 +722,16 @@ dq_change_reasons_tbl ||--o{ assets_tags_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ refdata_currencies_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ refdata_countries_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ variability_feature_flags_tbl : "reason for"
-dq_change_reasons_tbl ||--o{ dq_catalog_tbl : "reason for"
-dq_change_reasons_tbl ||--o{ dq_data_domain_tbl : "reason for"
-dq_change_reasons_tbl ||--o{ dq_subject_area_tbl : "reason for"
-dq_change_reasons_tbl ||--o{ dq_coding_scheme_authority_type_tbl : "reason for"
-dq_change_reasons_tbl ||--o{ dq_coding_scheme_tbl : "reason for"
-dq_change_reasons_tbl ||--o{ dq_nature_dimension_tbl : "reason for"
-dq_change_reasons_tbl ||--o{ dq_origin_dimension_tbl : "reason for"
-dq_change_reasons_tbl ||--o{ dq_treatment_dimension_tbl : "reason for"
-dq_change_reasons_tbl ||--o{ dq_methodology_tbl : "reason for"
-dq_change_reasons_tbl ||--o{ dq_dataset_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_catalogs_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_data_domains_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_subject_areas_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_coding_scheme_authority_types_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_coding_schemes_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_nature_dimensions_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_origin_dimensions_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_treatment_dimensions_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_methodologies_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_datasets_tbl : "reason for"
 
 ' telemetry relationships
 iam_accounts_tbl ||--o{ telemetry_logs_tbl : "generates"

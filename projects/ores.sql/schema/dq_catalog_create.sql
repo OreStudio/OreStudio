@@ -30,7 +30,7 @@
  * - "Cryptocurrency" - Contains crypto reference data and icons
  */
 
-create table if not exists "ores"."dq_catalog_tbl" (
+create table if not exists "ores"."dq_catalogs_tbl" (
     "name" text not null,
     "version" integer not null,
     "description" text not null,
@@ -48,21 +48,21 @@ create table if not exists "ores"."dq_catalog_tbl" (
     check ("valid_from" < "valid_to")
 );
 
-create unique index if not exists dq_catalog_version_uniq_idx
-on "ores"."dq_catalog_tbl" (name, version)
+create unique index if not exists dq_catalogs_version_uniq_idx
+on "ores"."dq_catalogs_tbl" (name, version)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_catalog_name_uniq_idx
-on "ores"."dq_catalog_tbl" (name)
+create unique index if not exists dq_catalogs_name_uniq_idx
+on "ores"."dq_catalogs_tbl" (name)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create or replace function ores.dq_catalog_insert_fn()
+create or replace function ores.dq_catalogs_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "ores"."dq_catalog_tbl"
+    from "ores"."dq_catalogs_tbl"
     where name = NEW.name
       and valid_to = ores.utility_infinity_timestamp_fn();
 
@@ -76,7 +76,7 @@ begin
         NEW.version = current_version + 1;
 
         -- Close the old record.
-        update "ores"."dq_catalog_tbl"
+        update "ores"."dq_catalogs_tbl"
         set valid_to = current_timestamp
         where name = NEW.name
           and valid_to = ores.utility_infinity_timestamp_fn()
@@ -99,13 +99,13 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_catalog_insert_trg
-before insert on "ores"."dq_catalog_tbl"
-for each row execute function ores.dq_catalog_insert_fn();
+create or replace trigger dq_catalogs_insert_trg
+before insert on "ores"."dq_catalogs_tbl"
+for each row execute function ores.dq_catalogs_insert_fn();
 
-create or replace rule dq_catalog_delete_rule as
-on delete to "ores"."dq_catalog_tbl" do instead
-    update "ores"."dq_catalog_tbl"
+create or replace rule dq_catalogs_delete_rule as
+on delete to "ores"."dq_catalogs_tbl" do instead
+    update "ores"."dq_catalogs_tbl"
     set valid_to = current_timestamp
     where name = OLD.name
       and valid_to = ores.utility_infinity_timestamp_fn();

@@ -42,7 +42,7 @@ set schema 'ores';
 -- =============================================================================
 
 -- Helper function to insert a scheme if it doesn't exist
-create or replace function ores.upsert_dq_coding_scheme(
+create or replace function ores.upsert_dq_coding_schemes(
     p_code text,
     p_name text,
     p_authority_type text,
@@ -53,10 +53,10 @@ create or replace function ores.upsert_dq_coding_scheme(
 ) returns void as $$
 begin
     if not exists (
-        select 1 from ores.dq_coding_scheme_tbl
+        select 1 from ores.dq_coding_schemes_tbl
         where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
-        insert into ores.dq_coding_scheme_tbl (
+        insert into ores.dq_coding_schemes_tbl (
             code, version, name, authority_type, subject_area_name, domain_name, uri, description,
             modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
@@ -79,7 +79,7 @@ $$ language plpgsql;
 \echo '--- Data Quality Coding Schemes ---'
 
 -- Party identification schemes (official - ISO standards)
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'LEI',
     'Legal Entity Identifier',
     'official',
@@ -89,7 +89,7 @@ select ores.upsert_dq_coding_scheme(
     'Legal Entity Identifier (ISO 17442, 20-char alphanumeric). Global standard for legal entities.'
 );
 
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'BIC',
     'Business Identifier Code',
     'official',
@@ -99,7 +99,7 @@ select ores.upsert_dq_coding_scheme(
     'Business Identifier Code (SWIFT/BIC, ISO 9362). Used for banks and financial institutions.'
 );
 
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'MIC',
     'Market Identifier Code',
     'official',
@@ -109,7 +109,7 @@ select ores.upsert_dq_coding_scheme(
     'Market Identifier Code (ISO 10383). Identifies trading venues (e.g., XNYS, XLON). Note: Technically a venue, but often linked to party context in trade reports.'
 );
 
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'NATIONAL_ID',
     'National Identifier',
     'official',
@@ -120,7 +120,7 @@ select ores.upsert_dq_coding_scheme(
 );
 
 -- Party identification schemes (industry - regulatory/consortium standards)
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'CEDB',
     'CFTC Entity Directory',
     'industry',
@@ -130,7 +130,7 @@ select ores.upsert_dq_coding_scheme(
     'CFTC Entity Directory (US-specific). Used in CFTC swap data reporting for non-LEI entities.'
 );
 
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'ACER',
     'EU Agency for Energy Regulation',
     'industry',
@@ -140,7 +140,7 @@ select ores.upsert_dq_coding_scheme(
     'ACER (EU Agency for Energy Regulation) code. Required for REMIT reporting by non-LEI energy market participants. Officially supported in FpML energy extensions.'
 );
 
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'DTCC',
     'Depository Trust & Clearing Corporation Participant ID',
     'industry',
@@ -150,7 +150,7 @@ select ores.upsert_dq_coding_scheme(
     'DTCC Participant ID: A unique numeric identifier (typically 4-6 digits) assigned by the Depository Trust & Clearing Corporation (DTCC) to member firms authorized to participate in U.S. clearing and settlement systems, including DTC, NSCC, and FICC. Used in post-trade processing, trade reporting, and regulatory submissions in U.S. capital markets.'
 );
 
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'MPID',
     'Market Participant Identifier',
     'industry',
@@ -161,7 +161,7 @@ select ores.upsert_dq_coding_scheme(
 );
 
 -- Party identification schemes (internal - proprietary)
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'NATURAL_PERSON',
     'Natural Person',
     'internal',
@@ -171,7 +171,7 @@ select ores.upsert_dq_coding_scheme(
     'Generic identifier for individuals (e.g., employee ID, trader ID). Not standardized; value interpreted contextually.'
 );
 
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'INTERNAL',
     'Internal',
     'internal',
@@ -182,7 +182,7 @@ select ores.upsert_dq_coding_scheme(
 );
 
 -- Country identification schemes (official - ISO standards)
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'ISO_3166_1_ALPHA_2',
     'ISO 3166-1 Alpha-2 Country Code',
     'official',
@@ -192,7 +192,7 @@ select ores.upsert_dq_coding_scheme(
     'ISO 3166-1 alpha-2 country codes. Two-letter codes (e.g., US, GB, DE) for countries and dependent territories. The most commonly used country code format in financial messaging.'
 );
 
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'ISO_3166_1_ALPHA_3',
     'ISO 3166-1 Alpha-3 Country Code',
     'official',
@@ -203,7 +203,7 @@ select ores.upsert_dq_coding_scheme(
 );
 
 -- Currency identification schemes (official - ISO standards)
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'ISO_4217',
     'ISO 4217 Currency Code',
     'official',
@@ -214,7 +214,7 @@ select ores.upsert_dq_coding_scheme(
 );
 
 -- Currency identification schemes (industry - FPML extensions)
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'FPML_NON_ISO_CURRENCY',
     'FpML Non-ISO Currency',
     'industry',
@@ -225,7 +225,7 @@ select ores.upsert_dq_coding_scheme(
 );
 
 -- General schemes (internal - placeholder)
-select ores.upsert_dq_coding_scheme(
+select ores.upsert_dq_coding_schemes(
     'NONE',
     'No Coding Scheme',
     'internal',
@@ -239,7 +239,7 @@ select ores.upsert_dq_coding_scheme(
 -- Cleanup
 -- =============================================================================
 
-drop function ores.upsert_dq_coding_scheme(text, text, text, text, text, text, text);
+drop function ores.upsert_dq_coding_schemes(text, text, text, text, text, text, text);
 
 -- =============================================================================
 -- Summary
@@ -249,5 +249,5 @@ drop function ores.upsert_dq_coding_scheme(text, text, text, text, text, text, t
 \echo '--- Summary ---'
 
 select 'Coding Schemes' as entity, count(*) as count
-from ores.dq_coding_scheme_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_coding_schemes_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

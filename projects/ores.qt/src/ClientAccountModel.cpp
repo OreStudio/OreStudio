@@ -24,6 +24,7 @@
 #include <unordered_map>
 #include <QtConcurrent>
 #include <QColor>
+#include "ores.qt/ExceptionHelper.hpp"
 #include <QDateTime>
 #include <QFont>
 #include <boost/uuid/uuid_io.hpp>
@@ -202,47 +203,59 @@ void ClientAccountModel::fetch_accounts(std::uint32_t offset, std::uint32_t limi
 
     QFuture<FutureWatcherResult> future =
         QtConcurrent::run([self, offset, limit]() -> FutureWatcherResult {
-            BOOST_LOG_SEV(lg(), debug) << "Making an accounts request with offset="
-                                       << offset << ", limit=" << limit;
-            if (!self) return {false, {}, {}, 0};
+            return exception_helper::wrap_async_fetch<FutureWatcherResult>([&]() -> FutureWatcherResult {
+                BOOST_LOG_SEV(lg(), debug) << "Making an accounts request with offset="
+                                           << offset << ", limit=" << limit;
+                if (!self || !self->clientManager_) {
+                    return {.success = false, .accounts = {}, .loginInfos = {},
+                            .total_available_count = 0,
+                            .error_message = "Model was destroyed",
+                            .error_details = {}};
+                }
 
-            // Fetch accounts using typed request
-            iam::messaging::get_accounts_request accounts_request;
-            accounts_request.offset = offset;
-            accounts_request.limit = limit;
+                // Fetch accounts using typed request
+                iam::messaging::get_accounts_request accounts_request;
+                accounts_request.offset = offset;
+                accounts_request.limit = limit;
 
-            auto accounts_result = self->clientManager_->
-                process_authenticated_request(std::move(accounts_request));
+                auto accounts_result = self->clientManager_->
+                    process_authenticated_request(std::move(accounts_request));
 
-            if (!accounts_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to fetch accounts: "
-                                           << comms::net::to_string(accounts_result.error());
-                return {false, {}, {}, 0};
-            }
+                if (!accounts_result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to fetch accounts: "
+                                               << comms::net::to_string(accounts_result.error());
+                    return {.success = false, .accounts = {}, .loginInfos = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(
+                                "Failed to fetch accounts: " + comms::net::to_string(accounts_result.error())),
+                            .error_details = {}};
+                }
 
-            BOOST_LOG_SEV(lg(), debug) << "Received " << accounts_result->accounts.size()
-                                       << " accounts, total available: "
-                                       << accounts_result->total_available_count;
+                BOOST_LOG_SEV(lg(), debug) << "Received " << accounts_result->accounts.size()
+                                           << " accounts, total available: "
+                                           << accounts_result->total_available_count;
 
-            // Fetch login info using typed request
-            iam::messaging::list_login_info_request login_info_request;
+                // Fetch login info using typed request
+                iam::messaging::list_login_info_request login_info_request;
 
-            std::vector<iam::domain::login_info> login_infos;
-            auto login_info_result = self->clientManager_->
-                process_authenticated_request(std::move(login_info_request));
+                std::vector<iam::domain::login_info> login_infos;
+                auto login_info_result = self->clientManager_->
+                    process_authenticated_request(std::move(login_info_request));
 
-            if (login_info_result) {
-                login_infos = std::move(login_info_result->login_infos);
-                BOOST_LOG_SEV(lg(), debug) << "Received " << login_infos.size()
-                                           << " login info records";
-            } else {
-                BOOST_LOG_SEV(lg(), warn) << "Failed to fetch login info: "
-                                          << comms::net::to_string(login_info_result.error());
-            }
+                if (login_info_result) {
+                    login_infos = std::move(login_info_result->login_infos);
+                    BOOST_LOG_SEV(lg(), debug) << "Received " << login_infos.size()
+                                               << " login info records";
+                } else {
+                    BOOST_LOG_SEV(lg(), warn) << "Failed to fetch login info: "
+                                              << comms::net::to_string(login_info_result.error());
+                }
 
-            return {true, std::move(accounts_result->accounts),
-                    std::move(login_infos),
-                    accounts_result->total_available_count};
+                return {.success = true, .accounts = std::move(accounts_result->accounts),
+                        .loginInfos = std::move(login_infos),
+                        .total_available_count = accounts_result->total_available_count,
+                        .error_message = {}, .error_details = {}};
+            }, "accounts");
         });
 
      watcher_->setFuture(future);
@@ -252,8 +265,16 @@ void ClientAccountModel::onAccountsLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "On accounts loaded event.";
     is_fetching_ = false;
 
-    auto result = watcher_->result();
-    if (result.success) {
+    const auto result = watcher_->result();
+
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch accounts: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
+        return;
+    }
+
+    {
         total_available_count_ = result.total_available_count;
 
         // Build map of login_info by account_id for joining
@@ -324,9 +345,6 @@ void ClientAccountModel::onAccountsLoaded() {
         }
 
         emit dataLoaded();
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Accounts request failed: no response.";
-        emit loadError(tr("Failed to load accounts from server"));
     }
 }
 

@@ -71,7 +71,7 @@ public:
 
 signals:
     void dataLoaded();
-    void loadError(const QString& error_message);
+    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onDimensionsLoaded();
@@ -84,6 +84,8 @@ private:
     struct FetchResult {
         bool success;
         std::vector<dq::domain::treatment_dimension> dimensions;
+        QString error_message;
+        QString error_details;
     };
 
     ClientManager* clientManager_;

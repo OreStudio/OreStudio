@@ -44,7 +44,7 @@ declare
 begin
     -- Get the FpML Non-ISO Currencies dataset ID
     select id into v_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = 'FpML Non-ISO Currencies'
       and subject_area_name = 'Currencies'
       and domain_name = 'Reference Data'
@@ -56,7 +56,7 @@ begin
 
     -- Get the flags dataset ID (for linking images)
     select id into v_flags_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = 'Country Flags from lipis/flag-icons'
       and subject_area_name = 'Countries'
       and domain_name = 'Reference Data'
@@ -136,27 +136,27 @@ end $$;
 
 select 'Total FpML Non-ISO Currencies' as metric, count(*) as count
 from ores.dq_currencies_artefact_tbl c
-join ores.dq_dataset_tbl d on c.dataset_id = d.id
+join ores.dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = 'FpML Non-ISO Currencies'
   and d.valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Offshore Currencies (fiat.offshore)', count(*)
 from ores.dq_currencies_artefact_tbl c
-join ores.dq_dataset_tbl d on c.dataset_id = d.id
+join ores.dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = 'FpML Non-ISO Currencies'
   and d.valid_to = ores.utility_infinity_timestamp_fn()
   and c.currency_type = 'fiat.offshore'
 union all
 select 'Emerging Currencies (fiat.emerging)', count(*)
 from ores.dq_currencies_artefact_tbl c
-join ores.dq_dataset_tbl d on c.dataset_id = d.id
+join ores.dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = 'FpML Non-ISO Currencies'
   and d.valid_to = ores.utility_infinity_timestamp_fn()
   and c.currency_type = 'fiat.emerging'
 union all
 select 'Historical Currencies (fiat.historical)', count(*)
 from ores.dq_currencies_artefact_tbl c
-join ores.dq_dataset_tbl d on c.dataset_id = d.id
+join ores.dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = 'FpML Non-ISO Currencies'
   and d.valid_to = ores.utility_infinity_timestamp_fn()
   and c.currency_type = 'fiat.historical';

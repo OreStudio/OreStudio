@@ -207,7 +207,7 @@ signals:
     /**
      * @brief Emitted when an error occurs during data loading.
      */
-    void loadError(const QString& error_message);
+    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onCurrenciesLoaded();
@@ -236,6 +236,8 @@ private:
         bool success;
         std::vector<refdata::domain::currency> currencies;
         std::uint32_t total_available_count;
+        QString error_message;
+        QString error_details;
     };
 
     using FutureWatcherResult = FetchResult;

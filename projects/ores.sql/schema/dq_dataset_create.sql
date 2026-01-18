@@ -18,7 +18,7 @@
  *
  */
 
-create table if not exists "ores"."dq_dataset_tbl" (
+create table if not exists "ores"."dq_datasets_tbl" (
     "id" uuid not null,
     "version" integer not null,
     "catalog_name" text,
@@ -51,22 +51,22 @@ create table if not exists "ores"."dq_dataset_tbl" (
     check ("valid_from" < "valid_to")
 );
 
-create unique index if not exists dq_dataset_name_uniq_idx
-on "ores"."dq_dataset_tbl" (name, subject_area_name, domain_name)
+create unique index if not exists dq_datasets_name_uniq_idx
+on "ores"."dq_datasets_tbl" (name, subject_area_name, domain_name)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_dataset_version_uniq_idx
-on "ores"."dq_dataset_tbl" (id, version)
+create unique index if not exists dq_datasets_version_uniq_idx
+on "ores"."dq_datasets_tbl" (id, version)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create or replace function ores.dq_dataset_insert_fn()
+create or replace function ores.dq_datasets_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     -- Validate foreign key references
     if NEW.catalog_name is not null and not exists (
-        select 1 from ores.dq_catalog_tbl
+        select 1 from ores.dq_catalogs_tbl
         where name = NEW.catalog_name
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
@@ -75,7 +75,7 @@ begin
     end if;
 
     if not exists (
-        select 1 from ores.dq_subject_area_tbl
+        select 1 from ores.dq_subject_areas_tbl
         where name = NEW.subject_area_name
         and domain_name = NEW.domain_name
         and valid_to = ores.utility_infinity_timestamp_fn()
@@ -85,7 +85,7 @@ begin
     end if;
 
     if NEW.coding_scheme_code is not null and not exists (
-        select 1 from ores.dq_coding_scheme_tbl
+        select 1 from ores.dq_coding_schemes_tbl
         where code = NEW.coding_scheme_code
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
@@ -94,7 +94,7 @@ begin
     end if;
 
     if not exists (
-        select 1 from ores.dq_origin_dimension_tbl
+        select 1 from ores.dq_origin_dimensions_tbl
         where code = NEW.origin_code
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
@@ -103,7 +103,7 @@ begin
     end if;
 
     if not exists (
-        select 1 from ores.dq_nature_dimension_tbl
+        select 1 from ores.dq_nature_dimensions_tbl
         where code = NEW.nature_code
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
@@ -112,7 +112,7 @@ begin
     end if;
 
     if not exists (
-        select 1 from ores.dq_treatment_dimension_tbl
+        select 1 from ores.dq_treatment_dimensions_tbl
         where code = NEW.treatment_code
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
@@ -121,7 +121,7 @@ begin
     end if;
 
     if NEW.methodology_id is not null and not exists (
-        select 1 from ores.dq_methodology_tbl
+        select 1 from ores.dq_methodologies_tbl
         where id = NEW.methodology_id
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
@@ -130,7 +130,7 @@ begin
     end if;
 
     if NEW.upstream_derivation_id is not null and not exists (
-        select 1 from ores.dq_dataset_tbl
+        select 1 from ores.dq_datasets_tbl
         where id = NEW.upstream_derivation_id
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
@@ -142,7 +142,7 @@ begin
     if NEW.upstream_derivation_id is null then
         NEW.lineage_depth := 0;
     else
-        select COALESCE((select lineage_depth from ores.dq_dataset_tbl
+        select COALESCE((select lineage_depth from ores.dq_datasets_tbl
                          where id = NEW.upstream_derivation_id
                          and valid_to = ores.utility_infinity_timestamp_fn()), 0) + 1
         into NEW.lineage_depth;
@@ -150,7 +150,7 @@ begin
 
     -- Version management
     select version into current_version
-    from "ores"."dq_dataset_tbl"
+    from "ores"."dq_datasets_tbl"
     where id = NEW.id
       and valid_to = ores.utility_infinity_timestamp_fn();
 
@@ -162,7 +162,7 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "ores"."dq_dataset_tbl"
+        update "ores"."dq_datasets_tbl"
         set valid_to = current_timestamp
         where id = NEW.id
           and valid_to = ores.utility_infinity_timestamp_fn()
@@ -184,13 +184,13 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_dataset_insert_trg
-before insert on "ores"."dq_dataset_tbl"
-for each row execute function ores.dq_dataset_insert_fn();
+create or replace trigger dq_datasets_insert_trg
+before insert on "ores"."dq_datasets_tbl"
+for each row execute function ores.dq_datasets_insert_fn();
 
-create or replace rule dq_dataset_delete_rule as
-on delete to "ores"."dq_dataset_tbl" do instead
-    update "ores"."dq_dataset_tbl"
+create or replace rule dq_datasets_delete_rule as
+on delete to "ores"."dq_datasets_tbl" do instead
+    update "ores"."dq_datasets_tbl"
     set valid_to = current_timestamp
     where id = OLD.id
       and valid_to = ores.utility_infinity_timestamp_fn();

@@ -70,7 +70,7 @@ begin
         d.source_system_id,
         d.as_of_date,
         d.license_info
-    from ores.dq_dataset_tbl d
+    from ores.dq_datasets_tbl d
     join ores.dq_images_artefact_tbl i on i.dataset_id = d.id
     where d.valid_to = ores.utility_infinity_timestamp_fn()
     group by d.id, d.name, d.subject_area_name, d.domain_name,
@@ -89,7 +89,7 @@ begin
         d.source_system_id,
         d.as_of_date,
         d.license_info
-    from ores.dq_dataset_tbl d
+    from ores.dq_datasets_tbl d
     join ores.dq_countries_artefact_tbl c on c.dataset_id = d.id
     where d.valid_to = ores.utility_infinity_timestamp_fn()
     group by d.id, d.name, d.subject_area_name, d.domain_name,
@@ -108,7 +108,7 @@ begin
         d.source_system_id,
         d.as_of_date,
         d.license_info
-    from ores.dq_dataset_tbl d
+    from ores.dq_datasets_tbl d
     join ores.dq_currencies_artefact_tbl c on c.dataset_id = d.id
     where d.valid_to = ores.utility_infinity_timestamp_fn()
     group by d.id, d.name, d.subject_area_name, d.domain_name,
@@ -183,7 +183,7 @@ declare
 begin
     -- Validate dataset exists
     select name into v_dataset_name
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where id = p_dataset_id
       and valid_to = ores.utility_infinity_timestamp_fn();
 
@@ -323,7 +323,7 @@ declare
 begin
     -- Validate dataset exists and get metadata
     select name, coding_scheme_code into v_dataset_name, v_coding_scheme_code
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where id = p_dataset_id
       and valid_to = ores.utility_infinity_timestamp_fn();
 
@@ -491,7 +491,7 @@ declare
 begin
     -- Validate dataset exists and get metadata
     select name, coding_scheme_code into v_dataset_name, v_coding_scheme_code
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where id = p_dataset_id
       and valid_to = ores.utility_infinity_timestamp_fn();
 

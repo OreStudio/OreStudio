@@ -26,7 +26,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq/domain/coding_scheme.hpp"
+#include "ores.dq/domain/coding_scheme_authority_type.hpp"
 #include "ores.dq/repository/coding_scheme_repository.hpp"
+#include "ores.dq/repository/coding_scheme_authority_type_repository.hpp"
 
 namespace ores::dq::service {
 
@@ -124,8 +126,59 @@ public:
     std::vector<domain::coding_scheme>
     get_coding_scheme_history(const std::string& code);
 
+    // ========================================================================
+    // Coding Scheme Authority Type Management
+    // ========================================================================
+
+    /**
+     * @brief Lists all coding scheme authority types.
+     */
+    std::vector<domain::coding_scheme_authority_type> list_authority_types();
+
+    /**
+     * @brief Finds a coding scheme authority type by its code.
+     */
+    std::optional<domain::coding_scheme_authority_type>
+    find_authority_type(const std::string& code);
+
+    /**
+     * @brief Creates a new coding scheme authority type.
+     *
+     * @param authority_type The authority type to create
+     * @return The created authority type
+     * @throws std::invalid_argument if code is empty
+     * @throws std::runtime_error if authority type already exists
+     */
+    domain::coding_scheme_authority_type create_authority_type(
+        const domain::coding_scheme_authority_type& authority_type);
+
+    /**
+     * @brief Updates an existing coding scheme authority type.
+     *
+     * @param authority_type The authority type with updated values
+     */
+    void update_authority_type(
+        const domain::coding_scheme_authority_type& authority_type);
+
+    /**
+     * @brief Removes a coding scheme authority type.
+     *
+     * @param code The code of the authority type to remove
+     */
+    void remove_authority_type(const std::string& code);
+
+    /**
+     * @brief Gets the version history for a coding scheme authority type.
+     *
+     * @param code The authority type code
+     * @return Vector of all versions, newest first
+     */
+    std::vector<domain::coding_scheme_authority_type>
+    get_authority_type_history(const std::string& code);
+
 private:
     repository::coding_scheme_repository coding_scheme_repo_;
+    repository::coding_scheme_authority_type_repository authority_type_repo_;
 };
 
 }

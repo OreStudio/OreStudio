@@ -83,7 +83,7 @@ get_change_reason_categories_response::deserialize(
     std::span<const std::byte> data) {
     get_change_reason_categories_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }
@@ -186,7 +186,7 @@ std::expected<get_change_reasons_response,
 get_change_reasons_response::deserialize(std::span<const std::byte> data) {
     get_change_reasons_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }
@@ -319,7 +319,7 @@ get_change_reasons_by_category_response::deserialize(
     std::span<const std::byte> data) {
     get_change_reasons_by_category_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }
@@ -596,7 +596,7 @@ std::expected<delete_change_reason_request, error_code>
 delete_change_reason_request::deserialize(std::span<const std::byte> data) {
     delete_change_reason_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -632,7 +632,7 @@ std::expected<delete_change_reason_response, error_code>
 delete_change_reason_response::deserialize(std::span<const std::byte> data) {
     delete_change_reason_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -713,7 +713,7 @@ get_change_reason_history_response::deserialize(std::span<const std::byte> data)
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -815,7 +815,7 @@ std::expected<delete_change_reason_category_request, error_code>
 delete_change_reason_category_request::deserialize(std::span<const std::byte> data) {
     delete_change_reason_category_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -852,7 +852,7 @@ std::expected<delete_change_reason_category_response, error_code>
 delete_change_reason_category_response::deserialize(std::span<const std::byte> data) {
     delete_change_reason_category_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -938,7 +938,7 @@ get_change_reason_category_history_response::deserialize(
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 

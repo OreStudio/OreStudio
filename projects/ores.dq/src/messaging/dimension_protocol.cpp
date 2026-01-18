@@ -233,7 +233,7 @@ std::expected<get_nature_dimensions_response, error_code>
 get_nature_dimensions_response::deserialize(std::span<const std::byte> data) {
     get_nature_dimensions_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -319,7 +319,7 @@ std::expected<delete_nature_dimension_request, error_code>
 delete_nature_dimension_request::deserialize(std::span<const std::byte> data) {
     delete_nature_dimension_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -353,7 +353,7 @@ std::expected<delete_nature_dimension_response, error_code>
 delete_nature_dimension_response::deserialize(std::span<const std::byte> data) {
     delete_nature_dimension_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -429,7 +429,7 @@ get_nature_dimension_history_response::deserialize(std::span<const std::byte> da
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -482,7 +482,7 @@ std::expected<get_origin_dimensions_response, error_code>
 get_origin_dimensions_response::deserialize(std::span<const std::byte> data) {
     get_origin_dimensions_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -568,7 +568,7 @@ std::expected<delete_origin_dimension_request, error_code>
 delete_origin_dimension_request::deserialize(std::span<const std::byte> data) {
     delete_origin_dimension_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -602,7 +602,7 @@ std::expected<delete_origin_dimension_response, error_code>
 delete_origin_dimension_response::deserialize(std::span<const std::byte> data) {
     delete_origin_dimension_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -678,7 +678,7 @@ get_origin_dimension_history_response::deserialize(std::span<const std::byte> da
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -731,7 +731,7 @@ std::expected<get_treatment_dimensions_response, error_code>
 get_treatment_dimensions_response::deserialize(std::span<const std::byte> data) {
     get_treatment_dimensions_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -817,7 +817,7 @@ std::expected<delete_treatment_dimension_request, error_code>
 delete_treatment_dimension_request::deserialize(std::span<const std::byte> data) {
     delete_treatment_dimension_request request;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -851,7 +851,7 @@ std::expected<delete_treatment_dimension_response, error_code>
 delete_treatment_dimension_response::deserialize(std::span<const std::byte> data) {
     delete_treatment_dimension_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -927,7 +927,7 @@ get_treatment_dimension_history_response::deserialize(std::span<const std::byte>
     if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 

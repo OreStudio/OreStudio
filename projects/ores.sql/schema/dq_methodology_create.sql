@@ -18,7 +18,7 @@
  *
  */
 
-create table if not exists "ores"."dq_methodology_tbl" (
+create table if not exists "ores"."dq_methodologies_tbl" (
     "id" uuid not null,
     "version" integer not null,
     "name" text not null,
@@ -38,21 +38,21 @@ create table if not exists "ores"."dq_methodology_tbl" (
     check ("valid_from" < "valid_to")
 );
 
-create unique index if not exists dq_methodology_name_uniq_idx
-on "ores"."dq_methodology_tbl" (name)
+create unique index if not exists dq_methodologies_name_uniq_idx
+on "ores"."dq_methodologies_tbl" (name)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_methodology_version_uniq_idx
-on "ores"."dq_methodology_tbl" (id, version)
+create unique index if not exists dq_methodologies_version_uniq_idx
+on "ores"."dq_methodologies_tbl" (id, version)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create or replace function ores.dq_methodology_insert_fn()
+create or replace function ores.dq_methodologies_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "ores"."dq_methodology_tbl"
+    from "ores"."dq_methodologies_tbl"
     where id = NEW.id
       and valid_to = ores.utility_infinity_timestamp_fn();
 
@@ -64,7 +64,7 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "ores"."dq_methodology_tbl"
+        update "ores"."dq_methodologies_tbl"
         set valid_to = current_timestamp
         where id = NEW.id
           and valid_to = ores.utility_infinity_timestamp_fn()
@@ -86,13 +86,13 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_methodology_insert_trg
-before insert on "ores"."dq_methodology_tbl"
-for each row execute function ores.dq_methodology_insert_fn();
+create or replace trigger dq_methodologies_insert_trg
+before insert on "ores"."dq_methodologies_tbl"
+for each row execute function ores.dq_methodologies_insert_fn();
 
-create or replace rule dq_methodology_delete_rule as
-on delete to "ores"."dq_methodology_tbl" do instead
-    update "ores"."dq_methodology_tbl"
+create or replace rule dq_methodologies_delete_rule as
+on delete to "ores"."dq_methodologies_tbl" do instead
+    update "ores"."dq_methodologies_tbl"
     set valid_to = current_timestamp
     where id = OLD.id
       and valid_to = ores.utility_infinity_timestamp_fn();

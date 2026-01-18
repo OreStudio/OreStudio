@@ -57,6 +57,18 @@ reader::read_uint32(std::span<const std::byte>& data) {
     return value;
 }
 
+std::expected<std::uint32_t, error_code>
+reader::read_count(std::span<const std::byte>& data, std::uint32_t max_count) {
+    auto count_result = read_uint32(data);
+    if (!count_result) {
+        return std::unexpected(count_result.error());
+    }
+    if (*count_result > max_count) {
+        return std::unexpected(error_code::limit_exceeded);
+    }
+    return *count_result;
+}
+
 std::expected<std::int64_t, error_code>
 reader::read_int64(std::span<const std::byte>& data) {
     if (data.size() < 8) {

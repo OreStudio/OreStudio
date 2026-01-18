@@ -18,7 +18,7 @@
  *
  */
 
-create table if not exists "ores"."dq_data_domain_tbl" (
+create table if not exists "ores"."dq_data_domains_tbl" (
     "name" text not null,
     "version" integer not null,
     "description" text not null,
@@ -35,21 +35,21 @@ create table if not exists "ores"."dq_data_domain_tbl" (
     check ("valid_from" < "valid_to")
 );
 
-create unique index if not exists dq_data_domain_version_uniq_idx
-on "ores"."dq_data_domain_tbl" (name, version)
+create unique index if not exists dq_data_domains_version_uniq_idx
+on "ores"."dq_data_domains_tbl" (name, version)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create unique index if not exists dq_data_domain_name_uniq_idx
-on "ores"."dq_data_domain_tbl" (name)
+create unique index if not exists dq_data_domains_name_uniq_idx
+on "ores"."dq_data_domains_tbl" (name)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
-create or replace function ores.dq_data_domain_insert_fn()
+create or replace function ores.dq_data_domains_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "ores"."dq_data_domain_tbl"
+    from "ores"."dq_data_domains_tbl"
     where name = NEW.name
       and valid_to = ores.utility_infinity_timestamp_fn();
 
@@ -61,7 +61,7 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "ores"."dq_data_domain_tbl"
+        update "ores"."dq_data_domains_tbl"
         set valid_to = current_timestamp
         where name = NEW.name
           and valid_to = ores.utility_infinity_timestamp_fn()
@@ -83,13 +83,13 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger dq_data_domain_insert_trg
-before insert on "ores"."dq_data_domain_tbl"
-for each row execute function ores.dq_data_domain_insert_fn();
+create or replace trigger dq_data_domains_insert_trg
+before insert on "ores"."dq_data_domains_tbl"
+for each row execute function ores.dq_data_domains_insert_fn();
 
-create or replace rule dq_data_domain_delete_rule as
-on delete to "ores"."dq_data_domain_tbl" do instead
-    update "ores"."dq_data_domain_tbl"
+create or replace rule dq_data_domains_delete_rule as
+on delete to "ores"."dq_data_domains_tbl" do instead
+    update "ores"."dq_data_domains_tbl"
     set valid_to = current_timestamp
     where name = OLD.name
       and valid_to = ores.utility_infinity_timestamp_fn();

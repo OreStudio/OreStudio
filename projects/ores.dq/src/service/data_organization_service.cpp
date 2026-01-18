@@ -26,7 +26,7 @@ namespace ores::dq::service {
 using namespace ores::logging;
 
 data_organization_service::data_organization_service(context ctx)
-    : catalog_repo_(ctx), subject_area_repo_(ctx) {}
+    : catalog_repo_(ctx), data_domain_repo_(ctx), subject_area_repo_(ctx) {}
 
 // ============================================================================
 // Catalog Management
@@ -103,6 +103,73 @@ std::vector<domain::catalog>
 data_organization_service::get_catalog_history(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for catalog: " << name;
     return catalog_repo_.read_all(name);
+}
+
+// ============================================================================
+// Data Domain Management
+// ============================================================================
+
+std::vector<domain::data_domain> data_organization_service::list_data_domains() {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all data domains";
+    return data_domain_repo_.read_latest();
+}
+
+std::optional<domain::data_domain>
+data_organization_service::find_data_domain(const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding data domain: " << name;
+    auto domains = data_domain_repo_.read_latest(name);
+    if (domains.empty()) {
+        return std::nullopt;
+    }
+    return domains.front();
+}
+
+domain::data_domain
+data_organization_service::create_data_domain(
+    const domain::data_domain& data_domain) {
+    BOOST_LOG_SEV(lg(), debug) << "Creating data domain: " << data_domain.name;
+
+    if (data_domain.name.empty()) {
+        throw std::invalid_argument("Data domain name cannot be empty");
+    }
+
+    auto existing = find_data_domain(data_domain.name);
+    if (existing) {
+        throw std::runtime_error("Data domain already exists: " + data_domain.name);
+    }
+
+    data_domain_repo_.write(data_domain);
+    BOOST_LOG_SEV(lg(), info) << "Created data domain: " << data_domain.name;
+
+    auto created = find_data_domain(data_domain.name);
+    if (!created) {
+        throw std::runtime_error("Failed to retrieve created data domain");
+    }
+    return *created;
+}
+
+void data_organization_service::update_data_domain(
+    const domain::data_domain& data_domain) {
+    BOOST_LOG_SEV(lg(), debug) << "Updating data domain: " << data_domain.name;
+
+    if (data_domain.name.empty()) {
+        throw std::invalid_argument("Data domain name cannot be empty");
+    }
+
+    data_domain_repo_.write(data_domain);
+    BOOST_LOG_SEV(lg(), info) << "Updated data domain: " << data_domain.name;
+}
+
+void data_organization_service::remove_data_domain(const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing data domain: " << name;
+    data_domain_repo_.remove(name);
+    BOOST_LOG_SEV(lg(), info) << "Removed data domain: " << name;
+}
+
+std::vector<domain::data_domain>
+data_organization_service::get_data_domain_history(const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for data domain: " << name;
+    return data_domain_repo_.read_all(name);
 }
 
 // ============================================================================

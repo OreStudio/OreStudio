@@ -87,7 +87,7 @@ declare
 begin
     -- Get the dataset ID using (name, subject_area_name, domain_name)
     select id into v_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = '{dataset_name}'
       and subject_area_name = '{subject_area_name}'
       and domain_name = '{domain_name}'
@@ -146,7 +146,7 @@ Examples:
     parser.add_argument('--config', '-c', choices=CONFIGS.keys(),
                         help='Use a predefined configuration')
     parser.add_argument('--dataset-name', '-n',
-                        help='Name of the dataset in dq_dataset_tbl')
+                        help='Name of the dataset in dq_datasets_tbl')
     parser.add_argument('--subject-area', '-s',
                         help='Subject area name')
     parser.add_argument('--domain', '-d',

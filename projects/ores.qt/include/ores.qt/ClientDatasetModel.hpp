@@ -79,7 +79,7 @@ public:
 
 signals:
     void dataLoaded();
-    void loadError(const QString& error_message);
+    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onDatasetsLoaded();
@@ -92,6 +92,8 @@ private:
     struct FetchResult {
         bool success;
         std::vector<dq::domain::dataset> datasets;
+        QString error_message;
+        QString error_details;
     };
 
     ClientManager* clientManager_;

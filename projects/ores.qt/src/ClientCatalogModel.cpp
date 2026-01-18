@@ -23,6 +23,7 @@
 #include <QColor>
 #include <QFutureWatcher>
 #include <QtConcurrent>
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -113,72 +114,105 @@ void ClientCatalogModel::loadData() {
 
     struct LoadResult {
         bool success;
-        std::string message;
         std::vector<dq::domain::catalog> catalogs;
+        QString error_message;
+        QString error_details;
     };
 
     auto task = [self]() -> LoadResult {
-        if (!self || !self->clientManager_)
-            return {false, "Model destroyed", {}};
+        return exception_helper::wrap_async_fetch<LoadResult>([&]() -> LoadResult {
+            if (!self || !self->clientManager_) {
+                return {.success = false, .catalogs = {},
+                        .error_message = "Model was destroyed",
+                        .error_details = {}};
+            }
 
-        dq::messaging::get_catalogs_request request;
-        auto payload = request.serialize();
+            dq::messaging::get_catalogs_request request;
+            auto payload = request.serialize();
 
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_catalogs_request,
-            0, std::move(payload));
+            comms::messaging::frame request_frame(
+                comms::messaging::message_type::get_catalogs_request,
+                0, std::move(payload));
 
-        auto response_result =
-            self->clientManager_->sendRequest(std::move(request_frame));
-        if (!response_result)
-            return {false, "Failed to communicate with server", {}};
+            auto response_result =
+                self->clientManager_->sendRequest(std::move(request_frame));
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                return {.success = false, .catalogs = {},
+                        .error_message = "Failed to communicate with server",
+                        .error_details = {}};
+            }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result)
-            return {false, "Failed to decompress response", {}};
+            // Check for server error response
+            if (auto err = exception_helper::check_error_response(*response_result)) {
+                BOOST_LOG_SEV(lg(), error) << "Server error: "
+                                           << err->message.toStdString();
+                return {.success = false, .catalogs = {},
+                        .error_message = err->message,
+                        .error_details = err->details};
+            }
 
-        auto response =
-            dq::messaging::get_catalogs_response::deserialize(*payload_result);
-        if (!response)
-            return {false, "Invalid server response", {}};
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+                return {.success = false, .catalogs = {},
+                        .error_message = "Failed to decompress response",
+                        .error_details = {}};
+            }
 
-        return {true, "", std::move(response->catalogs)};
+            auto response =
+                dq::messaging::get_catalogs_response::deserialize(*payload_result);
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+                return {.success = false, .catalogs = {},
+                        .error_message = "Invalid server response",
+                        .error_details = {}};
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->catalogs.size()
+                                       << " catalogs";
+            return {.success = true, .catalogs = std::move(response->catalogs),
+                    .error_message = {}, .error_details = {}};
+        }, "catalogs");
     };
 
     auto* watcher = new QFutureWatcher<LoadResult>(this);
     connect(watcher, &QFutureWatcher<LoadResult>::finished, this,
             [self, watcher]() {
-        auto result = watcher->result();
+        const auto result = watcher->result();
         watcher->deleteLater();
 
         if (!self) return;
 
-        if (result.success) {
-            QSet<QString> oldKeys;
-            for (const auto& c : self->catalogs_) {
-                oldKeys.insert(QString::fromStdString(c.name));
-            }
-
-            self->beginResetModel();
-            self->catalogs_ = std::move(result.catalogs);
-            self->endResetModel();
-
-            self->recentlyModifiedKeys_.clear();
-            for (const auto& c : self->catalogs_) {
-                QString key = QString::fromStdString(c.name);
-                if (!oldKeys.contains(key)) {
-                    self->markRecentlyModified(key);
-                }
-            }
-
-            self->lastLoadTime_ = std::chrono::steady_clock::now();
-            emit self->loadFinished();
-
-            BOOST_LOG_SEV(lg(), debug)
-                << "Loaded " << self->catalogs_.size() << " catalogs";
-        } else {
-            emit self->errorOccurred(QString::fromStdString(result.message));
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch catalogs: "
+                                       << result.error_message.toStdString();
+            emit self->errorOccurred(result.error_message, result.error_details);
+            return;
         }
+
+        QSet<QString> oldKeys;
+        for (const auto& c : self->catalogs_) {
+            oldKeys.insert(QString::fromStdString(c.name));
+        }
+
+        self->beginResetModel();
+        self->catalogs_ = std::move(result.catalogs);
+        self->endResetModel();
+
+        self->recentlyModifiedKeys_.clear();
+        for (const auto& c : self->catalogs_) {
+            QString key = QString::fromStdString(c.name);
+            if (!oldKeys.contains(key)) {
+                self->markRecentlyModified(key);
+            }
+        }
+
+        self->lastLoadTime_ = std::chrono::steady_clock::now();
+        emit self->loadFinished();
+
+        BOOST_LOG_SEV(lg(), debug)
+            << "Loaded " << self->catalogs_.size() << " catalogs";
     });
 
     watcher->setFuture(QtConcurrent::run(task));

@@ -125,6 +125,21 @@ read_uint32(std::span<const std::byte>& data) {
     return value;
 }
 
+constexpr std::uint32_t max_element_count = 100'000;
+
+std::expected<std::uint32_t, ores::utility::serialization::error_code>
+read_count(std::span<const std::byte>& data,
+           std::uint32_t max_count = max_element_count) {
+    auto count_result = read_uint32(data);
+    if (!count_result) {
+        return std::unexpected(count_result.error());
+    }
+    if (*count_result > max_count) {
+        return std::unexpected(error_code::limit_exceeded);
+    }
+    return *count_result;
+}
+
 std::expected<std::uint64_t, ores::utility::serialization::error_code>
 read_uint64(std::span<const std::byte>& data) {
     if (data.size() < 8) {
@@ -416,7 +431,7 @@ get_telemetry_logs_response::deserialize(std::span<const std::byte> data) {
     if (!msg_result) return std::unexpected(msg_result.error());
     response.message = std::move(*msg_result);
 
-    auto count_result = read_uint32(data);
+    auto count_result = read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
@@ -586,7 +601,7 @@ get_telemetry_stats_response::deserialize(std::span<const std::byte> data) {
     if (!msg_result) return std::unexpected(msg_result.error());
     response.message = std::move(*msg_result);
 
-    auto count_result = read_uint32(data);
+    auto count_result = read_count(data);
     if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 

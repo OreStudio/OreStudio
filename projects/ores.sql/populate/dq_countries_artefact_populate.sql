@@ -37,7 +37,7 @@ declare
 begin
     -- Get the countries dataset ID
     select id into v_countries_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = 'ISO 3166 Countries from Wikipedia'
       and subject_area_name = 'Countries'
       and domain_name = 'Reference Data'
@@ -49,7 +49,7 @@ begin
 
     -- Get the flags dataset ID (for linking images)
     select id into v_flags_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = 'Country Flags from lipis/flag-icons'
       and subject_area_name = 'Countries'
       and domain_name = 'Reference Data'

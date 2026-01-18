@@ -25,6 +25,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QMessageBox>
 #include <QSortFilterProxyModel>
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/FeatureFlagItemDelegate.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -201,12 +202,13 @@ void FeatureFlagMdiWindow::onDataLoaded() {
     }
 }
 
-void FeatureFlagMdiWindow::onLoadError(const QString& error_message) {
+void FeatureFlagMdiWindow::onLoadError(const QString& error_message,
+                                        const QString& details) {
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading feature flags: "
                                << error_message.toStdString();
 
-    MessageBoxHelper::critical(this, "Load Error", error_message);
+    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
 }
 
 void FeatureFlagMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
@@ -316,6 +318,14 @@ void FeatureFlagMdiWindow::deleteSelected() {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send delete request";
                 results.push_back({name,
                     {false, "Failed to communicate with server"}});
+                continue;
+            }
+
+            // Check for error response
+            if (auto err = exception_helper::check_error_response(*response_result)) {
+                BOOST_LOG_SEV(lg(), error) << "Server returned error for delete request: "
+                                           << err->message.toStdString();
+                results.push_back({name, {false, err->message.toStdString()}});
                 continue;
             }
 

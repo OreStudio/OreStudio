@@ -21,6 +21,7 @@
 
 #include <QtConcurrent>
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -102,54 +103,87 @@ void ClientCodingSchemeAuthorityTypeModel::refresh() {
     is_fetching_ = true;
     BOOST_LOG_SEV(lg(), debug) << "Fetching coding scheme authority types...";
 
-    auto task = [cm = clientManager_]() -> FetchResult {
-        dq::messaging::get_coding_scheme_authority_types_request request;
-        auto payload = request.serialize();
+    QPointer<ClientCodingSchemeAuthorityTypeModel> self = this;
 
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_coding_scheme_authority_types_request,
-            0, std::move(payload));
+    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+            if (!self || !self->clientManager_) {
+                return {.success = false, .authority_types = {},
+                        .error_message = "Model was destroyed",
+                        .error_details = {}};
+            }
 
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) {
-            return {false, {}};
-        }
+            dq::messaging::get_coding_scheme_authority_types_request request;
+            auto payload = request.serialize();
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, {}};
-        }
+            comms::messaging::frame request_frame(
+                comms::messaging::message_type::get_coding_scheme_authority_types_request,
+                0, std::move(payload));
 
-        auto response = dq::messaging::get_coding_scheme_authority_types_response::deserialize(
-            *payload_result);
-        if (!response) {
-            return {false, {}};
-        }
+            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                return {.success = false, .authority_types = {},
+                        .error_message = "Failed to send request",
+                        .error_details = {}};
+            }
 
-        return {true, std::move(response->authority_types)};
-    };
+            // Check for server error response
+            if (auto err = exception_helper::check_error_response(*response_result)) {
+                BOOST_LOG_SEV(lg(), error) << "Server error: "
+                                           << err->message.toStdString();
+                return {.success = false, .authority_types = {},
+                        .error_message = err->message,
+                        .error_details = err->details};
+            }
 
-    watcher_->setFuture(QtConcurrent::run(task));
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+                return {.success = false, .authority_types = {},
+                        .error_message = "Failed to decompress response",
+                        .error_details = {}};
+            }
+
+            auto response = dq::messaging::get_coding_scheme_authority_types_response::deserialize(
+                *payload_result);
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+                return {.success = false, .authority_types = {},
+                        .error_message = "Failed to deserialize response",
+                        .error_details = {}};
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->authority_types.size()
+                                       << " coding scheme authority types";
+            return {.success = true, .authority_types = std::move(response->authority_types),
+                    .error_message = {}, .error_details = {}};
+        }, "coding scheme authority types");
+    });
+
+    watcher_->setFuture(future);
 }
 
 void ClientCodingSchemeAuthorityTypeModel::onAuthorityTypesLoaded() {
     is_fetching_ = false;
-    auto result = watcher_->result();
 
-    if (result.success) {
-        beginResetModel();
-        auto old_authority_types = std::move(authorityTypes_);
-        authorityTypes_ = std::move(result.authority_types);
-        update_recent_authority_types();
-        endResetModel();
+    const auto result = watcher_->result();
 
-        BOOST_LOG_SEV(lg(), debug) << "Loaded " << authorityTypes_.size()
-                                   << " coding scheme authority types";
-        emit dataLoaded();
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load coding scheme authority types";
-        emit loadError(tr("Failed to load coding scheme authority types"));
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch coding scheme authority types: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
+        return;
     }
+
+    beginResetModel();
+    authorityTypes_ = std::move(result.authority_types);
+    update_recent_authority_types();
+    endResetModel();
+
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << authorityTypes_.size()
+                               << " coding scheme authority types";
+    emit dataLoaded();
 }
 
 const dq::domain::coding_scheme_authority_type* ClientCodingSchemeAuthorityTypeModel::getAuthorityType(

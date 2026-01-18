@@ -20,7 +20,7 @@
 
 set schema 'ores';
 
-drop trigger if exists dq_catalog_insert_trg on "ores"."dq_catalog_tbl";
-drop rule if exists dq_catalog_delete_rule on "ores"."dq_catalog_tbl";
-drop function if exists ores.dq_catalog_insert_fn();
-drop table if exists "ores"."dq_catalog_tbl";
+drop trigger if exists dq_catalogs_insert_trg on "ores"."dq_catalogs_tbl";
+drop rule if exists dq_catalogs_delete_rule on "ores"."dq_catalogs_tbl";
+drop function if exists ores.dq_catalogs_insert_fn();
+drop table if exists "ores"."dq_catalogs_tbl";

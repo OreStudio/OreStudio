@@ -75,7 +75,7 @@ public:
 signals:
     void loadStarted();
     void loadFinished();
-    void errorOccurred(const QString& message);
+    void errorOccurred(const QString& message, const QString& details = {});
 
 private:
     void markRecentlyModified(const QString& name);

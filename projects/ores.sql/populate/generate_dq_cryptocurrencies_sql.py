@@ -129,7 +129,7 @@ declare
 begin
     -- Get the cryptocurrencies dataset ID
     select id into v_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = '{dataset_name}'
       and subject_area_name = '{subject_area_name}'
       and domain_name = '{domain_name}'
@@ -141,7 +141,7 @@ begin
 
     -- Get the cryptocurrency icons dataset ID (for linking images)
     select id into v_icons_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = '{icons_dataset_name}'
       and subject_area_name = '{icons_subject_area_name}'
       and domain_name = '{icons_domain_name}'
@@ -218,30 +218,30 @@ end $$;
 
 select 'Total DQ Cryptocurrencies' as metric, count(*) as count
 from ores.dq_currencies_artefact_tbl c
-join ores.dq_dataset_tbl d on c.dataset_id = d.id
+join ores.dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = '{dataset_name}'
 union all
 select 'Major Cryptocurrencies (crypto.major)', count(*)
 from ores.dq_currencies_artefact_tbl c
-join ores.dq_dataset_tbl d on c.dataset_id = d.id
+join ores.dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = '{dataset_name}'
   and c.currency_type = 'crypto.major'
 union all
 select 'Minor Cryptocurrencies (crypto.minor)', count(*)
 from ores.dq_currencies_artefact_tbl c
-join ores.dq_dataset_tbl d on c.dataset_id = d.id
+join ores.dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = '{dataset_name}'
   and c.currency_type = 'crypto.minor'
 union all
 select 'Cryptocurrencies with Icons', count(*)
 from ores.dq_currencies_artefact_tbl c
-join ores.dq_dataset_tbl d on c.dataset_id = d.id
+join ores.dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = '{dataset_name}'
   and c.image_id is not null
 union all
 select 'Cryptocurrencies without Icons', count(*)
 from ores.dq_currencies_artefact_tbl c
-join ores.dq_dataset_tbl d on c.dataset_id = d.id
+join ores.dq_datasets_tbl d on c.dataset_id = d.id
 where d.name = '{dataset_name}'
   and c.image_id is null;
 """
@@ -295,7 +295,7 @@ Examples:
                         help='Output SQL file path')
     parser.add_argument('--dataset-name', '-n',
                         default=DEFAULT_CONFIG['dataset_name'],
-                        help='Name of the dataset in dq_dataset_tbl')
+                        help='Name of the dataset in dq_datasets_tbl')
     parser.add_argument('--subject-area',
                         default=DEFAULT_CONFIG['subject_area_name'],
                         help='Subject area name')

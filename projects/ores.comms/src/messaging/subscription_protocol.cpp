@@ -166,7 +166,7 @@ notification_message::deserialize(std::span<const std::byte> data) {
         std::chrono::milliseconds(*ms));
 
     // Deserialize entity_ids
-    auto count = reader::read_uint32(data);
+    auto count = reader::read_count(data);
     if (!count) return std::unexpected(count.error());
 
     msg.entity_ids.reserve(*count);
@@ -272,7 +272,7 @@ std::expected<list_event_channels_response, ores::utility::serialization::error_
 list_event_channels_response::deserialize(std::span<const std::byte> data) {
     list_event_channels_response resp;
 
-    auto count = reader::read_uint32(data);
+    auto count = reader::read_count(data);
     if (!count) return std::unexpected(count.error());
 
     resp.channels.reserve(*count);

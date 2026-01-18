@@ -21,6 +21,7 @@
 
 #include <QtConcurrent>
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -108,54 +109,87 @@ void ClientCodingSchemeModel::refresh() {
     is_fetching_ = true;
     BOOST_LOG_SEV(lg(), debug) << "Fetching coding schemes...";
 
-    auto task = [cm = clientManager_]() -> FetchResult {
-        dq::messaging::get_coding_schemes_request request;
-        auto payload = request.serialize();
+    QPointer<ClientCodingSchemeModel> self = this;
 
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_coding_schemes_request,
-            0, std::move(payload));
+    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+            if (!self || !self->clientManager_) {
+                return {.success = false, .schemes = {},
+                        .error_message = "Model was destroyed",
+                        .error_details = {}};
+            }
 
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) {
-            return {false, {}};
-        }
+            dq::messaging::get_coding_schemes_request request;
+            auto payload = request.serialize();
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, {}};
-        }
+            comms::messaging::frame request_frame(
+                comms::messaging::message_type::get_coding_schemes_request,
+                0, std::move(payload));
 
-        auto response = dq::messaging::get_coding_schemes_response::deserialize(
-            *payload_result);
-        if (!response) {
-            return {false, {}};
-        }
+            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                return {.success = false, .schemes = {},
+                        .error_message = "Failed to send request",
+                        .error_details = {}};
+            }
 
-        return {true, std::move(response->schemes)};
-    };
+            // Check for server error response
+            if (auto err = exception_helper::check_error_response(*response_result)) {
+                BOOST_LOG_SEV(lg(), error) << "Server error: "
+                                           << err->message.toStdString();
+                return {.success = false, .schemes = {},
+                        .error_message = err->message,
+                        .error_details = err->details};
+            }
 
-    watcher_->setFuture(QtConcurrent::run(task));
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+                return {.success = false, .schemes = {},
+                        .error_message = "Failed to decompress response",
+                        .error_details = {}};
+            }
+
+            auto response = dq::messaging::get_coding_schemes_response::deserialize(
+                *payload_result);
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+                return {.success = false, .schemes = {},
+                        .error_message = "Failed to deserialize response",
+                        .error_details = {}};
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->schemes.size()
+                                       << " coding schemes";
+            return {.success = true, .schemes = std::move(response->schemes),
+                    .error_message = {}, .error_details = {}};
+        }, "coding schemes");
+    });
+
+    watcher_->setFuture(future);
 }
 
 void ClientCodingSchemeModel::onSchemesLoaded() {
     is_fetching_ = false;
-    auto result = watcher_->result();
 
-    if (result.success) {
-        beginResetModel();
-        auto old_schemes = std::move(schemes_);
-        schemes_ = std::move(result.schemes);
-        update_recent_schemes();
-        endResetModel();
+    const auto result = watcher_->result();
 
-        BOOST_LOG_SEV(lg(), debug) << "Loaded " << schemes_.size()
-                                   << " coding schemes";
-        emit dataLoaded();
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load coding schemes";
-        emit loadError(tr("Failed to load coding schemes"));
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch coding schemes: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
+        return;
     }
+
+    beginResetModel();
+    schemes_ = std::move(result.schemes);
+    update_recent_schemes();
+    endResetModel();
+
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << schemes_.size()
+                               << " coding schemes";
+    emit dataLoaded();
 }
 
 const dq::domain::coding_scheme* ClientCodingSchemeModel::getScheme(

@@ -39,6 +39,7 @@
 #include <QImage>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/AccountItemDelegate.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.iam/messaging/account_protocol.hpp"
@@ -289,12 +290,13 @@ void AccountMdiWindow::onDataLoaded() {
     }
 }
 
-void AccountMdiWindow::onLoadError(const QString& error_message) {
+void AccountMdiWindow::onLoadError(const QString& error_message,
+                                    const QString& details) {
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading accounts: "
                               << error_message.toStdString();
 
-    MessageBoxHelper::critical(this, "Load Error", error_message);
+    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
 }
 
 void AccountMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
@@ -407,6 +409,14 @@ void AccountMdiWindow::deleteSelected() {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send delete request";
                 results.push_back({account_id,
                     {false, "Failed to communicate with server"}});
+                continue;
+            }
+
+            // Check for error response
+            if (auto err = exception_helper::check_error_response(*response_result)) {
+                BOOST_LOG_SEV(lg(), error) << "Server returned error for delete request: "
+                                           << err->message.toStdString();
+                results.push_back({account_id, {false, err->message.toStdString()}});
                 continue;
             }
 
@@ -567,6 +577,17 @@ void AccountMdiWindow::lockSelected() {
             return error_results;
         }
 
+        // Check for error response
+        if (auto err = exception_helper::check_error_response(*response_result)) {
+            BOOST_LOG_SEV(lg(), error) << "Server returned error for lock request: "
+                                       << err->message.toStdString();
+            LockResult error_results;
+            for (const auto& id : account_ids) {
+                error_results.push_back({id, false, err->message.toStdString()});
+            }
+            return error_results;
+        }
+
         auto payload_result = response_result->decompressed_payload();
         if (!payload_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
@@ -717,6 +738,17 @@ void AccountMdiWindow::unlockSelected() {
             UnlockResult error_results;
             for (const auto& id : account_ids) {
                 error_results.push_back({id, false, "Failed to communicate with server"});
+            }
+            return error_results;
+        }
+
+        // Check for error response
+        if (auto err = exception_helper::check_error_response(*response_result)) {
+            BOOST_LOG_SEV(lg(), error) << "Server returned error for unlock request: "
+                                       << err->message.toStdString();
+            UnlockResult error_results;
+            for (const auto& id : account_ids) {
+                error_results.push_back({id, false, err->message.toStdString()});
             }
             return error_results;
         }
@@ -895,6 +927,17 @@ void AccountMdiWindow::resetPasswordSelected() {
             for (const auto& id : account_ids) {
                 error_results.push_back({id, false,
                     "Failed to communicate with server"});
+            }
+            return error_results;
+        }
+
+        // Check for error response
+        if (auto err = exception_helper::check_error_response(*response_result)) {
+            BOOST_LOG_SEV(lg(), error) << "Server returned error for reset password request: "
+                                       << err->message.toStdString();
+            ResetResult error_results;
+            for (const auto& id : account_ids) {
+                error_results.push_back({id, false, err->message.toStdString()});
             }
             return error_results;
         }

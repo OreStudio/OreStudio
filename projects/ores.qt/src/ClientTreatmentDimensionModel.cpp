@@ -21,6 +21,7 @@
 
 #include <QtConcurrent>
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/dimension_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -102,54 +103,87 @@ void ClientTreatmentDimensionModel::refresh() {
     is_fetching_ = true;
     BOOST_LOG_SEV(lg(), debug) << "Fetching treatment dimensions...";
 
-    auto task = [cm = clientManager_]() -> FetchResult {
-        dq::messaging::get_treatment_dimensions_request request;
-        auto payload = request.serialize();
+    QPointer<ClientTreatmentDimensionModel> self = this;
 
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_treatment_dimensions_request,
-            0, std::move(payload));
+    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+        return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+            if (!self || !self->clientManager_) {
+                return {.success = false, .dimensions = {},
+                        .error_message = "Model was destroyed",
+                        .error_details = {}};
+            }
 
-        auto response_result = cm->sendRequest(std::move(request_frame));
-        if (!response_result) {
-            return {false, {}};
-        }
+            dq::messaging::get_treatment_dimensions_request request;
+            auto payload = request.serialize();
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, {}};
-        }
+            comms::messaging::frame request_frame(
+                comms::messaging::message_type::get_treatment_dimensions_request,
+                0, std::move(payload));
 
-        auto response = dq::messaging::get_treatment_dimensions_response::deserialize(
-            *payload_result);
-        if (!response) {
-            return {false, {}};
-        }
+            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+                return {.success = false, .dimensions = {},
+                        .error_message = "Failed to send request",
+                        .error_details = {}};
+            }
 
-        return {true, std::move(response->dimensions)};
-    };
+            // Check for server error response
+            if (auto err = exception_helper::check_error_response(*response_result)) {
+                BOOST_LOG_SEV(lg(), error) << "Server error: "
+                                           << err->message.toStdString();
+                return {.success = false, .dimensions = {},
+                        .error_message = err->message,
+                        .error_details = err->details};
+            }
 
-    watcher_->setFuture(QtConcurrent::run(task));
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
+                return {.success = false, .dimensions = {},
+                        .error_message = "Failed to decompress response",
+                        .error_details = {}};
+            }
+
+            auto response = dq::messaging::get_treatment_dimensions_response::deserialize(
+                *payload_result);
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
+                return {.success = false, .dimensions = {},
+                        .error_message = "Failed to deserialize response",
+                        .error_details = {}};
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->dimensions.size()
+                                       << " treatment dimensions";
+            return {.success = true, .dimensions = std::move(response->dimensions),
+                    .error_message = {}, .error_details = {}};
+        }, "treatment dimensions");
+    });
+
+    watcher_->setFuture(future);
 }
 
 void ClientTreatmentDimensionModel::onDimensionsLoaded() {
     is_fetching_ = false;
-    auto result = watcher_->result();
 
-    if (result.success) {
-        beginResetModel();
-        auto old_dimensions = std::move(dimensions_);
-        dimensions_ = std::move(result.dimensions);
-        update_recent_dimensions();
-        endResetModel();
+    const auto result = watcher_->result();
 
-        BOOST_LOG_SEV(lg(), debug) << "Loaded " << dimensions_.size()
-                                   << " treatment dimensions";
-        emit dataLoaded();
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Failed to load treatment dimensions";
-        emit loadError(tr("Failed to load treatment dimensions"));
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch treatment dimensions: "
+                                   << result.error_message.toStdString();
+        emit loadError(result.error_message, result.error_details);
+        return;
     }
+
+    beginResetModel();
+    dimensions_ = std::move(result.dimensions);
+    update_recent_dimensions();
+    endResetModel();
+
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << dimensions_.size()
+                               << " treatment dimensions";
+    emit dataLoaded();
 }
 
 const dq::domain::treatment_dimension* ClientTreatmentDimensionModel::getDimension(

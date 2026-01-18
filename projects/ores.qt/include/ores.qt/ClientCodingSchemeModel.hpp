@@ -74,7 +74,7 @@ public:
 
 signals:
     void dataLoaded();
-    void loadError(const QString& error_message);
+    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onSchemesLoaded();
@@ -87,6 +87,8 @@ private:
     struct FetchResult {
         bool success;
         std::vector<dq::domain::coding_scheme> schemes;
+        QString error_message;
+        QString error_details;
     };
 
     ClientManager* clientManager_;

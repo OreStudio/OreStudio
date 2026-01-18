@@ -39,7 +39,7 @@ declare
 begin
     -- Get the dataset ID using (name, subject_area_name, domain_name)
     select id into v_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = 'Cryptocurrency Icons from spothq/cryptocurrency-icons'
       and subject_area_name = 'Cryptocurrencies'
       and domain_name = 'Reference Data'

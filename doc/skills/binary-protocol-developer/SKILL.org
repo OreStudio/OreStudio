@@ -288,7 +288,7 @@ action_resource_request::deserialize(std::span<const std::byte> data) {
 | =std::uint32_t=      | 4 bytes big-endian             | write_uint32/read_uint32 |
 | =boost::uuids::uuid= | 16 bytes raw                   | write_uuid/read_uuid     |
 | =std::string=        | 2 bytes length + N bytes UTF-8 | write_string/read_string |
-| =std::vector<T>=     | 4 bytes count + N * sizeof(T)  | Custom implementation    |
+| =std::vector<T>=     | 4 bytes count + N * T elements | write_uint32/read_count  |
 
 *** Important serialization rules
 
@@ -297,6 +297,57 @@ action_resource_request::deserialize(std::span<const std::byte> data) {
 3. Deserialization must read fields in the same order as serialization
 4. Always check for errors during deserialization
 5. Use =std::unexpected= to propagate errors
+6. Use =read_count()= instead of =read_uint32()= for collection sizes
+
+*** Defensive limits for collections
+
+To prevent memory exhaustion from corrupted or malicious data, always use
+=reader::read_count()= when reading collection sizes. This function validates
+the count against =MAX_ELEMENT_COUNT= (100,000) before the collection is
+allocated.
+
+#+begin_src cpp
+#include "ores.utility/serialization/reader.hpp"
+
+// In reader.hpp:
+// constexpr std::uint32_t MAX_ELEMENT_COUNT = 100'000;
+
+std::expected<get_items_response, error_code>
+get_items_response::deserialize(std::span<const std::byte> data) {
+    get_items_response response;
+
+    // Use read_count() instead of read_uint32() for collection sizes
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    response.items.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        // Deserialize each item...
+        auto item_result = deserialize_item(data);
+        if (!item_result) return std::unexpected(item_result.error());
+        response.items.push_back(std::move(*item_result));
+    }
+
+    return response;
+}
+#+end_src
+
+If the count exceeds the limit, =read_count()= returns
+=error_code::limit_exceeded=, preventing a huge memory allocation.
+
+For custom limits, pass a second argument:
+
+#+begin_src cpp
+// Allow at most 1000 items
+auto count_result = reader::read_count(data, 1000);
+#+end_src
+
+*** Decompression limits
+
+Compressed payloads are also protected. The =decompress()= function in
+=ores.comms/messaging/compression.hpp= limits decompressed output to
+=MAX_DECOMPRESSED_SIZE= (16 MB) to prevent zip bomb attacks.
 
 ** Step 5: Add JSON output support
 

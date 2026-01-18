@@ -37,16 +37,16 @@ set schema 'ores';
 -- =============================================================================
 
 -- Helper function to insert a data quality data domain if it doesn't exist
-create or replace function ores.upsert_dq_data_domain(
+create or replace function ores.upsert_dq_data_domains(
     p_name text,
     p_description text
 ) returns void as $$
 begin
     if not exists (
-        select 1 from ores.dq_data_domain_tbl
+        select 1 from ores.dq_data_domains_tbl
         where name = p_name and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
-        insert into ores.dq_data_domain_tbl (
+        insert into ores.dq_data_domains_tbl (
             name, version, description,
             modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
@@ -68,17 +68,17 @@ $$ language plpgsql;
 
 \echo '--- Data Quality Data Domains ---'
 
-select ores.upsert_dq_data_domain(
+select ores.upsert_dq_data_domains(
     'Reference Data',
     'Standardized data used across the system.'
 );
 
-select ores.upsert_dq_data_domain(
+select ores.upsert_dq_data_domains(
     'Trade Data',
     'Transaction and position data.'
 );
 
-select ores.upsert_dq_data_domain(
+select ores.upsert_dq_data_domains(
     'Market Data',
     'Pricing and market information.'
 );
@@ -87,7 +87,7 @@ select ores.upsert_dq_data_domain(
 -- Cleanup
 -- =============================================================================
 
-drop function ores.upsert_dq_data_domain(text, text);
+drop function ores.upsert_dq_data_domains(text, text);
 
 -- =============================================================================
 -- Summary
@@ -97,5 +97,5 @@ drop function ores.upsert_dq_data_domain(text, text);
 \echo '--- Summary ---'
 
 select 'Data Quality Data Domains' as entity, count(*) as count
-from ores.dq_data_domain_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_data_domains_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

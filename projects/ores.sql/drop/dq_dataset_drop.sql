@@ -20,7 +20,7 @@
 
 set schema 'ores';
 
-drop trigger if exists dq_dataset_insert_trg on "ores"."dq_dataset_tbl";
-drop rule if exists dq_dataset_delete_rule on "ores"."dq_dataset_tbl";
-drop function if exists ores.dq_dataset_insert_fn();
-drop table if exists "ores"."dq_dataset_tbl";
+drop trigger if exists dq_datasets_insert_trg on "ores"."dq_datasets_tbl";
+drop rule if exists dq_datasets_delete_rule on "ores"."dq_datasets_tbl";
+drop function if exists ores.dq_datasets_insert_fn();
+drop table if exists "ores"."dq_datasets_tbl";

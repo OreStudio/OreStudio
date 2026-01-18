@@ -17,48 +17,44 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-16 Fri 17:23], for Friday, January 16, 2026.
-|       | <75>                                               |        |      |      |       |
-| Tags  | Headline                                           | Time   |      |      |     % |
-|-------+----------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                       | *8:28* |      |      | 100.0 |
-|-------+----------------------------------------------------+--------+------+------+-------|
-|       | Stories                                            | 8:28   |      |      | 100.0 |
-|       | Active                                             |        | 8:28 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |        |      | 0:32 |   6.3 |
-| infra | OCR scan notebooks for this sprint                 |        |      | 1:33 |  18.3 |
-| code  | Disconnect shows reconnect message                 |        |      | 1:55 |  22.6 |
-| code  | Add UI support for data sets                       |        |      | 4:08 |  48.8 |
-| code  | Implement party related entities at database level |        |      | 0:20 |   3.9 |
+#+CAPTION: Clock summary at [2026-01-17 Sat 22:47], for Saturday, January 17, 2026.
+|      | <75>                         |        |      |      |       |
+| Tags | Headline                     | Time   |      |      |     % |
+|------+------------------------------+--------+------+------+-------|
+|      | *Total time*                 | *4:36* |      |      | 100.0 |
+|------+------------------------------+--------+------+------+-------|
+|      | Stories                      | 4:36   |      |      | 100.0 |
+|      | Active                       |        | 4:36 |      | 100.0 |
+| code | Add UI support for data sets |        |      | 4:36 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-16 Fri 17:23]
+#+CAPTION: Clock summary at [2026-01-17 Sat 22:47]
 |       | <75>                                               |         |       |      |       |
 | Tags  | Headline                                           | Time    |       |      |     % |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                       | *48:08* |       |      | 100.0 |
+|       | *Total time*                                       | *52:44* |       |      | 100.0 |
 |-------+----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                            | 48:08   |       |      | 100.0 |
-|       | Active                                             |         | 48:08 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       | 2:11 |   4.5 |
-| infra | OCR scan notebooks for this sprint                 |         |       | 6:46 |  14.1 |
-| infra | Clean up system models and component models        |         |       | 0:28 |   1.0 |
-| code  | Add missing entities to CLI                        |         |       | 1:55 |   4.0 |
+|       | Stories                                            | 52:44   |       |      | 100.0 |
+|       | Active                                             |         | 52:44 |      | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       | 2:11 |   4.1 |
+| infra | OCR scan notebooks for this sprint                 |         |       | 6:46 |  12.8 |
+| infra | Clean up system models and component models        |         |       | 0:28 |   0.9 |
+| code  | Add missing entities to CLI                        |         |       | 1:55 |   3.6 |
 | infra | Refactor PR related skills                         |         |       | 0:18 |   0.6 |
-| code  | Fix valgrind errors in nightly                     |         |       | 1:25 |   2.9 |
-| code  | Create security module                             |         |       | 1:23 |   2.9 |
-| code  | Prodigy should support multiple environments       |         |       | 0:19 |   0.7 |
-| code  | Add named environment sets                         |         |       | 4:17 |   8.9 |
-| code  | Rename risk to refdata                             |         |       | 0:43 |   1.5 |
-| code  | Prefix database entities with component            |         |       | 3:15 |   6.8 |
-| code  | Implement data quality                             |         |       | 9:42 |  20.2 |
-| code  | Improvements to connection browser                 |         |       | 2:05 |   4.3 |
-| code  | Disconnect shows reconnect message                 |         |       | 2:24 |   5.0 |
-| infra | Refactor documentation                             |         |       | 6:29 |  13.5 |
-| code  | Add UI support for data sets                       |         |       | 4:08 |   8.6 |
-| code  | Implement party related entities at database level |         |       | 0:20 |   0.7 |
+| code  | Fix valgrind errors in nightly                     |         |       | 1:25 |   2.7 |
+| code  | Create security module                             |         |       | 1:23 |   2.6 |
+| code  | Prodigy should support multiple environments       |         |       | 0:19 |   0.6 |
+| code  | Add named environment sets                         |         |       | 4:17 |   8.1 |
+| code  | Rename risk to refdata                             |         |       | 0:43 |   1.4 |
+| code  | Prefix database entities with component            |         |       | 3:15 |   6.2 |
+| code  | Implement data quality                             |         |       | 9:42 |  18.4 |
+| code  | Improvements to connection browser                 |         |       | 2:05 |   4.0 |
+| code  | Disconnect shows reconnect message                 |         |       | 2:24 |   4.6 |
+| infra | Refactor documentation                             |         |       | 6:29 |  12.3 |
+| code  | Add UI support for data sets                       |         |       | 8:44 |  16.6 |
+| code  | Implement party related entities at database level |         |       | 0:20 |   0.6 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -817,6 +813,8 @@ Highlights:
 
 *** STARTED Add UI support for data sets                               :code:
     :LOGBOOK:
+    CLOCK: [2026-01-17 Sat 22:28]--[2026-01-17 Sat 22:47] =>  0:19
+    CLOCK: [2026-01-17 Sat 18:10]--[2026-01-17 Sat 22:27] =>  4:17
     CLOCK: [2026-01-16 Fri 16:27]--[2026-01-16 Fri 17:23] =>  0:56
     CLOCK: [2026-01-16 Fri 15:20]--[2026-01-16 Fri 16:26] =>  1:06
     CLOCK: [2026-01-16 Fri 14:07]--[2026-01-16 Fri 15:01] =>  0:54

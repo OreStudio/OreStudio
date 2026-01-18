@@ -101,7 +101,7 @@ signals:
     /**
      * @brief Emitted when an error occurs during data loading.
      */
-    void loadError(const QString& error_message);
+    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onReasonsLoaded();
@@ -114,6 +114,8 @@ private:
     struct FetchResult {
         bool success;
         std::vector<dq::domain::change_reason> reasons;
+        QString error_message;
+        QString error_details;
     };
 
     ClientManager* clientManager_;

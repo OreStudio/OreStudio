@@ -175,12 +175,13 @@ void RoleMdiWindow::onDataLoaded() {
     }
 }
 
-void RoleMdiWindow::onLoadError(const QString& error_message) {
+void RoleMdiWindow::onLoadError(const QString& error_message,
+                                 const QString& details) {
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading roles: "
                               << error_message.toStdString();
 
-    MessageBoxHelper::critical(this, "Load Error", error_message);
+    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
 }
 
 void RoleMdiWindow::onRowDoubleClicked(const QModelIndex& index) {

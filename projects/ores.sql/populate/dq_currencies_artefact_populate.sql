@@ -37,7 +37,7 @@ declare
 begin
     -- Get the currencies dataset ID
     select id into v_currencies_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = 'ISO 4217 Currencies from Wikipedia'
       and subject_area_name = 'Currencies'
       and domain_name = 'Reference Data'
@@ -49,7 +49,7 @@ begin
 
     -- Get the flags dataset ID (for linking images)
     select id into v_flags_dataset_id
-    from ores.dq_dataset_tbl
+    from ores.dq_datasets_tbl
     where name = 'Country Flags from lipis/flag-icons'
       and subject_area_name = 'Countries'
       and domain_name = 'Reference Data'

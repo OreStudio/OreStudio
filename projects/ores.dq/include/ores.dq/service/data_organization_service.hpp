@@ -26,8 +26,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq/domain/catalog.hpp"
+#include "ores.dq/domain/data_domain.hpp"
 #include "ores.dq/domain/subject_area.hpp"
 #include "ores.dq/repository/catalog_repository.hpp"
+#include "ores.dq/repository/data_domain_repository.hpp"
 #include "ores.dq/repository/subject_area_repository.hpp"
 
 namespace ores::dq::service {
@@ -118,6 +120,52 @@ public:
     std::vector<domain::catalog> get_catalog_history(const std::string& name);
 
     // ========================================================================
+    // Data Domain Management
+    // ========================================================================
+
+    /**
+     * @brief Lists all data domains.
+     */
+    std::vector<domain::data_domain> list_data_domains();
+
+    /**
+     * @brief Finds a data domain by its name.
+     */
+    std::optional<domain::data_domain> find_data_domain(const std::string& name);
+
+    /**
+     * @brief Creates a new data domain.
+     *
+     * @param data_domain The data domain to create
+     * @return The created data domain
+     * @throws std::invalid_argument if name is empty
+     * @throws std::runtime_error if data domain already exists
+     */
+    domain::data_domain create_data_domain(const domain::data_domain& data_domain);
+
+    /**
+     * @brief Updates an existing data domain.
+     *
+     * @param data_domain The data domain with updated values
+     */
+    void update_data_domain(const domain::data_domain& data_domain);
+
+    /**
+     * @brief Removes a data domain.
+     *
+     * @param name The name of the data domain to remove
+     */
+    void remove_data_domain(const std::string& name);
+
+    /**
+     * @brief Gets the version history for a data domain.
+     *
+     * @param name The data domain name
+     * @return Vector of all versions, newest first
+     */
+    std::vector<domain::data_domain> get_data_domain_history(const std::string& name);
+
+    // ========================================================================
     // Subject Area Management
     // ========================================================================
 
@@ -189,6 +237,7 @@ public:
 
 private:
     repository::catalog_repository catalog_repo_;
+    repository::data_domain_repository data_domain_repo_;
     repository::subject_area_repository subject_area_repo_;
 };
 

@@ -20,7 +20,7 @@
 
 set schema 'ores';
 
-drop trigger if exists dq_coding_scheme_insert_trg on "ores"."dq_coding_scheme_tbl";
-drop rule if exists dq_coding_scheme_delete_rule on "ores"."dq_coding_scheme_tbl";
-drop function if exists ores.dq_coding_scheme_insert_fn();
-drop table if exists "ores"."dq_coding_scheme_tbl";
+drop trigger if exists dq_coding_schemes_insert_trg on "ores"."dq_coding_schemes_tbl";
+drop rule if exists dq_coding_schemes_delete_rule on "ores"."dq_coding_schemes_tbl";
+drop function if exists ores.dq_coding_schemes_insert_fn();
+drop table if exists "ores"."dq_coding_schemes_tbl";

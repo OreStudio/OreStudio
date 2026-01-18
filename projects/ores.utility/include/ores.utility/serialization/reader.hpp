@@ -31,6 +31,14 @@
 namespace ores::utility::serialization {
 
 /**
+ * @brief Maximum allowed element count for collections (100,000 elements).
+ *
+ * This limit prevents memory exhaustion attacks where corrupted or malicious
+ * data contains an enormous count value, causing huge memory allocations.
+ */
+constexpr std::uint32_t MAX_ELEMENT_COUNT = 100'000;
+
+/**
  * @brief Helper class to read binary data in network byte order.
  *
  * Provides static methods to deserialize various data types from a byte span.
@@ -56,6 +64,20 @@ public:
      */
     static std::expected<std::uint32_t, error_code>
     read_uint32(std::span<const std::byte>& data);
+
+    /**
+     * @brief Read a 32-bit count with validation against maximum.
+     *
+     * Use this for reading collection sizes to prevent memory exhaustion
+     * from corrupted data. Returns limit_exceeded if count > max_count.
+     *
+     * @param data The byte span to read from (advanced on success).
+     * @param max_count Maximum allowed count (default: MAX_ELEMENT_COUNT).
+     * @return The count value, or error_code on failure.
+     */
+    static std::expected<std::uint32_t, error_code>
+    read_count(std::span<const std::byte>& data,
+               std::uint32_t max_count = MAX_ELEMENT_COUNT);
 
     /**
      * @brief Read a signed 64-bit integer in network byte order.

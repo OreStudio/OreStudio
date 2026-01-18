@@ -39,17 +39,17 @@ set schema 'ores';
 -- =============================================================================
 
 -- Helper function to insert a data quality subject area if it doesn't exist
-create or replace function ores.upsert_dq_subject_area(
+create or replace function ores.upsert_dq_subject_areas(
     p_domain_name text,
     p_name text,
     p_description text
 ) returns void as $$
 begin
     if not exists (
-        select 1 from ores.dq_subject_area_tbl
+        select 1 from ores.dq_subject_areas_tbl
         where name = p_name and domain_name = p_domain_name and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
-        insert into ores.dq_subject_area_tbl (
+        insert into ores.dq_subject_areas_tbl (
             name, version, domain_name, description,
             modified_by, change_reason_code, change_commentary, valid_from, valid_to
         )
@@ -71,43 +71,43 @@ $$ language plpgsql;
 
 \echo '--- Data Quality Subject Areas ---'
 
-select ores.upsert_dq_subject_area(
+select ores.upsert_dq_subject_areas(
     'Reference Data',
     'Currencies',
     'Currency reference data.'
 );
 
-select ores.upsert_dq_subject_area(
+select ores.upsert_dq_subject_areas(
     'Reference Data',
     'Countries',
     'Country reference data.'
 );
 
-select ores.upsert_dq_subject_area(
+select ores.upsert_dq_subject_areas(
     'Reference Data',
     'Country Flags',
     'Flag image data associated with countries.'
 );
 
-select ores.upsert_dq_subject_area(
+select ores.upsert_dq_subject_areas(
     'Reference Data',
     'IP Address to Country maps',
     'IP geolocation mapping data.'
 );
 
-select ores.upsert_dq_subject_area(
+select ores.upsert_dq_subject_areas(
     'Reference Data',
     'Cryptocurrencies',
     'Cryptocurrency reference data including icons and metadata.'
 );
 
-select ores.upsert_dq_subject_area(
+select ores.upsert_dq_subject_areas(
     'Reference Data',
     'Parties',
     'Party identification schemes and reference data for legal entities and financial institutions.'
 );
 
-select ores.upsert_dq_subject_area(
+select ores.upsert_dq_subject_areas(
     'Reference Data',
     'General',
     'Cross-cutting reference data not specific to a particular domain.'
@@ -117,7 +117,7 @@ select ores.upsert_dq_subject_area(
 -- Cleanup
 -- =============================================================================
 
-drop function ores.upsert_dq_subject_area(text, text, text);
+drop function ores.upsert_dq_subject_areas(text, text, text);
 
 -- =============================================================================
 -- Summary
@@ -127,5 +127,5 @@ drop function ores.upsert_dq_subject_area(text, text, text);
 \echo '--- Summary ---'
 
 select 'Data Quality Subject Areas' as entity, count(*) as count
-from ores.dq_subject_area_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_subject_areas_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

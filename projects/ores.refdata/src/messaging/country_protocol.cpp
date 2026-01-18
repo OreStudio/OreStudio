@@ -178,7 +178,7 @@ get_countries_response::deserialize(std::span<const std::byte> data) {
     response.total_available_count = *total_result;
 
     // Read country count in this response
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }
@@ -278,7 +278,7 @@ delete_country_request::deserialize(std::span<const std::byte> data) {
     delete_country_request request;
 
     // Read count
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }
@@ -332,7 +332,7 @@ delete_country_response::deserialize(std::span<const std::byte> data) {
     delete_country_response response;
 
     // Read count
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }
@@ -434,7 +434,7 @@ get_country_history_response::deserialize(std::span<const std::byte> data) {
     response.message = *message_result;
 
     // Read count of history entries
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }

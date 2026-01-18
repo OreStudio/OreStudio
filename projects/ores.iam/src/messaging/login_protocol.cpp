@@ -154,7 +154,7 @@ std::expected<list_login_info_response, ores::utility::serialization::error_code
 list_login_info_response::deserialize(std::span<const std::byte> data) {
     list_login_info_response response;
 
-    auto count_result = reader::read_uint32(data);
+    auto count_result = reader::read_count(data);
     if (!count_result) {
         return std::unexpected(count_result.error());
     }

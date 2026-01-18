@@ -43,7 +43,7 @@ using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
 
 ChangeReasonDetailDialog::ChangeReasonDetailDialog(QWidget* parent)
-    : QWidget(parent), ui_(new Ui::ChangeReasonDetailDialog), isDirty_(false),
+    : DetailDialogBase(parent), ui_(new Ui::ChangeReasonDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), clientManager_(nullptr),
       currentHistoryIndex_(0),
       firstVersionAction_(nullptr), prevVersionAction_(nullptr),
@@ -322,12 +322,6 @@ void ChangeReasonDetailDialog::updateSaveButtonState() {
     saveAction_->setEnabled(canSave && !isReadOnly_);
 }
 
-void ChangeReasonDetailDialog::closeParentWindow() {
-    if (auto* subWindow = qobject_cast<QMdiSubWindow*>(parentWidget())) {
-        subWindow->close();
-    }
-}
-
 void ChangeReasonDetailDialog::displayCurrentVersion() {
     if (currentHistoryIndex_ >= 0 &&
         currentHistoryIndex_ < static_cast<int>(history_.size())) {
@@ -488,15 +482,13 @@ void ChangeReasonDetailDialog::onSaveClicked() {
         if (success) {
             BOOST_LOG_SEV(lg(), debug) << "Change reason saved successfully";
 
-            emit self->statusMessage(QString("Successfully saved change reason: %1")
-                .arg(QString::fromStdString(reasonToSave.code)));
-
             self->isDirty_ = false;
             emit self->isDirtyChanged(false);
             self->updateSaveButtonState();
 
             emit self->changeReasonSaved(QString::fromStdString(reasonToSave.code));
-            self->closeParentWindow();
+            self->notifySaveSuccess(tr("Change reason '%1' saved")
+                .arg(QString::fromStdString(reasonToSave.code)));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Change reason save failed: " << message;
             emit self->errorMessage(QString("Failed to save change reason: %1")
@@ -593,7 +585,7 @@ void ChangeReasonDetailDialog::onDeleteClicked() {
                 .arg(QString::fromStdString(code)));
 
             emit self->changeReasonDeleted(QString::fromStdString(code));
-            self->closeParentWindow();
+            self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Change reason delete failed: " << message;
             emit self->errorMessage(QString("Failed to delete change reason: %1")

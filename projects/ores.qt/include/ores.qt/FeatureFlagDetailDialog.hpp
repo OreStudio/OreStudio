@@ -21,10 +21,10 @@
 #define ORES_QT_FEATURE_FLAG_DETAIL_DIALOG_HPP
 
 #include <vector>
-#include <QWidget>
 #include <QAction>
 #include <QToolBar>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 
@@ -40,7 +40,7 @@ namespace ores::qt {
  * This widget provides a form for entering feature flag details,
  * with save and delete capabilities.
  */
-class FeatureFlagDetailDialog : public QWidget {
+class FeatureFlagDetailDialog : public DetailDialogBase {
     Q_OBJECT
 
 private:
@@ -74,8 +74,6 @@ public:
     bool isReadOnly() const { return isReadOnly_; }
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& message);
     void isDirtyChanged(bool dirty);
     void featureFlagSaved(const QString& name);
     void featureFlagDeleted(const QString& name);

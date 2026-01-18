@@ -462,8 +462,8 @@ void ClientAccountModel::onPulseTimerTimeout() {
     pulse_state_ = !pulse_state_;
     pulse_count_++;
 
-    // After max_pulse_cycles_, keep the highlight on permanently
-    if (pulse_count_ >= max_pulse_cycles_) {
+    // After max_pulse_cycles_ * 2, keep the highlight on permanently
+    if (pulse_count_ >= max_pulse_cycles_ * 2) {
         pulse_timer_->stop();
         pulse_state_ = true;  // Keep highlight on after pulsing stops
     }

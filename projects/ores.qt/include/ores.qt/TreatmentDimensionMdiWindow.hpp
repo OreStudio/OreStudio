@@ -20,10 +20,10 @@
 #ifndef ORES_QT_TREATMENT_DIMENSION_MDI_WINDOW_HPP
 #define ORES_QT_TREATMENT_DIMENSION_MDI_WINDOW_HPP
 
-#include <QWidget>
 #include <QTableView>
 #include <QToolBar>
 #include <QSortFilterProxyModel>
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientTreatmentDimensionModel.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -31,7 +31,7 @@
 
 namespace ores::qt {
 
-class TreatmentDimensionMdiWindow final : public QWidget {
+class TreatmentDimensionMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
@@ -51,7 +51,9 @@ public:
     ~TreatmentDimensionMdiWindow() override = default;
 
     QSize sizeHint() const override { return QSize(900, 600); }
-    void reload();
+
+public slots:
+    void reload() override;
 
 signals:
     void statusChanged(const QString& message);
@@ -70,6 +72,11 @@ private slots:
     void onRefreshClicked();
     void onSelectionChanged();
     void onHistoryClicked();
+
+protected:
+    QString normalRefreshTooltip() const override {
+        return tr("Refresh treatment dimensions");
+    }
 
 private:
     void setupUi();

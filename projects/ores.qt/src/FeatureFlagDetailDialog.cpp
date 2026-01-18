@@ -42,7 +42,7 @@ using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
 
 FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
-    : QWidget(parent), ui_(new Ui::FeatureFlagDetailDialog), isDirty_(false),
+    : DetailDialogBase(parent), ui_(new Ui::FeatureFlagDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), clientManager_(nullptr),
       currentHistoryIndex_(0),
       firstVersionAction_(nullptr), prevVersionAction_(nullptr),
@@ -284,15 +284,13 @@ void FeatureFlagDetailDialog::onSaveClicked() {
         if (success) {
             BOOST_LOG_SEV(lg(), debug) << "Feature flag saved successfully";
 
-            emit self->statusMessage(QString("Successfully saved feature flag: %1")
-                .arg(QString::fromStdString(flagToSave.name)));
-
             self->isDirty_ = false;
             emit self->isDirtyChanged(false);
             self->updateSaveButtonState();
 
             emit self->featureFlagSaved(QString::fromStdString(flagToSave.name));
-            self->closeParentWindow();
+            self->notifySaveSuccess(tr("Feature flag '%1' saved")
+                .arg(QString::fromStdString(flagToSave.name)));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Feature flag save failed: " << message;
             emit self->errorMessage(QString("Failed to save feature flag: %1")
@@ -381,7 +379,7 @@ void FeatureFlagDetailDialog::onDeleteClicked() {
             emit self->statusMessage(QString("Successfully deleted feature flag: %1")
                 .arg(QString::fromStdString(name)));
             emit self->featureFlagDeleted(QString::fromStdString(name));
-            self->closeParentWindow();
+            self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Feature flag deletion failed: " << message;
             emit self->errorMessage(QString("Failed to delete feature flag: %1")
@@ -406,18 +404,6 @@ void FeatureFlagDetailDialog::updateSaveButtonState() {
 
     if (deleteAction_)
         deleteAction_->setEnabled(!isAddMode_);
-}
-
-void FeatureFlagDetailDialog::closeParentWindow() {
-    QWidget* parent = parentWidget();
-    while (parent) {
-        if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
-            QMetaObject::invokeMethod(mdiSubWindow, "close",
-                Qt::QueuedConnection);
-            break;
-        }
-        parent = parent->parentWidget();
-    }
 }
 
 QString FeatureFlagDetailDialog::featureFlagName() const {

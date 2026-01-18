@@ -26,28 +26,31 @@
 #include "ores.qt/DataDomainDetailDialog.hpp"
 #include "ores.qt/DataDomainHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.dq/eventing/data_domain_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    constexpr std::string_view data_domain_event_name =
+        eventing::domain::event_traits<
+            dq::eventing::data_domain_changed_event>::name;
+}
 
 DataDomainController::DataDomainController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
-    QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username,
+                       data_domain_event_name, parent),
       listWindow_(nullptr),
-      listMdiSubWindow_(nullptr),
-      allDetachableWindows_(allDetachableWindows) {
+      listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "DataDomainController created";
-}
-
-DataDomainController::~DataDomainController() {
-    BOOST_LOG_SEV(lg(), debug) << "DataDomainController destroyed";
 }
 
 void DataDomainController::showListWindow() {
@@ -85,11 +88,10 @@ void DataDomainController::showListWindow() {
     listMdiSubWindow_->show();
 
     track_window(key, listMdiSubWindow_);
-    allDetachableWindows_.append(listMdiSubWindow_);
+    register_detachable_window(listMdiSubWindow_);
 
     connect(listMdiSubWindow_, &QObject::destroyed, this, [this, key]() {
         untrack_window(key);
-        allDetachableWindows_.removeOne(listMdiSubWindow_);
         listWindow_ = nullptr;
         listMdiSubWindow_ = nullptr;
     });
@@ -110,6 +112,12 @@ void DataDomainController::closeAllWindows() {
 
     listWindow_ = nullptr;
     listMdiSubWindow_ = nullptr;
+}
+
+void DataDomainController::reloadListWindow() {
+    if (listWindow_) {
+        listWindow_->reload();
+    }
 }
 
 void DataDomainController::onShowDetails(
@@ -145,9 +153,7 @@ void DataDomainController::showAddWindow() {
     connect(detailDialog, &DataDomainDetailDialog::domainSaved,
             this, [this](const QString& name) {
         BOOST_LOG_SEV(lg(), info) << "Data domain saved: " << name.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -157,27 +163,10 @@ void DataDomainController::showAddWindow() {
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_folder_20_regular.svg", iconColor));
 
-    allDetachableWindows_.append(detailWindow);
-    QPointer<DataDomainController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self)
-            self->allDetachableWindows_.removeAll(detailWindow);
-    });
+    register_detachable_window(detailWindow);
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 void DataDomainController::showDetailWindow(
@@ -208,16 +197,12 @@ void DataDomainController::showDetailWindow(
     connect(detailDialog, &DataDomainDetailDialog::domainSaved,
             this, [this](const QString& name) {
         BOOST_LOG_SEV(lg(), info) << "Data domain saved: " << name.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
     connect(detailDialog, &DataDomainDetailDialog::domainDeleted,
             this, [this, key](const QString& name) {
         BOOST_LOG_SEV(lg(), info) << "Data domain deleted: " << name.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntityDeleted();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -228,30 +213,18 @@ void DataDomainController::showDetailWindow(
         ":/icons/ic_fluent_folder_20_regular.svg", iconColor));
 
     track_window(key, detailWindow);
-    allDetachableWindows_.append(detailWindow);
+    register_detachable_window(detailWindow);
 
     QPointer<DataDomainController> self = this;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow, key]() {
+            [self, key]() {
         if (self) {
             self->untrack_window(key);
-            self->allDetachableWindows_.removeAll(detailWindow);
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 void DataDomainController::showHistoryWindow(const QString& name) {
@@ -295,30 +268,17 @@ void DataDomainController::showHistoryWindow(const QString& name) {
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
 
     track_window(windowKey, historyWindow);
+    register_detachable_window(historyWindow);
 
-    allDetachableWindows_.append(historyWindow);
     QPointer<DataDomainController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
     connect(historyWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });
 
-    mdiArea_->addSubWindow(historyWindow);
-    historyWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        historyWindow->show();
-        historyWindow->detach();
-
-        QPoint parentPos = listMdiSubWindow_->pos();
-        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        historyWindow->show();
-    }
+    show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
 void DataDomainController::onOpenVersion(
@@ -361,30 +321,18 @@ void DataDomainController::onOpenVersion(
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
 
     track_window(windowKey, detailWindow);
-    allDetachableWindows_.append(detailWindow);
+    register_detachable_window(detailWindow);
 
     QPointer<DataDomainController> self = this;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow, windowKey]() {
+            [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
-            self->allDetachableWindows_.removeAll(detailWindow);
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 60, parentPos.y() + 60);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
 void DataDomainController::onRevertVersion(
@@ -406,9 +354,7 @@ void DataDomainController::onRevertVersion(
             this, [this](const QString& name) {
         BOOST_LOG_SEV(lg(), info) << "Data domain reverted: " << name.toStdString();
         emit statusMessage(QString("Data domain '%1' reverted successfully").arg(name));
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     const QColor iconColor(220, 220, 220);
@@ -420,28 +366,14 @@ void DataDomainController::onRevertVersion(
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
 
-    allDetachableWindows_.append(detailWindow);
-    QPointer<DataDomainController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self) {
-            self->allDetachableWindows_.removeAll(detailWindow);
-        }
-    });
+    register_detachable_window(detailWindow);
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_);
+}
 
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+EntityListMdiWindow* DataDomainController::listWindow() const {
+    return listWindow_;
 }
 
 }

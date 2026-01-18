@@ -34,10 +34,8 @@ RoleController::RoleController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
-    QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
-      allDetachableWindows_(allDetachableWindows),
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
       roleListWindow_(nullptr) {
     BOOST_LOG_SEV(lg(), debug) << "Role controller created";
 }
@@ -93,17 +91,13 @@ void RoleController::showListWindow() {
         ":/icons/ic_fluent_lock_closed_20_regular.svg", iconColor));
 
     // Track window for detach/reattach operations
-    allDetachableWindows_.append(roleListWindow_);
+    register_detachable_window(roleListWindow_);
     QPointer<RoleController> self = this;
     QPointer<DetachableMdiSubWindow> windowBeingDestroyed = roleListWindow_;
     connect(roleListWindow_, &QObject::destroyed, this,
         [self, windowBeingDestroyed]() {
         if (!self)
             return;
-
-        if (!windowBeingDestroyed.isNull()) {
-            self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
-        }
 
         if (self->roleListWindow_ == windowBeingDestroyed)
             self->roleListWindow_ = nullptr;
@@ -117,6 +111,14 @@ void RoleController::showListWindow() {
 void RoleController::closeAllWindows() {
     if (roleListWindow_) {
         roleListWindow_->close();
+    }
+}
+
+void RoleController::reloadListWindow() {
+    if (roleListWindow_) {
+        if (auto* widget = qobject_cast<RoleMdiWindow*>(roleListWindow_->widget())) {
+            widget->reload();
+        }
     }
 }
 
@@ -148,16 +150,7 @@ void RoleController::onShowRoleDetails(const iam::domain::role& role) {
         ":/icons/ic_fluent_lock_closed_20_regular.svg", iconColor));
 
     // Track window for cleanup
-    allDetachableWindows_.append(detailWindow);
-    QPointer<RoleController> self = this;
-    QPointer<DetachableMdiSubWindow> windowBeingDestroyed = detailWindow;
-    connect(detailWindow, &QObject::destroyed, this,
-        [self, windowBeingDestroyed]() {
-        if (!self) return;
-        if (!windowBeingDestroyed.isNull()) {
-            self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
-        }
-    });
+    register_detachable_window(detailWindow);
 
     mdiArea_->addSubWindow(detailWindow);
     detailWindow->adjustSize();

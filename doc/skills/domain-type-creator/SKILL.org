@@ -203,6 +203,48 @@ The domain type implementation is now complete.
 - Explain the "why" in comments, not the "what"
 - Include =@brief= tags for all documented items
 
+** Service layer patterns
+
+When creating a service class to expose repository operations, follow these
+patterns:
+
+*** Use save_* for upsert semantics
+
+The repository =write()= method has *upsert semantics* - it creates a new record
+or updates an existing one. The service layer should expose this same behavior
+through =save_*= methods:
+
+#+begin_src cpp
+// CORRECT: Single save_* method with upsert semantics
+void currency_service::save_currency(const domain::currency& currency) {
+    currency_repo_.write(currency);
+}
+#+end_src
+
+*DO NOT* create separate =create_*= and =update_*= methods at the service level:
+
+#+begin_src cpp
+// WRONG: Separate create/update methods duplicate repository semantics
+void currency_service::create_currency(const domain::currency& c);  // Don't do this
+void currency_service::update_currency(const domain::currency& c);  // Don't do this
+#+end_src
+
+*** Service method naming convention
+
+| Operation         | Method Name Pattern        | Notes                          |
+|-------------------+----------------------------+--------------------------------|
+| Create or update  | =save_<entity>=            | Upsert via repository write()  |
+| Delete            | =remove_<entity>=          | Soft delete via repository     |
+| Find by key       | =find_<entity>=            | Returns std::optional          |
+| List all          | =list_<entities>=          | Returns vector                 |
+| List with filter  | =list_<entities>_by_<key>= | Filtered list                  |
+| Get history       | =get_<entity>_history=     | All versions of an entity      |
+
+*** Reference implementation
+
+See =projects/ores.refdata/src/service/currency_service.cpp= for a correct
+implementation of the service layer pattern.
+
 * Artefacts                                                        :noexport:
 
 ** Licence

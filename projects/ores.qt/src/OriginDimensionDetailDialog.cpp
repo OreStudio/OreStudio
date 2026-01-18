@@ -19,7 +19,6 @@
  */
 #include "ores.qt/OriginDimensionDetailDialog.hpp"
 
-#include <QVBoxLayout>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -36,11 +35,9 @@ namespace ores::qt {
 using namespace ores::logging;
 
 OriginDimensionDetailDialog::OriginDimensionDetailDialog(QWidget* parent)
-    : QWidget(parent),
+    : DetailDialogBase(parent),
       ui_(new Ui::OriginDimensionDetailDialog),
-      clientManager_(nullptr),
-      saveButton_(nullptr),
-      deleteButton_(nullptr) {
+      clientManager_(nullptr) {
 
     ui_->setupUi(this);
     setupUi();
@@ -54,32 +51,18 @@ OriginDimensionDetailDialog::~OriginDimensionDetailDialog() {
 void OriginDimensionDetailDialog::setupUi() {
     const auto& iconColor = color_constants::icon_color;
 
-    // Create and add buttons to a button layout
-    auto* buttonLayout = new QHBoxLayout();
-    buttonLayout->addStretch();
+    ui_->saveButton->setIcon(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_save_20_regular.svg", iconColor));
+    ui_->saveButton->setEnabled(false);
 
-    saveButton_ = new QPushButton(
-        IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_save_20_regular.svg", iconColor),
-        tr("Save"), this);
-    saveButton_->setEnabled(false);
-
-    deleteButton_ = new QPushButton(
-        IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_delete_20_regular.svg", iconColor),
-        tr("Delete"), this);
-
-    buttonLayout->addWidget(saveButton_);
-    buttonLayout->addWidget(deleteButton_);
-
-    // Add button layout to main layout
-    ui_->verticalLayout->addLayout(buttonLayout);
+    ui_->deleteButton->setIcon(
+        IconUtils::createRecoloredIcon(":/icons/ic_fluent_delete_20_regular.svg", iconColor));
 }
 
 void OriginDimensionDetailDialog::setupConnections() {
-    connect(saveButton_, &QPushButton::clicked, this,
+    connect(ui_->saveButton, &QPushButton::clicked, this,
             &OriginDimensionDetailDialog::onSaveClicked);
-    connect(deleteButton_, &QPushButton::clicked, this,
+    connect(ui_->deleteButton, &QPushButton::clicked, this,
             &OriginDimensionDetailDialog::onDeleteClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
@@ -107,7 +90,7 @@ void OriginDimensionDetailDialog::setDimension(
 void OriginDimensionDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->codeEdit->setReadOnly(!createMode);
-    deleteButton_->setVisible(!createMode);
+    ui_->deleteButton->setVisible(!createMode);
 
     if (createMode) {
         ui_->metadataGroup->setVisible(false);
@@ -122,8 +105,8 @@ void OriginDimensionDetailDialog::setReadOnly(bool readOnly) {
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
-    saveButton_->setVisible(!readOnly);
-    deleteButton_->setVisible(!readOnly);
+    ui_->saveButton->setVisible(!readOnly);
+    ui_->deleteButton->setVisible(!readOnly);
 }
 
 void OriginDimensionDetailDialog::updateUiFromDimension() {
@@ -158,7 +141,7 @@ void OriginDimensionDetailDialog::onFieldChanged() {
 
 void OriginDimensionDetailDialog::updateSaveButtonState() {
     bool canSave = hasChanges_ && validateInput() && !readOnly_;
-    saveButton_->setEnabled(canSave);
+    ui_->saveButton->setEnabled(canSave);
 }
 
 bool OriginDimensionDetailDialog::validateInput() {
@@ -237,16 +220,8 @@ void OriginDimensionDetailDialog::onSaveClicked() {
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Origin dimension saved successfully";
             QString code = QString::fromStdString(self->dimension_.code);
-            emit self->statusMessage(QString("Origin dimension '%1' saved").arg(code));
             emit self->dimensionSaved(code);
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-
-            // If this was create mode, switch to edit mode
-            if (self->createMode_) {
-                self->setCreateMode(false);
-                self->ui_->metadataGroup->setVisible(true);
-            }
+            self->notifySaveSuccess(tr("Origin dimension '%1' saved").arg(code));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);
@@ -330,11 +305,7 @@ void OriginDimensionDetailDialog::onDeleteClicked() {
             BOOST_LOG_SEV(lg(), info) << "Origin dimension deleted successfully";
             emit self->statusMessage(QString("Origin dimension '%1' deleted").arg(code));
             emit self->dimensionDeleted(code);
-
-            // Close the window
-            if (auto* window = self->window()) {
-                window->close();
-            }
+            self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);

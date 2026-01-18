@@ -53,13 +53,14 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
-        QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);
-
-    ~CatalogController() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
+    void reloadListWindow() override;
+
+protected:
+    EntityListMdiWindow* listWindow() const override;
 
 private slots:
     void onShowDetails(const dq::domain::catalog& catalog);
@@ -75,7 +76,6 @@ private:
 
     QPointer<CatalogMdiWindow> listWindow_;
     QPointer<DetachableMdiSubWindow> listMdiSubWindow_;
-    QList<DetachableMdiSubWindow*>& allDetachableWindows_;
 };
 
 }

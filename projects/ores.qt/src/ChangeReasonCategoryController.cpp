@@ -45,12 +45,10 @@ ChangeReasonCategoryController::ChangeReasonCategoryController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
-    QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
       listWindow_(nullptr),
-      listMdiSubWindow_(nullptr),
-      allDetachableWindows_(allDetachableWindows) {
+      listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "ChangeReasonCategoryController created";
 
@@ -130,12 +128,11 @@ void ChangeReasonCategoryController::showListWindow() {
 
     // Track window
     track_window(key, listMdiSubWindow_);
-    allDetachableWindows_.append(listMdiSubWindow_);
+    register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_, &QObject::destroyed, this, [this, key]() {
         untrack_window(key);
-        allDetachableWindows_.removeOne(listMdiSubWindow_);
         listWindow_ = nullptr;
         listMdiSubWindow_ = nullptr;
     });
@@ -157,6 +154,12 @@ void ChangeReasonCategoryController::closeAllWindows() {
 
     listWindow_ = nullptr;
     listMdiSubWindow_ = nullptr;
+}
+
+void ChangeReasonCategoryController::reloadListWindow() {
+    if (listWindow_) {
+        listWindow_->reload();
+    }
 }
 
 void ChangeReasonCategoryController::onShowDetails(
@@ -204,28 +207,10 @@ void ChangeReasonCategoryController::showAddWindow() {
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
 
-    allDetachableWindows_.append(detailWindow);
-    QPointer<ChangeReasonCategoryController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self)
-            self->allDetachableWindows_.removeAll(detailWindow);
-    });
+    register_detachable_window(detailWindow);
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If parent list is detached, detach this too
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 void ChangeReasonCategoryController::showDetailWindow(
@@ -277,31 +262,18 @@ void ChangeReasonCategoryController::showDetailWindow(
 
     // Track window
     track_window(key, detailWindow);
-    allDetachableWindows_.append(detailWindow);
+    register_detachable_window(detailWindow);
 
     QPointer<ChangeReasonCategoryController> self = this;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow, key]() {
+            [self, key]() {
         if (self) {
             self->untrack_window(key);
-            self->allDetachableWindows_.removeAll(detailWindow);
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If parent list is detached, detach this too
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 void ChangeReasonCategoryController::onNotificationReceived(
@@ -367,31 +339,17 @@ void ChangeReasonCategoryController::showHistoryWindow(const QString& code) {
 
     // Track this history window
     track_window(windowKey, historyWindow);
+    register_detachable_window(historyWindow);
 
-    allDetachableWindows_.append(historyWindow);
     QPointer<ChangeReasonCategoryController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
     connect(historyWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });
 
-    mdiArea_->addSubWindow(historyWindow);
-    historyWindow->adjustSize();
-
-    // If the parent list window is detached, detach this window too
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        historyWindow->show();
-        historyWindow->detach();
-
-        QPoint parentPos = listMdiSubWindow_->pos();
-        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        historyWindow->show();
-    }
+    show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
 void ChangeReasonCategoryController::onOpenVersion(
@@ -435,30 +393,18 @@ void ChangeReasonCategoryController::onOpenVersion(
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
 
     track_window(windowKey, detailWindow);
-    allDetachableWindows_.append(detailWindow);
+    register_detachable_window(detailWindow);
 
     QPointer<ChangeReasonCategoryController> self = this;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow, windowKey]() {
+            [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
-            self->allDetachableWindows_.removeAll(detailWindow);
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 60, parentPos.y() + 60);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
 void ChangeReasonCategoryController::onRevertVersion(
@@ -496,28 +442,10 @@ void ChangeReasonCategoryController::onRevertVersion(
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
 
-    allDetachableWindows_.append(detailWindow);
-    QPointer<ChangeReasonCategoryController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self) {
-            self->allDetachableWindows_.removeAll(detailWindow);
-        }
-    });
+    register_detachable_window(detailWindow);
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 }

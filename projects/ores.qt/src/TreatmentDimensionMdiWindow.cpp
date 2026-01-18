@@ -36,7 +36,7 @@ using namespace ores::logging;
 
 TreatmentDimensionMdiWindow::TreatmentDimensionMdiWindow(
     ClientManager* clientManager, const QString& username, QWidget* parent)
-    : QWidget(parent),
+    : EntityListMdiWindow(parent),
       clientManager_(clientManager),
       username_(username),
       model_(new ClientTreatmentDimensionModel(clientManager, this)),
@@ -110,7 +110,8 @@ void TreatmentDimensionMdiWindow::setupToolbar() {
     refreshAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor),
         tr("Refresh"));
-    refreshAction_->setToolTip(tr("Refresh treatment dimensions"));
+
+    initializeStaleIndicator(refreshAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
 
     if (auto* layout = qobject_cast<QVBoxLayout*>(this->layout())) {
         layout->insertWidget(0, toolbar_);
@@ -257,6 +258,7 @@ void TreatmentDimensionMdiWindow::updateActionStates() {
 }
 
 void TreatmentDimensionMdiWindow::reload() {
+    clearStaleIndicator();
     model_->refresh();
 }
 

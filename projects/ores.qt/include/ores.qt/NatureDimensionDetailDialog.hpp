@@ -20,9 +20,8 @@
 #ifndef ORES_QT_NATURE_DIMENSION_DETAIL_DIALOG_HPP
 #define ORES_QT_NATURE_DIMENSION_DETAIL_DIALOG_HPP
 
-#include <QWidget>
-#include <QPushButton>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/nature_dimension.hpp"
 
@@ -32,7 +31,7 @@ class NatureDimensionDetailDialog;
 
 namespace ores::qt {
 
-class NatureDimensionDetailDialog final : public QWidget {
+class NatureDimensionDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
@@ -56,8 +55,6 @@ public:
     void setReadOnly(bool readOnly);
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& error);
     void dimensionSaved(const QString& code);
     void dimensionDeleted(const QString& code);
 
@@ -82,9 +79,6 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
-
-    QPushButton* saveButton_;
-    QPushButton* deleteButton_;
 };
 
 }

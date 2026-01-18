@@ -20,10 +20,8 @@
 #ifndef ORES_QT_FEATURE_FLAG_CONTROLLER_HPP
 #define ORES_QT_FEATURE_FLAG_CONTROLLER_HPP
 
-#include <QList>
 #include <QDateTime>
 #include "ores.qt/EntityController.hpp"
-#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 
@@ -57,13 +55,13 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
-        QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);
 
     ~FeatureFlagController() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
+    void reloadListWindow() override;
 
 private slots:
     void onAddNewRequested();
@@ -86,7 +84,6 @@ private:
 private:
     FeatureFlagMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
-    QList<DetachableMdiSubWindow*>& allDetachableWindows_;
 };
 
 }

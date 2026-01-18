@@ -20,10 +20,9 @@
 #ifndef ORES_QT_CATALOG_MDI_WINDOW_HPP
 #define ORES_QT_CATALOG_MDI_WINDOW_HPP
 
-#include <QWidget>
 #include <QTableView>
 #include <QToolBar>
-#include <QAction>
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientCatalogModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.dq/domain/catalog.hpp"
@@ -37,7 +36,7 @@ namespace ores::qt {
  * Provides a table view with toolbar actions for Add, Edit, Delete,
  * History, and Refresh operations.
  */
-class CatalogMdiWindow : public QWidget {
+class CatalogMdiWindow : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
@@ -56,7 +55,8 @@ public:
 
     QSize sizeHint() const override { return QSize(800, 500); }
 
-    void reload();
+public slots:
+    void reload() override;
 
 signals:
     void statusChanged(const QString& message);
@@ -72,6 +72,11 @@ private slots:
     void onHistoryClicked();
     void onRefreshClicked();
     void onDoubleClicked(const QModelIndex& index);
+
+protected:
+    QString normalRefreshTooltip() const override {
+        return tr("Refresh catalogs");
+    }
 
 private:
     void setupUi();

@@ -37,7 +37,9 @@ create table if not exists "ores"."dq_change_reasons_tbl" (
         code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to")
+    check ("valid_from" < "valid_to"),
+    check ("code" <> ''),
+    check ("category_code" <> '')
 );
 
 create unique index if not exists dq_change_reasons_version_uniq_idx

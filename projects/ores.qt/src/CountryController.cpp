@@ -50,10 +50,8 @@ CountryController::CountryController(
     ImageCache* imageCache,
     ChangeReasonCache* changeReasonCache,
     const QString& username,
-    QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
-      allDetachableWindows_(allDetachableWindows),
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
       imageCache_(imageCache),
       changeReasonCache_(changeReasonCache),
       countryListWindow_(nullptr) {
@@ -147,7 +145,7 @@ void CountryController::showListWindow() {
         ":/icons/ic_fluent_globe_20_regular.svg", iconColor));
 
     // Track window for detach/reattach operations
-    allDetachableWindows_.append(countryListWindow_);
+    register_detachable_window(countryListWindow_);
     QPointer<CountryController> self = this;
     QPointer<DetachableMdiSubWindow> windowBeingDestroyed = countryListWindow_;
     // to avoid race conditions with signal processing
@@ -157,9 +155,6 @@ void CountryController::showListWindow() {
             if (!self) return;
 
             BOOST_LOG_SEV(lg(), debug) << "Detachable MDI Sub Window destroyed";
-
-            // Remove the window from the list of all detachable windows
-            self->allDetachableWindows_.removeAll(windowBeingDestroyed);
 
             // If the destroyed window is the country list, nullify the pointer
             if (self->countryListWindow_ == windowBeingDestroyed)
@@ -181,6 +176,14 @@ void CountryController::showListWindow() {
 void CountryController::closeAllWindows() {
     if (countryListWindow_) {
         countryListWindow_->close();
+    }
+}
+
+void CountryController::reloadListWindow() {
+    if (countryListWindow_) {
+        if (auto* widget = qobject_cast<CountryMdiWindow*>(countryListWindow_->widget())) {
+            widget->reload();
+        }
     }
 }
 
@@ -219,29 +222,10 @@ void CountryController::onAddNewRequested() {
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_globe_20_regular.svg", iconColor));
 
-    allDetachableWindows_.append(detailWindow);
-    QPointer<CountryController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self)
-            self->allDetachableWindows_.removeAll(detailWindow);
-    });
+    register_detachable_window(detailWindow);
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If the parent country list window is detached, detach this window too
-    if (countryListWindow_ && countryListWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-
-        QPoint parentPos = countryListWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, countryListWindow_);
 }
 
 void CountryController::onShowCountryDetails(
@@ -295,33 +279,18 @@ void CountryController::onShowCountryDetails(
 
     // Track this detail window
     track_window(windowKey, detailWindow);
+    register_detachable_window(detailWindow);
 
-    allDetachableWindows_.append(detailWindow);
     QPointer<CountryController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = detailWindow;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If the parent country list window is detached, detach this window too
-    if (countryListWindow_ && countryListWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-
-        QPoint parentPos = countryListWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, countryListWindow_);
 }
 
 void CountryController::onShowCountryHistory(const QString& alpha2Code) {
@@ -371,31 +340,17 @@ void CountryController::onShowCountryHistory(const QString& alpha2Code) {
 
     // Track this history window
     track_window(windowKey, historyWindow);
+    register_detachable_window(historyWindow);
 
-    allDetachableWindows_.append(historyWindow);
     QPointer<CountryController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
     connect(historyWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });
 
-    mdiArea_->addSubWindow(historyWindow);
-    historyWindow->adjustSize();
-
-    // If the parent country list window is detached, detach this window too
-    if (countryListWindow_ && countryListWindow_->isDetached()) {
-        historyWindow->show();
-        historyWindow->detach();
-
-        QPoint parentPos = countryListWindow_->pos();
-        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        historyWindow->show();
-    }
+    show_managed_window(historyWindow, countryListWindow_);
 }
 
 void CountryController::onNotificationReceived(
@@ -521,34 +476,18 @@ void CountryController::onOpenCountryVersion(
 
     // Track this version window
     track_window(windowKey, detailWindow);
+    register_detachable_window(detailWindow);
 
-    allDetachableWindows_.append(detailWindow);
     QPointer<CountryController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = detailWindow;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If the parent country list window is detached, detach this window too
-    if (countryListWindow_ && countryListWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-
-        QPoint parentPos = countryListWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, countryListWindow_);
 }
 
 void CountryController::onRevertCountry(const refdata::domain::country& country) {

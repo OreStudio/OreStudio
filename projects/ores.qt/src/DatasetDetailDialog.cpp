@@ -38,7 +38,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 DatasetDetailDialog::DatasetDetailDialog(QWidget* parent)
-    : QWidget(parent),
+    : DetailDialogBase(parent),
       ui_(new Ui::DatasetDetailDialog),
       clientManager_(nullptr),
       isCreateMode_(true),
@@ -564,11 +564,8 @@ void DatasetDetailDialog::onSaveClicked() {
         if (!self) return;
 
         if (result.success) {
-            emit self->statusMessage(tr("Dataset saved successfully"));
             emit self->datasetSaved(datasetId);
-            if (auto* parentWidget = self->parentWidget()) {
-                parentWidget->close();
-            }
+            self->notifySaveSuccess(tr("Dataset saved"));
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }
@@ -619,9 +616,7 @@ void DatasetDetailDialog::onDeleteClicked() {
         if (success) {
             emit self->statusMessage(tr("Dataset deleted successfully"));
             emit self->datasetDeleted(datasetId);
-            if (auto* parentWidget = self->parentWidget()) {
-                parentWidget->close();
-            }
+            self->requestClose();
         } else {
             emit self->errorMessage(tr("Failed to delete dataset"));
         }

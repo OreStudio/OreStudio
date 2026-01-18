@@ -32,7 +32,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 SubjectAreaDetailDialog::SubjectAreaDetailDialog(QWidget* parent)
-    : QWidget(parent),
+    : DetailDialogBase(parent),
       ui_(new Ui::SubjectAreaDetailDialog),
       clientManager_(nullptr),
       isCreateMode_(true),
@@ -219,11 +219,8 @@ void SubjectAreaDetailDialog::onSaveClicked() {
         if (!self) return;
 
         if (result.success) {
-            emit self->statusMessage(tr("Subject area saved successfully"));
             emit self->subjectAreaSaved(name, domain_name);
-            if (auto* parentWidget = self->parentWidget()) {
-                parentWidget->close();
-            }
+            self->notifySaveSuccess(tr("Subject area '%1' saved").arg(name));
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }
@@ -279,9 +276,7 @@ void SubjectAreaDetailDialog::onDeleteClicked() {
         if (success) {
             emit self->statusMessage(tr("Subject area deleted successfully"));
             emit self->subjectAreaDeleted(name, domain_name);
-            if (auto* parentWidget = self->parentWidget()) {
-                parentWidget->close();
-            }
+            self->requestClose();
         } else {
             emit self->errorMessage(tr("Failed to delete subject area"));
         }

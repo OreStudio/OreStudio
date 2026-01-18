@@ -51,12 +51,11 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
-        QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);
-    ~DataDomainController() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
+    void reloadListWindow() override;
 
 signals:
     void statusMessage(const QString& message);
@@ -70,6 +69,9 @@ private slots:
     void onOpenVersion(const dq::domain::data_domain& domain,
                        int versionNumber);
 
+protected:
+    EntityListMdiWindow* listWindow() const override;
+
 private:
     void showAddWindow();
     void showDetailWindow(const dq::domain::data_domain& domain);
@@ -77,7 +79,6 @@ private:
 
     DataDomainMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
-    QList<DetachableMdiSubWindow*>& allDetachableWindows_;
 };
 
 }

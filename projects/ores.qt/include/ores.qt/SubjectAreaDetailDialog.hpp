@@ -20,8 +20,8 @@
 #ifndef ORES_QT_SUBJECT_AREA_DETAIL_DIALOG_HPP
 #define ORES_QT_SUBJECT_AREA_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/subject_area.hpp"
 
@@ -31,7 +31,7 @@ class SubjectAreaDetailDialog;
 
 namespace ores::qt {
 
-class SubjectAreaDetailDialog final : public QWidget {
+class SubjectAreaDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
@@ -62,8 +62,6 @@ public:
     void loadDomains();
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& error);
     void subjectAreaSaved(const QString& name, const QString& domain_name);
     void subjectAreaDeleted(const QString& name, const QString& domain_name);
 

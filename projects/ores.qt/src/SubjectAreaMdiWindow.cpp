@@ -36,7 +36,7 @@ using namespace ores::logging;
 
 SubjectAreaMdiWindow::SubjectAreaMdiWindow(
     ClientManager* clientManager, const QString& username, QWidget* parent)
-    : QWidget(parent),
+    : EntityListMdiWindow(parent),
       clientManager_(clientManager),
       username_(username),
       model_(new ClientSubjectAreaModel(clientManager, this)),
@@ -111,6 +111,7 @@ void SubjectAreaMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor),
         tr("Refresh"));
     refreshAction_->setToolTip(tr("Refresh subject areas"));
+    initializeStaleIndicator(refreshAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
 
     if (auto* layout = qobject_cast<QVBoxLayout*>(this->layout())) {
         layout->insertWidget(0, toolbar_);
@@ -261,6 +262,7 @@ void SubjectAreaMdiWindow::updateActionStates() {
 }
 
 void SubjectAreaMdiWindow::reload() {
+    clearStaleIndicator();
     model_->refresh();
 }
 

@@ -20,12 +20,10 @@
 #ifndef ORES_QT_NATURE_DIMENSION_MDI_WINDOW_HPP
 #define ORES_QT_NATURE_DIMENSION_MDI_WINDOW_HPP
 
-#include <QWidget>
-#include <QTimer>
-#include <QAction>
 #include <QToolBar>
 #include <QTableView>
 #include <QSortFilterProxyModel>
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientNatureDimensionModel.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -33,7 +31,7 @@
 
 namespace ores::qt {
 
-class NatureDimensionMdiWindow final : public QWidget {
+class NatureDimensionMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
@@ -56,9 +54,7 @@ public:
     QSize sizeHint() const override;
 
 public slots:
-    void reload();
-    void markAsStale();
-    void clearStaleIndicator();
+    void reload() override;
 
 signals:
     void statusChanged(const QString& message);
@@ -81,13 +77,17 @@ private slots:
     void onDoubleClicked(const QModelIndex& index);
     void showHeaderContextMenu(const QPoint& pos);
 
+protected:
+    QString normalRefreshTooltip() const override {
+        return tr("Refresh nature dimensions");
+    }
+
 private:
     void setupUi();
     void setupToolbar();
     void setupTable();
     void setupColumnVisibility();
     void setupConnections();
-    void startPulseAnimation();
     void updateActionStates();
     void saveSettings();
     void restoreSettings();
@@ -105,14 +105,6 @@ private:
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;
-
-    QIcon normalReloadIcon_;
-    QIcon staleReloadIcon_;
-    QTimer* pulseTimer_;
-    bool pulseState_{false};
-    int pulseCount_{0};
-    static constexpr int pulse_interval_ms_ = 500;
-    static constexpr int max_pulse_cycles_ = 6;
 };
 
 }

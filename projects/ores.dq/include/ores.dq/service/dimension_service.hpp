@@ -79,21 +79,11 @@ public:
     find_nature_dimension(const std::string& code);
 
     /**
-     * @brief Creates a new nature dimension.
+     * @brief Saves a nature dimension (creates or updates).
      *
-     * @param dimension The dimension to create
-     * @return The created dimension
-     * @throws std::runtime_error if dimension already exists
+     * @param dimension The dimension to save
      */
-    domain::nature_dimension
-    create_nature_dimension(const domain::nature_dimension& dimension);
-
-    /**
-     * @brief Updates an existing nature dimension.
-     *
-     * @param dimension The dimension with updated values
-     */
-    void update_nature_dimension(const domain::nature_dimension& dimension);
+    void save_nature_dimension(const domain::nature_dimension& dimension);
 
     /**
      * @brief Removes a nature dimension.
@@ -127,21 +117,11 @@ public:
     find_origin_dimension(const std::string& code);
 
     /**
-     * @brief Creates a new origin dimension.
+     * @brief Saves an origin dimension (creates or updates).
      *
-     * @param dimension The dimension to create
-     * @return The created dimension
-     * @throws std::runtime_error if dimension already exists
+     * @param dimension The dimension to save
      */
-    domain::origin_dimension
-    create_origin_dimension(const domain::origin_dimension& dimension);
-
-    /**
-     * @brief Updates an existing origin dimension.
-     *
-     * @param dimension The dimension with updated values
-     */
-    void update_origin_dimension(const domain::origin_dimension& dimension);
+    void save_origin_dimension(const domain::origin_dimension& dimension);
 
     /**
      * @brief Removes an origin dimension.
@@ -175,21 +155,11 @@ public:
     find_treatment_dimension(const std::string& code);
 
     /**
-     * @brief Creates a new treatment dimension.
+     * @brief Saves a treatment dimension (creates or updates).
      *
-     * @param dimension The dimension to create
-     * @return The created dimension
-     * @throws std::runtime_error if dimension already exists
+     * @param dimension The dimension to save
      */
-    domain::treatment_dimension
-    create_treatment_dimension(const domain::treatment_dimension& dimension);
-
-    /**
-     * @brief Updates an existing treatment dimension.
-     *
-     * @param dimension The dimension with updated values
-     */
-    void update_treatment_dimension(const domain::treatment_dimension& dimension);
+    void save_treatment_dimension(const domain::treatment_dimension& dimension);
 
     /**
      * @brief Removes a treatment dimension.

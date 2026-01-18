@@ -49,7 +49,7 @@ using FutureResult = std::pair<bool, std::string>;
 namespace reason = dq::domain::change_reason_constants;
 
 CountryDetailDialog::CountryDetailDialog(QWidget* parent)
-    : QWidget(parent), ui_(new Ui::CountryDetailDialog), isDirty_(false),
+    : DetailDialogBase(parent), ui_(new Ui::CountryDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), isStale_(false), flagChanged_(false),
       historicalVersion_(0), flagButton_(nullptr),
       clientManager_(nullptr), imageCache_(nullptr), changeReasonCache_(nullptr),
@@ -386,9 +386,6 @@ void CountryDetailDialog::onSaveClicked() {
         if (success) {
             BOOST_LOG_SEV(lg(), debug) << "Country saved successfully.";
 
-            emit self->statusMessage(QString("Successfully saved country: %1")
-                .arg(QString::fromStdString(country.alpha2_code)));
-
             self->pendingImageId_.clear();
 
             self->isDirty_ = false;
@@ -396,23 +393,14 @@ void CountryDetailDialog::onSaveClicked() {
             emit self->isDirtyChanged(false);
             self->updateSaveResetButtonState();
 
+            QString code = QString::fromStdString(country.alpha2_code);
             if (self->isAddMode_) {
-                emit self->countryCreated(
-                    QString::fromStdString(country.alpha2_code));
+                emit self->countryCreated(code);
             } else {
-                emit self->countryUpdated(
-                    QString::fromStdString(country.alpha2_code));
+                emit self->countryUpdated(code);
             }
 
-            QWidget* parent = self->parentWidget();
-            while (parent) {
-                if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
-                    QMetaObject::invokeMethod(mdiSubWindow, "close",
-                        Qt::QueuedConnection);
-                    break;
-                }
-                parent = parent->parentWidget();
-            }
+            self->notifySaveSuccess(tr("Country '%1' saved").arg(code));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Country save failed: " << message;
             emit self->errorMessage(QString("Failed to save country: %1")

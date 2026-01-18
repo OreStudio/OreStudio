@@ -26,28 +26,35 @@
 #include "ores.qt/NatureDimensionDetailDialog.hpp"
 #include "ores.qt/NatureDimensionHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.dq/eventing/nature_dimension_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    constexpr std::string_view nature_dimension_event_name =
+        eventing::domain::event_traits<
+            dq::eventing::nature_dimension_changed_event>::name;
+}
 
 NatureDimensionController::NatureDimensionController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
-    QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username,
+                       nature_dimension_event_name, parent),
       listWindow_(nullptr),
-      listMdiSubWindow_(nullptr),
-      allDetachableWindows_(allDetachableWindows) {
+      listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "NatureDimensionController created";
 }
 
-NatureDimensionController::~NatureDimensionController() {
-    BOOST_LOG_SEV(lg(), debug) << "NatureDimensionController destroyed";
+EntityListMdiWindow* NatureDimensionController::listWindow() const {
+    return listWindow_;
 }
 
 void NatureDimensionController::showListWindow() {
@@ -89,12 +96,11 @@ void NatureDimensionController::showListWindow() {
 
     // Track window
     track_window(key, listMdiSubWindow_);
-    allDetachableWindows_.append(listMdiSubWindow_);
+    register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_, &QObject::destroyed, this, [this, key]() {
         untrack_window(key);
-        allDetachableWindows_.removeOne(listMdiSubWindow_);
         listWindow_ = nullptr;
         listMdiSubWindow_ = nullptr;
     });
@@ -116,6 +122,13 @@ void NatureDimensionController::closeAllWindows() {
 
     listWindow_ = nullptr;
     listMdiSubWindow_ = nullptr;
+}
+
+void NatureDimensionController::reloadListWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "reloadListWindow called";
+    if (listWindow_) {
+        listWindow_->reload();
+    }
 }
 
 void NatureDimensionController::onShowDetails(
@@ -151,9 +164,7 @@ void NatureDimensionController::showAddWindow() {
     connect(detailDialog, &NatureDimensionDetailDialog::dimensionSaved,
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Nature dimension saved: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -163,28 +174,10 @@ void NatureDimensionController::showAddWindow() {
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_database_20_regular.svg", iconColor));
 
-    allDetachableWindows_.append(detailWindow);
-    QPointer<NatureDimensionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self)
-            self->allDetachableWindows_.removeAll(detailWindow);
-    });
+    register_detachable_window(detailWindow);
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If parent list is detached, detach this too
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 void NatureDimensionController::showDetailWindow(
@@ -215,16 +208,12 @@ void NatureDimensionController::showDetailWindow(
     connect(detailDialog, &NatureDimensionDetailDialog::dimensionSaved,
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Nature dimension saved: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
     connect(detailDialog, &NatureDimensionDetailDialog::dimensionDeleted,
             this, [this, key](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Nature dimension deleted: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntityDeleted();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -236,40 +225,18 @@ void NatureDimensionController::showDetailWindow(
 
     // Track window
     track_window(key, detailWindow);
-    allDetachableWindows_.append(detailWindow);
+    register_detachable_window(detailWindow);
 
     QPointer<NatureDimensionController> self = this;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow, key]() {
+            [self, key]() {
         if (self) {
             self->untrack_window(key);
-            self->allDetachableWindows_.removeAll(detailWindow);
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If parent list is detached, detach this too
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
-}
-
-void NatureDimensionController::onNotificationReceived(
-    const QString& eventType, const QDateTime& timestamp,
-    const QStringList& entityIds) {
-    Q_UNUSED(eventType);
-    Q_UNUSED(timestamp);
-    Q_UNUSED(entityIds);
-    // Event handling can be added later if needed
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 void NatureDimensionController::showHistoryWindow(const QString& code) {
@@ -316,31 +283,17 @@ void NatureDimensionController::showHistoryWindow(const QString& code) {
 
     // Track this history window
     track_window(windowKey, historyWindow);
+    register_detachable_window(historyWindow);
 
-    allDetachableWindows_.append(historyWindow);
     QPointer<NatureDimensionController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
     connect(historyWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });
 
-    mdiArea_->addSubWindow(historyWindow);
-    historyWindow->adjustSize();
-
-    // If the parent list window is detached, detach this window too
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        historyWindow->show();
-        historyWindow->detach();
-
-        QPoint parentPos = listMdiSubWindow_->pos();
-        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        historyWindow->show();
-    }
+    show_managed_window(historyWindow, listMdiSubWindow_);
 }
 
 void NatureDimensionController::onOpenVersion(
@@ -384,30 +337,18 @@ void NatureDimensionController::onOpenVersion(
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
 
     track_window(windowKey, detailWindow);
-    allDetachableWindows_.append(detailWindow);
+    register_detachable_window(detailWindow);
 
     QPointer<NatureDimensionController> self = this;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow, windowKey]() {
+            [self, windowKey]() {
         if (self) {
             self->untrack_window(windowKey);
-            self->allDetachableWindows_.removeAll(detailWindow);
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 60, parentPos.y() + 60);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
 void NatureDimensionController::onRevertVersion(
@@ -430,9 +371,7 @@ void NatureDimensionController::onRevertVersion(
             this, [this](const QString& code) {
         BOOST_LOG_SEV(lg(), info) << "Nature dimension reverted: " << code.toStdString();
         emit statusMessage(QString("Nature dimension '%1' reverted successfully").arg(code));
-        if (listWindow_) {
-            listWindow_->reload();
-        }
+        handleEntitySaved();
     });
 
     const QColor iconColor(220, 220, 220);
@@ -444,28 +383,10 @@ void NatureDimensionController::onRevertVersion(
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
 
-    allDetachableWindows_.append(detailWindow);
-    QPointer<NatureDimensionController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self) {
-            self->allDetachableWindows_.removeAll(detailWindow);
-        }
-    });
+    register_detachable_window(detailWindow);
 
-    mdiArea_->addSubWindow(detailWindow);
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    if (listMdiSubWindow_ && listMdiSubWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-        QPoint parentPos = listMdiSubWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
 }

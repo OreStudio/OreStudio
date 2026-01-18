@@ -35,6 +35,7 @@ create table if not exists "ores"."variability_feature_flags_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
+    check ("name" <> ''),
     check ("change_reason_code" <> '')
 );
 

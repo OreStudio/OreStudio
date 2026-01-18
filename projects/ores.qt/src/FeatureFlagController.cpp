@@ -47,12 +47,10 @@ FeatureFlagController::FeatureFlagController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
-    QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
       listWindow_(nullptr),
-      listMdiSubWindow_(nullptr),
-      allDetachableWindows_(allDetachableWindows) {
+      listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "FeatureFlagController created";
 
@@ -134,12 +132,11 @@ void FeatureFlagController::showListWindow() {
 
     // Track window
     track_window(key, listMdiSubWindow_);
-    allDetachableWindows_.append(listMdiSubWindow_);
+    register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_, &QObject::destroyed, this, [this, key]() {
         untrack_window(key);
-        allDetachableWindows_.removeOne(listMdiSubWindow_);
         listWindow_ = nullptr;
         listMdiSubWindow_ = nullptr;
     });
@@ -161,6 +158,12 @@ void FeatureFlagController::closeAllWindows() {
 
     listWindow_ = nullptr;
     listMdiSubWindow_ = nullptr;
+}
+
+void FeatureFlagController::reloadListWindow() {
+    if (listWindow_) {
+        listWindow_->reload();
+    }
 }
 
 void FeatureFlagController::onAddNewRequested() {
@@ -227,12 +230,11 @@ void FeatureFlagController::showDetailWindow(
 
     // Track window
     track_window(key, subWindow);
-    allDetachableWindows_.append(subWindow);
+    register_detachable_window(subWindow);
 
     // Cleanup when closed
-    connect(subWindow, &QObject::destroyed, this, [this, key, subWindow]() {
+    connect(subWindow, &QObject::destroyed, this, [this, key]() {
         untrack_window(key);
-        allDetachableWindows_.removeOne(subWindow);
     });
 
     BOOST_LOG_SEV(lg(), debug) << "Detail window created for: "
@@ -256,7 +258,7 @@ void FeatureFlagController::onFeatureFlagDeleted(const QString& name) {
 void FeatureFlagController::refreshListWindow() {
     if (listWindow_) {
         BOOST_LOG_SEV(lg(), debug) << "Refreshing feature flags list";
-        listWindow_->reload();
+        handleEntitySaved();
     }
 }
 
@@ -351,14 +353,12 @@ void FeatureFlagController::showHistoryWindow(const QString& name) {
 
     // Track this history window
     track_window(windowKey, historyWindow);
+    register_detachable_window(historyWindow);
 
-    allDetachableWindows_.append(historyWindow);
     QPointer<FeatureFlagController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
     connect(historyWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });
@@ -431,14 +431,12 @@ void FeatureFlagController::onOpenFeatureFlagVersion(
 
     // Track this version window
     track_window(windowKey, detailWindow);
+    register_detachable_window(detailWindow);
 
-    allDetachableWindows_.append(detailWindow);
     QPointer<FeatureFlagController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = detailWindow;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });

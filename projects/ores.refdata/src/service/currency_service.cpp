@@ -41,6 +41,9 @@ std::uint32_t currency_service::count_currencies() {
 }
 
 void currency_service::save_currency(const domain::currency& currency) {
+    if (currency.iso_code.empty()) {
+        throw std::invalid_argument("Currency ISO code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving currency: " << currency.iso_code;
     repo_.write(ctx_, currency);
 }

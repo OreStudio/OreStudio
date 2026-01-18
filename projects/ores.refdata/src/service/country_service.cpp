@@ -41,6 +41,9 @@ std::uint32_t country_service::count_countries() {
 }
 
 void country_service::save_country(const domain::country& country) {
+    if (country.alpha2_code.empty()) {
+        throw std::invalid_argument("Country alpha2 code cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving country: " << country.alpha2_code;
     repo_.write(ctx_, country);
 }

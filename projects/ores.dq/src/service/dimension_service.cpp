@@ -47,29 +47,13 @@ dimension_service::find_nature_dimension(const std::string& code) {
     return dimensions.front();
 }
 
-domain::nature_dimension
-dimension_service::create_nature_dimension(const domain::nature_dimension& dimension) {
-    BOOST_LOG_SEV(lg(), debug) << "Creating nature dimension: " << dimension.code;
-
-    auto existing = find_nature_dimension(dimension.code);
-    if (existing) {
-        throw std::runtime_error("Nature dimension already exists: " + dimension.code);
+void dimension_service::save_nature_dimension(const domain::nature_dimension& dimension) {
+    if (dimension.code.empty()) {
+        throw std::invalid_argument("Nature dimension code cannot be empty.");
     }
-
+    BOOST_LOG_SEV(lg(), debug) << "Saving nature dimension: " << dimension.code;
     nature_repo_.write(dimension);
-    BOOST_LOG_SEV(lg(), info) << "Created nature dimension: " << dimension.code;
-
-    auto created = find_nature_dimension(dimension.code);
-    if (!created) {
-        throw std::runtime_error("Failed to retrieve created nature dimension");
-    }
-    return *created;
-}
-
-void dimension_service::update_nature_dimension(const domain::nature_dimension& dimension) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating nature dimension: " << dimension.code;
-    nature_repo_.write(dimension);
-    BOOST_LOG_SEV(lg(), info) << "Updated nature dimension: " << dimension.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved nature dimension: " << dimension.code;
 }
 
 void dimension_service::remove_nature_dimension(const std::string& code) {
@@ -103,29 +87,13 @@ dimension_service::find_origin_dimension(const std::string& code) {
     return dimensions.front();
 }
 
-domain::origin_dimension
-dimension_service::create_origin_dimension(const domain::origin_dimension& dimension) {
-    BOOST_LOG_SEV(lg(), debug) << "Creating origin dimension: " << dimension.code;
-
-    auto existing = find_origin_dimension(dimension.code);
-    if (existing) {
-        throw std::runtime_error("Origin dimension already exists: " + dimension.code);
+void dimension_service::save_origin_dimension(const domain::origin_dimension& dimension) {
+    if (dimension.code.empty()) {
+        throw std::invalid_argument("Origin dimension code cannot be empty.");
     }
-
+    BOOST_LOG_SEV(lg(), debug) << "Saving origin dimension: " << dimension.code;
     origin_repo_.write(dimension);
-    BOOST_LOG_SEV(lg(), info) << "Created origin dimension: " << dimension.code;
-
-    auto created = find_origin_dimension(dimension.code);
-    if (!created) {
-        throw std::runtime_error("Failed to retrieve created origin dimension");
-    }
-    return *created;
-}
-
-void dimension_service::update_origin_dimension(const domain::origin_dimension& dimension) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating origin dimension: " << dimension.code;
-    origin_repo_.write(dimension);
-    BOOST_LOG_SEV(lg(), info) << "Updated origin dimension: " << dimension.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved origin dimension: " << dimension.code;
 }
 
 void dimension_service::remove_origin_dimension(const std::string& code) {
@@ -159,29 +127,13 @@ dimension_service::find_treatment_dimension(const std::string& code) {
     return dimensions.front();
 }
 
-domain::treatment_dimension
-dimension_service::create_treatment_dimension(const domain::treatment_dimension& dimension) {
-    BOOST_LOG_SEV(lg(), debug) << "Creating treatment dimension: " << dimension.code;
-
-    auto existing = find_treatment_dimension(dimension.code);
-    if (existing) {
-        throw std::runtime_error("Treatment dimension already exists: " + dimension.code);
+void dimension_service::save_treatment_dimension(const domain::treatment_dimension& dimension) {
+    if (dimension.code.empty()) {
+        throw std::invalid_argument("Treatment dimension code cannot be empty.");
     }
-
+    BOOST_LOG_SEV(lg(), debug) << "Saving treatment dimension: " << dimension.code;
     treatment_repo_.write(dimension);
-    BOOST_LOG_SEV(lg(), info) << "Created treatment dimension: " << dimension.code;
-
-    auto created = find_treatment_dimension(dimension.code);
-    if (!created) {
-        throw std::runtime_error("Failed to retrieve created treatment dimension");
-    }
-    return *created;
-}
-
-void dimension_service::update_treatment_dimension(const domain::treatment_dimension& dimension) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating treatment dimension: " << dimension.code;
-    treatment_repo_.write(dimension);
-    BOOST_LOG_SEV(lg(), info) << "Updated treatment dimension: " << dimension.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved treatment dimension: " << dimension.code;
 }
 
 void dimension_service::remove_treatment_dimension(const std::string& code) {

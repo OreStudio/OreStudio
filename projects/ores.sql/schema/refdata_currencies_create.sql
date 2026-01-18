@@ -44,6 +44,7 @@ create table if not exists "ores"."refdata_currencies_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
+    check ("iso_code" <> ''),
     check ("change_reason_code" <> '')
 );
 

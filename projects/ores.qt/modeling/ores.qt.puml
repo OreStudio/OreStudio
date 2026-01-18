@@ -247,39 +247,64 @@ namespace ores #F2F2F2 {
             +~EntityController()
             +{abstract} showListWindow() void
             +setClientManager(ClientManager* clientManager, const QString& username) void
+            +setUsername(const QString& username) void
             +{abstract} closeAllWindows() void
             #statusMessage(const QString& message)
             #errorMessage(const QString& message)
+            #detachableWindowCreated(DetachableMdiSubWindow* window)
+            #detachableWindowDestroyed(DetachableMdiSubWindow* window)
+            #build_window_key(const QString& windowType, const QString& identifier) QString
+            #try_reuse_window(const QString& key) bool
+            #bring_window_to_front(DetachableMdiSubWindow* window) void
+            #track_window(const QString& key, DetachableMdiSubWindow* window) void
+            #untrack_window(const QString& key) void
+            #show_managed_window(DetachableMdiSubWindow* window, DetachableMdiSubWindow* referenceWindow, QPoint offset) void
+            #connect_dialog_close(DetailDialogBase* dialog, DetachableMdiSubWindow* window) void
+            #register_detachable_window(DetachableMdiSubWindow* window) void
             #{field} mainWindow_ QMainWindow*
             #{field} mdiArea_ QMdiArea*
             #{field} clientManager_ ClientManager*
             #{field} username_ QString
+            #{field} managed_windows_ QMap<QString, DetachableMdiSubWindow*>
         }
         note top of EntityController
         Base class for entity-specific controllers.
 
-        - mainWindow_: Parent main window
-        - mdiArea_: MDI area for windows
-        - clientManager_: Client manager for network operations
-        - username_: Logged-in username
+        Provides common window management functionality:
+        - Window tracking and reuse via managed_windows_
+        - Detach-aware window presentation via show_managed_window
+        - Window key generation for unique identification
+        - Signal-based window lifecycle notification
+
+        Key methods:
+        - show_managed_window: Adds window to MDI, handles sizing
+          and detaching if reference window is detached
+        - try_reuse_window: Reactivates existing window if available
+        - track/untrack_window: Window lifecycle management
+        - register_detachable_window: Emits signals for window tracking
+        - connect_dialog_close: Wires up dialog close requests
+
+        Signals:
+        - detachableWindowCreated: Emitted when window is registered
+        - detachableWindowDestroyed: Emitted when window is destroyed
         end note
 
         class CurrencyController #ECECEC {
-            +CurrencyController(QMainWindow* mainWindow, QMdiArea* mdiArea, ClientManager* clientManager, const QString& username, QList<DetachableMdiSubWindow*>& allDetachableWindows, QObject* parent)
+            +CurrencyController(QMainWindow* mainWindow, QMdiArea* mdiArea, ClientManager* clientManager, const QString& username, QObject* parent)
             +~CurrencyController()
             +showListWindow() void
             +closeAllWindows() void
             -onAddNewRequested() void
             -onShowCurrencyDetails(const refdata::domain::currency& currency) void
             -onShowCurrencyHistory(const QString& isoCode) void
-            -{field} allDetachableWindows_ QList<DetachableMdiSubWindow*>&
             -{field} currencyListWindow_ QPointer<DetachableMdiSubWindow>
         }
         note top of CurrencyController
         Controller managing all currency-related windows and operations.
 
-        - allDetachableWindows_: Reference to MainWindow's window list
         - currencyListWindow_: Weak pointer to currency list window
+
+        Uses inherited register_detachable_window() for window tracking.
         end note
 
         ' Currency Windows
@@ -412,7 +437,7 @@ namespace ores #F2F2F2 {
 
         ' Country Controller
         class CountryController #ECECEC {
-            +CountryController(QMainWindow* mainWindow, QMdiArea* mdiArea, ClientManager* clientManager, ImageCache* imageCache, const QString& username, QList<DetachableMdiSubWindow*>& allDetachableWindows, QObject* parent)
+            +CountryController(QMainWindow* mainWindow, QMdiArea* mdiArea, ClientManager* clientManager, ImageCache* imageCache, const QString& username, QObject* parent)
             +~CountryController()
             +showListWindow() void
             +closeAllWindows() void
@@ -420,16 +445,16 @@ namespace ores #F2F2F2 {
             -onShowCountryDetails(const refdata::domain::country& country) void
             -onShowCountryHistory(const QString& alpha2Code) void
             -onNotificationReceived(const QString& eventType, const QDateTime& timestamp, const QStringList& entityIds) void
-            -{field} allDetachableWindows_ QList<DetachableMdiSubWindow*>&
             -{field} imageCache_ ImageCache*
             -{field} countryListWindow_ QPointer<DetachableMdiSubWindow>
         }
         note top of CountryController
         Controller managing all country-related windows and operations.
 
-        - allDetachableWindows_: Reference to MainWindow's window list
         - imageCache_: Image cache for country flags
         - countryListWindow_: Weak pointer to country list window
+
+        Uses inherited register_detachable_window() for window tracking.
         end note
 
         ' Country MDI Window

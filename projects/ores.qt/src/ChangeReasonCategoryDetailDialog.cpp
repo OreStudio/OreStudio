@@ -42,7 +42,7 @@ using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
 
 ChangeReasonCategoryDetailDialog::ChangeReasonCategoryDetailDialog(QWidget* parent)
-    : QWidget(parent), ui_(new Ui::ChangeReasonCategoryDetailDialog), isDirty_(false),
+    : DetailDialogBase(parent), ui_(new Ui::ChangeReasonCategoryDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), clientManager_(nullptr),
       currentHistoryIndex_(0),
       firstVersionAction_(nullptr), prevVersionAction_(nullptr),
@@ -265,12 +265,6 @@ void ChangeReasonCategoryDetailDialog::updateSaveButtonState() {
     saveAction_->setEnabled(canSave && !isReadOnly_);
 }
 
-void ChangeReasonCategoryDetailDialog::closeParentWindow() {
-    if (auto* subWindow = qobject_cast<QMdiSubWindow*>(parentWidget())) {
-        subWindow->close();
-    }
-}
-
 void ChangeReasonCategoryDetailDialog::displayCurrentVersion() {
     if (currentHistoryIndex_ >= 0 &&
         currentHistoryIndex_ < static_cast<int>(history_.size())) {
@@ -423,15 +417,13 @@ void ChangeReasonCategoryDetailDialog::onSaveClicked() {
         if (success) {
             BOOST_LOG_SEV(lg(), debug) << "Category saved successfully";
 
-            emit self->statusMessage(QString("Successfully saved category: %1")
-                .arg(QString::fromStdString(categoryToSave.code)));
-
             self->isDirty_ = false;
             emit self->isDirtyChanged(false);
             self->updateSaveButtonState();
 
             emit self->categorySaved(QString::fromStdString(categoryToSave.code));
-            self->closeParentWindow();
+            self->notifySaveSuccess(tr("Category '%1' saved")
+                .arg(QString::fromStdString(categoryToSave.code)));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Category save failed: " << message;
             emit self->errorMessage(QString("Failed to save category: %1")
@@ -528,7 +520,7 @@ void ChangeReasonCategoryDetailDialog::onDeleteClicked() {
                 .arg(QString::fromStdString(code)));
 
             emit self->categoryDeleted(QString::fromStdString(code));
-            self->closeParentWindow();
+            self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Category delete failed: " << message;
             emit self->errorMessage(QString("Failed to delete category: %1")

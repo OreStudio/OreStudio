@@ -93,22 +93,11 @@ public:
     find_coding_scheme(const std::string& code);
 
     /**
-     * @brief Creates a new coding scheme.
+     * @brief Saves a coding scheme (creates or updates).
      *
-     * @param scheme The coding scheme to create
-     * @return The created coding scheme
-     * @throws std::invalid_argument if code is empty
-     * @throws std::runtime_error if coding scheme already exists
+     * @param scheme The coding scheme to save
      */
-    domain::coding_scheme create_coding_scheme(
-        const domain::coding_scheme& scheme);
-
-    /**
-     * @brief Updates an existing coding scheme.
-     *
-     * @param scheme The coding scheme with updated values
-     */
-    void update_coding_scheme(const domain::coding_scheme& scheme);
+    void save_coding_scheme(const domain::coding_scheme& scheme);
 
     /**
      * @brief Removes a coding scheme.
@@ -142,22 +131,11 @@ public:
     find_authority_type(const std::string& code);
 
     /**
-     * @brief Creates a new coding scheme authority type.
+     * @brief Saves a coding scheme authority type (creates or updates).
      *
-     * @param authority_type The authority type to create
-     * @return The created authority type
-     * @throws std::invalid_argument if code is empty
-     * @throws std::runtime_error if authority type already exists
+     * @param authority_type The authority type to save
      */
-    domain::coding_scheme_authority_type create_authority_type(
-        const domain::coding_scheme_authority_type& authority_type);
-
-    /**
-     * @brief Updates an existing coding scheme authority type.
-     *
-     * @param authority_type The authority type with updated values
-     */
-    void update_authority_type(
+    void save_authority_type(
         const domain::coding_scheme_authority_type& authority_type);
 
     /**

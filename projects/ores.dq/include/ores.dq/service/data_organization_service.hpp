@@ -88,21 +88,11 @@ public:
     std::optional<domain::catalog> find_catalog(const std::string& name);
 
     /**
-     * @brief Creates a new catalog.
+     * @brief Saves a catalog (creates or updates).
      *
-     * @param catalog The catalog to create
-     * @return The created catalog
-     * @throws std::invalid_argument if name is empty
-     * @throws std::runtime_error if catalog already exists
+     * @param catalog The catalog to save
      */
-    domain::catalog create_catalog(const domain::catalog& catalog);
-
-    /**
-     * @brief Updates an existing catalog.
-     *
-     * @param catalog The catalog with updated values
-     */
-    void update_catalog(const domain::catalog& catalog);
+    void save_catalog(const domain::catalog& catalog);
 
     /**
      * @brief Removes a catalog.
@@ -134,21 +124,11 @@ public:
     std::optional<domain::data_domain> find_data_domain(const std::string& name);
 
     /**
-     * @brief Creates a new data domain.
+     * @brief Saves a data domain (creates or updates).
      *
-     * @param data_domain The data domain to create
-     * @return The created data domain
-     * @throws std::invalid_argument if name is empty
-     * @throws std::runtime_error if data domain already exists
+     * @param data_domain The data domain to save
      */
-    domain::data_domain create_data_domain(const domain::data_domain& data_domain);
-
-    /**
-     * @brief Updates an existing data domain.
-     *
-     * @param data_domain The data domain with updated values
-     */
-    void update_data_domain(const domain::data_domain& data_domain);
+    void save_data_domain(const domain::data_domain& data_domain);
 
     /**
      * @brief Removes a data domain.
@@ -198,22 +178,11 @@ public:
     find_subject_area(const std::string& name, const std::string& domain_name);
 
     /**
-     * @brief Creates a new subject area.
+     * @brief Saves a subject area (creates or updates).
      *
-     * @param subject_area The subject area to create
-     * @return The created subject area
-     * @throws std::invalid_argument if name or domain_name is empty
-     * @throws std::runtime_error if subject area already exists
+     * @param subject_area The subject area to save
      */
-    domain::subject_area create_subject_area(
-        const domain::subject_area& subject_area);
-
-    /**
-     * @brief Updates an existing subject area.
-     *
-     * @param subject_area The subject area with updated values
-     */
-    void update_subject_area(const domain::subject_area& subject_area);
+    void save_subject_area(const domain::subject_area& subject_area);
 
     /**
      * @brief Removes a subject area.

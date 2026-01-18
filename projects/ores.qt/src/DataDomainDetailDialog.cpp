@@ -32,7 +32,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 DataDomainDetailDialog::DataDomainDetailDialog(QWidget* parent)
-    : QWidget(parent),
+    : DetailDialogBase(parent),
       ui_(new Ui::DataDomainDetailDialog),
       clientManager_(nullptr),
       isCreateMode_(true),
@@ -136,11 +136,8 @@ void DataDomainDetailDialog::onSaveClicked() {
         if (!self) return;
 
         if (result.success) {
-            emit self->statusMessage(tr("Data domain saved successfully"));
             emit self->domainSaved(name);
-            if (auto* parentWidget = self->parentWidget()) {
-                parentWidget->close();
-            }
+            self->notifySaveSuccess(tr("Data domain '%1' saved").arg(name));
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }
@@ -191,9 +188,7 @@ void DataDomainDetailDialog::onDeleteClicked() {
         if (success) {
             emit self->statusMessage(tr("Data domain deleted successfully"));
             emit self->domainDeleted(name);
-            if (auto* parentWidget = self->parentWidget()) {
-                parentWidget->close();
-            }
+            self->requestClose();
         } else {
             emit self->errorMessage(tr("Failed to delete data domain"));
         }

@@ -21,7 +21,6 @@
 #define ORES_QT_COUNTRY_CONTROLLER_HPP
 
 #include <QPointer>
-#include <QList>
 #include <QDateTime>
 #include "ores.qt/EntityController.hpp"
 #include "ores.refdata/domain/country.hpp"
@@ -57,13 +56,13 @@ public:
         ImageCache* imageCache,
         ChangeReasonCache* changeReasonCache,
         const QString& username,
-        QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);
 
     ~CountryController() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
+    void reloadListWindow() override;
 
 private slots:
     void onAddNewRequested();
@@ -75,7 +74,6 @@ private slots:
                                 const QStringList& entityIds);
 
 private:
-    QList<DetachableMdiSubWindow*>& allDetachableWindows_;
     ImageCache* imageCache_;
     ChangeReasonCache* changeReasonCache_;
     QPointer<DetachableMdiSubWindow> countryListWindow_;

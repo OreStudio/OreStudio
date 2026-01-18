@@ -17,43 +17,44 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-18 Sun 10:12], for Sunday, January 18, 2026.
-|      | <75>                         |        |      |      |       |
-| Tags | Headline                     | Time   |      |      |     % |
-|------+------------------------------+--------+------+------+-------|
-|      | *Total time*                 | *1:32* |      |      | 100.0 |
-|------+------------------------------+--------+------+------+-------|
-|      | Stories                      | 1:32   |      |      | 100.0 |
-|      | Active                       |        | 1:32 |      | 100.0 |
-| code | Add UI support for data sets |        |      | 1:32 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-18 Sun 20:44], for Sunday, January 18, 2026.
+|       | <75>                               |        |      |      |       |
+| Tags  | Headline                           | Time   |      |      |     % |
+|-------+------------------------------------+--------+------+------+-------|
+|       | *Total time*                       | *6:16* |      |      | 100.0 |
+|-------+------------------------------------+--------+------+------+-------|
+|       | Stories                            | 6:16   |      |      | 100.0 |
+|       | Active                             |        | 6:16 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint |        |      | 1:33 |  24.7 |
+| code  | Add UI support for data sets       |        |      | 4:43 |  75.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-18 Sun 10:12]
+#+CAPTION: Clock summary at [2026-01-18 Sun 20:44]
 |       | <75>                                               |         |       |       |       |
 | Tags  | Headline                                           | Time    |       |       |     % |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                       | *54:16* |       |       | 100.0 |
+|       | *Total time*                                       | *59:00* |       |       | 100.0 |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                            | 54:16   |       |       | 100.0 |
-|       | Active                                             |         | 54:16 |       | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       |  2:11 |   4.0 |
-| infra | OCR scan notebooks for this sprint                 |         |       |  6:46 |  12.5 |
-| infra | Clean up system models and component models        |         |       |  0:28 |   0.9 |
-| code  | Add missing entities to CLI                        |         |       |  1:55 |   3.5 |
-| infra | Refactor PR related skills                         |         |       |  0:18 |   0.6 |
-| code  | Fix valgrind errors in nightly                     |         |       |  1:25 |   2.6 |
-| code  | Create security module                             |         |       |  1:23 |   2.5 |
-| code  | Prodigy should support multiple environments       |         |       |  0:19 |   0.6 |
-| code  | Add named environment sets                         |         |       |  4:17 |   7.9 |
-| code  | Rename risk to refdata                             |         |       |  0:43 |   1.3 |
-| code  | Prefix database entities with component            |         |       |  3:15 |   6.0 |
-| code  | Implement data quality                             |         |       |  9:42 |  17.9 |
-| code  | Improvements to connection browser                 |         |       |  2:05 |   3.8 |
-| code  | Disconnect shows reconnect message                 |         |       |  2:24 |   4.4 |
-| infra | Refactor documentation                             |         |       |  6:29 |  11.9 |
-| code  | Add UI support for data sets                       |         |       | 10:16 |  18.9 |
+|       | Stories                                            | 59:00   |       |       | 100.0 |
+|       | Active                                             |         | 59:00 |       | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       |  2:11 |   3.7 |
+| infra | OCR scan notebooks for this sprint                 |         |       |  8:19 |  14.1 |
+| infra | Clean up system models and component models        |         |       |  0:28 |   0.8 |
+| code  | Add missing entities to CLI                        |         |       |  1:55 |   3.2 |
+| infra | Refactor PR related skills                         |         |       |  0:18 |   0.5 |
+| code  | Fix valgrind errors in nightly                     |         |       |  1:25 |   2.4 |
+| code  | Create security module                             |         |       |  1:23 |   2.3 |
+| code  | Prodigy should support multiple environments       |         |       |  0:19 |   0.5 |
+| code  | Add named environment sets                         |         |       |  4:17 |   7.3 |
+| code  | Rename risk to refdata                             |         |       |  0:43 |   1.2 |
+| code  | Prefix database entities with component            |         |       |  3:15 |   5.5 |
+| code  | Implement data quality                             |         |       |  9:42 |  16.4 |
+| code  | Improvements to connection browser                 |         |       |  2:05 |   3.5 |
+| code  | Disconnect shows reconnect message                 |         |       |  2:24 |   4.1 |
+| infra | Refactor documentation                             |         |       |  6:29 |  11.0 |
+| code  | Add UI support for data sets                       |         |       | 13:27 |  22.8 |
 | code  | Implement party related entities at database level |         |       |  0:20 |   0.6 |
 #+end:
 
@@ -211,6 +212,7 @@ print(p)
 
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2026-01-18 Sun 11:22]--[2026-01-18 Sun 12:55] =>  1:33
     CLOCK: [2026-01-16 Fri 09:30]--[2026-01-16 Fri 11:03] =>  1:33
     CLOCK: [2026-01-15 Thu 23:31]--[2026-01-15 Thu 23:55] =>  0:24
     CLOCK: [2026-01-15 Thu 09:47]--[2026-01-15 Thu 11:30] =>  1:43
@@ -813,6 +815,11 @@ Highlights:
 
 *** STARTED Add UI support for data sets                               :code:
     :LOGBOOK:
+    CLOCK: [2026-01-18 Sun 19:01]--[2026-01-18 Sun 19:20] =>  0:19
+    CLOCK: [2026-01-18 Sun 18:35]--[2026-01-18 Sun 19:01] =>  0:26
+    CLOCK: [2026-01-18 Sun 16:54]--[2026-01-18 Sun 17:20] =>  0:26
+    CLOCK: [2026-01-18 Sun 16:01]--[2026-01-18 Sun 16:54] =>  0:53
+    CLOCK: [2026-01-18 Sun 10:13]--[2026-01-18 Sun 11:20] =>  1:07
     CLOCK: [2026-01-18 Sun 08:40]--[2026-01-18 Sun 10:12] =>  1:32
     CLOCK: [2026-01-17 Sat 22:28]--[2026-01-17 Sat 22:47] =>  0:19
     CLOCK: [2026-01-17 Sat 18:10]--[2026-01-17 Sat 22:27] =>  4:17
@@ -971,6 +978,35 @@ Grok:
 HF:
 
 [[./mock_data_librarian_hf.png]]
+
+**** Subject areas
+
+#+begin_quote
+This pull request significantly enhances the application's data organization
+capabilities by introducing a new module for managing Subject Areas. It provides
+a structured way to define and track subject areas, complete with dedicated user
+interfaces for detailed viewing, editing, and a robust version history system.
+This integration improves the overall data governance and traceability within
+the application.
+
+Highlights:
+
+- New Subject Area Management Feature: Introduced a comprehensive system for
+  managing 'Subject Areas', allowing users to create, view, edit, delete, and
+  track the history of subject areas within data domains.
+- Dedicated Controller and UI Components: Added a new SubjectAreaController to
+  manage the lifecycle of subject area-related windows, along with
+  SubjectAreaDetailDialog for individual subject area operations and
+  SubjectAreaHistoryDialog for viewing version history and changes.
+- Main Window Integration: The main application window (MainWindow) has been
+  updated to include and initialize the SubjectAreaController, connect its
+  signals to the status bar, and enable a new 'Subject Areas' action in the
+  menu, making the feature accessible upon successful login.
+- Version History and Revert Functionality: The SubjectAreaHistoryDialog
+  provides a detailed view of a subject area's changes over time, including who
+  made the change, when, and a commentary. It also enables opening read-only
+  versions and reverting to previous states.
+#+end_quote
 
 **** Address review comments
 

@@ -335,13 +335,7 @@ handle_save_change_reason_request(std::span<const std::byte> payload,
 
     save_change_reason_response response;
     try {
-        // Check if reason exists (update) or not (create)
-        auto existing = change_management_service_.find_reason(request.reason.code);
-        if (existing) {
-            change_management_service_.update_reason(request.reason);
-        } else {
-            change_management_service_.create_reason(request.reason);
-        }
+        change_management_service_.save_reason(request.reason);
         response.success = true;
         response.message = "Change reason saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved change reason: " << request.reason.code;
@@ -456,13 +450,7 @@ handle_save_change_reason_category_request(std::span<const std::byte> payload,
 
     save_change_reason_category_response response;
     try {
-        // Check if category exists (update) or not (create)
-        auto existing = change_management_service_.find_category(request.category.code);
-        if (existing) {
-            change_management_service_.update_category(request.category);
-        } else {
-            change_management_service_.create_category(request.category);
-        }
+        change_management_service_.save_category(request.category);
         response.success = true;
         response.message = "Change reason category saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved change reason category: "
@@ -607,12 +595,7 @@ handle_save_catalog_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_catalog_response response;
     try {
-        auto existing = data_organization_service_.find_catalog(request.catalog.name);
-        if (existing) {
-            data_organization_service_.update_catalog(request.catalog);
-        } else {
-            data_organization_service_.create_catalog(request.catalog);
-        }
+        data_organization_service_.save_catalog(request.catalog);
         response.success = true;
         response.message = "Catalog saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved catalog: " << request.catalog.name;
@@ -752,13 +735,7 @@ handle_save_data_domain_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_data_domain_response response;
     try {
-        auto existing = data_organization_service_.find_data_domain(
-            request.domain.name);
-        if (existing) {
-            data_organization_service_.update_data_domain(request.domain);
-        } else {
-            data_organization_service_.create_data_domain(request.domain);
-        }
+        data_organization_service_.save_data_domain(request.domain);
         response.success = true;
         response.message = "Data domain saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved data domain: " << request.domain.name;
@@ -928,13 +905,7 @@ handle_save_subject_area_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_subject_area_response response;
     try {
-        auto existing = data_organization_service_.find_subject_area(
-            request.subject_area.name, request.subject_area.domain_name);
-        if (existing) {
-            data_organization_service_.update_subject_area(request.subject_area);
-        } else {
-            data_organization_service_.create_subject_area(request.subject_area);
-        }
+        data_organization_service_.save_subject_area(request.subject_area);
         response.success = true;
         response.message = "Subject area saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved subject area: "
@@ -1075,12 +1046,7 @@ handle_save_dataset_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_dataset_response response;
     try {
-        auto existing = dataset_service_.find_dataset(request.dataset.id);
-        if (existing) {
-            dataset_service_.update_dataset(request.dataset);
-        } else {
-            dataset_service_.create_dataset(request.dataset);
-        }
+        dataset_service_.save_dataset(request.dataset);
         response.success = true;
         response.message = "Dataset saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved dataset: " << request.dataset.id;
@@ -1219,12 +1185,7 @@ handle_save_methodology_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_methodology_response response;
     try {
-        auto existing = dataset_service_.find_methodology(request.methodology.id);
-        if (existing) {
-            dataset_service_.update_methodology(request.methodology);
-        } else {
-            dataset_service_.create_methodology(request.methodology);
-        }
+        dataset_service_.save_methodology(request.methodology);
         response.success = true;
         response.message = "Methodology saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved methodology: "
@@ -1398,13 +1359,7 @@ handle_save_coding_scheme_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_coding_scheme_response response;
     try {
-        auto existing = coding_scheme_service_.find_coding_scheme(
-            request.scheme.code);
-        if (existing) {
-            coding_scheme_service_.update_coding_scheme(request.scheme);
-        } else {
-            coding_scheme_service_.create_coding_scheme(request.scheme);
-        }
+        coding_scheme_service_.save_coding_scheme(request.scheme);
         response.success = true;
         response.message = "Coding scheme saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved coding scheme: "
@@ -1549,13 +1504,7 @@ handle_save_coding_scheme_authority_type_request(std::span<const std::byte> payl
     const auto& request = *request_result;
     save_coding_scheme_authority_type_response response;
     try {
-        auto existing = coding_scheme_service_.find_authority_type(
-            request.authority_type.code);
-        if (existing) {
-            coding_scheme_service_.update_authority_type(request.authority_type);
-        } else {
-            coding_scheme_service_.create_authority_type(request.authority_type);
-        }
+        coding_scheme_service_.save_authority_type(request.authority_type);
         response.success = true;
         response.message = "Coding scheme authority type saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved coding scheme authority type: "
@@ -1701,13 +1650,7 @@ handle_save_nature_dimension_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_nature_dimension_response response;
     try {
-        auto existing = dimension_service_.find_nature_dimension(
-            request.dimension.code);
-        if (existing) {
-            dimension_service_.update_nature_dimension(request.dimension);
-        } else {
-            dimension_service_.create_nature_dimension(request.dimension);
-        }
+        dimension_service_.save_nature_dimension(request.dimension);
         response.success = true;
         response.message = "Nature dimension saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved nature dimension: "
@@ -1852,13 +1795,7 @@ handle_save_origin_dimension_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_origin_dimension_response response;
     try {
-        auto existing = dimension_service_.find_origin_dimension(
-            request.dimension.code);
-        if (existing) {
-            dimension_service_.update_origin_dimension(request.dimension);
-        } else {
-            dimension_service_.create_origin_dimension(request.dimension);
-        }
+        dimension_service_.save_origin_dimension(request.dimension);
         response.success = true;
         response.message = "Origin dimension saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved origin dimension: "
@@ -2003,13 +1940,7 @@ handle_save_treatment_dimension_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     save_treatment_dimension_response response;
     try {
-        auto existing = dimension_service_.find_treatment_dimension(
-            request.dimension.code);
-        if (existing) {
-            dimension_service_.update_treatment_dimension(request.dimension);
-        } else {
-            dimension_service_.create_treatment_dimension(request.dimension);
-        }
+        dimension_service_.save_treatment_dimension(request.dimension);
         response.success = true;
         response.message = "Treatment dimension saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved treatment dimension: "

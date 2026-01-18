@@ -32,7 +32,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 TreatmentDimensionDetailDialog::TreatmentDimensionDetailDialog(QWidget* parent)
-    : QWidget(parent),
+    : DetailDialogBase(parent),
       ui_(new Ui::TreatmentDimensionDetailDialog),
       clientManager_(nullptr),
       isCreateMode_(true),
@@ -146,11 +146,8 @@ void TreatmentDimensionDetailDialog::onSaveClicked() {
         if (!self) return;
 
         if (result.success) {
-            emit self->statusMessage(tr("Treatment dimension saved successfully"));
             emit self->dimensionSaved(code);
-            if (auto* parentWidget = self->parentWidget()) {
-                parentWidget->close();
-            }
+            self->notifySaveSuccess(tr("Treatment dimension '%1' saved").arg(code));
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }
@@ -201,9 +198,7 @@ void TreatmentDimensionDetailDialog::onDeleteClicked() {
         if (success) {
             emit self->statusMessage(tr("Treatment dimension deleted successfully"));
             emit self->dimensionDeleted(code);
-            if (auto* parentWidget = self->parentWidget()) {
-                parentWidget->close();
-            }
+            self->requestClose();
         } else {
             emit self->errorMessage(tr("Failed to delete treatment dimension"));
         }

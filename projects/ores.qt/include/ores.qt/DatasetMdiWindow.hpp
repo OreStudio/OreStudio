@@ -20,11 +20,11 @@
 #ifndef ORES_QT_DATASET_MDI_WINDOW_HPP
 #define ORES_QT_DATASET_MDI_WINDOW_HPP
 
-#include <QWidget>
 #include <QTableView>
 #include <QToolBar>
 #include <QSortFilterProxyModel>
 #include <boost/uuid/uuid.hpp>
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientDatasetModel.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -32,7 +32,7 @@
 
 namespace ores::qt {
 
-class DatasetMdiWindow final : public QWidget {
+class DatasetMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
@@ -52,7 +52,9 @@ public:
     ~DatasetMdiWindow() override = default;
 
     QSize sizeHint() const override { return QSize(1200, 600); }
-    void reload();
+
+public slots:
+    void reload() override;
 
 signals:
     void statusChanged(const QString& message);
@@ -71,6 +73,11 @@ private slots:
     void onRefreshClicked();
     void onSelectionChanged();
     void onHistoryClicked();
+
+protected:
+    QString normalRefreshTooltip() const override {
+        return tr("Refresh datasets");
+    }
 
 private:
     void setupUi();

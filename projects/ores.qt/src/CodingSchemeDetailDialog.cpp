@@ -33,7 +33,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 CodingSchemeDetailDialog::CodingSchemeDetailDialog(QWidget* parent)
-    : QWidget(parent),
+    : DetailDialogBase(parent),
       ui_(new Ui::CodingSchemeDetailDialog),
       clientManager_(nullptr),
       isCreateMode_(true),
@@ -301,11 +301,8 @@ void CodingSchemeDetailDialog::onSaveClicked() {
         if (!self) return;
 
         if (result.success) {
-            emit self->statusMessage(tr("Coding scheme saved successfully"));
             emit self->schemeSaved(code);
-            if (auto* parentWidget = self->parentWidget()) {
-                parentWidget->close();
-            }
+            self->notifySaveSuccess(tr("Coding scheme '%1' saved").arg(code));
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }
@@ -356,9 +353,7 @@ void CodingSchemeDetailDialog::onDeleteClicked() {
         if (success) {
             emit self->statusMessage(tr("Coding scheme deleted successfully"));
             emit self->schemeDeleted(code);
-            if (auto* parentWidget = self->parentWidget()) {
-                parentWidget->close();
-            }
+            self->requestClose();
         } else {
             emit self->errorMessage(tr("Failed to delete coding scheme"));
         }

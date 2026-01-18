@@ -32,7 +32,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 CodingSchemeAuthorityTypeDetailDialog::CodingSchemeAuthorityTypeDetailDialog(QWidget* parent)
-    : QWidget(parent),
+    : DetailDialogBase(parent),
       ui_(new Ui::CodingSchemeAuthorityTypeDetailDialog),
       clientManager_(nullptr),
       isCreateMode_(true),
@@ -146,11 +146,8 @@ void CodingSchemeAuthorityTypeDetailDialog::onSaveClicked() {
         if (!self) return;
 
         if (result.success) {
-            emit self->statusMessage(tr("Authority type saved successfully"));
             emit self->authorityTypeSaved(code);
-            if (auto* parentWidget = self->parentWidget()) {
-                parentWidget->close();
-            }
+            self->notifySaveSuccess(tr("Authority type '%1' saved").arg(code));
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }
@@ -201,9 +198,7 @@ void CodingSchemeAuthorityTypeDetailDialog::onDeleteClicked() {
         if (success) {
             emit self->statusMessage(tr("Authority type deleted successfully"));
             emit self->authorityTypeDeleted(code);
-            if (auto* parentWidget = self->parentWidget()) {
-                parentWidget->close();
-            }
+            self->requestClose();
         } else {
             emit self->errorMessage(tr("Failed to delete authority type"));
         }

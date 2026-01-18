@@ -36,7 +36,7 @@ using namespace ores::logging;
 
 CodingSchemeMdiWindow::CodingSchemeMdiWindow(
     ClientManager* clientManager, const QString& username, QWidget* parent)
-    : QWidget(parent),
+    : EntityListMdiWindow(parent),
       clientManager_(clientManager),
       username_(username),
       model_(new ClientCodingSchemeModel(clientManager, this)),
@@ -111,6 +111,7 @@ void CodingSchemeMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor),
         tr("Refresh"));
     refreshAction_->setToolTip(tr("Refresh coding schemes"));
+    initializeStaleIndicator(refreshAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
 
     if (auto* layout = qobject_cast<QVBoxLayout*>(this->layout())) {
         layout->insertWidget(0, toolbar_);
@@ -257,6 +258,7 @@ void CodingSchemeMdiWindow::updateActionStates() {
 }
 
 void CodingSchemeMdiWindow::reload() {
+    clearStaleIndicator();
     model_->refresh();
 }
 

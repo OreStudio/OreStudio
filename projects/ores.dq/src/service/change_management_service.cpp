@@ -66,46 +66,15 @@ change_management_service::find_category(const std::string& code) {
     return categories.front();
 }
 
-domain::change_reason_category change_management_service::create_category(
+void change_management_service::save_category(
     const domain::change_reason_category& category) {
-    BOOST_LOG_SEV(lg(), info) << "Creating change reason category: "
-                              << category.code;
-
     if (category.code.empty()) {
         throw std::invalid_argument("Category code cannot be empty.");
     }
-
-    // Check if category already exists
-    auto existing = find_category(category.code);
-    if (existing) {
-        throw std::runtime_error("Category with code '" + category.code +
-            "' already exists.");
-    }
-
-    domain::change_reason_category new_category = category;
-    new_category.version = 0;
-
-    category_repo_.write(new_category);
-
-    BOOST_LOG_SEV(lg(), info) << "Created change reason category: "
-                              << category.code;
-    return new_category;
-}
-
-void change_management_service::update_category(
-    const domain::change_reason_category& category) {
-    BOOST_LOG_SEV(lg(), info) << "Updating change reason category: "
-                              << category.code;
-
-    // Verify category exists
-    auto existing = find_category(category.code);
-    if (!existing) {
-        throw std::runtime_error("Category not found: " + category.code);
-    }
-
+    BOOST_LOG_SEV(lg(), debug) << "Saving change reason category: "
+                               << category.code;
     category_repo_.write(category);
-
-    BOOST_LOG_SEV(lg(), info) << "Updated change reason category: "
+    BOOST_LOG_SEV(lg(), info) << "Saved change reason category: "
                               << category.code;
 }
 
@@ -172,62 +141,14 @@ change_management_service::find_reason(const std::string& code) {
     return reasons.front();
 }
 
-domain::change_reason change_management_service::create_reason(
+void change_management_service::save_reason(
     const domain::change_reason& reason) {
-    BOOST_LOG_SEV(lg(), info) << "Creating change reason: " << reason.code;
-
     if (reason.code.empty()) {
         throw std::invalid_argument("Reason code cannot be empty.");
     }
-
-    if (reason.category_code.empty()) {
-        throw std::invalid_argument("Category code cannot be empty.");
-    }
-
-    // Verify category exists
-    auto category = find_category(reason.category_code);
-    if (!category) {
-        throw std::runtime_error("Category not found: " + reason.category_code);
-    }
-
-    // Check if reason already exists
-    auto existing = find_reason(reason.code);
-    if (existing) {
-        throw std::runtime_error("Reason with code '" + reason.code +
-            "' already exists.");
-    }
-
-    domain::change_reason new_reason = reason;
-    new_reason.version = 0;
-
-    reason_repo_.write(new_reason);
-
-    BOOST_LOG_SEV(lg(), info) << "Created change reason: " << reason.code;
-    return new_reason;
-}
-
-void change_management_service::update_reason(
-    const domain::change_reason& reason) {
-    BOOST_LOG_SEV(lg(), info) << "Updating change reason: " << reason.code;
-
-    // Verify reason exists
-    auto existing = find_reason(reason.code);
-    if (!existing) {
-        throw std::runtime_error("Reason not found: " + reason.code);
-    }
-
-    // Verify category exists if changing
-    if (reason.category_code != existing->category_code) {
-        auto category = find_category(reason.category_code);
-        if (!category) {
-            throw std::runtime_error("Category not found: " +
-                reason.category_code);
-        }
-    }
-
+    BOOST_LOG_SEV(lg(), debug) << "Saving change reason: " << reason.code;
     reason_repo_.write(reason);
-
-    BOOST_LOG_SEV(lg(), info) << "Updated change reason: " << reason.code;
+    BOOST_LOG_SEV(lg(), info) << "Saved change reason: " << reason.code;
 }
 
 void change_management_service::remove_reason(const std::string& code) {

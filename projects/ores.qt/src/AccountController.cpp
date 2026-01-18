@@ -53,10 +53,8 @@ AccountController::AccountController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
-    QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
-      allDetachableWindows_(allDetachableWindows),
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
       accountListWindow_(nullptr) {
     BOOST_LOG_SEV(lg(), debug) << "Account controller created";
 
@@ -150,17 +148,13 @@ void AccountController::showListWindow() {
         ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
 
     // Track window for detach/reattach operations
-    allDetachableWindows_.append(accountListWindow_);
+    register_detachable_window(accountListWindow_);
     QPointer<AccountController> self = this;
     QPointer<DetachableMdiSubWindow> windowBeingDestroyed = accountListWindow_;
     connect(accountListWindow_, &QObject::destroyed, this,
         [self, windowBeingDestroyed]() {
         if (!self)
             return;
-
-        if (!windowBeingDestroyed.isNull()) {
-            self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
-        }
 
         if (self->accountListWindow_ == windowBeingDestroyed)
             self->accountListWindow_ = nullptr;
@@ -174,6 +168,14 @@ void AccountController::showListWindow() {
 void AccountController::closeAllWindows() {
     if (accountListWindow_) {
         accountListWindow_->close();
+    }
+}
+
+void AccountController::reloadListWindow() {
+    if (accountListWindow_) {
+        if (auto* widget = qobject_cast<AccountMdiWindow*>(accountListWindow_->widget())) {
+            widget->reload();
+        }
     }
 }
 
@@ -200,8 +202,8 @@ void AccountController::onNotificationReceived(
     }
 
     // Notify open detail/history dialogs for affected accounts
-    // Since we track windows in allDetachableWindows_, iterate and match
-    for (auto* window : allDetachableWindows_) {
+    // Iterate over managed windows to find matching dialogs
+    for (auto* window : managed_windows_) {
         if (!window || window == accountListWindow_)
             continue;
 
@@ -274,23 +276,9 @@ void AccountController::onShowAccountHistory(const QString& username) {
         ":/icons/ic_fluent_history_20_regular.svg", iconColor));
 
     // Track window for cleanup
-    allDetachableWindows_.append(historyWindow);
-    QPointer<AccountController> self = this;
-    QPointer<DetachableMdiSubWindow> windowBeingDestroyed = historyWindow;
-    connect(historyWindow, &QObject::destroyed, this,
-        [self, windowBeingDestroyed]() {
-        if (!self) return;
-        if (!windowBeingDestroyed.isNull()) {
-            self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
-        }
-    });
+    register_detachable_window(historyWindow);
 
-    mdiArea_->addSubWindow(historyWindow);
-    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
-    historyWindow->setWindowFlags(historyWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    historyWindow->adjustSize();
-    historyWindow->show();
+    show_managed_window(historyWindow, accountListWindow_);
 
     // Load the history data
     historyDialog->loadHistory();
@@ -324,23 +312,9 @@ void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId
         ":/icons/ic_fluent_clock_16_regular.svg", iconColor));
 
     // Track window for cleanup
-    allDetachableWindows_.append(sessionWindow);
-    QPointer<AccountController> self = this;
-    QPointer<DetachableMdiSubWindow> windowBeingDestroyed = sessionWindow;
-    connect(sessionWindow, &QObject::destroyed, this,
-        [self, windowBeingDestroyed]() {
-        if (!self) return;
-        if (!windowBeingDestroyed.isNull()) {
-            self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
-        }
-    });
+    register_detachable_window(sessionWindow);
 
-    mdiArea_->addSubWindow(sessionWindow);
-    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
-    sessionWindow->setWindowFlags(sessionWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    sessionWindow->adjustSize();
-    sessionWindow->show();
+    show_managed_window(sessionWindow, accountListWindow_);
 
     // Load the session data for this account
     sessionDialog->setAccount(accountId, username);
@@ -408,24 +382,10 @@ void AccountController::showDetailWindow(
         ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
 
     // Track window for cleanup
-    allDetachableWindows_.append(detailWindow);
-    QPointer<AccountController> self = this;
-    QPointer<DetachableMdiSubWindow> windowBeingDestroyed = detailWindow;
-    connect(detailWindow, &QObject::destroyed, this,
-        [self, windowBeingDestroyed]() {
-        if (!self) return;
-        if (!windowBeingDestroyed.isNull()) {
-            self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
-        }
-    });
+    register_detachable_window(detailWindow);
 
-    mdiArea_->addSubWindow(detailWindow);
-
-    // Disable maximize button (account details is a fixed-size form)
-    detailWindow->setWindowFlags(detailWindow->windowFlags() & ~Qt::WindowMaximizeButtonHint);
-
-    detailWindow->adjustSize();
-    detailWindow->show();
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, accountListWindow_);
 }
 
 void AccountController::onOpenAccountVersion(
@@ -465,24 +425,10 @@ void AccountController::onOpenAccountVersion(
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
 
-    allDetachableWindows_.append(detailWindow);
-    QPointer<AccountController> self = this;
-    QPointer<DetachableMdiSubWindow> windowBeingDestroyed = detailWindow;
-    connect(detailWindow, &QObject::destroyed, this,
-        [self, windowBeingDestroyed]() {
-        if (!self) return;
-        if (!windowBeingDestroyed.isNull()) {
-            self->allDetachableWindows_.removeAll(windowBeingDestroyed.data());
-        }
-    });
+    register_detachable_window(detailWindow);
 
-    mdiArea_->addSubWindow(detailWindow);
-
-    // Disable maximize button (account details is a fixed-size form)
-    detailWindow->setWindowFlags(detailWindow->windowFlags() & ~Qt::WindowMaximizeButtonHint);
-
-    detailWindow->adjustSize();
-    detailWindow->show();
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, accountListWindow_);
 }
 
 void AccountController::onRevertAccount(const iam::domain::account& account) {

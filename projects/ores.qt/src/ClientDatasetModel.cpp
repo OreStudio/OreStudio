@@ -235,7 +235,7 @@ void ClientDatasetModel::onPulseTimerTimeout() {
     pulse_state_ = !pulse_state_;
     pulse_count_++;
 
-    if (pulse_count_ >= max_pulse_cycles_) {
+    if (pulse_count_ >= max_pulse_cycles_ * 2) {
         pulse_timer_->stop();
         recent_dataset_ids_.clear();
     }

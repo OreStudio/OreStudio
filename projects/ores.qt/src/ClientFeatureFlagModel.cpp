@@ -289,7 +289,7 @@ void ClientFeatureFlagModel::onPulseTimerTimeout() {
     pulse_count_++;
 
     // Stop pulsing after max cycles but keep yellow color on
-    if (pulse_count_ >= max_pulse_cycles_) {
+    if (pulse_count_ >= max_pulse_cycles_ * 2) {
         pulse_timer_->stop();
         pulse_state_ = true;  // Keep highlight on after pulsing stops
         BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete, staying highlighted";

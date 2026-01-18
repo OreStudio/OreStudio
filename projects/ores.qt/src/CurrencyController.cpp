@@ -54,10 +54,8 @@ CurrencyController::CurrencyController(
     ImageCache* imageCache,
     ChangeReasonCache* changeReasonCache,
     const QString& username,
-    QList<DetachableMdiSubWindow*>& allDetachableWindows,
     QObject* parent)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
-      allDetachableWindows_(allDetachableWindows),
+    : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
       imageCache_(imageCache),
       changeReasonCache_(changeReasonCache),
       currencyListWindow_(nullptr) {
@@ -157,7 +155,7 @@ void CurrencyController::showListWindow() {
         ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
 
     // Track window for detach/reattach operations
-    allDetachableWindows_.append(currencyListWindow_);
+    register_detachable_window(currencyListWindow_);
     QPointer<CurrencyController> self = this;
     QPointer<DetachableMdiSubWindow> windowBeingDestroyed = currencyListWindow_;
     // to avoid race conditions with signal processing
@@ -166,9 +164,6 @@ void CurrencyController::showListWindow() {
             if (!self) return;
 
             BOOST_LOG_SEV(lg(), debug) << "Detachable MDI Sub Window destroyed";
-
-            // Remove the window from the list of all detachable windows
-            self->allDetachableWindows_.removeAll(windowBeingDestroyed);
 
             // If the destroyed window is the currency list, nullify the pointer
             if (self->currencyListWindow_ == windowBeingDestroyed)
@@ -195,6 +190,14 @@ void CurrencyController::closeAllWindows() {
     // But if we do need to close them:
     if (currencyListWindow_) {
         currencyListWindow_->close();
+    }
+}
+
+void CurrencyController::reloadListWindow() {
+    if (currencyListWindow_) {
+        if (auto* widget = qobject_cast<CurrencyMdiWindow*>(currencyListWindow_->widget())) {
+            widget->reload();
+        }
     }
 }
 
@@ -234,31 +237,10 @@ void CurrencyController::onAddNewRequested() {
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
 
-    allDetachableWindows_.append(detailWindow);
-    QPointer<CurrencyController> self = this;
-    connect(detailWindow, &QObject::destroyed, this,
-            [self, detailWindow]() {
-        if (self)
-            self->allDetachableWindows_.removeAll(detailWindow);
-    });
+    register_detachable_window(detailWindow);
 
-    mdiArea_->addSubWindow(detailWindow);
-    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If the parent currency list window is detached, detach this window too
-    // and position it near the parent
-    if (currencyListWindow_ && currencyListWindow_->isDetached()) {
-        detailWindow->show();  // Show first so geometry is valid
-        detailWindow->detach();
-
-        // Position near parent with offset
-        QPoint parentPos = currencyListWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else
-        detailWindow->show();
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, currencyListWindow_);
 }
 
 void CurrencyController::onShowCurrencyDetails(
@@ -312,36 +294,18 @@ void CurrencyController::onShowCurrencyDetails(
 
     // Track this detail window
     track_window(windowKey, detailWindow);
+    register_detachable_window(detailWindow);
 
-    allDetachableWindows_.append(detailWindow);
     QPointer<CurrencyController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = detailWindow;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If the parent currency list window is detached, detach this window too
-    // and position it near the parent
-    if (currencyListWindow_ && currencyListWindow_->isDetached()) {
-        detailWindow->show();  // Show first so geometry is valid
-        detailWindow->detach();
-
-        // Position near parent with offset
-        QPoint parentPos = currencyListWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, currencyListWindow_);
 }
 
 void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
@@ -393,36 +357,17 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
 
     // Track this history window
     track_window(windowKey, historyWindow);
+    register_detachable_window(historyWindow);
 
-    allDetachableWindows_.append(historyWindow);
     QPointer<CurrencyController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = historyWindow;
     connect(historyWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });
 
-    mdiArea_->addSubWindow(historyWindow);
-    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
-    historyWindow->setWindowFlags(historyWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    historyWindow->adjustSize();
-
-    // If the parent currency list window is detached, detach this window too
-    // and position it near the parent
-    if (currencyListWindow_ && currencyListWindow_->isDetached()) {
-        historyWindow->show();  // Show first so geometry is valid
-        historyWindow->detach();
-
-        // Position near parent with offset
-        QPoint parentPos = currencyListWindow_->pos();
-        historyWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        historyWindow->show();
-    }
+    show_managed_window(historyWindow, currencyListWindow_);
 }
 
 void CurrencyController::onNotificationReceived(
@@ -537,34 +482,18 @@ void CurrencyController::onOpenCurrencyVersion(
 
     // Track this version window
     track_window(windowKey, detailWindow);
+    register_detachable_window(detailWindow);
 
-    allDetachableWindows_.append(detailWindow);
     QPointer<CurrencyController> self = this;
-    QPointer<DetachableMdiSubWindow> windowPtr = detailWindow;
     connect(detailWindow, &QObject::destroyed, this,
-            [self, windowPtr, windowKey]() {
+            [self, windowKey]() {
         if (self) {
-            self->allDetachableWindows_.removeAll(windowPtr.data());
             self->untrack_window(windowKey);
         }
     });
 
-    mdiArea_->addSubWindow(detailWindow);
-    // Set window flags AFTER addSubWindow (Qt resets flags when adding to MDI)
-    detailWindow->setWindowFlags(detailWindow->windowFlags()
-        & ~Qt::WindowMaximizeButtonHint);
-    detailWindow->adjustSize();
-
-    // If the parent currency list window is detached, detach this window too
-    if (currencyListWindow_ && currencyListWindow_->isDetached()) {
-        detailWindow->show();
-        detailWindow->detach();
-
-        QPoint parentPos = currencyListWindow_->pos();
-        detailWindow->move(parentPos.x() + 30, parentPos.y() + 30);
-    } else {
-        detailWindow->show();
-    }
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, currencyListWindow_);
 }
 
 void CurrencyController::onRevertCurrency(const refdata::domain::currency& currency) {

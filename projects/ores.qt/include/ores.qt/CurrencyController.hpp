@@ -21,7 +21,6 @@
 #define ORES_QT_CURRENCY_CONTROLLER_HPP
 
 #include <QPointer>
-#include <QList>
 #include <QDateTime>
 #include "ores.qt/EntityController.hpp"
 #include "ores.refdata/domain/currency.hpp"
@@ -74,8 +73,6 @@ public:
      * @param imageCache Image cache for currency flag icons
      * @param changeReasonCache Cache for change reasons
      * @param username Username of logged-in user (for audit trails)
-     * @param allDetachableWindows Reference to MainWindow's window list
-     * for detach/reattach operations
      * @param parent QObject parent (for Qt ownership)
      */
     explicit CurrencyController(
@@ -85,7 +82,6 @@ public:
         ImageCache* imageCache,
         ChangeReasonCache* changeReasonCache,
         const QString& username,
-        QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);
 
     /**
@@ -115,6 +111,8 @@ public:
      * @note Inherited from EntityController
      */
     void closeAllWindows() override;
+
+    void reloadListWindow() override;
 
 private slots:
     /**
@@ -183,15 +181,6 @@ private slots:
                                 const QStringList& entityIds);
 
 private:
-    /**
-     * @brief Reference to MainWindow's list of all detachable windows.
-     *
-     * Windows created by this controller are added to this list so they
-     * can participate in detach/reattach operations and appear in the
-     * Window menu.
-     */
-    QList<DetachableMdiSubWindow*>& allDetachableWindows_;
-
     /**
      * @brief Cache for currency flag icons.
      */

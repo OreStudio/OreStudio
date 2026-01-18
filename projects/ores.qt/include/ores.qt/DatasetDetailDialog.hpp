@@ -20,9 +20,9 @@
 #ifndef ORES_QT_DATASET_DETAIL_DIALOG_HPP
 #define ORES_QT_DATASET_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/dataset.hpp"
 
@@ -32,7 +32,7 @@ class DatasetDetailDialog;
 
 namespace ores::qt {
 
-class DatasetDetailDialog final : public QWidget {
+class DatasetDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
@@ -57,8 +57,6 @@ public:
     void loadLookupData();
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& error);
     void datasetSaved(const boost::uuids::uuid& id);
     void datasetDeleted(const boost::uuids::uuid& id);
 

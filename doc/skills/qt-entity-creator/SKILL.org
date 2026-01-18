@@ -25,6 +25,8 @@ Prerequisites:
 - The domain type must already exist (see [[id:b1450696-8c51-4cc5-8910-84912a411ab6][domain-type-creator]] skill)
 - The messaging protocol for CRUD operations must exist (see [[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][binary-protocol-developer]] skill)
 - The server-side handlers must be implemented
+- *If real-time updates are needed*: The eventing infrastructure must exist (see
+  "Eventing Infrastructure" section in [[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][binary-protocol-developer]] skill)
 
 
 * How to use this skill
@@ -280,17 +282,22 @@ Common patterns:
 
 *** Header structure
 
+The MdiWindow inherits from =EntityListMdiWindow= which provides:
+- =markAsStale()= / =clearStaleIndicator()= for stale indicator support
+- Pure virtual =reload()= method
+- =initializeStaleIndicator(QAction*, QString)= helper for toolbar setup
+- =normalRefreshTooltip()= / =staleRefreshTooltip()= virtual methods for customization
+
 #+begin_src cpp
 #ifndef ORES_QT_<ENTITY>_MDI_WINDOW_HPP
 #define ORES_QT_<ENTITY>_MDI_WINDOW_HPP
 
-#include <QWidget>
 #include <QTableView>
 #include <QVBoxLayout>
 #include <QToolBar>
-#include <QTimer>
 #include <QSortFilterProxyModel>
 #include <memory>
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/Client<Entity>Model.hpp"
 #include "ores.qt/PaginationWidget.hpp"  // If pagination needed
@@ -299,7 +306,7 @@ Common patterns:
 
 namespace ores::qt {
 
-class <Entity>MdiWindow : public QWidget {
+class <Entity>MdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
@@ -315,10 +322,13 @@ public:
     explicit <Entity>MdiWindow(ClientManager* clientManager,
                                 const QString& username,
                                 QWidget* parent = nullptr);
-    ~<Entity>MdiWindow() override;
+    ~<Entity>MdiWindow() override = default;
 
     Client<Entity>Model* model() const { return model_.get(); }
-    QSize sizeHint() const override;
+    QSize sizeHint() const override { return QSize(900, 600); }
+
+public slots:
+    void reload() override;  // Pure virtual from EntityListMdiWindow
 
 signals:
     void statusChanged(const QString& message);
@@ -329,10 +339,10 @@ signals:
     void <entity>Deleted(const QString& id);
     void show<Entity>History(const QString& id);
 
-public slots:
-    void reload();
-    void markAsStale();
-    void clearStaleIndicator();
+protected:
+    QString normalRefreshTooltip() const override {
+        return tr("Refresh <entity>s");
+    }
 
 private slots:
     void onDataLoaded();
@@ -348,9 +358,6 @@ private slots:
 private:
     void setupUi();
     void setupToolbar();
-    void setupReloadAction();
-    void startPulseAnimation();
-    void stopPulseAnimation();
     void updateActionStates();
 
     // Layout
@@ -359,18 +366,11 @@ private:
     QToolBar* toolBar_;
     PaginationWidget* paginationWidget_;  // If pagination needed
 
-    // Stale indicator
-    QAction* reloadAction_;
-    QIcon normalReloadIcon_;
-    QIcon staleReloadIcon_;
-    QTimer* pulseTimer_;
-    bool pulseState_{false};
-    int pulseCount_{0};
-
     // Standard actions
     QAction* addAction_;
     QAction* editAction_;
     QAction* deleteAction_;
+    QAction* refreshAction_;
     QAction* historyAction_;
 
     // Model
@@ -378,7 +378,6 @@ private:
     QSortFilterProxyModel* proxyModel_;
     ClientManager* clientManager_;
     QString username_;
-    bool isStale_{false};
 };
 
 }
@@ -414,45 +413,43 @@ tableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 tableView_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 #+end_src
 
-**** Stale indicator pattern
+**** Stale indicator pattern (using EntityListMdiWindow base class)
+
+The base class =EntityListMdiWindow= provides all stale indicator functionality.
+In your =setupToolbar()=, create the refresh action and call =initializeStaleIndicator()=:
 
 #+begin_src cpp
-void <Entity>MdiWindow::setupReloadAction() {
-    normalReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg",
-        color_constants::icon_color);
-    staleReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg",
-        color_constants::stale_indicator);
+void <Entity>MdiWindow::setupToolbar() {
+    toolBar_ = new QToolBar(this);
+    const QColor iconColor = color_constants::icon_color;
 
-    reloadAction_ = new QAction(normalReloadIcon_, tr("Reload"), this);
-    reloadAction_->setToolTip(tr("Reload data from server"));
-    connect(reloadAction_, &QAction::triggered, this, &<Entity>MdiWindow::reload);
+    // Create refresh action
+    refreshAction_ = new QAction(
+        IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor),
+        tr("Refresh"), this);
+    connect(refreshAction_, &QAction::triggered, this, &<Entity>MdiWindow::reload);
+    toolBar_->addAction(refreshAction_);
 
-    pulseTimer_ = new QTimer(this);
-    pulseTimer_->setInterval(500);
-    connect(pulseTimer_, &QTimer::timeout, this, [this]() {
-        pulseState_ = !pulseState_;
-        reloadAction_->setIcon(pulseState_ ? staleReloadIcon_ : normalReloadIcon_);
-        if (++pulseCount_ >= 6) {
-            stopPulseAnimation();
-            reloadAction_->setIcon(staleReloadIcon_);
-        }
-    });
+    // Initialize stale indicator (base class handles pulse animation)
+    initializeStaleIndicator(refreshAction_,
+        ":/icons/ic_fluent_arrow_sync_20_regular.svg");
+
+    // Add other actions...
+    addAction_ = new QAction(/* ... */);
+    // etc.
 }
 
-void <Entity>MdiWindow::markAsStale() {
-    isStale_ = true;
-    startPulseAnimation();
-    emit statusChanged(tr("Data changed on server - click Reload"));
-}
-
-void <Entity>MdiWindow::clearStaleIndicator() {
-    isStale_ = false;
-    stopPulseAnimation();
-    reloadAction_->setIcon(normalReloadIcon_);
+void <Entity>MdiWindow::reload() {
+    clearStaleIndicator();  // Clear stale state before reloading
+    model_->refresh();
 }
 #+end_src
+
+The base class provides:
+- =markAsStale()= - Starts pulse animation and shows stale tooltip
+- =clearStaleIndicator()= - Stops animation and restores normal state
+- =normalRefreshTooltip()= / =staleRefreshTooltip()= - Override for custom tooltips
 
 **** Deletion pattern
 
@@ -540,9 +537,9 @@ Create the dialog for creating, editing, and viewing entity details.
 #ifndef ORES_QT_<ENTITY>_DETAIL_DIALOG_HPP
 #define ORES_QT_<ENTITY>_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include <QToolBar>
 #include <memory>
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "<component>/domain/<entity>.hpp"
@@ -551,7 +548,15 @@ namespace Ui { class <Entity>DetailDialog; }
 
 namespace ores::qt {
 
-class <Entity>DetailDialog : public QWidget {
+/**
+ * @brief Detail dialog for viewing and editing <entity> records.
+ *
+ * Inherits from DetailDialogBase which provides:
+ * - statusMessage/errorMessage signals
+ * - requestClose() for decoupled window closing
+ * - notifySaveSuccess() helper for consistent post-save behavior
+ */
+class <Entity>DetailDialog : public DetailDialogBase {
     Q_OBJECT
 
 private:
@@ -582,11 +587,9 @@ public:
     void showVersionNavActions(bool visible);
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& message);
+    // Note: statusMessage and errorMessage are inherited from DetailDialogBase
     void isDirtyChanged(bool isDirty);
-    void <entity>Created(const QString& id);
-    void <entity>Updated(const QString& id);
+    void <entity>Saved(const QString& id);  // Emitted for both create and update
     void <entity>Deleted(const QString& id);
     void revertRequested(const <component>::domain::<entity>& entity);
 
@@ -749,20 +752,16 @@ void <Entity>DetailDialog::onSaveClicked() {
         watcher->deleteLater();
 
         if (result.success) {
-            self->isDirty_ = false;
-            emit self->isDirtyChanged(false);
+            // Emit entity-specific signal first
+            emit self-><entity>Saved(self->identifier());
 
-            if (self->isAddMode_) {
-                emit self-><entity>Created(self->identifier());
-            } else {
-                emit self-><entity>Updated(self->identifier());
-            }
-
-            // Close parent MDI window
-            // ...
+            // Then use base class helper to emit status and close dialog
+            self->notifySaveSuccess(
+                tr("<Entity> '%1' saved").arg(self->identifier()));
         } else {
             BOOST_LOG_SEV(lg(), error) << "Save failed: "
                                        << result.error_message.toStdString();
+            emit self->errorMessage(result.error_message);
             MessageBoxHelper::critical(self, tr("Save Error"),
                 result.error_message, result.error_details);
         }
@@ -1131,6 +1130,11 @@ Create the controller that coordinates windows and handles events.
 
 *** Header structure
 
+The controller inherits from =EntityController= and:
+- Passes the event name to the base class constructor for automatic subscription
+- Overrides =listWindow()= to return the list window for stale marking
+- Does NOT need to implement =onNotificationReceived= (handled by base class)
+
 #+begin_src cpp
 #ifndef ORES_QT_<ENTITY>_CONTROLLER_HPP
 #define ORES_QT_<ENTITY>_CONTROLLER_HPP
@@ -1163,17 +1167,15 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
-        QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);
-
-    ~<Entity>Controller() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
+    void reloadListWindow() override;
 
-signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& message);
+protected:
+    // Return list window for base class notification handling
+    EntityListMdiWindow* listWindow() const override;
 
 private slots:
     void onAddNewRequested();
@@ -1182,17 +1184,14 @@ private slots:
     void on<Entity>Deleted(const QString& id);
     void onOpenHistoryVersion(const <component>::domain::<entity>& entity, int versionNumber);
     void onRevert<Entity>(const <component>::domain::<entity>& entity);
-    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
-                                const QStringList& entityIds);
 
 private:
     void showDetailWindow(const <component>::domain::<entity>* entity,
                           bool createMode, bool readOnly = false,
                           int versionNumber = 0);
 
-    QList<DetachableMdiSubWindow*>& allDetachableWindows_;
-    QPointer<DetachableMdiSubWindow> listWindow_;
-    QPointer<<Entity>MdiWindow> listWidget_;
+    QPointer<<Entity>MdiWindow> listWindow_;
+    QPointer<DetachableMdiSubWindow> listMdiSubWindow_;
 };
 
 }
@@ -1202,33 +1201,62 @@ private:
 
 *** Implementation patterns
 
-**** Constructor - event subscription
+**** Constructor - event subscription via base class
+
+*Important:* The event subscription requires the eventing infrastructure to be in place:
+1. Database notification trigger exists (see [[id:7e4c9d3a-2f1b-4e5c-8d6a-9f2e3c4b5a6d][sql-schema-creator]] skill)
+2. Event type is defined with =event_traits= specialization
+3. Event is registered in comms service =application.cpp=
+
+For details, see the "Eventing Infrastructure" section in the
+[[id:f8a12c4e-9b3d-4e5f-a1c2-8d7e6f5a4b3c][binary-protocol-developer]] skill.
+
+The =EntityController= base class handles all event subscription/unsubscription
+when you pass the event name to the constructor:
 
 #+begin_src cpp
-<Entity>Controller::<Entity>Controller(/* params */)
-    : EntityController(mainWindow, mdiArea, clientManager, username, parent),
-      allDetachableWindows_(allDetachableWindows) {
+#include "ores.eventing/domain/event_traits.hpp"
+#include "<component>/eventing/<entity>_changed_event.hpp"
 
-    BOOST_LOG_SEV(lg(), debug) << "<Entity> controller created";
+namespace ores::qt {
 
-    // Subscribe to server notifications
-    if (clientManager_) {
-        connect(clientManager_, &ClientManager::notificationReceived,
-                this, &<Entity>Controller::onNotificationReceived);
+using namespace ores::logging;
 
-        connect(clientManager_, &ClientManager::connected, this, [this]() {
-            clientManager_->subscribeToEvent(std::string{event_name});
-        });
-
-        connect(clientManager_, &ClientManager::reconnected, this, [this]() {
-            clientManager_->subscribeToEvent(std::string{event_name});
-        });
-
-        if (clientManager_->isConnected()) {
-            clientManager_->subscribeToEvent(std::string{event_name});
-        }
-    }
+namespace {
+    // Get the event name from the event traits
+    constexpr std::string_view <entity>_event_name =
+        eventing::domain::event_traits<
+            <component>::eventing::<entity>_changed_event>::name;
 }
+
+<Entity>Controller::<Entity>Controller(
+    QMainWindow* mainWindow,
+    QMdiArea* mdiArea,
+    ClientManager* clientManager,
+    const QString& username,
+    QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username,
+                       <entity>_event_name, parent),  // Pass event name to base
+      listWindow_(nullptr),
+      listMdiSubWindow_(nullptr) {
+
+    BOOST_LOG_SEV(lg(), debug) << "<Entity>Controller created";
+}
+
+// Override listWindow() so base class can call markAsStale()
+EntityListMdiWindow* <Entity>Controller::listWindow() const {
+    return listWindow_;
+}
+#+end_src
+
+The base class:
+- Subscribes to events on connect/reconnect
+- Unsubscribes in destructor
+- Handles =onNotificationReceived= and calls =listWindow()->markAsStale()=
+
+For controllers that don't need events, pass empty string_view ={}=:
+#+begin_src cpp
+: EntityController(mainWindow, mdiArea, clientManager, username, {}, parent)
 #+end_src
 
 **** Show list window
@@ -1236,95 +1264,172 @@ private:
 #+begin_src cpp
 void <Entity>Controller::showListWindow() {
     // Reuse existing window if available
-    if (listWindow_) {
-        bring_window_to_front(listWindow_);
+    if (listMdiSubWindow_) {
+        bring_window_to_front(listMdiSubWindow_);
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new <entity> MDI window";
+    const QColor iconColor = color_constants::icon_color;
 
     // Create widget
-    auto* widget = new <Entity>MdiWindow(clientManager_, username_, nullptr);
-    listWidget_ = widget;
+    listWindow_ = new <Entity>MdiWindow(clientManager_, username_, nullptr);
 
     // Connect signals
-    connect(widget, &<Entity>MdiWindow::statusChanged,
-            this, [this](const QString& msg) { emit statusMessage(msg); });
-    connect(widget, &<Entity>MdiWindow::errorOccurred,
-            this, [this](const QString& err) { emit errorMessage(err); });
-    connect(widget, &<Entity>MdiWindow::addNewRequested,
+    connect(listWindow_, &<Entity>MdiWindow::statusChanged,
+            this, &<Entity>Controller::statusMessage);
+    connect(listWindow_, &<Entity>MdiWindow::errorOccurred,
+            this, &<Entity>Controller::errorMessage);
+    connect(listWindow_, &<Entity>MdiWindow::addNewRequested,
             this, &<Entity>Controller::onAddNewRequested);
-    connect(widget, &<Entity>MdiWindow::show<Entity>Details,
+    connect(listWindow_, &<Entity>MdiWindow::show<Entity>Details,
             this, &<Entity>Controller::onShow<Entity>Details);
-    connect(widget, &<Entity>MdiWindow::show<Entity>History,
+    connect(listWindow_, &<Entity>MdiWindow::show<Entity>History,
             this, &<Entity>Controller::onShow<Entity>History);
-    connect(widget, &<Entity>MdiWindow::<entity>Deleted,
-            this, &<Entity>Controller::on<Entity>Deleted);
 
     // Wrap in MDI sub-window
-    listWindow_ = new DetachableMdiSubWindow();
-    listWindow_->setAttribute(Qt::WA_DeleteOnClose);
-    listWindow_->setWidget(widget);
-    listWindow_->setWindowTitle(tr("<Entity>s"));
-    listWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_<icon>_20_regular.svg", color_constants::icon_color));
+    listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
+    listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    listMdiSubWindow_->setWidget(listWindow_);
+    listMdiSubWindow_->setWindowTitle(tr("<Entity>s"));
+    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_<icon>_20_regular.svg", iconColor));
+
+    register_detachable_window(listMdiSubWindow_);
 
     // Track destruction
-    connect(listWindow_, &QObject::destroyed, this, [this]() {
+    connect(listMdiSubWindow_, &QObject::destroyed, this, [this]() {
         listWindow_ = nullptr;
-        listWidget_ = nullptr;
+        listMdiSubWindow_ = nullptr;
     });
 
-    mdiArea_->addSubWindow(listWindow_);
-    allDetachableWindows_.append(listWindow_);
-    listWindow_->show();
+    mdiArea_->addSubWindow(listMdiSubWindow_);
+    listMdiSubWindow_->adjustSize();
+    listMdiSubWindow_->show();
 
-    widget->reload();
+    listWindow_->reload();
+}
+
+void <Entity>Controller::closeAllWindows() {
+    BOOST_LOG_SEV(lg(), debug) << "closeAllWindows called";
+
+    // Close all managed windows
+    QList<QString> keys = managed_windows_.keys();
+    for (const QString& key : keys) {
+        if (auto* window = managed_windows_.value(key)) {
+            window->close();
+        }
+    }
+    managed_windows_.clear();
+
+    listWindow_ = nullptr;
+    listMdiSubWindow_ = nullptr;
+}
+
+void <Entity>Controller::reloadListWindow() {
+    if (listWindow_) {
+        listWindow_->reload();
+    }
 }
 #+end_src
 
-**** Notification handling
+**** Showing detail and history windows
+
+Use the =show_managed_window= helper from =EntityController= to present detail
+and history windows. This helper handles adding to MDI, removing the maximize
+button, sizing, and detaching if the list window is detached:
 
 #+begin_src cpp
-void <Entity>Controller::onNotificationReceived(
-    const QString& eventType,
-    const QDateTime& timestamp,
-    const QStringList& entityIds) {
+void <Entity>Controller::showDetailWindow(
+    const <component>::domain::<entity>* entity,
+    bool createMode, bool readOnly, int versionNumber) {
 
-    Q_UNUSED(timestamp);
+    const QString windowKey = build_window_key("details",
+        entity ? QString::fromStdString(entity->identifier()) : "new");
 
-    if (eventType != QString::fromStdString(std::string{event_name})) {
+    if (try_reuse_window(windowKey)) {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "<Entity> change notification received";
-
-    // Mark list as stale
-    if (listWidget_) {
-        listWidget_->markAsStale();
+    auto* detailDialog = new <Entity>DetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setCreateMode(createMode);
+    if (entity) {
+        detailDialog->set<Entity>(*entity);
     }
 
-    // Mark affected detail/history windows as stale
-    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
-        const QString& key = it.key();
-        auto* window = it.value();
+    // Connect status/error signals
+    connect(detailDialog, &<Entity>DetailDialog::statusMessage,
+            this, &<Entity>Controller::statusMessage);
+    connect(detailDialog, &<Entity>DetailDialog::errorMessage,
+            this, &<Entity>Controller::errorMessage);
 
-        // Check if this window is affected
-        if (entityIds.isEmpty()) {
-            // All entities changed
-            MdiUtils::markParentWindowAsStale(window);
-        } else {
-            // Check specific IDs
-            for (const QString& id : entityIds) {
-                if (key.contains(id)) {
-                    MdiUtils::markParentWindowAsStale(window);
-                    break;
-                }
-            }
-        }
-    }
+    // Connect entity-specific signals - use handleEntitySaved/handleEntityDeleted
+    // for centralized reload control
+    connect(detailDialog, &<Entity>DetailDialog::<entity>Saved,
+            this, [this](const QString& id) {
+        BOOST_LOG_SEV(lg(), info) << "<Entity> saved: " << id.toStdString();
+        handleEntitySaved();  // Respects autoReloadOnSave_ flag
+    });
+    connect(detailDialog, &<Entity>DetailDialog::<entity>Deleted,
+            this, [this, windowKey](const QString& id) {
+        BOOST_LOG_SEV(lg(), info) << "<Entity> deleted: " << id.toStdString();
+        handleEntityDeleted();  // Respects autoReloadOnSave_ flag
+    });
+
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(createMode ? tr("New <Entity>")
+        : tr("<Entity>: %1").arg(/* identifier */));
+    detailWindow->setWindowIcon(/* ... */);
+
+    register_detachable_window(detailWindow);
+
+    connect(detailWindow, &QObject::destroyed, this, [this, windowKey]() {
+        managed_windows_.remove(windowKey);
+    });
+
+    managed_windows_[windowKey] = detailWindow;
+
+    // Wire dialog close signal to window close
+    connect_dialog_close(detailDialog, detailWindow);
+
+    // Use the helper to show the window (handles MDI add, sizing, detach)
+    show_managed_window(detailWindow, listMdiSubWindow_);
 }
 #+end_src
+
+The =handleEntitySaved()= and =handleEntityDeleted()= methods are defined in
+=EntityController= and respect the =autoReloadOnSave_= flag. By default,
+auto-reload is disabled. Controllers should NOT call =listWindow_->reload()=
+directly; instead, use these centralized methods for consistent behavior.
+
+The =show_managed_window= method signature:
+
+#+begin_src cpp
+void show_managed_window(DetachableMdiSubWindow* window,
+    DetachableMdiSubWindow* referenceWindow = nullptr,
+    QPoint offset = QPoint(30, 30));
+#+end_src
+
+- =window=: The window to show
+- =referenceWindow=: Optional window to follow detach state from (typically =listWindow_=)
+- =offset=: Position offset when detaching (default 30,30, use 60,60 for nested windows)
+
+**** Notification handling (automatic via base class)
+
+Notification handling is automatic when you:
+1. Pass the event name to the =EntityController= base class constructor
+2. Override =listWindow()= to return your list window
+
+The base class =EntityController::onNotificationReceived()=:
+- Filters notifications by the event name you provided
+- Calls =listWindow()->markAsStale()= when matching notifications arrive
+- Logs the notification receipt
+
+No additional code is needed in derived controllers for basic stale marking.
 
 *** Commit message
 
@@ -1372,8 +1477,13 @@ In =MainWindow.cpp= constructor:
 #+begin_src cpp
 // Create controller
 <entity>Controller_ = new <Entity>Controller(
-    this, mdiArea_, clientManager_, username_,
-    allDetachableWindows_, this);
+    this, mdiArea_, clientManager_, username_, this);
+
+// Connect signals from controller to MainWindow
+connect(<entity>Controller_, &<Entity>Controller::detachableWindowCreated,
+        this, &MainWindow::onDetachableWindowCreated);
+connect(<entity>Controller_, &<Entity>Controller::detachableWindowDestroyed,
+        this, &MainWindow::onDetachableWindowDestroyed);
 
 // Connect signals
 connect(<entity>Controller_, &<Entity>Controller::statusMessage,

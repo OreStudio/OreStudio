@@ -46,7 +46,8 @@ create table if not exists "ores"."dq_coding_scheme_authority_types_tbl" (
         code WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to")
+    check ("valid_from" < "valid_to"),
+    check ("code" <> '')
 );
 
 create unique index if not exists dq_coding_scheme_authority_types_version_uniq_idx

@@ -94,16 +94,26 @@ grant create on schema ores to ores;
 
 -- Data Quality tables
 \ir ../schema/dq_catalog_create.sql
+\ir ../schema/dq_catalogs_notify_trigger.sql
 \ir ../schema/dq_catalog_dependency_create.sql
 \ir ../schema/dq_data_domain_create.sql
+\ir ../schema/dq_data_domains_notify_trigger.sql
 \ir ../schema/dq_subject_area_create.sql
+\ir ../schema/dq_subject_areas_notify_trigger.sql
 \ir ../schema/dq_coding_scheme_authority_type_create.sql
+\ir ../schema/dq_coding_scheme_authority_types_notify_trigger.sql
 \ir ../schema/dq_coding_scheme_create.sql
+\ir ../schema/dq_coding_schemes_notify_trigger.sql
 \ir ../schema/dq_origin_dimension_create.sql
+\ir ../schema/dq_origin_dimensions_notify_trigger.sql
 \ir ../schema/dq_nature_dimension_create.sql
+\ir ../schema/dq_nature_dimensions_notify_trigger.sql
 \ir ../schema/dq_treatment_dimension_create.sql
+\ir ../schema/dq_treatment_dimensions_notify_trigger.sql
 \ir ../schema/dq_methodology_create.sql
+\ir ../schema/dq_methodologies_notify_trigger.sql
 \ir ../schema/dq_dataset_create.sql
+\ir ../schema/dq_datasets_notify_trigger.sql
 \ir ../schema/dq_countries_artefact_create.sql
 \ir ../schema/dq_currencies_artefact_create.sql
 \ir ../schema/dq_images_artefact_create.sql

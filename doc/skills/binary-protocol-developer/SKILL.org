@@ -381,6 +381,52 @@ case message_type::action_resource_request:
     co_return co_await handle_action_resource_request(payload, remote_address);
 #+end_src
 
+*** Message handler as thin dispatcher
+
+Message handlers should be *thin dispatchers* that delegate business logic to
+the service layer. They should:
+
+1. Deserialize the request payload
+2. Call the appropriate service method
+3. Build and serialize the response
+
+*DO NOT* implement business logic (such as upsert decisions) in the message
+handler. For save operations, call the service's =save_*= method directly - the
+service layer handles upsert semantics via the repository:
+
+#+begin_src cpp
+// CORRECT: Thin dispatcher - delegates to service
+handler_result message_handler::handle_save_entity_request(
+    std::span<const std::byte> payload, const std::string& remote_address) {
+
+    auto request = save_entity_request::deserialize(payload);
+    if (!request) {
+        co_return make_error_response(request.error());
+    }
+
+    service_.save_entity(request->entity);  // Service handles upsert
+
+    save_entity_response response;
+    response.success = true;
+    co_return make_response(response);
+}
+#+end_src
+
+#+begin_src cpp
+// WRONG: Business logic in message handler
+handler_result message_handler::handle_save_entity_request(
+    std::span<const std::byte> payload, const std::string& remote_address) {
+
+    // DON'T do this - upsert logic belongs in service layer
+    auto existing = service_.find_entity(request->entity.id);
+    if (existing) {
+        service_.update_entity(request->entity);  // Wrong pattern
+    } else {
+        service_.create_entity(request->entity);  // Wrong pattern
+    }
+}
+#+end_src
+
 ** Step 7: Update protocol version
 
 After making changes, update the version in =message_types.hpp=:
@@ -586,6 +632,218 @@ auto result = client_->process_request(std::move(req));
 //   response_type = subscribe_response
 //   request_message_type = message_type::subscribe_request
 #+end_src
+
+
+* Creating Event Infrastructure for a New Entity
+
+When adding a new entity that needs real-time change notifications in the Qt UI,
+you must create the complete event infrastructure. This consists of four parts
+that form an event pipeline:
+
+#+begin_example
+Database Trigger → Event Type → Comms Registration → Client Subscription
+(pg_notify)        (*_changed_    (application.cpp)   (Qt Controller)
+                    event.hpp)
+#+end_example
+
+** Prerequisites
+
+Before creating event infrastructure, ensure:
+
+1. The database table exists with a notify trigger (see [[id:A1B2C3D4-E5F6-7890-ABCD-EF1234567890][sql-schema-creator]])
+2. The trigger uses =pg_notify('ores_{entity_plural}', payload)=
+3. The payload JSON contains: =entity=, =timestamp=, =entity_ids=
+
+
+** Step 1: Create the event type
+
+Create the event struct and traits specialization in the component's eventing
+folder.
+
+*** File location
+
+=projects/ores.{component}/include/ores.{component}/eventing/{entity}_changed_event.hpp=
+
+*** Template
+
+#+begin_src cpp
+#ifndef ORES_{COMPONENT}_EVENTING_{ENTITY}_CHANGED_EVENT_HPP
+#define ORES_{COMPONENT}_EVENTING_{ENTITY}_CHANGED_EVENT_HPP
+
+#include <chrono>
+#include <vector>
+#include <string>
+#include "ores.eventing/domain/event_traits.hpp"
+
+namespace ores::{component}::eventing {
+
+/**
+ * @brief Domain event indicating that {entity} data has changed.
+ *
+ * Published when any {entity} is created, updated, or deleted.
+ */
+struct {entity}_changed_event final {
+    /**
+     * @brief The timestamp of when the change occurred (in UTC).
+     */
+    std::chrono::system_clock::time_point timestamp;
+
+    /**
+     * @brief Identifiers of entities that changed.
+     *
+     * Contains the primary key values of entities that were created,
+     * updated, or deleted. May contain multiple values for batch operations.
+     */
+    std::vector<std::string> {entity}_ids;  // or {entity}_codes for string PKs
+};
+
+}
+
+namespace ores::eventing::domain {
+
+/**
+ * @brief Event traits specialization for {entity}_changed_event.
+ */
+template<>
+struct event_traits<ores::{component}::eventing::{entity}_changed_event> {
+    static constexpr std::string_view name = "ores.{component}.{entity}_changed";
+};
+
+}
+
+#endif
+#+end_src
+
+*** Naming conventions
+
+| Element | Pattern | Example |
+|---------+---------+---------|
+| Event struct | ={entity}_changed_event= | =catalog_changed_event= |
+| Event name | =ores.{component}.{entity}_changed= | =ores.dq.catalog_changed= |
+| ID field | ={entity}_ids= or ={entity}_codes= | =catalog_names=, =dimension_codes= |
+
+Follow the existing patterns in:
+- =ores.refdata/eventing/currency_changed_event.hpp=
+- =ores.dq/eventing/change_reason_changed_event.hpp=
+
+
+** Step 2: Register in comms service
+
+Add two registrations in =projects/ores.comms.service/src/app/application.cpp=:
+
+*** 2a. Register entity-to-event mapping
+
+This tells the event source which PostgreSQL notification channel maps to which
+event type:
+
+#+begin_src cpp
+// Near line 159, with other register_mapping calls
+eventing::service::registrar::register_mapping<
+    {component}::eventing::{entity}_changed_event>(
+    event_source, "ores.{component}.{entity}", "ores_{entity_plural}",
+    *channel_registry, "{Entity} data modified");
+#+end_src
+
+Where:
+- =ores.{component}.{entity}= matches the =entity= field in the trigger payload
+- =ores_{entity_plural}= matches the pg_notify channel name from the trigger
+
+*** 2b. Bridge event bus to subscription manager
+
+This forwards events to subscribed clients:
+
+#+begin_src cpp
+// Near line 205, with other event_bus.subscribe calls
+auto {entity}_sub = event_bus.subscribe<{component}::eventing::{entity}_changed_event>(
+    [&subscription_mgr](const {component}::eventing::{entity}_changed_event& e) {
+        using traits = eventing::domain::event_traits<
+            {component}::eventing::{entity}_changed_event>;
+        subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                 e.{entity}_ids);
+    });
+#+end_src
+
+*** 2c. Add include
+
+Add the event header to the includes at the top of the file:
+
+#+begin_src cpp
+#include "ores.{component}/eventing/{entity}_changed_event.hpp"
+#+end_src
+
+
+** Step 3: Subscribe in Qt controller
+
+The Qt controller subscribes to events in its constructor and handles
+notifications.
+
+*** 3a. Add event trait constant
+
+#+begin_src cpp
+namespace {
+    constexpr std::string_view {entity}_event_name =
+        eventing::domain::event_traits<{component}::eventing::{entity}_changed_event>::name;
+}
+#+end_src
+
+*** 3b. Subscribe in constructor
+
+#+begin_src cpp
+// Subscribe to server notifications
+if (clientManager_) {
+    connect(clientManager_, &ClientManager::notificationReceived,
+            this, &{Entity}Controller::onNotificationReceived);
+
+    connect(clientManager_, &ClientManager::connected, this, [this]() {
+        BOOST_LOG_SEV(lg(), info) << "Subscribing to {entity} change events";
+        clientManager_->subscribeToEvent(std::string{{entity}_event_name});
+    });
+
+    connect(clientManager_, &ClientManager::reconnected, this, [this]() {
+        BOOST_LOG_SEV(lg(), info) << "Re-subscribing to {entity} change events";
+        clientManager_->subscribeToEvent(std::string{{entity}_event_name});
+    });
+
+    if (clientManager_->isConnected()) {
+        clientManager_->subscribeToEvent(std::string{{entity}_event_name});
+    }
+}
+#+end_src
+
+*** 3c. Handle notifications
+
+#+begin_src cpp
+void {Entity}Controller::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
+
+    if (eventType != QString::fromStdString(std::string{{entity}_event_name})) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "{Entity} change notification received";
+
+    // Mark list window as stale
+    if (listWindow_) {
+        listWindow_->markAsStale();
+    }
+}
+#+end_src
+
+
+** Complete checklist
+
+When adding event infrastructure for a new entity, verify:
+
+- [ ] Database trigger exists and uses correct channel name
+- [ ] Event struct created with timestamp and IDs fields
+- [ ] Event traits specialized with correct event name
+- [ ] Event registered with =register_mapping= in application.cpp
+- [ ] Event bridged to subscription manager in application.cpp
+- [ ] Include added to application.cpp
+- [ ] Qt controller subscribes to event name
+- [ ] Qt controller handles notifications and marks windows stale
+
 
 * Artefacts                                                        :noexport:
 

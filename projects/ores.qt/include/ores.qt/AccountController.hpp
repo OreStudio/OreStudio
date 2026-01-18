@@ -22,7 +22,6 @@
 
 #include <optional>
 #include <QPointer>
-#include <QList>
 #include <QDateTime>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/EntityController.hpp"
@@ -72,8 +71,6 @@ public:
      * @param mdiArea MDI area where windows will be displayed
      * @param clientManager Client manager for network operations
      * @param username Username of logged-in user (for audit trails)
-     * @param allDetachableWindows Reference to MainWindow's window list
-     * for detach/reattach operations
      * @param parent QObject parent (for Qt ownership)
      */
     explicit AccountController(
@@ -81,7 +78,6 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
-        QList<DetachableMdiSubWindow*>& allDetachableWindows,
         QObject* parent = nullptr);
 
     /**
@@ -111,6 +107,8 @@ public:
      * @note Inherited from EntityController
      */
     void closeAllWindows() override;
+
+    void reloadListWindow() override;
 
 private slots:
     /**
@@ -206,15 +204,6 @@ private:
      * Helper method to reduce code duplication in signal handlers.
      */
     void markAccountListAsStale();
-
-    /**
-     * @brief Reference to MainWindow's list of all detachable windows.
-     *
-     * Windows created by this controller are added to this list so they
-     * can participate in detach/reattach operations and appear in the
-     * Window menu.
-     */
-    QList<DetachableMdiSubWindow*>& allDetachableWindows_;
 
     /**
      * @brief Weak pointer to the account list window.

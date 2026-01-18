@@ -35,7 +35,8 @@ create table if not exists "ores"."dq_methodologies_tbl" (
         id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
-    check ("valid_from" < "valid_to")
+    check ("valid_from" < "valid_to"),
+    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
 );
 
 create unique index if not exists dq_methodologies_name_uniq_idx

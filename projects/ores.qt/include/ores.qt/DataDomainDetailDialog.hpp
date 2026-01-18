@@ -20,8 +20,8 @@
 #ifndef ORES_QT_DATA_DOMAIN_DETAIL_DIALOG_HPP
 #define ORES_QT_DATA_DOMAIN_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/data_domain.hpp"
 
@@ -31,7 +31,7 @@ class DataDomainDetailDialog;
 
 namespace ores::qt {
 
-class DataDomainDetailDialog final : public QWidget {
+class DataDomainDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:
@@ -55,8 +55,6 @@ public:
     void setReadOnly(bool readOnly);
 
 signals:
-    void statusMessage(const QString& message);
-    void errorMessage(const QString& error);
     void domainSaved(const QString& name);
     void domainDeleted(const QString& name);
 

@@ -18,7 +18,7 @@ The repository should provide:
 
 - Constructor accepting a =context= parameter
 - =sql()= method returning the table creation SQL
-- Write methods:
+- Write methods (with *upsert semantics* - creates or updates):
   - =void write(const domain::TYPE_NAME& obj)=
   - =void write(const std::vector<domain::TYPE_NAME>& objs)=
 - Read methods:

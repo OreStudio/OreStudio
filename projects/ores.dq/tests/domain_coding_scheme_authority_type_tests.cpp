@@ -67,8 +67,8 @@ TEST_CASE("coding_scheme_authority_type_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
-    CHECK(table.find("Code") != std::string::npos);
-    CHECK(table.find("Description") != std::string::npos);
-    CHECK(table.find("ISDA") != std::string::npos);
-    CHECK(table.find("International Swaps and Derivatives Association") != std::string::npos);
+    CHECK(table.contains("Code"));
+    CHECK(table.contains("Description"));
+    CHECK(table.contains("ISDA"));
+    CHECK(table.contains("International Swaps and Derivatives Association"));
 }

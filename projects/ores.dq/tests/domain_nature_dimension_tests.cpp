@@ -67,8 +67,8 @@ TEST_CASE("nature_dimension_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
-    CHECK(table.find("Code") != std::string::npos);
-    CHECK(table.find("Description") != std::string::npos);
-    CHECK(table.find("derived") != std::string::npos);
-    CHECK(table.find("Data calculated from other datasets") != std::string::npos);
+    CHECK(table.contains("Code"));
+    CHECK(table.contains("Description"));
+    CHECK(table.contains("derived"));
+    CHECK(table.contains("Data calculated from other datasets"));
 }

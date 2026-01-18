@@ -67,8 +67,8 @@ TEST_CASE("data_domain_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
-    CHECK(table.find("Name") != std::string::npos);
-    CHECK(table.find("Description") != std::string::npos);
-    CHECK(table.find("Market Data") != std::string::npos);
-    CHECK(table.find("Real-time and historical market prices") != std::string::npos);
+    CHECK(table.contains("Name"));
+    CHECK(table.contains("Description"));
+    CHECK(table.contains("Market Data"));
+    CHECK(table.contains("Real-time and historical market prices"));
 }

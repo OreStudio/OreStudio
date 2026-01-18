@@ -65,8 +65,8 @@ TEST_CASE("change_reason_category_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
-    CHECK(table.find("Code") != std::string::npos);
-    CHECK(table.find("Description") != std::string::npos);
-    CHECK(table.find("system") != std::string::npos);
-    CHECK(table.find("System-level operations") != std::string::npos);
+    CHECK(table.contains("Code"));
+    CHECK(table.contains("Description"));
+    CHECK(table.contains("system"));
+    CHECK(table.contains("System-level operations"));
 }

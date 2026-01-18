@@ -74,8 +74,8 @@ TEST_CASE("methodology_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
-    CHECK(table.find("Name") != std::string::npos);
-    CHECK(table.find("Description") != std::string::npos);
-    CHECK(table.find("Data Validation") != std::string::npos);
-    CHECK(table.find("Validates data against schema rules") != std::string::npos);
+    CHECK(table.contains("Name"));
+    CHECK(table.contains("Description"));
+    CHECK(table.contains("Data Validation"));
+    CHECK(table.contains("Validates data against schema rules"));
 }

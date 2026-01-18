@@ -77,8 +77,8 @@ TEST_CASE("coding_scheme_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
-    CHECK(table.find("Code") != std::string::npos);
-    CHECK(table.find("Description") != std::string::npos);
-    CHECK(table.find("ISO-3166") != std::string::npos);
-    CHECK(table.find("ISO 3166 country codes") != std::string::npos);
+    CHECK(table.contains("Code"));
+    CHECK(table.contains("Description"));
+    CHECK(table.contains("ISO-3166"));
+    CHECK(table.contains("ISO 3166 country codes"));
 }

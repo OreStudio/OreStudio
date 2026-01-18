@@ -69,8 +69,8 @@ TEST_CASE("catalog_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
-    CHECK(table.find("Name") != std::string::npos);
-    CHECK(table.find("Description") != std::string::npos);
-    CHECK(table.find("FpML Standards") != std::string::npos);
-    CHECK(table.find("FpML-based financial products") != std::string::npos);
+    CHECK(table.contains("Name"));
+    CHECK(table.contains("Description"));
+    CHECK(table.contains("FpML Standards"));
+    CHECK(table.contains("FpML-based financial products"));
 }

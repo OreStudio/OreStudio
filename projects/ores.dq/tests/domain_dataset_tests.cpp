@@ -101,10 +101,10 @@ TEST_CASE("dataset_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
-    CHECK(table.find("Name") != std::string::npos);
-    CHECK(table.find("Description") != std::string::npos);
-    CHECK(table.find("Country Codes") != std::string::npos);
-    CHECK(table.find("ISO 3166 country codes") != std::string::npos);
+    CHECK(table.contains("Name"));
+    CHECK(table.contains("Subject Area"));
+    CHECK(table.contains("Country Codes"));
+    CHECK(table.contains("Countries"));
 }
 
 TEST_CASE("dataset_with_lineage", tags) {

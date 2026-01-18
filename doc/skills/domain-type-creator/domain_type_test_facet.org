@@ -53,6 +53,9 @@ When testing table conversion, verify that the output includes:
 1. Expected table headers (column names)
 2. Expected field values from the test data
 
+Use C++23's =std::string::contains()= method for substring checks instead of
+=find() != std::string::npos=:
+
 #+begin_src cpp
 TEST_CASE("entity_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
@@ -69,11 +72,11 @@ TEST_CASE("entity_convert_single_to_table", tags) {
 
     CHECK(!table.empty());
     // Check for headers
-    CHECK(table.find("Name") != std::string::npos);
-    CHECK(table.find("Description") != std::string::npos);
+    CHECK(table.contains("Name"));
+    CHECK(table.contains("Description"));
     // Check for field values
-    CHECK(table.find("Test Name") != std::string::npos);
-    CHECK(table.find("Test description") != std::string::npos);
+    CHECK(table.contains("Test Name"));
+    CHECK(table.contains("Test description"));
 }
 #+end_src
 

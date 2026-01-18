@@ -76,8 +76,8 @@ TEST_CASE("change_reason_convert_single_to_table", tags) {
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
 
     CHECK(!table.empty());
-    CHECK(table.find("Code") != std::string::npos);
-    CHECK(table.find("Description") != std::string::npos);
-    CHECK(table.find("system.new") != std::string::npos);
-    CHECK(table.find("Initial record creation") != std::string::npos);
+    CHECK(table.contains("Code"));
+    CHECK(table.contains("Description"));
+    CHECK(table.contains("system.new"));
+    CHECK(table.contains("Initial record creation"));
 }

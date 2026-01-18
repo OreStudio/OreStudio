@@ -26,10 +26,18 @@
 #include "ores.qt/DataDomainDetailDialog.hpp"
 #include "ores.qt/DataDomainHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.dq/eventing/data_domain_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    constexpr std::string_view data_domain_event_name =
+        eventing::domain::event_traits<
+            dq::eventing::data_domain_changed_event>::name;
+}
 
 DataDomainController::DataDomainController(
     QMainWindow* mainWindow,
@@ -42,10 +50,37 @@ DataDomainController::DataDomainController(
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "DataDomainController created";
+
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &DataDomainController::onNotificationReceived);
+
+        connect(clientManager_, &ClientManager::connected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to data domain change events";
+            clientManager_->subscribeToEvent(std::string{data_domain_event_name});
+        });
+
+        connect(clientManager_, &ClientManager::reconnected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to data domain change events";
+            clientManager_->subscribeToEvent(std::string{data_domain_event_name});
+        });
+
+        if (clientManager_->isConnected()) {
+            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to events";
+            clientManager_->subscribeToEvent(std::string{data_domain_event_name});
+        }
+    }
 }
 
 DataDomainController::~DataDomainController() {
     BOOST_LOG_SEV(lg(), debug) << "DataDomainController destroyed";
+
+    if (clientManager_) {
+        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from data domain change events";
+        clientManager_->unsubscribeFromEvent(std::string{data_domain_event_name});
+    }
 }
 
 void DataDomainController::showListWindow() {
@@ -365,6 +400,24 @@ void DataDomainController::onRevertVersion(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
+}
+
+void DataDomainController::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
+
+    if (eventType != QString::fromStdString(std::string{data_domain_event_name})) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Received data domain change notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " IDs";
+
+    if (listWindow_) {
+        listWindow_->markAsStale();
+        BOOST_LOG_SEV(lg(), debug) << "Marked data domain list as stale";
+    }
 }
 
 }

@@ -26,10 +26,18 @@
 #include "ores.qt/TreatmentDimensionDetailDialog.hpp"
 #include "ores.qt/TreatmentDimensionHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.dq/eventing/treatment_dimension_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    constexpr std::string_view treatment_dimension_event_name =
+        eventing::domain::event_traits<
+            dq::eventing::treatment_dimension_changed_event>::name;
+}
 
 TreatmentDimensionController::TreatmentDimensionController(
     QMainWindow* mainWindow,
@@ -42,10 +50,37 @@ TreatmentDimensionController::TreatmentDimensionController(
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "TreatmentDimensionController created";
+
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &TreatmentDimensionController::onNotificationReceived);
+
+        connect(clientManager_, &ClientManager::connected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to treatment dimension change events";
+            clientManager_->subscribeToEvent(std::string{treatment_dimension_event_name});
+        });
+
+        connect(clientManager_, &ClientManager::reconnected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to treatment dimension change events";
+            clientManager_->subscribeToEvent(std::string{treatment_dimension_event_name});
+        });
+
+        if (clientManager_->isConnected()) {
+            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to events";
+            clientManager_->subscribeToEvent(std::string{treatment_dimension_event_name});
+        }
+    }
 }
 
 TreatmentDimensionController::~TreatmentDimensionController() {
     BOOST_LOG_SEV(lg(), debug) << "TreatmentDimensionController destroyed";
+
+    if (clientManager_) {
+        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from treatment dimension change events";
+        clientManager_->unsubscribeFromEvent(std::string{treatment_dimension_event_name});
+    }
 }
 
 void TreatmentDimensionController::showListWindow() {
@@ -225,9 +260,19 @@ void TreatmentDimensionController::showDetailWindow(
 void TreatmentDimensionController::onNotificationReceived(
     const QString& eventType, const QDateTime& timestamp,
     const QStringList& entityIds) {
-    Q_UNUSED(eventType);
-    Q_UNUSED(timestamp);
-    Q_UNUSED(entityIds);
+
+    if (eventType != QString::fromStdString(std::string{treatment_dimension_event_name})) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Received treatment dimension change notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " codes";
+
+    if (listWindow_) {
+        listWindow_->markAsStale();
+        BOOST_LOG_SEV(lg(), debug) << "Marked treatment dimension list as stale";
+    }
 }
 
 void TreatmentDimensionController::showHistoryWindow(const QString& code) {

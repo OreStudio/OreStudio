@@ -27,10 +27,18 @@
 #include "ores.qt/MethodologyDetailDialog.hpp"
 #include "ores.qt/MethodologyHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.dq/eventing/methodology_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    constexpr std::string_view methodology_event_name =
+        eventing::domain::event_traits<
+            dq::eventing::methodology_changed_event>::name;
+}
 
 MethodologyController::MethodologyController(
     QMainWindow* mainWindow,
@@ -43,10 +51,37 @@ MethodologyController::MethodologyController(
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "MethodologyController created";
+
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &MethodologyController::onNotificationReceived);
+
+        connect(clientManager_, &ClientManager::connected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to methodology change events";
+            clientManager_->subscribeToEvent(std::string{methodology_event_name});
+        });
+
+        connect(clientManager_, &ClientManager::reconnected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to methodology change events";
+            clientManager_->subscribeToEvent(std::string{methodology_event_name});
+        });
+
+        if (clientManager_->isConnected()) {
+            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to events";
+            clientManager_->subscribeToEvent(std::string{methodology_event_name});
+        }
+    }
 }
 
 MethodologyController::~MethodologyController() {
     BOOST_LOG_SEV(lg(), debug) << "MethodologyController destroyed";
+
+    if (clientManager_) {
+        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from methodology change events";
+        clientManager_->unsubscribeFromEvent(std::string{methodology_event_name});
+    }
 }
 
 void MethodologyController::showListWindow() {
@@ -362,6 +397,24 @@ void MethodologyController::onRevertVersion(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
+}
+
+void MethodologyController::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
+
+    if (eventType != QString::fromStdString(std::string{methodology_event_name})) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Received methodology change notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " IDs";
+
+    if (listWindow_) {
+        listWindow_->markAsStale();
+        BOOST_LOG_SEV(lg(), debug) << "Marked methodology list as stale";
+    }
 }
 
 }

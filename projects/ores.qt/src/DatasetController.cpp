@@ -27,10 +27,18 @@
 #include "ores.qt/DatasetDetailDialog.hpp"
 #include "ores.qt/DatasetHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.dq/eventing/dataset_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    constexpr std::string_view dataset_event_name =
+        eventing::domain::event_traits<
+            dq::eventing::dataset_changed_event>::name;
+}
 
 DatasetController::DatasetController(
     QMainWindow* mainWindow,
@@ -43,10 +51,37 @@ DatasetController::DatasetController(
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "DatasetController created";
+
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &DatasetController::onNotificationReceived);
+
+        connect(clientManager_, &ClientManager::connected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to dataset change events";
+            clientManager_->subscribeToEvent(std::string{dataset_event_name});
+        });
+
+        connect(clientManager_, &ClientManager::reconnected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to dataset change events";
+            clientManager_->subscribeToEvent(std::string{dataset_event_name});
+        });
+
+        if (clientManager_->isConnected()) {
+            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to events";
+            clientManager_->subscribeToEvent(std::string{dataset_event_name});
+        }
+    }
 }
 
 DatasetController::~DatasetController() {
     BOOST_LOG_SEV(lg(), debug) << "DatasetController destroyed";
+
+    if (clientManager_) {
+        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from dataset change events";
+        clientManager_->unsubscribeFromEvent(std::string{dataset_event_name});
+    }
 }
 
 void DatasetController::showListWindow() {
@@ -368,6 +403,24 @@ void DatasetController::onRevertVersion(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
+}
+
+void DatasetController::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
+
+    if (eventType != QString::fromStdString(std::string{dataset_event_name})) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Received dataset change notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " IDs";
+
+    if (listWindow_) {
+        listWindow_->markAsStale();
+        BOOST_LOG_SEV(lg(), debug) << "Marked dataset list as stale";
+    }
 }
 
 }

@@ -26,10 +26,18 @@
 #include "ores.qt/SubjectAreaDetailDialog.hpp"
 #include "ores.qt/SubjectAreaHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.dq/eventing/subject_area_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    constexpr std::string_view subject_area_event_name =
+        eventing::domain::event_traits<
+            dq::eventing::subject_area_changed_event>::name;
+}
 
 SubjectAreaController::SubjectAreaController(
     QMainWindow* mainWindow,
@@ -42,10 +50,37 @@ SubjectAreaController::SubjectAreaController(
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "SubjectAreaController created";
+
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &SubjectAreaController::onNotificationReceived);
+
+        connect(clientManager_, &ClientManager::connected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to subject area change events";
+            clientManager_->subscribeToEvent(std::string{subject_area_event_name});
+        });
+
+        connect(clientManager_, &ClientManager::reconnected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to subject area change events";
+            clientManager_->subscribeToEvent(std::string{subject_area_event_name});
+        });
+
+        if (clientManager_->isConnected()) {
+            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to events";
+            clientManager_->subscribeToEvent(std::string{subject_area_event_name});
+        }
+    }
 }
 
 SubjectAreaController::~SubjectAreaController() {
     BOOST_LOG_SEV(lg(), debug) << "SubjectAreaController destroyed";
+
+    if (clientManager_) {
+        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from subject area change events";
+        clientManager_->unsubscribeFromEvent(std::string{subject_area_event_name});
+    }
 }
 
 void SubjectAreaController::showListWindow() {
@@ -388,6 +423,24 @@ void SubjectAreaController::onRevertVersion(
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
+}
+
+void SubjectAreaController::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
+
+    if (eventType != QString::fromStdString(std::string{subject_area_event_name})) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Received subject area change notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " IDs";
+
+    if (listWindow_) {
+        listWindow_->markAsStale();
+        BOOST_LOG_SEV(lg(), debug) << "Marked subject area list as stale";
+    }
 }
 
 }

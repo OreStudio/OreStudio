@@ -26,10 +26,18 @@
 #include "ores.qt/NatureDimensionDetailDialog.hpp"
 #include "ores.qt/NatureDimensionHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.dq/eventing/nature_dimension_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    constexpr std::string_view nature_dimension_event_name =
+        eventing::domain::event_traits<
+            dq::eventing::nature_dimension_changed_event>::name;
+}
 
 NatureDimensionController::NatureDimensionController(
     QMainWindow* mainWindow,
@@ -42,10 +50,37 @@ NatureDimensionController::NatureDimensionController(
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "NatureDimensionController created";
+
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &NatureDimensionController::onNotificationReceived);
+
+        connect(clientManager_, &ClientManager::connected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to nature dimension change events";
+            clientManager_->subscribeToEvent(std::string{nature_dimension_event_name});
+        });
+
+        connect(clientManager_, &ClientManager::reconnected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to nature dimension change events";
+            clientManager_->subscribeToEvent(std::string{nature_dimension_event_name});
+        });
+
+        if (clientManager_->isConnected()) {
+            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to events";
+            clientManager_->subscribeToEvent(std::string{nature_dimension_event_name});
+        }
+    }
 }
 
 NatureDimensionController::~NatureDimensionController() {
     BOOST_LOG_SEV(lg(), debug) << "NatureDimensionController destroyed";
+
+    if (clientManager_) {
+        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from nature dimension change events";
+        clientManager_->unsubscribeFromEvent(std::string{nature_dimension_event_name});
+    }
 }
 
 void NatureDimensionController::showListWindow() {
@@ -233,10 +268,19 @@ void NatureDimensionController::showDetailWindow(
 void NatureDimensionController::onNotificationReceived(
     const QString& eventType, const QDateTime& timestamp,
     const QStringList& entityIds) {
-    Q_UNUSED(eventType);
-    Q_UNUSED(timestamp);
-    Q_UNUSED(entityIds);
-    // Event handling can be added later if needed
+
+    if (eventType != QString::fromStdString(std::string{nature_dimension_event_name})) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Received nature dimension change notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " codes";
+
+    if (listWindow_) {
+        listWindow_->markAsStale();
+        BOOST_LOG_SEV(lg(), debug) << "Marked nature dimension list as stale";
+    }
 }
 
 void NatureDimensionController::showHistoryWindow(const QString& code) {

@@ -22,6 +22,8 @@
 
 #include <QMdiArea>
 #include <QMainWindow>
+#include <QDateTime>
+#include <QStringList>
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -68,6 +70,9 @@ private slots:
     void onShowHistory(const QString& code);
     void onRevertVersion(const dq::domain::coding_scheme& scheme);
     void onOpenVersion(const dq::domain::coding_scheme& scheme, int versionNumber);
+    void onNotificationReceived(const QString& eventType,
+                                const QDateTime& timestamp,
+                                const QStringList& entityIds);
 
 private:
     void showAddWindow();

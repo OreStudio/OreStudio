@@ -36,7 +36,7 @@ using namespace ores::logging;
 
 CodingSchemeAuthorityTypeMdiWindow::CodingSchemeAuthorityTypeMdiWindow(
     ClientManager* clientManager, const QString& username, QWidget* parent)
-    : QWidget(parent),
+    : EntityListMdiWindow(parent),
       clientManager_(clientManager),
       username_(username),
       model_(new ClientCodingSchemeAuthorityTypeModel(clientManager, this)),
@@ -111,6 +111,7 @@ void CodingSchemeAuthorityTypeMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor),
         tr("Refresh"));
     refreshAction_->setToolTip(tr("Refresh authority types"));
+    initializeStaleIndicator(refreshAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
 
     if (auto* layout = qobject_cast<QVBoxLayout*>(this->layout())) {
         layout->insertWidget(0, toolbar_);
@@ -257,6 +258,7 @@ void CodingSchemeAuthorityTypeMdiWindow::updateActionStates() {
 }
 
 void CodingSchemeAuthorityTypeMdiWindow::reload() {
+    clearStaleIndicator();
     model_->refresh();
 }
 

@@ -26,10 +26,18 @@
 #include "ores.qt/CatalogDetailDialog.hpp"
 #include "ores.qt/CatalogHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.dq/eventing/catalog_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    constexpr std::string_view catalog_event_name =
+        eventing::domain::event_traits<
+            dq::eventing::catalog_changed_event>::name;
+}
 
 CatalogController::CatalogController(
     QMainWindow* mainWindow,
@@ -42,10 +50,37 @@ CatalogController::CatalogController(
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "CatalogController created";
+
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &CatalogController::onNotificationReceived);
+
+        connect(clientManager_, &ClientManager::connected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to catalog change events";
+            clientManager_->subscribeToEvent(std::string{catalog_event_name});
+        });
+
+        connect(clientManager_, &ClientManager::reconnected,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), info) << "Re-subscribing to catalog change events";
+            clientManager_->subscribeToEvent(std::string{catalog_event_name});
+        });
+
+        if (clientManager_->isConnected()) {
+            BOOST_LOG_SEV(lg(), info) << "Already connected, subscribing to events";
+            clientManager_->subscribeToEvent(std::string{catalog_event_name});
+        }
+    }
 }
 
 CatalogController::~CatalogController() {
     BOOST_LOG_SEV(lg(), debug) << "CatalogController destroyed";
+
+    if (clientManager_) {
+        BOOST_LOG_SEV(lg(), debug) << "Unsubscribing from catalog change events";
+        clientManager_->unsubscribeFromEvent(std::string{catalog_event_name});
+    }
 }
 
 void CatalogController::showListWindow() {
@@ -365,6 +400,24 @@ void CatalogController::onRevertVersion(const dq::domain::catalog& catalog) {
 
     connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
+}
+
+void CatalogController::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds) {
+
+    if (eventType != QString::fromStdString(std::string{catalog_event_name})) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Received catalog change notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " IDs";
+
+    if (listWindow_) {
+        listWindow_->markAsStale();
+        BOOST_LOG_SEV(lg(), debug) << "Marked catalog list as stale";
+    }
 }
 
 }

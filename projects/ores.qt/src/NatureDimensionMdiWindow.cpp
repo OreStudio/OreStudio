@@ -40,7 +40,7 @@ NatureDimensionMdiWindow::NatureDimensionMdiWindow(
     ClientManager* clientManager,
     const QString& username,
     QWidget* parent)
-    : QWidget(parent),
+    : EntityListMdiWindow(parent),
       clientManager_(clientManager),
       username_(username),
       toolbar_(nullptr),
@@ -51,8 +51,7 @@ NatureDimensionMdiWindow::NatureDimensionMdiWindow(
       addAction_(nullptr),
       editAction_(nullptr),
       deleteAction_(nullptr),
-      historyAction_(nullptr),
-      pulseTimer_(new QTimer(this)) {
+      historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -78,16 +77,14 @@ void NatureDimensionMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     const auto& iconColor = color_constants::icon_color;
-    const auto& staleColor = color_constants::stale_indicator;
 
-    normalReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor);
-    staleReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", staleColor);
-
-    reloadAction_ = toolbar_->addAction(normalReloadIcon_, tr("Reload"));
-    reloadAction_->setToolTip(tr("Reload nature dimensions from server"));
+    reloadAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor),
+        tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this, &NatureDimensionMdiWindow::reload);
+
+    initializeStaleIndicator(reloadAction_, ":/icons/ic_fluent_arrow_clockwise_16_regular.svg");
 
     toolbar_->addSeparator();
 
@@ -117,17 +114,6 @@ void NatureDimensionMdiWindow::setupToolbar() {
     historyAction_->setToolTip(tr("View nature dimension history"));
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this, &NatureDimensionMdiWindow::viewHistorySelected);
-
-    pulseTimer_->setInterval(pulse_interval_ms_);
-    connect(pulseTimer_, &QTimer::timeout, this, [this]() {
-        pulseState_ = !pulseState_;
-        reloadAction_->setIcon(pulseState_ ? staleReloadIcon_ : normalReloadIcon_);
-        pulseCount_++;
-        if (pulseCount_ >= max_pulse_cycles_ * 2) {
-            pulseTimer_->stop();
-            reloadAction_->setIcon(staleReloadIcon_);
-        }
-    });
 }
 
 void NatureDimensionMdiWindow::setupTable() {
@@ -345,25 +331,6 @@ void NatureDimensionMdiWindow::deleteSelected() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
-}
-
-void NatureDimensionMdiWindow::markAsStale() {
-    reloadAction_->setToolTip(tr("Data changed on server - click to reload"));
-    startPulseAnimation();
-}
-
-void NatureDimensionMdiWindow::clearStaleIndicator() {
-    pulseTimer_->stop();
-    pulseState_ = false;
-    pulseCount_ = 0;
-    reloadAction_->setIcon(normalReloadIcon_);
-    reloadAction_->setToolTip(tr("Reload nature dimensions from server"));
-}
-
-void NatureDimensionMdiWindow::startPulseAnimation() {
-    pulseCount_ = 0;
-    pulseState_ = false;
-    pulseTimer_->start();
 }
 
 void NatureDimensionMdiWindow::setupColumnVisibility() {

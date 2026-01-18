@@ -36,7 +36,7 @@ using namespace ores::logging;
 CatalogMdiWindow::CatalogMdiWindow(ClientManager* clientManager,
                                    const QString& username,
                                    QWidget* parent)
-    : QWidget(parent),
+    : EntityListMdiWindow(parent),
       clientManager_(clientManager),
       username_(username),
       tableView_(nullptr),
@@ -111,7 +111,8 @@ void CatalogMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(
             ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor),
         tr("Refresh"));
-    refreshAction_->setToolTip(tr("Refresh the list"));
+
+    initializeStaleIndicator(refreshAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
 
     if (auto* layout = qobject_cast<QVBoxLayout*>(this->layout())) {
         layout->insertWidget(0, toolbar_);
@@ -154,6 +155,7 @@ void CatalogMdiWindow::updateActionStates() {
 }
 
 void CatalogMdiWindow::reload() {
+    clearStaleIndicator();
     model_->loadData();
 }
 

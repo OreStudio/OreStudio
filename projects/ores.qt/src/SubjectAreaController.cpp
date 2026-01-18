@@ -171,6 +171,7 @@ void SubjectAreaController::showAddWindow() {
             self->allDetachableWindows_.removeAll(detailWindow);
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
@@ -239,6 +240,7 @@ void SubjectAreaController::showDetailWindow(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
@@ -356,6 +358,7 @@ void SubjectAreaController::onOpenVersion(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
@@ -405,6 +408,7 @@ void SubjectAreaController::onRevertVersion(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 

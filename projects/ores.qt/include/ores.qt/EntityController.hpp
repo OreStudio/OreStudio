@@ -27,6 +27,7 @@
 #include <QMap>
 #include <memory>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 
 namespace ores::qt {
 
@@ -136,6 +137,17 @@ protected:
     void show_managed_window(DetachableMdiSubWindow* window,
         DetachableMdiSubWindow* referenceWindow = nullptr,
         QPoint offset = QPoint(30, 30));
+
+    /**
+     * @brief Connects a dialog's closeRequested signal to the window's close slot.
+     *
+     * Use this after creating a detail dialog to wire up decoupled window closing.
+     * The dialog can then call requestClose() instead of parentWidget()->close().
+     *
+     * @param dialog The detail dialog.
+     * @param window The container window to close when the dialog requests it.
+     */
+    void connect_dialog_close(DetailDialogBase* dialog, DetachableMdiSubWindow* window);
 
 protected:
     QMainWindow* mainWindow_;

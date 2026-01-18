@@ -20,8 +20,8 @@
 #ifndef ORES_QT_ORIGIN_DIMENSION_DETAIL_DIALOG_HPP
 #define ORES_QT_ORIGIN_DIMENSION_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/origin_dimension.hpp"
 
@@ -38,7 +38,7 @@ namespace ores::qt {
  * It supports both create mode (for new records) and edit mode (for
  * existing records).
  */
-class OriginDimensionDetailDialog final : public QWidget {
+class OriginDimensionDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:

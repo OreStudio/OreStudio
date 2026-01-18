@@ -165,6 +165,7 @@ void MethodologyController::showAddWindow() {
             self->allDetachableWindows_.removeAll(detailWindow);
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
@@ -226,6 +227,7 @@ void MethodologyController::showDetailWindow(const dq::domain::methodology& meth
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
@@ -334,6 +336,7 @@ void MethodologyController::onOpenVersion(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
@@ -379,6 +382,7 @@ void MethodologyController::onRevertVersion(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 

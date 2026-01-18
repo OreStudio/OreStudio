@@ -96,4 +96,9 @@ void EntityController::show_managed_window(DetachableMdiSubWindow* window,
     }
 }
 
+void EntityController::connect_dialog_close(DetailDialogBase* dialog,
+    DetachableMdiSubWindow* window) {
+    connect(dialog, &DetailDialogBase::closeRequested, window, &QWidget::close);
+}
+
 }

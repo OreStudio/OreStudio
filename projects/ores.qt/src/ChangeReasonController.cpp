@@ -221,6 +221,7 @@ void ChangeReasonController::showAddWindow() {
             self->allDetachableWindows_.removeAll(detailWindow);
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
@@ -290,6 +291,7 @@ void ChangeReasonController::showDetailWindow(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
@@ -423,6 +425,7 @@ void ChangeReasonController::onOpenVersion(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
@@ -476,6 +479,7 @@ void ChangeReasonController::onRevertVersion(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 

@@ -20,7 +20,6 @@
 #ifndef ORES_QT_ACCOUNT_DETAIL_DIALOG_HPP
 #define ORES_QT_ACCOUNT_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include <QToolBar>
 #include <QAction>
 #include <memory>
@@ -29,6 +28,7 @@
 #include "ores.iam/domain/login_info.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/AccountRolesWidget.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 
 
@@ -52,7 +52,7 @@ namespace ores::qt {
  * - Password fields are hidden (password changes not supported yet)
  * - Email and admin status can be modified
  */
-class AccountDetailDialog final : public QWidget {
+class AccountDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:

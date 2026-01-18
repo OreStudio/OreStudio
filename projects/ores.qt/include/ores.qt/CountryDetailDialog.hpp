@@ -20,7 +20,6 @@
 #ifndef ORES_QT_COUNTRY_DETAIL_DIALOG_HPP
 #define ORES_QT_COUNTRY_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include <QToolBar>
 #include <QAction>
 #include <QPushButton>
@@ -28,6 +27,7 @@
 #include <vector>
 #include "ores.refdata/domain/country.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -41,7 +41,7 @@ namespace ores::qt {
 
 class ChangeReasonCache;
 
-class CountryDetailDialog final : public QWidget {
+class CountryDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:

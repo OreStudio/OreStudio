@@ -29,7 +29,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 RoleDetailDialog::RoleDetailDialog(QWidget* parent)
-    : QWidget(parent),
+    : DetailDialogBase(parent),
       ui_(std::make_unique<Ui::RoleDetailDialog>()) {
 
     ui_->setupUi(this);

@@ -409,6 +409,7 @@ void AccountController::showDetailWindow(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, accountListWindow_);
 }
 
@@ -460,6 +461,7 @@ void AccountController::onOpenAccountVersion(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, accountListWindow_);
 }
 

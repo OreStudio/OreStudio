@@ -35,7 +35,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 OriginDimensionDetailDialog::OriginDimensionDetailDialog(QWidget* parent)
-    : QWidget(parent),
+    : DetailDialogBase(parent),
       ui_(new Ui::OriginDimensionDetailDialog),
       clientManager_(nullptr) {
 
@@ -313,11 +313,7 @@ void OriginDimensionDetailDialog::onDeleteClicked() {
             BOOST_LOG_SEV(lg(), info) << "Origin dimension deleted successfully";
             emit self->statusMessage(QString("Origin dimension '%1' deleted").arg(code));
             emit self->dimensionDeleted(code);
-
-            // Close the window
-            if (auto* window = self->window()) {
-                window->close();
-            }
+            self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
             QString errorMsg = QString::fromStdString(result.message);

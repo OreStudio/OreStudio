@@ -31,7 +31,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 CatalogDetailDialog::CatalogDetailDialog(QWidget* parent)
-    : QWidget(parent),
+    : DetailDialogBase(parent),
       ui_(new Ui::CatalogDetailDialog),
       clientManager_(nullptr),
       createMode_(false),
@@ -244,9 +244,7 @@ void CatalogDetailDialog::onDeleteClicked() {
             emit self->statusMessage(
                 tr("Catalog '%1' deleted successfully").arg(name));
             emit self->catalogDeleted(name);
-            if (auto* window = self->window()) {
-                window->close();
-            }
+            self->requestClose();
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }

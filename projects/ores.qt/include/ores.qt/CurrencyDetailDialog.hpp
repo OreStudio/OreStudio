@@ -20,7 +20,6 @@
 #ifndef ORES_QT_CURRENCY_DETAIL_DIALOG_HPP
 #define ORES_QT_CURRENCY_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include <QToolBar>
 #include <QAction>
 #include <QPushButton>
@@ -29,6 +28,7 @@
 #include "ores.refdata/domain/currency.hpp"
 #include "ores.refdata/domain/currency_version_history.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -42,7 +42,7 @@ namespace ores::qt {
 
 class ChangeReasonCache;
 
-class CurrencyDetailDialog final : public QWidget {
+class CurrencyDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:

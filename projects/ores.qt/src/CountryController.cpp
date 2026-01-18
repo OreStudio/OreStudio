@@ -227,6 +227,7 @@ void CountryController::onAddNewRequested() {
             self->allDetachableWindows_.removeAll(detailWindow);
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, countryListWindow_);
 }
 
@@ -293,6 +294,7 @@ void CountryController::onShowCountryDetails(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, countryListWindow_);
 }
 
@@ -493,6 +495,7 @@ void CountryController::onOpenCountryVersion(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, countryListWindow_);
 }
 

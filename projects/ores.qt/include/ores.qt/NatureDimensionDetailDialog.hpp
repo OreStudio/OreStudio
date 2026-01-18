@@ -20,8 +20,8 @@
 #ifndef ORES_QT_NATURE_DIMENSION_DETAIL_DIALOG_HPP
 #define ORES_QT_NATURE_DIMENSION_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/nature_dimension.hpp"
 
@@ -31,7 +31,7 @@ class NatureDimensionDetailDialog;
 
 namespace ores::qt {
 
-class NatureDimensionDetailDialog final : public QWidget {
+class NatureDimensionDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:

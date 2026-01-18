@@ -21,10 +21,10 @@
 #define ORES_QT_CHANGE_REASON_DETAIL_DIALOG_HPP
 
 #include <vector>
-#include <QWidget>
 #include <QAction>
 #include <QToolBar>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/change_reason.hpp"
 #include "ores.dq/domain/change_reason_category.hpp"
@@ -41,7 +41,7 @@ namespace ores::qt {
  * This widget provides a form for entering change reason details,
  * with save and delete capabilities.
  */
-class ChangeReasonDetailDialog : public QWidget {
+class ChangeReasonDetailDialog : public DetailDialogBase {
     Q_OBJECT
 
 private:

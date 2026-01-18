@@ -20,8 +20,8 @@
 #ifndef ORES_QT_TREATMENT_DIMENSION_DETAIL_DIALOG_HPP
 #define ORES_QT_TREATMENT_DIMENSION_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/treatment_dimension.hpp"
 
@@ -31,7 +31,7 @@ class TreatmentDimensionDetailDialog;
 
 namespace ores::qt {
 
-class TreatmentDimensionDetailDialog final : public QWidget {
+class TreatmentDimensionDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:

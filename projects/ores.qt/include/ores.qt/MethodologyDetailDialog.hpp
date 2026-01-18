@@ -20,9 +20,9 @@
 #ifndef ORES_QT_METHODOLOGY_DETAIL_DIALOG_HPP
 #define ORES_QT_METHODOLOGY_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/methodology.hpp"
 
@@ -32,7 +32,7 @@ class MethodologyDetailDialog;
 
 namespace ores::qt {
 
-class MethodologyDetailDialog final : public QWidget {
+class MethodologyDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:

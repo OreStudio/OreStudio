@@ -46,7 +46,7 @@ using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
 
 AccountDetailDialog::AccountDetailDialog(QWidget* parent)
-    : QWidget(parent), ui_(new Ui::AccountDetailDialog), isDirty_(false),
+    : DetailDialogBase(parent), ui_(new Ui::AccountDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), isStale_(false),
       historicalVersion_(0), clientManager_(nullptr), rolesWidget_(nullptr) {
 
@@ -416,15 +416,7 @@ void AccountDetailDialog::onSaveClicked() {
                 }
 
                 // Close window after successful creation
-                QWidget* parent = self->parentWidget();
-                while (parent) {
-                    if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
-                        QMetaObject::invokeMethod(mdiSubWindow, "close",
-                            Qt::QueuedConnection);
-                        break;
-                    }
-                    parent = parent->parentWidget();
-                }
+                self->requestClose();
             } else {
                 BOOST_LOG_SEV(lg(), error) << "Account creation failed: " << message;
                 emit self->errorMessage(QString("Failed to create account: %1")
@@ -502,15 +494,7 @@ void AccountDetailDialog::onSaveClicked() {
                 emit self->accountUpdated(account_id);
 
                 // Close window after successful update
-                QWidget* parent = self->parentWidget();
-                while (parent) {
-                    if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
-                        QMetaObject::invokeMethod(mdiSubWindow, "close",
-                            Qt::QueuedConnection);
-                        break;
-                    }
-                    parent = parent->parentWidget();
-                }
+                self->requestClose();
             } else {
                 BOOST_LOG_SEV(lg(), error) << "Account update failed: " << message;
                 emit self->errorMessage(QString("Failed to update account: %1")
@@ -610,15 +594,7 @@ void AccountDetailDialog::onDeleteClicked() {
             emit self->accountDeleted(account_id);
 
             // Close window after successful deletion
-            QWidget* parent = self->parentWidget();
-            while (parent) {
-                if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
-                    QMetaObject::invokeMethod(mdiSubWindow, "close",
-                        Qt::QueuedConnection);
-                    break;
-                }
-                parent = parent->parentWidget();
-            }
+            self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Account deletion failed: " << message;
             emit self->errorMessage(QString("Failed to delete account: %1")

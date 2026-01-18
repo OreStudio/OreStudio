@@ -34,7 +34,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 MethodologyDetailDialog::MethodologyDetailDialog(QWidget* parent)
-    : QWidget(parent),
+    : DetailDialogBase(parent),
       ui_(new Ui::MethodologyDetailDialog),
       clientManager_(nullptr),
       isCreateMode_(true),
@@ -162,9 +162,7 @@ void MethodologyDetailDialog::onSaveClicked() {
         if (result.success) {
             emit self->statusMessage(tr("Methodology saved successfully"));
             emit self->methodologySaved(methodologyId);
-            if (auto* parentWidget = self->parentWidget()) {
-                parentWidget->close();
-            }
+            self->requestClose();
         } else {
             emit self->errorMessage(QString::fromStdString(result.message));
         }
@@ -215,9 +213,7 @@ void MethodologyDetailDialog::onDeleteClicked() {
         if (success) {
             emit self->statusMessage(tr("Methodology deleted successfully"));
             emit self->methodologyDeleted(methodologyId);
-            if (auto* parentWidget = self->parentWidget()) {
-                parentWidget->close();
-            }
+            self->requestClose();
         } else {
             emit self->errorMessage(tr("Failed to delete methodology"));
         }

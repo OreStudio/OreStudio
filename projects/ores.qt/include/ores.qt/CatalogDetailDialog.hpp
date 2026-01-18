@@ -20,10 +20,10 @@
 #ifndef ORES_QT_CATALOG_DETAIL_DIALOG_HPP
 #define ORES_QT_CATALOG_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include <string>
 #include "ores.dq/domain/catalog.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace Ui {
@@ -35,7 +35,7 @@ namespace ores::qt {
 /**
  * @brief Dialog for viewing and editing catalog details.
  */
-class CatalogDetailDialog : public QWidget {
+class CatalogDetailDialog : public DetailDialogBase {
     Q_OBJECT
 
 private:

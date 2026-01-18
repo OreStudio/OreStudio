@@ -165,6 +165,7 @@ void CatalogController::showAddWindow() {
             self->allDetachableWindows_.removeAll(detailWindow);
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
@@ -225,6 +226,7 @@ void CatalogController::showDetailWindow(const dq::domain::catalog& catalog) {
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
@@ -336,6 +338,7 @@ void CatalogController::onOpenVersion(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
@@ -382,6 +385,7 @@ void CatalogController::onRevertVersion(const dq::domain::catalog& catalog) {
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 

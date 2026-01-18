@@ -20,10 +20,10 @@
 #ifndef ORES_QT_ROLE_DETAIL_DIALOG_HPP
 #define ORES_QT_ROLE_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include <memory>
 #include "ores.iam/domain/role.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace Ui {
@@ -42,7 +42,7 @@ namespace ores::qt {
  * - List of assigned permissions
  * - Metadata (version, modified by, modified at)
  */
-class RoleDetailDialog final : public QWidget {
+class RoleDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:

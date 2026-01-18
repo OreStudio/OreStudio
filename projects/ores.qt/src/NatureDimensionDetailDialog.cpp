@@ -35,7 +35,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 NatureDimensionDetailDialog::NatureDimensionDetailDialog(QWidget* parent)
-    : QWidget(parent),
+    : DetailDialogBase(parent),
       ui_(new Ui::NatureDimensionDetailDialog),
       clientManager_(nullptr) {
 
@@ -245,7 +245,7 @@ void NatureDimensionDetailDialog::onDeleteClicked() {
         if (result.success) {
             emit self->statusMessage(QString("Nature dimension '%1' deleted").arg(code));
             emit self->dimensionDeleted(code);
-            if (auto* window = self->window()) window->close();
+            self->requestClose();
         } else {
             QString errorMsg = QString::fromStdString(result.message);
             emit self->errorMessage(errorMsg);

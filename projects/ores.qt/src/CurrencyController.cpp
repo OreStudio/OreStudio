@@ -242,6 +242,7 @@ void CurrencyController::onAddNewRequested() {
             self->allDetachableWindows_.removeAll(detailWindow);
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, currencyListWindow_);
 }
 
@@ -308,6 +309,7 @@ void CurrencyController::onShowCurrencyDetails(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, currencyListWindow_);
 }
 
@@ -499,6 +501,7 @@ void CurrencyController::onOpenCurrencyVersion(
         }
     });
 
+    connect_dialog_close(detailDialog, detailWindow);
     show_managed_window(detailWindow, currencyListWindow_);
 }
 

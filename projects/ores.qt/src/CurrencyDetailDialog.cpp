@@ -70,7 +70,7 @@ namespace {
 }
 
 CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
-    : QWidget(parent), ui_(new Ui::CurrencyDetailDialog), isDirty_(false),
+    : DetailDialogBase(parent), ui_(new Ui::CurrencyDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), isStale_(false),
       historicalVersion_(0), flagButton_(nullptr),
       clientManager_(nullptr), imageCache_(nullptr), changeReasonCache_(nullptr),
@@ -477,15 +477,7 @@ void CurrencyDetailDialog::onSaveClicked() {
                     QString::fromStdString(currency.iso_code));
             }
 
-            QWidget* parent = self->parentWidget();
-            while (parent) {
-                if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
-                    QMetaObject::invokeMethod(mdiSubWindow, "close",
-                        Qt::QueuedConnection);
-                    break;
-                }
-                parent = parent->parentWidget();
-            }
+            self->requestClose();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Currency save failed: " << message;
             emit self->errorMessage(QString("Failed to save currency: %1")

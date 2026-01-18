@@ -20,8 +20,8 @@
 #ifndef ORES_QT_CODING_SCHEME_DETAIL_DIALOG_HPP
 #define ORES_QT_CODING_SCHEME_DETAIL_DIALOG_HPP
 
-#include <QWidget>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/coding_scheme.hpp"
 
@@ -31,7 +31,7 @@ class CodingSchemeDetailDialog;
 
 namespace ores::qt {
 
-class CodingSchemeDetailDialog final : public QWidget {
+class CodingSchemeDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
 private:

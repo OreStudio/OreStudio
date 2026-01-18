@@ -177,6 +177,8 @@ public:
     get_methodology_history(const boost::uuids::uuid& id);
 
 private:
+    void ensure_non_nil(const boost::uuids::uuid& id, std::string_view entity_type);
+
     repository::dataset_repository dataset_repo_;
     repository::methodology_repository methodology_repo_;
 };

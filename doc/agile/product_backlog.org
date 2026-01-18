@@ -67,6 +67,18 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Review skills in claude code templates                             :code:
+
+#+begin_quote
+Ready-to-use configurations for Anthropic's Claude Code. A comprehensive
+collection of AI agents, custom commands, settings, hooks, external integrations
+(MCPs), and project templates to enhance your development workflow.
+#+end_quote
+
+Links:
+
+- [[https://github.com/davila7/claude-code-templates][GH: claude-code-templates]]
+
 *** Add claude continuous learning skill                               :code:
 
 #+begin_quote

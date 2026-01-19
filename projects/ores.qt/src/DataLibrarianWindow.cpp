@@ -30,8 +30,8 @@
 #include <QGraphicsLineItem>
 #include <QMenu>
 #include <QSettings>
-#include <QPushButton>
 #include <QTextBrowser>
+#include <QBrush>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -99,6 +99,7 @@ DataLibrarianWindow::DataLibrarianWindow(
     setupCentralWorkspace();
     setupDetailPanel();
     setupLineagePanel();
+    setupMethodologyPanel();
     setupConnections();
     setupColumnVisibility();
 
@@ -320,59 +321,6 @@ void DataLibrarianWindow::setupDetailPanel() {
     propertiesTree_->setStyleSheet("QTreeWidget::item { padding: 2px 4px; }");
     detailLayout->addWidget(propertiesTree_, 1);
 
-    // Methodology section header
-    auto* methodologyHeader = new QLabel(tr("<b>Methodology</b>"), detailPanel_);
-    detailLayout->addWidget(methodologyHeader);
-
-    // Methodology content
-    auto* methodologyWidget = new QWidget(detailPanel_);
-    auto* methodologyLayout = new QVBoxLayout(methodologyWidget);
-    methodologyLayout->setContentsMargins(4, 4, 4, 4);
-    methodologyLayout->setSpacing(2);
-
-    methodologyLabel_ = new QLabel(tr("-"), methodologyWidget);
-    methodologyLabel_->setToolTip(tr("The methodology used to produce this dataset"));
-    methodologyLayout->addWidget(methodologyLabel_);
-
-    sourceUrlLabel_ = new QLabel(tr(""), methodologyWidget);
-    sourceUrlLabel_->setOpenExternalLinks(true);
-    sourceUrlLabel_->setTextFormat(Qt::RichText);
-    sourceUrlLabel_->setToolTip(tr("Source URL for the data"));
-    sourceUrlLabel_->setWordWrap(true);
-    methodologyLayout->addWidget(sourceUrlLabel_);
-
-    descriptionLabel_ = new QLabel(tr(""), methodologyWidget);
-    descriptionLabel_->setWordWrap(true);
-    descriptionLabel_->setStyleSheet("color: #888; font-style: italic;");
-    methodologyLayout->addWidget(descriptionLabel_);
-
-    // Implementation details (collapsible)
-    implementationDetailsToggle_ = new QPushButton(tr("▶ Processing Steps"), methodologyWidget);
-    implementationDetailsToggle_->setFlat(true);
-    implementationDetailsToggle_->setStyleSheet(
-        "QPushButton { text-align: left; padding: 2px 0; color: #666; font-size: 11px; }"
-        "QPushButton:hover { color: #888; }");
-    implementationDetailsToggle_->setCursor(Qt::PointingHandCursor);
-    methodologyLayout->addWidget(implementationDetailsToggle_);
-
-    implementationDetailsText_ = new QTextBrowser(methodologyWidget);
-    implementationDetailsText_->setOpenExternalLinks(true);
-    implementationDetailsText_->setFrameShape(QFrame::NoFrame);
-    implementationDetailsText_->setStyleSheet(
-        "QTextBrowser { background-color: #f5f5f5; font-family: monospace; font-size: 10px; padding: 4px; }");
-    implementationDetailsText_->setMaximumHeight(150);
-    implementationDetailsText_->setVisible(false);
-    methodologyLayout->addWidget(implementationDetailsText_);
-
-    // Connect toggle button
-    connect(implementationDetailsToggle_, &QPushButton::clicked, this, [this]() {
-        bool visible = !implementationDetailsText_->isVisible();
-        implementationDetailsText_->setVisible(visible);
-        implementationDetailsToggle_->setText(visible ? tr("▼ Processing Steps") : tr("▶ Processing Steps"));
-    });
-
-    detailLayout->addWidget(methodologyWidget);
-
     // Initially hide detail panel until a dataset is selected
     detailPanel_->setVisible(false);
 }
@@ -404,6 +352,61 @@ void DataLibrarianWindow::setupLineagePanel() {
 
     // Initially hide lineage panel until a dataset is selected
     lineagePanel_->setVisible(false);
+}
+
+void DataLibrarianWindow::setupMethodologyPanel() {
+    // Create right panel container for methodology
+    methodologyPanel_ = new QWidget(this);
+    auto* rightLayout = new QVBoxLayout(methodologyPanel_);
+    rightLayout->setContentsMargins(0, 0, 0, 0);
+    rightLayout->setSpacing(8);
+
+    // Methodology section header
+    auto* methodologyLabel = new QLabel(tr("<b>Methodology</b>"), methodologyPanel_);
+    rightLayout->addWidget(methodologyLabel);
+
+    // Properties tree - same style as accession card
+    methodologyPropertiesTree_ = new QTreeWidget(methodologyPanel_);
+    methodologyPropertiesTree_->setColumnCount(2);
+    methodologyPropertiesTree_->setHeaderHidden(true);
+    methodologyPropertiesTree_->setRootIsDecorated(false);
+    methodologyPropertiesTree_->setAlternatingRowColors(true);
+    methodologyPropertiesTree_->setSelectionMode(QAbstractItemView::NoSelection);
+    methodologyPropertiesTree_->setFocusPolicy(Qt::NoFocus);
+    methodologyPropertiesTree_->setIndentation(0);
+    methodologyPropertiesTree_->setFrameShape(QFrame::StyledPanel);
+    methodologyPropertiesTree_->setFrameShadow(QFrame::Sunken);
+    methodologyPropertiesTree_->header()->setStretchLastSection(true);
+    methodologyPropertiesTree_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    methodologyPropertiesTree_->setStyleSheet("QTreeWidget::item { padding: 2px 4px; }");
+    rightLayout->addWidget(methodologyPropertiesTree_);
+
+    // Processing Steps header
+    auto* stepsLabel = new QLabel(tr("<b>Processing Steps</b>"), methodologyPanel_);
+    rightLayout->addWidget(stepsLabel);
+
+    // Implementation details text browser - always visible, dark theme compatible
+    implementationDetailsText_ = new QTextBrowser(methodologyPanel_);
+    implementationDetailsText_->setOpenExternalLinks(true);
+    implementationDetailsText_->setFrameShape(QFrame::StyledPanel);
+    implementationDetailsText_->setFrameShadow(QFrame::Sunken);
+    // Use palette-aware styling for dark theme compatibility
+    implementationDetailsText_->setStyleSheet(
+        "QTextBrowser { font-family: monospace; font-size: 10px; padding: 4px; }");
+    rightLayout->addWidget(implementationDetailsText_, 1);
+
+    // Set minimum/maximum width for right panel (same as left)
+    methodologyPanel_->setMinimumWidth(350);
+    methodologyPanel_->setMaximumWidth(500);
+
+    // Add to main splitter (right side)
+    mainSplitter_->addWidget(methodologyPanel_);
+
+    // Update splitter sizes: left 350px, central fills, right 350px
+    mainSplitter_->setSizes({350, 700, 350});
+
+    // Initially hide until a dataset is selected
+    methodologyPanel_->setVisible(false);
 }
 
 void DataLibrarianWindow::setupConnections() {
@@ -503,6 +506,7 @@ void DataLibrarianWindow::onDatasetSelectionChanged() {
     if (selected.isEmpty()) {
         detailPanel_->setVisible(false);
         lineagePanel_->setVisible(false);
+        methodologyPanel_->setVisible(false);
         return;
     }
 
@@ -510,8 +514,10 @@ void DataLibrarianWindow::onDatasetSelectionChanged() {
     const auto* dataset = datasetModel_->getDataset(sourceIndex.row());
 
     updateDetailPanel(dataset);
+    updateMethodologyPanel(dataset);
     detailPanel_->setVisible(true);
     lineagePanel_->setVisible(true);
+    methodologyPanel_->setVisible(true);
 }
 
 void DataLibrarianWindow::onDatasetDoubleClicked(const QModelIndex& index) {
@@ -746,12 +752,6 @@ void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) 
         addProperty(tr("Recorded By"), tr("-"));
         addProperty(tr("Recorded At"), tr("-"));
         addProperty(tr("Change Commentary"), tr("-"));
-        methodologyLabel_->setText(tr("-"));
-        sourceUrlLabel_->setText(tr(""));
-        descriptionLabel_->setText(tr(""));
-        implementationDetailsToggle_->setVisible(false);
-        implementationDetailsText_->setVisible(false);
-        implementationDetailsText_->clear();
         return;
     }
 
@@ -791,44 +791,73 @@ void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) 
         dataset->change_commentary.empty() ? tr("-") : QString::fromStdString(dataset->change_commentary),
         tr("Commentary explaining the last change to this dataset"));
 
-    // Methodology and source URL
-    const auto* methodology = findMethodology(dataset->methodology_id);
-    if (methodology) {
-        methodologyLabel_->setText(QString::fromStdString(methodology->name));
-        if (methodology->logic_reference && !methodology->logic_reference->empty()) {
-            QString url = QString::fromStdString(*methodology->logic_reference);
-            sourceUrlLabel_->setText(
-                QString("<a href=\"%1\">%1</a>").arg(url.toHtmlEscaped()));
-        } else {
-            sourceUrlLabel_->setText(tr(""));
-        }
-        // Implementation details (processing steps)
-        if (methodology->implementation_details && !methodology->implementation_details->empty()) {
-            implementationDetailsToggle_->setVisible(true);
-            implementationDetailsText_->setPlainText(
-                QString::fromStdString(*methodology->implementation_details));
-        } else {
-            implementationDetailsToggle_->setVisible(false);
-            implementationDetailsText_->setVisible(false);
-            implementationDetailsText_->clear();
-        }
-    } else {
-        methodologyLabel_->setText(dataset->methodology_id ? tr("Unknown") : tr("None"));
-        sourceUrlLabel_->setText(tr(""));
-        implementationDetailsToggle_->setVisible(false);
-        implementationDetailsText_->setVisible(false);
-        implementationDetailsText_->clear();
-    }
-
-    // Description
-    if (!dataset->description.empty()) {
-        descriptionLabel_->setText(
-            QString("\"%1\"").arg(QString::fromStdString(dataset->description)));
-    } else {
-        descriptionLabel_->setText(tr(""));
-    }
-
     updateLineageView(dataset);
+}
+
+void DataLibrarianWindow::updateMethodologyPanel(const dq::domain::dataset* dataset) {
+    methodologyPropertiesTree_->clear();
+    implementationDetailsText_->clear();
+
+    // Helper to add a property row with tooltip
+    auto addProperty = [this](const QString& name, const QString& value,
+                              const QString& tooltip = {}) {
+        auto* item = new QTreeWidgetItem(methodologyPropertiesTree_);
+        item->setText(0, name);
+        item->setText(1, value);
+        if (!tooltip.isEmpty()) {
+            item->setToolTip(0, tooltip);
+            item->setToolTip(1, tooltip);
+        }
+        return item;
+    };
+
+    if (!dataset) {
+        addProperty(tr("Name"), tr("-"));
+        addProperty(tr("Description"), tr("-"));
+        addProperty(tr("Source URL"), tr("-"));
+        addProperty(tr("Recorded By"), tr("-"));
+        addProperty(tr("Recorded At"), tr("-"));
+        return;
+    }
+
+    const auto* methodology = findMethodology(dataset->methodology_id);
+    if (!methodology) {
+        addProperty(tr("Name"), dataset->methodology_id ? tr("Unknown") : tr("None"));
+        addProperty(tr("Description"), tr("-"));
+        addProperty(tr("Source URL"), tr("-"));
+        addProperty(tr("Recorded By"), tr("-"));
+        addProperty(tr("Recorded At"), tr("-"));
+        return;
+    }
+
+    // Methodology properties
+    addProperty(tr("Name"), QString::fromStdString(methodology->name),
+        tr("Name of the methodology used to produce this dataset"));
+    addProperty(tr("Description"), QString::fromStdString(methodology->description),
+        tr("Description of the methodology's purpose and approach"));
+
+    if (methodology->logic_reference && !methodology->logic_reference->empty()) {
+        auto* urlItem = addProperty(tr("Source URL"),
+            QString::fromStdString(*methodology->logic_reference),
+            tr("External reference URL for the source data"));
+        // Make URL clickable appearance
+        urlItem->setForeground(1, QBrush(QColor(100, 149, 237)));  // Cornflower blue
+    } else {
+        addProperty(tr("Source URL"), tr("-"));
+    }
+
+    addProperty(tr("Recorded By"), QString::fromStdString(methodology->recorded_by),
+        tr("User who recorded this methodology"));
+    addProperty(tr("Recorded At"), relative_time_helper::format(methodology->recorded_at),
+        tr("When this methodology was recorded"));
+
+    // Implementation details (processing steps)
+    if (methodology->implementation_details && !methodology->implementation_details->empty()) {
+        implementationDetailsText_->setPlainText(
+            QString::fromStdString(*methodology->implementation_details));
+    } else {
+        implementationDetailsText_->setPlainText(tr("No processing steps documented."));
+    }
 }
 
 void DataLibrarianWindow::updateLineageView(const dq::domain::dataset* dataset) {

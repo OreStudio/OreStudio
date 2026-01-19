@@ -35,7 +35,6 @@
 #include <QStandardItemModel>
 #include <QGraphicsView>
 #include <QTextBrowser>
-#include <QPushButton>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientDatasetModel.hpp"
@@ -121,10 +120,12 @@ private:
     void setupCentralWorkspace();
     void setupDetailPanel();
     void setupLineagePanel();
+    void setupMethodologyPanel();
     void setupToolbar();
     void setupConnections();
     void buildNavigationTree();
     void updateDetailPanel(const dq::domain::dataset* dataset);
+    void updateMethodologyPanel(const dq::domain::dataset* dataset);
     void updateLineageView(const dq::domain::dataset* dataset);
     void filterDatasetsByCatalog(const QString& catalogName);
     void filterDatasetsByDomain(const QString& domainName);
@@ -172,12 +173,12 @@ private:
 
     // Lineage panel (below dataset table)
     QWidget* lineagePanel_;
-    QLabel* methodologyLabel_;
-    QLabel* sourceUrlLabel_;
-    QLabel* descriptionLabel_;
-    QPushButton* implementationDetailsToggle_;
-    QTextBrowser* implementationDetailsText_;
     QGraphicsView* lineageView_;
+
+    // Methodology panel (right side)
+    QWidget* methodologyPanel_;
+    QTreeWidget* methodologyPropertiesTree_;
+    QTextBrowser* implementationDetailsText_;
 
     // Data models for navigation
     ClientDataDomainModel* dataDomainModel_;

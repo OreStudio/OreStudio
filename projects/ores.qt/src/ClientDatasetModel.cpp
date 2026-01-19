@@ -130,7 +130,7 @@ QVariant ClientDatasetModel::headerData(int section,
     case Version: return tr("Version");
     case RecordedBy: return tr("Recorded By");
     case RecordedAt: return tr("Recorded At");
-    case Tags: return tr("Tags");
+    case Tags: return tr("Dimensions");
     default: return {};
     }
 }

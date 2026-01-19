@@ -22,22 +22,13 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
-#include <QGroupBox>
-#include <QFormLayout>
-#include <QGraphicsScene>
-#include <QGraphicsRectItem>
-#include <QGraphicsTextItem>
-#include <QGraphicsLineItem>
 #include <QMenu>
 #include <QSettings>
-#include <QTextBrowser>
-#include <QBrush>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/DatasetItemDelegate.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
@@ -75,14 +66,12 @@ DataLibrarianWindow::DataLibrarianWindow(
       clientManager_(clientManager),
       username_(username),
       mainSplitter_(new QSplitter(Qt::Horizontal, this)),
-      centralSplitter_(new QSplitter(Qt::Vertical, this)),
       navigationTree_(new QTreeView(this)),
       navigationModel_(new QStandardItemModel(this)),
       toolbar_(new QToolBar(this)),
       datasetTable_(new QTableView(this)),
       datasetModel_(new ClientDatasetModel(clientManager, this)),
       datasetProxyModel_(new QSortFilterProxyModel(this)),
-      detailPanel_(new QWidget(this)),
       dataDomainModel_(new ClientDataDomainModel(clientManager, this)),
       subjectAreaModel_(new ClientSubjectAreaModel(clientManager, this)),
       catalogModel_(new ClientCatalogModel(clientManager, this)),
@@ -97,9 +86,6 @@ DataLibrarianWindow::DataLibrarianWindow(
     setupToolbar();
     setupNavigationSidebar();
     setupCentralWorkspace();
-    setupDetailPanel();
-    setupLineagePanel();
-    setupMethodologyPanel();
     setupConnections();
     setupColumnVisibility();
 
@@ -152,13 +138,9 @@ void DataLibrarianWindow::setupUi() {
     statusBar_->setContentsMargins(4, 0, 4, 2);
     mainLayout->addWidget(statusBar_);
 
-    // Configure main splitter: sidebar | central
+    // Configure main splitter: sidebar | dataset table
     mainSplitter_->setHandleWidth(1);
     mainSplitter_->setChildrenCollapsible(false);
-
-    // Configure central splitter: table | detail
-    centralSplitter_->setHandleWidth(1);
-    centralSplitter_->setChildrenCollapsible(false);
 }
 
 void DataLibrarianWindow::setupToolbar() {
@@ -211,7 +193,7 @@ void DataLibrarianWindow::setupToolbar() {
 }
 
 void DataLibrarianWindow::setupNavigationSidebar() {
-    // Create left panel container with Data Browser and Detail Panel stacked vertically
+    // Create left panel container for navigation tree
     auto* leftPanel = new QWidget(this);
     auto* leftLayout = new QVBoxLayout(leftPanel);
     leftLayout->setContentsMargins(0, 0, 0, 0);
@@ -229,14 +211,9 @@ void DataLibrarianWindow::setupNavigationSidebar() {
     navigationTree_->setFrameShadow(QFrame::Sunken);
     leftLayout->addWidget(navigationTree_, 1);
 
-    // Dataset Accession Card section (detail panel)
-    auto* cardLabel = new QLabel(tr("<b>Dataset Accession Card</b>"), leftPanel);
-    leftLayout->addWidget(cardLabel);
-    leftLayout->addWidget(detailPanel_, 1);
-
-    // Set minimum/maximum width for left panel (wide enough for GUIDs)
-    leftPanel->setMinimumWidth(350);
-    leftPanel->setMaximumWidth(500);
+    // Set minimum/maximum width for left panel
+    leftPanel->setMinimumWidth(250);
+    leftPanel->setMaximumWidth(400);
 
     // Add to main splitter
     mainSplitter_->addWidget(leftPanel);
@@ -289,123 +266,11 @@ void DataLibrarianWindow::setupCentralWorkspace() {
     datasetTable_->setFrameShadow(QFrame::Sunken);
     datasetsLayout->addWidget(datasetTable_, 1);
 
-    // Add datasets container to central splitter
-    centralSplitter_->addWidget(datasetsContainer);
+    // Add datasets container to main splitter
+    mainSplitter_->addWidget(datasetsContainer);
 
-    // Add central splitter to main splitter
-    mainSplitter_->addWidget(centralSplitter_);
-
-    // Set splitter sizes: sidebar 350px, central takes the rest
-    mainSplitter_->setSizes({350, 1050});
-}
-
-void DataLibrarianWindow::setupDetailPanel() {
-    auto* detailLayout = new QVBoxLayout(detailPanel_);
-    detailLayout->setContentsMargins(0, 0, 0, 0);
-    detailLayout->setSpacing(4);
-
-    // Properties tree - styled to match dataset list view
-    propertiesTree_ = new QTreeWidget(detailPanel_);
-    propertiesTree_->setColumnCount(2);
-    propertiesTree_->setHeaderHidden(true);  // Hide headers to match list view
-    propertiesTree_->setRootIsDecorated(false);
-    propertiesTree_->setAlternatingRowColors(true);
-    propertiesTree_->setSelectionMode(QAbstractItemView::NoSelection);
-    propertiesTree_->setFocusPolicy(Qt::NoFocus);
-    propertiesTree_->setIndentation(0);
-    propertiesTree_->setFrameShape(QFrame::StyledPanel);
-    propertiesTree_->setFrameShadow(QFrame::Sunken);
-    propertiesTree_->header()->setStretchLastSection(true);
-    propertiesTree_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    propertiesTree_->setWordWrap(true);
-    // Match row height to dataset table
-    propertiesTree_->setStyleSheet("QTreeWidget::item { padding: 2px 4px; }");
-    detailLayout->addWidget(propertiesTree_, 1);
-
-    // Initialize with placeholder content
-    updateDetailPanel(nullptr);
-}
-
-void DataLibrarianWindow::setupLineagePanel() {
-    lineagePanel_ = new QWidget(this);
-    auto* lineageLayout = new QVBoxLayout(lineagePanel_);
-    lineageLayout->setContentsMargins(0, 0, 0, 0);
-    lineageLayout->setSpacing(4);
-
-    // Lineage title
-    auto* lineageLabel = new QLabel(tr("<b>Lineage</b>"), lineagePanel_);
-    lineageLayout->addWidget(lineageLabel);
-
-    // Lineage visualization
-    lineageView_ = new QGraphicsView(lineagePanel_);
-    lineageView_->setMinimumHeight(100);
-    lineageView_->setScene(new QGraphicsScene(lineageView_));
-    lineageView_->setRenderHint(QPainter::Antialiasing);
-    lineageView_->setFrameShape(QFrame::StyledPanel);
-    lineageView_->setFrameShadow(QFrame::Sunken);
-    lineageLayout->addWidget(lineageView_, 1);
-
-    // Add to central splitter (below dataset table)
-    centralSplitter_->addWidget(lineagePanel_);
-
-    // Set central splitter sizes: table 60%, lineage 40%
-    centralSplitter_->setSizes({500, 300});
-}
-
-void DataLibrarianWindow::setupMethodologyPanel() {
-    // Create right panel container for methodology
-    methodologyPanel_ = new QWidget(this);
-    auto* rightLayout = new QVBoxLayout(methodologyPanel_);
-    rightLayout->setContentsMargins(0, 0, 0, 0);
-    rightLayout->setSpacing(8);
-
-    // Methodology section header
-    auto* methodologyLabel = new QLabel(tr("<b>Methodology</b>"), methodologyPanel_);
-    rightLayout->addWidget(methodologyLabel);
-
-    // Properties tree - same style as accession card
-    methodologyPropertiesTree_ = new QTreeWidget(methodologyPanel_);
-    methodologyPropertiesTree_->setColumnCount(2);
-    methodologyPropertiesTree_->setHeaderHidden(true);
-    methodologyPropertiesTree_->setRootIsDecorated(false);
-    methodologyPropertiesTree_->setAlternatingRowColors(true);
-    methodologyPropertiesTree_->setSelectionMode(QAbstractItemView::NoSelection);
-    methodologyPropertiesTree_->setFocusPolicy(Qt::NoFocus);
-    methodologyPropertiesTree_->setIndentation(0);
-    methodologyPropertiesTree_->setFrameShape(QFrame::StyledPanel);
-    methodologyPropertiesTree_->setFrameShadow(QFrame::Sunken);
-    methodologyPropertiesTree_->header()->setStretchLastSection(true);
-    methodologyPropertiesTree_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    methodologyPropertiesTree_->setWordWrap(true);
-    methodologyPropertiesTree_->setStyleSheet("QTreeWidget::item { padding: 2px 4px; }");
-    rightLayout->addWidget(methodologyPropertiesTree_);
-
-    // Processing Steps header
-    auto* stepsLabel = new QLabel(tr("<b>Processing Steps</b>"), methodologyPanel_);
-    rightLayout->addWidget(stepsLabel);
-
-    // Implementation details text browser - always visible, dark theme compatible
-    implementationDetailsText_ = new QTextBrowser(methodologyPanel_);
-    implementationDetailsText_->setOpenExternalLinks(true);
-    implementationDetailsText_->setFrameShape(QFrame::StyledPanel);
-    implementationDetailsText_->setFrameShadow(QFrame::Sunken);
-    // Use palette-aware styling for dark theme compatibility
-    implementationDetailsText_->setStyleSheet(
-        "QTextBrowser { font-family: monospace; font-size: 10px; padding: 4px; }");
-    rightLayout->addWidget(implementationDetailsText_, 1);
-
-    // Set minimum/maximum width for right panel (same as left)
-    methodologyPanel_->setMinimumWidth(350);
-    methodologyPanel_->setMaximumWidth(500);
-
-    // Add to main splitter (right side)
-    mainSplitter_->addWidget(methodologyPanel_);
-
-    // Update splitter sizes: left 350px, central fills, right 400px
-    mainSplitter_->setSizes({350, 850, 400});
-
-    // Initialize with placeholder content
-    updateMethodologyPanel(nullptr);
+    // Set splitter sizes: sidebar 300px, dataset table takes the rest
+    mainSplitter_->setSizes({300, 1100});
 }
 
 void DataLibrarianWindow::setupConnections() {
@@ -500,22 +365,8 @@ void DataLibrarianWindow::onNavigationSelectionChanged(
 }
 
 void DataLibrarianWindow::onDatasetSelectionChanged() {
-    const auto selected = datasetTable_->selectionModel()->selectedRows();
-
-    if (selected.isEmpty()) {
-        // Clear panels but keep them visible
-        updateDetailPanel(nullptr);
-        updateMethodologyPanel(nullptr);
-        // Clear lineage view
-        lineageView_->scene()->clear();
-        return;
-    }
-
-    const auto sourceIndex = datasetProxyModel_->mapToSource(selected.first());
-    const auto* dataset = datasetModel_->getDataset(sourceIndex.row());
-
-    updateDetailPanel(dataset);
-    updateMethodologyPanel(dataset);
+    // Selection change is handled by double-click to open dialog
+    // No inline detail view to update
 }
 
 void DataLibrarianWindow::onDatasetDoubleClicked(const QModelIndex& index) {
@@ -527,8 +378,36 @@ void DataLibrarianWindow::onDatasetDoubleClicked(const QModelIndex& index) {
     const auto* dataset = datasetModel_->getDataset(sourceIndex.row());
 
     if (dataset) {
-        emit showDatasetDetails(*dataset);
+        showDatasetDetailDialog(dataset);
     }
+}
+
+void DataLibrarianWindow::showDatasetDetailDialog(const dq::domain::dataset* dataset) {
+    if (!dataset) {
+        return;
+    }
+
+    // Create dialog if it doesn't exist
+    if (!datasetViewDialog_) {
+        datasetViewDialog_ = new DatasetViewDialog(this);
+        datasetViewDialog_->setAttribute(Qt::WA_DeleteOnClose, false);
+    }
+
+    // Collect methodologies for the dialog
+    std::vector<dq::domain::methodology> methodologies;
+    for (int i = 0; i < methodologyModel_->rowCount(); ++i) {
+        const auto* methodology = methodologyModel_->getMethodology(i);
+        if (methodology) {
+            methodologies.push_back(*methodology);
+        }
+    }
+    datasetViewDialog_->setMethodologies(methodologies);
+    datasetViewDialog_->setDataset(*dataset);
+
+    // Show modeless dialog
+    datasetViewDialog_->show();
+    datasetViewDialog_->raise();
+    datasetViewDialog_->activateWindow();
 }
 
 void DataLibrarianWindow::onRefreshClicked() {
@@ -724,356 +603,6 @@ void DataLibrarianWindow::buildNavigationTree() {
     navigationTree_->expandAll();
 }
 
-void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) {
-    propertiesTree_->clear();
-
-    // Helper to add a property row with tooltip
-    auto addProperty = [this](const QString& name, const QString& value,
-                              const QString& tooltip = {}) {
-        auto* item = new QTreeWidgetItem(propertiesTree_);
-        item->setText(0, name);
-        item->setText(1, value);
-        if (!tooltip.isEmpty()) {
-            item->setToolTip(0, tooltip);
-            item->setToolTip(1, tooltip);
-        }
-        return item;
-    };
-
-    if (!dataset) {
-        addProperty(tr("Name"), tr("-"));
-        addProperty(tr("Version"), tr("-"));
-        addProperty(tr("ID"), tr("-"));
-        addProperty(tr("Description"), tr("-"));
-        addProperty(tr("Catalog"), tr("-"));
-        addProperty(tr("Domain"), tr("-"));
-        addProperty(tr("Subject Area"), tr("-"));
-        addProperty(tr("Origin"), tr("-"));
-        addProperty(tr("Nature"), tr("-"));
-        addProperty(tr("Treatment"), tr("-"));
-        addProperty(tr("Source"), tr("-"));
-        addProperty(tr("As Of Date"), tr("-"));
-        addProperty(tr("License"), tr("-"));
-        addProperty(tr("Recorded By"), tr("-"));
-        addProperty(tr("Recorded At"), tr("-"));
-        addProperty(tr("Change Commentary"), tr("-"));
-        return;
-    }
-
-    // Basic info
-    addProperty(tr("Name"), QString::fromStdString(dataset->name),
-        tr("The name of this dataset"));
-    addProperty(tr("Version"), QString::number(dataset->version),
-        tr("Version number for optimistic locking and change tracking"));
-    addProperty(tr("ID"), QString::fromStdString(boost::uuids::to_string(dataset->id)),
-        tr("Unique identifier for this dataset"));
-    addProperty(tr("Description"),
-        dataset->description.empty() ? tr("-") : QString::fromStdString(dataset->description),
-        tr("Detailed description of the dataset's contents and purpose"));
-
-    // Organizational info
-    addProperty(tr("Catalog"),
-        dataset->catalog_name ? QString::fromStdString(*dataset->catalog_name) : tr("-"),
-        tr("The catalog this dataset belongs to"));
-    addProperty(tr("Domain"), QString::fromStdString(dataset->domain_name),
-        tr("The data domain this dataset applies to"));
-    addProperty(tr("Subject Area"), QString::fromStdString(dataset->subject_area_name),
-        tr("The subject area this dataset belongs to"));
-
-    // Classification dimensions
-    addProperty(tr("Origin"), QString::fromStdString(dataset->origin_code),
-        tr("Origin indicates where the data came from:\n"
-           "- Primary: Data directly from originating system\n"
-           "- Derived: Data computed or aggregated from other datasets"));
-    addProperty(tr("Nature"), QString::fromStdString(dataset->nature_code),
-        tr("Nature describes the type of values in the data:\n"
-           "- Actual: Real observed values\n"
-           "- Estimated: Calculated or projected values\n"
-           "- Simulated: Model-generated values"));
-    addProperty(tr("Treatment"), QString::fromStdString(dataset->treatment_code),
-        tr("Treatment indicates how the data has been processed:\n"
-           "- Raw: Unprocessed original data\n"
-           "- Cleaned: Data with corrections applied\n"
-           "- Enriched: Data augmented with additional information"));
-
-    // Source and date info
-    addProperty(tr("Source"), QString::fromStdString(dataset->source_system_id),
-        tr("Identifier of the source system where data originated"));
-    addProperty(tr("As Of Date"), relative_time_helper::format(dataset->as_of_date),
-        tr("Business date the data represents"));
-    addProperty(tr("License"),
-        dataset->license_info ? QString::fromStdString(*dataset->license_info) : tr("-"),
-        tr("License information for the data"));
-
-    // Audit info
-    addProperty(tr("Recorded By"), QString::fromStdString(dataset->recorded_by),
-        tr("The user who recorded this dataset"));
-    addProperty(tr("Recorded At"), relative_time_helper::format(dataset->recorded_at),
-        tr("When this dataset was recorded"));
-    addProperty(tr("Change Commentary"),
-        dataset->change_commentary.empty() ? tr("-") : QString::fromStdString(dataset->change_commentary),
-        tr("Commentary explaining the last change to this dataset"));
-
-    updateLineageView(dataset);
-}
-
-void DataLibrarianWindow::updateMethodologyPanel(const dq::domain::dataset* dataset) {
-    methodologyPropertiesTree_->clear();
-    implementationDetailsText_->clear();
-
-    // Helper to add a property row with tooltip
-    auto addProperty = [this](const QString& name, const QString& value,
-                              const QString& tooltip = {}) {
-        auto* item = new QTreeWidgetItem(methodologyPropertiesTree_);
-        item->setText(0, name);
-        item->setText(1, value);
-        if (!tooltip.isEmpty()) {
-            item->setToolTip(0, tooltip);
-            item->setToolTip(1, tooltip);
-        }
-        return item;
-    };
-
-    if (!dataset) {
-        addProperty(tr("Name"), tr("-"));
-        addProperty(tr("Description"), tr("-"));
-        addProperty(tr("Source URL"), tr("-"));
-        addProperty(tr("Recorded By"), tr("-"));
-        addProperty(tr("Recorded At"), tr("-"));
-        return;
-    }
-
-    const auto* methodology = findMethodology(dataset->methodology_id);
-    if (!methodology) {
-        addProperty(tr("Name"), dataset->methodology_id ? tr("Unknown") : tr("None"));
-        addProperty(tr("Description"), tr("-"));
-        addProperty(tr("Source URL"), tr("-"));
-        addProperty(tr("Recorded By"), tr("-"));
-        addProperty(tr("Recorded At"), tr("-"));
-        return;
-    }
-
-    // Methodology properties
-    addProperty(tr("Name"), QString::fromStdString(methodology->name),
-        tr("Name of the methodology used to produce this dataset"));
-    addProperty(tr("Description"), QString::fromStdString(methodology->description),
-        tr("Description of the methodology's purpose and approach"));
-
-    if (methodology->logic_reference && !methodology->logic_reference->empty()) {
-        auto* urlItem = addProperty(tr("Source URL"),
-            QString::fromStdString(*methodology->logic_reference),
-            tr("External reference URL for the source data"));
-        // Make URL clickable appearance
-        urlItem->setForeground(1, QBrush(QColor(100, 149, 237)));  // Cornflower blue
-    } else {
-        addProperty(tr("Source URL"), tr("-"));
-    }
-
-    addProperty(tr("Recorded By"), QString::fromStdString(methodology->recorded_by),
-        tr("User who recorded this methodology"));
-    addProperty(tr("Recorded At"), relative_time_helper::format(methodology->recorded_at),
-        tr("When this methodology was recorded"));
-
-    // Implementation details (processing steps)
-    if (methodology->implementation_details && !methodology->implementation_details->empty()) {
-        implementationDetailsText_->setPlainText(
-            QString::fromStdString(*methodology->implementation_details));
-    } else {
-        implementationDetailsText_->setPlainText(tr("No processing steps documented."));
-    }
-}
-
-void DataLibrarianWindow::updateLineageView(const dq::domain::dataset* dataset) {
-    auto* scene = lineageView_->scene();
-    scene->clear();
-
-    if (!dataset) {
-        return;
-    }
-
-    // Calculate node positions using member dimension properties
-    const qreal node1X = 0;
-    const qreal node2X = lineageNodeWidth_ + lineageNodeSpacing_;
-    const qreal node3X = 2 * (lineageNodeWidth_ + lineageNodeSpacing_);
-    const qreal nodeY = 0;
-
-    // Create nodes using helper methods (colors from member properties, styleable via QSS)
-    qreal node1Height = createLineageNode(scene, node1X, nodeY, tr("Primary"),
-        {tr("Origin"), tr("Nature"), tr("Treatment")},
-        {QString::fromStdString(dataset->origin_code),
-         QString::fromStdString(dataset->nature_code),
-         QString::fromStdString(dataset->treatment_code)},
-        lineageHeaderOrigin_, false, true);
-
-    qreal node2Height = createLineageNode(scene, node2X, nodeY, tr("Process"),
-        {tr("Method"), tr("System")},
-        {findMethodologyName(dataset->methodology_id),
-         QString::fromStdString(dataset->source_system_id)},
-        lineageHeaderMethod_, true, true);
-
-    qreal node3Height = createLineageNode(scene, node3X, nodeY, tr("Output"),
-        {tr("Name"), tr("Version"), tr("As Of")},
-        {QString::fromStdString(dataset->name),
-         QString::number(dataset->version),
-         relative_time_helper::format(dataset->as_of_date)},
-        lineageHeaderDataset_, true, false);
-
-    // Draw connections between nodes (from output socket to input socket)
-    qreal connY1 = nodeY + node1Height / 2;
-    qreal connY2 = nodeY + node2Height / 2;
-    qreal connY3 = nodeY + node3Height / 2;
-
-    drawLineageConnection(scene,
-        node1X + lineageNodeWidth_ + lineageSocketRadius_, connY1,
-        node2X - lineageSocketRadius_, connY2);
-    drawLineageConnection(scene,
-        node2X + lineageNodeWidth_ + lineageSocketRadius_, connY2,
-        node3X - lineageSocketRadius_, connY3);
-
-    // Set scene background
-    scene->setBackgroundBrush(QBrush(lineageBackground_));
-
-    // Fit view with some margin
-    QRectF sceneRect = scene->itemsBoundingRect();
-    sceneRect.adjust(-8, -8, 8, 8);
-    lineageView_->fitInView(sceneRect, Qt::KeepAspectRatio);
-}
-
-qreal DataLibrarianWindow::createLineageNode(QGraphicsScene* scene, qreal x, qreal y,
-    const QString& headerText, const QStringList& labels, const QStringList& values,
-    const QColor& headerColor, bool hasInputSocket, bool hasOutputSocket) const {
-
-    const int numRows = std::min(labels.size(), values.size());
-    const qreal bodyHeight = numRows * lineageRowHeight_ + lineagePadding_ * 2;
-    const qreal nodeHeight = lineageHeaderHeight_ + bodyHeight;
-
-    // Build tooltip with all properties
-    QString tooltip = QString("<b>%1</b>").arg(headerText);
-    for (int i = 0; i < numRows; ++i) {
-        tooltip += QString("<br>%1: %2").arg(labels[i], values[i]);
-    }
-
-    createLineageNodeBody(scene, x, y, lineageNodeWidth_, nodeHeight, tooltip);
-    createLineageNodeHeader(scene, x, y, lineageNodeWidth_, headerText, headerColor, tooltip);
-    createLineageNodeProperties(scene, x, y + lineageHeaderHeight_ + lineagePadding_,
-        lineageNodeWidth_, labels, values);
-    createLineageNodeSockets(scene, x, y, lineageNodeWidth_, nodeHeight,
-        hasInputSocket, hasOutputSocket);
-
-    return nodeHeight;
-}
-
-void DataLibrarianWindow::createLineageNodeBody(QGraphicsScene* scene, qreal x, qreal y,
-    qreal nodeWidth, qreal nodeHeight, const QString& tooltip) const {
-
-    QPainterPath bodyPath;
-    bodyPath.addRoundedRect(x, y, nodeWidth, nodeHeight,
-        lineageCornerRadius_, lineageCornerRadius_);
-    auto* bodyItem = scene->addPath(bodyPath,
-        QPen(lineageNodeBorder_), QBrush(lineageNodeBody_));
-    bodyItem->setToolTip(tooltip);
-}
-
-void DataLibrarianWindow::createLineageNodeHeader(QGraphicsScene* scene, qreal x, qreal y,
-    qreal nodeWidth, const QString& headerText, const QColor& headerColor,
-    const QString& tooltip) const {
-
-    // Header background (top rounded, bottom square)
-    QPainterPath headerPath;
-    headerPath.moveTo(x + lineageCornerRadius_, y);
-    headerPath.arcTo(x, y, lineageCornerRadius_ * 2, lineageCornerRadius_ * 2, 90, 90);
-    headerPath.lineTo(x, y + lineageHeaderHeight_);
-    headerPath.lineTo(x + nodeWidth, y + lineageHeaderHeight_);
-    headerPath.lineTo(x + nodeWidth, y + lineageCornerRadius_);
-    headerPath.arcTo(x + nodeWidth - lineageCornerRadius_ * 2, y,
-        lineageCornerRadius_ * 2, lineageCornerRadius_ * 2, 0, 90);
-    headerPath.closeSubpath();
-    auto* headerBg = scene->addPath(headerPath, QPen(Qt::NoPen), QBrush(headerColor));
-    headerBg->setToolTip(tooltip);
-
-    // Header text (centered)
-    QFont headerFont;
-    headerFont.setPointSize(6);
-    headerFont.setBold(true);
-    QFontMetrics headerFm(headerFont);
-
-    QString elidedHeader = headerFm.elidedText(headerText, Qt::ElideRight,
-        static_cast<int>(nodeWidth - 2 * lineagePadding_));
-    auto* headerItem = scene->addText(elidedHeader);
-    headerItem->setFont(headerFont);
-    headerItem->setDefaultTextColor(lineageText_);
-    headerItem->setToolTip(tooltip);
-    qreal headerTextWidth = headerFm.horizontalAdvance(elidedHeader);
-    headerItem->setPos(x + (nodeWidth - headerTextWidth) / 2,
-        y + (lineageHeaderHeight_ - headerFm.height()) / 2 - 1);
-}
-
-void DataLibrarianWindow::createLineageNodeProperties(QGraphicsScene* scene, qreal x, qreal y,
-    qreal nodeWidth, const QStringList& labels, const QStringList& values) const {
-
-    QFont labelFont;
-    labelFont.setPointSize(5);
-    QFont valueFont;
-    valueFont.setPointSize(5);
-    valueFont.setBold(true);
-    QFontMetrics labelFm(labelFont);
-    QFontMetrics valueFm(valueFont);
-
-    int maxLabelWidth = static_cast<int>(nodeWidth * 0.35);
-    int maxValueWidth = static_cast<int>(nodeWidth - maxLabelWidth - lineagePadding_ * 3);
-    int numRows = std::min(labels.size(), values.size());
-
-    qreal rowY = y;
-    for (int i = 0; i < numRows; ++i) {
-        // Label (left aligned)
-        QString elidedLabel = labelFm.elidedText(labels[i] + ":", Qt::ElideRight, maxLabelWidth);
-        auto* labelItem = scene->addText(elidedLabel);
-        labelItem->setFont(labelFont);
-        labelItem->setDefaultTextColor(lineageLabel_);
-        labelItem->setPos(x + lineagePadding_, rowY + (lineageRowHeight_ - labelFm.height()) / 2);
-        labelItem->setToolTip(QString("%1: %2").arg(labels[i], values[i]));
-
-        // Value (right of label)
-        QString elidedValue = valueFm.elidedText(values[i], Qt::ElideRight, maxValueWidth);
-        auto* valueItem = scene->addText(elidedValue);
-        valueItem->setFont(valueFont);
-        valueItem->setDefaultTextColor(lineageValue_);
-        valueItem->setPos(x + lineagePadding_ + maxLabelWidth + 2,
-            rowY + (lineageRowHeight_ - valueFm.height()) / 2);
-        valueItem->setToolTip(QString("%1: %2").arg(labels[i], values[i]));
-
-        rowY += lineageRowHeight_;
-    }
-}
-
-void DataLibrarianWindow::createLineageNodeSockets(QGraphicsScene* scene, qreal x, qreal y,
-    qreal nodeWidth, qreal nodeHeight, bool hasInput, bool hasOutput) const {
-
-    qreal socketY = y + nodeHeight / 2;
-
-    if (hasInput) {
-        scene->addEllipse(x - lineageSocketRadius_, socketY - lineageSocketRadius_,
-            lineageSocketRadius_ * 2, lineageSocketRadius_ * 2,
-            QPen(lineageNodeBorder_), QBrush(lineageSocket_));
-    }
-
-    if (hasOutput) {
-        scene->addEllipse(x + nodeWidth - lineageSocketRadius_, socketY - lineageSocketRadius_,
-            lineageSocketRadius_ * 2, lineageSocketRadius_ * 2,
-            QPen(lineageNodeBorder_), QBrush(lineageSocket_));
-    }
-}
-
-void DataLibrarianWindow::drawLineageConnection(QGraphicsScene* scene,
-    qreal x1, qreal y1, qreal x2, qreal y2) const {
-
-    QPainterPath path;
-    path.moveTo(x1, y1);
-    qreal ctrlOffset = (x2 - x1) * 0.4;
-    path.cubicTo(x1 + ctrlOffset, y1, x2 - ctrlOffset, y2, x2, y2);
-    scene->addPath(path, QPen(lineageConnection_, 1.2));
-}
-
 void DataLibrarianWindow::filterDatasetsByCatalog(const QString& catalogName) {
     selectedCatalogName_ = catalogName;
     selectedDomainName_.clear();
@@ -1130,11 +659,6 @@ void DataLibrarianWindow::selectFirstDataset() {
         datasetTable_->selectionModel()->select(
             firstIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
         datasetTable_->setCurrentIndex(firstIndex);
-    } else {
-        // No datasets after filter - clear panels
-        updateDetailPanel(nullptr);
-        updateMethodologyPanel(nullptr);
-        lineageView_->scene()->clear();
     }
 }
 
@@ -1214,59 +738,6 @@ void DataLibrarianWindow::showHeaderContextMenu(const QPoint& pos) {
     }
 
     menu.exec(header->mapToGlobal(pos));
-}
-
-QString DataLibrarianWindow::findOriginDimensionName(
-    const boost::uuids::uuid& /*id*/) const {
-    // Not used - dataset stores origin_code directly
-    return tr("N/A");
-}
-
-QString DataLibrarianWindow::findNatureDimensionName(
-    const boost::uuids::uuid& /*id*/) const {
-    // Not used - dataset stores nature_code directly
-    return tr("N/A");
-}
-
-QString DataLibrarianWindow::findTreatmentDimensionName(
-    const boost::uuids::uuid& /*id*/) const {
-    // Not used - dataset stores treatment_code directly
-    return tr("N/A");
-}
-
-QString DataLibrarianWindow::findMethodologyName(
-    const std::optional<boost::uuids::uuid>& id) const {
-    const auto* methodology = findMethodology(id);
-    if (methodology) {
-        return QString::fromStdString(methodology->name);
-    }
-    if (!id) {
-        return tr("None");
-    }
-    // Fallback to truncated UUID if not found
-    return QString::fromStdString(boost::uuids::to_string(*id)).left(8) + "...";
-}
-
-const dq::domain::methodology* DataLibrarianWindow::findMethodology(
-    const std::optional<boost::uuids::uuid>& id) const {
-    if (!id) {
-        return nullptr;
-    }
-
-    // Look up from methodology model
-    for (int i = 0; i < methodologyModel_->rowCount(); ++i) {
-        const auto* methodology = methodologyModel_->getMethodology(i);
-        if (methodology && methodology->id == *id) {
-            return methodology;
-        }
-    }
-    return nullptr;
-}
-
-QString DataLibrarianWindow::findCatalogName(
-    const boost::uuids::uuid& /*id*/) const {
-    // Not used - dataset stores catalog_name directly
-    return tr("N/A");
 }
 
 }

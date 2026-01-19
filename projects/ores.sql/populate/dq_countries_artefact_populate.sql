@@ -51,7 +51,7 @@ begin
     select id into v_flags_dataset_id
     from ores.dq_datasets_tbl
     where name = 'Country Flag Images'
-      and subject_area_name = 'Countries'
+      and subject_area_name = 'Country Flags'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 

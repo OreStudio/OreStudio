@@ -17,44 +17,43 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-18 Sun 20:44], for Sunday, January 18, 2026.
-|       | <75>                               |        |      |      |       |
-| Tags  | Headline                           | Time   |      |      |     % |
-|-------+------------------------------------+--------+------+------+-------|
-|       | *Total time*                       | *6:16* |      |      | 100.0 |
-|-------+------------------------------------+--------+------+------+-------|
-|       | Stories                            | 6:16   |      |      | 100.0 |
-|       | Active                             |        | 6:16 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint |        |      | 1:33 |  24.7 |
-| code  | Add UI support for data sets       |        |      | 4:43 |  75.3 |
+#+CAPTION: Clock summary at [2026-01-19 Mon 01:11], for Monday, January 19, 2026.
+|      | <75>                         |        |      |      |       |
+| Tags | Headline                     | Time   |      |      |     % |
+|------+------------------------------+--------+------+------+-------|
+|      | *Total time*                 | *1:11* |      |      | 100.0 |
+|------+------------------------------+--------+------+------+-------|
+|      | Stories                      | 1:11   |      |      | 100.0 |
+|      | Active                       |        | 1:11 |      | 100.0 |
+| code | Add UI support for data sets |        |      | 1:11 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-18 Sun 20:44]
+#+CAPTION: Clock summary at [2026-01-19 Mon 01:11]
 |       | <75>                                               |         |       |       |       |
 | Tags  | Headline                                           | Time    |       |       |     % |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                       | *59:00* |       |       | 100.0 |
+|       | *Total time*                                       | *60:26* |       |       | 100.0 |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                            | 59:00   |       |       | 100.0 |
-|       | Active                                             |         | 59:00 |       | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       |  2:11 |   3.7 |
-| infra | OCR scan notebooks for this sprint                 |         |       |  8:19 |  14.1 |
+|       | Stories                                            | 60:26   |       |       | 100.0 |
+|       | Active                                             |         | 60:26 |       | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       |  2:11 |   3.6 |
+| infra | OCR scan notebooks for this sprint                 |         |       |  8:19 |  13.8 |
 | infra | Clean up system models and component models        |         |       |  0:28 |   0.8 |
 | code  | Add missing entities to CLI                        |         |       |  1:55 |   3.2 |
 | infra | Refactor PR related skills                         |         |       |  0:18 |   0.5 |
-| code  | Fix valgrind errors in nightly                     |         |       |  1:25 |   2.4 |
+| code  | Fix valgrind errors in nightly                     |         |       |  1:25 |   2.3 |
 | code  | Create security module                             |         |       |  1:23 |   2.3 |
 | code  | Prodigy should support multiple environments       |         |       |  0:19 |   0.5 |
-| code  | Add named environment sets                         |         |       |  4:17 |   7.3 |
+| code  | Add named environment sets                         |         |       |  4:17 |   7.1 |
 | code  | Rename risk to refdata                             |         |       |  0:43 |   1.2 |
-| code  | Prefix database entities with component            |         |       |  3:15 |   5.5 |
-| code  | Implement data quality                             |         |       |  9:42 |  16.4 |
-| code  | Improvements to connection browser                 |         |       |  2:05 |   3.5 |
-| code  | Disconnect shows reconnect message                 |         |       |  2:24 |   4.1 |
-| infra | Refactor documentation                             |         |       |  6:29 |  11.0 |
-| code  | Add UI support for data sets                       |         |       | 13:27 |  22.8 |
+| code  | Prefix database entities with component            |         |       |  3:15 |   5.4 |
+| code  | Implement data quality                             |         |       |  9:42 |  16.1 |
+| code  | Improvements to connection browser                 |         |       |  2:05 |   3.4 |
+| code  | Disconnect shows reconnect message                 |         |       |  2:24 |   4.0 |
+| infra | Refactor documentation                             |         |       |  6:29 |  10.7 |
+| code  | Add UI support for data sets                       |         |       | 14:53 |  24.6 |
 | code  | Implement party related entities at database level |         |       |  0:20 |   0.6 |
 #+end:
 
@@ -815,7 +814,7 @@ Highlights:
 
 *** STARTED Add UI support for data sets                               :code:
     :LOGBOOK:
-    CLOCK: [2026-01-18 Sun 23:45]
+    CLOCK: [2026-01-18 Sun 23:45]--[2026-01-19 Mon 01:11] =>  1:26
     CLOCK: [2026-01-18 Sun 19:01]--[2026-01-18 Sun 19:20] =>  0:19
     CLOCK: [2026-01-18 Sun 18:35]--[2026-01-18 Sun 19:01] =>  0:26
     CLOCK: [2026-01-18 Sun 16:54]--[2026-01-18 Sun 17:20] =>  0:26

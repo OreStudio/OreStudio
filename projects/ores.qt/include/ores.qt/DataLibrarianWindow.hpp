@@ -131,6 +131,7 @@ private:
     void filterDatasetsByDomain(const QString& domainName);
     void filterDatasetsBySubjectArea(const QString& subjectAreaName);
     void clearDatasetFilter();
+    void selectFirstDataset();
     void setupColumnVisibility();
     void applyDefaultColumnVisibility();
 

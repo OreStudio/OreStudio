@@ -317,6 +317,7 @@ void DataLibrarianWindow::setupDetailPanel() {
     propertiesTree_->setFrameShadow(QFrame::Sunken);
     propertiesTree_->header()->setStretchLastSection(true);
     propertiesTree_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    propertiesTree_->setWordWrap(true);
     // Match row height to dataset table
     propertiesTree_->setStyleSheet("QTreeWidget::item { padding: 2px 4px; }");
     detailLayout->addWidget(propertiesTree_, 1);
@@ -375,6 +376,7 @@ void DataLibrarianWindow::setupMethodologyPanel() {
     methodologyPropertiesTree_->setFrameShadow(QFrame::Sunken);
     methodologyPropertiesTree_->header()->setStretchLastSection(true);
     methodologyPropertiesTree_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    methodologyPropertiesTree_->setWordWrap(true);
     methodologyPropertiesTree_->setStyleSheet("QTreeWidget::item { padding: 2px 4px; }");
     rightLayout->addWidget(methodologyPropertiesTree_);
 
@@ -557,14 +559,7 @@ void DataLibrarianWindow::onDataLoaded() {
     if (pendingLoads_ <= 0) {
         loadingProgressBar_->setVisible(false);
         BOOST_LOG_SEV(lg(), info) << "All data loading complete";
-
-        // Auto-select first dataset if available
-        if (datasetProxyModel_->rowCount() > 0) {
-            const auto firstIndex = datasetProxyModel_->index(0, 0);
-            datasetTable_->selectionModel()->select(
-                firstIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
-            datasetTable_->setCurrentIndex(firstIndex);
-        }
+        selectFirstDataset();
     }
     emit statusChanged(tr("Loaded %1 datasets").arg(datasetModel_->rowCount()));
 }
@@ -1093,6 +1088,7 @@ void DataLibrarianWindow::filterDatasetsByCatalog(const QString& catalogName) {
 
     BOOST_LOG_SEV(lg(), debug) << "Filter datasets by catalog: "
                                << catalogName.toStdString();
+    selectFirstDataset();
 }
 
 void DataLibrarianWindow::filterDatasetsByDomain(const QString& domainName) {
@@ -1106,6 +1102,7 @@ void DataLibrarianWindow::filterDatasetsByDomain(const QString& domainName) {
 
     BOOST_LOG_SEV(lg(), debug) << "Filter datasets by domain: "
                                << domainName.toStdString();
+    selectFirstDataset();
 }
 
 void DataLibrarianWindow::filterDatasetsBySubjectArea(const QString& subjectAreaName) {
@@ -1119,6 +1116,7 @@ void DataLibrarianWindow::filterDatasetsBySubjectArea(const QString& subjectArea
 
     BOOST_LOG_SEV(lg(), debug) << "Filter datasets by subject area: "
                                << subjectAreaName.toStdString();
+    selectFirstDataset();
 }
 
 void DataLibrarianWindow::clearDatasetFilter() {
@@ -1126,6 +1124,21 @@ void DataLibrarianWindow::clearDatasetFilter() {
     selectedDomainName_.clear();
     selectedSubjectAreaName_.clear();
     datasetProxyModel_->setFilterRegularExpression("");
+    selectFirstDataset();
+}
+
+void DataLibrarianWindow::selectFirstDataset() {
+    if (datasetProxyModel_->rowCount() > 0) {
+        const auto firstIndex = datasetProxyModel_->index(0, 0);
+        datasetTable_->selectionModel()->select(
+            firstIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+        datasetTable_->setCurrentIndex(firstIndex);
+    } else {
+        // No datasets after filter - clear panels
+        updateDetailPanel(nullptr);
+        updateMethodologyPanel(nullptr);
+        lineageView_->scene()->clear();
+    }
 }
 
 void DataLibrarianWindow::setupColumnVisibility() {

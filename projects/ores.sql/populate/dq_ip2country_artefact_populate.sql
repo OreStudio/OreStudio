@@ -39,7 +39,7 @@ set schema 'ores';
 DO $$
 declare
     v_dataset_id uuid;
-    v_data_file text := 'projects/ores.sql/populate/data/ip2country/ip2country-v4-u32.tsv';
+    v_data_file text := 'populate/data/ip2country/ip2country-v4-u32.tsv';
 begin
     -- Get dataset ID
     select id into v_dataset_id
@@ -82,7 +82,7 @@ create temp table staging_ip2country_import (
     country_code text
 );
 
-\copy staging_ip2country_import from 'projects/ores.sql/populate/data/ip2country/ip2country-v4-u32.tsv' with (format text, delimiter E'\t')
+\copy staging_ip2country_import from 'populate/data/ip2country/ip2country-v4-u32.tsv' with (format text, delimiter E'\t')
 
 -- Insert into artefact table with dataset_id
 insert into ores.dq_ip2country_artefact_tbl (dataset_id, range_start, range_end, country_code)

@@ -249,19 +249,24 @@ select ores.upsert_dq_methodologies(
    Commit: git add projects/ores.sql/populate/data/ip2country/ip2country-v4-u32.tsv
            git commit -m "[data] Update IP to country mapping from iptoasn.com"
 
-3. IMPORT TO DATABASE
-   Script: projects/ores.sql/populate/geo_ip2country_import.sql
-   Command: psql -d <database> \
-                 -v data_file=''projects/ores.sql/populate/data/ip2country/ip2country-v4-u32.tsv'' \
-                 -f projects/ores.sql/populate/geo_ip2country_import.sql
-   Process: Truncate existing data, import via staging table, convert to int8range
+3. LOAD TO DQ STAGING TABLE
+   Script: projects/ores.sql/populate/dq_ip2country_artefact_populate.sql
+   Target table: ores.dq_ip2country_artefact_tbl
+   Process: Uses psql \copy to import TSV directly into staging table
+   Columns: (dataset_id, range_start, range_end, country_code)
 
-4. VERIFY IMPORT
+4. POPULATE PRODUCTION TABLE
+   Function: ores.dq_populate_ip2country(p_dataset_id, ''replace_all'')
+   Source: dq_ip2country_artefact_tbl (staging)
+   Target: geo_ip2country_tbl (production)
+   Process: Truncate production, insert from staging, convert to int8range, analyze
+
+5. VERIFY IMPORT
    Test lookups for known IPs (8.8.8.8 -> US, 1.1.1.1 -> US)
    Check statistics: total ranges, unique countries, unrouted ranges
 
-Note: This data uses direct import pattern (truncate-and-reload) rather than
-DQ artefact staging due to bulk size (~500k rows) and frequent update cycle.'
+Note: Uses DQ artefact staging pattern for consistency with other datasets.
+Due to bulk size (~500k rows), production population always uses replace_all mode.'
 );
 
 select ores.upsert_dq_methodologies(

@@ -462,7 +462,7 @@ MainWindow::MainWindow(QWidget* parent) :
     });
 
     // Connect Data Librarian action
-    connect(ui_->ActionDataLibrarian, &QAction::triggered, this, [this]() {
+    connect(ui_->ActionDataLibrarian, &QAction::triggered, this, [this, iconColor]() {
         if (dataLibrarianWindow_) {
             // If window exists, bring it to front
             mdiArea_->setActiveSubWindow(
@@ -477,6 +477,8 @@ MainWindow::MainWindow(QWidget* parent) :
         auto* subWindow = new DetachableMdiSubWindow(this);
         subWindow->setWidget(librarianWindow);
         subWindow->setWindowTitle(tr("Data Librarian"));
+        subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_library_20_regular.svg", iconColor));
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
 
         connect(librarianWindow, &DataLibrarianWindow::statusChanged,
@@ -522,6 +524,8 @@ MainWindow::MainWindow(QWidget* parent) :
         });
 
         mdiArea_->addSubWindow(subWindow);
+        // Set a larger initial size for the Data Librarian
+        subWindow->resize(librarianWindow->sizeHint());
         subWindow->show();
     });
 

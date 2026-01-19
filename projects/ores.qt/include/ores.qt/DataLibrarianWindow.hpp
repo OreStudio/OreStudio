@@ -26,6 +26,7 @@
 #include <QTableView>
 #include <QToolBar>
 #include <QLabel>
+#include <QProgressBar>
 #include <QStackedWidget>
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
@@ -36,6 +37,7 @@
 #include "ores.qt/ClientDataDomainModel.hpp"
 #include "ores.qt/ClientSubjectAreaModel.hpp"
 #include "ores.qt/ClientCatalogModel.hpp"
+#include "ores.qt/ClientMethodologyModel.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/dataset.hpp"
 
@@ -102,6 +104,10 @@ private slots:
     void onDomainsLoaded();
     void onSubjectAreasLoaded();
     void onCatalogsLoaded();
+    void onMethodologiesLoaded();
+
+    // Column visibility context menu
+    void showHeaderContextMenu(const QPoint& pos);
 
 private:
     void setupUi();
@@ -114,7 +120,11 @@ private:
     void updateDetailPanel(const dq::domain::dataset* dataset);
     void updateLineageView(const dq::domain::dataset* dataset);
     void filterDatasetsByCatalog(const QString& catalogName);
+    void filterDatasetsByDomain(const QString& domainName);
+    void filterDatasetsBySubjectArea(const QString& subjectAreaName);
     void clearDatasetFilter();
+    void setupColumnVisibility();
+    void applyDefaultColumnVisibility();
 
     // Helper to find dimension/methodology names
     QString findOriginDimensionName(const boost::uuids::uuid& id) const;
@@ -164,9 +174,17 @@ private:
     ClientDataDomainModel* dataDomainModel_;
     ClientSubjectAreaModel* subjectAreaModel_;
     ClientCatalogModel* catalogModel_;
+    ClientMethodologyModel* methodologyModel_;
 
-    // Track selected catalog for filtering
+    // Loading indicator
+    QProgressBar* loadingProgressBar_;
+    int pendingLoads_{0};
+    int totalLoads_{0};
+
+    // Track selected filter
     QString selectedCatalogName_;
+    QString selectedDomainName_;
+    QString selectedSubjectAreaName_;
 };
 
 }

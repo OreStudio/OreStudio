@@ -28,6 +28,8 @@
 #include <QGraphicsRectItem>
 #include <QGraphicsTextItem>
 #include <QGraphicsLineItem>
+#include <QMenu>
+#include <QSettings>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -50,6 +52,17 @@ enum class NavigationItemType {
     Catalog
 };
 
+QString iconPathForSubjectArea(const QString& subjectAreaName) {
+    if (subjectAreaName == "Countries") {
+        return ":/icons/ic_fluent_globe_20_regular.svg";
+    } else if (subjectAreaName == "Currencies") {
+        return ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg";
+    } else if (subjectAreaName == "Cryptocurrencies") {
+        return ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg";
+    }
+    return ":/icons/ic_fluent_table_20_regular.svg";
+}
+
 }
 
 DataLibrarianWindow::DataLibrarianWindow(
@@ -68,7 +81,9 @@ DataLibrarianWindow::DataLibrarianWindow(
       detailPanel_(new QWidget(this)),
       dataDomainModel_(new ClientDataDomainModel(clientManager, this)),
       subjectAreaModel_(new ClientSubjectAreaModel(clientManager, this)),
-      catalogModel_(new ClientCatalogModel(clientManager, this)) {
+      catalogModel_(new ClientCatalogModel(clientManager, this)),
+      methodologyModel_(new ClientMethodologyModel(clientManager, this)),
+      loadingProgressBar_(new QProgressBar(this)) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating Data Librarian window";
 
@@ -78,12 +93,24 @@ DataLibrarianWindow::DataLibrarianWindow(
     setupCentralWorkspace();
     setupDetailPanel();
     setupConnections();
+    setupColumnVisibility();
+
+    // Configure loading progress bar
+    totalLoads_ = 5;
+    pendingLoads_ = totalLoads_;
+    loadingProgressBar_->setRange(0, totalLoads_);
+    loadingProgressBar_->setValue(0);
+    loadingProgressBar_->setTextVisible(true);
+    loadingProgressBar_->setFormat(tr("Loading... %v/%m"));
+    loadingProgressBar_->setFixedWidth(150);
+    loadingProgressBar_->setVisible(true);
 
     // Load data
     emit statusChanged(tr("Loading data..."));
     dataDomainModel_->refresh();
     subjectAreaModel_->refresh();
     catalogModel_->loadData();
+    methodologyModel_->refresh();
     datasetModel_->refresh();
 }
 
@@ -119,10 +146,7 @@ void DataLibrarianWindow::setupToolbar() {
 
     toolbar_->addSeparator();
 
-    // Related windows section
-    auto* relatedLabel = new QLabel(tr("  Open:  "), toolbar_);
-    toolbar_->addWidget(relatedLabel);
-
+    // Related windows - dimensions
     originDimensionsAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
             ":/icons/ic_fluent_database_20_regular.svg", iconColor),
@@ -154,6 +178,14 @@ void DataLibrarianWindow::setupToolbar() {
             ":/icons/ic_fluent_book_20_regular.svg", iconColor),
         tr("Methods"));
     methodologiesAction_->setToolTip(tr("Open Methodologies window"));
+
+    // Add spacer to push progress bar to the right
+    auto* spacer = new QWidget(toolbar_);
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    toolbar_->addWidget(spacer);
+
+    // Loading progress bar on the right
+    toolbar_->addWidget(loadingProgressBar_);
 }
 
 void DataLibrarianWindow::setupNavigationSidebar() {
@@ -236,18 +268,39 @@ void DataLibrarianWindow::setupDetailPanel() {
     classificationLayout->addRow(tr("UUID:"), datasetUuidLabel_);
 
     catalogLabel_ = new QLabel(tr("-"), detailPanel_);
+    catalogLabel_->setToolTip(tr("The catalog this dataset belongs to"));
     classificationLayout->addRow(tr("Catalog:"), catalogLabel_);
 
     classificationLayout->addRow(new QLabel(tr("")));
 
+    auto* originRowLabel = new QLabel(tr("Origin:"), detailPanel_);
+    originRowLabel->setToolTip(tr(
+        "Origin indicates where the data came from:\n"
+        "- Source: Primary data directly from originating system\n"
+        "- Derived: Data computed or aggregated from other datasets"));
     originLabel_ = new QLabel(tr("-"), detailPanel_);
-    classificationLayout->addRow(tr("Origin:"), originLabel_);
+    originLabel_->setToolTip(originRowLabel->toolTip());
+    classificationLayout->addRow(originRowLabel, originLabel_);
 
+    auto* natureRowLabel = new QLabel(tr("Nature:"), detailPanel_);
+    natureRowLabel->setToolTip(tr(
+        "Nature describes the type of values in the data:\n"
+        "- Actual: Real observed values\n"
+        "- Estimated: Calculated or projected values\n"
+        "- Simulated: Model-generated values"));
     natureLabel_ = new QLabel(tr("-"), detailPanel_);
-    classificationLayout->addRow(tr("Nature:"), natureLabel_);
+    natureLabel_->setToolTip(natureRowLabel->toolTip());
+    classificationLayout->addRow(natureRowLabel, natureLabel_);
 
+    auto* treatmentRowLabel = new QLabel(tr("Treatment:"), detailPanel_);
+    treatmentRowLabel->setToolTip(tr(
+        "Treatment indicates how the data has been processed:\n"
+        "- Raw: Unprocessed original data\n"
+        "- Cleaned: Data with corrections applied\n"
+        "- Enriched: Data augmented with additional information"));
     treatmentLabel_ = new QLabel(tr("-"), detailPanel_);
-    classificationLayout->addRow(tr("Treatment:"), treatmentLabel_);
+    treatmentLabel_->setToolTip(treatmentRowLabel->toolTip());
+    classificationLayout->addRow(treatmentRowLabel, treatmentLabel_);
 
     contentLayout->addWidget(classificationGroup);
 
@@ -256,6 +309,7 @@ void DataLibrarianWindow::setupDetailPanel() {
     auto* lineageLayout = new QVBoxLayout(lineageGroup);
 
     methodologyLabel_ = new QLabel(tr("Methodology: -"), detailPanel_);
+    methodologyLabel_->setToolTip(tr("The methodology used to produce this dataset"));
     lineageLayout->addWidget(methodologyLabel_);
 
     descriptionLabel_ = new QLabel(tr(""), detailPanel_);
@@ -263,23 +317,22 @@ void DataLibrarianWindow::setupDetailPanel() {
     descriptionLabel_->setStyleSheet("color: #888; font-style: italic;");
     lineageLayout->addWidget(descriptionLabel_);
 
-    // Lineage visualization
+    // Lineage visualization - allow it to grow
     lineageView_ = new QGraphicsView(detailPanel_);
-    lineageView_->setMinimumHeight(100);
-    lineageView_->setMaximumHeight(150);
+    lineageView_->setMinimumHeight(80);
     lineageView_->setScene(new QGraphicsScene(lineageView_));
     lineageView_->setRenderHint(QPainter::Antialiasing);
-    lineageLayout->addWidget(lineageView_);
+    lineageLayout->addWidget(lineageView_, 1);
 
     contentLayout->addWidget(lineageGroup, 1);
 
-    detailLayout->addLayout(contentLayout);
+    detailLayout->addLayout(contentLayout, 1);
 
     // Add detail panel to central splitter
     centralSplitter_->addWidget(detailPanel_);
 
-    // Set central splitter sizes: table 60%, detail 40%
-    centralSplitter_->setSizes({400, 300});
+    // Set central splitter sizes: table 65%, detail 35%
+    centralSplitter_->setSizes({500, 250});
 
     // Initially hide detail panel until a dataset is selected
     detailPanel_->setVisible(false);
@@ -326,6 +379,14 @@ void DataLibrarianWindow::setupConnections() {
             this, &DataLibrarianWindow::onSubjectAreasLoaded);
     connect(catalogModel_, &ClientCatalogModel::loadFinished,
             this, &DataLibrarianWindow::onCatalogsLoaded);
+    connect(methodologyModel_, &ClientMethodologyModel::dataLoaded,
+            this, &DataLibrarianWindow::onMethodologiesLoaded);
+
+    // Header context menu for column visibility
+    QHeaderView* header = datasetTable_->horizontalHeader();
+    header->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(header, &QHeaderView::customContextMenuRequested,
+            this, &DataLibrarianWindow::showHeaderContextMenu);
 }
 
 void DataLibrarianWindow::onNavigationSelectionChanged(
@@ -344,16 +405,26 @@ void DataLibrarianWindow::onNavigationSelectionChanged(
     case NavigationItemType::Root:
         clearDatasetFilter();
         break;
-    case NavigationItemType::Catalog: {
+    case NavigationItemType::Domain:
         if (!itemName.isEmpty()) {
-            filterDatasetsByCatalog(itemName);
+            filterDatasetsByDomain(itemName);
+        } else {
+            clearDatasetFilter();
         }
         break;
-    }
-    default:
-        // For Domain and SubjectArea, show all datasets under them
-        // TODO: Implement hierarchical filtering by domain_name/subject_area_name
-        clearDatasetFilter();
+    case NavigationItemType::SubjectArea:
+        if (!itemName.isEmpty()) {
+            filterDatasetsBySubjectArea(itemName);
+        } else {
+            clearDatasetFilter();
+        }
+        break;
+    case NavigationItemType::Catalog:
+        if (!itemName.isEmpty()) {
+            filterDatasetsByCatalog(itemName);
+        } else {
+            clearDatasetFilter();
+        }
         break;
     }
 }
@@ -387,14 +458,27 @@ void DataLibrarianWindow::onDatasetDoubleClicked(const QModelIndex& index) {
 }
 
 void DataLibrarianWindow::onRefreshClicked() {
+    // Reset and show progress bar
+    totalLoads_ = 5;
+    pendingLoads_ = totalLoads_;
+    loadingProgressBar_->setRange(0, totalLoads_);
+    loadingProgressBar_->setValue(0);
+    loadingProgressBar_->setVisible(true);
+
     emit statusChanged(tr("Refreshing data..."));
     dataDomainModel_->refresh();
     subjectAreaModel_->refresh();
     catalogModel_->loadData();
+    methodologyModel_->refresh();
     datasetModel_->refresh();
 }
 
 void DataLibrarianWindow::onDataLoaded() {
+    --pendingLoads_;
+    loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    if (pendingLoads_ <= 0) {
+        loadingProgressBar_->setVisible(false);
+    }
     emit statusChanged(tr("Loaded %1 datasets").arg(datasetModel_->rowCount()));
 }
 
@@ -406,21 +490,46 @@ void DataLibrarianWindow::onLoadError(const QString& error_message,
 }
 
 void DataLibrarianWindow::onDomainsLoaded() {
+    --pendingLoads_;
+    loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    if (pendingLoads_ <= 0) {
+        loadingProgressBar_->setVisible(false);
+    }
     BOOST_LOG_SEV(lg(), debug) << "Domains loaded: "
                                << dataDomainModel_->rowCount();
     buildNavigationTree();
 }
 
 void DataLibrarianWindow::onSubjectAreasLoaded() {
+    --pendingLoads_;
+    loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    if (pendingLoads_ <= 0) {
+        loadingProgressBar_->setVisible(false);
+    }
     BOOST_LOG_SEV(lg(), debug) << "Subject areas loaded: "
                                << subjectAreaModel_->rowCount();
     buildNavigationTree();
 }
 
 void DataLibrarianWindow::onCatalogsLoaded() {
+    --pendingLoads_;
+    loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    if (pendingLoads_ <= 0) {
+        loadingProgressBar_->setVisible(false);
+    }
     BOOST_LOG_SEV(lg(), debug) << "Catalogs loaded: "
                                << catalogModel_->rowCount();
     buildNavigationTree();
+}
+
+void DataLibrarianWindow::onMethodologiesLoaded() {
+    --pendingLoads_;
+    loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    if (pendingLoads_ <= 0) {
+        loadingProgressBar_->setVisible(false);
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Methodologies loaded: "
+                               << methodologyModel_->rowCount();
 }
 
 void DataLibrarianWindow::buildNavigationTree() {
@@ -478,14 +587,13 @@ void DataLibrarianWindow::buildNavigationTree() {
                     continue;
                 }
 
-                auto* subjectAreaItem = new QStandardItem(
-                    QString::fromStdString(subjectArea->name));
+                QString saName = QString::fromStdString(subjectArea->name);
+                auto* subjectAreaItem = new QStandardItem(saName);
                 subjectAreaItem->setData(
                     static_cast<int>(NavigationItemType::SubjectArea), ItemTypeRole);
-                subjectAreaItem->setData(
-                    QString::fromStdString(subjectArea->name), ItemIdRole);
+                subjectAreaItem->setData(saName, ItemIdRole);
                 subjectAreaItem->setIcon(IconUtils::createRecoloredIcon(
-                    ":/icons/ic_fluent_table_20_regular.svg", color_constants::icon_color));
+                    iconPathForSubjectArea(saName), color_constants::icon_color));
 
                 domainItem->appendRow(subjectAreaItem);
             }
@@ -570,32 +678,38 @@ void DataLibrarianWindow::updateLineageView(const dq::domain::dataset* dataset) 
     const QColor textColor(220, 220, 220);
     const QColor lineColor(100, 150, 200);
 
-    const qreal boxWidth = 120;
-    const qreal boxHeight = 50;
-    const qreal spacing = 80;
+    const qreal boxWidth = 100;
+    const qreal boxHeight = 40;
+    const qreal spacing = 50;
+
+    QFont smallFont;
+    smallFont.setPointSize(8);
 
     // Source box (Origin dimension)
     auto* sourceRect = scene->addRect(0, 0, boxWidth, boxHeight,
                                        QPen(lineColor), QBrush(boxColor));
     auto* sourceText = scene->addText(QString::fromStdString(dataset->origin_code));
+    sourceText->setFont(smallFont);
     sourceText->setDefaultTextColor(textColor);
-    sourceText->setPos(10, 15);
+    sourceText->setPos(8, 12);
 
     // Methodology box
     auto* methodRect = scene->addRect(boxWidth + spacing, 0, boxWidth, boxHeight,
                                        QPen(lineColor), QBrush(boxColor));
     auto* methodText = scene->addText(findMethodologyName(dataset->methodology_id));
+    methodText->setFont(smallFont);
     methodText->setDefaultTextColor(textColor);
-    methodText->setPos(boxWidth + spacing + 10, 15);
+    methodText->setPos(boxWidth + spacing + 8, 12);
 
     // Dataset box
     auto* datasetRect = scene->addRect(2 * (boxWidth + spacing), 0,
                                         boxWidth, boxHeight,
                                         QPen(lineColor), QBrush(boxColor));
     auto* datasetText = scene->addText(
-        QString::fromStdString(dataset->name).left(15));
+        QString::fromStdString(dataset->name).left(12));
+    datasetText->setFont(smallFont);
     datasetText->setDefaultTextColor(textColor);
-    datasetText->setPos(2 * (boxWidth + spacing) + 10, 15);
+    datasetText->setPos(2 * (boxWidth + spacing) + 8, 12);
 
     // Arrows
     QPen arrowPen(lineColor, 2);
@@ -613,15 +727,127 @@ void DataLibrarianWindow::updateLineageView(const dq::domain::dataset* dataset) 
 
 void DataLibrarianWindow::filterDatasetsByCatalog(const QString& catalogName) {
     selectedCatalogName_ = catalogName;
-    // TODO: Implement actual filtering on the proxy model
-    // For now, just log the filter request
+    selectedDomainName_.clear();
+    selectedSubjectAreaName_.clear();
+
+    // Filter by catalog column
+    datasetProxyModel_->setFilterKeyColumn(ClientDatasetModel::Catalog);
+    datasetProxyModel_->setFilterFixedString(catalogName);
+
     BOOST_LOG_SEV(lg(), debug) << "Filter datasets by catalog: "
                                << catalogName.toStdString();
 }
 
+void DataLibrarianWindow::filterDatasetsByDomain(const QString& domainName) {
+    selectedDomainName_ = domainName;
+    selectedCatalogName_.clear();
+    selectedSubjectAreaName_.clear();
+
+    // Filter by domain column
+    datasetProxyModel_->setFilterKeyColumn(ClientDatasetModel::Domain);
+    datasetProxyModel_->setFilterFixedString(domainName);
+
+    BOOST_LOG_SEV(lg(), debug) << "Filter datasets by domain: "
+                               << domainName.toStdString();
+}
+
+void DataLibrarianWindow::filterDatasetsBySubjectArea(const QString& subjectAreaName) {
+    selectedSubjectAreaName_ = subjectAreaName;
+    selectedCatalogName_.clear();
+    selectedDomainName_.clear();
+
+    // Filter by subject area column
+    datasetProxyModel_->setFilterKeyColumn(ClientDatasetModel::SubjectArea);
+    datasetProxyModel_->setFilterFixedString(subjectAreaName);
+
+    BOOST_LOG_SEV(lg(), debug) << "Filter datasets by subject area: "
+                               << subjectAreaName.toStdString();
+}
+
 void DataLibrarianWindow::clearDatasetFilter() {
     selectedCatalogName_.clear();
+    selectedDomainName_.clear();
+    selectedSubjectAreaName_.clear();
     datasetProxyModel_->setFilterRegularExpression("");
+}
+
+void DataLibrarianWindow::setupColumnVisibility() {
+    QHeaderView* header = datasetTable_->horizontalHeader();
+
+    // Check for saved settings
+    QSettings settings("OreStudio", "OreStudio");
+    settings.beginGroup("DataLibrarianWindow");
+
+    if (settings.contains("headerState")) {
+        header->restoreState(settings.value("headerState").toByteArray());
+        BOOST_LOG_SEV(lg(), debug) << "Restored header state from settings";
+    } else {
+        applyDefaultColumnVisibility();
+    }
+
+    settings.endGroup();
+}
+
+void DataLibrarianWindow::applyDefaultColumnVisibility() {
+    QHeaderView* header = datasetTable_->horizontalHeader();
+
+    // Hide these columns by default (data is shown in accession card):
+    header->setSectionHidden(ClientDatasetModel::SubjectArea, true);
+    header->setSectionHidden(ClientDatasetModel::Domain, true);
+    header->setSectionHidden(ClientDatasetModel::Origin, true);
+    header->setSectionHidden(ClientDatasetModel::Nature, true);
+    header->setSectionHidden(ClientDatasetModel::Treatment, true);
+    header->setSectionHidden(ClientDatasetModel::RecordedBy, true);
+    header->setSectionHidden(ClientDatasetModel::RecordedAt, true);
+
+    // Reorder columns: Name(0), Version(9), SourceSystem(7), AsOfDate(8), Catalog(1)
+    // Move Version next to Name
+    header->moveSection(header->visualIndex(ClientDatasetModel::Version), 1);
+    // Move SourceSystem after Version
+    header->moveSection(header->visualIndex(ClientDatasetModel::SourceSystem), 2);
+    // Move AsOfDate after SourceSystem
+    header->moveSection(header->visualIndex(ClientDatasetModel::AsOfDate), 3);
+    // Catalog stays at visual index 4
+
+    // Set reasonable column widths
+    header->resizeSection(ClientDatasetModel::Name, 280);
+    header->resizeSection(ClientDatasetModel::Version, 60);
+    header->resizeSection(ClientDatasetModel::SourceSystem, 120);
+    header->resizeSection(ClientDatasetModel::AsOfDate, 100);
+    header->resizeSection(ClientDatasetModel::Catalog, 140);
+
+    BOOST_LOG_SEV(lg(), debug) << "Applied default column visibility and order";
+}
+
+void DataLibrarianWindow::showHeaderContextMenu(const QPoint& pos) {
+    QHeaderView* header = datasetTable_->horizontalHeader();
+    QMenu menu(this);
+    menu.setTitle(tr("Columns"));
+
+    // Add action for each column
+    for (int col = 0; col < datasetModel_->columnCount(); ++col) {
+        QString columnName = datasetModel_->headerData(col, Qt::Horizontal,
+            Qt::DisplayRole).toString();
+
+        QAction* action = menu.addAction(columnName);
+        action->setCheckable(true);
+        action->setChecked(!header->isSectionHidden(col));
+
+        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
+            header->setSectionHidden(col, !visible);
+
+            // Save settings
+            QSettings settings("OreStudio", "OreStudio");
+            settings.beginGroup("DataLibrarianWindow");
+            settings.setValue("headerState", header->saveState());
+            settings.endGroup();
+
+            BOOST_LOG_SEV(lg(), debug) << "Column " << col
+                                       << " visibility changed to: " << visible;
+        });
+    }
+
+    menu.exec(header->mapToGlobal(pos));
 }
 
 QString DataLibrarianWindow::findOriginDimensionName(
@@ -647,7 +873,16 @@ QString DataLibrarianWindow::findMethodologyName(
     if (!id) {
         return tr("None");
     }
-    // TODO: Look up from a loaded methodologies cache
+
+    // Look up from methodology model
+    for (int i = 0; i < methodologyModel_->rowCount(); ++i) {
+        const auto* methodology = methodologyModel_->getMethodology(i);
+        if (methodology && methodology->id == *id) {
+            return QString::fromStdString(methodology->name);
+        }
+    }
+
+    // Fallback to truncated UUID if not found
     return QString::fromStdString(boost::uuids::to_string(*id)).left(8) + "...";
 }
 

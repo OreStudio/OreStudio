@@ -38,41 +38,6 @@
 set schema 'ores';
 
 -- =============================================================================
--- Helper Functions
--- =============================================================================
-
--- Helper function to insert a scheme if it doesn't exist
-create or replace function ores.upsert_dq_coding_schemes(
-    p_code text,
-    p_name text,
-    p_authority_type text,
-    p_subject_area_name text,
-    p_domain_name text,
-    p_uri text,
-    p_description text
-) returns void as $$
-begin
-    if not exists (
-        select 1 from ores.dq_coding_schemes_tbl
-        where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_coding_schemes_tbl (
-            code, version, name, authority_type, subject_area_name, domain_name, uri, description,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_code, 0, p_name, p_authority_type, p_subject_area_name, p_domain_name, p_uri, p_description,
-            'system', 'system.new_record', 'System seed data - coding scheme',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
-        raise notice 'Created coding scheme: %', p_code;
-    else
-        raise notice 'Coding scheme already exists: %', p_code;
-    end if;
-end;
-$$ language plpgsql;
-
--- =============================================================================
 -- Data Quality Coding Schemes
 -- =============================================================================
 
@@ -234,12 +199,6 @@ select ores.upsert_dq_coding_schemes(
     null,
     'Placeholder for datasets that do not follow a formal coding scheme. Used when data uses ad-hoc or proprietary identifiers without a standardized format.'
 );
-
--- =============================================================================
--- Cleanup
--- =============================================================================
-
-drop function ores.upsert_dq_coding_schemes(text, text, text, text, text, text, text);
 
 -- =============================================================================
 -- Summary

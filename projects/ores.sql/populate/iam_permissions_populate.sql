@@ -31,31 +31,6 @@
 
 set schema 'ores';
 
--- Helper function to insert a permission if it doesn't exist
-create or replace function ores.upsert_permission(
-    p_code text,
-    p_description text
-) returns void as $$
-declare
-    v_id uuid;
-begin
-    -- Check if permission already exists
-    select id into v_id
-    from ores.iam_permissions_tbl
-    where code = p_code and valid_to = ores.utility_infinity_timestamp_fn();
-
-    if v_id is null then
-        -- The update_permissions trigger will set valid_from/valid_to
-        insert into ores.iam_permissions_tbl (id, code, description, valid_from, valid_to)
-        values (gen_random_uuid(), p_code, p_description,
-                current_timestamp, ores.utility_infinity_timestamp_fn());
-        raise notice 'Created permission: %', p_code;
-    else
-        raise notice 'Permission already exists: %', p_code;
-    end if;
-end;
-$$ language plpgsql;
-
 -- Account management permissions
 select ores.upsert_permission('accounts:create', 'Create new user accounts');
 select ores.upsert_permission('accounts:read', 'View user account details');
@@ -91,9 +66,6 @@ select ores.upsert_permission('roles:revoke', 'Revoke roles from accounts');
 
 -- Wildcard permission (superuser)
 select ores.upsert_permission('*', 'Full access to all operations');
-
--- Clean up helper function
-drop function ores.upsert_permission(text, text);
 
 -- Show summary
 select count(*) as total_permissions from ores.iam_permissions_tbl

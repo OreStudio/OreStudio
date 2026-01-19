@@ -35,37 +35,6 @@
 set schema 'ores';
 
 -- =============================================================================
--- Helper Functions
--- =============================================================================
-
--- Helper function to insert a data quality subject area if it doesn't exist
-create or replace function ores.upsert_dq_subject_areas(
-    p_domain_name text,
-    p_name text,
-    p_description text
-) returns void as $$
-begin
-    if not exists (
-        select 1 from ores.dq_subject_areas_tbl
-        where name = p_name and domain_name = p_domain_name and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_subject_areas_tbl (
-            name, version, domain_name, description,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_name, 0, p_domain_name, p_description,
-            'system', 'system.new_record', 'System seed data - data quality subject area',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
-        raise notice 'Created data quality subject area: % in domain %', p_name, p_domain_name;
-    else
-        raise notice 'Data quality subject area already exists: % in domain %', p_name, p_domain_name;
-    end if;
-end;
-$$ language plpgsql;
-
--- =============================================================================
 -- Data Quality Subject Areas
 -- =============================================================================
 
@@ -112,12 +81,6 @@ select ores.upsert_dq_subject_areas(
     'General',
     'Cross-cutting reference data not specific to a particular domain.'
 );
-
--- =============================================================================
--- Cleanup
--- =============================================================================
-
-drop function ores.upsert_dq_subject_areas(text, text, text);
 
 -- =============================================================================
 -- Summary

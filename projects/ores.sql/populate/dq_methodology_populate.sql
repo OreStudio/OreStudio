@@ -21,41 +21,6 @@
 set schema 'ores';
 
 -- =============================================================================
--- Helper Function
--- =============================================================================
-
-create or replace function ores.upsert_dq_methodologies(
-    p_name text,
-    p_description text,
-    p_logic_reference text default null,
-    p_implementation_details text default null
-) returns void as $$
-declare
-    v_id uuid;
-begin
-    if not exists (
-        select 1 from ores.dq_methodologies_tbl
-        where name = p_name
-          and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_methodologies_tbl (
-            id, version, name, description, logic_reference, implementation_details,
-            modified_by, change_reason_code, change_commentary,
-            valid_from, valid_to
-        )
-        values (
-            gen_random_uuid(), 0, p_name, p_description, p_logic_reference, p_implementation_details,
-            'system', 'system.new_record', 'System seed data',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
-        raise notice 'Created dq_methodologies: %', p_name;
-    else
-        raise notice 'dq_methodologies already exists: %', p_name;
-    end if;
-end;
-$$ language plpgsql;
-
--- =============================================================================
 -- Seed Data
 -- =============================================================================
 
@@ -295,12 +260,6 @@ This methodology is used for all programmatically generated test data.
 The specific seed and generation parameters are tracked separately from
 the methodology itself.'
 );
-
--- =============================================================================
--- Cleanup
--- =============================================================================
-
-drop function ores.upsert_dq_methodologies(text, text, text, text);
 
 -- =============================================================================
 -- Summary

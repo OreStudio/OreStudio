@@ -36,32 +36,6 @@
 
 set schema 'ores';
 
--- Helper function to create a system flag if it doesn't exist
-create or replace function ores.upsert_system_flag(
-    p_name text,
-    p_enabled boolean,
-    p_description text
-) returns void as $$
-begin
-    -- Only insert if flag doesn't exist (preserve existing values)
-    if not exists (
-        select 1 from ores.variability_feature_flags_tbl
-        where name = p_name and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        -- The variability_feature_flags_insert_trg trigger will set version and valid_from/valid_to
-        -- Cast boolean to integer for the enabled column
-        insert into ores.variability_feature_flags_tbl (name, enabled, description, modified_by,
-            change_reason_code, change_commentary, valid_from, valid_to)
-        values (p_name, p_enabled::int, p_description, 'system',
-                'system.new_record', 'System seed data',
-                current_timestamp, ores.utility_infinity_timestamp_fn());
-        raise notice 'Created system flag: % (default: %)', p_name, p_enabled;
-    else
-        raise notice 'System flag already exists: %', p_name;
-    end if;
-end;
-$$ language plpgsql;
-
 -- Seed system flags with their default values
 select ores.upsert_system_flag(
     'system.bootstrap_mode',
@@ -92,9 +66,6 @@ select ores.upsert_system_flag(
     false,
     'Enables synthetic test data generation in the UI. FOR TESTING/DEVELOPMENT ONLY.'
 );
-
--- Clean up helper function
-drop function ores.upsert_system_flag(text, boolean, text);
 
 -- Show summary
 select name, enabled, description

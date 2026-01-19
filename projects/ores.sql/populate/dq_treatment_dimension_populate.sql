@@ -33,37 +33,6 @@
 set schema 'ores';
 
 -- =============================================================================
--- Helper Functions
--- =============================================================================
-
--- Helper function to insert a data quality treatment dimension if it doesn't exist
-create or replace function ores.upsert_dq_treatment_dimensions(
-    p_code text,
-    p_name text,
-    p_description text
-) returns void as $$
-begin
-    if not exists (
-        select 1 from ores.dq_treatment_dimensions_tbl
-        where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_treatment_dimensions_tbl (
-            code, version, name, description,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_code, 0, p_name, p_description,
-            'system', 'system.new_record', 'System seed data - data quality treatment dimension',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
-        raise notice 'Created data quality treatment: %', p_code;
-    else
-        raise notice 'Data quality treatment already exists: %', p_code;
-    end if;
-end;
-$$ language plpgsql;
-
--- =============================================================================
 -- Data Quality Treatment Dimensions
 -- =============================================================================
 
@@ -86,12 +55,6 @@ select ores.upsert_dq_treatment_dimensions(
     'Anonymized Data',
     'Irreversibly altered to prevent re-identification.'
 );
-
--- =============================================================================
--- Cleanup
--- =============================================================================
-
-drop function ores.upsert_dq_treatment_dimensions(text, text, text);
 
 -- =============================================================================
 -- Summary

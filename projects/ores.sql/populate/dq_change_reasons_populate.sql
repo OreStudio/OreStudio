@@ -44,69 +44,6 @@
 set schema 'ores';
 
 -- =============================================================================
--- Helper Functions
--- =============================================================================
-
--- Helper function to insert a change reason category if it doesn't exist
-create or replace function ores.upsert_change_reason_category(
-    p_code text,
-    p_description text
-) returns void as $$
-begin
-    if not exists (
-        select 1 from ores.dq_change_reason_categories_tbl
-        where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_change_reason_categories_tbl (
-            code, description, modified_by, change_commentary,
-            valid_from, valid_to
-        )
-        values (
-            p_code, p_description, 'system',
-            'System seed data - standard regulatory taxonomy',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
-        raise notice 'Created change reason category: %', p_code;
-    else
-        raise notice 'Change reason category already exists: %', p_code;
-    end if;
-end;
-$$ language plpgsql;
-
--- Helper function to insert a change reason if it doesn't exist
-create or replace function ores.upsert_change_reason(
-    p_code text,
-    p_description text,
-    p_category_code text,
-    p_applies_to_amend boolean,
-    p_applies_to_delete boolean,
-    p_requires_commentary boolean,
-    p_display_order integer
-) returns void as $$
-begin
-    if not exists (
-        select 1 from ores.dq_change_reasons_tbl
-        where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_change_reasons_tbl (
-            code, description, category_code,
-            applies_to_amend, applies_to_delete, requires_commentary, display_order,
-            modified_by, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_code, p_description, p_category_code,
-            p_applies_to_amend, p_applies_to_delete, p_requires_commentary, p_display_order,
-            'system', 'System seed data - standard regulatory taxonomy',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
-        raise notice 'Created change reason: %', p_code;
-    else
-        raise notice 'Change reason already exists: %', p_code;
-    end if;
-end;
-$$ language plpgsql;
-
--- =============================================================================
 -- Change Reason Categories
 -- =============================================================================
 
@@ -338,13 +275,6 @@ select ores.upsert_change_reason(
     true,   -- commentary REQUIRED
     1000    -- display last
 );
-
--- =============================================================================
--- Cleanup
--- =============================================================================
-
-drop function ores.upsert_change_reason_category(text, text);
-drop function ores.upsert_change_reason(text, text, text, boolean, boolean, boolean, integer);
 
 -- =============================================================================
 -- Summary

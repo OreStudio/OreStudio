@@ -33,36 +33,6 @@
 set schema 'ores';
 
 -- =============================================================================
--- Helper Functions
--- =============================================================================
-
-create or replace function ores.upsert_dq_coding_scheme_authority_type(
-    p_code text,
-    p_name text,
-    p_description text
-) returns void as $$
-begin
-    if not exists (
-        select 1 from ores.dq_coding_scheme_authority_types_tbl
-        where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_coding_scheme_authority_types_tbl (
-            code, version, name, description,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_code, 0, p_name, p_description,
-            'system', 'system.new_record', 'System seed data - coding scheme authority type',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
-        raise notice 'Created coding scheme authority type: %', p_code;
-    else
-        raise notice 'Coding scheme authority type already exists: %', p_code;
-    end if;
-end;
-$$ language plpgsql;
-
--- =============================================================================
 -- Coding Scheme Authority Types
 -- =============================================================================
 
@@ -85,12 +55,6 @@ select ores.upsert_dq_coding_scheme_authority_type(
     'Internal/Proprietary',
     'Proprietary or organization-specific identifier scheme. Used for internal systems, client identifiers, or custom classifications that are not standardized outside the organization.'
 );
-
--- =============================================================================
--- Cleanup
--- =============================================================================
-
-drop function ores.upsert_dq_coding_scheme_authority_type(text, text, text);
 
 -- =============================================================================
 -- Summary

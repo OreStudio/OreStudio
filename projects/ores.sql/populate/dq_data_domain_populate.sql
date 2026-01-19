@@ -33,36 +33,6 @@
 set schema 'ores';
 
 -- =============================================================================
--- Helper Functions
--- =============================================================================
-
--- Helper function to insert a data quality data domain if it doesn't exist
-create or replace function ores.upsert_dq_data_domains(
-    p_name text,
-    p_description text
-) returns void as $$
-begin
-    if not exists (
-        select 1 from ores.dq_data_domains_tbl
-        where name = p_name and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_data_domains_tbl (
-            name, version, description,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_name, 0, p_description,
-            'system', 'system.new_record', 'System seed data - data quality data domain',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
-        raise notice 'Created data quality data domain: %', p_name;
-    else
-        raise notice 'Data quality data domain already exists: %', p_name;
-    end if;
-end;
-$$ language plpgsql;
-
--- =============================================================================
 -- Data Quality Data Domains
 -- =============================================================================
 
@@ -82,12 +52,6 @@ select ores.upsert_dq_data_domains(
     'Market Data',
     'Pricing and market information.'
 );
-
--- =============================================================================
--- Cleanup
--- =============================================================================
-
-drop function ores.upsert_dq_data_domains(text, text);
 
 -- =============================================================================
 -- Summary

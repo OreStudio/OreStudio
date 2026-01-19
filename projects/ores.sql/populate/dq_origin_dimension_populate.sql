@@ -46,37 +46,6 @@ set origin_code = 'Primary'
 where origin_code = 'Source';
 
 -- =============================================================================
--- Helper Functions
--- =============================================================================
-
--- Helper function to insert a data quality origin dimension if it doesn't exist
-create or replace function ores.upsert_dq_origin_dimensions(
-    p_code text,
-    p_name text,
-    p_description text
-) returns void as $$
-begin
-    if not exists (
-        select 1 from ores.dq_origin_dimensions_tbl
-        where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_origin_dimensions_tbl (
-            code, version, name, description,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_code, 0, p_name, p_description,
-            'system', 'system.new_record', 'System seed data - data quality origin dimension',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
-        raise notice 'Created data quality origin: %', p_code;
-    else
-        raise notice 'Data quality origin already exists: %', p_code;
-    end if;
-end;
-$$ language plpgsql;
-
--- =============================================================================
 -- Data Quality Origin Dimensions
 -- =============================================================================
 
@@ -93,12 +62,6 @@ select ores.upsert_dq_origin_dimensions(
     'Derived Data',
     'Data transformed, aggregated, or calculated via code.'
 );
-
--- =============================================================================
--- Cleanup
--- =============================================================================
-
-drop function ores.upsert_dq_origin_dimensions(text, text, text);
 
 -- =============================================================================
 -- Summary

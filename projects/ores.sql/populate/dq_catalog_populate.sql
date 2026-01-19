@@ -34,37 +34,6 @@
 set schema 'ores';
 
 -- =============================================================================
--- Helper Functions
--- =============================================================================
-
--- Helper function to insert a catalog if it doesn't exist
-create or replace function ores.upsert_dq_catalogs(
-    p_name text,
-    p_description text,
-    p_owner text default null
-) returns void as $$
-begin
-    if not exists (
-        select 1 from ores.dq_catalogs_tbl
-        where name = p_name and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_catalogs_tbl (
-            name, version, description, owner,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_name, 0, p_description, p_owner,
-            'system', 'system.new_record', 'System seed data - data quality catalog',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
-        raise notice 'Created data quality catalog: %', p_name;
-    else
-        raise notice 'Data quality catalog already exists: %', p_name;
-    end if;
-end;
-$$ language plpgsql;
-
--- =============================================================================
 -- Data Quality Catalogs
 -- =============================================================================
 
@@ -99,12 +68,6 @@ select ores.upsert_dq_catalogs(
     'IP address geolocation reference data including IPv4 and IPv6 to country mappings. Sourced from community-maintained databases for geographic IP lookup.',
     'Reference Data Team'
 );
-
--- =============================================================================
--- Cleanup
--- =============================================================================
-
-drop function ores.upsert_dq_catalogs(text, text, text);
 
 -- =============================================================================
 -- Summary

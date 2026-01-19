@@ -30,6 +30,8 @@
 #include <QGraphicsLineItem>
 #include <QMenu>
 #include <QSettings>
+#include <QPushButton>
+#include <QTextBrowser>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -343,6 +345,31 @@ void DataLibrarianWindow::setupDetailPanel() {
     descriptionLabel_->setWordWrap(true);
     descriptionLabel_->setStyleSheet("color: #888; font-style: italic;");
     methodologyLayout->addWidget(descriptionLabel_);
+
+    // Implementation details (collapsible)
+    implementationDetailsToggle_ = new QPushButton(tr("▶ Processing Steps"), methodologyWidget);
+    implementationDetailsToggle_->setFlat(true);
+    implementationDetailsToggle_->setStyleSheet(
+        "QPushButton { text-align: left; padding: 2px 0; color: #666; font-size: 11px; }"
+        "QPushButton:hover { color: #888; }");
+    implementationDetailsToggle_->setCursor(Qt::PointingHandCursor);
+    methodologyLayout->addWidget(implementationDetailsToggle_);
+
+    implementationDetailsText_ = new QTextBrowser(methodologyWidget);
+    implementationDetailsText_->setOpenExternalLinks(true);
+    implementationDetailsText_->setFrameShape(QFrame::NoFrame);
+    implementationDetailsText_->setStyleSheet(
+        "QTextBrowser { background-color: #f5f5f5; font-family: monospace; font-size: 10px; padding: 4px; }");
+    implementationDetailsText_->setMaximumHeight(150);
+    implementationDetailsText_->setVisible(false);
+    methodologyLayout->addWidget(implementationDetailsText_);
+
+    // Connect toggle button
+    connect(implementationDetailsToggle_, &QPushButton::clicked, this, [this]() {
+        bool visible = !implementationDetailsText_->isVisible();
+        implementationDetailsText_->setVisible(visible);
+        implementationDetailsToggle_->setText(visible ? tr("▼ Processing Steps") : tr("▶ Processing Steps"));
+    });
 
     detailLayout->addWidget(methodologyWidget);
 
@@ -722,6 +749,9 @@ void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) 
         methodologyLabel_->setText(tr("-"));
         sourceUrlLabel_->setText(tr(""));
         descriptionLabel_->setText(tr(""));
+        implementationDetailsToggle_->setVisible(false);
+        implementationDetailsText_->setVisible(false);
+        implementationDetailsText_->clear();
         return;
     }
 
@@ -772,9 +802,22 @@ void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) 
         } else {
             sourceUrlLabel_->setText(tr(""));
         }
+        // Implementation details (processing steps)
+        if (methodology->implementation_details && !methodology->implementation_details->empty()) {
+            implementationDetailsToggle_->setVisible(true);
+            implementationDetailsText_->setPlainText(
+                QString::fromStdString(*methodology->implementation_details));
+        } else {
+            implementationDetailsToggle_->setVisible(false);
+            implementationDetailsText_->setVisible(false);
+            implementationDetailsText_->clear();
+        }
     } else {
         methodologyLabel_->setText(dataset->methodology_id ? tr("Unknown") : tr("None"));
         sourceUrlLabel_->setText(tr(""));
+        implementationDetailsToggle_->setVisible(false);
+        implementationDetailsText_->setVisible(false);
+        implementationDetailsText_->clear();
     }
 
     // Description

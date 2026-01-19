@@ -34,6 +34,8 @@
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 #include <QGraphicsView>
+#include <QTextBrowser>
+#include <QPushButton>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientDatasetModel.hpp"
@@ -173,6 +175,8 @@ private:
     QLabel* methodologyLabel_;
     QLabel* sourceUrlLabel_;
     QLabel* descriptionLabel_;
+    QPushButton* implementationDetailsToggle_;
+    QTextBrowser* implementationDetailsText_;
     QGraphicsView* lineageView_;
 
     // Data models for navigation

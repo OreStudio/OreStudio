@@ -557,6 +557,14 @@ void DataLibrarianWindow::onDataLoaded() {
     if (pendingLoads_ <= 0) {
         loadingProgressBar_->setVisible(false);
         BOOST_LOG_SEV(lg(), info) << "All data loading complete";
+
+        // Auto-select first dataset if available
+        if (datasetProxyModel_->rowCount() > 0) {
+            const auto firstIndex = datasetProxyModel_->index(0, 0);
+            datasetTable_->selectionModel()->select(
+                firstIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+            datasetTable_->setCurrentIndex(firstIndex);
+        }
     }
     emit statusChanged(tr("Loaded %1 datasets").arg(datasetModel_->rowCount()));
 }
@@ -739,12 +747,18 @@ void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) 
 
     if (!dataset) {
         addProperty(tr("Name"), tr("-"));
+        addProperty(tr("Version"), tr("-"));
         addProperty(tr("ID"), tr("-"));
+        addProperty(tr("Description"), tr("-"));
         addProperty(tr("Catalog"), tr("-"));
+        addProperty(tr("Domain"), tr("-"));
         addProperty(tr("Subject Area"), tr("-"));
         addProperty(tr("Origin"), tr("-"));
         addProperty(tr("Nature"), tr("-"));
         addProperty(tr("Treatment"), tr("-"));
+        addProperty(tr("Source"), tr("-"));
+        addProperty(tr("As Of Date"), tr("-"));
+        addProperty(tr("License"), tr("-"));
         addProperty(tr("Recorded By"), tr("-"));
         addProperty(tr("Recorded At"), tr("-"));
         addProperty(tr("Change Commentary"), tr("-"));
@@ -754,11 +768,20 @@ void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) 
     // Basic info
     addProperty(tr("Name"), QString::fromStdString(dataset->name),
         tr("The name of this dataset"));
+    addProperty(tr("Version"), QString::number(dataset->version),
+        tr("Version number for optimistic locking and change tracking"));
     addProperty(tr("ID"), QString::fromStdString(boost::uuids::to_string(dataset->id)),
         tr("Unique identifier for this dataset"));
+    addProperty(tr("Description"),
+        dataset->description.empty() ? tr("-") : QString::fromStdString(dataset->description),
+        tr("Detailed description of the dataset's contents and purpose"));
+
+    // Organizational info
     addProperty(tr("Catalog"),
         dataset->catalog_name ? QString::fromStdString(*dataset->catalog_name) : tr("-"),
         tr("The catalog this dataset belongs to"));
+    addProperty(tr("Domain"), QString::fromStdString(dataset->domain_name),
+        tr("The data domain this dataset applies to"));
     addProperty(tr("Subject Area"), QString::fromStdString(dataset->subject_area_name),
         tr("The subject area this dataset belongs to"));
 
@@ -777,6 +800,15 @@ void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) 
            "- Raw: Unprocessed original data\n"
            "- Cleaned: Data with corrections applied\n"
            "- Enriched: Data augmented with additional information"));
+
+    // Source and date info
+    addProperty(tr("Source"), QString::fromStdString(dataset->source_system_id),
+        tr("Identifier of the source system where data originated"));
+    addProperty(tr("As Of Date"), relative_time_helper::format(dataset->as_of_date),
+        tr("Business date the data represents"));
+    addProperty(tr("License"),
+        dataset->license_info ? QString::fromStdString(*dataset->license_info) : tr("-"),
+        tr("License information for the data"));
 
     // Audit info
     addProperty(tr("Recorded By"), QString::fromStdString(dataset->recorded_by),

@@ -35,6 +35,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/DatasetItemDelegate.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
@@ -249,6 +250,8 @@ void DataLibrarianWindow::setupCentralWorkspace() {
     datasetTable_->horizontalHeader()->setStretchLastSection(true);
     datasetTable_->verticalHeader()->setVisible(false);
     datasetTable_->sortByColumn(ClientDatasetModel::Name, Qt::AscendingOrder);
+    datasetTable_->setFrameShape(QFrame::StyledPanel);
+    datasetTable_->setFrameShadow(QFrame::Sunken);
 
     // Add table to central splitter
     centralSplitter_->addWidget(datasetTable_);
@@ -725,63 +728,179 @@ void DataLibrarianWindow::updateLineageView(const dq::domain::dataset* dataset) 
         return;
     }
 
-    // Simple lineage flow: Source -> Methodology -> Dataset
-    const QColor boxColor(60, 60, 80);
-    const QColor textColor(220, 220, 220);
-    const QColor lineColor(100, 150, 200);
+    // Node-based lineage flow inspired by Blender's node editor
+    // Colors
+    const QColor bgColor(45, 45, 48);           // Dark background
+    const QColor nodeBodyColor(63, 63, 70);     // Node body
+    const QColor nodeBorderColor(80, 80, 85);   // Node border
+    const QColor textColor(220, 220, 220);      // Light text
+    const QColor labelColor(140, 140, 145);     // Dim text for labels
+    const QColor valueColor(180, 180, 185);     // Slightly brighter for values
+    const QColor connectionColor(180, 180, 180);// Connection lines
+    const QColor socketColor(200, 200, 200);    // Socket circles
 
-    const qreal boxWidth = 90;
-    const qreal boxHeight = 36;
-    const qreal spacing = 30;
-    const qreal padding = 6;
+    // Header colors for different node types
+    const QColor originHeaderColor(74, 144, 226);    // Blue for origin/input
+    const QColor methodHeaderColor(130, 94, 186);    // Purple for methodology
+    const QColor datasetHeaderColor(80, 200, 120);   // Green for output/dataset
 
-    QFont smallFont;
-    smallFont.setPointSize(7);
-    QFontMetrics fm(smallFont);
+    // Dimensions
+    const qreal nodeWidth = 95;
+    const qreal headerHeight = 14;
+    const qreal rowHeight = 11;
+    const qreal nodeSpacing = 40;
+    const qreal cornerRadius = 3;
+    const qreal socketRadius = 3;
+    const qreal padding = 4;
 
-    auto elidedText = [&fm, boxWidth, padding](const QString& text) {
-        return fm.elidedText(text, Qt::ElideRight, static_cast<int>(boxWidth - 2 * padding));
+    // Fonts
+    QFont headerFont;
+    headerFont.setPointSize(6);
+    headerFont.setBold(true);
+    QFont labelFont;
+    labelFont.setPointSize(5);
+    QFont valueFont;
+    valueFont.setPointSize(5);
+    valueFont.setBold(true);
+    QFontMetrics headerFm(headerFont);
+    QFontMetrics labelFm(labelFont);
+    QFontMetrics valueFm(valueFont);
+
+    // Helper to create a node with header and multiple property rows
+    auto createNode = [&](qreal x, qreal y, const QString& headerText,
+                          const QStringList& labels, const QStringList& values,
+                          const QColor& headerColor,
+                          bool hasInputSocket, bool hasOutputSocket) -> qreal {
+        int numRows = std::min(labels.size(), values.size());
+        qreal bodyHeight = numRows * rowHeight + padding * 2;
+        qreal nodeHeight = headerHeight + bodyHeight;
+
+        // Node body (rounded rect)
+        QPainterPath bodyPath;
+        bodyPath.addRoundedRect(x, y, nodeWidth, nodeHeight, cornerRadius, cornerRadius);
+        scene->addPath(bodyPath, QPen(nodeBorderColor), QBrush(nodeBodyColor));
+
+        // Header background (top rounded, bottom square)
+        QPainterPath headerPath;
+        headerPath.moveTo(x + cornerRadius, y);
+        headerPath.arcTo(x, y, cornerRadius * 2, cornerRadius * 2, 90, 90);
+        headerPath.lineTo(x, y + headerHeight);
+        headerPath.lineTo(x + nodeWidth, y + headerHeight);
+        headerPath.lineTo(x + nodeWidth, y + cornerRadius);
+        headerPath.arcTo(x + nodeWidth - cornerRadius * 2, y, cornerRadius * 2, cornerRadius * 2, 0, 90);
+        headerPath.closeSubpath();
+        scene->addPath(headerPath, QPen(Qt::NoPen), QBrush(headerColor));
+
+        // Header text (centered)
+        QString elidedHeader = headerFm.elidedText(headerText, Qt::ElideRight,
+            static_cast<int>(nodeWidth - 2 * padding));
+        auto* headerItem = scene->addText(elidedHeader);
+        headerItem->setFont(headerFont);
+        headerItem->setDefaultTextColor(textColor);
+        qreal headerTextWidth = headerFm.horizontalAdvance(elidedHeader);
+        headerItem->setPos(x + (nodeWidth - headerTextWidth) / 2,
+                          y + (headerHeight - headerFm.height()) / 2 - 1);
+
+        // Property rows
+        qreal rowY = y + headerHeight + padding;
+        int maxLabelWidth = static_cast<int>(nodeWidth * 0.35);
+        int maxValueWidth = static_cast<int>(nodeWidth - maxLabelWidth - padding * 3);
+
+        for (int i = 0; i < numRows; ++i) {
+            // Label (left aligned)
+            QString elidedLabel = labelFm.elidedText(labels[i] + ":", Qt::ElideRight, maxLabelWidth);
+            auto* labelItem = scene->addText(elidedLabel);
+            labelItem->setFont(labelFont);
+            labelItem->setDefaultTextColor(labelColor);
+            labelItem->setPos(x + padding, rowY + (rowHeight - labelFm.height()) / 2);
+
+            // Value (right of label)
+            QString elidedValue = valueFm.elidedText(values[i], Qt::ElideRight, maxValueWidth);
+            auto* valueItem = scene->addText(elidedValue);
+            valueItem->setFont(valueFont);
+            valueItem->setDefaultTextColor(valueColor);
+            valueItem->setPos(x + padding + maxLabelWidth + 2, rowY + (rowHeight - valueFm.height()) / 2);
+
+            rowY += rowHeight;
+        }
+
+        // Input socket (left side, vertically centered)
+        if (hasInputSocket) {
+            qreal socketY = y + nodeHeight / 2;
+            scene->addEllipse(x - socketRadius, socketY - socketRadius,
+                socketRadius * 2, socketRadius * 2,
+                QPen(nodeBorderColor), QBrush(socketColor));
+        }
+
+        // Output socket (right side, vertically centered)
+        if (hasOutputSocket) {
+            qreal socketY = y + nodeHeight / 2;
+            scene->addEllipse(x + nodeWidth - socketRadius, socketY - socketRadius,
+                socketRadius * 2, socketRadius * 2,
+                QPen(nodeBorderColor), QBrush(socketColor));
+        }
+
+        return nodeHeight;
     };
 
-    auto centerTextInBox = [&fm, boxHeight, padding](QGraphicsTextItem* textItem, qreal boxX) {
-        qreal textHeight = fm.height();
-        qreal textY = (boxHeight - textHeight) / 2;
-        textItem->setPos(boxX + padding, textY);
+    // Helper to draw curved connection between nodes
+    auto drawConnection = [&](qreal x1, qreal y1, qreal x2, qreal y2) {
+        QPainterPath path;
+        path.moveTo(x1, y1);
+        qreal ctrlOffset = (x2 - x1) * 0.4;
+        path.cubicTo(x1 + ctrlOffset, y1,
+                     x2 - ctrlOffset, y2,
+                     x2, y2);
+        scene->addPath(path, QPen(connectionColor, 1.2));
     };
 
-    // Source box (Origin dimension)
-    scene->addRect(0, 0, boxWidth, boxHeight, QPen(lineColor), QBrush(boxColor));
-    auto* sourceText = scene->addText(elidedText(QString::fromStdString(dataset->origin_code)));
-    sourceText->setFont(smallFont);
-    sourceText->setDefaultTextColor(textColor);
-    centerTextInBox(sourceText, 0);
+    // Calculate positions
+    qreal node1X = 0;
+    qreal node2X = nodeWidth + nodeSpacing;
+    qreal node3X = 2 * (nodeWidth + nodeSpacing);
+    qreal nodeY = 0;
 
-    // Methodology box
-    qreal methodX = boxWidth + spacing;
-    scene->addRect(methodX, 0, boxWidth, boxHeight, QPen(lineColor), QBrush(boxColor));
-    auto* methodText = scene->addText(elidedText(findMethodologyName(dataset->methodology_id)));
-    methodText->setFont(smallFont);
-    methodText->setDefaultTextColor(textColor);
-    centerTextInBox(methodText, methodX);
+    // Create nodes with multiple properties
+    qreal node1Height = createNode(node1X, nodeY, tr("Primary"),
+        {tr("Origin"), tr("Nature"), tr("Treatment")},
+        {QString::fromStdString(dataset->origin_code),
+         QString::fromStdString(dataset->nature_code),
+         QString::fromStdString(dataset->treatment_code)},
+        originHeaderColor, false, true);
 
-    // Dataset box
-    qreal datasetX = 2 * (boxWidth + spacing);
-    scene->addRect(datasetX, 0, boxWidth, boxHeight, QPen(lineColor), QBrush(boxColor));
-    auto* datasetText = scene->addText(elidedText(QString::fromStdString(dataset->name)));
-    datasetText->setFont(smallFont);
-    datasetText->setDefaultTextColor(textColor);
-    centerTextInBox(datasetText, datasetX);
+    qreal node2Height = createNode(node2X, nodeY, tr("Process"),
+        {tr("Method"), tr("System")},
+        {findMethodologyName(dataset->methodology_id),
+         QString::fromStdString(dataset->source_system_id)},
+        methodHeaderColor, true, true);
 
-    // Arrows
-    QPen arrowPen(lineColor, 2);
+    qreal node3Height = createNode(node3X, nodeY, tr("Output"),
+        {tr("Name"), tr("Version"), tr("As Of")},
+        {QString::fromStdString(dataset->name),
+         QString::number(dataset->version),
+         relative_time_helper::format(dataset->as_of_date)},
+        datasetHeaderColor, true, false);
 
-    // Arrow 1: Source -> Methodology
-    scene->addLine(boxWidth, boxHeight / 2, methodX, boxHeight / 2, arrowPen);
+    // Draw connections (from output socket to input socket)
+    // Use the tallest node height to center connections
+    qreal maxHeight = std::max({node1Height, node2Height, node3Height});
+    qreal connY1 = nodeY + node1Height / 2;
+    qreal connY2 = nodeY + node2Height / 2;
+    qreal connY3 = nodeY + node3Height / 2;
+    Q_UNUSED(maxHeight);
 
-    // Arrow 2: Methodology -> Dataset
-    scene->addLine(methodX + boxWidth, boxHeight / 2, datasetX, boxHeight / 2, arrowPen);
+    drawConnection(node1X + nodeWidth + socketRadius, connY1,
+                   node2X - socketRadius, connY2);
+    drawConnection(node2X + nodeWidth + socketRadius, connY2,
+                   node3X - socketRadius, connY3);
 
-    lineageView_->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
+    // Set scene background
+    scene->setBackgroundBrush(QBrush(bgColor));
+
+    // Fit view with some margin
+    QRectF sceneRect = scene->itemsBoundingRect();
+    sceneRect.adjust(-8, -8, 8, 8);
+    lineageView_->fitInView(sceneRect, Qt::KeepAspectRatio);
 }
 
 void DataLibrarianWindow::filterDatasetsByCatalog(const QString& catalogName) {

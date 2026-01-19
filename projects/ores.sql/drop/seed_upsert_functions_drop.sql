@@ -66,3 +66,6 @@ drop function if exists ores.assign_permission_to_role(text, text, text);
 
 -- Variability: Feature Flags
 drop function if exists ores.upsert_system_flag(text, boolean, text);
+
+-- Validation Helpers (drop last as other functions depend on it)
+drop function if exists ores.seed_validate_not_empty(text, text);

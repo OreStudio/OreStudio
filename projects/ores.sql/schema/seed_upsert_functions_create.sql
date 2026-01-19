@@ -39,6 +39,33 @@
 set schema 'ores';
 
 -- =============================================================================
+-- Validation Helpers
+-- =============================================================================
+
+/**
+ * Validates that a text value is not null or empty (after trimming whitespace).
+ * Raises an exception if validation fails.
+ *
+ * To disable validation (e.g., for performance testing), comment out the body
+ * of this function and uncomment the null statement.
+ *
+ * @param p_value The value to validate
+ * @param p_field_name Descriptive name of the field (used in error message)
+ */
+create or replace function ores.seed_validate_not_empty(
+    p_value text,
+    p_field_name text
+) returns void as $$
+begin
+    if p_value is null or trim(p_value) = '' then
+        raise exception '% cannot be empty', p_field_name;
+    end if;
+    -- To disable validation, comment out the above and uncomment below:
+    -- null;
+end;
+$$ language plpgsql;
+
+-- =============================================================================
 -- Data Quality: Data Domains
 -- =============================================================================
 
@@ -50,9 +77,7 @@ create or replace function ores.upsert_dq_data_domains(
     p_description text
 ) returns void as $$
 begin
-    if p_name is null or p_name = '' then
-        raise exception 'Data domain name cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_name, 'Data domain name');
 
     if not exists (
         select 1 from ores.dq_data_domains_tbl
@@ -87,13 +112,8 @@ create or replace function ores.upsert_dq_subject_areas(
     p_description text
 ) returns void as $$
 begin
-    if p_name is null or p_name = '' then
-        raise exception 'Subject area name cannot be empty';
-    end if;
-
-    if p_domain_name is null or p_domain_name = '' then
-        raise exception 'Domain name cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_name, 'Subject area name');
+    perform ores.seed_validate_not_empty(p_domain_name, 'Domain name');
 
     if not exists (
         select 1 from ores.dq_subject_areas_tbl
@@ -128,9 +148,7 @@ create or replace function ores.upsert_dq_catalogs(
     p_owner text default null
 ) returns void as $$
 begin
-    if p_name is null or p_name = '' then
-        raise exception 'Catalog name cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_name, 'Catalog name');
 
     if not exists (
         select 1 from ores.dq_catalogs_tbl
@@ -160,13 +178,8 @@ create or replace function ores.upsert_dq_catalog_dependency(
     p_dependency_name text
 ) returns void as $$
 begin
-    if p_catalog_name is null or p_catalog_name = '' then
-        raise exception 'Catalog name cannot be empty';
-    end if;
-
-    if p_dependency_name is null or p_dependency_name = '' then
-        raise exception 'Dependency name cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_catalog_name, 'Catalog name');
+    perform ores.seed_validate_not_empty(p_dependency_name, 'Dependency name');
 
     if not exists (
         select 1 from ores.dq_catalog_dependencies_tbl
@@ -204,9 +217,7 @@ create or replace function ores.upsert_dq_origin_dimensions(
     p_description text
 ) returns void as $$
 begin
-    if p_code is null or p_code = '' then
-        raise exception 'Origin dimension code cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_code, 'Origin dimension code');
 
     if not exists (
         select 1 from ores.dq_origin_dimensions_tbl
@@ -237,9 +248,7 @@ create or replace function ores.upsert_dq_nature_dimensions(
     p_description text
 ) returns void as $$
 begin
-    if p_code is null or p_code = '' then
-        raise exception 'Nature dimension code cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_code, 'Nature dimension code');
 
     if not exists (
         select 1 from ores.dq_nature_dimensions_tbl
@@ -270,9 +279,7 @@ create or replace function ores.upsert_dq_treatment_dimensions(
     p_description text
 ) returns void as $$
 begin
-    if p_code is null or p_code = '' then
-        raise exception 'Treatment dimension code cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_code, 'Treatment dimension code');
 
     if not exists (
         select 1 from ores.dq_treatment_dimensions_tbl
@@ -306,9 +313,7 @@ create or replace function ores.upsert_change_reason_category(
     p_description text
 ) returns void as $$
 begin
-    if p_code is null or p_code = '' then
-        raise exception 'Change reason category code cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_code, 'Change reason category code');
 
     if not exists (
         select 1 from ores.dq_change_reason_categories_tbl
@@ -343,9 +348,7 @@ create or replace function ores.upsert_change_reason(
     p_display_order integer
 ) returns void as $$
 begin
-    if p_code is null or p_code = '' then
-        raise exception 'Change reason code cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_code, 'Change reason code');
 
     if not exists (
         select 1 from ores.dq_change_reasons_tbl
@@ -382,9 +385,7 @@ create or replace function ores.upsert_dq_coding_scheme_authority_type(
     p_description text
 ) returns void as $$
 begin
-    if p_code is null or p_code = '' then
-        raise exception 'Coding scheme authority type code cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_code, 'Coding scheme authority type code');
 
     if not exists (
         select 1 from ores.dq_coding_scheme_authority_types_tbl
@@ -419,9 +420,7 @@ create or replace function ores.upsert_dq_coding_schemes(
     p_description text
 ) returns void as $$
 begin
-    if p_code is null or p_code = '' then
-        raise exception 'Coding scheme code cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_code, 'Coding scheme code');
 
     if not exists (
         select 1 from ores.dq_coding_schemes_tbl
@@ -457,9 +456,7 @@ create or replace function ores.upsert_dq_methodologies(
     p_implementation_details text default null
 ) returns void as $$
 begin
-    if p_name is null or p_name = '' then
-        raise exception 'Methodology name cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_name, 'Methodology name');
 
     if not exists (
         select 1 from ores.dq_methodologies_tbl
@@ -509,9 +506,7 @@ create or replace function ores.upsert_dq_datasets(
 declare
     v_methodology_id uuid;
 begin
-    if p_name is null or p_name = '' then
-        raise exception 'Dataset name cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_name, 'Dataset name');
 
     -- Get methodology ID (only table that still uses UUID PK)
     select id into v_methodology_id from ores.dq_methodologies_tbl where name = p_methodology_name and valid_to = ores.utility_infinity_timestamp_fn();
@@ -561,9 +556,7 @@ create or replace function ores.upsert_dq_tag(
 declare
     v_dataset_id uuid;
 begin
-    if p_tag_name is null or p_tag_name = '' then
-        raise exception 'Tag name cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_tag_name, 'Tag name');
 
     -- Get dataset ID
     select id into v_dataset_id
@@ -578,18 +571,20 @@ begin
             p_dataset_name, p_subject_area_name, p_domain_name;
     end if;
 
-    -- Delete existing tag with same name for this dataset (idempotency)
-    delete from ores.dq_tags_artefact_tbl
-    where dataset_id = v_dataset_id and name = p_tag_name;
-
-    -- Insert the tag
-    insert into ores.dq_tags_artefact_tbl (
-        dataset_id, tag_id, version, name, description
-    ) values (
-        v_dataset_id, gen_random_uuid(), 0, p_tag_name, p_tag_description
-    );
-
-    raise notice 'Created dq_tag: % for dataset %', p_tag_name, p_dataset_name;
+    -- Only insert if tag doesn't already exist for this dataset (true idempotency)
+    if not exists (
+        select 1 from ores.dq_tags_artefact_tbl
+        where dataset_id = v_dataset_id and name = p_tag_name
+    ) then
+        insert into ores.dq_tags_artefact_tbl (
+            dataset_id, tag_id, version, name, description
+        ) values (
+            v_dataset_id, gen_random_uuid(), 0, p_tag_name, p_tag_description
+        );
+        raise notice 'Created dq_tag: % for dataset %', p_tag_name, p_dataset_name;
+    else
+        raise notice 'Tag already exists: % for dataset %', p_tag_name, p_dataset_name;
+    end if;
 end;
 $$ language plpgsql;
 
@@ -607,9 +602,7 @@ create or replace function ores.upsert_permission(
 declare
     v_id uuid;
 begin
-    if p_code is null or p_code = '' then
-        raise exception 'Permission code cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_code, 'Permission code');
 
     -- Check if permission already exists
     select id into v_id
@@ -643,9 +636,7 @@ create or replace function ores.upsert_role(
 declare
     v_id uuid;
 begin
-    if p_name is null or p_name = '' then
-        raise exception 'Role name cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_name, 'Role name');
 
     -- Check if role already exists
     select id into v_id
@@ -726,9 +717,7 @@ create or replace function ores.upsert_system_flag(
     p_description text
 ) returns void as $$
 begin
-    if p_name is null or p_name = '' then
-        raise exception 'System flag name cannot be empty';
-    end if;
+    perform ores.seed_validate_not_empty(p_name, 'System flag name');
 
     -- Only insert if flag doesn't exist (preserve existing values)
     if not exists (

@@ -120,14 +120,14 @@
          :publishing-function org-publish-attachment)
         ("site:main" :components("site:pages" "site:images" "site:style"))))
 
-;; Generate the site output
-;; Wrap publishing in error handler to avoid backtraces
 (condition-case err
     (progn
       (org-publish-all t)
-      (message "Build complete!"))
+      (message "Build succeeded.")
+      (kill-emacs 0))
   (error
-   (message "Build failed: %s" (error-message-string err))))
+   (message "Build failed: %s" (error-message-string err))
+   (kill-emacs 1)))
 
 (provide '.build-site)
 ;;; .build-site.el ends here

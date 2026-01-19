@@ -1297,7 +1297,7 @@ private:
 **** Constructor - event subscription via base class
 
 *Important:* The event subscription requires the eventing infrastructure to be in place:
-1. Database notification trigger exists (see [[id:7e4c9d3a-2f1b-4e5c-8d6a-9f2e3c4b5a6d][sql-schema-creator]] skill)
+1. Database notification trigger exists (see [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][sql-schema-creator]] skill)
 2. Event type is defined with =event_traits= specialization
 3. Event is registered in comms service =application.cpp=
 

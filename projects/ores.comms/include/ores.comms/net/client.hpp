@@ -539,6 +539,7 @@ private:
 
     // Infrastructure for unified message loop
     std::unique_ptr<boost::asio::strand<boost::asio::any_io_executor>> write_strand_;
+    std::atomic<bool> write_in_progress_{false}; // Async spinlock for serializing SSL writes
     std::unique_ptr<pending_request_map> pending_requests_;
     std::atomic<std::uint32_t> correlation_id_counter_{1};
     std::atomic<bool> message_loop_running_{false};

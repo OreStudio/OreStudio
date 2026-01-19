@@ -23,20 +23,15 @@
 #include <QWidget>
 #include <QSplitter>
 #include <QTreeView>
-#include <QTreeWidget>
 #include <QTableView>
 #include <QToolBar>
 #include <QStatusBar>
 #include <QLabel>
-#include <QLineEdit>
 #include <QProgressBar>
-#include <QStackedWidget>
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
-#include <QGraphicsView>
-#include <QTextBrowser>
-#include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DatasetViewDialog.hpp"
 #include "ores.qt/ClientDatasetModel.hpp"
 #include "ores.qt/ClientDataDomainModel.hpp"
 #include "ores.qt/ClientSubjectAreaModel.hpp"
@@ -63,28 +58,6 @@ namespace ores::qt {
 class DataLibrarianWindow final : public QWidget {
     Q_OBJECT
 
-    // Lineage diagram colors (styleable via QSS qproperty-)
-    Q_PROPERTY(QColor lineageBackground MEMBER lineageBackground_)
-    Q_PROPERTY(QColor lineageNodeBody MEMBER lineageNodeBody_)
-    Q_PROPERTY(QColor lineageNodeBorder MEMBER lineageNodeBorder_)
-    Q_PROPERTY(QColor lineageText MEMBER lineageText_)
-    Q_PROPERTY(QColor lineageLabel MEMBER lineageLabel_)
-    Q_PROPERTY(QColor lineageValue MEMBER lineageValue_)
-    Q_PROPERTY(QColor lineageConnection MEMBER lineageConnection_)
-    Q_PROPERTY(QColor lineageSocket MEMBER lineageSocket_)
-    Q_PROPERTY(QColor lineageHeaderOrigin MEMBER lineageHeaderOrigin_)
-    Q_PROPERTY(QColor lineageHeaderMethod MEMBER lineageHeaderMethod_)
-    Q_PROPERTY(QColor lineageHeaderDataset MEMBER lineageHeaderDataset_)
-
-    // Lineage diagram dimensions (styleable via QSS qproperty-)
-    Q_PROPERTY(qreal lineageNodeWidth MEMBER lineageNodeWidth_)
-    Q_PROPERTY(qreal lineageHeaderHeight MEMBER lineageHeaderHeight_)
-    Q_PROPERTY(qreal lineageRowHeight MEMBER lineageRowHeight_)
-    Q_PROPERTY(qreal lineageNodeSpacing MEMBER lineageNodeSpacing_)
-    Q_PROPERTY(qreal lineageCornerRadius MEMBER lineageCornerRadius_)
-    Q_PROPERTY(qreal lineageSocketRadius MEMBER lineageSocketRadius_)
-    Q_PROPERTY(qreal lineagePadding MEMBER lineagePadding_)
-
 private:
     inline static std::string_view logger_name = "ores.qt.data_librarian_window";
     static constexpr int total_model_loads = 5;
@@ -106,8 +79,6 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showDatasetDetails(const dq::domain::dataset& dataset);
-    void showDatasetHistory(const boost::uuids::uuid& id);
 
     // Signals to open related windows
     void openOriginDimensionsRequested();
@@ -125,6 +96,7 @@ private slots:
     void onDatasetSelectionChanged();
     void onDatasetDoubleClicked(const QModelIndex& index);
     void onRefreshClicked();
+    void onViewDatasetClicked();
     void onDataLoaded();
     void onLoadError(const QString& error_message, const QString& details = {});
 
@@ -141,15 +113,10 @@ private:
     void setupUi();
     void setupNavigationSidebar();
     void setupCentralWorkspace();
-    void setupDetailPanel();
-    void setupLineagePanel();
-    void setupMethodologyPanel();
     void setupToolbar();
     void setupConnections();
     void buildNavigationTree();
-    void updateDetailPanel(const dq::domain::dataset* dataset);
-    void updateMethodologyPanel(const dq::domain::dataset* dataset);
-    void updateLineageView(const dq::domain::dataset* dataset);
+    void showDatasetDetailDialog(const dq::domain::dataset* dataset);
     void filterDatasetsByCatalog(const QString& catalogName);
     void filterDatasetsByDomain(const QString& domainName);
     void filterDatasetsBySubjectArea(const QString& subjectAreaName);
@@ -157,31 +124,6 @@ private:
     void selectFirstDataset();
     void setupColumnVisibility();
     void applyDefaultColumnVisibility();
-
-    // Helper to find dimension/methodology names
-    QString findOriginDimensionName(const boost::uuids::uuid& id) const;
-    QString findNatureDimensionName(const boost::uuids::uuid& id) const;
-    QString findTreatmentDimensionName(const boost::uuids::uuid& id) const;
-    QString findMethodologyName(const std::optional<boost::uuids::uuid>& id) const;
-    const dq::domain::methodology* findMethodology(const std::optional<boost::uuids::uuid>& id) const;
-    QString findCatalogName(const boost::uuids::uuid& id) const;
-
-    // Lineage diagram helper methods
-    qreal createLineageNode(QGraphicsScene* scene, qreal x, qreal y,
-        const QString& headerText, const QStringList& labels,
-        const QStringList& values, const QColor& headerColor,
-        bool hasInputSocket, bool hasOutputSocket) const;
-    void createLineageNodeBody(QGraphicsScene* scene, qreal x, qreal y,
-        qreal nodeWidth, qreal nodeHeight, const QString& tooltip) const;
-    void createLineageNodeHeader(QGraphicsScene* scene, qreal x, qreal y,
-        qreal nodeWidth, const QString& headerText, const QColor& headerColor,
-        const QString& tooltip) const;
-    void createLineageNodeProperties(QGraphicsScene* scene, qreal x, qreal y,
-        qreal nodeWidth, const QStringList& labels, const QStringList& values) const;
-    void createLineageNodeSockets(QGraphicsScene* scene, qreal x, qreal y,
-        qreal nodeWidth, qreal nodeHeight, bool hasInput, bool hasOutput) const;
-    void drawLineageConnection(QGraphicsScene* scene, qreal x1, qreal y1,
-        qreal x2, qreal y2) const;
 
     ClientManager* clientManager_;
     QString username_;
@@ -197,6 +139,7 @@ private:
     // Toolbar
     QToolBar* toolbar_;
     QAction* refreshAction_;
+    QAction* viewDatasetAction_;
     QAction* originDimensionsAction_;
     QAction* natureDimensionsAction_;
     QAction* treatmentDimensionsAction_;
@@ -208,18 +151,8 @@ private:
     ClientDatasetModel* datasetModel_;
     QSortFilterProxyModel* datasetProxyModel_;
 
-    // Detail panel ("Dataset Accession Card")
-    QWidget* detailPanel_;
-    QTreeWidget* propertiesTree_;  // Unified property list
-
-    // Lineage panel (below dataset table)
-    QWidget* lineagePanel_;
-    QGraphicsView* lineageView_;
-
-    // Methodology panel (right side)
-    QWidget* methodologyPanel_;
-    QTreeWidget* methodologyPropertiesTree_;
-    QTextBrowser* implementationDetailsText_;
+    // Dataset view dialog (modeless)
+    DatasetViewDialog* datasetViewDialog_{nullptr};
 
     // Data models for navigation
     ClientDataDomainModel* dataDomainModel_;
@@ -238,26 +171,6 @@ private:
     QString selectedCatalogName_;
     QString selectedDomainName_;
     QString selectedSubjectAreaName_;
-
-    // Lineage diagram styling (defaults, can be overridden via QSS)
-    QColor lineageBackground_{45, 45, 48};
-    QColor lineageNodeBody_{63, 63, 70};
-    QColor lineageNodeBorder_{80, 80, 85};
-    QColor lineageText_{220, 220, 220};
-    QColor lineageLabel_{140, 140, 145};
-    QColor lineageValue_{180, 180, 185};
-    QColor lineageConnection_{180, 180, 180};
-    QColor lineageSocket_{200, 200, 200};
-    QColor lineageHeaderOrigin_{74, 144, 226};
-    QColor lineageHeaderMethod_{130, 94, 186};
-    QColor lineageHeaderDataset_{80, 200, 120};
-    qreal lineageNodeWidth_{95};
-    qreal lineageHeaderHeight_{14};
-    qreal lineageRowHeight_{11};
-    qreal lineageNodeSpacing_{40};
-    qreal lineageCornerRadius_{3};
-    qreal lineageSocketRadius_{3};
-    qreal lineagePadding_{4};
 };
 
 }

@@ -160,8 +160,6 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_code_20_regular.svg", iconColor));
     ui_->ActionMethodologies->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_book_20_regular.svg", iconColor));
-    ui_->ActionDatasets->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
     ui_->ActionDataLibrarian->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_library_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
@@ -455,12 +453,6 @@ MainWindow::MainWindow(QWidget* parent) :
             methodologyController_->showListWindow();
     });
 
-    // Connect Datasets action to controller
-    connect(ui_->ActionDatasets, &QAction::triggered, this, [this]() {
-        if (datasetController_)
-            datasetController_->showListWindow();
-    });
-
     // Connect Data Librarian action
     connect(ui_->ActionDataLibrarian, &QAction::triggered, this, [this, iconColor]() {
         if (dataLibrarianWindow_) {
@@ -735,7 +727,6 @@ void MainWindow::updateMenuState() {
     ui_->ActionCatalogs->setEnabled(isConnected);
     ui_->ActionCodingSchemes->setEnabled(isConnected);
     ui_->ActionMethodologies->setEnabled(isConnected);
-    ui_->ActionDatasets->setEnabled(isConnected);
     ui_->ActionDataLibrarian->setEnabled(isConnected);
 
     // My Account and My Sessions menu items are enabled when connected

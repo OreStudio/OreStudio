@@ -892,29 +892,25 @@ void DataLibrarianWindow::updateLineageView(const dq::domain::dataset* dataset) 
     }
 
     // Node-based lineage flow inspired by Blender's node editor
-    // Colors
-    const QColor bgColor(45, 45, 48);           // Dark background
-    const QColor nodeBodyColor(63, 63, 70);     // Node body
-    const QColor nodeBorderColor(80, 80, 85);   // Node border
-    const QColor textColor(220, 220, 220);      // Light text
-    const QColor labelColor(140, 140, 145);     // Dim text for labels
-    const QColor valueColor(180, 180, 185);     // Slightly brighter for values
-    const QColor connectionColor(180, 180, 180);// Connection lines
-    const QColor socketColor(200, 200, 200);    // Socket circles
-
-    // Header colors for different node types
-    const QColor originHeaderColor(74, 144, 226);    // Blue for origin/input
-    const QColor methodHeaderColor(130, 94, 186);    // Purple for methodology
-    const QColor datasetHeaderColor(80, 200, 120);   // Green for output/dataset
-
-    // Dimensions
-    const qreal nodeWidth = 95;
-    const qreal headerHeight = 14;
-    const qreal rowHeight = 11;
-    const qreal nodeSpacing = 40;
-    const qreal cornerRadius = 3;
-    const qreal socketRadius = 3;
-    const qreal padding = 4;
+    // Use member properties (styleable via QSS qproperty-)
+    const auto& bgColor = lineageBackground_;
+    const auto& nodeBodyColor = lineageNodeBody_;
+    const auto& nodeBorderColor = lineageNodeBorder_;
+    const auto& textColor = lineageText_;
+    const auto& labelColor = lineageLabel_;
+    const auto& valueColor = lineageValue_;
+    const auto& connectionColor = lineageConnection_;
+    const auto& socketColor = lineageSocket_;
+    const auto& originHeaderColor = lineageHeaderOrigin_;
+    const auto& methodHeaderColor = lineageHeaderMethod_;
+    const auto& datasetHeaderColor = lineageHeaderDataset_;
+    const auto nodeWidth = lineageNodeWidth_;
+    const auto headerHeight = lineageHeaderHeight_;
+    const auto rowHeight = lineageRowHeight_;
+    const auto nodeSpacing = lineageNodeSpacing_;
+    const auto cornerRadius = lineageCornerRadius_;
+    const auto socketRadius = lineageSocketRadius_;
+    const auto padding = lineagePadding_;
 
     // Fonts
     QFont headerFont;

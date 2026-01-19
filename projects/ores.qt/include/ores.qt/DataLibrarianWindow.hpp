@@ -63,6 +63,28 @@ namespace ores::qt {
 class DataLibrarianWindow final : public QWidget {
     Q_OBJECT
 
+    // Lineage diagram colors (styleable via QSS qproperty-)
+    Q_PROPERTY(QColor lineageBackground MEMBER lineageBackground_)
+    Q_PROPERTY(QColor lineageNodeBody MEMBER lineageNodeBody_)
+    Q_PROPERTY(QColor lineageNodeBorder MEMBER lineageNodeBorder_)
+    Q_PROPERTY(QColor lineageText MEMBER lineageText_)
+    Q_PROPERTY(QColor lineageLabel MEMBER lineageLabel_)
+    Q_PROPERTY(QColor lineageValue MEMBER lineageValue_)
+    Q_PROPERTY(QColor lineageConnection MEMBER lineageConnection_)
+    Q_PROPERTY(QColor lineageSocket MEMBER lineageSocket_)
+    Q_PROPERTY(QColor lineageHeaderOrigin MEMBER lineageHeaderOrigin_)
+    Q_PROPERTY(QColor lineageHeaderMethod MEMBER lineageHeaderMethod_)
+    Q_PROPERTY(QColor lineageHeaderDataset MEMBER lineageHeaderDataset_)
+
+    // Lineage diagram dimensions (styleable via QSS qproperty-)
+    Q_PROPERTY(qreal lineageNodeWidth MEMBER lineageNodeWidth_)
+    Q_PROPERTY(qreal lineageHeaderHeight MEMBER lineageHeaderHeight_)
+    Q_PROPERTY(qreal lineageRowHeight MEMBER lineageRowHeight_)
+    Q_PROPERTY(qreal lineageNodeSpacing MEMBER lineageNodeSpacing_)
+    Q_PROPERTY(qreal lineageCornerRadius MEMBER lineageCornerRadius_)
+    Q_PROPERTY(qreal lineageSocketRadius MEMBER lineageSocketRadius_)
+    Q_PROPERTY(qreal lineagePadding MEMBER lineagePadding_)
+
 private:
     inline static std::string_view logger_name = "ores.qt.data_librarian_window";
     static constexpr int total_model_loads = 5;
@@ -199,6 +221,26 @@ private:
     QString selectedCatalogName_;
     QString selectedDomainName_;
     QString selectedSubjectAreaName_;
+
+    // Lineage diagram styling (defaults, can be overridden via QSS)
+    QColor lineageBackground_{45, 45, 48};
+    QColor lineageNodeBody_{63, 63, 70};
+    QColor lineageNodeBorder_{80, 80, 85};
+    QColor lineageText_{220, 220, 220};
+    QColor lineageLabel_{140, 140, 145};
+    QColor lineageValue_{180, 180, 185};
+    QColor lineageConnection_{180, 180, 180};
+    QColor lineageSocket_{200, 200, 200};
+    QColor lineageHeaderOrigin_{74, 144, 226};
+    QColor lineageHeaderMethod_{130, 94, 186};
+    QColor lineageHeaderDataset_{80, 200, 120};
+    qreal lineageNodeWidth_{95};
+    qreal lineageHeaderHeight_{14};
+    qreal lineageRowHeight_{11};
+    qreal lineageNodeSpacing_{40};
+    qreal lineageCornerRadius_{3};
+    qreal lineageSocketRadius_{3};
+    qreal lineagePadding_{4};
 };
 
 }

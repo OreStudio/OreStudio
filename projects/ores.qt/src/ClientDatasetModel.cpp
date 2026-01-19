@@ -125,7 +125,7 @@ QVariant ClientDatasetModel::headerData(int section,
     case Origin: return tr("Origin");
     case Nature: return tr("Nature");
     case Treatment: return tr("Treatment");
-    case SourceSystem: return tr("Source System");
+    case SourceSystem: return tr("Source");
     case AsOfDate: return tr("As Of Date");
     case Version: return tr("Version");
     case RecordedBy: return tr("Recorded By");

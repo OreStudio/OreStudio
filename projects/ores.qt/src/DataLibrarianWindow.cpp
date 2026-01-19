@@ -96,6 +96,7 @@ DataLibrarianWindow::DataLibrarianWindow(
     setupNavigationSidebar();
     setupCentralWorkspace();
     setupDetailPanel();
+    setupLineagePanel();
     setupConnections();
     setupColumnVisibility();
 
@@ -207,15 +208,35 @@ void DataLibrarianWindow::setupToolbar() {
 }
 
 void DataLibrarianWindow::setupNavigationSidebar() {
+    // Create left panel container with Data Browser and Detail Panel stacked vertically
+    auto* leftPanel = new QWidget(this);
+    auto* leftLayout = new QVBoxLayout(leftPanel);
+    leftLayout->setContentsMargins(0, 0, 0, 0);
+    leftLayout->setSpacing(8);
+
+    // Dataset Browser section
+    auto* browserLabel = new QLabel(tr("<b>Dataset Browser</b>"), leftPanel);
+    leftLayout->addWidget(browserLabel);
+
     // Configure tree view
     navigationTree_->setModel(navigationModel_);
     navigationTree_->setHeaderHidden(true);
     navigationTree_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    navigationTree_->setMinimumWidth(200);
-    navigationTree_->setMaximumWidth(350);
+    navigationTree_->setFrameShape(QFrame::StyledPanel);
+    navigationTree_->setFrameShadow(QFrame::Sunken);
+    leftLayout->addWidget(navigationTree_, 1);
+
+    // Dataset Accession Card section (detail panel)
+    auto* cardLabel = new QLabel(tr("<b>Dataset Accession Card</b>"), leftPanel);
+    leftLayout->addWidget(cardLabel);
+    leftLayout->addWidget(detailPanel_, 1);
+
+    // Set minimum/maximum width for left panel (wide enough for GUIDs)
+    leftPanel->setMinimumWidth(350);
+    leftPanel->setMaximumWidth(500);
 
     // Add to main splitter
-    mainSplitter_->addWidget(navigationTree_);
+    mainSplitter_->addWidget(leftPanel);
 
     // Initialize navigation model with root items
     navigationModel_->setHorizontalHeaderLabels({tr("Navigation")});
@@ -238,6 +259,15 @@ void DataLibrarianWindow::setupNavigationSidebar() {
 }
 
 void DataLibrarianWindow::setupCentralWorkspace() {
+    // Create container for datasets section with title
+    auto* datasetsContainer = new QWidget(this);
+    auto* datasetsLayout = new QVBoxLayout(datasetsContainer);
+    datasetsLayout->setContentsMargins(0, 0, 0, 0);
+    datasetsLayout->setSpacing(4);
+
+    auto* datasetsLabel = new QLabel(tr("<b>Datasets</b>"), datasetsContainer);
+    datasetsLayout->addWidget(datasetsLabel);
+
     // Configure dataset table
     datasetProxyModel_->setSourceModel(datasetModel_);
     datasetProxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
@@ -254,78 +284,99 @@ void DataLibrarianWindow::setupCentralWorkspace() {
     datasetTable_->sortByColumn(ClientDatasetModel::Name, Qt::AscendingOrder);
     datasetTable_->setFrameShape(QFrame::StyledPanel);
     datasetTable_->setFrameShadow(QFrame::Sunken);
+    datasetsLayout->addWidget(datasetTable_, 1);
 
-    // Add table to central splitter
-    centralSplitter_->addWidget(datasetTable_);
+    // Add datasets container to central splitter
+    centralSplitter_->addWidget(datasetsContainer);
 
     // Add central splitter to main splitter
     mainSplitter_->addWidget(centralSplitter_);
 
-    // Set splitter sizes: sidebar 250px, central takes the rest
-    mainSplitter_->setSizes({250, 1150});
+    // Set splitter sizes: sidebar 350px, central takes the rest
+    mainSplitter_->setSizes({350, 1050});
 }
 
 void DataLibrarianWindow::setupDetailPanel() {
     auto* detailLayout = new QVBoxLayout(detailPanel_);
-    detailLayout->setContentsMargins(8, 8, 8, 8);
+    detailLayout->setContentsMargins(0, 0, 0, 0);
+    detailLayout->setSpacing(4);
 
-    // Header
-    auto* headerLabel = new QLabel(tr("<b>Dataset Accession Card</b>"), detailPanel_);
-    detailLayout->addWidget(headerLabel);
-
-    // Main content in horizontal layout
-    auto* contentLayout = new QHBoxLayout();
-
-    // Left side: Properties tree (unified list view)
-    auto* propertiesGroup = new QGroupBox(tr("Properties"), detailPanel_);
-    auto* propertiesLayout = new QVBoxLayout(propertiesGroup);
-    propertiesLayout->setContentsMargins(0, 0, 0, 0);
-
+    // Properties tree - styled to match dataset list view
     propertiesTree_ = new QTreeWidget(detailPanel_);
-    propertiesTree_->setHeaderLabels({tr("Property"), tr("Value")});
+    propertiesTree_->setColumnCount(2);
+    propertiesTree_->setHeaderHidden(true);  // Hide headers to match list view
     propertiesTree_->setRootIsDecorated(false);
     propertiesTree_->setAlternatingRowColors(true);
     propertiesTree_->setSelectionMode(QAbstractItemView::NoSelection);
     propertiesTree_->setFocusPolicy(Qt::NoFocus);
     propertiesTree_->setIndentation(0);
+    propertiesTree_->setFrameShape(QFrame::StyledPanel);
+    propertiesTree_->setFrameShadow(QFrame::Sunken);
     propertiesTree_->header()->setStretchLastSection(true);
     propertiesTree_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    propertiesLayout->addWidget(propertiesTree_);
+    // Match row height to dataset table
+    propertiesTree_->setStyleSheet("QTreeWidget::item { padding: 2px 4px; }");
+    detailLayout->addWidget(propertiesTree_, 1);
 
-    contentLayout->addWidget(propertiesGroup);
+    // Methodology section header
+    auto* methodologyHeader = new QLabel(tr("<b>Methodology</b>"), detailPanel_);
+    detailLayout->addWidget(methodologyHeader);
 
-    // Center: Lineage & Methodology
-    auto* lineageGroup = new QGroupBox(tr("The Trace (Lineage)"), detailPanel_);
-    auto* lineageLayout = new QVBoxLayout(lineageGroup);
+    // Methodology content
+    auto* methodologyWidget = new QWidget(detailPanel_);
+    auto* methodologyLayout = new QVBoxLayout(methodologyWidget);
+    methodologyLayout->setContentsMargins(4, 4, 4, 4);
+    methodologyLayout->setSpacing(2);
 
-    methodologyLabel_ = new QLabel(tr("Methodology: -"), detailPanel_);
+    methodologyLabel_ = new QLabel(tr("-"), methodologyWidget);
     methodologyLabel_->setToolTip(tr("The methodology used to produce this dataset"));
-    lineageLayout->addWidget(methodologyLabel_);
+    methodologyLayout->addWidget(methodologyLabel_);
 
-    descriptionLabel_ = new QLabel(tr(""), detailPanel_);
+    sourceUrlLabel_ = new QLabel(tr(""), methodologyWidget);
+    sourceUrlLabel_->setOpenExternalLinks(true);
+    sourceUrlLabel_->setTextFormat(Qt::RichText);
+    sourceUrlLabel_->setToolTip(tr("Source URL for the data"));
+    sourceUrlLabel_->setWordWrap(true);
+    methodologyLayout->addWidget(sourceUrlLabel_);
+
+    descriptionLabel_ = new QLabel(tr(""), methodologyWidget);
     descriptionLabel_->setWordWrap(true);
     descriptionLabel_->setStyleSheet("color: #888; font-style: italic;");
-    lineageLayout->addWidget(descriptionLabel_);
+    methodologyLayout->addWidget(descriptionLabel_);
 
-    // Lineage visualization - allow it to grow
-    lineageView_ = new QGraphicsView(detailPanel_);
-    lineageView_->setMinimumHeight(80);
-    lineageView_->setScene(new QGraphicsScene(lineageView_));
-    lineageView_->setRenderHint(QPainter::Antialiasing);
-    lineageLayout->addWidget(lineageView_, 1);
-
-    contentLayout->addWidget(lineageGroup, 1);
-
-    detailLayout->addLayout(contentLayout, 1);
-
-    // Add detail panel to central splitter
-    centralSplitter_->addWidget(detailPanel_);
-
-    // Set central splitter sizes: table 65%, detail 35%
-    centralSplitter_->setSizes({500, 250});
+    detailLayout->addWidget(methodologyWidget);
 
     // Initially hide detail panel until a dataset is selected
     detailPanel_->setVisible(false);
+}
+
+void DataLibrarianWindow::setupLineagePanel() {
+    lineagePanel_ = new QWidget(this);
+    auto* lineageLayout = new QVBoxLayout(lineagePanel_);
+    lineageLayout->setContentsMargins(0, 0, 0, 0);
+    lineageLayout->setSpacing(4);
+
+    // Lineage title
+    auto* lineageLabel = new QLabel(tr("<b>Lineage</b>"), lineagePanel_);
+    lineageLayout->addWidget(lineageLabel);
+
+    // Lineage visualization
+    lineageView_ = new QGraphicsView(lineagePanel_);
+    lineageView_->setMinimumHeight(100);
+    lineageView_->setScene(new QGraphicsScene(lineageView_));
+    lineageView_->setRenderHint(QPainter::Antialiasing);
+    lineageView_->setFrameShape(QFrame::StyledPanel);
+    lineageView_->setFrameShadow(QFrame::Sunken);
+    lineageLayout->addWidget(lineageView_, 1);
+
+    // Add to central splitter (below dataset table)
+    centralSplitter_->addWidget(lineagePanel_);
+
+    // Set central splitter sizes: table 50%, lineage 50%
+    centralSplitter_->setSizes({400, 400});
+
+    // Initially hide lineage panel until a dataset is selected
+    lineagePanel_->setVisible(false);
 }
 
 void DataLibrarianWindow::setupConnections() {
@@ -424,6 +475,7 @@ void DataLibrarianWindow::onDatasetSelectionChanged() {
 
     if (selected.isEmpty()) {
         detailPanel_->setVisible(false);
+        lineagePanel_->setVisible(false);
         return;
     }
 
@@ -432,6 +484,7 @@ void DataLibrarianWindow::onDatasetSelectionChanged() {
 
     updateDetailPanel(dataset);
     detailPanel_->setVisible(true);
+    lineagePanel_->setVisible(true);
 }
 
 void DataLibrarianWindow::onDatasetDoubleClicked(const QModelIndex& index) {
@@ -665,7 +718,9 @@ void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) 
         addProperty(tr("Treatment"), tr("-"));
         addProperty(tr("Recorded By"), tr("-"));
         addProperty(tr("Recorded At"), tr("-"));
-        methodologyLabel_->setText(tr("Methodology: -"));
+        addProperty(tr("Change Commentary"), tr("-"));
+        methodologyLabel_->setText(tr("-"));
+        sourceUrlLabel_->setText(tr(""));
         descriptionLabel_->setText(tr(""));
         return;
     }
@@ -702,10 +757,25 @@ void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) 
         tr("The user who recorded this dataset"));
     addProperty(tr("Recorded At"), relative_time_helper::format(dataset->recorded_at),
         tr("When this dataset was recorded"));
+    addProperty(tr("Change Commentary"),
+        dataset->change_commentary.empty() ? tr("-") : QString::fromStdString(dataset->change_commentary),
+        tr("Commentary explaining the last change to this dataset"));
 
-    // Methodology
-    methodologyLabel_->setText(
-        tr("Methodology: %1").arg(findMethodologyName(dataset->methodology_id)));
+    // Methodology and source URL
+    const auto* methodology = findMethodology(dataset->methodology_id);
+    if (methodology) {
+        methodologyLabel_->setText(QString::fromStdString(methodology->name));
+        if (methodology->logic_reference && !methodology->logic_reference->empty()) {
+            QString url = QString::fromStdString(*methodology->logic_reference);
+            sourceUrlLabel_->setText(
+                QString("<a href=\"%1\">%1</a>").arg(url.toHtmlEscaped()));
+        } else {
+            sourceUrlLabel_->setText(tr(""));
+        }
+    } else {
+        methodologyLabel_->setText(dataset->methodology_id ? tr("Unknown") : tr("None"));
+        sourceUrlLabel_->setText(tr(""));
+    }
 
     // Description
     if (!dataset->description.empty()) {
@@ -1056,20 +1126,31 @@ QString DataLibrarianWindow::findTreatmentDimensionName(
 
 QString DataLibrarianWindow::findMethodologyName(
     const std::optional<boost::uuids::uuid>& id) const {
+    const auto* methodology = findMethodology(id);
+    if (methodology) {
+        return QString::fromStdString(methodology->name);
+    }
     if (!id) {
         return tr("None");
+    }
+    // Fallback to truncated UUID if not found
+    return QString::fromStdString(boost::uuids::to_string(*id)).left(8) + "...";
+}
+
+const dq::domain::methodology* DataLibrarianWindow::findMethodology(
+    const std::optional<boost::uuids::uuid>& id) const {
+    if (!id) {
+        return nullptr;
     }
 
     // Look up from methodology model
     for (int i = 0; i < methodologyModel_->rowCount(); ++i) {
         const auto* methodology = methodologyModel_->getMethodology(i);
         if (methodology && methodology->id == *id) {
-            return QString::fromStdString(methodology->name);
+            return methodology;
         }
     }
-
-    // Fallback to truncated UUID if not found
-    return QString::fromStdString(boost::uuids::to_string(*id)).left(8) + "...";
+    return nullptr;
 }
 
 QString DataLibrarianWindow::findCatalogName(

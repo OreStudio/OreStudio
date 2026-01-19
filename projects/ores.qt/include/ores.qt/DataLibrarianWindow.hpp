@@ -43,6 +43,7 @@
 #include "ores.qt/ClientMethodologyModel.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/dataset.hpp"
+#include "ores.dq/domain/methodology.hpp"
 
 namespace ores::qt {
 
@@ -117,6 +118,7 @@ private:
     void setupNavigationSidebar();
     void setupCentralWorkspace();
     void setupDetailPanel();
+    void setupLineagePanel();
     void setupToolbar();
     void setupConnections();
     void buildNavigationTree();
@@ -134,6 +136,7 @@ private:
     QString findNatureDimensionName(const boost::uuids::uuid& id) const;
     QString findTreatmentDimensionName(const boost::uuids::uuid& id) const;
     QString findMethodologyName(const std::optional<boost::uuids::uuid>& id) const;
+    const dq::domain::methodology* findMethodology(const std::optional<boost::uuids::uuid>& id) const;
     QString findCatalogName(const boost::uuids::uuid& id) const;
 
     ClientManager* clientManager_;
@@ -164,7 +167,11 @@ private:
     // Detail panel ("Dataset Accession Card")
     QWidget* detailPanel_;
     QTreeWidget* propertiesTree_;  // Unified property list
+
+    // Lineage panel (below dataset table)
+    QWidget* lineagePanel_;
     QLabel* methodologyLabel_;
+    QLabel* sourceUrlLabel_;
     QLabel* descriptionLabel_;
     QGraphicsView* lineageView_;
 

@@ -71,6 +71,7 @@
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/TelemetrySettingsDialog.hpp"
 #include "ores.qt/ConnectionBrowserMdiWindow.hpp"
+#include "ores.qt/DataLibrarianWindow.hpp"
 #include "ores.qt/MasterPasswordDialog.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
 #include "ores.connections/service/connection_manager.hpp"
@@ -161,6 +162,8 @@ MainWindow::MainWindow(QWidget* parent) :
         ":/icons/ic_fluent_book_20_regular.svg", iconColor));
     ui_->ActionDatasets->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+    ui_->ActionDataLibrarian->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_library_20_regular.svg", iconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_person_20_regular.svg", iconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(
@@ -458,6 +461,70 @@ MainWindow::MainWindow(QWidget* parent) :
             datasetController_->showListWindow();
     });
 
+    // Connect Data Librarian action
+    connect(ui_->ActionDataLibrarian, &QAction::triggered, this, [this]() {
+        if (dataLibrarianWindow_) {
+            // If window exists, bring it to front
+            mdiArea_->setActiveSubWindow(
+                qobject_cast<QMdiSubWindow*>(dataLibrarianWindow_->parent()));
+            return;
+        }
+
+        // Create new Data Librarian window
+        auto* librarianWindow = new DataLibrarianWindow(
+            clientManager_, QString::fromStdString(username_), this);
+
+        auto* subWindow = new DetachableMdiSubWindow(this);
+        subWindow->setWidget(librarianWindow);
+        subWindow->setWindowTitle(tr("Data Librarian"));
+        subWindow->setAttribute(Qt::WA_DeleteOnClose);
+
+        connect(librarianWindow, &DataLibrarianWindow::statusChanged,
+                ui_->statusbar, [this](const QString& msg) {
+                    ui_->statusbar->showMessage(msg, 5000);
+                });
+        connect(librarianWindow, &DataLibrarianWindow::errorOccurred,
+                ui_->statusbar, [this](const QString& msg) {
+                    ui_->statusbar->showMessage(msg, 10000);
+                });
+
+        // Connect to open related windows
+        connect(librarianWindow, &DataLibrarianWindow::openOriginDimensionsRequested,
+                this, [this]() {
+                    if (originDimensionController_)
+                        originDimensionController_->showListWindow();
+                });
+        connect(librarianWindow, &DataLibrarianWindow::openNatureDimensionsRequested,
+                this, [this]() {
+                    if (natureDimensionController_)
+                        natureDimensionController_->showListWindow();
+                });
+        connect(librarianWindow, &DataLibrarianWindow::openTreatmentDimensionsRequested,
+                this, [this]() {
+                    if (treatmentDimensionController_)
+                        treatmentDimensionController_->showListWindow();
+                });
+        connect(librarianWindow, &DataLibrarianWindow::openCodingSchemesRequested,
+                this, [this]() {
+                    if (codingSchemeController_)
+                        codingSchemeController_->showListWindow();
+                });
+        connect(librarianWindow, &DataLibrarianWindow::openMethodologiesRequested,
+                this, [this]() {
+                    if (methodologyController_)
+                        methodologyController_->showListWindow();
+                });
+
+        // Track window destruction
+        dataLibrarianWindow_ = subWindow;
+        connect(subWindow, &QObject::destroyed, this, [this]() {
+            dataLibrarianWindow_ = nullptr;
+        });
+
+        mdiArea_->addSubWindow(subWindow);
+        subWindow->show();
+    });
+
     // Initially disable data-related actions until logged in
     updateMenuState();
 
@@ -665,6 +732,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionCodingSchemes->setEnabled(isConnected);
     ui_->ActionMethodologies->setEnabled(isConnected);
     ui_->ActionDatasets->setEnabled(isConnected);
+    ui_->ActionDataLibrarian->setEnabled(isConnected);
 
     // My Account and My Sessions menu items are enabled when connected
     ui_->ActionMyAccount->setEnabled(isConnected);

@@ -58,6 +58,8 @@
      <property name="title">
       <string>&amp;Assets</string>
      </property>
+     <addaction name="ActionDataLibrarian"/>
+     <addaction name="separator"/>
      <addaction name="ActionDatasets"/>
     </widget>
     <widget class="QMenu" name="menuQuality">
@@ -510,6 +512,18 @@
    </property>
    <property name="toolTip">
     <string>Manage data processing methodologies</string>
+   </property>
+  </action>
+  <action name="ActionDataLibrarian">
+   <property name="icon">
+    <iconset>
+     <normaloff>:/icons/ic_fluent_library_20_regular.svg</normaloff>:/icons/ic_fluent_library_20_regular.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Data &amp;Librarian</string>
+   </property>
+   <property name="toolTip">
+    <string>Open the Data Librarian to browse and manage datasets</string>
    </property>
   </action>
   <action name="ActionDatasets">

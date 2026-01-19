@@ -69,6 +69,7 @@ class MethodologyController;
 class DatasetController;
 class ImageCache;
 class ChangeReasonCache;
+class DataLibrarianWindow;
 
 /**
  * @brief Main application window providing the MDI interface and entity
@@ -510,6 +511,9 @@ private:
 
     /** @brief Connection Browser MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* connectionBrowserWindow_{nullptr};
+
+    /** @brief Data Librarian MDI sub-window (nullptr if not open) */
+    DetachableMdiSubWindow* dataLibrarianWindow_{nullptr};
 
     /** @brief Name of the connection used for current login (empty if manual) */
     QString activeConnectionName_;

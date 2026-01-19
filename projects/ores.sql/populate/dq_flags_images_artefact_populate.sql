@@ -20,7 +20,7 @@
 
 -- Script to populate DQ SVG images into the database
 -- Dataset: Country Flag Images
--- Subject Area: Countries
+-- Subject Area: Country Flags
 -- Domain: Reference Data
 --
 -- This file was auto-generated from the SVG files in projects/ores.sql/populate/data/flags
@@ -41,12 +41,12 @@ begin
     select id into v_dataset_id
     from ores.dq_datasets_tbl
     where name = 'Country Flag Images'
-      and subject_area_name = 'Countries'
+      and subject_area_name = 'Country Flags'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: name="Country Flag Images", subject_area="Countries", domain="Reference Data"';
+        raise exception 'Dataset not found: name="Country Flag Images", subject_area="Country Flags", domain="Reference Data"';
     end if;
 
     -- Clear existing images for this dataset (idempotency)

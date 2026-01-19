@@ -78,7 +78,7 @@ public:
                                   QWidget* parent = nullptr);
     ~DataLibrarianWindow() override = default;
 
-    QSize sizeHint() const override { return QSize(1400, 800); }
+    QSize sizeHint() const override { return QSize(1600, 900); }
 
 signals:
     void statusChanged(const QString& message);

@@ -321,8 +321,8 @@ void DataLibrarianWindow::setupDetailPanel() {
     propertiesTree_->setStyleSheet("QTreeWidget::item { padding: 2px 4px; }");
     detailLayout->addWidget(propertiesTree_, 1);
 
-    // Initially hide detail panel until a dataset is selected
-    detailPanel_->setVisible(false);
+    // Initialize with placeholder content
+    updateDetailPanel(nullptr);
 }
 
 void DataLibrarianWindow::setupLineagePanel() {
@@ -347,11 +347,8 @@ void DataLibrarianWindow::setupLineagePanel() {
     // Add to central splitter (below dataset table)
     centralSplitter_->addWidget(lineagePanel_);
 
-    // Set central splitter sizes: table 50%, lineage 50%
-    centralSplitter_->setSizes({400, 400});
-
-    // Initially hide lineage panel until a dataset is selected
-    lineagePanel_->setVisible(false);
+    // Set central splitter sizes: table 60%, lineage 40%
+    centralSplitter_->setSizes({500, 300});
 }
 
 void DataLibrarianWindow::setupMethodologyPanel() {
@@ -402,11 +399,11 @@ void DataLibrarianWindow::setupMethodologyPanel() {
     // Add to main splitter (right side)
     mainSplitter_->addWidget(methodologyPanel_);
 
-    // Update splitter sizes: left 350px, central fills, right 350px
-    mainSplitter_->setSizes({350, 700, 350});
+    // Update splitter sizes: left 350px, central fills, right 400px
+    mainSplitter_->setSizes({350, 850, 400});
 
-    // Initially hide until a dataset is selected
-    methodologyPanel_->setVisible(false);
+    // Initialize with placeholder content
+    updateMethodologyPanel(nullptr);
 }
 
 void DataLibrarianWindow::setupConnections() {
@@ -504,9 +501,11 @@ void DataLibrarianWindow::onDatasetSelectionChanged() {
     const auto selected = datasetTable_->selectionModel()->selectedRows();
 
     if (selected.isEmpty()) {
-        detailPanel_->setVisible(false);
-        lineagePanel_->setVisible(false);
-        methodologyPanel_->setVisible(false);
+        // Clear panels but keep them visible
+        updateDetailPanel(nullptr);
+        updateMethodologyPanel(nullptr);
+        // Clear lineage view
+        lineageView_->scene()->clear();
         return;
     }
 
@@ -515,9 +514,6 @@ void DataLibrarianWindow::onDatasetSelectionChanged() {
 
     updateDetailPanel(dataset);
     updateMethodologyPanel(dataset);
-    detailPanel_->setVisible(true);
-    lineagePanel_->setVisible(true);
-    methodologyPanel_->setVisible(true);
 }
 
 void DataLibrarianWindow::onDatasetDoubleClicked(const QModelIndex& index) {

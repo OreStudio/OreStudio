@@ -78,7 +78,7 @@ select ores.upsert_dq_methodologies(
    git add projects/ores.sql/populate/dq_countries_artefact_populate.sql
    git commit -m "[sql] Update countries artefact populate script"
 
-Note: Countries are linked to flag images via the flag_key field, which matches
+Countries are linked to flag images via the flag_key field, which matches
 the key in the dq_images_artefact_tbl (e.g., ''gb'' -> gb.svg flag).'
 );
 
@@ -157,7 +157,7 @@ select ores.upsert_dq_methodologies(
    git add projects/ores.sql/populate/dq_currencies_artefact_populate.sql
    git commit -m "[sql] Update currencies artefact populate script"
 
-Note: Fiat currencies are classified as ''fiat.major'' (EUR, USD, GBP, JPY, AUD, CAD, CHF,
+Fiat currencies are classified as ''fiat.major'' (EUR, USD, GBP, JPY, AUD, CAD, CHF,
 DKK, NOK, NZD, SEK) or ''fiat.emerging'' (all others). Commodity currencies (XAU, XAG, etc.)
 use type ''commodity''. SDR uses type ''supranational''.'
 );
@@ -191,7 +191,7 @@ select ores.upsert_dq_methodologies(
    git add projects/ores.sql/populate/dq_cryptocurrencies_artefact_populate.sql
    git commit -m "[sql] Regenerate cryptocurrencies populate script"
 
-Note: The script classifies cryptocurrencies as ''crypto.major'' (top 20 by market cap)
+The script classifies cryptocurrencies as ''crypto.major'' (top 20 by market cap)
 or ''crypto.minor'' (all others). Only crypto.major currencies are populated to production.'
 );
 
@@ -222,7 +222,7 @@ select ores.upsert_dq_methodologies(
    git add projects/ores.sql/populate/dq_<entity>_artefact_populate.sql
    git commit -m "[sql] Regenerate <entity> artefact populate script from FpML"
 
-Note: FpML Genericode files follow the OASIS CodeList standard. Each file contains
+FpML Genericode files follow the OASIS CodeList standard. Each file contains
 Code, Source, and Description columns. The CanonicalVersionUri identifies the specific
 version of the coding scheme.'
 );
@@ -263,10 +263,7 @@ select ores.upsert_dq_methodologies(
 
 5. VERIFY IMPORT
    Test lookups for known IPs (8.8.8.8 -> US, 1.1.1.1 -> US)
-   Check statistics: total ranges, unique countries, unrouted ranges
-
-Note: Uses DQ artefact staging pattern for consistency with other datasets.
-Due to bulk size (~500k rows), production population always uses replace_all mode.'
+   Check statistics: total ranges, unique countries, unrouted ranges'
 );
 
 select ores.upsert_dq_methodologies(
@@ -294,7 +291,7 @@ select ores.upsert_dq_methodologies(
    Code: ores::synthetic::service::catalog_generator_service
    Options: ores::synthetic::domain::generation_options
 
-Note: This methodology is used for all programmatically generated test data.
+This methodology is used for all programmatically generated test data.
 The specific seed and generation parameters are tracked separately from
 the methodology itself.'
 );

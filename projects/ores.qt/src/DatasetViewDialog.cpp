@@ -22,9 +22,8 @@
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QFormLayout>
-#include <QGroupBox>
-#include <QScrollArea>
+#include <QSplitter>
+#include <QHeaderView>
 #include <QPainterPath>
 #include <QGraphicsTextItem>
 #include <boost/uuid/uuid_io.hpp>
@@ -40,168 +39,86 @@ DatasetViewDialog::~DatasetViewDialog() = default;
 
 void DatasetViewDialog::setupUi() {
     setWindowTitle(tr("Dataset Details"));
-    setMinimumSize(600, 500);
-    resize(700, 550);
+    setMinimumSize(700, 550);
+    resize(800, 600);
 
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
-    // Create tab widget with tabs on the left (West)
+    // Create tab widget with tabs at the top
     tabWidget_ = new QTabWidget(this);
-    tabWidget_->setTabPosition(QTabWidget::West);
 
     // Add tabs
-    tabWidget_->addTab(createGeneralTab(), tr("General"));
-    tabWidget_->addTab(createClassificationTab(), tr("Classification"));
-    tabWidget_->addTab(createDataQualityTab(), tr("Data Quality"));
+    tabWidget_->addTab(createOverviewTab(), tr("Overview"));
     tabWidget_->addTab(createProvenanceTab(), tr("Provenance"));
+    tabWidget_->addTab(createMethodologyTab(), tr("Methodology"));
     tabWidget_->addTab(createLineageTab(), tr("Lineage"));
-    tabWidget_->addTab(createAuditTab(), tr("Audit"));
 
     mainLayout->addWidget(tabWidget_);
 }
 
-QWidget* DatasetViewDialog::createGeneralTab() {
+QWidget* DatasetViewDialog::createOverviewTab() {
     auto* widget = new QWidget();
     auto* layout = new QVBoxLayout(widget);
-    layout->setContentsMargins(16, 16, 16, 16);
+    layout->setContentsMargins(8, 8, 8, 8);
 
-    auto* form = new QFormLayout();
-    form->setLabelAlignment(Qt::AlignRight);
-    form->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+    overviewTree_ = new QTreeWidget();
+    overviewTree_->setHeaderLabels({tr("Property"), tr("Value")});
+    overviewTree_->setAlternatingRowColors(true);
+    overviewTree_->setRootIsDecorated(false);
+    overviewTree_->header()->setStretchLastSection(true);
+    overviewTree_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    overviewTree_->setStyleSheet("QTreeWidget::item { padding: 4px 0px; }");
 
-    nameLabel_ = new QLabel();
-    nameLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Name:"), nameLabel_);
-
-    versionLabel_ = new QLabel();
-    versionLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Version:"), versionLabel_);
-
-    idLabel_ = new QLabel();
-    idLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    idLabel_->setWordWrap(true);
-    form->addRow(tr("ID:"), idLabel_);
-
-    catalogLabel_ = new QLabel();
-    catalogLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Catalog:"), catalogLabel_);
-
-    descriptionLabel_ = new QLabel();
-    descriptionLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    descriptionLabel_->setWordWrap(true);
-    form->addRow(tr("Description:"), descriptionLabel_);
-
-    layout->addLayout(form);
-    layout->addStretch();
-    return widget;
-}
-
-QWidget* DatasetViewDialog::createClassificationTab() {
-    auto* widget = new QWidget();
-    auto* layout = new QVBoxLayout(widget);
-    layout->setContentsMargins(16, 16, 16, 16);
-
-    auto* form = new QFormLayout();
-    form->setLabelAlignment(Qt::AlignRight);
-    form->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
-
-    domainLabel_ = new QLabel();
-    domainLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Domain:"), domainLabel_);
-
-    subjectAreaLabel_ = new QLabel();
-    subjectAreaLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Subject Area:"), subjectAreaLabel_);
-
-    layout->addLayout(form);
-    layout->addStretch();
-    return widget;
-}
-
-QWidget* DatasetViewDialog::createDataQualityTab() {
-    auto* widget = new QWidget();
-    auto* layout = new QVBoxLayout(widget);
-    layout->setContentsMargins(16, 16, 16, 16);
-
-    auto* form = new QFormLayout();
-    form->setLabelAlignment(Qt::AlignRight);
-    form->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
-
-    originLabel_ = new QLabel();
-    originLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Origin:"), originLabel_);
-
-    natureLabel_ = new QLabel();
-    natureLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Nature:"), natureLabel_);
-
-    treatmentLabel_ = new QLabel();
-    treatmentLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Treatment:"), treatmentLabel_);
-
-    layout->addLayout(form);
-    layout->addStretch();
+    layout->addWidget(overviewTree_);
     return widget;
 }
 
 QWidget* DatasetViewDialog::createProvenanceTab() {
-    auto* scrollArea = new QScrollArea();
-    scrollArea->setWidgetResizable(true);
-    scrollArea->setFrameShape(QFrame::NoFrame);
-
     auto* widget = new QWidget();
     auto* layout = new QVBoxLayout(widget);
-    layout->setContentsMargins(16, 16, 16, 16);
+    layout->setContentsMargins(8, 8, 8, 8);
 
-    auto* form = new QFormLayout();
-    form->setLabelAlignment(Qt::AlignRight);
-    form->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+    provenanceTree_ = new QTreeWidget();
+    provenanceTree_->setHeaderLabels({tr("Property"), tr("Value")});
+    provenanceTree_->setAlternatingRowColors(true);
+    provenanceTree_->setRootIsDecorated(false);
+    provenanceTree_->header()->setStretchLastSection(true);
+    provenanceTree_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    provenanceTree_->setStyleSheet("QTreeWidget::item { padding: 4px 0px; }");
 
-    methodologyLabel_ = new QLabel();
-    methodologyLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Methodology:"), methodologyLabel_);
+    layout->addWidget(provenanceTree_);
+    return widget;
+}
 
-    sourceSystemLabel_ = new QLabel();
-    sourceSystemLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Source System:"), sourceSystemLabel_);
+QWidget* DatasetViewDialog::createMethodologyTab() {
+    auto* widget = new QWidget();
+    auto* layout = new QVBoxLayout(widget);
+    layout->setContentsMargins(8, 8, 8, 8);
 
-    asOfDateLabel_ = new QLabel();
-    asOfDateLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("As Of Date:"), asOfDateLabel_);
+    auto* splitter = new QSplitter(Qt::Vertical);
 
-    ingestionLabel_ = new QLabel();
-    ingestionLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Ingestion:"), ingestionLabel_);
+    // Top: properties tree
+    methodologyTree_ = new QTreeWidget();
+    methodologyTree_->setHeaderLabels({tr("Property"), tr("Value")});
+    methodologyTree_->setAlternatingRowColors(true);
+    methodologyTree_->setRootIsDecorated(false);
+    methodologyTree_->header()->setStretchLastSection(true);
+    methodologyTree_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    methodologyTree_->setStyleSheet("QTreeWidget::item { padding: 4px 0px; }");
 
-    licenseLabel_ = new QLabel();
-    licenseLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    licenseLabel_->setWordWrap(true);
-    form->addRow(tr("License:"), licenseLabel_);
+    // Bottom: implementation details text
+    stepsText_ = new QTextBrowser();
+    stepsText_->setPlaceholderText(tr("No implementation details available."));
+    stepsText_->setOpenExternalLinks(true);
 
-    codingSchemeLabel_ = new QLabel();
-    codingSchemeLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Coding Scheme:"), codingSchemeLabel_);
+    splitter->addWidget(methodologyTree_);
+    splitter->addWidget(stepsText_);
+    splitter->setStretchFactor(0, 1);
+    splitter->setStretchFactor(1, 2);
 
-    businessContextLabel_ = new QLabel();
-    businessContextLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    businessContextLabel_->setWordWrap(true);
-    form->addRow(tr("Business Context:"), businessContextLabel_);
-
-    upstreamLabel_ = new QLabel();
-    upstreamLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    upstreamLabel_->setWordWrap(true);
-    form->addRow(tr("Upstream:"), upstreamLabel_);
-
-    lineageDepthLabel_ = new QLabel();
-    lineageDepthLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Lineage Depth:"), lineageDepthLabel_);
-
-    layout->addLayout(form);
-    layout->addStretch();
-
-    scrollArea->setWidget(widget);
-    return scrollArea;
+    layout->addWidget(splitter);
+    return widget;
 }
 
 QWidget* DatasetViewDialog::createLineageTab() {
@@ -219,98 +136,39 @@ QWidget* DatasetViewDialog::createLineageTab() {
     return widget;
 }
 
-QWidget* DatasetViewDialog::createAuditTab() {
-    auto* widget = new QWidget();
-    auto* layout = new QVBoxLayout(widget);
-    layout->setContentsMargins(16, 16, 16, 16);
+void DatasetViewDialog::addProperty(QTreeWidget* tree, const QString& name,
+    const QString& value, const QString& tooltip) {
 
-    auto* form = new QFormLayout();
-    form->setLabelAlignment(Qt::AlignRight);
-    form->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+    auto* item = new QTreeWidgetItem(tree);
+    item->setText(0, name);
+    item->setText(1, value);
+    item->setFlags(item->flags() | Qt::ItemNeverHasChildren);
 
-    recordedByLabel_ = new QLabel();
-    recordedByLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Recorded By:"), recordedByLabel_);
+    // Make property name bold for better readability
+    auto nameFont = item->font(0);
+    nameFont.setBold(true);
+    item->setFont(0, nameFont);
 
-    recordedAtLabel_ = new QLabel();
-    recordedAtLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    form->addRow(tr("Recorded At:"), recordedAtLabel_);
-
-    commentaryLabel_ = new QLabel();
-    commentaryLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    commentaryLabel_->setWordWrap(true);
-    form->addRow(tr("Commentary:"), commentaryLabel_);
-
-    layout->addLayout(form);
-    layout->addStretch();
-    return widget;
+    if (!tooltip.isEmpty()) {
+        item->setToolTip(0, tooltip);
+        item->setToolTip(1, tooltip);
+    }
 }
 
-void DatasetViewDialog::setDataset(const dq::domain::dataset& dataset) {
-    dataset_ = dataset;
-    setWindowTitle(tr("Dataset: %1").arg(QString::fromStdString(dataset_.name)));
+void DatasetViewDialog::addSectionHeader(QTreeWidget* tree, const QString& title) {
+    auto* item = new QTreeWidgetItem(tree);
+    item->setFlags(item->flags() | Qt::ItemNeverHasChildren);
+    item->setFirstColumnSpanned(true);
 
-    updateGeneralTab();
-    updateClassificationTab();
-    updateDataQualityTab();
-    updateProvenanceTab();
-    updateLineageView();
-    updateAuditTab();
-}
-
-void DatasetViewDialog::setMethodologies(const std::vector<dq::domain::methodology>& methodologies) {
-    methodologies_ = methodologies;
-}
-
-void DatasetViewDialog::updateGeneralTab() {
-    nameLabel_->setText(QString::fromStdString(dataset_.name));
-    versionLabel_->setText(QString::number(dataset_.version));
-    idLabel_->setText(QString::fromStdString(boost::uuids::to_string(dataset_.id)));
-    catalogLabel_->setText(dataset_.catalog_name
-        ? QString::fromStdString(*dataset_.catalog_name)
-        : tr("-"));
-    descriptionLabel_->setText(dataset_.description.empty()
-        ? tr("-")
-        : QString::fromStdString(dataset_.description));
-}
-
-void DatasetViewDialog::updateClassificationTab() {
-    domainLabel_->setText(QString::fromStdString(dataset_.domain_name));
-    subjectAreaLabel_->setText(QString::fromStdString(dataset_.subject_area_name));
-}
-
-void DatasetViewDialog::updateDataQualityTab() {
-    originLabel_->setText(QString::fromStdString(dataset_.origin_code));
-    natureLabel_->setText(QString::fromStdString(dataset_.nature_code));
-    treatmentLabel_->setText(QString::fromStdString(dataset_.treatment_code));
-}
-
-void DatasetViewDialog::updateProvenanceTab() {
-    methodologyLabel_->setText(findMethodologyName(dataset_.methodology_id));
-    sourceSystemLabel_->setText(QString::fromStdString(dataset_.source_system_id));
-    asOfDateLabel_->setText(relative_time_helper::format(dataset_.as_of_date));
-    ingestionLabel_->setText(relative_time_helper::format(dataset_.ingestion_timestamp));
-    licenseLabel_->setText(dataset_.license_info
-        ? QString::fromStdString(*dataset_.license_info)
-        : tr("-"));
-    codingSchemeLabel_->setText(dataset_.coding_scheme_code
-        ? QString::fromStdString(*dataset_.coding_scheme_code)
-        : tr("-"));
-    businessContextLabel_->setText(dataset_.business_context.empty()
-        ? tr("-")
-        : QString::fromStdString(dataset_.business_context));
-    upstreamLabel_->setText(dataset_.upstream_derivation_id
-        ? QString::fromStdString(boost::uuids::to_string(*dataset_.upstream_derivation_id))
-        : tr("-"));
-    lineageDepthLabel_->setText(QString::number(dataset_.lineage_depth));
-}
-
-void DatasetViewDialog::updateAuditTab() {
-    recordedByLabel_->setText(QString::fromStdString(dataset_.recorded_by));
-    recordedAtLabel_->setText(relative_time_helper::format(dataset_.recorded_at));
-    commentaryLabel_->setText(dataset_.change_commentary.empty()
-        ? tr("-")
-        : QString::fromStdString(dataset_.change_commentary));
+    // Style section header: centered, bold, larger, distinct background
+    auto font = item->font(0);
+    font.setBold(true);
+    font.setPointSize(font.pointSize() + 1);
+    item->setFont(0, font);
+    item->setText(0, QString("— %1 —").arg(title));
+    item->setTextAlignment(0, Qt::AlignCenter);
+    item->setBackground(0, tree->palette().highlight());
+    item->setForeground(0, tree->palette().highlightedText());
 }
 
 QString DatasetViewDialog::findMethodologyName(
@@ -324,6 +182,146 @@ QString DatasetViewDialog::findMethodologyName(
         }
     }
     return tr("Unknown");
+}
+
+const dq::domain::methodology* DatasetViewDialog::findMethodology(
+    const std::optional<boost::uuids::uuid>& methodologyId) const {
+    if (!methodologyId) {
+        return nullptr;
+    }
+    for (const auto& m : methodologies_) {
+        if (m.id == *methodologyId) {
+            return &m;
+        }
+    }
+    return nullptr;
+}
+
+void DatasetViewDialog::setDataset(const dq::domain::dataset& dataset) {
+    dataset_ = dataset;
+    setWindowTitle(tr("Dataset: %1").arg(QString::fromStdString(dataset_.name)));
+
+    updateOverviewTab();
+    updateProvenanceTab();
+    updateMethodologyTab();
+    updateLineageView();
+}
+
+void DatasetViewDialog::setMethodologies(const std::vector<dq::domain::methodology>& methodologies) {
+    methodologies_ = methodologies;
+}
+
+void DatasetViewDialog::updateOverviewTab() {
+    overviewTree_->clear();
+
+    // General section
+    addSectionHeader(overviewTree_, tr("General"));
+    addProperty(overviewTree_, tr("Name"), QString::fromStdString(dataset_.name));
+    addProperty(overviewTree_, tr("Version"), QString::number(dataset_.version));
+    addProperty(overviewTree_, tr("ID"),
+        QString::fromStdString(boost::uuids::to_string(dataset_.id)));
+    addProperty(overviewTree_, tr("Description"),
+        dataset_.description.empty() ? tr("-") : QString::fromStdString(dataset_.description));
+
+    // Classification section
+    addSectionHeader(overviewTree_, tr("Classification"));
+    addProperty(overviewTree_, tr("Domain"), QString::fromStdString(dataset_.domain_name));
+    addProperty(overviewTree_, tr("Subject Area"),
+        QString::fromStdString(dataset_.subject_area_name));
+    addProperty(overviewTree_, tr("Catalog"),
+        dataset_.catalog_name ? QString::fromStdString(*dataset_.catalog_name) : tr("-"));
+
+    // Data Quality section
+    addSectionHeader(overviewTree_, tr("Data Quality"));
+    addProperty(overviewTree_, tr("Origin"), QString::fromStdString(dataset_.origin_code));
+    addProperty(overviewTree_, tr("Nature"), QString::fromStdString(dataset_.nature_code));
+    addProperty(overviewTree_, tr("Treatment"), QString::fromStdString(dataset_.treatment_code));
+
+    // Audit section
+    addSectionHeader(overviewTree_, tr("Audit"));
+    addProperty(overviewTree_, tr("Recorded By"), QString::fromStdString(dataset_.recorded_by));
+    addProperty(overviewTree_, tr("Recorded At"),
+        relative_time_helper::format(dataset_.recorded_at));
+    addProperty(overviewTree_, tr("Commentary"),
+        dataset_.change_commentary.empty()
+            ? tr("-") : QString::fromStdString(dataset_.change_commentary));
+}
+
+void DatasetViewDialog::updateProvenanceTab() {
+    provenanceTree_->clear();
+
+    // Source section
+    addSectionHeader(provenanceTree_, tr("Source"));
+    addProperty(provenanceTree_, tr("Source System"),
+        QString::fromStdString(dataset_.source_system_id));
+    addProperty(provenanceTree_, tr("Business Context"),
+        dataset_.business_context.empty()
+            ? tr("-") : QString::fromStdString(dataset_.business_context));
+    addProperty(provenanceTree_, tr("License"),
+        dataset_.license_info ? QString::fromStdString(*dataset_.license_info) : tr("-"));
+    addProperty(provenanceTree_, tr("Coding Scheme"),
+        dataset_.coding_scheme_code
+            ? QString::fromStdString(*dataset_.coding_scheme_code) : tr("-"));
+
+    // Dates section
+    addSectionHeader(provenanceTree_, tr("Dates"));
+    addProperty(provenanceTree_, tr("As Of Date"),
+        relative_time_helper::format(dataset_.as_of_date));
+    addProperty(provenanceTree_, tr("Ingestion"),
+        relative_time_helper::format(dataset_.ingestion_timestamp));
+
+    // Lineage section
+    addSectionHeader(provenanceTree_, tr("Lineage"));
+    addProperty(provenanceTree_, tr("Upstream Derivation"),
+        dataset_.upstream_derivation_id
+            ? QString::fromStdString(boost::uuids::to_string(*dataset_.upstream_derivation_id))
+            : tr("-"));
+    addProperty(provenanceTree_, tr("Lineage Depth"), QString::number(dataset_.lineage_depth));
+}
+
+void DatasetViewDialog::updateMethodologyTab() {
+    methodologyTree_->clear();
+    stepsText_->clear();
+
+    const auto* methodology = findMethodology(dataset_.methodology_id);
+    if (!methodology) {
+        addProperty(methodologyTree_, tr("Status"), tr("No methodology assigned"));
+        stepsText_->setPlainText(tr("No methodology is assigned to this dataset."));
+        return;
+    }
+
+    // Basic info
+    addSectionHeader(methodologyTree_, tr("General"));
+    addProperty(methodologyTree_, tr("Name"), QString::fromStdString(methodology->name));
+    addProperty(methodologyTree_, tr("Version"), QString::number(methodology->version));
+    addProperty(methodologyTree_, tr("ID"),
+        QString::fromStdString(boost::uuids::to_string(methodology->id)));
+    addProperty(methodologyTree_, tr("Description"),
+        methodology->description.empty()
+            ? tr("-") : QString::fromStdString(methodology->description));
+
+    // References
+    addSectionHeader(methodologyTree_, tr("References"));
+    addProperty(methodologyTree_, tr("Logic Reference"),
+        methodology->logic_reference
+            ? QString::fromStdString(*methodology->logic_reference) : tr("-"));
+
+    // Audit info
+    addSectionHeader(methodologyTree_, tr("Audit"));
+    addProperty(methodologyTree_, tr("Recorded By"),
+        QString::fromStdString(methodology->recorded_by));
+    addProperty(methodologyTree_, tr("Recorded At"),
+        relative_time_helper::format(methodology->recorded_at));
+    addProperty(methodologyTree_, tr("Commentary"),
+        methodology->change_commentary.empty()
+            ? tr("-") : QString::fromStdString(methodology->change_commentary));
+
+    // Implementation details in the text browser
+    if (methodology->implementation_details) {
+        stepsText_->setPlainText(QString::fromStdString(*methodology->implementation_details));
+    } else {
+        stepsText_->setPlainText(tr("No implementation details available."));
+    }
 }
 
 void DatasetViewDialog::updateLineageView() {

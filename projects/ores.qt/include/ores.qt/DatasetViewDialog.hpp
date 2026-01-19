@@ -23,7 +23,8 @@
 #include <vector>
 #include <QDialog>
 #include <QTabWidget>
-#include <QLabel>
+#include <QTreeWidget>
+#include <QTextBrowser>
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include "ores.dq/domain/dataset.hpp"
@@ -36,12 +37,10 @@ namespace ores::qt {
  * @brief Dialog for viewing dataset details with tabbed interface.
  *
  * Displays dataset information organized into tabs:
- * - General: name, version, ID, description, catalog
- * - Classification: domain, subject area
- * - Data Quality: origin, nature, treatment dimensions
- * - Provenance: methodology, source, dates, license
+ * - Overview: general info, classification, data quality dimensions, audit info
+ * - Provenance: methodology, source, dates, license, lineage info
+ * - Methodology: methodology details and processing steps
  * - Lineage: visual diagram
- * - Audit: recorded by/at, commentary
  */
 class DatasetViewDialog : public QDialog {
     Q_OBJECT
@@ -84,21 +83,24 @@ public:
 
 private:
     void setupUi();
-    QWidget* createGeneralTab();
-    QWidget* createClassificationTab();
-    QWidget* createDataQualityTab();
+    QWidget* createOverviewTab();
     QWidget* createProvenanceTab();
+    QWidget* createMethodologyTab();
     QWidget* createLineageTab();
-    QWidget* createAuditTab();
 
-    void updateGeneralTab();
-    void updateClassificationTab();
-    void updateDataQualityTab();
+    void updateOverviewTab();
     void updateProvenanceTab();
+    void updateMethodologyTab();
     void updateLineageView();
-    void updateAuditTab();
+
+    // Helper to add property to tree widget
+    void addProperty(QTreeWidget* tree, const QString& name, const QString& value,
+        const QString& tooltip = {});
+    void addSectionHeader(QTreeWidget* tree, const QString& title);
 
     QString findMethodologyName(const std::optional<boost::uuids::uuid>& methodologyId) const;
+    const dq::domain::methodology* findMethodology(
+        const std::optional<boost::uuids::uuid>& methodologyId) const;
 
     // Lineage diagram helper methods
     qreal createLineageNode(QGraphicsScene* scene, qreal x, qreal y,
@@ -120,40 +122,18 @@ private:
     // Tab widget
     QTabWidget* tabWidget_;
 
-    // General tab labels
-    QLabel* nameLabel_;
-    QLabel* versionLabel_;
-    QLabel* idLabel_;
-    QLabel* descriptionLabel_;
-    QLabel* catalogLabel_;
+    // Overview tab (General + Classification + Data Quality + Audit)
+    QTreeWidget* overviewTree_;
 
-    // Classification tab labels
-    QLabel* domainLabel_;
-    QLabel* subjectAreaLabel_;
+    // Provenance tab
+    QTreeWidget* provenanceTree_;
 
-    // Data Quality tab labels
-    QLabel* originLabel_;
-    QLabel* natureLabel_;
-    QLabel* treatmentLabel_;
-
-    // Provenance tab labels
-    QLabel* methodologyLabel_;
-    QLabel* sourceSystemLabel_;
-    QLabel* asOfDateLabel_;
-    QLabel* ingestionLabel_;
-    QLabel* licenseLabel_;
-    QLabel* codingSchemeLabel_;
-    QLabel* businessContextLabel_;
-    QLabel* upstreamLabel_;
-    QLabel* lineageDepthLabel_;
+    // Methodology tab
+    QTreeWidget* methodologyTree_;
+    QTextBrowser* stepsText_;
 
     // Lineage tab
     QGraphicsView* lineageView_;
-
-    // Audit tab labels
-    QLabel* recordedByLabel_;
-    QLabel* recordedAtLabel_;
-    QLabel* commentaryLabel_;
 
     // Data
     dq::domain::dataset dataset_;

@@ -99,6 +99,8 @@ private slots:
     void onDatasetSelectionChanged();
     void onDatasetDoubleClicked(const QModelIndex& index);
     void onRefreshClicked();
+    void onViewDatasetClicked();
+    void onEditDatasetClicked();
     void onDataLoaded();
     void onLoadError(const QString& error_message, const QString& details = {});
 
@@ -141,6 +143,8 @@ private:
     // Toolbar
     QToolBar* toolbar_;
     QAction* refreshAction_;
+    QAction* viewDatasetAction_;
+    QAction* editDatasetAction_;
     QAction* originDimensionsAction_;
     QAction* natureDimensionsAction_;
     QAction* treatmentDimensionsAction_;

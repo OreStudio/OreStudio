@@ -19,6 +19,7 @@
  */
 #include "ores.qt/DatasetItemDelegate.hpp"
 #include "ores.qt/ClientDatasetModel.hpp"
+#include "ores.qt/ColorConstants.hpp"
 
 #include <QPainter>
 #include <QApplication>
@@ -28,49 +29,32 @@ namespace ores::qt {
 
 namespace {
 
-// Badge colors for Origin dimension
-const QColor origin_primary_bg(59, 130, 246);    // Blue for Primary
-const QColor origin_derived_bg(139, 92, 246);    // Purple for Derived
-
-// Badge colors for Nature dimension
-const QColor nature_actual_bg(34, 197, 94);      // Green for Actual
-const QColor nature_estimated_bg(234, 179, 8);   // Amber for Estimated
-const QColor nature_simulated_bg(236, 72, 153);  // Pink for Simulated
-
-// Badge colors for Treatment dimension
-const QColor treatment_raw_bg(107, 114, 128);    // Gray for Raw
-const QColor treatment_cleaned_bg(14, 165, 233); // Sky blue for Cleaned
-const QColor treatment_enriched_bg(168, 85, 247);// Purple for Enriched
-
-const QColor badge_text(255, 255, 255);
+using dbc = dimension_badge_colors;
 
 QColor getOriginColor(const QString& origin) {
-    if (origin == "Primary") return origin_primary_bg;
-    if (origin == "Derived") return origin_derived_bg;
-    return QColor(107, 114, 128);
+    if (origin == "Primary") return dbc::origin_primary;
+    if (origin == "Derived") return dbc::origin_derived;
+    return dbc::default_bg;
 }
 
 QColor getNatureColor(const QString& nature) {
-    if (nature == "Actual") return nature_actual_bg;
-    if (nature == "Estimated") return nature_estimated_bg;
-    if (nature == "Simulated") return nature_simulated_bg;
-    return QColor(107, 114, 128);
+    if (nature == "Actual") return dbc::nature_actual;
+    if (nature == "Estimated") return dbc::nature_estimated;
+    if (nature == "Simulated") return dbc::nature_simulated;
+    return dbc::default_bg;
 }
 
 QColor getTreatmentColor(const QString& treatment) {
-    if (treatment == "Raw") return treatment_raw_bg;
-    if (treatment == "Cleaned") return treatment_cleaned_bg;
-    if (treatment == "Enriched") return treatment_enriched_bg;
-    return QColor(107, 114, 128);
+    if (treatment == "Raw") return dbc::treatment_raw;
+    if (treatment == "Cleaned") return dbc::treatment_cleaned;
+    if (treatment == "Enriched") return dbc::treatment_enriched;
+    return dbc::default_bg;
 }
 
 }
 
 DatasetItemDelegate::DatasetItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent) {
-    badgeFont_ = QFont();
-    badgeFont_.setPointSize(7);
-    badgeFont_.setBold(true);
 }
 
 void DatasetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
@@ -84,6 +68,11 @@ void DatasetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         QStyle* style = QApplication::style();
         style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter);
 
+        // Create badge font derived from view's font for proper scaling
+        QFont badgeFont = opt.font;
+        badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
+        badgeFont.setBold(true);
+
         // Get the tag values
         QString origin = index.data(ClientDatasetModel::OriginRole).toString();
         QString nature = index.data(ClientDatasetModel::NatureRole).toString();
@@ -95,17 +84,17 @@ void DatasetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
 
         // Draw Origin badge
         if (!origin.isEmpty()) {
-            drawBadge(painter, badgeRect, origin, getOriginColor(origin), badge_text);
+            drawBadge(painter, badgeRect, origin, getOriginColor(origin), dbc::text, badgeFont);
         }
 
         // Draw Nature badge
         if (!nature.isEmpty()) {
-            drawBadge(painter, badgeRect, nature, getNatureColor(nature), badge_text);
+            drawBadge(painter, badgeRect, nature, getNatureColor(nature), dbc::text, badgeFont);
         }
 
         // Draw Treatment badge
         if (!treatment.isEmpty()) {
-            drawBadge(painter, badgeRect, treatment, getTreatmentColor(treatment), badge_text);
+            drawBadge(painter, badgeRect, treatment, getTreatmentColor(treatment), dbc::text, badgeFont);
         }
 
         return;
@@ -129,12 +118,12 @@ QSize DatasetItemDelegate::sizeHint(const QStyleOptionViewItem& option,
 
 void DatasetItemDelegate::drawBadge(QPainter* painter, QRect& rect,
                                     const QString& text, const QColor& backgroundColor,
-                                    const QColor& textColor) const {
+                                    const QColor& textColor, const QFont& font) const {
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing, true);
 
     // Calculate badge dimensions
-    QFontMetrics fm(badgeFont_);
+    QFontMetrics fm(font);
     int textWidth = fm.horizontalAdvance(text);
     int padding = 4;
     int badgeWidth = textWidth + padding * 2;
@@ -152,7 +141,7 @@ void DatasetItemDelegate::drawBadge(QPainter* painter, QRect& rect,
     painter->drawRoundedRect(badgeRect, radius, radius);
 
     // Draw text
-    painter->setFont(badgeFont_);
+    painter->setFont(font);
     painter->setPen(textColor);
     painter->drawText(badgeRect, Qt::AlignCenter, text);
 

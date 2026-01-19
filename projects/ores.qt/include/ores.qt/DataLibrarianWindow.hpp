@@ -166,6 +166,23 @@ private:
     const dq::domain::methodology* findMethodology(const std::optional<boost::uuids::uuid>& id) const;
     QString findCatalogName(const boost::uuids::uuid& id) const;
 
+    // Lineage diagram helper methods
+    qreal createLineageNode(QGraphicsScene* scene, qreal x, qreal y,
+        const QString& headerText, const QStringList& labels,
+        const QStringList& values, const QColor& headerColor,
+        bool hasInputSocket, bool hasOutputSocket) const;
+    void createLineageNodeBody(QGraphicsScene* scene, qreal x, qreal y,
+        qreal nodeWidth, qreal nodeHeight, const QString& tooltip) const;
+    void createLineageNodeHeader(QGraphicsScene* scene, qreal x, qreal y,
+        qreal nodeWidth, const QString& headerText, const QColor& headerColor,
+        const QString& tooltip) const;
+    void createLineageNodeProperties(QGraphicsScene* scene, qreal x, qreal y,
+        qreal nodeWidth, const QStringList& labels, const QStringList& values) const;
+    void createLineageNodeSockets(QGraphicsScene* scene, qreal x, qreal y,
+        qreal nodeWidth, qreal nodeHeight, bool hasInput, bool hasOutput) const;
+    void drawLineageConnection(QGraphicsScene* scene, qreal x1, qreal y1,
+        qreal x2, qreal y2) const;
+
     ClientManager* clientManager_;
     QString username_;
 

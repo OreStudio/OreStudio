@@ -39,9 +39,8 @@ public:
 
 private:
     void drawBadge(QPainter* painter, QRect& rect, const QString& text,
-                   const QColor& backgroundColor, const QColor& textColor) const;
-
-    QFont badgeFont_;
+                   const QColor& backgroundColor, const QColor& textColor,
+                   const QFont& font) const;
 };
 
 }

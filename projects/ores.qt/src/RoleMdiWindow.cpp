@@ -35,6 +35,7 @@
 #include <QAction>
 #include <QSortFilterProxyModel>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 
@@ -61,7 +62,7 @@ RoleMdiWindow(ClientManager* clientManager,
 
     toolBar_->setMovable(false);
     toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    const QColor iconColor(220, 220, 220);
+    const auto& iconColor = color_constants::icon_color;
 
     // Setup reload action with normal and stale icons
     setupReloadAction();
@@ -237,7 +238,7 @@ void RoleMdiWindow::updateActionStates() {
 }
 
 void RoleMdiWindow::setupReloadAction() {
-    const QColor iconColor(220, 220, 220);
+    const auto& iconColor = color_constants::icon_color;
 
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor));

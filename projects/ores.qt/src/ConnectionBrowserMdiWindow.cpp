@@ -24,6 +24,7 @@
 #include "ores.qt/ConnectionItemDelegate.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.connections/service/connection_manager.hpp"
 #include <QHeaderView>
@@ -73,7 +74,7 @@ void ConnectionBrowserMdiWindow::setupUI() {
     toolBar_ = new QToolBar(this);
     toolBar_->setIconSize(QSize(20, 20));
 
-    const QColor iconColor(220, 220, 220); // Light gray for dark theme
+    const auto& iconColor = color_constants::icon_color;
 
     addAction_ = toolBar_->addAction(
         IconUtils::createRecoloredIcon(":/icons/ic_fluent_add_20_regular.svg", iconColor),
@@ -304,7 +305,7 @@ void ConnectionBrowserMdiWindow::openAddDialog() {
 
     // Create as MDI sub-window if MDI area is available
     if (mdiArea_) {
-        const QColor iconColor(220, 220, 220);
+        const auto& iconColor = color_constants::icon_color;
         auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
         subWindow->setWidget(dialog);
         subWindow->setWindowTitle(tr("Add Item"));
@@ -410,7 +411,7 @@ void ConnectionBrowserMdiWindow::editSelected() {
 
     // Create as MDI sub-window if MDI area is available
     if (mdiArea_) {
-        const QColor iconColor(220, 220, 220);
+        const auto& iconColor = color_constants::icon_color;
         auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
         subWindow->setWidget(dialog);
         subWindow->setWindowTitle(windowTitle);

@@ -27,6 +27,7 @@
 #include <QSortFilterProxyModel>
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/FeatureFlagItemDelegate.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
@@ -59,7 +60,7 @@ FeatureFlagMdiWindow(ClientManager* clientManager,
 
     toolBar_->setMovable(false);
     toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    const QColor iconColor(220, 220, 220);
+    const auto& iconColor = color_constants::icon_color;
 
     // Setup reload action with normal and stale icons
     setupReloadAction();
@@ -429,7 +430,7 @@ void FeatureFlagMdiWindow::updateActionStates() {
 }
 
 void FeatureFlagMdiWindow::setupReloadAction() {
-    const QColor iconColor(220, 220, 220);
+    const auto& iconColor = color_constants::icon_color;
 
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor));

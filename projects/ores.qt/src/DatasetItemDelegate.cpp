@@ -29,7 +29,7 @@ namespace ores::qt {
 namespace {
 
 // Badge colors for Origin dimension
-const QColor origin_source_bg(59, 130, 246);     // Blue for Source
+const QColor origin_primary_bg(59, 130, 246);    // Blue for Primary
 const QColor origin_derived_bg(139, 92, 246);    // Purple for Derived
 
 // Badge colors for Nature dimension
@@ -45,7 +45,7 @@ const QColor treatment_enriched_bg(168, 85, 247);// Purple for Enriched
 const QColor badge_text(255, 255, 255);
 
 QColor getOriginColor(const QString& origin) {
-    if (origin == "Source") return origin_source_bg;
+    if (origin == "Primary") return origin_primary_bg;
     if (origin == "Derived") return origin_derived_bg;
     return QColor(107, 114, 128);
 }

@@ -176,6 +176,8 @@
    <addaction name="CountriesAction"/>
    <addaction name="ActionAccounts"/>
    <addaction name="ActionFeatureFlags"/>
+   <addaction name="separator"/>
+   <addaction name="ActionDataLibrarian"/>
   </widget>
   <action name="ExitAction">
    <property name="text">

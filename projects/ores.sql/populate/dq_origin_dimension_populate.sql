@@ -25,11 +25,25 @@
  * This script is idempotent.
  *
  * Origins:
- * - Source: Raw data ingested directly from the origin
+ * - Primary: Raw data ingested directly from the origin without transformations
  * - Derived: Data transformed, aggregated, or calculated via code
  */
 
 set schema 'ores';
+
+-- =============================================================================
+-- Migration: Rename Source to Primary
+-- =============================================================================
+
+-- Update existing 'Source' records to 'Primary'
+update ores.dq_origin_dimensions_tbl
+set code = 'Primary', name = 'Primary Data'
+where code = 'Source';
+
+-- Update any datasets referencing 'Source' to use 'Primary'
+update ores.dq_datasets_tbl
+set origin_code = 'Primary'
+where origin_code = 'Source';
 
 -- =============================================================================
 -- Helper Functions
@@ -69,9 +83,9 @@ $$ language plpgsql;
 \echo '--- Data Quality Origin Dimensions ---'
 
 select ores.upsert_dq_origin_dimensions(
-    'Source',
-    'Source Data',
-    'Raw data ingested directly from the origin.'
+    'Primary',
+    'Primary Data',
+    'Raw data ingested directly from the origin without transformations.'
 );
 
 select ores.upsert_dq_origin_dimensions(

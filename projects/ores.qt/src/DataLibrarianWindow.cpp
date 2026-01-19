@@ -684,7 +684,7 @@ void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) 
     // Classification dimensions
     addProperty(tr("Origin"), QString::fromStdString(dataset->origin_code),
         tr("Origin indicates where the data came from:\n"
-           "- Source: Primary data directly from originating system\n"
+           "- Primary: Data directly from originating system\n"
            "- Derived: Data computed or aggregated from other datasets"));
     addProperty(tr("Nature"), QString::fromStdString(dataset->nature_code),
         tr("Nature describes the type of values in the data:\n"

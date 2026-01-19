@@ -650,13 +650,10 @@ void MainWindow::updateMenuState() {
     ui_->ActionChangeReasonCategories->setEnabled(isConnected);
     ui_->ActionChangeReasons->setEnabled(isConnected);
 
-    // Identity menu enabled when connected - permission checks happen server-side via RBAC
-    ui_->menuIdentity->menuAction()->setEnabled(isConnected);
+    // System menu enabled when connected (contains Identity, Configuration, Telemetry)
+    ui_->menuSystem->menuAction()->setEnabled(isConnected);
     ui_->ActionAccounts->setEnabled(isConnected);
     ui_->ActionRoles->setEnabled(isConnected);
-
-    // System menu enabled when connected
-    ui_->menuSystem->menuAction()->setEnabled(isConnected);
     ui_->ActionFeatureFlags->setEnabled(isConnected);
     ui_->ActionOriginDimensions->setEnabled(isConnected);
     ui_->ActionNatureDimensions->setEnabled(isConnected);

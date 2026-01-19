@@ -62,7 +62,7 @@
     </widget>
     <widget class="QMenu" name="menuQuality">
      <property name="title">
-      <string>&amp;Quality</string>
+      <string>Data &amp;Quality</string>
      </property>
      <widget class="QMenu" name="menuClassifications">
       <property name="title">
@@ -94,17 +94,17 @@
     <addaction name="menuAssets"/>
     <addaction name="menuQuality"/>
    </widget>
-   <widget class="QMenu" name="menuIdentity">
-    <property name="title">
-     <string>&amp;Identity</string>
-    </property>
-    <addaction name="ActionAccounts"/>
-    <addaction name="ActionRoles"/>
-   </widget>
    <widget class="QMenu" name="menuSystem">
     <property name="title">
      <string>&amp;System</string>
     </property>
+    <widget class="QMenu" name="menuIdentity">
+     <property name="title">
+      <string>&amp;Identity</string>
+     </property>
+     <addaction name="ActionAccounts"/>
+     <addaction name="ActionRoles"/>
+    </widget>
     <widget class="QMenu" name="menuTelemetry">
      <property name="title">
       <string>&amp;Telemetry</string>
@@ -125,7 +125,14 @@
      <addaction name="separator"/>
      <addaction name="ActionTelemetrySettings"/>
     </widget>
-    <addaction name="ActionFeatureFlags"/>
+    <widget class="QMenu" name="menuConfiguration">
+     <property name="title">
+      <string>&amp;Configuration</string>
+     </property>
+     <addaction name="ActionFeatureFlags"/>
+    </widget>
+    <addaction name="menuIdentity"/>
+    <addaction name="menuConfiguration"/>
     <addaction name="menuTelemetry"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
@@ -143,7 +150,6 @@
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuData"/>
-   <addaction name="menuIdentity"/>
    <addaction name="menuSystem"/>
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>

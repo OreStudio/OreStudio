@@ -89,6 +89,13 @@ namespace ores #F2F2F2 {
             class LogoLabel
         }
 
+        ' Group: Data Librarian
+        together {
+            class DataLibrarianWindow
+            class DatasetViewDialog
+            class ClientDatasetModel
+        }
+
         ' Stack vertically within groups
         ClientManager -[hidden]down- MainWindow
         MdiAreaWithBackground -[hidden]down- DetachableMdiSubWindow
@@ -109,6 +116,8 @@ namespace ores #F2F2F2 {
         MessageBoxHelper -[hidden]down- IconUtils
         IconUtils -[hidden]down- MdiUtils
         MdiUtils -[hidden]down- LogoLabel
+        DataLibrarianWindow -[hidden]down- DatasetViewDialog
+        DatasetViewDialog -[hidden]down- ClientDatasetModel
 
         ' Create row structure between groups
         MainWindow -[hidden]down- MdiAreaWithBackground
@@ -118,6 +127,7 @@ namespace ores #F2F2F2 {
         CountryHistoryDialog -[hidden]down- LoginDialog
         ChangePasswordDialog -[hidden]down- CurrencyItemDelegate
         ImageCache -[hidden]down- LoginDialog
+        LogoLabel -[hidden]down- DataLibrarianWindow
 
         '
         ' Class definitions
@@ -866,6 +876,139 @@ namespace ores #F2F2F2 {
         - overlayText_: Text to overlay on label
         end note
 
+        ' Data Librarian Window
+        class DataLibrarianWindow #ECECEC {
+            +DataLibrarianWindow(ClientManager* clientManager, const QString& username, QWidget* parent)
+            +~DataLibrarianWindow()
+            +sizeHint() QSize
+            -setupUi() void
+            -setupNavigationSidebar() void
+            -setupCentralWorkspace() void
+            -setupToolbar() void
+            -setupConnections() void
+            -buildNavigationTree() void
+            -showDatasetDetailDialog(const dq::domain::dataset* dataset) void
+            -filterDatasetsByCatalog(const QString& catalogName) void
+            -filterDatasetsByDomain(const QString& domainName) void
+            -filterDatasetsBySubjectArea(const QString& subjectAreaName) void
+            -clearDatasetFilter() void
+            -selectFirstDataset() void
+            -setupColumnVisibility() void
+            -applyDefaultColumnVisibility() void
+            -onNavigationSelectionChanged(const QModelIndex& current, const QModelIndex& previous) void
+            -onDatasetSelectionChanged() void
+            -onDatasetDoubleClicked(const QModelIndex& index) void
+            -onRefreshClicked() void
+            -onViewDatasetClicked() void
+            -onDataLoaded() void
+            -onLoadError(const QString& error_message, const QString& details) void
+            -{field} clientManager_ ClientManager*
+            -{field} username_ QString
+            -{field} mainSplitter_ QSplitter*
+            -{field} navigationTree_ QTreeView*
+            -{field} navigationModel_ QStandardItemModel*
+            -{field} toolbar_ QToolBar*
+            -{field} datasetTable_ QTableView*
+            -{field} datasetModel_ ClientDatasetModel*
+            -{field} datasetProxyModel_ QSortFilterProxyModel*
+            -{field} datasetViewDialog_ DatasetViewDialog*
+            -{field} dataDomainModel_ ClientDataDomainModel*
+            -{field} subjectAreaModel_ ClientSubjectAreaModel*
+            -{field} catalogModel_ ClientCatalogModel*
+            -{field} methodologyModel_ ClientMethodologyModel*
+            -{field} statusBar_ QStatusBar*
+            -{field} loadingProgressBar_ QProgressBar*
+        }
+        note top of DataLibrarianWindow
+        Data Librarian window for browsing and managing datasets.
+
+        Provides:
+        - Navigation sidebar ("The Stacks"): Domain > Subject Area > Catalog tree
+        - Central workspace ("The Registry"): Dataset table with filtering
+        - Toolbar buttons to open related entity windows
+
+        Signals: statusChanged, errorOccurred, openOriginDimensionsRequested,
+        openNatureDimensionsRequested, openTreatmentDimensionsRequested,
+        openCodingSchemesRequested, openMethodologiesRequested
+        end note
+
+        ' Dataset View Dialog
+        class DatasetViewDialog #ECECEC {
+            +DatasetViewDialog(QWidget* parent)
+            +~DatasetViewDialog()
+            +setDataset(const dq::domain::dataset& dataset) void
+            +setMethodologies(const std::vector<dq::domain::methodology>& methodologies) void
+            -setupUi() void
+            -createOverviewTab() QWidget*
+            -createProvenanceTab() QWidget*
+            -createMethodologyTab() QWidget*
+            -createLineageTab() QWidget*
+            -updateOverviewTab() void
+            -updateProvenanceTab() void
+            -updateMethodologyTab() void
+            -updateLineageView() void
+            -addProperty(QTreeWidget* tree, const QString& name, const QString& value, const QString& tooltip) void
+            -addSectionHeader(QTreeWidget* tree, const QString& title) void
+            -findMethodologyName(const std::optional<boost::uuids::uuid>& methodologyId) QString
+            -findMethodology(const std::optional<boost::uuids::uuid>& methodologyId) const dq::domain::methodology*
+            -createLineageNode(QGraphicsScene* scene, qreal x, qreal y, const QString& headerText, const QStringList& labels, const QStringList& values, const QColor& headerColor, bool hasInputSocket, bool hasOutputSocket) qreal
+            -drawLineageConnection(QGraphicsScene* scene, qreal x1, qreal y1, qreal x2, qreal y2) void
+            -{field} tabWidget_ QTabWidget*
+            -{field} overviewTree_ QTreeWidget*
+            -{field} provenanceTree_ QTreeWidget*
+            -{field} methodologyTree_ QTreeWidget*
+            -{field} stepsText_ QTextBrowser*
+            -{field} lineageView_ QGraphicsView*
+            -{field} dataset_ dq::domain::dataset
+            -{field} methodologies_ std::vector<dq::domain::methodology>
+            -{field} lineageBackground_ QColor
+            -{field} lineageNodeBody_ QColor
+            -{field} lineageNodeWidth_ qreal
+        }
+        note top of DatasetViewDialog
+        Read-only dialog for viewing dataset details with tabbed interface.
+
+        Displays dataset information in 4 tabs:
+        - Overview: general info, classification, data quality, audit
+        - Provenance: source, dates, lineage info
+        - Methodology: methodology details and processing steps
+        - Lineage: visual diagram of data flow
+
+        QSS-styleable properties for lineage diagram customization.
+        end note
+
+        ' Client Dataset Model
+        class ClientDatasetModel #ECECEC {
+            +ClientDatasetModel(ClientManager* clientManager, QObject* parent)
+            +~ClientDatasetModel()
+            +rowCount(const QModelIndex& parent) int
+            +columnCount(const QModelIndex& parent) int
+            +data(const QModelIndex& index, int role) QVariant
+            +headerData(int section, Qt::Orientation orientation, int role) QVariant
+            +refresh() void
+            +getDataset(int row) const dq::domain::dataset*
+            -onDatasetsLoaded() void
+            -onPulseStateChanged(bool isOn) void
+            -onPulsingComplete() void
+            -recency_foreground_color(const boost::uuids::uuid& id) QVariant
+            -{field} clientManager_ ClientManager*
+            -{field} datasets_ std::vector<dq::domain::dataset>
+            -{field} watcher_ QFutureWatcher<FetchResult>*
+            -{field} is_fetching_ bool
+            -{field} recencyTracker_ RecencyTracker<dq::domain::dataset>
+            -{field} pulseManager_ RecencyPulseManager*
+        }
+        note top of ClientDatasetModel
+        Table model for displaying datasets fetched from the server.
+
+        Features:
+        - Columns: Name, Catalog, SubjectArea, Domain, Origin, Nature, Treatment, etc.
+        - Recency tracking for highlighting recently changed items
+        - Async loading with FutureWatcher
+
+        Signals: dataLoaded, loadError
+        end note
+
         ' Relationships - Main Window Structure
         ores::qt::MainWindow *-- ores::qt::MdiAreaWithBackground
         ores::qt::MainWindow o-- ores::qt::DetachableMdiSubWindow
@@ -932,6 +1075,14 @@ namespace ores #F2F2F2 {
 
         ' Relationships - ImageCache
         ores::qt::ImageCache o-- ores::qt::ClientManager
+
+        ' Relationships - Data Librarian
+        ores::qt::MainWindow *-- ores::qt::DataLibrarianWindow
+        ores::qt::DataLibrarianWindow o-- ores::qt::ClientManager
+        ores::qt::DataLibrarianWindow *-- ores::qt::ClientDatasetModel
+        ores::qt::DataLibrarianWindow *-- ores::qt::DatasetViewDialog
+        ores::qt::DataLibrarianWindow ..> ores::qt::DatasetViewDialog : creates
+        ores::qt::ClientDatasetModel o-- ores::qt::ClientManager
     }
 }
 

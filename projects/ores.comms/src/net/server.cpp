@@ -202,6 +202,9 @@ boost::asio::awaitable<void> server::accept_loop(boost::asio::io_context& io_con
                                       << socket.remote_endpoint().address().to_string()
                                       << ":" << socket.remote_endpoint().port();
 
+            // Disable Nagle's algorithm for low-latency request/response
+            socket.set_option(boost::asio::ip::tcp::no_delay(true));
+
             // Create SSL socket and connection wrapper
             auto conn = std::make_unique<connection>(
                 connection::ssl_socket(std::move(socket), ssl_ctx_));

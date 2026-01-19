@@ -170,7 +170,12 @@ boost::asio::awaitable<void> client::perform_connection() {
     co_await boost::asio::async_connect(socket, endpoints,
         boost::asio::use_awaitable);
 
-    BOOST_LOG_SEV(lg(), debug) << "TCP connection established.";
+    // Disable Nagle's algorithm for low-latency request/response.
+    // Without this, small writes get buffered and can cause multi-second delays
+    // when multiple requests are sent in quick succession.
+    socket.set_option(boost::asio::ip::tcp::no_delay(true));
+
+    BOOST_LOG_SEV(lg(), debug) << "TCP connection established (TCP_NODELAY enabled).";
 
     // Check if disconnect was called while we were connecting
     if (state_.load(std::memory_order_acquire) == connection_state::disconnected) {

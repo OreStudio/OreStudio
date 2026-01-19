@@ -25,7 +25,9 @@
  * must be loaded before others.
  *
  * Dependencies:
- * - FpML Standards depends on ISO Standards (uses flag images for currencies)
+ * - ISO Standards depends on Visual Assets (countries/currencies use flag images)
+ * - Cryptocurrency depends on Visual Assets (crypto data uses icon images)
+ * - FpML Standards depends on Visual Assets (non-ISO currencies use flag images)
  */
 
 set schema 'ores';
@@ -68,10 +70,22 @@ $$ language plpgsql;
 
 \echo '--- Catalog Dependencies ---'
 
--- FpML Standards uses flag images from ISO Standards for currency display
+-- ISO Standards uses flag images from Visual Assets for countries and currencies
+select ores.upsert_dq_catalog_dependency(
+    'ISO Standards',
+    'Visual Assets'
+);
+
+-- Cryptocurrency uses icon images from Visual Assets for crypto display
+select ores.upsert_dq_catalog_dependency(
+    'Cryptocurrency',
+    'Visual Assets'
+);
+
+-- FpML Standards uses flag images from Visual Assets for non-ISO currency display
 select ores.upsert_dq_catalog_dependency(
     'FpML Standards',
-    'ISO Standards'
+    'Visual Assets'
 );
 
 -- =============================================================================

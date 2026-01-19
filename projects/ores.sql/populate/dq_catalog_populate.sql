@@ -25,8 +25,9 @@
  * This script is idempotent.
  *
  * Catalogs:
+ * - Visual Assets: Flag images, cryptocurrency icons, and other visual media
  * - ISO Standards: International standards for currencies, countries
- * - Cryptocurrency: Digital asset reference data and visual assets
+ * - Cryptocurrency: Digital asset reference data
  * - FpML Standards: FpML coding schemes for OTC derivatives
  */
 
@@ -70,14 +71,20 @@ $$ language plpgsql;
 \echo '--- Data Quality Catalogs ---'
 
 select ores.upsert_dq_catalogs(
+    'Visual Assets',
+    'Visual media assets including country flag images, cryptocurrency icons, and other imagery used to enrich reference data displays.',
+    'Reference Data Team'
+);
+
+select ores.upsert_dq_catalogs(
     'ISO Standards',
-    'International Organization for Standardization (ISO) reference data including ISO 3166 country codes, ISO 4217 currency codes, and associated flag imagery.',
+    'International Organization for Standardization (ISO) reference data including ISO 3166 country codes and ISO 4217 currency codes.',
     'Reference Data Team'
 );
 
 select ores.upsert_dq_catalogs(
     'Cryptocurrency',
-    'Digital asset reference data including cryptocurrency symbols, names, and icon imagery from community-maintained repositories.',
+    'Digital asset reference data including cryptocurrency symbols and names from community-maintained repositories.',
     'Digital Assets Team'
 );
 

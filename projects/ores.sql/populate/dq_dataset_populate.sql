@@ -140,7 +140,7 @@ select ores.upsert_dq_datasets(
 );
 
 select ores.upsert_dq_datasets(
-    'ISO Standards',
+    'Visual Assets',
     'Country Flags',
     'Reference Data',
     'ISO_3166_1_ALPHA_2',
@@ -165,7 +165,7 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_datasets(
-    'Cryptocurrency',
+    'Visual Assets',
     'Cryptocurrencies',
     'Reference Data',
     'NONE',

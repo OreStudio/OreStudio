@@ -90,8 +90,8 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
 
     // Create Save action
     saveAction_ = new QAction("Save", this);
-    saveAction_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_save_20_regular.svg",
-            iconColor));
+    saveAction_->setIcon(IconUtils::createRecoloredIcon(Icon::Save,
+            IconUtils::DefaultIconColor));
     saveAction_->setToolTip("Save changes");
     connect(saveAction_, &QAction::triggered, this,
         &CurrencyDetailDialog::onSaveClicked);
@@ -100,7 +100,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     // Create Delete action
     deleteAction_ = new QAction("Delete", this);
     deleteAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_delete_20_regular.svg", iconColor));
+            Icon::Delete, IconUtils::DefaultIconColor));
     deleteAction_->setToolTip("Delete currency");
     connect(deleteAction_, &QAction::triggered, this,
         &CurrencyDetailDialog::onDeleteClicked);
@@ -111,7 +111,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
     // Create Revert action (initially hidden)
     revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
+            Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
     revertAction_->setToolTip("Revert currency to this historical version");
     connect(revertAction_, &QAction::triggered, this,
         &CurrencyDetailDialog::onRevertClicked);
@@ -123,7 +123,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
 
     firstVersionAction_ = new QAction("First", this);
     firstVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_previous_20_regular.svg", iconColor));
+        Icon::ArrowPrevious, IconUtils::DefaultIconColor));
     firstVersionAction_->setToolTip(tr("First version"));
     connect(firstVersionAction_, &QAction::triggered, this,
         &CurrencyDetailDialog::onFirstVersionClicked);
@@ -132,7 +132,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
 
     prevVersionAction_ = new QAction("Previous", this);
     prevVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_left_20_regular.svg", iconColor));
+        Icon::ArrowLeft, IconUtils::DefaultIconColor));
     prevVersionAction_->setToolTip(tr("Previous version"));
     connect(prevVersionAction_, &QAction::triggered, this,
         &CurrencyDetailDialog::onPrevVersionClicked);
@@ -141,7 +141,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
 
     nextVersionAction_ = new QAction("Next", this);
     nextVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_right_20_regular.svg", iconColor));
+        Icon::ArrowRight, IconUtils::DefaultIconColor));
     nextVersionAction_->setToolTip(tr("Next version"));
     connect(nextVersionAction_, &QAction::triggered, this,
         &CurrencyDetailDialog::onNextVersionClicked);
@@ -150,7 +150,7 @@ CurrencyDetailDialog::CurrencyDetailDialog(QWidget* parent)
 
     lastVersionAction_ = new QAction("Last", this);
     lastVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_next_20_regular.svg", iconColor));
+        Icon::ArrowNext, IconUtils::DefaultIconColor));
     lastVersionAction_->setToolTip(tr("Last version"));
     connect(lastVersionAction_, &QAction::triggered, this,
         &CurrencyDetailDialog::onLastVersionClicked);
@@ -936,11 +936,9 @@ void CurrencyDetailDialog::onLastVersionClicked() {
 }
 
 void CurrencyDetailDialog::setupGenerateAction() {
-    const QColor iconColor(220, 220, 220);
-
     generateAction_ = new QAction("Generate", this);
     generateAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_wand_20_regular.svg", iconColor));
+            Icon::Wand, IconUtils::DefaultIconColor));
     generateAction_->setToolTip("Fill fields with synthetic test data");
     connect(generateAction_, &QAction::triggered, this,
         &CurrencyDetailDialog::onGenerateClicked);

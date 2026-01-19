@@ -75,12 +75,12 @@ void DataDomainController::showListWindow() {
     connect(listWindow_, &DataDomainMdiWindow::showDomainHistory,
             this, &DataDomainController::onShowHistory);
 
-    const QColor iconColor(220, 220, 220);
+    // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Data Domains");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_folder_20_regular.svg", iconColor));
+        Icon::Folder, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -140,8 +140,6 @@ void DataDomainController::onShowHistory(const QString& name) {
 void DataDomainController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new data domain";
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new DataDomainDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -163,7 +161,7 @@ void DataDomainController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Data Domain");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_folder_20_regular.svg", iconColor));
+        Icon::Folder, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -183,8 +181,6 @@ void DataDomainController::showDetailWindow(
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << domain.name;
-
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new DataDomainDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -214,7 +210,7 @@ void DataDomainController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Data Domain: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_folder_20_regular.svg", iconColor));
+        Icon::Folder, IconUtils::DefaultIconColor));
 
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
@@ -245,7 +241,6 @@ void DataDomainController::showHistoryWindow(const QString& name) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << name.toStdString();
-    const QColor iconColor(220, 220, 220);
 
     auto* historyDialog = new DataDomainHistoryDialog(name, clientManager_, mainWindow_);
 
@@ -271,7 +266,7 @@ void DataDomainController::showHistoryWindow(const QString& name) {
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Data Domain History: %1").arg(name));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
@@ -301,8 +296,6 @@ void DataDomainController::onOpenVersion(
         return;
     }
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new DataDomainDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -326,7 +319,7 @@ void DataDomainController::onOpenVersion(
     detailWindow->setWindowTitle(QString("Data Domain: %1 (Version %2)")
         .arg(name).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
@@ -366,14 +359,13 @@ void DataDomainController::onRevertVersion(
         self->handleEntitySaved();
     });
 
-    const QColor iconColor(220, 220, 220);
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Revert Data Domain: %1")
         .arg(QString::fromStdString(domain.name)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

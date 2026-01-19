@@ -117,7 +117,6 @@ void CountryController::showListWindow() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new countries MDI window";
-    const QColor iconColor(220, 220, 220);
     auto* countryWidget = new CountryMdiWindow(clientManager_, imageCache_,
                                                 username_, mainWindow_);
 
@@ -146,7 +145,7 @@ void CountryController::showListWindow() {
     countryListWindow_->setWidget(countryWidget);
     countryListWindow_->setWindowTitle("Countries");
     countryListWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_globe_20_regular.svg", iconColor));
+        Icon::Globe, IconUtils::DefaultIconColor));
 
     // Track window for detach/reattach operations
     register_detachable_window(countryListWindow_);
@@ -194,7 +193,6 @@ void CountryController::reloadListWindow() {
 
 void CountryController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new country requested";
-    const QColor iconColor(220, 220, 220);
     refdata::domain::country new_country;
 
     auto* detailDialog = new CountryDetailDialog(mainWindow_);
@@ -227,7 +225,7 @@ void CountryController::onAddNewRequested() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Country");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_globe_20_regular.svg", iconColor));
+        Icon::Globe, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -252,7 +250,6 @@ void CountryController::onShowCountryDetails(
 
     BOOST_LOG_SEV(lg(), info) << "Creating new detail window for: "
                               << country.alpha2_code;
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new CountryDetailDialog(mainWindow_);
     if (clientManager_) {
@@ -284,7 +281,7 @@ void CountryController::onShowCountryDetails(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Country Details: %1").arg(alpha2Code));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_globe_20_regular.svg", iconColor));
+        Icon::Globe, IconUtils::DefaultIconColor));
 
     // Track this detail window
     track_window(windowKey, detailWindow);
@@ -317,7 +314,6 @@ void CountryController::onShowCountryHistory(const QString& alpha2Code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << alpha2Code.toStdString();
-    const QColor iconColor(220, 220, 220);
 
     auto* historyDialog = new CountryHistoryDialog(alpha2Code, clientManager_, mainWindow_);
     if (imageCache_) {
@@ -347,7 +343,7 @@ void CountryController::onShowCountryHistory(const QString& alpha2Code) {
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Country History: %1").arg(alpha2Code));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -439,8 +435,6 @@ void CountryController::onOpenCountryVersion(
         return;
     }
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new CountryDetailDialog(mainWindow_);
     if (clientManager_) {
         detailDialog->setClientManager(clientManager_);
@@ -485,7 +479,7 @@ void CountryController::onOpenCountryVersion(
     detailWindow->setWindowTitle(QString("Country: %1 (Version %2 - Read Only)")
         .arg(alpha2Code).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_globe_20_regular.svg", iconColor));
+        Icon::Globe, IconUtils::DefaultIconColor));
 
     // Track this version window
     track_window(windowKey, detailWindow);

@@ -114,17 +114,9 @@ MainWindow::MainWindow(QWidget* parent) :
 
     mdiArea_->setBackgroundLogo(":/images/ore-studio-background.png");
 
-    const QColor iconColor(220, 220, 220); // Light gray for dark theme
-    const QColor connectedColor(100, 200, 100); // Green for connected
-    const QColor disconnectedColor(200, 100, 100); // Red for disconnected
-    const QColor reconnectingColor(230, 180, 80); // Orange/yellow for reconnecting
-    connectedIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_plug_connected_20_regular.svg",
-        connectedColor);
-    disconnectedIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_plug_disconnected_20_regular.svg", disconnectedColor);
-    reconnectingIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_plug_disconnected_20_regular.svg", reconnectingColor);
+    connectedIcon_ = IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::ConnectedColor);
+    disconnectedIcon_ = IconUtils::createRecoloredIcon(Icon::PlugDisconnected, IconUtils::DisconnectedColor);
+    reconnectingIcon_ = IconUtils::createRecoloredIcon(Icon::PlugDisconnected, IconUtils::ReconnectingColor);
 
     ui_->ActionConnect->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_plug_connected_20_regular.svg", iconColor));
@@ -177,16 +169,39 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionConnectionBrowser->setIcon(IconUtils::createRecoloredIcon(
         ":/icons/ic_fluent_server_link_20_regular.svg", iconColor));
 
+    ui_->ActionConnect->setIcon(IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::DefaultIconColor));
+    ui_->ActionDisconnect->setIcon(IconUtils::createRecoloredIcon(Icon::PlugDisconnected, IconUtils::DefaultIconColor));
+    ui_->CurrenciesAction->setIcon(IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));
+    ui_->CountriesAction->setIcon(IconUtils::createRecoloredIcon(Icon::Globe, IconUtils::DefaultIconColor));
+    ui_->ActionAbout->setIcon(IconUtils::createRecoloredIcon(Icon::Star, IconUtils::DefaultIconColor));
+    ui_->ActionAccounts->setIcon(IconUtils::createRecoloredIcon(Icon::PersonAccounts, IconUtils::DefaultIconColor));
+    ui_->ActionRoles->setIcon(IconUtils::createRecoloredIcon(Icon::LockClosed, IconUtils::DefaultIconColor));
+    ui_->ActionFeatureFlags->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
+    ui_->ActionChangeReasonCategories->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
+    ui_->ActionChangeReasons->setIcon(IconUtils::createRecoloredIcon(Icon::NoteEdit, IconUtils::DefaultIconColor));
+    ui_->ActionOriginDimensions->setIcon(IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
+    ui_->ActionNatureDimensions->setIcon(IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
+    ui_->ActionTreatmentDimensions->setIcon(IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
+    ui_->ActionCodingSchemeAuthorityTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
+    ui_->ActionDataDomains->setIcon(IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+    ui_->ActionCodingSchemes->setIcon(IconUtils::createRecoloredIcon(Icon::Code, IconUtils::DefaultIconColor));
+    ui_->ActionMethodologies->setIcon(IconUtils::createRecoloredIcon(Icon::Book, IconUtils::DefaultIconColor));
+    ui_->ActionDatasets->setIcon(IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
+    ui_->ActionDataLibrarian->setIcon(IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
+    ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(Icon::Person, IconUtils::DefaultIconColor));
+    ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
+    ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    ui_->ActionOpenRecording->setIcon(IconUtils::createRecoloredIcon(Icon::FolderOpen, IconUtils::DefaultIconColor));
+    ui_->ActionSetRecordingDirectory->setIcon(IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
+    ui_->ActionTelemetrySettings->setIcon(IconUtils::createRecoloredIcon(Icon::Settings, IconUtils::DefaultIconColor));
+    ui_->ActionConnectionBrowser->setIcon(IconUtils::createRecoloredIcon(Icon::ServerLink, IconUtils::DefaultIconColor));
+
     // Create record icons - regular (gray) for off, filled (red) for on
-    recordOffIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_record_20_regular.svg", iconColor);
-    recordOnIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_record_20_filled.svg", QColor(220, 80, 80)); // Red for recording
+    recordOffIcon_ = IconUtils::createRecoloredIcon(Icon::Record, IconUtils::DefaultIconColor);
+    recordOnIcon_ = IconUtils::createRecoloredIcon(Icon::RecordFilled, IconUtils::RecordingOnColor);
     ui_->ActionRecordSession->setIcon(recordOffIcon_);
-    ui_->ActionEventViewer->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_document_code_16_regular.svg", iconColor));
-    ui_->ActionTelemetryViewer->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_document_table_20_regular.svg", iconColor));
+    ui_->ActionEventViewer->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentCode, IconUtils::DefaultIconColor));
+    ui_->ActionTelemetryViewer->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
 
     // Connect menu actions
     connect(ui_->ActionConnect, &QAction::triggered, this,
@@ -275,9 +290,8 @@ MainWindow::MainWindow(QWidget* parent) :
         telemetryViewerWindow_->setAttribute(Qt::WA_DeleteOnClose);
         telemetryViewerWindow_->resize(1200, 700);
 
-        const QColor iconColor(220, 220, 220);
         telemetryViewerWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_document_table_20_regular.svg", iconColor));
+            Icon::DocumentTable, IconUtils::DefaultIconColor));
 
         // Track window destruction
         connect(telemetryViewerWindow_, &QObject::destroyed, this, [this]() {
@@ -454,7 +468,7 @@ MainWindow::MainWindow(QWidget* parent) :
     });
 
     // Connect Data Librarian action
-    connect(ui_->ActionDataLibrarian, &QAction::triggered, this, [this, iconColor]() {
+    connect(ui_->ActionDataLibrarian, &QAction::triggered, this, [this]() {
         if (dataLibrarianWindow_) {
             // If window exists, bring it to front
             mdiArea_->setActiveSubWindow(
@@ -470,7 +484,7 @@ MainWindow::MainWindow(QWidget* parent) :
         subWindow->setWidget(librarianWindow);
         subWindow->setWindowTitle(tr("Data Librarian"));
         subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_library_20_regular.svg", iconColor));
+            Icon::Library, IconUtils::DefaultIconColor));
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
 
         connect(librarianWindow, &DataLibrarianWindow::statusChanged,
@@ -1574,9 +1588,8 @@ void MainWindow::onConnectionBrowserTriggered() {
     connectionBrowserWindow_ = new DetachableMdiSubWindow();
     connectionBrowserWindow_->setWidget(browserWidget);
     connectionBrowserWindow_->setWindowTitle(tr("Connection Browser"));
-    const QColor windowIconColor(220, 220, 220);
     connectionBrowserWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_server_link_20_regular.svg", windowIconColor));
+        Icon::ServerLink, IconUtils::DefaultIconColor));
     connectionBrowserWindow_->setAttribute(Qt::WA_DeleteOnClose);
 
     // Track the window

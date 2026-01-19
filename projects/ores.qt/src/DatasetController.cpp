@@ -80,12 +80,12 @@ void DatasetController::showListWindow() {
     connect(listWindow_, &DatasetMdiWindow::showDatasetHistory,
             this, &DatasetController::onShowHistory);
 
-    const QColor iconColor(220, 220, 220);
+    // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Datasets");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+        Icon::Database, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -146,8 +146,6 @@ void DatasetController::onShowHistory(const boost::uuids::uuid& id) {
 void DatasetController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new dataset";
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new DatasetDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -170,7 +168,7 @@ void DatasetController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Dataset");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+        Icon::Database, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -188,8 +186,6 @@ void DatasetController::showDetailWindow(const dq::domain::dataset& dataset) {
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << dataset.id;
-
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new DatasetDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -221,7 +217,7 @@ void DatasetController::showDetailWindow(const dq::domain::dataset& dataset) {
     detailWindow->setWindowTitle(QString("Dataset: %1").arg(
         QString::fromStdString(dataset.name)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+        Icon::Database, IconUtils::DefaultIconColor));
 
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
@@ -250,7 +246,6 @@ void DatasetController::showHistoryWindow(const boost::uuids::uuid& id) {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << id;
-    const QColor iconColor(220, 220, 220);
 
     auto* historyDialog = new DatasetHistoryDialog(id, clientManager_, mainWindow_);
 
@@ -276,7 +271,7 @@ void DatasetController::showHistoryWindow(const boost::uuids::uuid& id) {
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Dataset History: %1").arg(idStr));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
@@ -306,8 +301,6 @@ void DatasetController::onOpenVersion(
         return;
     }
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new DatasetDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -332,7 +325,7 @@ void DatasetController::onOpenVersion(
     detailWindow->setWindowTitle(QString("Dataset: %1 (Version %2)")
         .arg(QString::fromStdString(dataset.name)).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
@@ -373,14 +366,13 @@ void DatasetController::onRevertVersion(
         self->handleEntitySaved();
     });
 
-    const QColor iconColor(220, 220, 220);
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Revert Dataset: %1")
         .arg(QString::fromStdString(dataset.name)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

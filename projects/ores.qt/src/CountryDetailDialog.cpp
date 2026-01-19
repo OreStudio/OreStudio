@@ -70,7 +70,7 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     // Create Save action
     saveAction_ = new QAction("Save", this);
     saveAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_save_20_regular.svg", iconColor));
+        Icon::Save, IconUtils::DefaultIconColor));
     saveAction_->setToolTip("Save changes");
     connect(saveAction_, &QAction::triggered, this,
         &CountryDetailDialog::onSaveClicked);
@@ -79,7 +79,7 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     // Create Delete action
     deleteAction_ = new QAction("Delete", this);
     deleteAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_delete_20_regular.svg", iconColor));
+        Icon::Delete, IconUtils::DefaultIconColor));
     deleteAction_->setToolTip("Delete country");
     connect(deleteAction_, &QAction::triggered, this,
         &CountryDetailDialog::onDeleteClicked);
@@ -90,7 +90,7 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     // Create Revert action (initially hidden)
     revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
     revertAction_->setToolTip("Revert country to this historical version");
     connect(revertAction_, &QAction::triggered, this,
         &CountryDetailDialog::onRevertClicked);
@@ -102,7 +102,7 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
 
     firstVersionAction_ = new QAction("First", this);
     firstVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_previous_20_regular.svg", iconColor));
+        Icon::ArrowPrevious, IconUtils::DefaultIconColor));
     firstVersionAction_->setToolTip(tr("First version"));
     connect(firstVersionAction_, &QAction::triggered, this,
         &CountryDetailDialog::onFirstVersionClicked);
@@ -111,7 +111,7 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
 
     prevVersionAction_ = new QAction("Previous", this);
     prevVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_left_20_regular.svg", iconColor));
+        Icon::ArrowLeft, IconUtils::DefaultIconColor));
     prevVersionAction_->setToolTip(tr("Previous version"));
     connect(prevVersionAction_, &QAction::triggered, this,
         &CountryDetailDialog::onPrevVersionClicked);
@@ -120,7 +120,7 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
 
     nextVersionAction_ = new QAction("Next", this);
     nextVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_right_20_regular.svg", iconColor));
+        Icon::ArrowRight, IconUtils::DefaultIconColor));
     nextVersionAction_->setToolTip(tr("Next version"));
     connect(nextVersionAction_, &QAction::triggered, this,
         &CountryDetailDialog::onNextVersionClicked);
@@ -129,7 +129,7 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
 
     lastVersionAction_ = new QAction("Last", this);
     lastVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_next_20_regular.svg", iconColor));
+        Icon::ArrowNext, IconUtils::DefaultIconColor));
     lastVersionAction_->setToolTip(tr("Last version"));
     connect(lastVersionAction_, &QAction::triggered, this,
         &CountryDetailDialog::onLastVersionClicked);

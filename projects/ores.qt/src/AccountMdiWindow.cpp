@@ -78,7 +78,6 @@ AccountMdiWindow(ClientManager* clientManager,
 
     toolBar_->setMovable(false);
     toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    const auto& iconColor = color_constants::icon_color;
 
     // Setup reload action with normal and stale icons
     setupReloadAction();
@@ -87,20 +86,20 @@ AccountMdiWindow(ClientManager* clientManager,
     toolBar_->addSeparator();
 
     addAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_add_20_regular.svg", iconColor));
+            Icon::Add, IconUtils::DefaultIconColor));
     addAction_->setToolTip("Add new account");
     connect(addAction_, &QAction::triggered, this, &AccountMdiWindow::addNew);
     toolBar_->addAction(addAction_);
 
     editAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_edit_20_regular.svg", iconColor));
+            Icon::Edit, IconUtils::DefaultIconColor));
     editAction_->setToolTip("Edit selected account");
     connect(editAction_, &QAction::triggered, this,
         &AccountMdiWindow::editSelected);
     toolBar_->addAction(editAction_);
 
     deleteAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_delete_20_regular.svg", iconColor));
+            Icon::Delete, IconUtils::DefaultIconColor));
     deleteAction_->setToolTip("Delete selected account(s)");
     connect(deleteAction_, &QAction::triggered, this,
         &AccountMdiWindow::deleteSelected);
@@ -109,21 +108,21 @@ AccountMdiWindow(ClientManager* clientManager,
     toolBar_->addSeparator();
 
     lockAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_lock_closed_20_regular.svg", iconColor));
+            Icon::LockClosed, IconUtils::DefaultIconColor));
     lockAction_->setToolTip("Lock selected account(s)");
     connect(lockAction_, &QAction::triggered, this,
         &AccountMdiWindow::lockSelected);
     toolBar_->addAction(lockAction_);
 
     unlockAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_lock_open_20_regular.svg", iconColor));
+            Icon::LockOpen, IconUtils::DefaultIconColor));
     unlockAction_->setToolTip("Unlock selected account(s)");
     connect(unlockAction_, &QAction::triggered, this,
         &AccountMdiWindow::unlockSelected);
     toolBar_->addAction(unlockAction_);
 
     resetPasswordAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_password_reset_48_regular.svg", iconColor));
+            Icon::PasswordReset, IconUtils::DefaultIconColor));
     resetPasswordAction_->setToolTip("Force password reset on next login");
     connect(resetPasswordAction_, &QAction::triggered, this,
         &AccountMdiWindow::resetPasswordSelected);
@@ -132,14 +131,14 @@ AccountMdiWindow(ClientManager* clientManager,
     toolBar_->addSeparator();
 
     historyAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+            Icon::History, IconUtils::DefaultIconColor));
     historyAction_->setToolTip("View account history");
     connect(historyAction_, &QAction::triggered, this,
         &AccountMdiWindow::viewHistorySelected);
     toolBar_->addAction(historyAction_);
 
     sessionsAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_clock_16_regular.svg", iconColor));
+            Icon::Clock, IconUtils::DefaultIconColor));
     sessionsAction_->setToolTip("View session history");
     connect(sessionsAction_, &QAction::triggered, this,
         &AccountMdiWindow::viewSessionsSelected);
@@ -1108,13 +1107,11 @@ void AccountMdiWindow::updateActionStates() {
 }
 
 void AccountMdiWindow::setupReloadAction() {
-    const auto& iconColor = color_constants::icon_color;
-
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor));
+        Icon::ArrowSync, IconUtils::DefaultIconColor));
     connect(reloadAction_, &QAction::triggered, this, &AccountMdiWindow::reload);
 
-    initializeStaleIndicator(reloadAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }
 
 }

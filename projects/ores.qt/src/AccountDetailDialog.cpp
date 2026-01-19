@@ -62,7 +62,7 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     // Create Save action
     saveAction_ = new QAction("Save", this);
     saveAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_save_20_regular.svg", iconColor));
+        Icon::Save, IconUtils::DefaultIconColor));
     saveAction_->setToolTip("Save changes");
     connect(saveAction_, &QAction::triggered, this,
         &AccountDetailDialog::onSaveClicked);
@@ -71,7 +71,7 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     // Create Delete action
     deleteAction_ = new QAction("Delete", this);
     deleteAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_delete_20_regular.svg", iconColor));
+        Icon::Delete, IconUtils::DefaultIconColor));
     deleteAction_->setToolTip("Delete account");
     connect(deleteAction_, &QAction::triggered, this,
         &AccountDetailDialog::onDeleteClicked);
@@ -80,7 +80,7 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     // Create Revert action (initially hidden)
     revertAction_ = new QAction("Revert to this version", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
+        Icon::ArrowClockwise, IconUtils::DefaultIconColor));
     revertAction_->setToolTip("Revert account to this historical version");
     connect(revertAction_, &QAction::triggered, this,
         &AccountDetailDialog::onRevertClicked);

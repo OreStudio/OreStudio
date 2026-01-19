@@ -74,48 +74,46 @@ void ConnectionBrowserMdiWindow::setupUI() {
     toolBar_ = new QToolBar(this);
     toolBar_->setIconSize(QSize(20, 20));
 
-    const auto& iconColor = color_constants::icon_color;
-
     addAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_add_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
         tr("Add"));
     addAction_->setToolTip(tr("Add a new folder or connection"));
 
     toolBar_->addSeparator();
 
     editAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_edit_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor),
         tr("Edit"));
     editAction_->setToolTip(tr("Edit selected item"));
 
     deleteAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_delete_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
         tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected item"));
 
     toolBar_->addSeparator();
 
     connectAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_plug_connected_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::DefaultIconColor),
         tr("Connect"));
     connectAction_->setToolTip(tr("Connect to selected server"));
 
     toolBar_->addSeparator();
 
     refreshAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Refresh"));
     refreshAction_->setToolTip(tr("Refresh connection list"));
 
     toolBar_->addSeparator();
 
     changeMasterPasswordAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_key_multiple_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::KeyMultiple, IconUtils::DefaultIconColor),
         tr("Change"));
     changeMasterPasswordAction_->setToolTip(tr("Change master password"));
 
     purgeDatabaseAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_delete_dismiss_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::DeleteDismiss, IconUtils::DefaultIconColor),
         tr("Purge"));
     purgeDatabaseAction_->setToolTip(tr("Delete all connections and reset database"));
 
@@ -305,12 +303,11 @@ void ConnectionBrowserMdiWindow::openAddDialog() {
 
     // Create as MDI sub-window if MDI area is available
     if (mdiArea_) {
-        const auto& iconColor = color_constants::icon_color;
         auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
         subWindow->setWidget(dialog);
         subWindow->setWindowTitle(tr("Add Item"));
         subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_add_20_regular.svg", iconColor));
+            Icon::Add, IconUtils::DefaultIconColor));
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
         subWindow->resize(450, 500);
 
@@ -354,7 +351,7 @@ void ConnectionBrowserMdiWindow::editSelected() {
     dialog->setCreateMode(false);
 
     QString windowTitle;
-    QString iconPath;
+    Icon iconType;
 
     if (node->type == ConnectionTreeNode::Type::Folder) {
         auto folder = model_->getFolderFromIndex(current);
@@ -366,7 +363,7 @@ void ConnectionBrowserMdiWindow::editSelected() {
 
         dialog->setFolder(*folder);
         windowTitle = tr("Edit Folder: %1").arg(QString::fromStdString(folder->name));
-        iconPath = ":/icons/ic_fluent_folder_20_regular.svg";
+        iconType = Icon::Folder;
 
         connect(dialog, &AddItemDialog::folderSaved, this, [this](const boost::uuids::uuid&, const QString& name) {
             model_->refresh();
@@ -383,7 +380,7 @@ void ConnectionBrowserMdiWindow::editSelected() {
 
         dialog->setEnvironment(*env);
         windowTitle = tr("Edit Connection: %1").arg(QString::fromStdString(env->name));
-        iconPath = ":/icons/ic_fluent_server_20_regular.svg";
+        iconType = Icon::Server;
         if (testCallback_) {
             dialog->setTestCallback(testCallback_);
         }
@@ -411,11 +408,10 @@ void ConnectionBrowserMdiWindow::editSelected() {
 
     // Create as MDI sub-window if MDI area is available
     if (mdiArea_) {
-        const auto& iconColor = color_constants::icon_color;
         auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
         subWindow->setWidget(dialog);
         subWindow->setWindowTitle(windowTitle);
-        subWindow->setWindowIcon(IconUtils::createRecoloredIcon(iconPath, iconColor));
+        subWindow->setWindowIcon(IconUtils::createRecoloredIcon(iconType, IconUtils::DefaultIconColor));
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
         subWindow->resize(450, 500);
 

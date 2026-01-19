@@ -29,9 +29,88 @@
 namespace ores::qt {
 
 /**
+ * @brief Enumeration of available application icons by semantic function.
+ */
+enum class Icon {
+    Add,
+    ArrowClockwise,
+    ArrowDownload,
+    ArrowLeft,
+    ArrowNext,
+    ArrowPrevious,
+    ArrowRight,
+    ArrowRotateCounterclockwise,
+    ArrowSync,
+    Book,
+    Checkmark,
+    Clock,
+    Code,
+    Currency,
+    Database,
+    Delete,
+    DeleteDismiss,
+    Dismiss,
+    DocumentCode,
+    DocumentTable,
+    Edit,
+    Error,
+    Flag,
+    Folder,
+    FolderOpen,
+    Globe,
+    History,
+    Info,
+    Key,
+    KeyMultiple,
+    Library,
+    LockClosed,
+    LockOpen,
+    NoteEdit,
+    Open,
+    PasswordReset,
+    Person,
+    PersonAccounts,
+    PlugConnected,
+    PlugConnectedFilled,
+    PlugDisconnected,
+    Question,
+    Record,
+    RecordFilled,
+    Save,
+    Server,
+    ServerLink,
+    ServerLinkFilled,
+    Settings,
+    Star,
+    Table,
+    Tag,
+    Wand,
+    Warning
+};
+
+/**
+ * @brief Enumeration of available icon themes/styles.
+ */
+enum class IconTheme {
+    FluentUIRegular,
+    FluentUIFilled,
+    SolarizedLinear,
+    SolarizedBold
+};
+
+/**
  * @brief Utility class for icon manipulation operations.
  */
 class IconUtils {
+public:
+    // Common icon colors
+    static inline const QColor DefaultIconColor{220, 220, 220};
+    static inline const QColor ConnectedColor{100, 200, 100};
+    static inline const QColor DisconnectedColor{200, 100, 100};
+    static inline const QColor ReconnectingColor{230, 180, 80};
+    static inline const QColor RecordingOnColor{220, 80, 80};
+    static inline const QColor DisabledIconColor{100, 100, 100};
+
 private:
     inline static std::string_view logger_name = "ores.qt.icon_utils";
 
@@ -42,6 +121,23 @@ private:
     }
 
 public:
+    /**
+     * @brief Gets the resource path for a semantic icon in a specific theme.
+     * @param icon The semantic icon identifier
+     * @param theme The icon theme/style to use (defaults to FluentUIRegular)
+     * @return The resource path string (e.g. ":/icons/...")
+     */
+    static QString iconPath(Icon icon, IconTheme theme = IconTheme::FluentUIRegular);
+
+    /**
+     * @brief Creates a recolored version of a semantic icon.
+     * @param icon The semantic icon identifier
+     * @param color Color to apply to the icon in normal state
+     * @param theme The icon theme/style to use (defaults to FluentUIRegular)
+     * @return QIcon with recolored normal and disabled states
+     */
+    static QIcon createRecoloredIcon(Icon icon, const QColor& color, IconTheme theme = IconTheme::FluentUIRegular);
+
     /**
      * @brief Creates a recolored version of an SVG icon.
      *

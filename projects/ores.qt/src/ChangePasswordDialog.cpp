@@ -90,9 +90,8 @@ void ChangePasswordDialog::setupUI() {
     status_label_->setStyleSheet("QLabel { color: #666; font-style: italic; }");
 
     // Set icons on buttons
-    const QColor iconColor(220, 220, 220);
-    change_button_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_checkmark_20_regular.svg", iconColor));
-    cancel_button_->setIcon(IconUtils::createRecoloredIcon(":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
+    change_button_->setIcon(IconUtils::createRecoloredIcon(Icon::Checkmark, IconUtils::DefaultIconColor));
+    cancel_button_->setIcon(IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
     // Button layout
     auto* button_layout = new QHBoxLayout();

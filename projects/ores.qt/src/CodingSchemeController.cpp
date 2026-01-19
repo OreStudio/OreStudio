@@ -79,12 +79,12 @@ void CodingSchemeController::showListWindow() {
     connect(listWindow_, &CodingSchemeMdiWindow::showSchemeHistory,
             this, &CodingSchemeController::onShowHistory);
 
-    const QColor iconColor(220, 220, 220);
+    // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Coding Schemes");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_code_20_regular.svg", iconColor));
+        Icon::Code, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -143,8 +143,6 @@ void CodingSchemeController::onShowHistory(const QString& code) {
 void CodingSchemeController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new coding scheme";
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new CodingSchemeDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -167,7 +165,7 @@ void CodingSchemeController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Coding Scheme");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_code_20_regular.svg", iconColor));
+        Icon::Code, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -185,8 +183,6 @@ void CodingSchemeController::showDetailWindow(const dq::domain::coding_scheme& s
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << scheme.code;
-
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new CodingSchemeDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -217,7 +213,7 @@ void CodingSchemeController::showDetailWindow(const dq::domain::coding_scheme& s
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Coding Scheme: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_code_20_regular.svg", iconColor));
+        Icon::Code, IconUtils::DefaultIconColor));
 
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
@@ -248,7 +244,6 @@ void CodingSchemeController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << code.toStdString();
-    const QColor iconColor(220, 220, 220);
 
     auto* historyDialog = new CodingSchemeHistoryDialog(code, clientManager_, mainWindow_);
 
@@ -274,7 +269,7 @@ void CodingSchemeController::showHistoryWindow(const QString& code) {
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Coding Scheme History: %1").arg(code));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
@@ -304,8 +299,6 @@ void CodingSchemeController::onOpenVersion(
         return;
     }
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new CodingSchemeDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -330,7 +323,7 @@ void CodingSchemeController::onOpenVersion(
     detailWindow->setWindowTitle(QString("Coding Scheme: %1 (Version %2)")
         .arg(code).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
@@ -371,14 +364,13 @@ void CodingSchemeController::onRevertVersion(
         self->handleEntitySaved();
     });
 
-    const QColor iconColor(220, 220, 220);
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Revert Coding Scheme: %1")
         .arg(QString::fromStdString(scheme.code)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

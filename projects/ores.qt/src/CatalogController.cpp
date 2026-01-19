@@ -80,12 +80,12 @@ void CatalogController::showListWindow() {
     connect(listWindow_, &CatalogMdiWindow::showCatalogHistory,
             this, &CatalogController::onShowHistory);
 
-    const QColor iconColor(220, 220, 220);
+    // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Catalogs");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_library_20_regular.svg", iconColor));
+        Icon::Library, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -146,8 +146,6 @@ void CatalogController::onShowHistory(const QString& name) {
 void CatalogController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new catalog";
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new CatalogDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -169,7 +167,7 @@ void CatalogController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Catalog");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_library_20_regular.svg", iconColor));
+        Icon::Library, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -187,8 +185,6 @@ void CatalogController::showDetailWindow(const dq::domain::catalog& catalog) {
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << catalog.name;
-
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new CatalogDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -218,7 +214,7 @@ void CatalogController::showDetailWindow(const dq::domain::catalog& catalog) {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Catalog: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_library_20_regular.svg", iconColor));
+        Icon::Library, IconUtils::DefaultIconColor));
 
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
@@ -249,7 +245,6 @@ void CatalogController::showHistoryWindow(const QString& name) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << name.toStdString();
-    const QColor iconColor(220, 220, 220);
 
     auto* historyDialog = new CatalogHistoryDialog(
         name, clientManager_, mainWindow_);
@@ -276,7 +271,7 @@ void CatalogController::showHistoryWindow(const QString& name) {
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Catalog History: %1").arg(name));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
@@ -306,8 +301,6 @@ void CatalogController::onOpenVersion(
         return;
     }
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new CatalogDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -331,7 +324,7 @@ void CatalogController::onOpenVersion(
     detailWindow->setWindowTitle(QString("Catalog: %1 (Version %2)")
         .arg(name).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
@@ -371,15 +364,14 @@ void CatalogController::onRevertVersion(const dq::domain::catalog& catalog) {
         self->handleEntitySaved();
     });
 
-    const QColor iconColor(220, 220, 220);
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Revert Catalog: %1")
         .arg(QString::fromStdString(catalog.name)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg",
-        iconColor));
+        Icon::ArrowRotateCounterclockwise,
+        IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

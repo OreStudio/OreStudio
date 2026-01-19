@@ -117,12 +117,11 @@ void ChangeReasonCategoryController::showListWindow() {
             this, &ChangeReasonCategoryController::onShowHistory);
 
     // Create MDI subwindow
-    const QColor iconColor(220, 220, 220);
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Change Reason Categories");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
+        Icon::Tag, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -186,8 +185,6 @@ void ChangeReasonCategoryController::onShowHistory(const QString& code) {
 void ChangeReasonCategoryController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new category";
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -211,7 +208,7 @@ void ChangeReasonCategoryController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Category");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
+        Icon::Tag, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -231,8 +228,6 @@ void ChangeReasonCategoryController::showDetailWindow(
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << category.code;
-
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -266,7 +261,7 @@ void ChangeReasonCategoryController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Category: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
+        Icon::Tag, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
@@ -318,7 +313,6 @@ void ChangeReasonCategoryController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << code.toStdString();
-    const QColor iconColor(220, 220, 220);
 
     auto* historyDialog = new ChangeReasonCategoryHistoryDialog(code, clientManager_, mainWindow_);
 
@@ -345,7 +339,7 @@ void ChangeReasonCategoryController::showHistoryWindow(const QString& code) {
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Category History: %1").arg(code));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -377,8 +371,6 @@ void ChangeReasonCategoryController::onOpenVersion(
         return;
     }
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -402,7 +394,7 @@ void ChangeReasonCategoryController::onOpenVersion(
     detailWindow->setWindowTitle(QString("Category: %1 (Version %2)")
         .arg(code).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
@@ -446,14 +438,13 @@ void ChangeReasonCategoryController::onRevertVersion(
         }
     });
 
-    const QColor iconColor(220, 220, 220);
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Revert Category: %1")
         .arg(QString::fromStdString(category.code)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

@@ -127,7 +127,6 @@ void CurrencyController::showListWindow() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new currencies MDI window";
-    const QColor iconColor(220, 220, 220);
     auto* currencyWidget = new CurrencyMdiWindow(clientManager_, imageCache_,
                                                   username_, mainWindow_);
 
@@ -156,7 +155,7 @@ void CurrencyController::showListWindow() {
     currencyListWindow_->setWidget(currencyWidget);
     currencyListWindow_->setWindowTitle("Currencies");
     currencyListWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
+        Icon::Currency, IconUtils::DefaultIconColor));
 
     // Track window for detach/reattach operations
     register_detachable_window(currencyListWindow_);
@@ -208,7 +207,6 @@ void CurrencyController::reloadListWindow() {
 
 void CurrencyController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new currency requested";
-    const QColor iconColor(220, 220, 220);
     refdata::domain::currency new_currency;
 
     // Assuming CurrencyDetailDialog updated to take ClientManager*
@@ -242,7 +240,7 @@ void CurrencyController::onAddNewRequested() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Currency");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
+        Icon::Currency, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -267,7 +265,6 @@ void CurrencyController::onShowCurrencyDetails(
 
     BOOST_LOG_SEV(lg(), info) << "Creating new detail window for: "
                               << currency.iso_code;
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
     if (clientManager_) {
@@ -299,7 +296,7 @@ void CurrencyController::onShowCurrencyDetails(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Currency Details: %1").arg(isoCode));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
+        Icon::Currency, IconUtils::DefaultIconColor));
 
     // Track this detail window
     track_window(windowKey, detailWindow);
@@ -332,7 +329,6 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << isoCode.toStdString();
-    const QColor iconColor(220, 220, 220);
 
     auto* historyWidget = new CurrencyHistoryDialog(isoCode, clientManager_,
                                                      mainWindow_);
@@ -364,7 +360,7 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
     historyWindow->setWidget(historyWidget);
     historyWindow->setWindowTitle(QString("History: %1").arg(isoCode));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -445,8 +441,6 @@ void CurrencyController::onOpenCurrencyVersion(
         return;
     }
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new CurrencyDetailDialog(mainWindow_);
     if (clientManager_) {
         detailDialog->setClientManager(clientManager_);
@@ -491,7 +485,7 @@ void CurrencyController::onOpenCurrencyVersion(
     detailWindow->setWindowTitle(QString("Currency: %1 (Version %2 - Read Only)")
         .arg(isoCode).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
+        Icon::Currency, IconUtils::DefaultIconColor));
 
     // Track this version window
     track_window(windowKey, detailWindow);

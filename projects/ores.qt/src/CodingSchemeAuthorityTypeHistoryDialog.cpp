@@ -72,15 +72,13 @@ void CodingSchemeAuthorityTypeHistoryDialog::setupToolbar() {
     toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     toolbar_->setIconSize(QSize(20, 20));
 
-    const auto& iconColor = color_constants::icon_color;
-
     openVersionAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_open_20_regular.svg", iconColor), tr("Open"));
+        IconUtils::createRecoloredIcon(Icon::Open, IconUtils::DefaultIconColor), tr("Open"));
     openVersionAction_->setToolTip(tr("Open this version (read-only)"));
     openVersionAction_->setEnabled(false);
 
     revertAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor),
         tr("Revert"));
     revertAction_->setToolTip(tr("Revert to this version"));
     revertAction_->setEnabled(false);

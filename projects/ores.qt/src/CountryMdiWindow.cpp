@@ -73,7 +73,6 @@ CountryMdiWindow(ClientManager* clientManager,
 
     toolBar_->setMovable(false);
     toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    const auto& iconColor = color_constants::icon_color;
 
     // Setup reload action with normal and stale icons
     setupReloadAction();
@@ -82,20 +81,20 @@ CountryMdiWindow(ClientManager* clientManager,
     toolBar_->addSeparator();
 
     addAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_add_20_regular.svg", iconColor));
+            Icon::Add, IconUtils::DefaultIconColor));
     addAction_->setToolTip("Add new country");
     connect(addAction_, &QAction::triggered, this, &CountryMdiWindow::addNew);
     toolBar_->addAction(addAction_);
 
     editAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_edit_20_regular.svg", iconColor));
+            Icon::Edit, IconUtils::DefaultIconColor));
     editAction_->setToolTip("Edit selected country");
     connect(editAction_, &QAction::triggered, this,
         &CountryMdiWindow::editSelected);
     toolBar_->addAction(editAction_);
 
     deleteAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_delete_20_regular.svg", iconColor));
+            Icon::Delete, IconUtils::DefaultIconColor));
     deleteAction_->setToolTip("Delete selected country/countries");
     connect(deleteAction_, &QAction::triggered, this,
         &CountryMdiWindow::deleteSelected);
@@ -103,7 +102,7 @@ CountryMdiWindow(ClientManager* clientManager,
 
     historyAction_ = new QAction("History", this);
     historyAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+            Icon::History, IconUtils::DefaultIconColor));
     historyAction_->setToolTip("View country history");
     connect(historyAction_, &QAction::triggered, this,
         &CountryMdiWindow::viewHistorySelected);
@@ -113,7 +112,7 @@ CountryMdiWindow(ClientManager* clientManager,
 
     auto exportCSVAction = new QAction("Export CSV", this);
     exportCSVAction->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_document_table_20_regular.svg", iconColor));
+            Icon::DocumentTable, IconUtils::DefaultIconColor));
     exportCSVAction->setToolTip("Export countries to CSV");
     connect(exportCSVAction, &QAction::triggered, this,
         &CountryMdiWindow::exportToCSV);
@@ -597,10 +596,10 @@ void CountryMdiWindow::updateActionStates() {
 
 void CountryMdiWindow::setupReloadAction() {
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_sync_20_regular.svg", color_constants::icon_color));
+        Icon::ArrowSync, IconUtils::DefaultIconColor));
     connect(reloadAction_, &QAction::triggered, this, &CountryMdiWindow::reload);
 
-    initializeStaleIndicator(reloadAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }
 
 void CountryMdiWindow::setupColumnVisibility() {

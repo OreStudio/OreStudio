@@ -46,8 +46,8 @@ set schema 'ores';
  * Validates that a text value is not null or empty (after trimming whitespace).
  * Raises an exception if validation fails.
  *
- * To disable validation (e.g., for performance testing), comment out the body
- * of this function and uncomment the null statement.
+ * Validation can be disabled at runtime by setting the session variable
+ * ores.skip_validation to 'on' (e.g., via recreate_database.sh -n flag).
  *
  * @param p_value The value to validate
  * @param p_field_name Descriptive name of the field (used in error message)
@@ -57,11 +57,14 @@ create or replace function ores.seed_validate_not_empty(
     p_field_name text
 ) returns void as $$
 begin
+    -- Check if validation is disabled via session variable
+    if current_setting('ores.skip_validation', true) = 'on' then
+        return;
+    end if;
+
     if p_value is null or trim(p_value) = '' then
         raise exception '% cannot be empty', p_field_name;
     end if;
-    -- To disable validation, comment out the above and uncomment below:
-    -- null;
 end;
 $$ language plpgsql;
 

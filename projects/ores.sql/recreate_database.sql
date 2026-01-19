@@ -20,10 +20,17 @@
 
 /**
  * Runs a clean up for the current database and then gets it into a ready state.
+ *
+ * Variables:
+ *   :skip_validation - 'on' to skip input validation in seed functions (faster)
  */
 \pset pager off
 \pset tuples_only on
 \timing off
+
+-- Set session variable for seed function validation control
+-- This can be checked via current_setting('ores.skip_validation', true)
+select set_config('ores.skip_validation', :'skip_validation', false);
 
 \ir clean_slate.sql
 \ir setup_user.sql

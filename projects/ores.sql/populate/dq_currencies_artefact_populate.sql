@@ -38,25 +38,25 @@ begin
     -- Get the currencies dataset ID
     select id into v_currencies_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'ISO 4217 Currencies from Wikipedia'
+    where name = 'ISO 4217 Currency Codes'
       and subject_area_name = 'Currencies'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_currencies_dataset_id is null then
-        raise exception 'Dataset not found: ISO 4217 Currencies from Wikipedia';
+        raise exception 'Dataset not found: ISO 4217 Currency Codes';
     end if;
 
     -- Get the flags dataset ID (for linking images)
     select id into v_flags_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'Country Flags from lipis/flag-icons'
+    where name = 'Country Flag Images'
       and subject_area_name = 'Countries'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_flags_dataset_id is null then
-        raise exception 'Dataset not found: Country Flags from lipis/flag-icons';
+        raise exception 'Dataset not found: Country Flag Images';
     end if;
 
     -- Get the placeholder image (xx.svg = "no flag available")
@@ -73,7 +73,7 @@ begin
     delete from ores.dq_currencies_artefact_tbl
     where dataset_id = v_currencies_dataset_id;
 
-    raise notice 'Populating currencies for dataset: ISO 4217 Currencies from Wikipedia';
+    raise notice 'Populating currencies for dataset: ISO 4217 Currency Codes';
 
     -- Insert currencies with flag image links
     -- Currency-to-flag mapping: each currency maps to its issuing country's flag
@@ -269,7 +269,7 @@ begin
 
     get diagnostics v_count = row_count;
 
-    raise notice 'Successfully populated % currencies for dataset: ISO 4217 Currencies from Wikipedia', v_count;
+    raise notice 'Successfully populated % currencies for dataset: ISO 4217 Currency Codes', v_count;
 
     -- Report currencies using placeholder flag
     raise notice 'Currencies using placeholder flag (xx):';

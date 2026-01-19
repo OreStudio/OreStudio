@@ -58,73 +58,73 @@ begin
     -- Country flags dataset
     select id into v_flags_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'Country Flags from lipis/flag-icons'
+    where name = 'Country Flag Images'
       and subject_area_name = 'Countries'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_flags_dataset_id is null then
-        raise exception 'Dataset not found: Country Flags from lipis/flag-icons';
+        raise exception 'Dataset not found: Country Flag Images';
     end if;
 
     -- Cryptocurrency icons dataset
     select id into v_crypto_icons_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'Cryptocurrency Icons from spothq/cryptocurrency-icons'
+    where name = 'Cryptocurrency Icon Images'
       and subject_area_name = 'Cryptocurrencies'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_crypto_icons_dataset_id is null then
-        raise exception 'Dataset not found: Cryptocurrency Icons from spothq/cryptocurrency-icons';
+        raise exception 'Dataset not found: Cryptocurrency Icon Images';
     end if;
 
     -- Countries dataset
     select id into v_countries_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'ISO 3166 Countries from Wikipedia'
+    where name = 'ISO 3166 Country Codes'
       and subject_area_name = 'Countries'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_countries_dataset_id is null then
-        raise exception 'Dataset not found: ISO 3166 Countries from Wikipedia';
+        raise exception 'Dataset not found: ISO 3166 Country Codes';
     end if;
 
     -- Fiat currencies dataset
     select id into v_currencies_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'ISO 4217 Currencies from Wikipedia'
+    where name = 'ISO 4217 Currency Codes'
       and subject_area_name = 'Currencies'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_currencies_dataset_id is null then
-        raise exception 'Dataset not found: ISO 4217 Currencies from Wikipedia';
+        raise exception 'Dataset not found: ISO 4217 Currency Codes';
     end if;
 
     -- FpML non-ISO currencies dataset
     select id into v_fpml_currencies_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'FpML Non-ISO Currencies'
+    where name = 'FpML Non-ISO Currency Codes'
       and subject_area_name = 'Currencies'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_fpml_currencies_dataset_id is null then
-        raise exception 'Dataset not found: FpML Non-ISO Currencies';
+        raise exception 'Dataset not found: FpML Non-ISO Currency Codes';
     end if;
 
     -- Cryptocurrencies dataset
     select id into v_cryptocurrencies_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'Cryptocurrencies from crypti/cryptocurrencies'
+    where name = 'Cryptocurrency Reference Data'
       and subject_area_name = 'Cryptocurrencies'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_cryptocurrencies_dataset_id is null then
-        raise exception 'Dataset not found: Cryptocurrencies from crypti/cryptocurrencies';
+        raise exception 'Dataset not found: Cryptocurrency Reference Data';
     end if;
 
     raise notice 'All datasets found successfully';

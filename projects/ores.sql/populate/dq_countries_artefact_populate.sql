@@ -38,25 +38,25 @@ begin
     -- Get the countries dataset ID
     select id into v_countries_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'ISO 3166 Countries from Wikipedia'
+    where name = 'ISO 3166 Country Codes'
       and subject_area_name = 'Countries'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_countries_dataset_id is null then
-        raise exception 'Dataset not found: ISO 3166 Countries from Wikipedia';
+        raise exception 'Dataset not found: ISO 3166 Country Codes';
     end if;
 
     -- Get the flags dataset ID (for linking images)
     select id into v_flags_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'Country Flags from lipis/flag-icons'
+    where name = 'Country Flag Images'
       and subject_area_name = 'Countries'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_flags_dataset_id is null then
-        raise exception 'Dataset not found: Country Flags from lipis/flag-icons';
+        raise exception 'Dataset not found: Country Flag Images';
     end if;
 
     -- Get the placeholder image (xx.svg = "no flag available")
@@ -73,7 +73,7 @@ begin
     delete from ores.dq_countries_artefact_tbl
     where dataset_id = v_countries_dataset_id;
 
-    raise notice 'Populating countries for dataset: ISO 3166 Countries from Wikipedia';
+    raise notice 'Populating countries for dataset: ISO 3166 Country Codes';
 
     -- Insert countries with flag image links
     -- The flag images have keys matching lowercase alpha2 codes (e.g., 'us', 'gb')
@@ -372,7 +372,7 @@ begin
 
     get diagnostics v_count = row_count;
 
-    raise notice 'Successfully populated % countries for dataset: ISO 3166 Countries from Wikipedia', v_count;
+    raise notice 'Successfully populated % countries for dataset: ISO 3166 Country Codes', v_count;
 
     -- Report countries using placeholder flag
     raise notice 'Countries using placeholder flag (xx):';

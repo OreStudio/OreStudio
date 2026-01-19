@@ -94,10 +94,11 @@ void TreatmentDimensionController::showListWindow() {
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
 
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [this, key]() {
-        untrack_window(key);
-        listWindow_ = nullptr;
-        listMdiSubWindow_ = nullptr;
+    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<TreatmentDimensionController>(this), key]() {
+        if (!self) return;
+        self->untrack_window(key);
+        self->listWindow_ = nullptr;
+        self->listMdiSubWindow_ = nullptr;
     });
 
     BOOST_LOG_SEV(lg(), debug) << "Treatment dimension list window created";
@@ -155,9 +156,10 @@ void TreatmentDimensionController::showAddWindow() {
     connect(detailDialog, &TreatmentDimensionDetailDialog::errorMessage,
             this, &TreatmentDimensionController::errorMessage);
     connect(detailDialog, &TreatmentDimensionDetailDialog::dimensionSaved,
-            this, [this](const QString& code) {
+            this, [self = QPointer<TreatmentDimensionController>(this)](const QString& code) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Treatment dimension saved: " << code.toStdString();
-        handleEntitySaved();
+        self->handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -199,14 +201,16 @@ void TreatmentDimensionController::showDetailWindow(
     connect(detailDialog, &TreatmentDimensionDetailDialog::errorMessage,
             this, &TreatmentDimensionController::errorMessage);
     connect(detailDialog, &TreatmentDimensionDetailDialog::dimensionSaved,
-            this, [this](const QString& code) {
+            this, [self = QPointer<TreatmentDimensionController>(this)](const QString& code) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Treatment dimension saved: " << code.toStdString();
-        handleEntitySaved();
+        self->handleEntitySaved();
     });
     connect(detailDialog, &TreatmentDimensionDetailDialog::dimensionDeleted,
-            this, [this, key](const QString& code) {
+            this, [self = QPointer<TreatmentDimensionController>(this), key](const QString& code) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Treatment dimension deleted: " << code.toStdString();
-        handleEntityDeleted();
+        self->handleEntityDeleted();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -250,12 +254,14 @@ void TreatmentDimensionController::showHistoryWindow(const QString& code) {
     auto* historyDialog = new TreatmentDimensionHistoryDialog(code, clientManager_, mainWindow_);
 
     connect(historyDialog, &TreatmentDimensionHistoryDialog::statusChanged,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<TreatmentDimensionController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(historyDialog, &TreatmentDimensionHistoryDialog::errorOccurred,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<TreatmentDimensionController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
     connect(historyDialog, &TreatmentDimensionHistoryDialog::revertVersionRequested,
             this, &TreatmentDimensionController::onRevertVersion);
@@ -308,12 +314,14 @@ void TreatmentDimensionController::onOpenVersion(
     detailDialog->setReadOnly(true);
 
     connect(detailDialog, &TreatmentDimensionDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<TreatmentDimensionController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &TreatmentDimensionDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<TreatmentDimensionController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -355,10 +363,11 @@ void TreatmentDimensionController::onRevertVersion(
     connect(detailDialog, &TreatmentDimensionDetailDialog::errorMessage,
             this, &TreatmentDimensionController::errorMessage);
     connect(detailDialog, &TreatmentDimensionDetailDialog::dimensionSaved,
-            this, [this](const QString& code) {
+            this, [self = QPointer<TreatmentDimensionController>(this)](const QString& code) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Treatment dimension reverted: " << code.toStdString();
-        emit statusMessage(QString("Treatment dimension '%1' reverted successfully").arg(code));
-        handleEntitySaved();
+        emit self->statusMessage(QString("Treatment dimension '%1' reverted successfully").arg(code));
+        self->handleEntitySaved();
     });
 
     const QColor iconColor(220, 220, 220);

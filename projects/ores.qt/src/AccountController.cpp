@@ -65,16 +65,18 @@ AccountController::AccountController(
 
         // Subscribe to events when connected (event adapter only available after login)
         connect(clientManager_, &ClientManager::connected,
-                this, [this]() {
+                this, [self = QPointer<AccountController>(this)]() {
+            if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Subscribing to account change events";
-            clientManager_->subscribeToEvent(std::string{account_event_name});
+            self->clientManager_->subscribeToEvent(std::string{account_event_name});
         });
 
         // Re-subscribe after reconnection
         connect(clientManager_, &ClientManager::reconnected,
-                this, [this]() {
+                this, [self = QPointer<AccountController>(this)]() {
+            if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Re-subscribing to account change events after reconnect";
-            clientManager_->subscribeToEvent(std::string{account_event_name});
+            self->clientManager_->subscribeToEvent(std::string{account_event_name});
         });
 
         // If already connected, subscribe now
@@ -122,12 +124,14 @@ void AccountController::showListWindow() {
 
     // Connect status signals
     connect(accountWidget, &AccountMdiWindow::statusChanged,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<AccountController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(accountWidget, &AccountMdiWindow::errorOccurred,
-            this, [this](const QString& err_msg) {
-        emit errorMessage("Error: " + err_msg);
+            this, [self = QPointer<AccountController>(this)](const QString& err_msg) {
+        if (!self) return;
+        emit self->errorMessage("Error: " + err_msg);
     });
 
     // Connect account operations
@@ -253,12 +257,14 @@ void AccountController::onShowAccountHistory(const QString& username) {
 
     // Connect status signals
     connect(historyDialog, &AccountHistoryDialog::statusChanged,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<AccountController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(historyDialog, &AccountHistoryDialog::errorOccurred,
-            this, [this](const QString& err_msg) {
-        emit errorMessage(err_msg);
+            this, [self = QPointer<AccountController>(this)](const QString& err_msg) {
+        if (!self) return;
+        emit self->errorMessage(err_msg);
     });
 
     // Connect open and revert signals
@@ -295,12 +301,14 @@ void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId
 
     // Connect status signals
     connect(sessionDialog, &SessionHistoryDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<AccountController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(sessionDialog, &SessionHistoryDialog::errorMessage,
-            this, [this](const QString& err_msg) {
-        emit errorMessage(err_msg);
+            this, [self = QPointer<AccountController>(this)](const QString& err_msg) {
+        if (!self) return;
+        emit self->errorMessage(err_msg);
     });
 
     // Create and configure window
@@ -350,21 +358,32 @@ void AccountController::showDetailWindow(
 
     // Connect common signals
     connect(detailDialog, &AccountDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<AccountController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &AccountDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<AccountController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     // Connect account change signals - all mark the list as stale
     connect(detailDialog, &AccountDetailDialog::accountCreated,
-            this, [this](const boost::uuids::uuid&) { markAccountListAsStale(); });
+            this, [self = QPointer<AccountController>(this)](const boost::uuids::uuid&) {
+        if (!self) return;
+        self->markAccountListAsStale();
+    });
     connect(detailDialog, &AccountDetailDialog::accountUpdated,
-            this, [this](const boost::uuids::uuid&) { markAccountListAsStale(); });
+            this, [self = QPointer<AccountController>(this)](const boost::uuids::uuid&) {
+        if (!self) return;
+        self->markAccountListAsStale();
+    });
     connect(detailDialog, &AccountDetailDialog::accountDeleted,
-            this, [this](const boost::uuids::uuid&) { markAccountListAsStale(); });
+            this, [self = QPointer<AccountController>(this)](const boost::uuids::uuid&) {
+        if (!self) return;
+        self->markAccountListAsStale();
+    });
 
     // Create and configure window
     auto* detailWindow = new DetachableMdiSubWindow();
@@ -401,12 +420,14 @@ void AccountController::onOpenAccountVersion(
     detailDialog->setUsername(username_.toStdString());
 
     connect(detailDialog, &AccountDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<AccountController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &AccountDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<AccountController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     // Connect revert signal

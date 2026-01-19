@@ -1390,10 +1390,12 @@ void <Entity>Controller::showListWindow() {
 
     register_detachable_window(listMdiSubWindow_);
 
-    // Track destruction
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [this]() {
-        listWindow_ = nullptr;
-        listMdiSubWindow_ = nullptr;
+    // Track destruction - use QPointer for safety
+    connect(listMdiSubWindow_, &QObject::destroyed, this,
+            [self = QPointer<<Entity>Controller>(this)]() {
+        if (!self) return;
+        self->listWindow_ = nullptr;
+        self->listMdiSubWindow_ = nullptr;
     });
 
     mdiArea_->addSubWindow(listMdiSubWindow_);
@@ -1459,16 +1461,18 @@ void <Entity>Controller::showDetailWindow(
             this, &<Entity>Controller::errorMessage);
 
     // Connect entity-specific signals - use handleEntitySaved/handleEntityDeleted
-    // for centralized reload control
+    // for centralized reload control. Use QPointer for safety in lambda captures.
     connect(detailDialog, &<Entity>DetailDialog::<entity>Saved,
-            this, [this](const QString& id) {
+            this, [self = QPointer<<Entity>Controller>(this)](const QString& id) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "<Entity> saved: " << id.toStdString();
-        handleEntitySaved();  // Respects autoReloadOnSave_ flag
+        self->handleEntitySaved();  // Respects autoReloadOnSave_ flag
     });
     connect(detailDialog, &<Entity>DetailDialog::<entity>Deleted,
-            this, [this, windowKey](const QString& id) {
+            this, [self = QPointer<<Entity>Controller>(this), windowKey](const QString& id) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "<Entity> deleted: " << id.toStdString();
-        handleEntityDeleted();  // Respects autoReloadOnSave_ flag
+        self->handleEntityDeleted();  // Respects autoReloadOnSave_ flag
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -1480,8 +1484,10 @@ void <Entity>Controller::showDetailWindow(
 
     register_detachable_window(detailWindow);
 
-    connect(detailWindow, &QObject::destroyed, this, [this, windowKey]() {
-        managed_windows_.remove(windowKey);
+    connect(detailWindow, &QObject::destroyed, this,
+            [self = QPointer<<Entity>Controller>(this), windowKey]() {
+        if (!self) return;
+        self->managed_windows_.remove(windowKey);
     });
 
     managed_windows_[windowKey] = detailWindow;
@@ -1510,6 +1516,36 @@ void show_managed_window(DetachableMdiSubWindow* window,
 - =window=: The window to show
 - =referenceWindow=: Optional window to follow detach state from (typically =listWindow_=)
 - =offset=: Position offset when detaching (default 30,30, use 60,60 for nested windows)
+
+**** QPointer safety in lambda captures
+
+When using lambdas in Qt =connect()= calls, always use =QPointer= to safely
+capture =this=. This prevents crashes if the controller is destroyed while
+a signal is still pending:
+
+#+begin_src cpp
+// CORRECT: Use QPointer for safety
+connect(sender, &Sender::signal, this,
+        [self = QPointer<MyController>(this)](const QString& arg) {
+    if (!self) return;  // Guard against destroyed controller
+    BOOST_LOG_SEV(lg(), info) << "Signal received";
+    self->handleSomething();
+    emit self->statusMessage("Done");
+});
+
+// WRONG: Raw this capture can crash if controller is destroyed
+connect(sender, &Sender::signal, this, [this](const QString& arg) {
+    handleSomething();  // Crash if 'this' was deleted!
+});
+#+end_src
+
+Rules for QPointer usage:
+1. Replace =[this]= with =[self = QPointer<ControllerClass>(this)]=
+2. For additional captures: =[self = QPointer<...>(this), key, otherVar]=
+3. Add =if (!self) return;= as the first line in the lambda
+4. Replace =this->= with =self->=
+5. Replace bare member access (=member_=) with =self->member_=
+6. Replace =emit signal(...)= with =emit self->signal(...)=
 
 **** Notification handling (automatic via base class)
 

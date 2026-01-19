@@ -94,10 +94,11 @@ void SubjectAreaController::showListWindow() {
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
 
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [this, key]() {
-        untrack_window(key);
-        listWindow_ = nullptr;
-        listMdiSubWindow_ = nullptr;
+    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<SubjectAreaController>(this), key]() {
+        if (!self) return;
+        self->untrack_window(key);
+        self->listWindow_ = nullptr;
+        self->listMdiSubWindow_ = nullptr;
     });
 
     BOOST_LOG_SEV(lg(), debug) << "Subject area list window created";
@@ -160,10 +161,11 @@ void SubjectAreaController::showAddWindow() {
     connect(detailDialog, &SubjectAreaDetailDialog::errorMessage,
             this, &SubjectAreaController::errorMessage);
     connect(detailDialog, &SubjectAreaDetailDialog::subjectAreaSaved,
-            this, [this](const QString& name, const QString& domain_name) {
+            this, [self = QPointer<SubjectAreaController>(this)](const QString& name, const QString& domain_name) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Subject area saved: " << name.toStdString()
                                   << " in domain: " << domain_name.toStdString();
-        handleEntitySaved();
+        self->handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -209,15 +211,17 @@ void SubjectAreaController::showDetailWindow(
     connect(detailDialog, &SubjectAreaDetailDialog::errorMessage,
             this, &SubjectAreaController::errorMessage);
     connect(detailDialog, &SubjectAreaDetailDialog::subjectAreaSaved,
-            this, [this](const QString& name, const QString& domain_name) {
+            this, [self = QPointer<SubjectAreaController>(this)](const QString& name, const QString& domain_name) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Subject area saved: " << name.toStdString();
-        handleEntitySaved();
+        self->handleEntitySaved();
     });
     connect(detailDialog, &SubjectAreaDetailDialog::subjectAreaDeleted,
-            this, [this, key](const QString& name, const QString& domain_name) {
+            this, [self = QPointer<SubjectAreaController>(this), key](const QString& name, const QString& domain_name) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Subject area deleted: "
                                   << name.toStdString();
-        handleEntityDeleted();
+        self->handleEntityDeleted();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -266,12 +270,14 @@ void SubjectAreaController::showHistoryWindow(const QString& name,
         name, domain_name, clientManager_, mainWindow_);
 
     connect(historyDialog, &SubjectAreaHistoryDialog::statusChanged,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<SubjectAreaController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(historyDialog, &SubjectAreaHistoryDialog::errorOccurred,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<SubjectAreaController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
     connect(historyDialog, &SubjectAreaHistoryDialog::revertVersionRequested,
             this, &SubjectAreaController::onRevertVersion);
@@ -327,12 +333,14 @@ void SubjectAreaController::onOpenVersion(
     detailDialog->loadDomains();
 
     connect(detailDialog, &SubjectAreaDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<SubjectAreaController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &SubjectAreaDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<SubjectAreaController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -375,12 +383,13 @@ void SubjectAreaController::onRevertVersion(
     connect(detailDialog, &SubjectAreaDetailDialog::errorMessage,
             this, &SubjectAreaController::errorMessage);
     connect(detailDialog, &SubjectAreaDetailDialog::subjectAreaSaved,
-            this, [this](const QString& name, const QString& domain_name) {
+            this, [self = QPointer<SubjectAreaController>(this)](const QString& name, const QString& domain_name) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Subject area reverted: "
                                   << name.toStdString();
-        emit statusMessage(
+        emit self->statusMessage(
             QString("Subject area '%1' reverted successfully").arg(name));
-        handleEntitySaved();
+        self->handleEntitySaved();
     });
 
     const QColor iconColor(220, 220, 220);

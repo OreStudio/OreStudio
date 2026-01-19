@@ -21,6 +21,7 @@
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
+#include <QPointer>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ChangeReasonMdiWindow.hpp"
 #include "ores.qt/ChangeReasonDetailDialog.hpp"
@@ -62,16 +63,18 @@ ChangeReasonController::ChangeReasonController(
 
         // Subscribe to events when connected
         connect(clientManager_, &ClientManager::connected,
-                this, [this]() {
+                this, [self = QPointer<ChangeReasonController>(this)]() {
+            if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Subscribing to reason change events";
-            clientManager_->subscribeToEvent(std::string{reason_event_name});
+            self->clientManager_->subscribeToEvent(std::string{reason_event_name});
         });
 
         // Re-subscribe after reconnection
         connect(clientManager_, &ClientManager::reconnected,
-                this, [this]() {
+                this, [self = QPointer<ChangeReasonController>(this)]() {
+            if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Re-subscribing to reason change events";
-            clientManager_->subscribeToEvent(std::string{reason_event_name});
+            self->clientManager_->subscribeToEvent(std::string{reason_event_name});
         });
 
         // If already connected, subscribe now
@@ -134,10 +137,12 @@ void ChangeReasonController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [this, key]() {
-        untrack_window(key);
-        listWindow_ = nullptr;
-        listMdiSubWindow_ = nullptr;
+    connect(listMdiSubWindow_, &QObject::destroyed, this,
+            [self = QPointer<ChangeReasonController>(this), key]() {
+        if (!self) return;
+        self->untrack_window(key);
+        self->listWindow_ = nullptr;
+        self->listMdiSubWindow_ = nullptr;
     });
 
     BOOST_LOG_SEV(lg(), debug) << "Reason list window created";
@@ -202,10 +207,11 @@ void ChangeReasonController::showAddWindow() {
     connect(detailDialog, &ChangeReasonDetailDialog::errorMessage,
             this, &ChangeReasonController::errorMessage);
     connect(detailDialog, &ChangeReasonDetailDialog::changeReasonSaved,
-            this, [this](const QString& code) {
+            this, [self = QPointer<ChangeReasonController>(this)](const QString& code) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Change reason saved: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->markAsStale();
+        if (self->listWindow_) {
+            self->listWindow_->markAsStale();
         }
     });
 
@@ -254,17 +260,19 @@ void ChangeReasonController::showDetailWindow(
     connect(detailDialog, &ChangeReasonDetailDialog::errorMessage,
             this, &ChangeReasonController::errorMessage);
     connect(detailDialog, &ChangeReasonDetailDialog::changeReasonSaved,
-            this, [this](const QString& code) {
+            this, [self = QPointer<ChangeReasonController>(this)](const QString& code) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Change reason saved: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->markAsStale();
+        if (self->listWindow_) {
+            self->listWindow_->markAsStale();
         }
     });
     connect(detailDialog, &ChangeReasonDetailDialog::changeReasonDeleted,
-            this, [this, key](const QString& code) {
+            this, [self = QPointer<ChangeReasonController>(this), key](const QString& code) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Change reason deleted: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->markAsStale();
+        if (self->listWindow_) {
+            self->listWindow_->markAsStale();
         }
     });
 
@@ -330,12 +338,14 @@ void ChangeReasonController::showHistoryWindow(const QString& code) {
     auto* historyDialog = new ChangeReasonHistoryDialog(code, clientManager_, mainWindow_);
 
     connect(historyDialog, &ChangeReasonHistoryDialog::statusChanged,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<ChangeReasonController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(historyDialog, &ChangeReasonHistoryDialog::errorOccurred,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<ChangeReasonController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
     connect(historyDialog, &ChangeReasonHistoryDialog::revertVersionRequested,
             this, &ChangeReasonController::onRevertVersion);
@@ -391,12 +401,14 @@ void ChangeReasonController::onOpenVersion(
     detailDialog->setReadOnly(true);
 
     connect(detailDialog, &ChangeReasonDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<ChangeReasonController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &ChangeReasonDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<ChangeReasonController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -446,11 +458,12 @@ void ChangeReasonController::onRevertVersion(
     connect(detailDialog, &ChangeReasonDetailDialog::errorMessage,
             this, &ChangeReasonController::errorMessage);
     connect(detailDialog, &ChangeReasonDetailDialog::changeReasonSaved,
-            this, [this](const QString& code) {
+            this, [self = QPointer<ChangeReasonController>(this)](const QString& code) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Change reason reverted: " << code.toStdString();
-        emit statusMessage(QString("Change reason '%1' reverted successfully").arg(code));
-        if (listWindow_) {
-            listWindow_->markAsStale();
+        emit self->statusMessage(QString("Change reason '%1' reverted successfully").arg(code));
+        if (self->listWindow_) {
+            self->listWindow_->markAsStale();
         }
     });
 

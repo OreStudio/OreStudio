@@ -21,6 +21,7 @@
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
+#include <QPointer>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/CatalogMdiWindow.hpp"
 #include "ores.qt/CatalogDetailDialog.hpp"
@@ -94,10 +95,12 @@ void CatalogController::showListWindow() {
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
 
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [this, key]() {
-        untrack_window(key);
-        listWindow_ = nullptr;
-        listMdiSubWindow_ = nullptr;
+    connect(listMdiSubWindow_, &QObject::destroyed, this,
+            [self = QPointer<CatalogController>(this), key]() {
+        if (!self) return;
+        self->untrack_window(key);
+        self->listWindow_ = nullptr;
+        self->listMdiSubWindow_ = nullptr;
     });
 
     BOOST_LOG_SEV(lg(), debug) << "Catalog list window created";
@@ -155,9 +158,10 @@ void CatalogController::showAddWindow() {
     connect(detailDialog, &CatalogDetailDialog::errorMessage,
             this, &CatalogController::errorMessage);
     connect(detailDialog, &CatalogDetailDialog::catalogSaved,
-            this, [this](const QString& name) {
+            this, [self = QPointer<CatalogController>(this)](const QString& name) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Catalog saved: " << name.toStdString();
-        handleEntitySaved();
+        self->handleEntitySaved();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -197,14 +201,16 @@ void CatalogController::showDetailWindow(const dq::domain::catalog& catalog) {
     connect(detailDialog, &CatalogDetailDialog::errorMessage,
             this, &CatalogController::errorMessage);
     connect(detailDialog, &CatalogDetailDialog::catalogSaved,
-            this, [this](const QString& name) {
+            this, [self = QPointer<CatalogController>(this)](const QString& name) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Catalog saved: " << name.toStdString();
-        handleEntitySaved();
+        self->handleEntitySaved();
     });
     connect(detailDialog, &CatalogDetailDialog::catalogDeleted,
-            this, [this, key](const QString& name) {
+            this, [self = QPointer<CatalogController>(this), key](const QString& name) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Catalog deleted: " << name.toStdString();
-        handleEntityDeleted();
+        self->handleEntityDeleted();
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -249,12 +255,14 @@ void CatalogController::showHistoryWindow(const QString& name) {
         name, clientManager_, mainWindow_);
 
     connect(historyDialog, &CatalogHistoryDialog::statusChanged,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<CatalogController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(historyDialog, &CatalogHistoryDialog::errorOccurred,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<CatalogController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
     connect(historyDialog, &CatalogHistoryDialog::revertVersionRequested,
             this, &CatalogController::onRevertVersion);
@@ -307,12 +315,14 @@ void CatalogController::onOpenVersion(
     detailDialog->setReadOnly(true);
 
     connect(detailDialog, &CatalogDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<CatalogController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &CatalogDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<CatalogController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -353,11 +363,12 @@ void CatalogController::onRevertVersion(const dq::domain::catalog& catalog) {
     connect(detailDialog, &CatalogDetailDialog::errorMessage,
             this, &CatalogController::errorMessage);
     connect(detailDialog, &CatalogDetailDialog::catalogSaved,
-            this, [this](const QString& name) {
+            this, [self = QPointer<CatalogController>(this)](const QString& name) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Catalog reverted: " << name.toStdString();
-        emit statusMessage(
+        emit self->statusMessage(
             QString("Catalog '%1' reverted successfully").arg(name));
-        handleEntitySaved();
+        self->handleEntitySaved();
     });
 
     const QColor iconColor(220, 220, 220);

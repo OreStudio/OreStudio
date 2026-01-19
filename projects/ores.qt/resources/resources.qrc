@@ -101,6 +101,10 @@
     <file>icons/ic_fluent_key_multiple_20_filled.svg</file>
     <file>icons/ic_fluent_delete_dismiss_20_regular.svg</file>
     <file>icons/ic_fluent_delete_dismiss_20_filled.svg</file>
+    <file>icons/ic_fluent_library_20_regular.svg</file>
+    <file>icons/ic_fluent_library_20_filled.svg</file>
+    <file>icons/ic_fluent_table_20_regular.svg</file>
+    <file>icons/ic_fluent_table_20_filled.svg</file>
     <file>images/modern-icon.png</file>
     <file>images/ore-studio-background.png</file>
     <file>images/splash-screen.png</file>

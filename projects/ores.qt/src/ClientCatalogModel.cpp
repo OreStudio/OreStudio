@@ -31,10 +31,17 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+    std::string catalog_key_extractor(const dq::domain::catalog& c) {
+        return c.name;
+    }
+}
+
 ClientCatalogModel::ClientCatalogModel(ClientManager* clientManager,
                                        QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
+      recencyTracker_(catalog_key_extractor),
       pulseManager_(new RecencyPulseManager(this)) {
 
     connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
@@ -195,15 +202,16 @@ void ClientCatalogModel::loadData() {
         }
 
         self->beginResetModel();
-        self->recentNames_.clear();
+        self->recencyTracker_.clear();
         self->pulseManager_->stop_pulsing();
         self->catalogs_ = std::move(result.catalogs);
         self->endResetModel();
 
-        self->updateRecentCatalogs();
-
-        if (!self->recentNames_.empty() && !self->pulseManager_->is_pulsing()) {
+        const bool has_recent = self->recencyTracker_.update(self->catalogs_);
+        if (has_recent && !self->pulseManager_->is_pulsing()) {
             self->pulseManager_->start_pulsing();
+            BOOST_LOG_SEV(lg(), debug) << "Found " << self->recencyTracker_.recent_count()
+                                       << " catalogs newer than last reload";
         }
 
         emit self->loadFinished();
@@ -219,45 +227,8 @@ const dq::domain::catalog& ClientCatalogModel::catalogAt(int row) const {
     return catalogs_.at(row);
 }
 
-void ClientCatalogModel::updateRecentCatalogs() {
-    recentNames_.clear();
-
-    const QDateTime now = QDateTime::currentDateTime();
-
-    // First load: set baseline timestamp, no highlighting
-    if (!lastReloadTime_.isValid()) {
-        lastReloadTime_ = now;
-        BOOST_LOG_SEV(lg(), debug) << "First load - setting baseline timestamp";
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Checking catalogs newer than last reload: "
-                               << lastReloadTime_.toString(Qt::ISODate).toStdString();
-
-    // Find catalogs with recorded_at newer than last reload
-    for (const auto& catalog : catalogs_) {
-        if (catalog.recorded_at == std::chrono::system_clock::time_point{}) {
-            continue;
-        }
-
-        const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
-            catalog.recorded_at.time_since_epoch()).count();
-        QDateTime recordedAt = QDateTime::fromMSecsSinceEpoch(msecs);
-
-        if (recordedAt.isValid() && recordedAt > lastReloadTime_) {
-            recentNames_.insert(catalog.name);
-            BOOST_LOG_SEV(lg(), trace) << "Catalog " << catalog.name << " is recent";
-        }
-    }
-
-    lastReloadTime_ = now;
-
-    BOOST_LOG_SEV(lg(), debug) << "Found " << recentNames_.size()
-                               << " catalogs newer than last reload";
-}
-
 QVariant ClientCatalogModel::foregroundColor(const std::string& name) const {
-    if (recentNames_.find(name) != recentNames_.end() && pulseManager_->is_pulse_on()) {
+    if (recencyTracker_.is_recent(name) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
     return {};
@@ -272,7 +243,7 @@ void ClientCatalogModel::onPulseStateChanged(bool /*isOn*/) {
 
 void ClientCatalogModel::onPulsingComplete() {
     BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
-    recentNames_.clear();
+    recencyTracker_.clear();
 }
 
 }

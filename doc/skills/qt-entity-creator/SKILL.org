@@ -257,71 +257,63 @@ The =wrap_async_fetch= template catches any =std::exception= thrown inside the l
 **** Optional: Recency highlighting for modified records
 
 If you want to highlight recently-modified records in the table view with a
-pulsing color effect, use the =RecencyPulseManager= utility class:
+pulsing color effect, use the =RecencyTracker= and =RecencyPulseManager= utility
+classes:
 
 1. Add to header:
 
 #+begin_src cpp
 #include "ores.qt/RecencyPulseManager.hpp"
+#include "ores.qt/RecencyTracker.hpp"
 
 private slots:
     void onPulseStateChanged(bool isOn);
     void onPulsingComplete();
 
 private:
-    void updateRecentEntries();
     QVariant foregroundColor(const std::string& identifier) const;
 
-    std::unordered_set<std::string> recentIdentifiers_;
-    QDateTime lastReloadTime_;
+    // Recency highlighting - define key extractor type and tracker
+    using KeyExtractor = std::string(*)(const <component>::domain::<entity>&);
+    RecencyTracker<<component>::domain::<entity>, KeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 #+end_src
 
-2. In constructor, connect signals:
+2. Define a key extractor function and initialize in constructor:
 
 #+begin_src cpp
-pulseManager_ = new RecencyPulseManager(this);
-connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-        this, &Client<Entity>Model::onPulseStateChanged);
-connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-        this, &Client<Entity>Model::onPulsingComplete);
+namespace {
+    std::string entity_key_extractor(const <component>::domain::<entity>& e) {
+        return e.<primary_key_field>;  // e.g., e.name, e.iso_code
+    }
+}
+
+Client<Entity>Model::Client<Entity>Model(...)
+    : QAbstractTableModel(parent),
+      // ...other members...
+      recencyTracker_(entity_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
+
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+            this, &Client<Entity>Model::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+            this, &Client<Entity>Model::onPulsingComplete);
+}
 #+end_src
 
 3. In =data()= method, handle =Qt::ForegroundRole=:
 
 #+begin_src cpp
 if (role == Qt::ForegroundRole) {
-    return foregroundColor(entry.identifier);
+    return foregroundColor(entry.<primary_key_field>);
 }
 #+end_src
 
 4. Implement the helper methods:
 
 #+begin_src cpp
-void Client<Entity>Model::updateRecentEntries() {
-    recentIdentifiers_.clear();
-    const QDateTime now = QDateTime::currentDateTime();
-
-    // First load: set baseline timestamp, no highlighting
-    if (!lastReloadTime_.isValid()) {
-        lastReloadTime_ = now;
-        return;
-    }
-
-    // Find entries with recorded_at newer than last reload
-    for (const auto& entry : entries_) {
-        const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
-            entry.recorded_at.time_since_epoch()).count();
-        QDateTime recordedAt = QDateTime::fromMSecsSinceEpoch(msecs);
-        if (recordedAt.isValid() && recordedAt > lastReloadTime_) {
-            recentIdentifiers_.insert(entry.identifier);
-        }
-    }
-    lastReloadTime_ = now;
-}
-
 QVariant Client<Entity>Model::foregroundColor(const std::string& id) const {
-    if (recentIdentifiers_.count(id) && pulseManager_->is_pulse_on()) {
+    if (recencyTracker_.is_recent(id) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
     return {};
@@ -335,18 +327,25 @@ void Client<Entity>Model::onPulseStateChanged(bool /*isOn*/) {
 }
 
 void Client<Entity>Model::onPulsingComplete() {
-    recentIdentifiers_.clear();
+    recencyTracker_.clear();
 }
 #+end_src
 
-5. After loading data, call =updateRecentEntries()= and start pulsing if needed:
+5. After loading data, update recency tracking and start pulsing if needed:
 
 #+begin_src cpp
-updateRecentEntries();
-if (!recentIdentifiers_.empty() && !pulseManager_->is_pulsing()) {
+recencyTracker_.clear();
+pulseManager_->stop_pulsing();
+// ... load data into entries_ ...
+
+const bool has_recent = recencyTracker_.update(entries_);
+if (has_recent && !pulseManager_->is_pulsing()) {
     pulseManager_->start_pulsing();
 }
 #+end_src
+
+The =RecencyTracker= handles all timestamp comparison logic automatically,
+comparing each entity's =recorded_at= field against the last reload time
 
 *** Commit message
 

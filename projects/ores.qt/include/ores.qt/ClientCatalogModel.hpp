@@ -21,12 +21,11 @@
 #define ORES_QT_CLIENT_CATALOG_MODEL_HPP
 
 #include <QAbstractTableModel>
-#include <QDateTime>
-#include <unordered_set>
 #include <vector>
 #include "ores.dq/domain/catalog.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
+#include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
@@ -84,15 +83,14 @@ private slots:
     void onPulsingComplete();
 
 private:
-    void updateRecentCatalogs();
     QVariant foregroundColor(const std::string& name) const;
 
     ClientManager* clientManager_;
     std::vector<dq::domain::catalog> catalogs_;
 
     // Recency highlighting
-    std::unordered_set<std::string> recentNames_;
-    QDateTime lastReloadTime_;
+    using CatalogKeyExtractor = std::string(*)(const dq::domain::catalog&);
+    RecencyTracker<dq::domain::catalog, CatalogKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };
 

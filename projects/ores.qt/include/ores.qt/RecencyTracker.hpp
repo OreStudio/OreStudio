@@ -25,6 +25,12 @@
 #include <unordered_set>
 #include <QDateTime>
 
+#ifdef _MSC_VER
+#define ORES_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#else
+#define ORES_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#endif
+
 namespace ores::qt {
 
 /**
@@ -180,7 +186,7 @@ public:
 
 private:
     KeyExtractor key_extractor_;
-    [[no_unique_address]] TimestampExtractor timestamp_extractor_;
+    ORES_NO_UNIQUE_ADDRESS TimestampExtractor timestamp_extractor_;
     std::unordered_set<std::string> recent_keys_;
     QDateTime last_reload_time_;
 };

@@ -23,6 +23,7 @@
 #include <QWidget>
 #include <QSplitter>
 #include <QTreeView>
+#include <QTreeWidget>
 #include <QTableView>
 #include <QToolBar>
 #include <QStatusBar>
@@ -162,12 +163,7 @@ private:
 
     // Detail panel ("Dataset Accession Card")
     QWidget* detailPanel_;
-    QLabel* datasetNameLabel_;
-    QLabel* datasetUuidLabel_;
-    QLabel* catalogLabel_;
-    QLineEdit* originEdit_;      // Using QLineEdit for better tooltip behavior
-    QLineEdit* natureEdit_;
-    QLineEdit* treatmentEdit_;
+    QTreeWidget* propertiesTree_;  // Unified property list
     QLabel* methodologyLabel_;
     QLabel* descriptionLabel_;
     QGraphicsView* lineageView_;

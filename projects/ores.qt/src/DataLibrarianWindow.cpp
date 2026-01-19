@@ -144,6 +144,8 @@ void DataLibrarianWindow::setupUi() {
     statusBar_->addWidget(statusLabel_, 1);
     statusBar_->addPermanentWidget(loadingProgressBar_);
     statusBar_->setSizeGripEnabled(false);
+    statusBar_->setMinimumHeight(22);
+    statusBar_->setContentsMargins(4, 0, 4, 2);
     mainLayout->addWidget(statusBar_);
 
     // Configure main splitter: sidebar | central
@@ -274,66 +276,23 @@ void DataLibrarianWindow::setupDetailPanel() {
     // Main content in horizontal layout
     auto* contentLayout = new QHBoxLayout();
 
-    // Left side: Classification and basic info
-    auto* classificationGroup = new QGroupBox(tr("Classification"), detailPanel_);
-    auto* classificationLayout = new QFormLayout(classificationGroup);
+    // Left side: Properties tree (unified list view)
+    auto* propertiesGroup = new QGroupBox(tr("Properties"), detailPanel_);
+    auto* propertiesLayout = new QVBoxLayout(propertiesGroup);
+    propertiesLayout->setContentsMargins(0, 0, 0, 0);
 
-    datasetNameLabel_ = new QLabel(tr("-"), detailPanel_);
-    datasetNameLabel_->setWordWrap(true);
-    classificationLayout->addRow(tr("Name:"), datasetNameLabel_);
+    propertiesTree_ = new QTreeWidget(detailPanel_);
+    propertiesTree_->setHeaderLabels({tr("Property"), tr("Value")});
+    propertiesTree_->setRootIsDecorated(false);
+    propertiesTree_->setAlternatingRowColors(true);
+    propertiesTree_->setSelectionMode(QAbstractItemView::NoSelection);
+    propertiesTree_->setFocusPolicy(Qt::NoFocus);
+    propertiesTree_->setIndentation(0);
+    propertiesTree_->header()->setStretchLastSection(true);
+    propertiesTree_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    propertiesLayout->addWidget(propertiesTree_);
 
-    datasetUuidLabel_ = new QLabel(tr("-"), detailPanel_);
-    datasetUuidLabel_->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    classificationLayout->addRow(tr("UUID:"), datasetUuidLabel_);
-
-    catalogLabel_ = new QLabel(tr("-"), detailPanel_);
-    catalogLabel_->setToolTip(tr("The catalog this dataset belongs to"));
-    classificationLayout->addRow(tr("Catalog:"), catalogLabel_);
-
-    classificationLayout->addRow(new QLabel(tr("")));
-
-    // Use QLineEdit instead of QLabel for classification fields
-    // to get better tooltip behavior
-    auto createClassificationField = [this](const QString& tooltip) {
-        auto* edit = new QLineEdit(tr("-"), detailPanel_);
-        edit->setReadOnly(true);
-        edit->setFrame(false);
-        edit->setToolTip(tooltip);
-        edit->setCursor(Qt::ArrowCursor);
-        edit->setStyleSheet("QLineEdit { background: transparent; }");
-        return edit;
-    };
-
-    QString originTooltip = tr(
-        "Origin indicates where the data came from:\n"
-        "- Source: Primary data directly from originating system\n"
-        "- Derived: Data computed or aggregated from other datasets");
-    auto* originRowLabel = new QLabel(tr("Origin:"), detailPanel_);
-    originRowLabel->setToolTip(originTooltip);
-    originEdit_ = createClassificationField(originTooltip);
-    classificationLayout->addRow(originRowLabel, originEdit_);
-
-    QString natureTooltip = tr(
-        "Nature describes the type of values in the data:\n"
-        "- Actual: Real observed values\n"
-        "- Estimated: Calculated or projected values\n"
-        "- Simulated: Model-generated values");
-    auto* natureRowLabel = new QLabel(tr("Nature:"), detailPanel_);
-    natureRowLabel->setToolTip(natureTooltip);
-    natureEdit_ = createClassificationField(natureTooltip);
-    classificationLayout->addRow(natureRowLabel, natureEdit_);
-
-    QString treatmentTooltip = tr(
-        "Treatment indicates how the data has been processed:\n"
-        "- Raw: Unprocessed original data\n"
-        "- Cleaned: Data with corrections applied\n"
-        "- Enriched: Data augmented with additional information");
-    auto* treatmentRowLabel = new QLabel(tr("Treatment:"), detailPanel_);
-    treatmentRowLabel->setToolTip(treatmentTooltip);
-    treatmentEdit_ = createClassificationField(treatmentTooltip);
-    classificationLayout->addRow(treatmentRowLabel, treatmentEdit_);
-
-    contentLayout->addWidget(classificationGroup);
+    contentLayout->addWidget(propertiesGroup);
 
     // Center: Lineage & Methodology
     auto* lineageGroup = new QGroupBox(tr("The Trace (Lineage)"), detailPanel_);
@@ -681,29 +640,68 @@ void DataLibrarianWindow::buildNavigationTree() {
 }
 
 void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) {
+    propertiesTree_->clear();
+
+    // Helper to add a property row with tooltip
+    auto addProperty = [this](const QString& name, const QString& value,
+                              const QString& tooltip = {}) {
+        auto* item = new QTreeWidgetItem(propertiesTree_);
+        item->setText(0, name);
+        item->setText(1, value);
+        if (!tooltip.isEmpty()) {
+            item->setToolTip(0, tooltip);
+            item->setToolTip(1, tooltip);
+        }
+        return item;
+    };
+
     if (!dataset) {
-        datasetNameLabel_->setText(tr("-"));
-        datasetUuidLabel_->setText(tr("-"));
-        catalogLabel_->setText(tr("-"));
-        originEdit_->setText(tr("-"));
-        natureEdit_->setText(tr("-"));
-        treatmentEdit_->setText(tr("-"));
+        addProperty(tr("Name"), tr("-"));
+        addProperty(tr("ID"), tr("-"));
+        addProperty(tr("Catalog"), tr("-"));
+        addProperty(tr("Subject Area"), tr("-"));
+        addProperty(tr("Origin"), tr("-"));
+        addProperty(tr("Nature"), tr("-"));
+        addProperty(tr("Treatment"), tr("-"));
+        addProperty(tr("Recorded By"), tr("-"));
+        addProperty(tr("Recorded At"), tr("-"));
         methodologyLabel_->setText(tr("Methodology: -"));
         descriptionLabel_->setText(tr(""));
         return;
     }
 
-    datasetNameLabel_->setText(QString::fromStdString(dataset->name));
-    datasetUuidLabel_->setText(
-        QString::fromStdString(boost::uuids::to_string(dataset->id)));
-    catalogLabel_->setText(dataset->catalog_name
-        ? QString::fromStdString(*dataset->catalog_name)
-        : tr("-"));
+    // Basic info
+    addProperty(tr("Name"), QString::fromStdString(dataset->name),
+        tr("The name of this dataset"));
+    addProperty(tr("ID"), QString::fromStdString(boost::uuids::to_string(dataset->id)),
+        tr("Unique identifier for this dataset"));
+    addProperty(tr("Catalog"),
+        dataset->catalog_name ? QString::fromStdString(*dataset->catalog_name) : tr("-"),
+        tr("The catalog this dataset belongs to"));
+    addProperty(tr("Subject Area"), QString::fromStdString(dataset->subject_area_name),
+        tr("The subject area this dataset belongs to"));
 
-    // Dimensions (stored as codes, not UUIDs)
-    originEdit_->setText(QString::fromStdString(dataset->origin_code));
-    natureEdit_->setText(QString::fromStdString(dataset->nature_code));
-    treatmentEdit_->setText(QString::fromStdString(dataset->treatment_code));
+    // Classification dimensions
+    addProperty(tr("Origin"), QString::fromStdString(dataset->origin_code),
+        tr("Origin indicates where the data came from:\n"
+           "- Source: Primary data directly from originating system\n"
+           "- Derived: Data computed or aggregated from other datasets"));
+    addProperty(tr("Nature"), QString::fromStdString(dataset->nature_code),
+        tr("Nature describes the type of values in the data:\n"
+           "- Actual: Real observed values\n"
+           "- Estimated: Calculated or projected values\n"
+           "- Simulated: Model-generated values"));
+    addProperty(tr("Treatment"), QString::fromStdString(dataset->treatment_code),
+        tr("Treatment indicates how the data has been processed:\n"
+           "- Raw: Unprocessed original data\n"
+           "- Cleaned: Data with corrections applied\n"
+           "- Enriched: Data augmented with additional information"));
+
+    // Audit info
+    addProperty(tr("Recorded By"), QString::fromStdString(dataset->recorded_by),
+        tr("The user who recorded this dataset"));
+    addProperty(tr("Recorded At"), relative_time_helper::format(dataset->recorded_at),
+        tr("When this dataset was recorded"));
 
     // Methodology
     methodologyLabel_->setText(
@@ -775,10 +773,17 @@ void DataLibrarianWindow::updateLineageView(const dq::domain::dataset* dataset) 
         qreal bodyHeight = numRows * rowHeight + padding * 2;
         qreal nodeHeight = headerHeight + bodyHeight;
 
-        // Node body (rounded rect)
+        // Build tooltip with all properties
+        QString nodeTooltip = QString("<b>%1</b>").arg(headerText);
+        for (int i = 0; i < numRows; ++i) {
+            nodeTooltip += QString("<br>%1: %2").arg(labels[i], values[i]);
+        }
+
+        // Node body (rounded rect) - acts as tooltip area
         QPainterPath bodyPath;
         bodyPath.addRoundedRect(x, y, nodeWidth, nodeHeight, cornerRadius, cornerRadius);
-        scene->addPath(bodyPath, QPen(nodeBorderColor), QBrush(nodeBodyColor));
+        auto* bodyItem = scene->addPath(bodyPath, QPen(nodeBorderColor), QBrush(nodeBodyColor));
+        bodyItem->setToolTip(nodeTooltip);
 
         // Header background (top rounded, bottom square)
         QPainterPath headerPath;
@@ -789,7 +794,8 @@ void DataLibrarianWindow::updateLineageView(const dq::domain::dataset* dataset) 
         headerPath.lineTo(x + nodeWidth, y + cornerRadius);
         headerPath.arcTo(x + nodeWidth - cornerRadius * 2, y, cornerRadius * 2, cornerRadius * 2, 0, 90);
         headerPath.closeSubpath();
-        scene->addPath(headerPath, QPen(Qt::NoPen), QBrush(headerColor));
+        auto* headerBg = scene->addPath(headerPath, QPen(Qt::NoPen), QBrush(headerColor));
+        headerBg->setToolTip(nodeTooltip);
 
         // Header text (centered)
         QString elidedHeader = headerFm.elidedText(headerText, Qt::ElideRight,
@@ -797,6 +803,7 @@ void DataLibrarianWindow::updateLineageView(const dq::domain::dataset* dataset) 
         auto* headerItem = scene->addText(elidedHeader);
         headerItem->setFont(headerFont);
         headerItem->setDefaultTextColor(textColor);
+        headerItem->setToolTip(nodeTooltip);
         qreal headerTextWidth = headerFm.horizontalAdvance(elidedHeader);
         headerItem->setPos(x + (nodeWidth - headerTextWidth) / 2,
                           y + (headerHeight - headerFm.height()) / 2 - 1);
@@ -813,13 +820,15 @@ void DataLibrarianWindow::updateLineageView(const dq::domain::dataset* dataset) 
             labelItem->setFont(labelFont);
             labelItem->setDefaultTextColor(labelColor);
             labelItem->setPos(x + padding, rowY + (rowHeight - labelFm.height()) / 2);
+            labelItem->setToolTip(QString("%1: %2").arg(labels[i], values[i]));
 
-            // Value (right of label)
+            // Value (right of label) - with tooltip showing full value
             QString elidedValue = valueFm.elidedText(values[i], Qt::ElideRight, maxValueWidth);
             auto* valueItem = scene->addText(elidedValue);
             valueItem->setFont(valueFont);
             valueItem->setDefaultTextColor(valueColor);
             valueItem->setPos(x + padding + maxLabelWidth + 2, rowY + (rowHeight - valueFm.height()) / 2);
+            valueItem->setToolTip(QString("%1: %2").arg(labels[i], values[i]));
 
             rowY += rowHeight;
         }

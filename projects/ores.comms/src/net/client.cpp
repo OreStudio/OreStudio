@@ -999,12 +999,21 @@ std::uint32_t client::next_correlation_id() {
 }
 
 boost::asio::awaitable<void> client::write_frame(const messaging::frame& f) {
-    // Execute write on the strand to serialize all writes
-    co_await boost::asio::dispatch(
-        boost::asio::bind_executor(*write_strand_, boost::asio::use_awaitable));
+    // Serialize writes using async spinlock - SSL streams don't support concurrent writes.
+    // We use a simple atomic flag and yield to allow other coroutines to proceed.
+    auto executor = co_await boost::asio::this_coro::executor;
+    while (write_in_progress_.exchange(true, std::memory_order_acquire)) {
+        // Another write is in progress - yield and retry
+        co_await boost::asio::post(executor, boost::asio::use_awaitable);
+    }
 
-    // Now we're on the strand - safe to write
-    co_await conn_->write_frame(f);
+    try {
+        co_await conn_->write_frame(f);
+    } catch (...) {
+        write_in_progress_.store(false, std::memory_order_release);
+        throw;
+    }
+    write_in_progress_.store(false, std::memory_order_release);
 
     // Record the sent frame if recording is active
     std::shared_ptr<recording::session_recorder> recorder;

@@ -89,6 +89,13 @@
 \echo ''
 \echo '--- Data Quality Datasets ---'
 \ir dq_dataset_populate.sql
+
+-- Data Quality Catalog Dependencies
+\echo ''
+\echo '--- Data Quality Catalog Dependencies ---'
+\ir dq_catalog_dependency_populate.sql
+
+-- Data Quality Artefacts
 \ir dq_flags_images_artefact_populate.sql
 \ir dq_crypto_images_artefact_populate.sql
 \ir dq_countries_artefact_populate.sql

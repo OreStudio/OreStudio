@@ -35,20 +35,29 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+    std::string country_key_extractor(const refdata::domain::country& c) {
+        return c.alpha2_code;
+    }
+}
+
 ClientCountryModel::
 ClientCountryModel(ClientManager* clientManager, ImageCache* imageCache,
     QObject* parent)
     : QAbstractTableModel(parent), clientManager_(clientManager),
       imageCache_(imageCache),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      pulse_timer_(new QTimer(this)) {
+      recencyTracker_(country_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_,
         &QFutureWatcher<FetchResult>::finished,
         this, &ClientCountryModel::onCountriesLoaded);
 
-    connect(pulse_timer_, &QTimer::timeout,
-        this, &ClientCountryModel::onPulseTimerTimeout);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+        this, &ClientCountryModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+        this, &ClientCountryModel::onPulsingComplete);
 
     // Connect to image cache to refresh decorations when images are loaded
     if (imageCache_) {
@@ -168,10 +177,8 @@ void ClientCountryModel::refresh(bool replace) {
         if (!countries_.empty()) {
             beginResetModel();
             countries_.clear();
-            recent_alpha2_codes_.clear();
-            pulse_timer_->stop();
-            pulse_count_ = 0;
-            pulse_state_ = false;
+            recencyTracker_.clear();
+            pulseManager_->stop_pulsing();
             total_available_count_ = 0;
             endResetModel();
         }
@@ -196,10 +203,8 @@ void ClientCountryModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     if (!countries_.empty()) {
         beginResetModel();
         countries_.clear();
-        recent_alpha2_codes_.clear();
-        pulse_timer_->stop();
-        pulse_count_ = 0;
-        pulse_state_ = false;
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
         endResetModel();
     }
 
@@ -295,12 +300,11 @@ void ClientCountryModel::onCountriesLoaded() {
                 std::make_move_iterator(new_countries.end()));
             endInsertRows();
 
-            update_recent_countries();
-
-            if (!recent_alpha2_codes_.empty() && !pulse_timer_->isActive()) {
-                pulse_count_ = 0;
-                pulse_state_ = true;
-                pulse_timer_->start(pulse_interval_ms_);
+            const bool has_recent = recencyTracker_.update(countries_);
+            if (has_recent && !pulseManager_->is_pulsing()) {
+                pulseManager_->start_pulsing();
+                BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                           << " countries newer than last reload";
             }
         }
 
@@ -360,71 +364,24 @@ void ClientCountryModel::set_page_size(std::uint32_t size) {
     }
 }
 
-void ClientCountryModel::update_recent_countries() {
-    recent_alpha2_codes_.clear();
-
-    const QDateTime now = QDateTime::currentDateTime();
-
-    // First load: set baseline timestamp, no highlighting
-    if (!last_reload_time_.isValid()) {
-        last_reload_time_ = now;
-        BOOST_LOG_SEV(lg(), debug) << "First load - setting baseline timestamp: "
-                                   << last_reload_time_.toString(Qt::ISODate).toStdString();
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Checking countries newer than last reload: "
-                               << last_reload_time_.toString(Qt::ISODate).toStdString();
-
-    // Find countries with recorded_at newer than last reload
-    for (const auto& country : countries_) {
-        if (country.recorded_at == std::chrono::system_clock::time_point{}) {
-            continue;
-        }
-
-        const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
-            country.recorded_at.time_since_epoch()).count();
-        QDateTime recordedAt = QDateTime::fromMSecsSinceEpoch(msecs);
-
-        if (recordedAt.isValid() && recordedAt > last_reload_time_) {
-            recent_alpha2_codes_.insert(country.alpha2_code);
-            BOOST_LOG_SEV(lg(), trace) << "Country " << country.alpha2_code
-                                       << " is recent";
-        }
-    }
-
-    last_reload_time_ = now;
-
-    BOOST_LOG_SEV(lg(), debug) << "Found " << recent_alpha2_codes_.size()
-                               << " countries newer than last reload";
-}
-
 QVariant ClientCountryModel::
 recency_foreground_color(const std::string& alpha2_code) const {
-    // Recent countries show yellow when pulsing
-    if (recent_alpha2_codes_.find(alpha2_code) != recent_alpha2_codes_.end() && pulse_state_) {
+    if (recencyTracker_.is_recent(alpha2_code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
-
     return {};
 }
 
-void ClientCountryModel::onPulseTimerTimeout() {
-    pulse_state_ = !pulse_state_;
-    pulse_count_++;
-
-    // Stop pulsing after max cycles but keep yellow color on
-    if (pulse_count_ >= max_pulse_cycles_ * 2) {
-        pulse_timer_->stop();
-        pulse_state_ = true;
-        BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete, staying highlighted";
-    }
-
-    // Emit dataChanged to update the view with new colors
+void ClientCountryModel::onPulseStateChanged(bool /*isOn*/) {
     if (!countries_.empty()) {
         emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
             {Qt::ForegroundRole});
     }
+}
+
+void ClientCountryModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 }

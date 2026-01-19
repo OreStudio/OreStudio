@@ -20,14 +20,12 @@
 #ifndef ORES_QT_ROLE_MDI_WINDOW_HPP
 #define ORES_QT_ROLE_MDI_WINDOW_HPP
 
-#include <QWidget>
 #include <QTableView>
 #include <QVBoxLayout>
 #include <QToolBar>
-#include <QIcon>
-#include <QTimer>
 #include <QSortFilterProxyModel>
 #include <memory>
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientRoleModel.hpp"
@@ -40,7 +38,7 @@ namespace ores::qt {
  * This window provides functionality for viewing roles and their
  * associated permissions.
  */
-class RoleMdiWindow : public QWidget {
+class RoleMdiWindow : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
@@ -70,18 +68,11 @@ signals:
     void showRoleDetails(const iam::domain::role& role);
 
 public slots:
-    void reload();
+    void reload() override;
     void viewSelected();
 
-    /**
-     * @brief Mark the data as stale (changed on server).
-     */
-    void markAsStale();
-
-    /**
-     * @brief Clear the stale indicator.
-     */
-    void clearStaleIndicator();
+protected:
+    QString normalRefreshTooltip() const override { return tr("Refresh roles"); }
 
 private slots:
     void onDataLoaded();
@@ -93,29 +84,19 @@ private slots:
 private:
     void updateActionStates();
     void setupReloadAction();
-    void startPulseAnimation();
-    void stopPulseAnimation();
 
 private:
     QVBoxLayout* verticalLayout_;
     QTableView* roleTableView_;
     QToolBar* toolBar_;
 
-    // Reload action with stale indicator
     QAction* reloadAction_;
-    QIcon normalReloadIcon_;
-    QIcon staleReloadIcon_;
-    QTimer* pulseTimer_;
-    bool pulseState_{false};
-    int pulseCount_{0};
-
     QAction* viewAction_;
 
     std::unique_ptr<ClientRoleModel> roleModel_;
     QSortFilterProxyModel* proxyModel_;
     ClientManager* clientManager_;
     QString username_;
-    bool isStale_{false};
 };
 
 }

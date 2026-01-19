@@ -68,16 +68,18 @@ CurrencyController::CurrencyController(
 
         // Subscribe to events when connected (event adapter only available after login)
         connect(clientManager_, &ClientManager::connected,
-                this, [this]() {
+                this, [self = QPointer<CurrencyController>(this)]() {
+            if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Subscribing to currency change events";
-            clientManager_->subscribeToEvent(std::string{currency_event_name});
+            self->clientManager_->subscribeToEvent(std::string{currency_event_name});
         });
 
         // Re-subscribe after reconnection
         connect(clientManager_, &ClientManager::reconnected,
-                this, [this]() {
+                this, [self = QPointer<CurrencyController>(this)]() {
+            if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Re-subscribing to currency change events after reconnect";
-            clientManager_->subscribeToEvent(std::string{currency_event_name});
+            self->clientManager_->subscribeToEvent(std::string{currency_event_name});
         });
 
         // If already connected, subscribe now
@@ -131,12 +133,14 @@ void CurrencyController::showListWindow() {
 
     // Connect status signals
     connect(currencyWidget, &CurrencyMdiWindow::statusChanged,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<CurrencyController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(currencyWidget, &CurrencyMdiWindow::errorOccurred,
-            this, [this](const QString& err_msg) {
-        emit errorMessage("Error loading currencies: " + err_msg);
+            this, [self = QPointer<CurrencyController>(this)](const QString& err_msg) {
+        if (!self) return;
+        emit self->errorMessage("Error loading currencies: " + err_msg);
     });
 
     // Connect currency operations (add, edit, history)
@@ -171,7 +175,8 @@ void CurrencyController::showListWindow() {
         });
     
     // When the image cache reloads (due to external event), mark the list as stale
-    connect(imageCache_, &ImageCache::allLoaded, this, [this, currencyWidget](){
+    connect(imageCache_, &ImageCache::allLoaded, this, [self = QPointer<CurrencyController>(this), currencyWidget](){
+        if (!self) return;
         if (currencyWidget) {
             currencyWidget->markAsStale();
         }
@@ -220,12 +225,14 @@ void CurrencyController::onAddNewRequested() {
     }
 
     connect(detailDialog, &CurrencyDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<CurrencyController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &CurrencyDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<CurrencyController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     detailDialog->setCurrency(new_currency);
@@ -275,12 +282,14 @@ void CurrencyController::onShowCurrencyDetails(
     }
 
     connect(detailDialog, &CurrencyDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<CurrencyController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &CurrencyDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<CurrencyController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     detailDialog->setCurrency(currency);
@@ -332,12 +341,14 @@ void CurrencyController::onShowCurrencyHistory(const QString& isoCode) {
     }
 
     connect(historyWidget, &CurrencyHistoryDialog::statusChanged,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<CurrencyController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(historyWidget, &CurrencyHistoryDialog::errorOccurred,
-            this, [this](const QString& error_message) {
-        emit statusMessage("Error loading history: " + error_message);
+            this, [self = QPointer<CurrencyController>(this)](const QString& error_message) {
+        if (!self) return;
+        emit self->statusMessage("Error loading history: " + error_message);
     });
 
     // Connect open and revert signals
@@ -449,12 +460,14 @@ void CurrencyController::onOpenCurrencyVersion(
     }
 
     connect(detailDialog, &CurrencyDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<CurrencyController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &CurrencyDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<CurrencyController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     // Connect revert signal

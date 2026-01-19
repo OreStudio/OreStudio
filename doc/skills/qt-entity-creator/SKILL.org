@@ -254,6 +254,99 @@ void Client<Entity>Model::onDataLoaded() {
 
 The =wrap_async_fetch= template catches any =std::exception= thrown inside the lambda and populates the =error_message= and =error_details= fields with full =boost::diagnostic_information=. This preserves exception details that would otherwise be lost when Qt wraps exceptions in =QUnhandledException=.
 
+**** Optional: Recency highlighting for modified records
+
+If you want to highlight recently-modified records in the table view with a
+pulsing color effect, use the =RecencyTracker= and =RecencyPulseManager= utility
+classes:
+
+1. Add to header:
+
+#+begin_src cpp
+#include "ores.qt/RecencyPulseManager.hpp"
+#include "ores.qt/RecencyTracker.hpp"
+
+private slots:
+    void onPulseStateChanged(bool isOn);
+    void onPulsingComplete();
+
+private:
+    QVariant foregroundColor(const std::string& identifier) const;
+
+    // Recency highlighting - define key extractor type and tracker
+    using KeyExtractor = std::string(*)(const <component>::domain::<entity>&);
+    RecencyTracker<<component>::domain::<entity>, KeyExtractor> recencyTracker_;
+    RecencyPulseManager* pulseManager_;
+#+end_src
+
+2. Define a key extractor function and initialize in constructor:
+
+#+begin_src cpp
+namespace {
+    std::string entity_key_extractor(const <component>::domain::<entity>& e) {
+        return e.<primary_key_field>;  // e.g., e.name, e.iso_code
+    }
+}
+
+Client<Entity>Model::Client<Entity>Model(...)
+    : QAbstractTableModel(parent),
+      // ...other members...
+      recencyTracker_(entity_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
+
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+            this, &Client<Entity>Model::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+            this, &Client<Entity>Model::onPulsingComplete);
+}
+#+end_src
+
+3. In =data()= method, handle =Qt::ForegroundRole=:
+
+#+begin_src cpp
+if (role == Qt::ForegroundRole) {
+    return foregroundColor(entry.<primary_key_field>);
+}
+#+end_src
+
+4. Implement the helper methods:
+
+#+begin_src cpp
+QVariant Client<Entity>Model::foregroundColor(const std::string& id) const {
+    if (recencyTracker_.is_recent(id) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
+    }
+    return {};
+}
+
+void Client<Entity>Model::onPulseStateChanged(bool /*isOn*/) {
+    if (!entries_.empty()) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
+    }
+}
+
+void Client<Entity>Model::onPulsingComplete() {
+    recencyTracker_.clear();
+}
+#+end_src
+
+5. After loading data, update recency tracking and start pulsing if needed:
+
+#+begin_src cpp
+recencyTracker_.clear();
+pulseManager_->stop_pulsing();
+// ... load data into entries_ ...
+
+const bool has_recent = recencyTracker_.update(entries_);
+if (has_recent && !pulseManager_->is_pulsing()) {
+    pulseManager_->start_pulsing();
+}
+#+end_src
+
+The =RecencyTracker= handles all timestamp comparison logic automatically,
+comparing each entity's =recorded_at= field against the last reload time
+
 *** Commit message
 
 #+begin_example
@@ -1297,10 +1390,12 @@ void <Entity>Controller::showListWindow() {
 
     register_detachable_window(listMdiSubWindow_);
 
-    // Track destruction
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [this]() {
-        listWindow_ = nullptr;
-        listMdiSubWindow_ = nullptr;
+    // Track destruction - use QPointer for safety
+    connect(listMdiSubWindow_, &QObject::destroyed, this,
+            [self = QPointer<<Entity>Controller>(this)]() {
+        if (!self) return;
+        self->listWindow_ = nullptr;
+        self->listMdiSubWindow_ = nullptr;
     });
 
     mdiArea_->addSubWindow(listMdiSubWindow_);
@@ -1366,16 +1461,18 @@ void <Entity>Controller::showDetailWindow(
             this, &<Entity>Controller::errorMessage);
 
     // Connect entity-specific signals - use handleEntitySaved/handleEntityDeleted
-    // for centralized reload control
+    // for centralized reload control. Use QPointer for safety in lambda captures.
     connect(detailDialog, &<Entity>DetailDialog::<entity>Saved,
-            this, [this](const QString& id) {
+            this, [self = QPointer<<Entity>Controller>(this)](const QString& id) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "<Entity> saved: " << id.toStdString();
-        handleEntitySaved();  // Respects autoReloadOnSave_ flag
+        self->handleEntitySaved();  // Respects autoReloadOnSave_ flag
     });
     connect(detailDialog, &<Entity>DetailDialog::<entity>Deleted,
-            this, [this, windowKey](const QString& id) {
+            this, [self = QPointer<<Entity>Controller>(this), windowKey](const QString& id) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "<Entity> deleted: " << id.toStdString();
-        handleEntityDeleted();  // Respects autoReloadOnSave_ flag
+        self->handleEntityDeleted();  // Respects autoReloadOnSave_ flag
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -1387,8 +1484,10 @@ void <Entity>Controller::showDetailWindow(
 
     register_detachable_window(detailWindow);
 
-    connect(detailWindow, &QObject::destroyed, this, [this, windowKey]() {
-        managed_windows_.remove(windowKey);
+    connect(detailWindow, &QObject::destroyed, this,
+            [self = QPointer<<Entity>Controller>(this), windowKey]() {
+        if (!self) return;
+        self->managed_windows_.remove(windowKey);
     });
 
     managed_windows_[windowKey] = detailWindow;
@@ -1417,6 +1516,36 @@ void show_managed_window(DetachableMdiSubWindow* window,
 - =window=: The window to show
 - =referenceWindow=: Optional window to follow detach state from (typically =listWindow_=)
 - =offset=: Position offset when detaching (default 30,30, use 60,60 for nested windows)
+
+**** QPointer safety in lambda captures
+
+When using lambdas in Qt =connect()= calls, always use =QPointer= to safely
+capture =this=. This prevents crashes if the controller is destroyed while
+a signal is still pending:
+
+#+begin_src cpp
+// CORRECT: Use QPointer for safety
+connect(sender, &Sender::signal, this,
+        [self = QPointer<MyController>(this)](const QString& arg) {
+    if (!self) return;  // Guard against destroyed controller
+    BOOST_LOG_SEV(lg(), info) << "Signal received";
+    self->handleSomething();
+    emit self->statusMessage("Done");
+});
+
+// WRONG: Raw this capture can crash if controller is destroyed
+connect(sender, &Sender::signal, this, [this](const QString& arg) {
+    handleSomething();  // Crash if 'this' was deleted!
+});
+#+end_src
+
+Rules for QPointer usage:
+1. Replace =[this]= with =[self = QPointer<ControllerClass>(this)]=
+2. For additional captures: =[self = QPointer<...>(this), key, otherVar]=
+3. Add =if (!self) return;= as the first line in the lambda
+4. Replace =this->= with =self->=
+5. Replace bare member access (=member_=) with =self->member_=
+6. Replace =emit signal(...)= with =emit self->signal(...)=
 
 **** Notification handling (automatic via base class)
 

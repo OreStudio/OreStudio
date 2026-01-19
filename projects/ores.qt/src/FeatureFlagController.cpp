@@ -61,16 +61,18 @@ FeatureFlagController::FeatureFlagController(
 
         // Subscribe to events when connected
         connect(clientManager_, &ClientManager::connected,
-                this, [this]() {
+                this, [self = QPointer<FeatureFlagController>(this)]() {
+            if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Subscribing to feature flag change events";
-            clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
+            self->clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
         });
 
         // Re-subscribe after reconnection
         connect(clientManager_, &ClientManager::reconnected,
-                this, [this]() {
+                this, [self = QPointer<FeatureFlagController>(this)]() {
+            if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Re-subscribing to feature flag change events after reconnect";
-            clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
+            self->clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
         });
 
         // If already connected, subscribe now
@@ -135,10 +137,11 @@ void FeatureFlagController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [this, key]() {
-        untrack_window(key);
-        listWindow_ = nullptr;
-        listMdiSubWindow_ = nullptr;
+    connect(listMdiSubWindow_, &QObject::destroyed, this, [self = QPointer<FeatureFlagController>(this), key]() {
+        if (!self) return;
+        self->untrack_window(key);
+        self->listWindow_ = nullptr;
+        self->listMdiSubWindow_ = nullptr;
     });
 
     BOOST_LOG_SEV(lg(), debug) << "Feature flags list window created";
@@ -233,8 +236,9 @@ void FeatureFlagController::showDetailWindow(
     register_detachable_window(subWindow);
 
     // Cleanup when closed
-    connect(subWindow, &QObject::destroyed, this, [this, key]() {
-        untrack_window(key);
+    connect(subWindow, &QObject::destroyed, this, [self = QPointer<FeatureFlagController>(this), key]() {
+        if (!self) return;
+        self->untrack_window(key);
     });
 
     BOOST_LOG_SEV(lg(), debug) << "Detail window created for: "
@@ -329,12 +333,14 @@ void FeatureFlagController::showHistoryWindow(const QString& name) {
     auto* historyDialog = new FeatureFlagHistoryDialog(name, clientManager_, mainWindow_);
 
     connect(historyDialog, &FeatureFlagHistoryDialog::statusChanged,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<FeatureFlagController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(historyDialog, &FeatureFlagHistoryDialog::errorOccurred,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<FeatureFlagController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
     connect(historyDialog, &FeatureFlagHistoryDialog::revertVersionRequested,
             this, &FeatureFlagController::onRevertFeatureFlag);
@@ -402,12 +408,14 @@ void FeatureFlagController::onOpenFeatureFlagVersion(
     }
 
     connect(detailDialog, &FeatureFlagDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<FeatureFlagController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &FeatureFlagDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<FeatureFlagController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     // Try to get history from the sender (history dialog) for version navigation

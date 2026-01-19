@@ -30,19 +30,27 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+    std::string coding_scheme_key_extractor(const dq::domain::coding_scheme& e) {
+        return e.code;
+    }
+}
+
 ClientCodingSchemeModel::ClientCodingSchemeModel(
     ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      pulse_timer_(new QTimer(this)) {
+      recencyTracker_(coding_scheme_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &ClientCodingSchemeModel::onSchemesLoaded);
 
-    pulse_timer_->setInterval(pulse_interval_ms_);
-    connect(pulse_timer_, &QTimer::timeout,
-            this, &ClientCodingSchemeModel::onPulseTimerTimeout);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+        this, &ClientCodingSchemeModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+        this, &ClientCodingSchemeModel::onPulsingComplete);
 }
 
 int ClientCodingSchemeModel::rowCount(const QModelIndex& parent) const {
@@ -184,7 +192,12 @@ void ClientCodingSchemeModel::onSchemesLoaded() {
 
     beginResetModel();
     schemes_ = std::move(result.schemes);
-    update_recent_schemes();
+    const bool has_recent = recencyTracker_.update(schemes_);
+    if (has_recent && !pulseManager_->is_pulsing()) {
+        pulseManager_->start_pulsing();
+        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                   << " schemes newer than last reload";
+    }
     endResetModel();
 
     BOOST_LOG_SEV(lg(), debug) << "Loaded " << schemes_.size()
@@ -199,46 +212,22 @@ const dq::domain::coding_scheme* ClientCodingSchemeModel::getScheme(
     return &schemes_[row];
 }
 
-void ClientCodingSchemeModel::update_recent_schemes() {
-    recent_scheme_codes_.clear();
-    QDateTime now = QDateTime::currentDateTime();
-    last_reload_time_ = now;
-
-    for (const auto& scheme : schemes_) {
-        auto recorded = QDateTime::fromSecsSinceEpoch(
-            std::chrono::duration_cast<std::chrono::seconds>(
-                scheme.recorded_at.time_since_epoch()).count());
-
-        if (recorded.secsTo(now) <= 60) {
-            recent_scheme_codes_.insert(scheme.code);
-        }
-    }
-
-    if (!recent_scheme_codes_.empty()) {
-        pulse_count_ = 0;
-        pulse_state_ = true;
-        pulse_timer_->start();
+void ClientCodingSchemeModel::onPulseStateChanged(bool /*isOn*/) {
+    if (!schemes_.empty()) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
     }
 }
 
-void ClientCodingSchemeModel::onPulseTimerTimeout() {
-    pulse_state_ = !pulse_state_;
-    pulse_count_++;
-
-    if (pulse_count_ >= max_pulse_cycles_ * 2) {
-        pulse_timer_->stop();
-        recent_scheme_codes_.clear();
-    }
-
-    emit dataChanged(index(0, 0),
-                     index(rowCount() - 1, columnCount() - 1),
-                     {Qt::ForegroundRole});
+void ClientCodingSchemeModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 QVariant ClientCodingSchemeModel::recency_foreground_color(
     const std::string& code) const {
-    if (recent_scheme_codes_.contains(code) && pulse_state_) {
-        return QColor(100, 200, 100);
+    if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
     }
     return {};
 }

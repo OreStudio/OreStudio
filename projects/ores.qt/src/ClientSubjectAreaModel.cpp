@@ -30,19 +30,31 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+    std::string make_key(const std::string& name, const std::string& catalog_name) {
+        return name + "|" + catalog_name;
+    }
+
+    std::string subject_area_key_extractor(const dq::domain::subject_area& sa) {
+        return make_key(sa.name, sa.domain_name);
+    }
+}
+
 ClientSubjectAreaModel::ClientSubjectAreaModel(
     ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      pulse_timer_(new QTimer(this)) {
+      recencyTracker_(subject_area_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &ClientSubjectAreaModel::onSubjectAreasLoaded);
 
-    pulse_timer_->setInterval(pulse_interval_ms_);
-    connect(pulse_timer_, &QTimer::timeout,
-            this, &ClientSubjectAreaModel::onPulseTimerTimeout);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+            this, &ClientSubjectAreaModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+            this, &ClientSubjectAreaModel::onPulsingComplete);
 }
 
 int ClientSubjectAreaModel::rowCount(const QModelIndex& parent) const {
@@ -74,7 +86,7 @@ QVariant ClientSubjectAreaModel::data(const QModelIndex& index, int role) const 
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(subject_area.name, subject_area.domain_name);
+        return recency_foreground_color(make_key(subject_area.name, subject_area.domain_name));
     }
 
     return {};
@@ -178,8 +190,14 @@ void ClientSubjectAreaModel::onSubjectAreasLoaded() {
 
     beginResetModel();
     subject_areas_ = std::move(result.subject_areas);
-    update_recent_subject_areas();
     endResetModel();
+
+    const bool has_recent = recencyTracker_.update(subject_areas_);
+    if (has_recent && !pulseManager_->is_pulsing()) {
+        pulseManager_->start_pulsing();
+        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                   << " subject areas newer than last reload";
+    }
 
     BOOST_LOG_SEV(lg(), debug) << "Loaded " << subject_areas_.size()
                                << " subject areas";
@@ -193,54 +211,24 @@ const dq::domain::subject_area* ClientSubjectAreaModel::getSubjectArea(
     return &subject_areas_[row];
 }
 
-std::string ClientSubjectAreaModel::make_key(
-    const std::string& name, const std::string& domain_name) const {
-    return name + "|" + domain_name;
-}
-
-void ClientSubjectAreaModel::update_recent_subject_areas() {
-    recent_keys_.clear();
-    QDateTime now = QDateTime::currentDateTime();
-    last_reload_time_ = now;
-
-    for (const auto& subject_area : subject_areas_) {
-        auto recorded = QDateTime::fromSecsSinceEpoch(
-            std::chrono::duration_cast<std::chrono::seconds>(
-                subject_area.recorded_at.time_since_epoch()).count());
-
-        if (recorded.secsTo(now) <= 60) {
-            recent_keys_.insert(make_key(subject_area.name,
-                                         subject_area.domain_name));
-        }
-    }
-
-    if (!recent_keys_.empty()) {
-        pulse_count_ = 0;
-        pulse_state_ = true;
-        pulse_timer_->start();
-    }
-}
-
-void ClientSubjectAreaModel::onPulseTimerTimeout() {
-    pulse_state_ = !pulse_state_;
-    pulse_count_++;
-
-    if (pulse_count_ >= max_pulse_cycles_ * 2) {
-        pulse_timer_->stop();
-        recent_keys_.clear();
-    }
-
-    emit dataChanged(index(0, 0),
-                     index(rowCount() - 1, columnCount() - 1),
-                     {Qt::ForegroundRole});
-}
-
 QVariant ClientSubjectAreaModel::recency_foreground_color(
-    const std::string& name, const std::string& domain_name) const {
-    if (recent_keys_.contains(make_key(name, domain_name)) && pulse_state_) {
-        return QColor(100, 200, 100);
+    const std::string& key) const {
+    if (recencyTracker_.is_recent(key) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
     }
     return {};
+}
+
+void ClientSubjectAreaModel::onPulseStateChanged(bool /*isOn*/) {
+    if (!subject_areas_.empty()) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
+    }
+}
+
+void ClientSubjectAreaModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 }

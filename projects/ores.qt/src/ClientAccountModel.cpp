@@ -24,10 +24,10 @@
 #include <unordered_map>
 #include <QtConcurrent>
 #include <QColor>
-#include "ores.qt/ExceptionHelper.hpp"
-#include <QDateTime>
 #include <QFont>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.iam/messaging/account_protocol.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
@@ -37,19 +37,27 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+    std::string account_key_extractor(const iam::domain::account& a) {
+        return a.username;
+    }
+}
+
 ClientAccountModel::
 ClientAccountModel(ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent), clientManager_(clientManager),
       watcher_(new QFutureWatcher<FutureWatcherResult>(this)),
-      pulse_timer_(new QTimer(this)) {
+      recencyTracker_(account_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_,
         &QFutureWatcher<FutureWatcherResult>::finished,
         this, &ClientAccountModel::onAccountsLoaded);
 
-    // Setup pulse timer for recency color updates (same interval as reload button)
-    connect(pulse_timer_, &QTimer::timeout,
-        this, &ClientAccountModel::onPulseTimerTimeout);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+        this, &ClientAccountModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+        this, &ClientAccountModel::onPulsingComplete);
 }
 
 int ClientAccountModel::rowCount(const QModelIndex& parent) const {
@@ -159,10 +167,8 @@ void ClientAccountModel::refresh(bool replace) {
             beginResetModel();
             accounts_.clear();
             total_available_count_ = 0;
-            recent_usernames_.clear();
-            pulse_timer_->stop();
-            pulse_count_ = 0;
-            pulse_state_ = false;
+            recencyTracker_.clear();
+            pulseManager_->stop_pulsing();
             endResetModel();
         }
     }
@@ -187,10 +193,8 @@ void ClientAccountModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     if (!accounts_.empty()) {
         beginResetModel();
         accounts_.clear();
-        recent_usernames_.clear();
-        pulse_timer_->stop();
-        pulse_count_ = 0;
-        pulse_state_ = false;
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
         endResetModel();
     }
 
@@ -335,13 +339,17 @@ void ClientAccountModel::onAccountsLoaded() {
                                   << ", Total available: " << total_available_count_;
 
         // Update the set of recent accounts for recency coloring
-        update_recent_accounts();
-
-        // Start the pulse timer if there are recent accounts to highlight
-        if (!recent_usernames_.empty() && !pulse_timer_->isActive()) {
-            pulse_count_ = 0;
-            pulse_state_ = true;  // Start with highlight on
-            pulse_timer_->start(pulse_interval_ms_);
+        // We need to extract accounts from AccountWithLoginInfo for the tracker
+        std::vector<iam::domain::account> accounts_for_tracker;
+        accounts_for_tracker.reserve(accounts_.size());
+        for (const auto& item : accounts_) {
+            accounts_for_tracker.push_back(item.account);
+        }
+        const bool has_recent = recencyTracker_.update(accounts_for_tracker);
+        if (has_recent && !pulseManager_->is_pulsing()) {
+            pulseManager_->start_pulsing();
+            BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                       << " accounts newer than last reload";
         }
 
         emit dataLoaded();
@@ -397,82 +405,24 @@ void ClientAccountModel::set_page_size(std::uint32_t size) {
     }
 }
 
-void ClientAccountModel::update_recent_accounts() {
-    recent_usernames_.clear();
-
-    if (accounts_.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "No accounts to check for recency.";
-        return;
-    }
-
-    QDateTime now = QDateTime::currentDateTime();
-
-    // If this is the first load, set last_reload_time_ and return (no recent accounts)
-    if (!last_reload_time_.isValid()) {
-        last_reload_time_ = now;
-        BOOST_LOG_SEV(lg(), debug) << "First load, setting last_reload_time_";
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Checking accounts newer than last reload: "
-                               << last_reload_time_.toString(Qt::ISODate).toStdString();
-
-    // Find accounts with recorded_at newer than last reload
-    for (const auto& item : accounts_) {
-        const auto& account = item.account;
-        if (account.recorded_at == std::chrono::system_clock::time_point{}) {
-            continue;
-        }
-
-        // Convert time_point to QDateTime
-        const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
-            account.recorded_at.time_since_epoch()).count();
-        QDateTime recordedAt = QDateTime::fromMSecsSinceEpoch(msecs);
-
-        if (recordedAt.isValid() && recordedAt > last_reload_time_) {
-            recent_usernames_.insert(account.username);
-            BOOST_LOG_SEV(lg(), trace) << "Account " << account.username
-                                       << " is recent";
-        }
-    }
-
-    // Update the reload timestamp for next comparison
-    last_reload_time_ = now;
-
-    BOOST_LOG_SEV(lg(), debug) << "Found " << recent_usernames_.size()
-                               << " accounts newer than last reload";
-}
-
 QVariant ClientAccountModel::
 recency_foreground_color(const std::string& username) const {
-    if (recent_usernames_.empty() || recent_usernames_.find(username) == recent_usernames_.end()) {
-        return {};  // No special color
+    if (recencyTracker_.is_recent(username) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
     }
-
-    // Only show color when pulse_state_ is true (pulsing on)
-    if (!pulse_state_) {
-        return {};
-    }
-
-    // Return yellow/gold color for recent accounts
-    return QColor(255, 200, 0);  // Gold color
+    return {};
 }
 
-void ClientAccountModel::onPulseTimerTimeout() {
-    pulse_state_ = !pulse_state_;
-    pulse_count_++;
-
-    // After max_pulse_cycles_ * 2, keep the highlight on permanently
-    if (pulse_count_ >= max_pulse_cycles_ * 2) {
-        pulse_timer_->stop();
-        pulse_state_ = true;  // Keep highlight on after pulsing stops
-    }
-
-    // Emit dataChanged for ForegroundRole on all rows with recent usernames
-    if (!recent_usernames_.empty()) {
+void ClientAccountModel::onPulseStateChanged(bool /*isOn*/) {
+    if (!accounts_.empty()) {
         emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
             {Qt::ForegroundRole});
     }
+}
+
+void ClientAccountModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 LoginStatus ClientAccountModel::calculateLoginStatus(

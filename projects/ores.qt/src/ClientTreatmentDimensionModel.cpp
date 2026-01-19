@@ -30,19 +30,27 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+    std::string treatment_dimension_key_extractor(const dq::domain::treatment_dimension& e) {
+        return e.code;
+    }
+}
+
 ClientTreatmentDimensionModel::ClientTreatmentDimensionModel(
     ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      pulse_timer_(new QTimer(this)) {
+      recencyTracker_(treatment_dimension_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &ClientTreatmentDimensionModel::onDimensionsLoaded);
 
-    pulse_timer_->setInterval(pulse_interval_ms_);
-    connect(pulse_timer_, &QTimer::timeout,
-            this, &ClientTreatmentDimensionModel::onPulseTimerTimeout);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+            this, &ClientTreatmentDimensionModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+            this, &ClientTreatmentDimensionModel::onPulsingComplete);
 }
 
 int ClientTreatmentDimensionModel::rowCount(const QModelIndex& parent) const {
@@ -178,8 +186,14 @@ void ClientTreatmentDimensionModel::onDimensionsLoaded() {
 
     beginResetModel();
     dimensions_ = std::move(result.dimensions);
-    update_recent_dimensions();
     endResetModel();
+
+    const bool has_recent = recencyTracker_.update(dimensions_);
+    if (has_recent && !pulseManager_->is_pulsing()) {
+        pulseManager_->start_pulsing();
+        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                   << " dimensions newer than last reload";
+    }
 
     BOOST_LOG_SEV(lg(), debug) << "Loaded " << dimensions_.size()
                                << " treatment dimensions";
@@ -193,48 +207,24 @@ const dq::domain::treatment_dimension* ClientTreatmentDimensionModel::getDimensi
     return &dimensions_[row];
 }
 
-void ClientTreatmentDimensionModel::update_recent_dimensions() {
-    recent_dimension_codes_.clear();
-    QDateTime now = QDateTime::currentDateTime();
-    last_reload_time_ = now;
-
-    for (const auto& dim : dimensions_) {
-        auto recorded = QDateTime::fromSecsSinceEpoch(
-            std::chrono::duration_cast<std::chrono::seconds>(
-                dim.recorded_at.time_since_epoch()).count());
-
-        if (recorded.secsTo(now) <= 60) {
-            recent_dimension_codes_.insert(dim.code);
-        }
-    }
-
-    if (!recent_dimension_codes_.empty()) {
-        pulse_count_ = 0;
-        pulse_state_ = true;
-        pulse_timer_->start();
-    }
-}
-
-void ClientTreatmentDimensionModel::onPulseTimerTimeout() {
-    pulse_state_ = !pulse_state_;
-    pulse_count_++;
-
-    if (pulse_count_ >= max_pulse_cycles_ * 2) {
-        pulse_timer_->stop();
-        recent_dimension_codes_.clear();
-    }
-
-    emit dataChanged(index(0, 0),
-                     index(rowCount() - 1, columnCount() - 1),
-                     {Qt::ForegroundRole});
-}
-
 QVariant ClientTreatmentDimensionModel::recency_foreground_color(
     const std::string& code) const {
-    if (recent_dimension_codes_.contains(code) && pulse_state_) {
-        return QColor(100, 200, 100);
+    if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
     }
     return {};
+}
+
+void ClientTreatmentDimensionModel::onPulseStateChanged(bool /*isOn*/) {
+    if (!dimensions_.empty()) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
+    }
+}
+
+void ClientTreatmentDimensionModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 }

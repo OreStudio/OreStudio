@@ -64,16 +64,18 @@ CountryController::CountryController(
 
         // Subscribe to events when connected (event adapter only available after login)
         connect(clientManager_, &ClientManager::connected,
-                this, [this]() {
+                this, [self = QPointer<CountryController>(this)]() {
+            if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Subscribing to country change events";
-            clientManager_->subscribeToEvent(std::string{country_event_name});
+            self->clientManager_->subscribeToEvent(std::string{country_event_name});
         });
 
         // Re-subscribe after reconnection
         connect(clientManager_, &ClientManager::reconnected,
-                this, [this]() {
+                this, [self = QPointer<CountryController>(this)]() {
+            if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Re-subscribing to country change events after reconnect";
-            clientManager_->subscribeToEvent(std::string{country_event_name});
+            self->clientManager_->subscribeToEvent(std::string{country_event_name});
         });
 
         // If already connected, subscribe now
@@ -121,12 +123,14 @@ void CountryController::showListWindow() {
 
     // Connect status signals
     connect(countryWidget, &CountryMdiWindow::statusChanged,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<CountryController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(countryWidget, &CountryMdiWindow::errorOccurred,
-            this, [this](const QString& err_msg) {
-        emit errorMessage("Error loading countries: " + err_msg);
+            this, [self = QPointer<CountryController>(this)](const QString& err_msg) {
+        if (!self) return;
+        emit self->errorMessage("Error loading countries: " + err_msg);
     });
 
     // Connect country operations (add, edit, history)
@@ -162,7 +166,8 @@ void CountryController::showListWindow() {
         });
 
     // When the image cache reloads (due to external event), mark the list as stale
-    connect(imageCache_, &ImageCache::allLoaded, this, [this, countryWidget](){
+    connect(imageCache_, &ImageCache::allLoaded, this, [self = QPointer<CountryController>(this), countryWidget](){
+        if (!self) return;
         if (countryWidget) {
             countryWidget->markAsStale();
         }
@@ -205,12 +210,14 @@ void CountryController::onAddNewRequested() {
     }
 
     connect(detailDialog, &CountryDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<CountryController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &CountryDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<CountryController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     detailDialog->setCountry(new_country);
@@ -260,12 +267,14 @@ void CountryController::onShowCountryDetails(
     }
 
     connect(detailDialog, &CountryDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<CountryController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &CountryDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<CountryController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     detailDialog->setCountry(country);
@@ -316,12 +325,14 @@ void CountryController::onShowCountryHistory(const QString& alpha2Code) {
     }
 
     connect(historyDialog, &CountryHistoryDialog::statusChanged,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<CountryController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(historyDialog, &CountryHistoryDialog::errorOccurred,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<CountryController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
     connect(historyDialog, &CountryHistoryDialog::revertVersionRequested,
             this, &CountryController::onRevertCountry);
@@ -443,12 +454,14 @@ void CountryController::onOpenCountryVersion(
     }
 
     connect(detailDialog, &CountryDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<CountryController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &CountryDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<CountryController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     // Connect revert signal

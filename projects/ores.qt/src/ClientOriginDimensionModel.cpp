@@ -20,8 +20,8 @@
 #include "ores.qt/ClientOriginDimensionModel.hpp"
 
 #include <QtConcurrent>
-#include <QBrush>
 #include "ores.dq/messaging/dimension_protocol.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
@@ -32,19 +32,27 @@ using namespace ores::logging;
 using ores::comms::messaging::frame;
 using ores::comms::messaging::message_type;
 
+namespace {
+    std::string origin_dimension_key_extractor(const dq::domain::origin_dimension& e) {
+        return e.code;
+    }
+}
+
 ClientOriginDimensionModel::ClientOriginDimensionModel(
     ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      pulse_timer_(new QTimer(this)) {
+      recencyTracker_(origin_dimension_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &ClientOriginDimensionModel::onDimensionsLoaded);
 
-    pulse_timer_->setInterval(pulse_interval_ms_);
-    connect(pulse_timer_, &QTimer::timeout,
-            this, &ClientOriginDimensionModel::onPulseTimerTimeout);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+            this, &ClientOriginDimensionModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+            this, &ClientOriginDimensionModel::onPulsingComplete);
 }
 
 int ClientOriginDimensionModel::rowCount(const QModelIndex& parent) const {
@@ -212,8 +220,12 @@ void ClientOriginDimensionModel::onDimensionsLoaded() {
     dimensions_ = std::move(result.dimensions);
     endResetModel();
 
-    update_recent_dimensions();
-    last_reload_time_ = QDateTime::currentDateTime();
+    const bool has_recent = recencyTracker_.update(dimensions_);
+    if (has_recent && !pulseManager_->is_pulsing()) {
+        pulseManager_->start_pulsing();
+        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                   << " dimensions newer than last reload";
+    }
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << dimensions_.size() << " origin dimensions";
     emit dataLoaded();
@@ -227,57 +239,24 @@ ClientOriginDimensionModel::getDimension(int row) const {
     return &dimensions_[idx];
 }
 
-void ClientOriginDimensionModel::update_recent_dimensions() {
-    recent_dimension_codes_.clear();
-
-    if (!last_reload_time_.isValid()) {
-        return;
-    }
-
-    // Check for dimensions modified since last reload
-    for (const auto& dimension : dimensions_) {
-        auto recorded_at = QDateTime::fromSecsSinceEpoch(
-            std::chrono::duration_cast<std::chrono::seconds>(
-                dimension.recorded_at.time_since_epoch()).count());
-
-        if (recorded_at > last_reload_time_) {
-            recent_dimension_codes_.insert(dimension.code);
-        }
-    }
-
-    if (!recent_dimension_codes_.empty()) {
-        pulse_count_ = 0;
-        pulse_state_ = false;
-        pulse_timer_->start();
-    }
-}
-
 QVariant ClientOriginDimensionModel::recency_foreground_color(
     const std::string& code) const {
-    if (recent_dimension_codes_.find(code) == recent_dimension_codes_.end()) {
-        return {};
-    }
-
-    if (pulse_state_) {
-        return QBrush(QColor(255, 200, 0)); // Yellow highlight
+    if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
     }
     return {};
 }
 
-void ClientOriginDimensionModel::onPulseTimerTimeout() {
-    pulse_state_ = !pulse_state_;
-    pulse_count_++;
-
-    if (pulse_count_ >= max_pulse_cycles_ * 2) {
-        pulse_timer_->stop();
-        recent_dimension_codes_.clear();
-    }
-
-    // Notify views to repaint
+void ClientOriginDimensionModel::onPulseStateChanged(bool /*isOn*/) {
     if (!dimensions_.empty()) {
-        emit dataChanged(index(0, 0),
-            index(static_cast<int>(dimensions_.size()) - 1, ColumnCount - 1));
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
     }
+}
+
+void ClientOriginDimensionModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 }

@@ -23,6 +23,7 @@
 #include <QBrush>
 #include "ores.dq/messaging/change_management_protocol.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
@@ -32,19 +33,27 @@ using namespace ores::logging;
 using ores::comms::messaging::frame;
 using ores::comms::messaging::message_type;
 
+namespace {
+    std::string change_reason_key_extractor(const dq::domain::change_reason& r) {
+        return r.code;
+    }
+}
+
 ClientChangeReasonModel::ClientChangeReasonModel(
     ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      pulse_timer_(new QTimer(this)) {
+      recencyTracker_(change_reason_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &ClientChangeReasonModel::onReasonsLoaded);
 
-    pulse_timer_->setInterval(pulse_interval_ms_);
-    connect(pulse_timer_, &QTimer::timeout,
-            this, &ClientChangeReasonModel::onPulseTimerTimeout);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+        this, &ClientChangeReasonModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+        this, &ClientChangeReasonModel::onPulsingComplete);
 }
 
 int ClientChangeReasonModel::rowCount(const QModelIndex& parent) const {
@@ -224,8 +233,12 @@ void ClientChangeReasonModel::onReasonsLoaded() {
     reasons_ = std::move(result.reasons);
     endResetModel();
 
-    update_recent_reasons();
-    last_reload_time_ = QDateTime::currentDateTime();
+    const bool has_recent = recencyTracker_.update(reasons_);
+    if (has_recent && !pulseManager_->is_pulsing()) {
+        pulseManager_->start_pulsing();
+        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                   << " reasons newer than last reload";
+    }
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << reasons_.size() << " change reasons";
     emit dataLoaded();
@@ -239,57 +252,24 @@ ClientChangeReasonModel::getReason(int row) const {
     return &reasons_[idx];
 }
 
-void ClientChangeReasonModel::update_recent_reasons() {
-    recent_reason_codes_.clear();
-
-    if (!last_reload_time_.isValid()) {
-        return;
-    }
-
-    // Check for reasons modified since last reload
-    for (const auto& reason : reasons_) {
-        auto recorded_at = QDateTime::fromSecsSinceEpoch(
-            std::chrono::duration_cast<std::chrono::seconds>(
-                reason.recorded_at.time_since_epoch()).count());
-
-        if (recorded_at > last_reload_time_) {
-            recent_reason_codes_.insert(reason.code);
-        }
-    }
-
-    if (!recent_reason_codes_.empty()) {
-        pulse_count_ = 0;
-        pulse_state_ = false;
-        pulse_timer_->start();
-    }
-}
-
 QVariant ClientChangeReasonModel::recency_foreground_color(
     const std::string& code) const {
-    if (recent_reason_codes_.find(code) == recent_reason_codes_.end()) {
-        return {};
-    }
-
-    if (pulse_state_) {
-        return QBrush(QColor(255, 200, 0)); // Yellow highlight
+    if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
     }
     return {};
 }
 
-void ClientChangeReasonModel::onPulseTimerTimeout() {
-    pulse_state_ = !pulse_state_;
-    pulse_count_++;
-
-    if (pulse_count_ >= max_pulse_cycles_ * 2) {
-        pulse_timer_->stop();
-        recent_reason_codes_.clear();
-    }
-
-    // Notify views to repaint
+void ClientChangeReasonModel::onPulseStateChanged(bool /*isOn*/) {
     if (!reasons_.empty()) {
-        emit dataChanged(index(0, 0),
-            index(static_cast<int>(reasons_.size()) - 1, ColumnCount - 1));
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
     }
+}
+
+void ClientChangeReasonModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 }

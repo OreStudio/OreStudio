@@ -64,15 +64,17 @@ void EntityController::setupEventSubscription() {
             this, &EntityController::onNotificationReceived);
 
     connect(clientManager_, &ClientManager::connected,
-            this, [this]() {
-        BOOST_LOG_SEV(lg(), info) << "Subscribing to " << eventName_ << " events";
-        clientManager_->subscribeToEvent(eventName_);
+            this, [self = QPointer<EntityController>(this)]() {
+        if (!self) return;
+        BOOST_LOG_SEV(lg(), info) << "Subscribing to " << self->eventName_ << " events";
+        self->clientManager_->subscribeToEvent(self->eventName_);
     });
 
     connect(clientManager_, &ClientManager::reconnected,
-            this, [this]() {
-        BOOST_LOG_SEV(lg(), info) << "Re-subscribing to " << eventName_ << " events";
-        clientManager_->subscribeToEvent(eventName_);
+            this, [self = QPointer<EntityController>(this)]() {
+        if (!self) return;
+        BOOST_LOG_SEV(lg(), info) << "Re-subscribing to " << self->eventName_ << " events";
+        self->clientManager_->subscribeToEvent(self->eventName_);
     });
 
     if (clientManager_->isConnected()) {

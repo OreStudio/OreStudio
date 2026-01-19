@@ -19,10 +19,9 @@
  */
 #include "ores.qt/ClientCatalogModel.hpp"
 
-#include <QBrush>
-#include <QColor>
 #include <QFutureWatcher>
 #include <QtConcurrent>
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
@@ -32,10 +31,23 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+    std::string catalog_key_extractor(const dq::domain::catalog& c) {
+        return c.name;
+    }
+}
+
 ClientCatalogModel::ClientCatalogModel(ClientManager* clientManager,
                                        QObject* parent)
     : QAbstractTableModel(parent),
-      clientManager_(clientManager) {
+      clientManager_(clientManager),
+      recencyTracker_(catalog_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
+
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+            this, &ClientCatalogModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+            this, &ClientCatalogModel::onPulsingComplete);
 }
 
 int ClientCatalogModel::rowCount(const QModelIndex& parent) const {
@@ -55,34 +67,32 @@ QVariant ClientCatalogModel::data(const QModelIndex& index, int role) const {
         return {};
 
     const auto& catalog = catalogs_[index.row()];
-    const QString key = QString::fromStdString(catalog.name);
 
-    if (role == Qt::DisplayRole) {
-        switch (index.column()) {
-        case Name:
-            return QString::fromStdString(catalog.name);
-        case Description:
-            return QString::fromStdString(catalog.description);
-        case Owner:
-            return catalog.owner
-                ? QString::fromStdString(*catalog.owner)
-                : QString();
-        case Version:
-            return catalog.version;
-        case RecordedBy:
-            return QString::fromStdString(catalog.recorded_by);
-        case RecordedAt:
-            return relative_time_helper::format(catalog.recorded_at);
-        default:
-            return {};
-        }
+    if (role == Qt::ForegroundRole) {
+        return foregroundColor(catalog.name);
     }
 
-    if (role == Qt::BackgroundRole && isRecentlyModified(key)) {
-        return QBrush(QColor(70, 130, 180, 50));
-    }
+    if (role != Qt::DisplayRole)
+        return {};
 
-    return {};
+    switch (index.column()) {
+    case Name:
+        return QString::fromStdString(catalog.name);
+    case Description:
+        return QString::fromStdString(catalog.description);
+    case Owner:
+        return catalog.owner
+            ? QString::fromStdString(*catalog.owner)
+            : QString();
+    case Version:
+        return catalog.version;
+    case RecordedBy:
+        return QString::fromStdString(catalog.recorded_by);
+    case RecordedAt:
+        return relative_time_helper::format(catalog.recorded_at);
+    default:
+        return {};
+    }
 }
 
 QVariant ClientCatalogModel::headerData(int section,
@@ -191,24 +201,19 @@ void ClientCatalogModel::loadData() {
             return;
         }
 
-        QSet<QString> oldKeys;
-        for (const auto& c : self->catalogs_) {
-            oldKeys.insert(QString::fromStdString(c.name));
-        }
-
         self->beginResetModel();
+        self->recencyTracker_.clear();
+        self->pulseManager_->stop_pulsing();
         self->catalogs_ = std::move(result.catalogs);
         self->endResetModel();
 
-        self->recentlyModifiedKeys_.clear();
-        for (const auto& c : self->catalogs_) {
-            QString key = QString::fromStdString(c.name);
-            if (!oldKeys.contains(key)) {
-                self->markRecentlyModified(key);
-            }
+        const bool has_recent = self->recencyTracker_.update(self->catalogs_);
+        if (has_recent && !self->pulseManager_->is_pulsing()) {
+            self->pulseManager_->start_pulsing();
+            BOOST_LOG_SEV(lg(), debug) << "Found " << self->recencyTracker_.recent_count()
+                                       << " catalogs newer than last reload";
         }
 
-        self->lastLoadTime_ = std::chrono::steady_clock::now();
         emit self->loadFinished();
 
         BOOST_LOG_SEV(lg(), debug)
@@ -222,12 +227,23 @@ const dq::domain::catalog& ClientCatalogModel::catalogAt(int row) const {
     return catalogs_.at(row);
 }
 
-void ClientCatalogModel::markRecentlyModified(const QString& name) {
-    recentlyModifiedKeys_.insert(name);
+QVariant ClientCatalogModel::foregroundColor(const std::string& name) const {
+    if (recencyTracker_.is_recent(name) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
+    }
+    return {};
 }
 
-bool ClientCatalogModel::isRecentlyModified(const QString& name) const {
-    return recentlyModifiedKeys_.contains(name);
+void ClientCatalogModel::onPulseStateChanged(bool /*isOn*/) {
+    if (!catalogs_.empty()) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
+    }
+}
+
+void ClientCatalogModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 }

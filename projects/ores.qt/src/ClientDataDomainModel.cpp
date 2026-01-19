@@ -30,19 +30,27 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+    std::string data_domain_key_extractor(const dq::domain::data_domain& e) {
+        return e.name;
+    }
+}
+
 ClientDataDomainModel::ClientDataDomainModel(
     ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      pulse_timer_(new QTimer(this)) {
+      recencyTracker_(data_domain_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &ClientDataDomainModel::onDomainsLoaded);
 
-    pulse_timer_->setInterval(pulse_interval_ms_);
-    connect(pulse_timer_, &QTimer::timeout,
-            this, &ClientDataDomainModel::onPulseTimerTimeout);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+        this, &ClientDataDomainModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+        this, &ClientDataDomainModel::onPulsingComplete);
 }
 
 int ClientDataDomainModel::rowCount(const QModelIndex& parent) const {
@@ -176,7 +184,12 @@ void ClientDataDomainModel::onDomainsLoaded() {
 
     beginResetModel();
     domains_ = std::move(result.domains);
-    update_recent_domains();
+    const bool has_recent = recencyTracker_.update(domains_);
+    if (has_recent && !pulseManager_->is_pulsing()) {
+        pulseManager_->start_pulsing();
+        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                   << " domains newer than last reload";
+    }
     endResetModel();
 
     BOOST_LOG_SEV(lg(), debug) << "Loaded " << domains_.size()
@@ -191,46 +204,22 @@ const dq::domain::data_domain* ClientDataDomainModel::getDomain(
     return &domains_[row];
 }
 
-void ClientDataDomainModel::update_recent_domains() {
-    recent_domain_names_.clear();
-    QDateTime now = QDateTime::currentDateTime();
-    last_reload_time_ = now;
-
-    for (const auto& domain : domains_) {
-        auto recorded = QDateTime::fromSecsSinceEpoch(
-            std::chrono::duration_cast<std::chrono::seconds>(
-                domain.recorded_at.time_since_epoch()).count());
-
-        if (recorded.secsTo(now) <= 60) {
-            recent_domain_names_.insert(domain.name);
-        }
-    }
-
-    if (!recent_domain_names_.empty()) {
-        pulse_count_ = 0;
-        pulse_state_ = true;
-        pulse_timer_->start();
+void ClientDataDomainModel::onPulseStateChanged(bool /*isOn*/) {
+    if (!domains_.empty()) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
     }
 }
 
-void ClientDataDomainModel::onPulseTimerTimeout() {
-    pulse_state_ = !pulse_state_;
-    pulse_count_++;
-
-    if (pulse_count_ >= max_pulse_cycles_ * 2) {
-        pulse_timer_->stop();
-        recent_domain_names_.clear();
-    }
-
-    emit dataChanged(index(0, 0),
-                     index(rowCount() - 1, columnCount() - 1),
-                     {Qt::ForegroundRole});
+void ClientDataDomainModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 QVariant ClientDataDomainModel::recency_foreground_color(
     const std::string& name) const {
-    if (recent_domain_names_.contains(name) && pulse_state_) {
-        return QColor(100, 200, 100);
+    if (recencyTracker_.is_recent(name) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
     }
     return {};
 }

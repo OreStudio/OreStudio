@@ -78,13 +78,12 @@ CurrencyMdiWindow(ClientManager* clientManager,
                   ImageCache* imageCache,
                   const QString& username,
                   QWidget* parent)
-    : QWidget(parent),
+    : EntityListMdiWindow(parent),
       verticalLayout_(new QVBoxLayout(this)),
       currencyTableView_(new QTableView(this)),
       toolBar_(new QToolBar(this)),
       pagination_widget_(new PaginationWidget(this)),
       reloadAction_(new QAction("Reload", this)),
-      pulseTimer_(new QTimer(this)),
       addAction_(new QAction("Add", this)),
       editAction_(new QAction("Edit", this)),
       deleteAction_(new QAction("Delete", this)),
@@ -824,56 +823,11 @@ void CurrencyMdiWindow::updateActionStates() {
 }
 
 void CurrencyMdiWindow::setupReloadAction() {
-    normalReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", color_constants::icon_color);
-    staleReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", color_constants::stale_indicator);
-
-    reloadAction_->setIcon(normalReloadIcon_);
-    reloadAction_->setToolTip("Reload currencies from server");
+    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_sync_20_regular.svg", color_constants::icon_color));
     connect(reloadAction_, &QAction::triggered, this, &CurrencyMdiWindow::reload);
 
-    // Setup pulse animation timer
-    connect(pulseTimer_, &QTimer::timeout, this, [this]() {
-        pulseState_ = !pulseState_;
-        reloadAction_->setIcon(pulseState_ ? staleReloadIcon_ : normalReloadIcon_);
-
-        pulseCount_++;
-        // Stop pulsing after 6 cycles (3 seconds) but keep stale icon
-        if (pulseCount_ >= 6) {
-            pulseTimer_->stop();
-            reloadAction_->setIcon(staleReloadIcon_);
-        }
-    });
-}
-
-void CurrencyMdiWindow::startPulseAnimation() {
-    pulseCount_ = 0;
-    pulseState_ = false;
-    pulseTimer_->start(500);  // Toggle every 500ms
-}
-
-void CurrencyMdiWindow::stopPulseAnimation() {
-    pulseTimer_->stop();
-    reloadAction_->setIcon(normalReloadIcon_);
-}
-
-void CurrencyMdiWindow::markAsStale() {
-    if (!isStale_) {
-        isStale_ = true;
-        reloadAction_->setToolTip("Data changed on server - click to reload");
-        startPulseAnimation();
-        BOOST_LOG_SEV(lg(), info) << "Currency data marked as stale";
-    }
-}
-
-void CurrencyMdiWindow::clearStaleIndicator() {
-    if (isStale_) {
-        isStale_ = false;
-        stopPulseAnimation();
-        reloadAction_->setToolTip("Reload currencies from server");
-        BOOST_LOG_SEV(lg(), debug) << "Stale indicator cleared";
-    }
+    initializeStaleIndicator(reloadAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
 }
 
 void CurrencyMdiWindow::setupColumnVisibility() {

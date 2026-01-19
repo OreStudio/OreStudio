@@ -31,19 +31,27 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+    std::string methodology_key_extractor(const dq::domain::methodology& e) {
+        return boost::uuids::to_string(e.id);
+    }
+}
+
 ClientMethodologyModel::ClientMethodologyModel(
     ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      pulse_timer_(new QTimer(this)) {
+      recencyTracker_(methodology_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &ClientMethodologyModel::onMethodologiesLoaded);
 
-    pulse_timer_->setInterval(pulse_interval_ms_);
-    connect(pulse_timer_, &QTimer::timeout,
-            this, &ClientMethodologyModel::onPulseTimerTimeout);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+            this, &ClientMethodologyModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+            this, &ClientMethodologyModel::onPulsingComplete);
 }
 
 int ClientMethodologyModel::rowCount(const QModelIndex& parent) const {
@@ -182,8 +190,14 @@ void ClientMethodologyModel::onMethodologiesLoaded() {
 
     beginResetModel();
     methodologies_ = std::move(result.methodologies);
-    update_recent_methodologies();
     endResetModel();
+
+    const bool has_recent = recencyTracker_.update(methodologies_);
+    if (has_recent && !pulseManager_->is_pulsing()) {
+        pulseManager_->start_pulsing();
+        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                   << " methodologies newer than last reload";
+    }
 
     BOOST_LOG_SEV(lg(), debug) << "Loaded " << methodologies_.size()
                                << " methodologies";
@@ -197,46 +211,22 @@ const dq::domain::methodology* ClientMethodologyModel::getMethodology(
     return &methodologies_[row];
 }
 
-void ClientMethodologyModel::update_recent_methodologies() {
-    recent_methodology_ids_.clear();
-    QDateTime now = QDateTime::currentDateTime();
-    last_reload_time_ = now;
-
-    for (const auto& methodology : methodologies_) {
-        auto recorded = QDateTime::fromSecsSinceEpoch(
-            std::chrono::duration_cast<std::chrono::seconds>(
-                methodology.recorded_at.time_since_epoch()).count());
-
-        if (recorded.secsTo(now) <= 60) {
-            recent_methodology_ids_.insert(boost::uuids::to_string(methodology.id));
-        }
-    }
-
-    if (!recent_methodology_ids_.empty()) {
-        pulse_count_ = 0;
-        pulse_state_ = true;
-        pulse_timer_->start();
+void ClientMethodologyModel::onPulseStateChanged(bool /*isOn*/) {
+    if (!methodologies_.empty()) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
     }
 }
 
-void ClientMethodologyModel::onPulseTimerTimeout() {
-    pulse_state_ = !pulse_state_;
-    pulse_count_++;
-
-    if (pulse_count_ >= max_pulse_cycles_ * 2) {
-        pulse_timer_->stop();
-        recent_methodology_ids_.clear();
-    }
-
-    emit dataChanged(index(0, 0),
-                     index(rowCount() - 1, columnCount() - 1),
-                     {Qt::ForegroundRole});
+void ClientMethodologyModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 QVariant ClientMethodologyModel::recency_foreground_color(
     const boost::uuids::uuid& id) const {
-    if (recent_methodology_ids_.contains(boost::uuids::to_string(id)) && pulse_state_) {
-        return QColor(100, 200, 100);
+    if (recencyTracker_.is_recent(boost::uuids::to_string(id)) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
     }
     return {};
 }

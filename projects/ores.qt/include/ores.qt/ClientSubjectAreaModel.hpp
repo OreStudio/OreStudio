@@ -21,12 +21,11 @@
 #define ORES_QT_CLIENT_SUBJECT_AREA_MODEL_HPP
 
 #include <vector>
-#include <unordered_set>
-#include <QTimer>
-#include <QDateTime>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/RecencyPulseManager.hpp"
+#include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/subject_area.hpp"
 
@@ -75,14 +74,11 @@ signals:
 
 private slots:
     void onSubjectAreasLoaded();
-    void onPulseTimerTimeout();
+    void onPulseStateChanged(bool isOn);
+    void onPulsingComplete();
 
 private:
-    void update_recent_subject_areas();
-    QVariant recency_foreground_color(const std::string& name,
-                                      const std::string& domain_name) const;
-    std::string make_key(const std::string& name,
-                         const std::string& domain_name) const;
+    QVariant recency_foreground_color(const std::string& key) const;
 
     struct FetchResult {
         bool success;
@@ -96,13 +92,9 @@ private:
     QFutureWatcher<FetchResult>* watcher_;
     bool is_fetching_{false};
 
-    QTimer* pulse_timer_;
-    std::unordered_set<std::string> recent_keys_;
-    QDateTime last_reload_time_;
-    bool pulse_state_{false};
-    int pulse_count_{0};
-    static constexpr int pulse_interval_ms_ = 500;
-    static constexpr int max_pulse_cycles_ = 6;
+    using SubjectAreaKeyExtractor = std::string(*)(const dq::domain::subject_area&);
+    RecencyTracker<dq::domain::subject_area, SubjectAreaKeyExtractor> recencyTracker_;
+    RecencyPulseManager* pulseManager_;
 };
 
 }

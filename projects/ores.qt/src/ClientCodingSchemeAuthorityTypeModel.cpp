@@ -30,19 +30,27 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+    std::string coding_scheme_authority_type_key_extractor(const dq::domain::coding_scheme_authority_type& e) {
+        return e.code;
+    }
+}
+
 ClientCodingSchemeAuthorityTypeModel::ClientCodingSchemeAuthorityTypeModel(
     ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      pulse_timer_(new QTimer(this)) {
+      recencyTracker_(coding_scheme_authority_type_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &ClientCodingSchemeAuthorityTypeModel::onAuthorityTypesLoaded);
 
-    pulse_timer_->setInterval(pulse_interval_ms_);
-    connect(pulse_timer_, &QTimer::timeout,
-            this, &ClientCodingSchemeAuthorityTypeModel::onPulseTimerTimeout);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+        this, &ClientCodingSchemeAuthorityTypeModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+        this, &ClientCodingSchemeAuthorityTypeModel::onPulsingComplete);
 }
 
 int ClientCodingSchemeAuthorityTypeModel::rowCount(const QModelIndex& parent) const {
@@ -178,7 +186,12 @@ void ClientCodingSchemeAuthorityTypeModel::onAuthorityTypesLoaded() {
 
     beginResetModel();
     authorityTypes_ = std::move(result.authority_types);
-    update_recent_authority_types();
+    const bool has_recent = recencyTracker_.update(authorityTypes_);
+    if (has_recent && !pulseManager_->is_pulsing()) {
+        pulseManager_->start_pulsing();
+        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                   << " authority_types newer than last reload";
+    }
     endResetModel();
 
     BOOST_LOG_SEV(lg(), debug) << "Loaded " << authorityTypes_.size()
@@ -193,46 +206,22 @@ const dq::domain::coding_scheme_authority_type* ClientCodingSchemeAuthorityTypeM
     return &authorityTypes_[row];
 }
 
-void ClientCodingSchemeAuthorityTypeModel::update_recent_authority_types() {
-    recent_authority_type_codes_.clear();
-    QDateTime now = QDateTime::currentDateTime();
-    last_reload_time_ = now;
-
-    for (const auto& at : authorityTypes_) {
-        auto recorded = QDateTime::fromSecsSinceEpoch(
-            std::chrono::duration_cast<std::chrono::seconds>(
-                at.recorded_at.time_since_epoch()).count());
-
-        if (recorded.secsTo(now) <= 60) {
-            recent_authority_type_codes_.insert(at.code);
-        }
-    }
-
-    if (!recent_authority_type_codes_.empty()) {
-        pulse_count_ = 0;
-        pulse_state_ = true;
-        pulse_timer_->start();
+void ClientCodingSchemeAuthorityTypeModel::onPulseStateChanged(bool /*isOn*/) {
+    if (!authorityTypes_.empty()) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
     }
 }
 
-void ClientCodingSchemeAuthorityTypeModel::onPulseTimerTimeout() {
-    pulse_state_ = !pulse_state_;
-    pulse_count_++;
-
-    if (pulse_count_ >= max_pulse_cycles_ * 2) {
-        pulse_timer_->stop();
-        recent_authority_type_codes_.clear();
-    }
-
-    emit dataChanged(index(0, 0),
-                     index(rowCount() - 1, columnCount() - 1),
-                     {Qt::ForegroundRole});
+void ClientCodingSchemeAuthorityTypeModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 QVariant ClientCodingSchemeAuthorityTypeModel::recency_foreground_color(
     const std::string& code) const {
-    if (recent_authority_type_codes_.contains(code) && pulse_state_) {
-        return QColor(100, 200, 100);
+    if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
     }
     return {};
 }

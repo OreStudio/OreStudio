@@ -71,12 +71,14 @@ void RoleController::showListWindow() {
 
     // Connect status signals
     connect(roleWidget, &RoleMdiWindow::statusChanged,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<RoleController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(roleWidget, &RoleMdiWindow::errorOccurred,
-            this, [this](const QString& err_msg) {
-        emit errorMessage("Error: " + err_msg);
+            this, [self = QPointer<RoleController>(this)](const QString& err_msg) {
+        if (!self) return;
+        emit self->errorMessage("Error: " + err_msg);
     });
 
     // Connect role operations
@@ -132,12 +134,14 @@ void RoleController::onShowRoleDetails(const iam::domain::role& role) {
 
     // Connect common signals
     connect(detailDialog, &RoleDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<RoleController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &RoleDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<RoleController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     // Create and configure window

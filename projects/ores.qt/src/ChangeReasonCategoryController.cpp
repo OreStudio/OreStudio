@@ -21,6 +21,7 @@
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
+#include <QPointer>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ChangeReasonCategoryMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCategoryDetailDialog.hpp"
@@ -59,16 +60,18 @@ ChangeReasonCategoryController::ChangeReasonCategoryController(
 
         // Subscribe to events when connected
         connect(clientManager_, &ClientManager::connected,
-                this, [this]() {
+                this, [self = QPointer<ChangeReasonCategoryController>(this)]() {
+            if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Subscribing to category change events";
-            clientManager_->subscribeToEvent(std::string{category_event_name});
+            self->clientManager_->subscribeToEvent(std::string{category_event_name});
         });
 
         // Re-subscribe after reconnection
         connect(clientManager_, &ClientManager::reconnected,
-                this, [this]() {
+                this, [self = QPointer<ChangeReasonCategoryController>(this)]() {
+            if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Re-subscribing to category change events";
-            clientManager_->subscribeToEvent(std::string{category_event_name});
+            self->clientManager_->subscribeToEvent(std::string{category_event_name});
         });
 
         // If already connected, subscribe now
@@ -131,10 +134,12 @@ void ChangeReasonCategoryController::showListWindow() {
     register_detachable_window(listMdiSubWindow_);
 
     // Cleanup when closed
-    connect(listMdiSubWindow_, &QObject::destroyed, this, [this, key]() {
-        untrack_window(key);
-        listWindow_ = nullptr;
-        listMdiSubWindow_ = nullptr;
+    connect(listMdiSubWindow_, &QObject::destroyed, this,
+            [self = QPointer<ChangeReasonCategoryController>(this), key]() {
+        if (!self) return;
+        self->untrack_window(key);
+        self->listWindow_ = nullptr;
+        self->listMdiSubWindow_ = nullptr;
     });
 
     BOOST_LOG_SEV(lg(), debug) << "Category list window created";
@@ -193,10 +198,11 @@ void ChangeReasonCategoryController::showAddWindow() {
     connect(detailDialog, &ChangeReasonCategoryDetailDialog::errorMessage,
             this, &ChangeReasonCategoryController::errorMessage);
     connect(detailDialog, &ChangeReasonCategoryDetailDialog::categorySaved,
-            this, [this](const QString& code) {
+            this, [self = QPointer<ChangeReasonCategoryController>(this)](const QString& code) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Category saved: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->markAsStale();
+        if (self->listWindow_) {
+            self->listWindow_->markAsStale();
         }
     });
 
@@ -239,17 +245,19 @@ void ChangeReasonCategoryController::showDetailWindow(
     connect(detailDialog, &ChangeReasonCategoryDetailDialog::errorMessage,
             this, &ChangeReasonCategoryController::errorMessage);
     connect(detailDialog, &ChangeReasonCategoryDetailDialog::categorySaved,
-            this, [this](const QString& code) {
+            this, [self = QPointer<ChangeReasonCategoryController>(this)](const QString& code) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Category saved: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->markAsStale();
+        if (self->listWindow_) {
+            self->listWindow_->markAsStale();
         }
     });
     connect(detailDialog, &ChangeReasonCategoryDetailDialog::categoryDeleted,
-            this, [this, key](const QString& code) {
+            this, [self = QPointer<ChangeReasonCategoryController>(this), key](const QString& code) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Category deleted: " << code.toStdString();
-        if (listWindow_) {
-            listWindow_->markAsStale();
+        if (self->listWindow_) {
+            self->listWindow_->markAsStale();
         }
     });
 
@@ -315,12 +323,14 @@ void ChangeReasonCategoryController::showHistoryWindow(const QString& code) {
     auto* historyDialog = new ChangeReasonCategoryHistoryDialog(code, clientManager_, mainWindow_);
 
     connect(historyDialog, &ChangeReasonCategoryHistoryDialog::statusChanged,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<ChangeReasonCategoryController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(historyDialog, &ChangeReasonCategoryHistoryDialog::errorOccurred,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<ChangeReasonCategoryController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
     connect(historyDialog, &ChangeReasonCategoryHistoryDialog::revertVersionRequested,
             this, &ChangeReasonCategoryController::onRevertVersion);
@@ -376,12 +386,14 @@ void ChangeReasonCategoryController::onOpenVersion(
     detailDialog->setReadOnly(true);
 
     connect(detailDialog, &ChangeReasonCategoryDetailDialog::statusMessage,
-            this, [this](const QString& message) {
-        emit statusMessage(message);
+            this, [self = QPointer<ChangeReasonCategoryController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->statusMessage(message);
     });
     connect(detailDialog, &ChangeReasonCategoryDetailDialog::errorMessage,
-            this, [this](const QString& message) {
-        emit errorMessage(message);
+            this, [self = QPointer<ChangeReasonCategoryController>(this)](const QString& message) {
+        if (!self) return;
+        emit self->errorMessage(message);
     });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
@@ -425,11 +437,12 @@ void ChangeReasonCategoryController::onRevertVersion(
     connect(detailDialog, &ChangeReasonCategoryDetailDialog::errorMessage,
             this, &ChangeReasonCategoryController::errorMessage);
     connect(detailDialog, &ChangeReasonCategoryDetailDialog::categorySaved,
-            this, [this](const QString& code) {
+            this, [self = QPointer<ChangeReasonCategoryController>(this)](const QString& code) {
+        if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Category reverted: " << code.toStdString();
-        emit statusMessage(QString("Category '%1' reverted successfully").arg(code));
-        if (listWindow_) {
-            listWindow_->markAsStale();
+        emit self->statusMessage(QString("Category '%1' reverted successfully").arg(code));
+        if (self->listWindow_) {
+            self->listWindow_->markAsStale();
         }
     });
 

@@ -22,11 +22,11 @@
 
 #include <vector>
 #include <unordered_set>
-#include <chrono>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
-#include <QTimer>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/RecencyPulseManager.hpp"
+#include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/currency.hpp"
 
@@ -211,7 +211,8 @@ signals:
 
 private slots:
     void onCurrenciesLoaded();
-    void onPulseTimerTimeout();
+    void onPulseStateChanged(bool isOn);
+    void onPulsingComplete();
 
 private:
     /**
@@ -226,11 +227,6 @@ private:
      * @return QVariant containing QColor for foreground, or invalid QVariant if no color.
      */
     QVariant foreground_color(const std::string& iso_code) const;
-
-    /**
-     * @brief Update the set of recent currencies (valid_from within recency window).
-     */
-    void update_recent_currencies();
 
     struct FetchResult {
         bool success;
@@ -250,14 +246,10 @@ private:
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    // Recency tracking for row coloring based on valid_from date
-    std::unordered_set<std::string> recent_iso_codes_;  // ISO codes newer than last reload
-    QDateTime last_reload_time_;  // Timestamp of last reload (for comparison)
-    QTimer* pulse_timer_;
-    bool pulse_state_{false};  // Toggle for pulsing effect
-    int pulse_count_{0};
-    static constexpr int max_pulse_cycles_{6};  // 6 pulses (3 seconds at 500ms interval)
-    static constexpr int pulse_interval_ms_{500};  // Pulse toggle interval in milliseconds
+    // Recency highlighting
+    using CurrencyKeyExtractor = std::string(*)(const refdata::domain::currency&);
+    RecencyTracker<refdata::domain::currency, CurrencyKeyExtractor> recencyTracker_;
+    RecencyPulseManager* pulseManager_;
 
     /**
      * @brief Internal method to fetch currencies with specific offset and limit.

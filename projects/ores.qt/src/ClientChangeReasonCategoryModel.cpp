@@ -23,6 +23,7 @@
 #include <QBrush>
 #include "ores.dq/messaging/change_management_protocol.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/ColorConstants.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
@@ -32,19 +33,27 @@ using namespace ores::logging;
 using ores::comms::messaging::frame;
 using ores::comms::messaging::message_type;
 
+namespace {
+    std::string change_reason_category_key_extractor(const dq::domain::change_reason_category& c) {
+        return c.code;
+    }
+}
+
 ClientChangeReasonCategoryModel::ClientChangeReasonCategoryModel(
     ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      pulse_timer_(new QTimer(this)) {
+      recencyTracker_(change_reason_category_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &ClientChangeReasonCategoryModel::onCategoriesLoaded);
 
-    pulse_timer_->setInterval(pulse_interval_ms_);
-    connect(pulse_timer_, &QTimer::timeout,
-            this, &ClientChangeReasonCategoryModel::onPulseTimerTimeout);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+        this, &ClientChangeReasonCategoryModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+        this, &ClientChangeReasonCategoryModel::onPulsingComplete);
 }
 
 int ClientChangeReasonCategoryModel::rowCount(const QModelIndex& parent) const {
@@ -208,8 +217,12 @@ void ClientChangeReasonCategoryModel::onCategoriesLoaded() {
     categories_ = std::move(result.categories);
     endResetModel();
 
-    update_recent_categories();
-    last_reload_time_ = QDateTime::currentDateTime();
+    const bool has_recent = recencyTracker_.update(categories_);
+    if (has_recent && !pulseManager_->is_pulsing()) {
+        pulseManager_->start_pulsing();
+        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                   << " categories newer than last reload";
+    }
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << categories_.size() << " change reason categories";
     emit dataLoaded();
@@ -223,57 +236,24 @@ ClientChangeReasonCategoryModel::getCategory(int row) const {
     return &categories_[idx];
 }
 
-void ClientChangeReasonCategoryModel::update_recent_categories() {
-    recent_category_codes_.clear();
-
-    if (!last_reload_time_.isValid()) {
-        return;
-    }
-
-    // Check for categories modified since last reload
-    for (const auto& category : categories_) {
-        auto recorded_at = QDateTime::fromSecsSinceEpoch(
-            std::chrono::duration_cast<std::chrono::seconds>(
-                category.recorded_at.time_since_epoch()).count());
-
-        if (recorded_at > last_reload_time_) {
-            recent_category_codes_.insert(category.code);
-        }
-    }
-
-    if (!recent_category_codes_.empty()) {
-        pulse_count_ = 0;
-        pulse_state_ = false;
-        pulse_timer_->start();
-    }
-}
-
 QVariant ClientChangeReasonCategoryModel::recency_foreground_color(
     const std::string& code) const {
-    if (recent_category_codes_.find(code) == recent_category_codes_.end()) {
-        return {};
-    }
-
-    if (pulse_state_) {
-        return QBrush(QColor(255, 200, 0)); // Yellow highlight
+    if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
     }
     return {};
 }
 
-void ClientChangeReasonCategoryModel::onPulseTimerTimeout() {
-    pulse_state_ = !pulse_state_;
-    pulse_count_++;
-
-    if (pulse_count_ >= max_pulse_cycles_ * 2) {
-        pulse_timer_->stop();
-        recent_category_codes_.clear();
-    }
-
-    // Notify views to repaint
+void ClientChangeReasonCategoryModel::onPulseStateChanged(bool /*isOn*/) {
     if (!categories_.empty()) {
-        emit dataChanged(index(0, 0),
-            index(static_cast<int>(categories_.size()) - 1, ColumnCount - 1));
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
     }
+}
+
+void ClientChangeReasonCategoryModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 }

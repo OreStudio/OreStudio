@@ -141,7 +141,7 @@ select ores.upsert_dq_datasets(
 
 select ores.upsert_dq_datasets(
     'ISO Standards',
-    'Countries',
+    'Country Flags',
     'Reference Data',
     'ISO_3166_1_ALPHA_2',
     'Primary',
@@ -158,7 +158,7 @@ select ores.upsert_dq_datasets(
 
 select ores.upsert_dq_tag(
     'Country Flag Images',
-    'Countries',
+    'Country Flags',
     'Reference Data',
     'flag',
     'Country and region flag images'

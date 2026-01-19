@@ -167,8 +167,8 @@ void DatasetViewDialog::addSectionHeader(QTreeWidget* tree, const QString& title
     item->setFont(0, font);
     item->setText(0, title);
     item->setTextAlignment(0, Qt::AlignCenter);
-    item->setBackground(0, QColor(0x4A, 0x4A, 0x50));  // Distinct gray
-    item->setForeground(0, QColor(0xE4, 0xE4, 0xE7));  // Light text
+    item->setBackground(0, tree->palette().color(QPalette::AlternateBase));
+    item->setForeground(0, tree->palette().color(QPalette::Text));
 }
 
 QString DatasetViewDialog::findMethodologyName(

@@ -419,6 +419,30 @@ Source code, script, technical document.
 
 Icons for numerical data and financial concepts.
 
+*** Database
+Data storage, datasets, data dimensions.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_database_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_database_20_filled.svg]]
+
+*Usage*: Dataset views, data dimensions (Origin, Nature, Treatment), data assets.
+
+*** Code
+Coding schemes, classification systems, identifier schemes.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_code_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_code_20_filled.svg]]
+
+*Usage*: Coding scheme management (LEI, ISIN, etc.), classification systems.
+
+*** Book
+Methodologies, documentation, reference materials.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_book_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_book_20_filled.svg]]
+
+*Usage*: Methodology views, data processing documentation, reference guides.
+
 *** Clipboard Number 123 (16px)
 Numeric data, ID reference, sequence.
 
@@ -469,84 +493,48 @@ Text validation, spell check, language processing.
 
 * Quick Reference Table
 
-<<<<<<< Updated upstream
-| Concept              | Icon Name                  | Regular | Filled |
-|----------------------+----------------------------+---------+--------|
-| Add/Create           | add_20                     | Default | Active |
-| Delete/Remove        | delete_20                  | Default | Danger |
-| Purge/Clear All      | delete_dismiss_20          | Default | Danger |
-| Edit/Modify          | edit_20                    | Default | Active |
-| Save                 | save_20                    | Default | Active |
-| Confirm/Check        | checkmark_20               | Default | Done   |
-| Cancel/Close         | dismiss_20                 | Default | Active |
-| Favorite             | star_20                    | Off     | On     |
-| Generate             | wand_20                    | Default | Active |
-| Reload               | arrow_clockwise_16         | Default | Active |
-| Redo                 | arrow_clockwise_16         | Default | Active |
-| Back                 | arrow_left_20              | Default | Active |
-| Forward              | arrow_right_20             | Default | Active |
-| Download             | arrow_download_20          | Default | Active |
-| Sync                 | arrow_sync_20              | Default | Active |
+| Concept              | Icon Name                        | Regular | Filled |
+|----------------------+----------------------------------+---------+--------|
+| Add/Create           | add_20                           | Default | Active |
+| Delete/Remove        | delete_20                        | Default | Danger |
+| Purge/Clear All      | delete_dismiss_20                | Default | Danger |
+| Edit/Modify          | edit_20                          | Default | Active |
+| Save                 | save_20                          | Default | Active |
+| Confirm/Check        | checkmark_20                     | Default | Done   |
+| Cancel/Close         | dismiss_20                       | Default | Active |
+| Favorite             | star_20                          | Off     | On     |
+| Generate             | wand_20                          | Default | Active |
+| Reload               | arrow_clockwise_16               | Default | Active |
+| Redo                 | arrow_clockwise_16               | Default | Active |
+| Back                 | arrow_left_20                    | Default | Active |
+| Forward              | arrow_right_20                   | Default | Active |
+| Download             | arrow_download_20                | Default | Active |
+| Sync                 | arrow_sync_20                    | Default | Active |
 | Undo                 | arrow_rotate_counterclockwise_20 | Default | Active |
-| Info                 | info_20                    | Default | Active |
-| Warning              | warning_20                 | Default | Alert  |
-| Error                | error_circle_20            | Default | Alert  |
-| Help                 | question_20                | Default | Active |
-| User                 | person_20                  | Default | Active |
-| Add User             | person_add_20              | Default | Active |
-| Team                 | person_accounts_20         | Default | Active |
-| Locked               | lock_closed_20             | Default | Active |
-| Unlocked             | lock_open_20               | Default | Active |
-| Change Password      | key_multiple_20            | Default | Active |
-| Connected            | plug_connected_20          | Default | Active |
-| Disconnected         | plug_disconnected_20       | Default | Alert  |
-| Verified Connection  | plug_connected_checkmark_20 | Default | Active |
-| Server Link          | server_link_20             | Default | Active |
-| Folder               | folder_20                  | Closed  | Active |
-| Folder Open          | folder_open_20             | Open    | Active |
-| Table Document       | document_table_20          | Default | Active |
-| Code Document        | document_code_16           | Default | Active |
-| Currency             | currency_dollar_euro_20    | Default | Active |
-| Time                 | clock_16                   | Default | Active |
-| History              | history_20                 | Default | Active |
-=======
-| Concept             | Icon Name                        | Regular | Filled |
-|---------------------+----------------------------------+---------+--------|
-| Add/Create          | add_20                           | Default | Active |
-| Delete/Remove       | delete_20                        | Default | Danger |
-| Edit/Modify         | edit_20                          | Default | Active |
-| Save                | save_20                          | Default | Active |
-| Confirm/Check       | checkmark_20                     | Default | Done   |
-| Cancel/Close        | dismiss_20                       | Default | Active |
-| Favorite            | star_20                          | Off     | On     |
-| Generate            | wand_20                          | Default | Active |
-| Reload              | arrow_clockwise_16               | Default | Active |
-| Redo                | arrow_clockwise_16               | Default | Active |
-| Back                | arrow_left_20                    | Default | Active |
-| Forward             | arrow_right_20                   | Default | Active |
-| Download            | arrow_download_20                | Default | Active |
-| Sync                | arrow_sync_20                    | Default | Active |
-| Undo                | arrow_rotate_counterclockwise_20 | Default | Active |
-| Info                | info_20                          | Default | Active |
-| Warning             | warning_20                       | Default | Alert  |
-| Error               | error_circle_20                  | Default | Alert  |
-| Help                | question_20                      | Default | Active |
-| User                | person_20                        | Default | Active |
-| Add User            | person_add_20                    | Default | Active |
-| Team                | person_accounts_20               | Default | Active |
-| Locked              | lock_closed_20                   | Default | Active |
-| Unlocked            | lock_open_20                     | Default | Active |
-| Connected           | plug_connected_20                | Default | Active |
-| Disconnected        | plug_disconnected_20             | Default | Alert  |
-| Verified Connection | plug_connected_checkmark_20      | Default | Active |
-| Folder              | folder_20                        | Closed  | Active |
-| Folder Open         | folder_open_20                   | Open    | Active |
-| Table Document      | document_table_20                | Default | Active |
-| Code Document       | document_code_16                 | Default | Active |
-| Currency            | currency_dollar_euro_20          | Default | Active |
-| Time                | clock_16                         | Default | Active |
-| History             | history_20                       | Default | Active |
->>>>>>> Stashed changes
+| Info                 | info_20                          | Default | Active |
+| Warning              | warning_20                       | Default | Alert  |
+| Error                | error_circle_20                  | Default | Alert  |
+| Help                 | question_20                      | Default | Active |
+| User                 | person_20                        | Default | Active |
+| Add User             | person_add_20                    | Default | Active |
+| Team                 | person_accounts_20               | Default | Active |
+| Locked               | lock_closed_20                   | Default | Active |
+| Unlocked             | lock_open_20                     | Default | Active |
+| Change Password      | key_multiple_20                  | Default | Active |
+| Connected            | plug_connected_20                | Default | Active |
+| Disconnected         | plug_disconnected_20             | Default | Alert  |
+| Verified Connection  | plug_connected_checkmark_20      | Default | Active |
+| Server Link          | server_link_20                   | Default | Active |
+| Folder               | folder_20                        | Closed  | Active |
+| Folder Open          | folder_open_20                   | Open    | Active |
+| Table Document       | document_table_20                | Default | Active |
+| Code Document        | document_code_16                 | Default | Active |
+| Code/Scheme          | code_20                          | Default | Active |
+| Database/Dataset     | database_20                      | Default | Active |
+| Book/Methodology     | book_20                          | Default | Active |
+| Currency             | currency_dollar_euro_20          | Default | Active |
+| Time                 | clock_16                         | Default | Active |
+| History              | history_20                       | Default | Active |
 
 * Artefacts                                                        :noexport:
 

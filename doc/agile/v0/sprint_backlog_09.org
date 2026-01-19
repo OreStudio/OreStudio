@@ -816,6 +816,9 @@ Highlights:
 
 *** STARTED Add UI support for data sets                               :code:
     :LOGBOOK:
+    CLOCK: [2026-01-19 Mon 13:25]
+    CLOCK: [2026-01-19 Mon 12:47]--[2026-01-19 Mon 13:10] =>  0:23
+    CLOCK: [2026-01-19 Mon 10:35]--[2026-01-19 Mon 12:46] =>  2:11
     CLOCK: [2026-01-18 Sun 23:45]--[2026-01-19 Mon 01:11] =>  1:26
     CLOCK: [2026-01-18 Sun 19:01]--[2026-01-18 Sun 19:20] =>  0:19
     CLOCK: [2026-01-18 Sun 18:35]--[2026-01-18 Sun 19:01] =>  0:26

@@ -21,12 +21,11 @@
 #define ORES_QT_CLIENT_CHANGE_REASON_CATEGORY_MODEL_HPP
 
 #include <vector>
-#include <unordered_set>
-#include <QTimer>
-#include <QDateTime>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/RecencyPulseManager.hpp"
+#include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/change_reason_category.hpp"
 
@@ -101,10 +100,10 @@ signals:
 
 private slots:
     void onCategoriesLoaded();
-    void onPulseTimerTimeout();
+    void onPulseStateChanged(bool isOn);
+    void onPulsingComplete();
 
 private:
-    void update_recent_categories();
     QVariant recency_foreground_color(const std::string& code) const;
 
     struct FetchResult {
@@ -120,13 +119,9 @@ private:
     bool is_fetching_{false};
 
     // Recency highlighting
-    QTimer* pulse_timer_;
-    std::unordered_set<std::string> recent_category_codes_;
-    QDateTime last_reload_time_;
-    bool pulse_state_{false};
-    int pulse_count_{0};
-    static constexpr int pulse_interval_ms_ = 500;
-    static constexpr int max_pulse_cycles_ = 6;
+    using ChangeReasonCategoryKeyExtractor = std::string(*)(const dq::domain::change_reason_category&);
+    RecencyTracker<dq::domain::change_reason_category, ChangeReasonCategoryKeyExtractor> recencyTracker_;
+    RecencyPulseManager* pulseManager_;
 };
 
 }

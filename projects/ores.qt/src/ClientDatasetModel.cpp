@@ -31,19 +31,27 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+    std::string dataset_key_extractor(const dq::domain::dataset& e) {
+        return boost::uuids::to_string(e.id);
+    }
+}
+
 ClientDatasetModel::ClientDatasetModel(
     ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      pulse_timer_(new QTimer(this)) {
+      recencyTracker_(dataset_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &ClientDatasetModel::onDatasetsLoaded);
 
-    pulse_timer_->setInterval(pulse_interval_ms_);
-    connect(pulse_timer_, &QTimer::timeout,
-            this, &ClientDatasetModel::onPulseTimerTimeout);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+            this, &ClientDatasetModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+            this, &ClientDatasetModel::onPulsingComplete);
 }
 
 int ClientDatasetModel::rowCount(const QModelIndex& parent) const {
@@ -194,8 +202,14 @@ void ClientDatasetModel::onDatasetsLoaded() {
 
     beginResetModel();
     datasets_ = std::move(result.datasets);
-    update_recent_datasets();
     endResetModel();
+
+    const bool has_recent = recencyTracker_.update(datasets_);
+    if (has_recent && !pulseManager_->is_pulsing()) {
+        pulseManager_->start_pulsing();
+        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                   << " datasets newer than last reload";
+    }
 
     BOOST_LOG_SEV(lg(), debug) << "Loaded " << datasets_.size()
                                << " datasets";
@@ -209,46 +223,22 @@ const dq::domain::dataset* ClientDatasetModel::getDataset(
     return &datasets_[row];
 }
 
-void ClientDatasetModel::update_recent_datasets() {
-    recent_dataset_ids_.clear();
-    QDateTime now = QDateTime::currentDateTime();
-    last_reload_time_ = now;
-
-    for (const auto& dataset : datasets_) {
-        auto recorded = QDateTime::fromSecsSinceEpoch(
-            std::chrono::duration_cast<std::chrono::seconds>(
-                dataset.recorded_at.time_since_epoch()).count());
-
-        if (recorded.secsTo(now) <= 60) {
-            recent_dataset_ids_.insert(boost::uuids::to_string(dataset.id));
-        }
-    }
-
-    if (!recent_dataset_ids_.empty()) {
-        pulse_count_ = 0;
-        pulse_state_ = true;
-        pulse_timer_->start();
+void ClientDatasetModel::onPulseStateChanged(bool /*isOn*/) {
+    if (!datasets_.empty()) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
     }
 }
 
-void ClientDatasetModel::onPulseTimerTimeout() {
-    pulse_state_ = !pulse_state_;
-    pulse_count_++;
-
-    if (pulse_count_ >= max_pulse_cycles_ * 2) {
-        pulse_timer_->stop();
-        recent_dataset_ids_.clear();
-    }
-
-    emit dataChanged(index(0, 0),
-                     index(rowCount() - 1, columnCount() - 1),
-                     {Qt::ForegroundRole});
+void ClientDatasetModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 QVariant ClientDatasetModel::recency_foreground_color(
     const boost::uuids::uuid& id) const {
-    if (recent_dataset_ids_.contains(boost::uuids::to_string(id)) && pulse_state_) {
-        return QColor(100, 200, 100);
+    if (recencyTracker_.is_recent(boost::uuids::to_string(id)) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
     }
     return {};
 }

@@ -21,14 +21,13 @@
 #define ORES_QT_CLIENT_DATASET_MODEL_HPP
 
 #include <vector>
-#include <unordered_set>
-#include <QTimer>
-#include <QDateTime>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/RecencyPulseManager.hpp"
+#include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/dataset.hpp"
 
@@ -83,10 +82,10 @@ signals:
 
 private slots:
     void onDatasetsLoaded();
-    void onPulseTimerTimeout();
+    void onPulseStateChanged(bool isOn);
+    void onPulsingComplete();
 
 private:
-    void update_recent_datasets();
     QVariant recency_foreground_color(const boost::uuids::uuid& id) const;
 
     struct FetchResult {
@@ -101,13 +100,9 @@ private:
     QFutureWatcher<FetchResult>* watcher_;
     bool is_fetching_{false};
 
-    QTimer* pulse_timer_;
-    std::unordered_set<std::string> recent_dataset_ids_;
-    QDateTime last_reload_time_;
-    bool pulse_state_{false};
-    int pulse_count_{0};
-    static constexpr int pulse_interval_ms_ = 500;
-    static constexpr int max_pulse_cycles_ = 6;
+    using DatasetKeyExtractor = std::string(*)(const dq::domain::dataset&);
+    RecencyTracker<dq::domain::dataset, DatasetKeyExtractor> recencyTracker_;
+    RecencyPulseManager* pulseManager_;
 };
 
 }

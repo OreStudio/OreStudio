@@ -36,21 +36,29 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+    std::string currency_key_extractor(const refdata::domain::currency& c) {
+        return c.iso_code;
+    }
+}
+
 ClientCurrencyModel::
 ClientCurrencyModel(ClientManager* clientManager, ImageCache* imageCache,
     QObject* parent)
     : QAbstractTableModel(parent), clientManager_(clientManager),
       imageCache_(imageCache),
       watcher_(new QFutureWatcher<FutureWatcherResult>(this)),
-      pulse_timer_(new QTimer(this)) {
+      recencyTracker_(currency_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_,
         &QFutureWatcher<FutureWatcherResult>::finished,
         this, &ClientCurrencyModel::onCurrenciesLoaded);
 
-    // Setup pulse timer for recency color updates (same interval as reload button)
-    connect(pulse_timer_, &QTimer::timeout,
-        this, &ClientCurrencyModel::onPulseTimerTimeout);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+        this, &ClientCurrencyModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+        this, &ClientCurrencyModel::onPulsingComplete);
 
     // Connect to image cache to refresh decorations when images are loaded
     if (imageCache_) {
@@ -180,11 +188,9 @@ void ClientCurrencyModel::refresh(bool replace) {
         if (!currencies_.empty()) {
             beginResetModel();
             currencies_.clear();
-            recent_iso_codes_.clear();
+            recencyTracker_.clear();
             synthetic_iso_codes_.clear();
-            pulse_timer_->stop();
-            pulse_count_ = 0;
-            pulse_state_ = false;
+            pulseManager_->stop_pulsing();
             total_available_count_ = 0;
             endResetModel();
         }
@@ -210,10 +216,8 @@ void ClientCurrencyModel::load_page(std::uint32_t offset, std::uint32_t limit) {
     if (!currencies_.empty()) {
         beginResetModel();
         currencies_.clear();
-        recent_iso_codes_.clear();
-        pulse_timer_->stop();
-        pulse_count_ = 0;
-        pulse_state_ = false;
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
         endResetModel();
     }
 
@@ -312,13 +316,11 @@ void ClientCurrencyModel::onCurrenciesLoaded() {
             endInsertRows();
 
             // Update the set of recent currencies for recency coloring
-            update_recent_currencies();
-
-            // Start the pulse timer if there are recent currencies to highlight
-            if (!recent_iso_codes_.empty() && !pulse_timer_->isActive()) {
-                pulse_count_ = 0;
-                pulse_state_ = true;  // Start with highlight on
-                pulse_timer_->start(pulse_interval_ms_);
+            const bool has_recent = recencyTracker_.update(currencies_);
+            if (has_recent && !pulseManager_->is_pulsing()) {
+                pulseManager_->start_pulsing();
+                BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                           << " currencies newer than last reload";
             }
         }
 
@@ -378,47 +380,6 @@ void ClientCurrencyModel::set_page_size(std::uint32_t size) {
     }
 }
 
-void ClientCurrencyModel::update_recent_currencies() {
-    recent_iso_codes_.clear();
-
-    const QDateTime now = QDateTime::currentDateTime();
-
-    // First load: set baseline timestamp, no highlighting
-    if (!last_reload_time_.isValid()) {
-        last_reload_time_ = now;
-        BOOST_LOG_SEV(lg(), debug) << "First load - setting baseline timestamp: "
-                                   << last_reload_time_.toString(Qt::ISODate).toStdString();
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Checking currencies newer than last reload: "
-                               << last_reload_time_.toString(Qt::ISODate).toStdString();
-
-    // Find currencies with recorded_at newer than last reload
-    for (const auto& currency : currencies_) {
-        if (currency.recorded_at == std::chrono::system_clock::time_point{}) {
-            continue;
-        }
-
-        // Convert time_point to QDateTime
-        const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
-            currency.recorded_at.time_since_epoch()).count();
-        QDateTime recordedAt = QDateTime::fromMSecsSinceEpoch(msecs);
-
-        if (recordedAt.isValid() && recordedAt > last_reload_time_) {
-            recent_iso_codes_.insert(currency.iso_code);
-            BOOST_LOG_SEV(lg(), trace) << "Currency " << currency.iso_code
-                                       << " is recent";
-        }
-    }
-
-    // Update the reload timestamp for next comparison
-    last_reload_time_ = now;
-
-    BOOST_LOG_SEV(lg(), debug) << "Found " << recent_iso_codes_.size()
-                               << " currencies newer than last reload";
-}
-
 QVariant ClientCurrencyModel::
 foreground_color(const std::string& iso_code) const {
     // Synthetic currencies always show blue (no pulsing)
@@ -427,7 +388,7 @@ foreground_color(const std::string& iso_code) const {
     }
 
     // Recent currencies show yellow when pulsing
-    if (recent_iso_codes_.find(iso_code) != recent_iso_codes_.end() && pulse_state_) {
+    if (recencyTracker_.is_recent(iso_code) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }
 
@@ -490,22 +451,16 @@ void ClientCurrencyModel::clear_synthetic_markers() {
     }
 }
 
-void ClientCurrencyModel::onPulseTimerTimeout() {
-    pulse_state_ = !pulse_state_;
-    pulse_count_++;
-
-    // Stop pulsing after max cycles but keep yellow color on
-    if (pulse_count_ >= max_pulse_cycles_ * 2) {
-        pulse_timer_->stop();
-        pulse_state_ = true;  // Keep highlight on after pulsing stops
-        BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete, staying highlighted";
-    }
-
-    // Emit dataChanged to update the view with new colors
+void ClientCurrencyModel::onPulseStateChanged(bool /*isOn*/) {
     if (!currencies_.empty()) {
         emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
             {Qt::ForegroundRole});
     }
+}
+
+void ClientCurrencyModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 }

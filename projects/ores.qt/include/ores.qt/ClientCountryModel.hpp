@@ -21,12 +21,11 @@
 #define ORES_QT_CLIENT_COUNTRY_MODEL_HPP
 
 #include <vector>
-#include <unordered_set>
-#include <QTimer>
-#include <QDateTime>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/RecencyPulseManager.hpp"
+#include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/country.hpp"
 
@@ -152,21 +151,11 @@ signals:
 
 private slots:
     void onCountriesLoaded();
-    void onPulseTimerTimeout();
+    void onPulseStateChanged(bool isOn);
+    void onPulsingComplete();
 
 private:
-    /**
-     * @brief Calculate foreground color based on recency.
-     *
-     * @param alpha2_code The country's alpha-2 code to check.
-     * @return QVariant containing QColor for foreground, or invalid QVariant if no color.
-     */
     QVariant recency_foreground_color(const std::string& alpha2_code) const;
-
-    /**
-     * @brief Update the set of recent countries.
-     */
-    void update_recent_countries();
 
     struct FetchResult {
         bool success;
@@ -176,9 +165,6 @@ private:
         QString error_details;
     };
 
-    /**
-     * @brief Internal method to fetch countries with specific offset and limit.
-     */
     void fetch_countries(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
@@ -189,14 +175,10 @@ private:
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    // Recency tracking
-    std::unordered_set<std::string> recent_alpha2_codes_;
-    QDateTime last_reload_time_;
-    QTimer* pulse_timer_;
-    bool pulse_state_{false};
-    int pulse_count_{0};
-    static constexpr int max_pulse_cycles_{6};
-    static constexpr int pulse_interval_ms_{500};
+    // Recency highlighting
+    using CountryKeyExtractor = std::string(*)(const refdata::domain::country&);
+    RecencyTracker<refdata::domain::country, CountryKeyExtractor> recencyTracker_;
+    RecencyPulseManager* pulseManager_;
 };
 
 }

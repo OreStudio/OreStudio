@@ -21,12 +21,11 @@
 #define ORES_QT_CLIENT_FEATURE_FLAG_MODEL_HPP
 
 #include <vector>
-#include <unordered_set>
-#include <QTimer>
-#include <QDateTime>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/RecencyPulseManager.hpp"
+#include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
 
@@ -101,10 +100,10 @@ signals:
 
 private slots:
     void onFeatureFlagsLoaded();
-    void onPulseTimerTimeout();
+    void onPulseStateChanged(bool isOn);
+    void onPulsingComplete();
 
 private:
-    void update_recent_flags();
     QVariant recency_foreground_color(const std::string& name) const;
 
     struct FetchResult {
@@ -119,14 +118,9 @@ private:
     QFutureWatcher<FetchResult>* watcher_;
     bool is_fetching_{false};
 
-    // Recency highlighting
-    QTimer* pulse_timer_;
-    std::unordered_set<std::string> recent_flag_names_;
-    QDateTime last_reload_time_;
-    bool pulse_state_{false};
-    int pulse_count_{0};
-    static constexpr int pulse_interval_ms_ = 500;
-    static constexpr int max_pulse_cycles_ = 6;
+    using FeatureFlagKeyExtractor = std::string(*)(const variability::domain::feature_flags&);
+    RecencyTracker<variability::domain::feature_flags, FeatureFlagKeyExtractor> recencyTracker_;
+    RecencyPulseManager* pulseManager_;
 };
 
 }

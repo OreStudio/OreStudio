@@ -33,19 +33,27 @@ using comms::messaging::frame;
 using comms::messaging::message_type;
 using namespace ores::logging;
 
+namespace {
+    std::string feature_flag_key_extractor(const variability::domain::feature_flags& e) {
+        return e.name;
+    }
+}
+
 ClientFeatureFlagModel::ClientFeatureFlagModel(ClientManager* clientManager,
                                                QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      pulse_timer_(new QTimer(this)) {
+      recencyTracker_(feature_flag_key_extractor),
+      pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &ClientFeatureFlagModel::onFeatureFlagsLoaded);
 
-    // Setup pulse timer for recency color updates
-    connect(pulse_timer_, &QTimer::timeout,
-            this, &ClientFeatureFlagModel::onPulseTimerTimeout);
+    connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+            this, &ClientFeatureFlagModel::onPulseStateChanged);
+    connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+            this, &ClientFeatureFlagModel::onPulsingComplete);
 }
 
 int ClientFeatureFlagModel::rowCount(const QModelIndex& parent) const {
@@ -209,14 +217,11 @@ void ClientFeatureFlagModel::onFeatureFlagsLoaded() {
     flags_ = std::move(result.flags);
     endResetModel();
 
-    // Update the set of recent flags for recency coloring
-    update_recent_flags();
-
-    // Start the pulse timer if there are recent flags to highlight
-    if (!recent_flag_names_.empty() && !pulse_timer_->isActive()) {
-        pulse_count_ = 0;
-        pulse_state_ = true;  // Start with highlight on
-        pulse_timer_->start(pulse_interval_ms_);
+    const bool has_recent = recencyTracker_.update(flags_);
+    if (has_recent && !pulseManager_->is_pulsing()) {
+        pulseManager_->start_pulsing();
+        BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
+                                   << " feature flags newer than last reload";
     }
 
     BOOST_LOG_SEV(lg(), info) << "Loaded " << flags_.size() << " feature flags";
@@ -230,78 +235,23 @@ ClientFeatureFlagModel::getFeatureFlag(int row) const {
     return &flags_[row];
 }
 
-void ClientFeatureFlagModel::update_recent_flags() {
-    recent_flag_names_.clear();
-
-    const QDateTime now = QDateTime::currentDateTime();
-
-    // First load: set baseline timestamp, no highlighting
-    if (!last_reload_time_.isValid()) {
-        last_reload_time_ = now;
-        BOOST_LOG_SEV(lg(), info) << "First load - setting baseline timestamp: "
-                                  << last_reload_time_.toString(Qt::ISODate).toStdString();
-        return;
+void ClientFeatureFlagModel::onPulseStateChanged(bool /*isOn*/) {
+    if (!flags_.empty()) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
     }
+}
 
-    BOOST_LOG_SEV(lg(), info) << "Checking flags newer than last reload: "
-                              << last_reload_time_.toString(Qt::ISODate).toStdString();
-
-    // Find flags that have been modified since the last reload
-    for (const auto& flag : flags_) {
-        const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
-            flag.recorded_at.time_since_epoch()).count();
-        QDateTime recordedAt = QDateTime::fromMSecsSinceEpoch(msecs);
-
-        BOOST_LOG_SEV(lg(), debug) << "Flag " << flag.name << " recorded_at: "
-                                   << recordedAt.toString(Qt::ISODate).toStdString()
-                                   << " (msecs=" << msecs << ")";
-
-        if (recordedAt.isValid() && recordedAt > last_reload_time_) {
-            recent_flag_names_.insert(flag.name);
-            BOOST_LOG_SEV(lg(), info) << "Flag " << flag.name << " is recent (recorded_at > last_reload)";
-        }
-    }
-
-    // Update the reload timestamp for next comparison
-    last_reload_time_ = now;
-
-    BOOST_LOG_SEV(lg(), info) << "Found " << recent_flag_names_.size()
-                              << " flags newer than last reload";
+void ClientFeatureFlagModel::onPulsingComplete() {
+    BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
+    recencyTracker_.clear();
 }
 
 QVariant ClientFeatureFlagModel::recency_foreground_color(const std::string& name) const {
-    if (recent_flag_names_.empty() ||
-        recent_flag_names_.find(name) == recent_flag_names_.end()) {
-        return {};
+    if (recencyTracker_.is_recent(name) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
     }
-
-    // Only show color when pulse_state_ is true (pulsing on)
-    if (!pulse_state_) {
-        return {};
-    }
-
-    // Use the stale indicator color (same as reload button)
-    return color_constants::stale_indicator;
-}
-
-void ClientFeatureFlagModel::onPulseTimerTimeout() {
-    pulse_state_ = !pulse_state_;
-    pulse_count_++;
-
-    // Stop pulsing after max cycles but keep yellow color on
-    if (pulse_count_ >= max_pulse_cycles_ * 2) {
-        pulse_timer_->stop();
-        pulse_state_ = true;  // Keep highlight on after pulsing stops
-        BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete, staying highlighted";
-    }
-
-    // Emit dataChanged to update the view with new colors
-    if (!flags_.empty()) {
-        emit dataChanged(
-            index(0, 0),
-            index(static_cast<int>(flags_.size()) - 1, ColumnCount - 1),
-            {Qt::ForegroundRole});
-    }
+    return {};
 }
 
 }

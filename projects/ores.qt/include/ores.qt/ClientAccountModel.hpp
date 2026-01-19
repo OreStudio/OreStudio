@@ -22,11 +22,11 @@
 
 #include <vector>
 #include <optional>
-#include <unordered_set>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
-#include <QTimer>
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/RecencyPulseManager.hpp"
+#include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/account.hpp"
 #include "ores.iam/domain/login_info.hpp"
@@ -185,7 +185,8 @@ signals:
 
 private slots:
     void onAccountsLoaded();
-    void onPulseTimerTimeout();
+    void onPulseStateChanged(bool isOn);
+    void onPulsingComplete();
 
 private:
     /**
@@ -199,10 +200,6 @@ private:
      */
     QVariant recency_foreground_color(const std::string& username) const;
 
-    /**
-     * @brief Update the set of recent accounts (recorded_at within recency window).
-     */
-    void update_recent_accounts();
     /**
      * @brief Enumeration of table columns for type-safe column access.
      *
@@ -248,14 +245,10 @@ private:
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
-    // Recency tracking for row coloring based on recorded_at date
-    std::unordered_set<std::string> recent_usernames_;  // Usernames newer than last reload
-    QDateTime last_reload_time_;  // Timestamp of last reload (for comparison)
-    QTimer* pulse_timer_;
-    mutable bool pulse_state_{false};  // Toggle for pulsing effect
-    mutable int pulse_count_{0};
-    static constexpr int max_pulse_cycles_{6};  // 6 pulses (3 seconds at 500ms interval)
-    static constexpr int pulse_interval_ms_{500};  // Pulse toggle interval in milliseconds
+    // Recency highlighting
+    using AccountKeyExtractor = std::string(*)(const iam::domain::account&);
+    RecencyTracker<iam::domain::account, AccountKeyExtractor> recencyTracker_;
+    RecencyPulseManager* pulseManager_;
 
     /**
      * @brief Internal method to fetch accounts with specific offset and limit.

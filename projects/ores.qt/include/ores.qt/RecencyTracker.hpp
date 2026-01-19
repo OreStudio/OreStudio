@@ -25,10 +25,12 @@
 #include <unordered_set>
 #include <QDateTime>
 
-#ifdef _MSC_VER
+#if __has_cpp_attribute(msvc::no_unique_address)
 #define ORES_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
-#else
+#elif __has_cpp_attribute(no_unique_address)
 #define ORES_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#else
+#define ORES_NO_UNIQUE_ADDRESS
 #endif
 
 namespace ores::qt {

@@ -25,6 +25,7 @@
 #include <QTreeView>
 #include <QTableView>
 #include <QToolBar>
+#include <QStatusBar>
 #include <QLabel>
 #include <QProgressBar>
 #include <QStackedWidget>
@@ -176,8 +177,10 @@ private:
     ClientCatalogModel* catalogModel_;
     ClientMethodologyModel* methodologyModel_;
 
-    // Loading indicator
+    // Status bar with loading indicator
+    QStatusBar* statusBar_;
     QProgressBar* loadingProgressBar_;
+    QLabel* statusLabel_;
     int pendingLoads_{0};
     int totalLoads_{0};
 

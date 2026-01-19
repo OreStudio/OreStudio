@@ -87,12 +87,26 @@ QVariant ClientDatasetModel::data(const QModelIndex& index, int role) const {
         case Version: return dataset.version;
         case RecordedBy: return QString::fromStdString(dataset.recorded_by);
         case RecordedAt: return relative_time_helper::format(dataset.recorded_at);
+        case Tags: return QString();
         default: return {};
         }
     }
 
     if (role == Qt::ForegroundRole) {
         return recency_foreground_color(dataset.id);
+    }
+
+    // Custom roles for Tags column - return origin/nature/treatment data
+    if (index.column() == Tags) {
+        if (role == OriginRole) {
+            return QString::fromStdString(dataset.origin_code);
+        }
+        if (role == NatureRole) {
+            return QString::fromStdString(dataset.nature_code);
+        }
+        if (role == TreatmentRole) {
+            return QString::fromStdString(dataset.treatment_code);
+        }
     }
 
     return {};
@@ -116,6 +130,7 @@ QVariant ClientDatasetModel::headerData(int section,
     case Version: return tr("Version");
     case RecordedBy: return tr("Recorded By");
     case RecordedAt: return tr("Recorded At");
+    case Tags: return tr("Tags");
     default: return {};
     }
 }

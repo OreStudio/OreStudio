@@ -34,6 +34,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/DatasetItemDelegate.hpp"
 
 namespace ores::qt {
 
@@ -83,7 +84,9 @@ DataLibrarianWindow::DataLibrarianWindow(
       subjectAreaModel_(new ClientSubjectAreaModel(clientManager, this)),
       catalogModel_(new ClientCatalogModel(clientManager, this)),
       methodologyModel_(new ClientMethodologyModel(clientManager, this)),
-      loadingProgressBar_(new QProgressBar(this)) {
+      statusBar_(new QStatusBar(this)),
+      loadingProgressBar_(new QProgressBar(this)),
+      statusLabel_(new QLabel(this)) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating Data Librarian window";
 
@@ -100,13 +103,12 @@ DataLibrarianWindow::DataLibrarianWindow(
     pendingLoads_ = totalLoads_;
     loadingProgressBar_->setRange(0, totalLoads_);
     loadingProgressBar_->setValue(0);
-    loadingProgressBar_->setTextVisible(true);
-    loadingProgressBar_->setFormat(tr("Loading... %v/%m"));
-    loadingProgressBar_->setFixedWidth(150);
-    loadingProgressBar_->setVisible(true);
+    loadingProgressBar_->setTextVisible(false);
+    loadingProgressBar_->setFixedWidth(120);
+    loadingProgressBar_->setFixedHeight(16);
 
     // Load data
-    emit statusChanged(tr("Loading data..."));
+    statusLabel_->setText(tr("Loading data..."));
     dataDomainModel_->refresh();
     subjectAreaModel_->refresh();
     catalogModel_->loadData();
@@ -121,6 +123,12 @@ void DataLibrarianWindow::setupUi() {
 
     mainLayout->addWidget(toolbar_);
     mainLayout->addWidget(mainSplitter_, 1);
+
+    // Configure status bar
+    statusBar_->addWidget(statusLabel_, 1);
+    statusBar_->addPermanentWidget(loadingProgressBar_);
+    statusBar_->setSizeGripEnabled(false);
+    mainLayout->addWidget(statusBar_);
 
     // Configure main splitter: sidebar | central
     mainSplitter_->setHandleWidth(1);
@@ -178,14 +186,6 @@ void DataLibrarianWindow::setupToolbar() {
             ":/icons/ic_fluent_book_20_regular.svg", iconColor),
         tr("Methods"));
     methodologiesAction_->setToolTip(tr("Open Methodologies window"));
-
-    // Add spacer to push progress bar to the right
-    auto* spacer = new QWidget(toolbar_);
-    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    toolbar_->addWidget(spacer);
-
-    // Loading progress bar on the right
-    toolbar_->addWidget(loadingProgressBar_);
 }
 
 void DataLibrarianWindow::setupNavigationSidebar() {
@@ -225,6 +225,7 @@ void DataLibrarianWindow::setupCentralWorkspace() {
     datasetProxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
 
     datasetTable_->setModel(datasetProxyModel_);
+    datasetTable_->setItemDelegate(new DatasetItemDelegate(datasetTable_));
     datasetTable_->setSortingEnabled(true);
     datasetTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     datasetTable_->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -464,6 +465,7 @@ void DataLibrarianWindow::onRefreshClicked() {
     loadingProgressBar_->setRange(0, totalLoads_);
     loadingProgressBar_->setValue(0);
     loadingProgressBar_->setVisible(true);
+    statusLabel_->setText(tr("Refreshing data..."));
 
     emit statusChanged(tr("Refreshing data..."));
     dataDomainModel_->refresh();
@@ -478,6 +480,7 @@ void DataLibrarianWindow::onDataLoaded() {
     loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
     if (pendingLoads_ <= 0) {
         loadingProgressBar_->setVisible(false);
+        statusLabel_->setText(tr("Loaded %1 datasets").arg(datasetModel_->rowCount()));
     }
     emit statusChanged(tr("Loaded %1 datasets").arg(datasetModel_->rowCount()));
 }
@@ -485,6 +488,7 @@ void DataLibrarianWindow::onDataLoaded() {
 void DataLibrarianWindow::onLoadError(const QString& error_message,
                                        const QString& details) {
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
+    statusLabel_->setText(tr("Error: %1").arg(error_message));
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
 }
@@ -494,6 +498,7 @@ void DataLibrarianWindow::onDomainsLoaded() {
     loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
     if (pendingLoads_ <= 0) {
         loadingProgressBar_->setVisible(false);
+        statusLabel_->setText(tr("Ready"));
     }
     BOOST_LOG_SEV(lg(), debug) << "Domains loaded: "
                                << dataDomainModel_->rowCount();
@@ -505,6 +510,7 @@ void DataLibrarianWindow::onSubjectAreasLoaded() {
     loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
     if (pendingLoads_ <= 0) {
         loadingProgressBar_->setVisible(false);
+        statusLabel_->setText(tr("Ready"));
     }
     BOOST_LOG_SEV(lg(), debug) << "Subject areas loaded: "
                                << subjectAreaModel_->rowCount();
@@ -516,6 +522,7 @@ void DataLibrarianWindow::onCatalogsLoaded() {
     loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
     if (pendingLoads_ <= 0) {
         loadingProgressBar_->setVisible(false);
+        statusLabel_->setText(tr("Ready"));
     }
     BOOST_LOG_SEV(lg(), debug) << "Catalogs loaded: "
                                << catalogModel_->rowCount();
@@ -527,6 +534,7 @@ void DataLibrarianWindow::onMethodologiesLoaded() {
     loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
     if (pendingLoads_ <= 0) {
         loadingProgressBar_->setVisible(false);
+        statusLabel_->setText(tr("Ready"));
     }
     BOOST_LOG_SEV(lg(), debug) << "Methodologies loaded: "
                                << methodologyModel_->rowCount();
@@ -678,49 +686,56 @@ void DataLibrarianWindow::updateLineageView(const dq::domain::dataset* dataset) 
     const QColor textColor(220, 220, 220);
     const QColor lineColor(100, 150, 200);
 
-    const qreal boxWidth = 100;
-    const qreal boxHeight = 40;
-    const qreal spacing = 50;
+    const qreal boxWidth = 90;
+    const qreal boxHeight = 36;
+    const qreal spacing = 30;
+    const qreal padding = 6;
 
     QFont smallFont;
-    smallFont.setPointSize(8);
+    smallFont.setPointSize(7);
+    QFontMetrics fm(smallFont);
+
+    auto elidedText = [&fm, boxWidth, padding](const QString& text) {
+        return fm.elidedText(text, Qt::ElideRight, static_cast<int>(boxWidth - 2 * padding));
+    };
+
+    auto centerTextInBox = [&fm, boxHeight, padding](QGraphicsTextItem* textItem, qreal boxX) {
+        qreal textHeight = fm.height();
+        qreal textY = (boxHeight - textHeight) / 2;
+        textItem->setPos(boxX + padding, textY);
+    };
 
     // Source box (Origin dimension)
-    auto* sourceRect = scene->addRect(0, 0, boxWidth, boxHeight,
-                                       QPen(lineColor), QBrush(boxColor));
-    auto* sourceText = scene->addText(QString::fromStdString(dataset->origin_code));
+    scene->addRect(0, 0, boxWidth, boxHeight, QPen(lineColor), QBrush(boxColor));
+    auto* sourceText = scene->addText(elidedText(QString::fromStdString(dataset->origin_code)));
     sourceText->setFont(smallFont);
     sourceText->setDefaultTextColor(textColor);
-    sourceText->setPos(8, 12);
+    centerTextInBox(sourceText, 0);
 
     // Methodology box
-    auto* methodRect = scene->addRect(boxWidth + spacing, 0, boxWidth, boxHeight,
-                                       QPen(lineColor), QBrush(boxColor));
-    auto* methodText = scene->addText(findMethodologyName(dataset->methodology_id));
+    qreal methodX = boxWidth + spacing;
+    scene->addRect(methodX, 0, boxWidth, boxHeight, QPen(lineColor), QBrush(boxColor));
+    auto* methodText = scene->addText(elidedText(findMethodologyName(dataset->methodology_id)));
     methodText->setFont(smallFont);
     methodText->setDefaultTextColor(textColor);
-    methodText->setPos(boxWidth + spacing + 8, 12);
+    centerTextInBox(methodText, methodX);
 
     // Dataset box
-    auto* datasetRect = scene->addRect(2 * (boxWidth + spacing), 0,
-                                        boxWidth, boxHeight,
-                                        QPen(lineColor), QBrush(boxColor));
-    auto* datasetText = scene->addText(
-        QString::fromStdString(dataset->name).left(12));
+    qreal datasetX = 2 * (boxWidth + spacing);
+    scene->addRect(datasetX, 0, boxWidth, boxHeight, QPen(lineColor), QBrush(boxColor));
+    auto* datasetText = scene->addText(elidedText(QString::fromStdString(dataset->name)));
     datasetText->setFont(smallFont);
     datasetText->setDefaultTextColor(textColor);
-    datasetText->setPos(2 * (boxWidth + spacing) + 8, 12);
+    centerTextInBox(datasetText, datasetX);
 
     // Arrows
     QPen arrowPen(lineColor, 2);
 
     // Arrow 1: Source -> Methodology
-    scene->addLine(boxWidth, boxHeight / 2,
-                   boxWidth + spacing, boxHeight / 2, arrowPen);
+    scene->addLine(boxWidth, boxHeight / 2, methodX, boxHeight / 2, arrowPen);
 
     // Arrow 2: Methodology -> Dataset
-    scene->addLine(2 * boxWidth + spacing, boxHeight / 2,
-                   2 * boxWidth + 2 * spacing, boxHeight / 2, arrowPen);
+    scene->addLine(methodX + boxWidth, boxHeight / 2, datasetX, boxHeight / 2, arrowPen);
 
     lineageView_->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
 }
@@ -791,7 +806,7 @@ void DataLibrarianWindow::setupColumnVisibility() {
 void DataLibrarianWindow::applyDefaultColumnVisibility() {
     QHeaderView* header = datasetTable_->horizontalHeader();
 
-    // Hide these columns by default (data is shown in accession card):
+    // Hide these columns by default (data is shown in accession card or Tags):
     header->setSectionHidden(ClientDatasetModel::SubjectArea, true);
     header->setSectionHidden(ClientDatasetModel::Domain, true);
     header->setSectionHidden(ClientDatasetModel::Origin, true);
@@ -800,21 +815,20 @@ void DataLibrarianWindow::applyDefaultColumnVisibility() {
     header->setSectionHidden(ClientDatasetModel::RecordedBy, true);
     header->setSectionHidden(ClientDatasetModel::RecordedAt, true);
 
-    // Reorder columns: Name(0), Version(9), SourceSystem(7), AsOfDate(8), Catalog(1)
-    // Move Version next to Name
+    // Reorder columns: Name, Version, SourceSystem, AsOfDate, Catalog, Tags
     header->moveSection(header->visualIndex(ClientDatasetModel::Version), 1);
-    // Move SourceSystem after Version
     header->moveSection(header->visualIndex(ClientDatasetModel::SourceSystem), 2);
-    // Move AsOfDate after SourceSystem
     header->moveSection(header->visualIndex(ClientDatasetModel::AsOfDate), 3);
-    // Catalog stays at visual index 4
+    header->moveSection(header->visualIndex(ClientDatasetModel::Catalog), 4);
+    header->moveSection(header->visualIndex(ClientDatasetModel::Tags), 5);
 
     // Set reasonable column widths
-    header->resizeSection(ClientDatasetModel::Name, 280);
-    header->resizeSection(ClientDatasetModel::Version, 60);
-    header->resizeSection(ClientDatasetModel::SourceSystem, 120);
-    header->resizeSection(ClientDatasetModel::AsOfDate, 100);
-    header->resizeSection(ClientDatasetModel::Catalog, 140);
+    header->resizeSection(ClientDatasetModel::Name, 240);
+    header->resizeSection(ClientDatasetModel::Version, 55);
+    header->resizeSection(ClientDatasetModel::SourceSystem, 100);
+    header->resizeSection(ClientDatasetModel::AsOfDate, 90);
+    header->resizeSection(ClientDatasetModel::Catalog, 120);
+    header->resizeSection(ClientDatasetModel::Tags, 180);
 
     BOOST_LOG_SEV(lg(), debug) << "Applied default column visibility and order";
 }

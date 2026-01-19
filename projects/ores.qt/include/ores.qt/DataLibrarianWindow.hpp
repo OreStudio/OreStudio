@@ -65,6 +65,7 @@ class DataLibrarianWindow final : public QWidget {
 
 private:
     inline static std::string_view logger_name = "ores.qt.data_librarian_window";
+    static constexpr int total_model_loads = 5;
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

@@ -104,7 +104,7 @@ DataLibrarianWindow::DataLibrarianWindow(
     setupColumnVisibility();
 
     // Configure loading progress bar
-    totalLoads_ = 5;
+    totalLoads_ = total_model_loads;
     pendingLoads_ = totalLoads_;
     loadingProgressBar_->setRange(0, totalLoads_);
     loadingProgressBar_->setValue(0);
@@ -535,7 +535,7 @@ void DataLibrarianWindow::onRefreshClicked() {
     BOOST_LOG_SEV(lg(), info) << "Refresh clicked - reloading all data";
 
     // Reset and show progress bar
-    totalLoads_ = 5;
+    totalLoads_ = total_model_loads;
     pendingLoads_ = totalLoads_;
     loadingProgressBar_->setRange(0, totalLoads_);
     loadingProgressBar_->setValue(0);

@@ -645,16 +645,19 @@ void MainWindow::updateMenuState() {
     ui_->ActionConnect->setEnabled(!isConnected);
     ui_->ActionDisconnect->setEnabled(isConnected);
 
-    // System menu enabled when connected - permission checks happen server-side via RBAC
-    ui_->menuSystem->menuAction()->setEnabled(isConnected);
-    ui_->ActionAccounts->setEnabled(isConnected);
-
-    // Data Quality menu enabled when connected
-    ui_->menuDataQuality->menuAction()->setEnabled(isConnected);
-    ui_->ActionRoles->setEnabled(isConnected);
-    ui_->ActionFeatureFlags->setEnabled(isConnected);
+    // Data menu enabled when connected
+    ui_->menuData->menuAction()->setEnabled(isConnected);
     ui_->ActionChangeReasonCategories->setEnabled(isConnected);
     ui_->ActionChangeReasons->setEnabled(isConnected);
+
+    // Identity menu enabled when connected - permission checks happen server-side via RBAC
+    ui_->menuIdentity->menuAction()->setEnabled(isConnected);
+    ui_->ActionAccounts->setEnabled(isConnected);
+    ui_->ActionRoles->setEnabled(isConnected);
+
+    // System menu enabled when connected
+    ui_->menuSystem->menuAction()->setEnabled(isConnected);
+    ui_->ActionFeatureFlags->setEnabled(isConnected);
     ui_->ActionOriginDimensions->setEnabled(isConnected);
     ui_->ActionNatureDimensions->setEnabled(isConnected);
     ui_->ActionTreatmentDimensions->setEnabled(isConnected);

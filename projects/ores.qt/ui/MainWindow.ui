@@ -43,40 +43,90 @@
     <addaction name="separator"/>
     <addaction name="ExitAction"/>
    </widget>
-   <widget class="QMenu" name="menuRefereceData">
+   <widget class="QMenu" name="menuData">
     <property name="title">
-     <string>&amp;Ref Data</string>
+     <string>&amp;Data</string>
     </property>
-    <addaction name="CurrenciesAction"/>
-    <addaction name="CountriesAction"/>
+    <widget class="QMenu" name="menuReferenceData">
+     <property name="title">
+      <string>&amp;Reference Data</string>
+     </property>
+     <addaction name="CurrenciesAction"/>
+     <addaction name="CountriesAction"/>
+    </widget>
+    <widget class="QMenu" name="menuAssets">
+     <property name="title">
+      <string>&amp;Assets</string>
+     </property>
+     <addaction name="ActionDatasets"/>
+    </widget>
+    <widget class="QMenu" name="menuQuality">
+     <property name="title">
+      <string>&amp;Quality</string>
+     </property>
+     <widget class="QMenu" name="menuClassifications">
+      <property name="title">
+       <string>&amp;Classifications</string>
+      </property>
+      <addaction name="ActionCodingSchemes"/>
+      <addaction name="ActionCodingSchemeAuthorityTypes"/>
+     </widget>
+     <widget class="QMenu" name="menuOrganization">
+      <property name="title">
+       <string>&amp;Organization</string>
+      </property>
+      <addaction name="ActionDataDomains"/>
+      <addaction name="ActionSubjectAreas"/>
+      <addaction name="ActionCatalogs"/>
+     </widget>
+     <addaction name="ActionOriginDimensions"/>
+     <addaction name="ActionNatureDimensions"/>
+     <addaction name="ActionTreatmentDimensions"/>
+     <addaction name="ActionMethodologies"/>
+     <addaction name="separator"/>
+     <addaction name="menuClassifications"/>
+     <addaction name="menuOrganization"/>
+     <addaction name="separator"/>
+     <addaction name="ActionChangeReasonCategories"/>
+     <addaction name="ActionChangeReasons"/>
+    </widget>
+    <addaction name="menuReferenceData"/>
+    <addaction name="menuAssets"/>
+    <addaction name="menuQuality"/>
+   </widget>
+   <widget class="QMenu" name="menuIdentity">
+    <property name="title">
+     <string>&amp;Identity</string>
+    </property>
+    <addaction name="ActionAccounts"/>
+    <addaction name="ActionRoles"/>
    </widget>
    <widget class="QMenu" name="menuSystem">
     <property name="title">
      <string>&amp;System</string>
     </property>
-    <addaction name="ActionAccounts"/>
-    <addaction name="ActionRoles"/>
+    <widget class="QMenu" name="menuTelemetry">
+     <property name="title">
+      <string>&amp;Telemetry</string>
+     </property>
+     <widget class="QMenu" name="menuProtocol">
+      <property name="title">
+       <string>&amp;Protocol</string>
+      </property>
+      <addaction name="ActionRecordSession"/>
+      <addaction name="ActionOpenRecording"/>
+      <addaction name="separator"/>
+      <addaction name="ActionSetRecordingDirectory"/>
+     </widget>
+     <addaction name="ActionTelemetryViewer"/>
+     <addaction name="ActionEventViewer"/>
+     <addaction name="separator"/>
+     <addaction name="menuProtocol"/>
+     <addaction name="separator"/>
+     <addaction name="ActionTelemetrySettings"/>
+    </widget>
     <addaction name="ActionFeatureFlags"/>
-    <addaction name="separator"/>
-    <addaction name="ActionChangeReasonCategories"/>
-    <addaction name="ActionChangeReasons"/>
-   </widget>
-   <widget class="QMenu" name="menuDataQuality">
-    <property name="title">
-     <string>&amp;Data Quality</string>
-    </property>
-    <addaction name="ActionOriginDimensions"/>
-    <addaction name="ActionNatureDimensions"/>
-    <addaction name="ActionTreatmentDimensions"/>
-    <addaction name="separator"/>
-    <addaction name="ActionCodingSchemeAuthorityTypes"/>
-    <addaction name="ActionCodingSchemes"/>
-    <addaction name="ActionMethodologies"/>
-    <addaction name="separator"/>
-    <addaction name="ActionDataDomains"/>
-    <addaction name="ActionSubjectAreas"/>
-    <addaction name="ActionCatalogs"/>
-    <addaction name="ActionDatasets"/>
+    <addaction name="menuTelemetry"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
@@ -91,31 +141,10 @@
     </property>
     <addaction name="ActionAbout"/>
    </widget>
-   <widget class="QMenu" name="menuTelemetry">
-    <property name="title">
-     <string>&amp;Telemetry</string>
-    </property>
-    <widget class="QMenu" name="menuProtocol">
-     <property name="title">
-      <string>&amp;Protocol</string>
-     </property>
-     <addaction name="ActionRecordSession"/>
-     <addaction name="ActionOpenRecording"/>
-     <addaction name="separator"/>
-     <addaction name="ActionSetRecordingDirectory"/>
-    </widget>
-    <addaction name="ActionTelemetryViewer"/>
-    <addaction name="ActionEventViewer"/>
-    <addaction name="separator"/>
-    <addaction name="menuProtocol"/>
-    <addaction name="separator"/>
-    <addaction name="ActionTelemetrySettings"/>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuRefereceData"/>
-   <addaction name="menuDataQuality"/>
+   <addaction name="menuData"/>
+   <addaction name="menuIdentity"/>
    <addaction name="menuSystem"/>
-   <addaction name="menuTelemetry"/>
    <addaction name="menuWindow"/>
    <addaction name="menuHelp"/>
   </widget>

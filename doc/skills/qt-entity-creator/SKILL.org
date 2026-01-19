@@ -1752,6 +1752,66 @@ Use =color_constants= from =ColorConstants.hpp=:
 - =icon_color= - Light gray (220, 220, 220) for toolbar icons
 - =stale_indicator= - Orange (255, 165, 0) for stale data indicator
 
+*** Badge colors for item delegates
+
+When creating custom item delegates with badges, use =badge_colors= from
+=ColorConstants.hpp=:
+
+#+BEGIN_SRC cpp
+#include "ores.qt/ColorConstants.hpp"
+
+// In delegate implementation:
+using bc = badge_colors;
+
+// Boolean/enabled states
+bc::enabled   // Green for enabled/yes/active
+bc::disabled  // Gray for disabled/no/inactive
+bc::yes       // Alias for enabled
+bc::no        // Alias for disabled
+
+// Status indicators
+bc::online    // Green for online
+bc::recent    // Blue for recent activity
+bc::old       // Amber for old/stale
+bc::never     // Gray for never
+bc::locked    // Red for locked
+bc::unlocked  // Gray for unlocked
+
+// Data quality dimensions
+bc::origin_primary, bc::origin_derived
+bc::nature_actual, bc::nature_estimated, bc::nature_simulated
+bc::treatment_raw, bc::treatment_cleaned, bc::treatment_enriched
+
+// Common text color
+bc::text      // White (255, 255, 255)
+bc::default_bg // Gray fallback
+#+END_SRC
+
+*** Badge font scaling
+
+For proper high-DPI support, derive badge fonts from the view's font rather
+than hardcoding point sizes:
+
+#+BEGIN_SRC cpp
+void MyItemDelegate::paint(QPainter* painter,
+    const QStyleOptionViewItem& option,
+    const QModelIndex& index) const {
+    QStyleOptionViewItem opt = option;
+    initStyleOption(&opt, index);
+
+    // Derive badge font from view font
+    QFont badgeFont = opt.font;
+    badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
+    badgeFont.setBold(true);
+
+    // Pass font to badge drawing helper
+    drawBadge(painter, rect, text, bgColor, badge_colors::text, badgeFont);
+}
+#+END_SRC
+
+This ensures badges scale correctly with system font settings and high-DPI
+displays. Do NOT store a hardcoded =badgeFont_= member.
+
 
 ** Related skills
 

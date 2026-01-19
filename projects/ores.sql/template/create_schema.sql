@@ -119,6 +119,7 @@ grant create on schema ores to ores;
 \ir ../schema/dq_images_artefact_create.sql
 \ir ../schema/dq_tags_artefact_create.sql
 \ir ../schema/dq_image_tags_artefact_create.sql
+\ir ../schema/dq_ip2country_artefact_create.sql
 \ir ../schema/dq_functions_create.sql
 \ir ../schema/dq_population_functions_create.sql
 

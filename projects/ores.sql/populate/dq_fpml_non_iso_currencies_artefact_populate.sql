@@ -19,7 +19,7 @@
  */
 
 /**
- * Data Quality FpML Non-ISO Currencies Artefact Population Script
+ * Data Quality FpML Non-ISO Currency Codes Artefact Population Script
  *
  * Populates the dq_currencies_artefact_tbl with FpML non-ISO currency data.
  * Source: http://www.fpml.org/coding-scheme/non-iso-currency-1-1.xml
@@ -42,28 +42,28 @@ declare
     v_placeholder_image_id uuid;
     v_count integer := 0;
 begin
-    -- Get the FpML Non-ISO Currencies dataset ID
+    -- Get the FpML Non-ISO Currency Codes dataset ID
     select id into v_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'FpML Non-ISO Currencies'
+    where name = 'FpML Non-ISO Currency Codes'
       and subject_area_name = 'Currencies'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: FpML Non-ISO Currencies';
+        raise exception 'Dataset not found: FpML Non-ISO Currency Codes';
     end if;
 
     -- Get the flags dataset ID (for linking images)
     select id into v_flags_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'Country Flags from lipis/flag-icons'
-      and subject_area_name = 'Countries'
+    where name = 'Country Flag Images'
+      and subject_area_name = 'Country Flags'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_flags_dataset_id is null then
-        raise exception 'Dataset not found: Country Flags from lipis/flag-icons';
+        raise exception 'Dataset not found: Country Flag Images';
     end if;
 
     -- Get the placeholder image (xx.svg = "no flag available")
@@ -80,7 +80,7 @@ begin
     delete from ores.dq_currencies_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating currencies for dataset: FpML Non-ISO Currencies';
+    raise notice 'Populating currencies for dataset: FpML Non-ISO Currency Codes';
 
     -- Insert FpML non-ISO currencies with flag image links
     -- Data sourced from: http://www.fpml.org/coding-scheme/non-iso-currency-1-1.xml
@@ -124,7 +124,7 @@ begin
 
     get diagnostics v_count = row_count;
 
-    raise notice 'Successfully populated % currencies for dataset: FpML Non-ISO Currencies', v_count;
+    raise notice 'Successfully populated % currencies for dataset: FpML Non-ISO Currency Codes', v_count;
 end $$;
 
 -- =============================================================================
@@ -132,31 +132,31 @@ end $$;
 -- =============================================================================
 
 \echo ''
-\echo '--- DQ FpML Non-ISO Currencies Summary ---'
+\echo '--- DQ FpML Non-ISO Currency Codes Summary ---'
 
-select 'Total FpML Non-ISO Currencies' as metric, count(*) as count
+select 'Total FpML Non-ISO Currency Codes' as metric, count(*) as count
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.name = 'FpML Non-ISO Currencies'
+where d.name = 'FpML Non-ISO Currency Codes'
   and d.valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Offshore Currencies (fiat.offshore)', count(*)
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.name = 'FpML Non-ISO Currencies'
+where d.name = 'FpML Non-ISO Currency Codes'
   and d.valid_to = ores.utility_infinity_timestamp_fn()
   and c.currency_type = 'fiat.offshore'
 union all
 select 'Emerging Currencies (fiat.emerging)', count(*)
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.name = 'FpML Non-ISO Currencies'
+where d.name = 'FpML Non-ISO Currency Codes'
   and d.valid_to = ores.utility_infinity_timestamp_fn()
   and c.currency_type = 'fiat.emerging'
 union all
 select 'Historical Currencies (fiat.historical)', count(*)
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.name = 'FpML Non-ISO Currencies'
+where d.name = 'FpML Non-ISO Currency Codes'
   and d.valid_to = ores.utility_infinity_timestamp_fn()
   and c.currency_type = 'fiat.historical';

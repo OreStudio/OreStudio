@@ -127,12 +127,12 @@ select ores.upsert_dq_datasets(
     'Countries',
     'Reference Data',
     'ISO_3166_1_ALPHA_2',
-    'Source',
+    'Primary',
     'Actual',
     'Raw',
     'Wikipedia ISO 3166 Extraction',
-    'ISO 3166 Countries from Wikipedia',
-    'ISO 3166-1 country codes and names from Wikipedia',
+    'ISO 3166 Country Codes',
+    'ISO 3166-1 alpha-2 country codes and official names.',
     'WIKIPEDIA',
     'Reference data for country codes',
     current_date,
@@ -140,16 +140,16 @@ select ores.upsert_dq_datasets(
 );
 
 select ores.upsert_dq_datasets(
-    'ISO Standards',
-    'Countries',
+    'Visual Assets',
+    'Country Flags',
     'Reference Data',
     'ISO_3166_1_ALPHA_2',
-    'Source',
+    'Primary',
     'Actual',
     'Raw',
     'GitHub Flag Icons Download',
-    'Country Flags from lipis/flag-icons',
-    'SVG country flags from lipis/flag-icons repository',
+    'Country Flag Images',
+    'SVG flag images for each ISO 3166-1 country.',
     'GITHUB',
     'Visual assets for countries',
     '2025-12-20'::date,
@@ -157,24 +157,24 @@ select ores.upsert_dq_datasets(
 );
 
 select ores.upsert_dq_tag(
-    'Country Flags from lipis/flag-icons',
-    'Countries',
+    'Country Flag Images',
+    'Country Flags',
     'Reference Data',
     'flag',
     'Country and region flag images'
 );
 
 select ores.upsert_dq_datasets(
-    'Cryptocurrency',
+    'Visual Assets',
     'Cryptocurrencies',
     'Reference Data',
     'NONE',
-    'Source',
+    'Primary',
     'Actual',
     'Raw',
     'GitHub Cryptocurrency Icons Download',
-    'Cryptocurrency Icons from spothq/cryptocurrency-icons',
-    'SVG cryptocurrency icons from spothq/cryptocurrency-icons repository at commit 1a63530',
+    'Cryptocurrency Icon Images',
+    'SVG icon images for major cryptocurrencies.',
     'GITHUB',
     'Visual assets for cryptocurrencies',
     '2025-01-15'::date,
@@ -182,7 +182,7 @@ select ores.upsert_dq_datasets(
 );
 
 select ores.upsert_dq_tag(
-    'Cryptocurrency Icons from spothq/cryptocurrency-icons',
+    'Cryptocurrency Icon Images',
     'Cryptocurrencies',
     'Reference Data',
     'cryptocurrency',
@@ -194,12 +194,12 @@ select ores.upsert_dq_datasets(
     'Currencies',
     'Reference Data',
     'ISO_4217',
-    'Source',
+    'Primary',
     'Actual',
     'Raw',
     'Wikipedia ISO 4217 Extraction',
-    'ISO 4217 Currencies from Wikipedia',
-    'ISO 4217 currency codes and names from Wikipedia',
+    'ISO 4217 Currency Codes',
+    'ISO 4217 alphabetic and numeric currency codes.',
     'WIKIPEDIA',
     'Reference data for currency codes',
     current_date,
@@ -207,7 +207,7 @@ select ores.upsert_dq_datasets(
 );
 
 select ores.upsert_dq_tag(
-    'ISO 4217 Currencies from Wikipedia',
+    'ISO 4217 Currency Codes',
     'Currencies',
     'Reference Data',
     'currency',
@@ -219,12 +219,12 @@ select ores.upsert_dq_datasets(
     'Currencies',
     'Reference Data',
     'FPML_NON_ISO_CURRENCY',
-    'Source',
+    'Primary',
     'Actual',
     'Raw',
     'FpML Genericode Download',
-    'FpML Non-ISO Currencies',
-    'Non-ISO currency codes from FpML coding scheme (version 1-1). Includes offshore currencies (CNH, CNT) and historical currencies (MCF, SML, VAL).',
+    'FpML Non-ISO Currency Codes',
+    'Non-standard currency codes for derivatives (offshore CNH/CNT, historical MCF/SML/VAL).',
     'FPML',
     'Reference data for non-ISO currency codes used in derivatives trading',
     '2023-11-03'::date,
@@ -232,7 +232,7 @@ select ores.upsert_dq_datasets(
 );
 
 select ores.upsert_dq_tag(
-    'FpML Non-ISO Currencies',
+    'FpML Non-ISO Currency Codes',
     'Currencies',
     'Reference Data',
     'currency',
@@ -244,12 +244,12 @@ select ores.upsert_dq_datasets(
     'Cryptocurrencies',
     'Reference Data',
     'NONE',
-    'Source',
+    'Primary',
     'Actual',
     'Raw',
     'GitHub Cryptocurrencies JSON Download',
-    'Cryptocurrencies from crypti/cryptocurrencies',
-    'Cryptocurrency symbols and names from crypti/cryptocurrencies GitHub repository',
+    'Cryptocurrency Reference Data',
+    'Cryptocurrency symbols, names, and metadata.',
     'GITHUB',
     'Reference data for cryptocurrency codes',
     current_date,
@@ -257,11 +257,36 @@ select ores.upsert_dq_datasets(
 );
 
 select ores.upsert_dq_tag(
-    'Cryptocurrencies from crypti/cryptocurrencies',
+    'Cryptocurrency Reference Data',
     'Cryptocurrencies',
     'Reference Data',
     'cryptocurrency',
     'Cryptocurrency reference data'
+);
+
+select ores.upsert_dq_datasets(
+    'IP Geolocation',
+    'IP Address to Country maps',
+    'Reference Data',
+    'ISO_3166_1_ALPHA_2',
+    'Primary',
+    'Actual',
+    'Raw',
+    'iptoasn.com IP to Country Download',
+    'IPv4 to Country Mapping',
+    'IPv4 address ranges mapped to ISO 3166-1 alpha-2 country codes. Contains ~512k IP ranges covering the full IPv4 address space.',
+    'IPTOASN',
+    'Geographic IP lookup for IPv4 addresses',
+    '2025-12-30'::date,
+    'PDDL v1.0'
+);
+
+select ores.upsert_dq_tag(
+    'IPv4 to Country Mapping',
+    'IP Address to Country maps',
+    'Reference Data',
+    'geolocation',
+    'IP address geolocation reference data'
 );
 
 -- =============================================================================

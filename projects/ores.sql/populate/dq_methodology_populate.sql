@@ -78,7 +78,7 @@ select ores.upsert_dq_methodologies(
    git add projects/ores.sql/populate/dq_countries_artefact_populate.sql
    git commit -m "[sql] Update countries artefact populate script"
 
-Note: Countries are linked to flag images via the flag_key field, which matches
+Countries are linked to flag images via the flag_key field, which matches
 the key in the dq_images_artefact_tbl (e.g., ''gb'' -> gb.svg flag).'
 );
 
@@ -157,7 +157,7 @@ select ores.upsert_dq_methodologies(
    git add projects/ores.sql/populate/dq_currencies_artefact_populate.sql
    git commit -m "[sql] Update currencies artefact populate script"
 
-Note: Fiat currencies are classified as ''fiat.major'' (EUR, USD, GBP, JPY, AUD, CAD, CHF,
+Fiat currencies are classified as ''fiat.major'' (EUR, USD, GBP, JPY, AUD, CAD, CHF,
 DKK, NOK, NZD, SEK) or ''fiat.emerging'' (all others). Commodity currencies (XAU, XAG, etc.)
 use type ''commodity''. SDR uses type ''supranational''.'
 );
@@ -191,7 +191,7 @@ select ores.upsert_dq_methodologies(
    git add projects/ores.sql/populate/dq_cryptocurrencies_artefact_populate.sql
    git commit -m "[sql] Regenerate cryptocurrencies populate script"
 
-Note: The script classifies cryptocurrencies as ''crypto.major'' (top 20 by market cap)
+The script classifies cryptocurrencies as ''crypto.major'' (top 20 by market cap)
 or ''crypto.minor'' (all others). Only crypto.major currencies are populated to production.'
 );
 
@@ -222,9 +222,48 @@ select ores.upsert_dq_methodologies(
    git add projects/ores.sql/populate/dq_<entity>_artefact_populate.sql
    git commit -m "[sql] Regenerate <entity> artefact populate script from FpML"
 
-Note: FpML Genericode files follow the OASIS CodeList standard. Each file contains
+FpML Genericode files follow the OASIS CodeList standard. Each file contains
 Code, Source, and Description columns. The CanonicalVersionUri identifies the specific
 version of the coding scheme.'
+);
+
+select ores.upsert_dq_methodologies(
+    'iptoasn.com IP to Country Download',
+    'IPv4 to country mapping data downloaded from iptoasn.com, a community-maintained database by Frank Denis',
+    'https://iptoasn.com/',
+    'Data Sourcing and Import Steps:
+
+1. SOURCE DATA DOWNLOAD
+   Website: https://iptoasn.com/
+   Creator: Frank Denis
+   License: PDDL v1.0 (Public Domain)
+   Update frequency: Hourly
+   File: ip2country-v4-u32.tsv.gz (IPv4 in 32-bit unsigned integer format)
+   Download: curl -o ip2country-v4-u32.tsv.gz https://iptoasn.com/data/ip2country-v4-u32.tsv.gz
+             gunzip ip2country-v4-u32.tsv.gz
+
+2. SAVE TO REPOSITORY
+   Target directory: projects/ores.sql/populate/data/ip2country/
+   Target file: ip2country-v4-u32.tsv
+   Format: TSV with columns (range_start, range_end, country_code)
+   Commit: git add projects/ores.sql/populate/data/ip2country/ip2country-v4-u32.tsv
+           git commit -m "[data] Update IP to country mapping from iptoasn.com"
+
+3. LOAD TO DQ STAGING TABLE
+   Script: projects/ores.sql/populate/dq_ip2country_artefact_populate.sql
+   Target table: ores.dq_ip2country_artefact_tbl
+   Process: Uses psql \copy to import TSV directly into staging table
+   Columns: (dataset_id, range_start, range_end, country_code)
+
+4. POPULATE PRODUCTION TABLE
+   Function: ores.dq_populate_ip2country(p_dataset_id, ''replace_all'')
+   Source: dq_ip2country_artefact_tbl (staging)
+   Target: geo_ip2country_tbl (production)
+   Process: Truncate production, insert from staging, convert to int8range, analyze
+
+5. VERIFY IMPORT
+   Test lookups for known IPs (8.8.8.8 -> US, 1.1.1.1 -> US)
+   Check statistics: total ranges, unique countries, unrouted ranges'
 );
 
 select ores.upsert_dq_methodologies(
@@ -252,7 +291,7 @@ select ores.upsert_dq_methodologies(
    Code: ores::synthetic::service::catalog_generator_service
    Options: ores::synthetic::domain::generation_options
 
-Note: This methodology is used for all programmatically generated test data.
+This methodology is used for all programmatically generated test data.
 The specific seed and generation parameters are tracked separately from
 the methodology itself.'
 );

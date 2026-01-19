@@ -305,7 +305,7 @@ EOF
 
 #+RESULTS:
 #+begin_example
-ORE Studio Shell REPL v0.0.8
+ORE Studio Shell REPL v0.0.9
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> currencies> Commands available:
@@ -319,8 +319,8 @@ ores-shell> currencies> Commands available:
 	Exec a command by index in the history
  - get
 	Retrieve all currencies from the server
- - add <string> <string> <string> <string> <string>
-	Add a currency (iso_code name [numeric_code] [symbol] [fractions_per_unit])
+ - add <string> <string> <string> <string> <string> <string> <string>
+	Add a currency (iso_code name numeric_code symbol fractions reason_code "commentary")
  - delete <string>
 	Delete a currency by ISO code
  - history <string>
@@ -358,7 +358,7 @@ ORE Studio Shell REPL v0.0.9
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Initial admin account created successfully!
-  Account ID: 019bce17-b0d4-7e4e-8272-41f49d05484e
+  Account ID: 019bd6b1-65f8-7d0f-829d-46c4546ae885
   You can now login with the credentials provided.
 ores-shell> Bye!
 #+end_example

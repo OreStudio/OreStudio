@@ -60,8 +60,14 @@ public:
         Version,
         RecordedBy,
         RecordedAt,
+        Tags,
         ColumnCount
     };
+
+    // Custom roles for Tags column data
+    static constexpr int OriginRole = Qt::UserRole + 100;
+    static constexpr int NatureRole = Qt::UserRole + 101;
+    static constexpr int TreatmentRole = Qt::UserRole + 102;
 
     explicit ClientDatasetModel(ClientManager* clientManager,
                                 QObject* parent = nullptr);

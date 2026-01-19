@@ -140,3 +140,30 @@ QMenu::item:selected {
 QMenu::item:disabled {
     color: #646464;
 }
+
+/* Data Librarian - Lineage Diagram Styling */
+ores--qt--DataLibrarianWindow {
+    /* Node colors */
+    qproperty-lineageBackground: #2D2D30;
+    qproperty-lineageNodeBody: #3F3F46;
+    qproperty-lineageNodeBorder: #505055;
+    qproperty-lineageText: #DCDCDC;
+    qproperty-lineageLabel: #8C8C91;
+    qproperty-lineageValue: #B4B4B9;
+    qproperty-lineageConnection: #B4B4B4;
+    qproperty-lineageSocket: #C8C8C8;
+
+    /* Header colors for different node types */
+    qproperty-lineageHeaderOrigin: #4A90E2;
+    qproperty-lineageHeaderMethod: #825EBA;
+    qproperty-lineageHeaderDataset: #50C878;
+
+    /* Node dimensions */
+    qproperty-lineageNodeWidth: 95;
+    qproperty-lineageHeaderHeight: 14;
+    qproperty-lineageRowHeight: 11;
+    qproperty-lineageNodeSpacing: 40;
+    qproperty-lineageCornerRadius: 3;
+    qproperty-lineageSocketRadius: 3;
+    qproperty-lineagePadding: 4;
+}

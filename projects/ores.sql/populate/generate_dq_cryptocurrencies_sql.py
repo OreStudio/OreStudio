@@ -21,10 +21,10 @@ import sys
 
 # Default configuration
 DEFAULT_CONFIG = {
-    'dataset_name': 'Cryptocurrencies from crypti/cryptocurrencies',
+    'dataset_name': 'Cryptocurrency Reference Data',
     'subject_area_name': 'Cryptocurrencies',
     'domain_name': 'Reference Data',
-    'icons_dataset_name': 'Cryptocurrency Icons from spothq/cryptocurrency-icons',
+    'icons_dataset_name': 'Cryptocurrency Icon Images',
     'icons_subject_area_name': 'Cryptocurrencies',
     'icons_domain_name': 'Reference Data',
     'source_file': 'projects/ores.sql/populate/data/cryptocurrencies/cryptocurrencies.json',

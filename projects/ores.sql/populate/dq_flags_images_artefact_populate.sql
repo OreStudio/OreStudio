@@ -19,8 +19,8 @@
  */
 
 -- Script to populate DQ SVG images into the database
--- Dataset: Country Flags from lipis/flag-icons
--- Subject Area: Countries
+-- Dataset: Country Flag Images
+-- Subject Area: Country Flags
 -- Domain: Reference Data
 --
 -- This file was auto-generated from the SVG files in projects/ores.sql/populate/data/flags
@@ -40,20 +40,20 @@ begin
     -- Get the dataset ID using (name, subject_area_name, domain_name)
     select id into v_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'Country Flags from lipis/flag-icons'
-      and subject_area_name = 'Countries'
+    where name = 'Country Flag Images'
+      and subject_area_name = 'Country Flags'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: name="Country Flags from lipis/flag-icons", subject_area="Countries", domain="Reference Data"';
+        raise exception 'Dataset not found: name="Country Flag Images", subject_area="Country Flags", domain="Reference Data"';
     end if;
 
     -- Clear existing images for this dataset (idempotency)
     delete from ores.dq_images_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating images for dataset: %', 'Country Flags from lipis/flag-icons';
+    raise notice 'Populating images for dataset: %', 'Country Flag Images';
 
     -- Insert images
     insert into ores.dq_images_artefact_tbl (
@@ -12036,5 +12036,5 @@ begin
 </svg>$svg$
     );
 
-    raise notice 'Successfully populated % images for dataset: %', 276, 'Country Flags from lipis/flag-icons';
+    raise notice 'Successfully populated % images for dataset: %', 276, 'Country Flag Images';
 end $$;

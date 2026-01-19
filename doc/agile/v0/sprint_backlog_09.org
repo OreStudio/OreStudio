@@ -17,44 +17,45 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-19 Mon 01:11], for Monday, January 19, 2026.
-|      | <75>                         |        |      |      |       |
-| Tags | Headline                     | Time   |      |      |     % |
-|------+------------------------------+--------+------+------+-------|
-|      | *Total time*                 | *1:11* |      |      | 100.0 |
-|------+------------------------------+--------+------+------+-------|
-|      | Stories                      | 1:11   |      |      | 100.0 |
-|      | Active                       |        | 1:11 |      | 100.0 |
-| code | Add UI support for data sets |        |      | 1:11 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-19 Mon 10:34], for Monday, January 19, 2026.
+|       | <75>                               |        |      |      |       |
+| Tags  | Headline                           | Time   |      |      |     % |
+|-------+------------------------------------+--------+------+------+-------|
+|       | *Total time*                       | *2:45* |      |      | 100.0 |
+|-------+------------------------------------+--------+------+------+-------|
+|       | Stories                            | 2:45   |      |      | 100.0 |
+|       | Active                             |        | 2:45 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint |        |      | 1:34 |  57.0 |
+| code  | Add UI support for data sets       |        |      | 1:11 |  43.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-19 Mon 01:11]
+#+CAPTION: Clock summary at [2026-01-19 Mon 10:35]
 |       | <75>                                               |         |       |       |       |
 | Tags  | Headline                                           | Time    |       |       |     % |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                       | *60:26* |       |       | 100.0 |
+|       | *Total time*                                       | *62:00* |       |       | 100.0 |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                            | 60:26   |       |       | 100.0 |
-|       | Active                                             |         | 60:26 |       | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       |  2:11 |   3.6 |
-| infra | OCR scan notebooks for this sprint                 |         |       |  8:19 |  13.8 |
+|       | Stories                                            | 62:00   |       |       | 100.0 |
+|       | Active                                             |         | 62:00 |       | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       |  2:11 |   3.5 |
+| infra | OCR scan notebooks for this sprint                 |         |       |  9:53 |  15.9 |
 | infra | Clean up system models and component models        |         |       |  0:28 |   0.8 |
-| code  | Add missing entities to CLI                        |         |       |  1:55 |   3.2 |
+| code  | Add missing entities to CLI                        |         |       |  1:55 |   3.1 |
 | infra | Refactor PR related skills                         |         |       |  0:18 |   0.5 |
 | code  | Fix valgrind errors in nightly                     |         |       |  1:25 |   2.3 |
-| code  | Create security module                             |         |       |  1:23 |   2.3 |
+| code  | Create security module                             |         |       |  1:23 |   2.2 |
 | code  | Prodigy should support multiple environments       |         |       |  0:19 |   0.5 |
-| code  | Add named environment sets                         |         |       |  4:17 |   7.1 |
+| code  | Add named environment sets                         |         |       |  4:17 |   6.9 |
 | code  | Rename risk to refdata                             |         |       |  0:43 |   1.2 |
-| code  | Prefix database entities with component            |         |       |  3:15 |   5.4 |
-| code  | Implement data quality                             |         |       |  9:42 |  16.1 |
+| code  | Prefix database entities with component            |         |       |  3:15 |   5.2 |
+| code  | Implement data quality                             |         |       |  9:42 |  15.6 |
 | code  | Improvements to connection browser                 |         |       |  2:05 |   3.4 |
-| code  | Disconnect shows reconnect message                 |         |       |  2:24 |   4.0 |
-| infra | Refactor documentation                             |         |       |  6:29 |  10.7 |
-| code  | Add UI support for data sets                       |         |       | 14:53 |  24.6 |
-| code  | Implement party related entities at database level |         |       |  0:20 |   0.6 |
+| code  | Disconnect shows reconnect message                 |         |       |  2:24 |   3.9 |
+| infra | Refactor documentation                             |         |       |  6:29 |  10.5 |
+| code  | Add UI support for data sets                       |         |       | 14:53 |  24.0 |
+| code  | Implement party related entities at database level |         |       |  0:20 |   0.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -211,6 +212,7 @@ print(p)
 
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2026-01-19 Mon 09:00]--[2026-01-19 Mon 10:34] =>  1:34
     CLOCK: [2026-01-18 Sun 11:22]--[2026-01-18 Sun 12:55] =>  1:33
     CLOCK: [2026-01-16 Fri 09:30]--[2026-01-16 Fri 11:03] =>  1:33
     CLOCK: [2026-01-15 Thu 23:31]--[2026-01-15 Thu 23:55] =>  0:24
@@ -772,48 +774,11 @@ When you click disconnect the status bar says "Reconnecting to server".
 We can see but not edit. Also, test permissions to make sure they are being
 enforced.
 
-*** STARTED Refactor documentation                                    :infra:
+*** COMPLETED Add UI support for data sets                             :code:
     :LOGBOOK:
-    CLOCK: [2026-01-13 Tue 15:01]--[2026-01-13 Tue 16:02] =>  1:01
-    CLOCK: [2026-01-13 Tue 08:50]--[2026-01-13 Tue 09:00] =>  0:10
-    CLOCK: [2026-01-12 Mon 21:55]--[2026-01-12 Mon 23:50] =>  1:55
-    CLOCK: [2026-01-12 Mon 14:55]--[2026-01-12 Mon 17:52] =>  2:57
-    CLOCK: [2026-01-12 Mon 12:04]--[2026-01-12 Mon 12:30] =>  0:26
-    :END:
-
-- split recipes per entity.
-- create a top-level "domain" document per entity which cross-references
-  recipes, component model, entity implementation files (including SQL), skills.
-- recipes should belong to the component rather than being global.
-
-**** Site fixes
-
-#+begin_quote
-This pull request primarily focuses on improving the stability and reliability
-of the site build process by introducing robust error handling and preventing
-debugger interruptions. Concurrently, it addresses and resolves critical broken
-internal links within the project's documentation, enhancing the overall user
-experience and information accessibility. Minor updates to agile sprint tracking
-documentation are also included.
-
-Highlights:
-
-- Build Process Robustness: Implemented error handling for the org-publish-all
-  function across all build scripts (.build-plan.el, .build-site.el,
-  .build-skills.el) to gracefully catch and report build failures instead of
-  crashing. Additionally, Emacs debugger and quit-on-error behaviors are
-  suppressed during the build to ensure uninterrupted execution.
-- Broken Link Fixes: Corrected several broken internal links within the
-  doc/recipes/cli_recipes.org file by updating outdated UUIDs for the ORE Studio
-  Geo and Telemetry Components, ensuring accurate navigation within the
-  documentation.
-- Documentation Updates: Updated clock table entries and summaries in
-  doc/agile/v0/sprint_backlog_09.org to reflect recent work, and added new notes
-  and observations related to the 'Clean up seed data' task.
-#+end_quote
-
-*** STARTED Add UI support for data sets                               :code:
-    :LOGBOOK:
+    CLOCK: [2026-01-19 Mon 13:25]--[2026-01-19 Mon 15:16] =>  1:51
+    CLOCK: [2026-01-19 Mon 12:47]--[2026-01-19 Mon 13:10] =>  0:23
+    CLOCK: [2026-01-19 Mon 10:35]--[2026-01-19 Mon 12:46] =>  2:11
     CLOCK: [2026-01-18 Sun 23:45]--[2026-01-19 Mon 01:11] =>  1:26
     CLOCK: [2026-01-18 Sun 19:01]--[2026-01-18 Sun 19:20] =>  0:19
     CLOCK: [2026-01-18 Sun 18:35]--[2026-01-18 Sun 19:01] =>  0:26
@@ -978,6 +943,45 @@ Grok:
 HF:
 
 [[./mock_data_librarian_hf.png]]
+
+Implementation details:
+
+#+begin_quote
+This pull request significantly enhances the application's data management
+capabilities by introducing a comprehensive Data Librarian user interface. This
+new UI provides a centralized hub for users to explore, understand, and manage
+various datasets, complete with detailed metadata, data lineage visualization,
+and methodology documentation. Alongside this, new data sources like IP
+Geolocation mappings and visual assets have been integrated, expanding the
+breadth of available reference data. Performance and usability are also improved
+through network optimization and logical menu reorganization.
+
+Highlights:
+
+- Data Librarian UI: Introduced a new composite window for browsing and managing
+  Data Quality (DQ) datasets, featuring a three-panel layout for dataset
+  browsing, accession card details, and methodology information.
+- IP Geolocation Data Infrastructure: Added a new DQ catalog for IP Geolocation
+  data, including staging infrastructure for iptoasn.com data, and functions to
+  populate the production database with IPv4 to country mappings.
+- Visual Assets Catalog: Created a 'Visual Assets' catalog to centralize image
+  data such as country flags and cryptocurrency icons, improving organization
+  and reusability.
+- Methodology Panel: Integrated a dedicated panel within the Data Librarian to
+  display processing steps and implementation details for selected dataset
+  methodologies, enhancing data transparency.
+- UI Performance Improvement: Enabled the TCP_NODELAY option on network
+  communications to mitigate Nagle's algorithm, resulting in faster loading
+  times for parallel requests in the UI.
+- Menu Restructuring: Refactored the main application menu, moving 'Identity'
+  and 'Configuration' options under a unified 'System' menu, and consolidating
+  data-related actions under a new 'Data' menu.
+- Dataset Model Enhancements: Modified the ClientDatasetModel to include a
+  'Tags' column and custom roles for displaying Origin, Nature, and Treatment
+  dimensions as visual badges in the dataset table. Origin Dimension Renaming:
+  Renamed the 'Source' origin dimension to 'Primary' across the database schema
+  and UI to better reflect its meaning as raw, untransformed data.
+#+end_quote
 
 **** Subject areas
 
@@ -1148,6 +1152,46 @@ Highlights:
   like DAMA-DMBOK and TOGAF.
 #+end_quote
 
+*** STARTED Refactor documentation                                    :infra:
+    :LOGBOOK:
+    CLOCK: [2026-01-13 Tue 15:01]--[2026-01-13 Tue 16:02] =>  1:01
+    CLOCK: [2026-01-13 Tue 08:50]--[2026-01-13 Tue 09:00] =>  0:10
+    CLOCK: [2026-01-12 Mon 21:55]--[2026-01-12 Mon 23:50] =>  1:55
+    CLOCK: [2026-01-12 Mon 14:55]--[2026-01-12 Mon 17:52] =>  2:57
+    CLOCK: [2026-01-12 Mon 12:04]--[2026-01-12 Mon 12:30] =>  0:26
+    :END:
+
+- split recipes per entity.
+- create a top-level "domain" document per entity which cross-references
+  recipes, component model, entity implementation files (including SQL), skills.
+- recipes should belong to the component rather than being global.
+
+**** Site fixes
+
+#+begin_quote
+This pull request primarily focuses on improving the stability and reliability
+of the site build process by introducing robust error handling and preventing
+debugger interruptions. Concurrently, it addresses and resolves critical broken
+internal links within the project's documentation, enhancing the overall user
+experience and information accessibility. Minor updates to agile sprint tracking
+documentation are also included.
+
+Highlights:
+
+- Build Process Robustness: Implemented error handling for the org-publish-all
+  function across all build scripts (.build-plan.el, .build-site.el,
+  .build-skills.el) to gracefully catch and report build failures instead of
+  crashing. Additionally, Emacs debugger and quit-on-error behaviors are
+  suppressed during the build to ensure uninterrupted execution.
+- Broken Link Fixes: Corrected several broken internal links within the
+  doc/recipes/cli_recipes.org file by updating outdated UUIDs for the ORE Studio
+  Geo and Telemetry Components, ensuring accurate navigation within the
+  documentation.
+- Documentation Updates: Updated clock table entries and summaries in
+  doc/agile/v0/sprint_backlog_09.org to reflect recent work, and added new notes
+  and observations related to the 'Clean up seed data' task.
+#+end_quote
+
 *** STARTED Implement party related entities at database level         :code:
     :LOGBOOK:
     CLOCK: [2026-01-16 Fri 11:16]--[2026-01-16 Fri 11:36] =>  0:20
@@ -1171,6 +1215,25 @@ schema level.
 | =business_center_id= | Integer     | FK (scheme)     | Links to an FpML Business Center (e.g., GBLO, USNY). Determines holiday calendars for settlement. |
 | =status=             | Enum        | Active/Inactive | Controls whether trades can be booked against this entity.                                        |
 | =created_at=         | Timestamp   |                 | Audit trail for when the entity was onboarded.                                                    |
+
+*** Data Librarian improvements                                        :code:
+
+Notes:
+
+- graph is not reflecting collection dependencies nor lineage dependencies.
+- should be able to insert collections into system from dialog. Remove insert
+  from scripts.
+- use word wrap in methodology and data Ascension
+- rename data Ascension to data passport.
+- instead of showing dataset properties in main data librarian window, create a
+  dataset specific dialog. Add tabs to make it easier to understand the
+  information. Tabs should be on the left hand side.
+- add licence to FPML data: https://www.fpml.org/the_standard/fpml-public-license/
+
+*** Add coloured icons                                                 :code:
+
+At present we are using black and white icons. These are a bit hard to see. We
+should try the coloured ones and see if it improves readability.
 
 *** Add a "is alive" message                                           :code:
 

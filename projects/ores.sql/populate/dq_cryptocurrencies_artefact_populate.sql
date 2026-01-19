@@ -25,7 +25,7 @@
  * Links cryptocurrencies to their icons from the cryptocurrency-icons dataset.
  * This script is idempotent.
  *
- * Dataset: Cryptocurrencies from crypti/cryptocurrencies
+ * Dataset: Cryptocurrency Reference Data
  * Subject Area: Cryptocurrencies
  * Domain: Reference Data
  *
@@ -48,25 +48,25 @@ begin
     -- Get the cryptocurrencies dataset ID
     select id into v_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'Cryptocurrencies from crypti/cryptocurrencies'
+    where name = 'Cryptocurrency Reference Data'
       and subject_area_name = 'Cryptocurrencies'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: Cryptocurrencies from crypti/cryptocurrencies';
+        raise exception 'Dataset not found: Cryptocurrency Reference Data';
     end if;
 
     -- Get the cryptocurrency icons dataset ID (for linking images)
     select id into v_icons_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'Cryptocurrency Icons from spothq/cryptocurrency-icons'
+    where name = 'Cryptocurrency Icon Images'
       and subject_area_name = 'Cryptocurrencies'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_icons_dataset_id is null then
-        raise exception 'Dataset not found: Cryptocurrency Icons from spothq/cryptocurrency-icons';
+        raise exception 'Dataset not found: Cryptocurrency Icon Images';
     end if;
 
     -- Get a placeholder image (use 'xx' flag from the flags dataset)
@@ -83,7 +83,7 @@ begin
     delete from ores.dq_currencies_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating cryptocurrencies for dataset: Cryptocurrencies from crypti/cryptocurrencies';
+    raise notice 'Populating cryptocurrencies for dataset: Cryptocurrency Reference Data';
 
     -- Insert cryptocurrencies with icon links
     -- Icons are keyed by lowercase symbol (e.g., 'btc', 'eth')
@@ -12355,7 +12355,7 @@ begin
 
     get diagnostics v_count = row_count;
 
-    raise notice 'Successfully populated % cryptocurrencies for dataset: Cryptocurrencies from crypti/cryptocurrencies', v_count;
+    raise notice 'Successfully populated % cryptocurrencies for dataset: Cryptocurrency Reference Data', v_count;
 
     -- Report cryptocurrencies with icons
     raise notice 'Cryptocurrencies with matching icons:';
@@ -12375,28 +12375,28 @@ end $$;
 select 'Total DQ Cryptocurrencies' as metric, count(*) as count
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.name = 'Cryptocurrencies from crypti/cryptocurrencies'
+where d.name = 'Cryptocurrency Reference Data'
 union all
 select 'Major Cryptocurrencies (crypto.major)', count(*)
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.name = 'Cryptocurrencies from crypti/cryptocurrencies'
+where d.name = 'Cryptocurrency Reference Data'
   and c.currency_type = 'crypto.major'
 union all
 select 'Minor Cryptocurrencies (crypto.minor)', count(*)
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.name = 'Cryptocurrencies from crypti/cryptocurrencies'
+where d.name = 'Cryptocurrency Reference Data'
   and c.currency_type = 'crypto.minor'
 union all
 select 'Cryptocurrencies with Icons', count(*)
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.name = 'Cryptocurrencies from crypti/cryptocurrencies'
+where d.name = 'Cryptocurrency Reference Data'
   and c.image_id is not null
 union all
 select 'Cryptocurrencies without Icons', count(*)
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.name = 'Cryptocurrencies from crypti/cryptocurrencies'
+where d.name = 'Cryptocurrency Reference Data'
   and c.image_id is null;

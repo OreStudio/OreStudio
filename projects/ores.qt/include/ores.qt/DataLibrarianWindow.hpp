@@ -30,7 +30,6 @@
 #include <QProgressBar>
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
-#include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DatasetViewDialog.hpp"
 #include "ores.qt/ClientDatasetModel.hpp"
@@ -80,8 +79,6 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void showDatasetDetails(const dq::domain::dataset& dataset);
-    void showDatasetHistory(const boost::uuids::uuid& id);
 
     // Signals to open related windows
     void openOriginDimensionsRequested();
@@ -100,7 +97,6 @@ private slots:
     void onDatasetDoubleClicked(const QModelIndex& index);
     void onRefreshClicked();
     void onViewDatasetClicked();
-    void onEditDatasetClicked();
     void onDataLoaded();
     void onLoadError(const QString& error_message, const QString& details = {});
 
@@ -144,7 +140,6 @@ private:
     QToolBar* toolbar_;
     QAction* refreshAction_;
     QAction* viewDatasetAction_;
-    QAction* editDatasetAction_;
     QAction* originDimensionsAction_;
     QAction* natureDimensionsAction_;
     QAction* treatmentDimensionsAction_;

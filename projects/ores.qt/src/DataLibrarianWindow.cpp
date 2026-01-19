@@ -163,13 +163,6 @@ void DataLibrarianWindow::setupToolbar() {
     viewDatasetAction_->setToolTip(tr("View selected dataset details"));
     viewDatasetAction_->setEnabled(false);
 
-    editDatasetAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_edit_20_regular.svg", iconColor),
-        tr("Edit"));
-    editDatasetAction_->setToolTip(tr("Edit selected dataset"));
-    editDatasetAction_->setEnabled(false);
-
     toolbar_->addSeparator();
 
     // Related windows - dimensions
@@ -306,8 +299,6 @@ void DataLibrarianWindow::setupConnections() {
             this, &DataLibrarianWindow::onRefreshClicked);
     connect(viewDatasetAction_, &QAction::triggered,
             this, &DataLibrarianWindow::onViewDatasetClicked);
-    connect(editDatasetAction_, &QAction::triggered,
-            this, &DataLibrarianWindow::onEditDatasetClicked);
 
     connect(originDimensionsAction_, &QAction::triggered,
             this, &DataLibrarianWindow::openOriginDimensionsRequested);
@@ -383,11 +374,9 @@ void DataLibrarianWindow::onNavigationSelectionChanged(
 }
 
 void DataLibrarianWindow::onDatasetSelectionChanged() {
-    // Enable/disable view and edit actions based on selection
+    // Enable/disable view action based on selection
     const auto selection = datasetTable_->selectionModel()->selectedRows();
-    const bool hasSelection = !selection.isEmpty();
-    viewDatasetAction_->setEnabled(hasSelection);
-    editDatasetAction_->setEnabled(hasSelection);
+    viewDatasetAction_->setEnabled(!selection.isEmpty());
 }
 
 void DataLibrarianWindow::onDatasetDoubleClicked(const QModelIndex& index) {
@@ -414,20 +403,6 @@ void DataLibrarianWindow::onViewDatasetClicked() {
 
     if (dataset) {
         showDatasetDetailDialog(dataset);
-    }
-}
-
-void DataLibrarianWindow::onEditDatasetClicked() {
-    const auto selection = datasetTable_->selectionModel()->selectedRows();
-    if (selection.isEmpty()) {
-        return;
-    }
-
-    const auto sourceIndex = datasetProxyModel_->mapToSource(selection.first());
-    const auto* dataset = datasetModel_->getDataset(sourceIndex.row());
-
-    if (dataset) {
-        emit showDatasetDetails(*dataset);
     }
 }
 

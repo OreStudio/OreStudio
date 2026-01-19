@@ -39,8 +39,8 @@ DatasetViewDialog::~DatasetViewDialog() = default;
 
 void DatasetViewDialog::setupUi() {
     setWindowTitle(tr("Dataset Details"));
-    setMinimumSize(700, 550);
-    resize(800, 600);
+    setMinimumSize(800, 600);
+    resize(950, 700);
 
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -114,8 +114,8 @@ QWidget* DatasetViewDialog::createMethodologyTab() {
 
     splitter->addWidget(methodologyTree_);
     splitter->addWidget(stepsText_);
-    splitter->setStretchFactor(0, 1);
-    splitter->setStretchFactor(1, 2);
+    splitter->setStretchFactor(0, 2);
+    splitter->setStretchFactor(1, 1);
 
     layout->addWidget(splitter);
     return widget;
@@ -160,15 +160,15 @@ void DatasetViewDialog::addSectionHeader(QTreeWidget* tree, const QString& title
     item->setFlags(item->flags() | Qt::ItemNeverHasChildren);
     item->setFirstColumnSpanned(true);
 
-    // Style section header: centered, bold, larger, distinct background
+    // Style section header: centered, bold, larger, distinct gray background
     auto font = item->font(0);
     font.setBold(true);
     font.setPointSize(font.pointSize() + 1);
     item->setFont(0, font);
-    item->setText(0, QString("— %1 —").arg(title));
+    item->setText(0, title);
     item->setTextAlignment(0, Qt::AlignCenter);
-    item->setBackground(0, tree->palette().highlight());
-    item->setForeground(0, tree->palette().highlightedText());
+    item->setBackground(0, QColor(0x4A, 0x4A, 0x50));  // Distinct gray
+    item->setForeground(0, QColor(0xE4, 0xE4, 0xE7));  // Light text
 }
 
 QString DatasetViewDialog::findMethodologyName(

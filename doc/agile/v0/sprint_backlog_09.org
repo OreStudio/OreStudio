@@ -1154,6 +1154,21 @@ Highlights:
   like DAMA-DMBOK and TOGAF.
 #+end_quote
 
+*** COMPLETED Add schemes for countries and currencies                 :code:
+
+*Rationale*: implemented.
+
+We should have data lineage where possible. There should be a table telling us
+where we sourced countries, currencies etc. Even permissions/roles, if there are
+Qany specs on this. There should be an entry for "internal".
+
+*** COMPLETED Add a data library or collection                         :code:
+
+*Rationale*: implemented.
+
+Datasets are logically related. We should have collections of datasets designed
+to work together.
+
 *** STARTED Refactor documentation                                    :infra:
     :LOGBOOK:
     CLOCK: [2026-01-13 Tue 15:01]--[2026-01-13 Tue 16:02] =>  1:01
@@ -1256,12 +1271,6 @@ Notes:
 
 At present we need to go to the shell to bootstrap. It would be easier if we
 just had a button in Qt for this.
-
-*** Add schemes for countries and currencies                           :code:
-
-We should have data lineage where possible. There should be a table telling us
-where we sourced countries, currencies etc. Even permissions/roles, if there are
-Qany specs on this. There should be an entry for "internal".
 
 *** Change reason and categories need permissions                      :code:
 
@@ -2463,11 +2472,6 @@ Tasks:
 - Instrument =client_session= with spans for outgoing requests.
 - Pass =telemetry_context= through message handlers in ores.iam, ores.refdata, etc.
 - Add spans for database operations in ores.database.
-
-*** Add a data library or collection                                   :code:
-
-Datasets are logically related. We should have collections of datasets designed
-to work together.
 
 *** Add widget to manage assets                                        :code:
 

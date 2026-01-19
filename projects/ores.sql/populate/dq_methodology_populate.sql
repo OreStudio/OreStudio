@@ -228,6 +228,43 @@ version of the coding scheme.'
 );
 
 select ores.upsert_dq_methodologies(
+    'iptoasn.com IP to Country Download',
+    'IPv4 to country mapping data downloaded from iptoasn.com, a community-maintained database by Frank Denis',
+    'https://iptoasn.com/',
+    'Data Sourcing and Import Steps:
+
+1. SOURCE DATA DOWNLOAD
+   Website: https://iptoasn.com/
+   Creator: Frank Denis
+   License: PDDL v1.0 (Public Domain)
+   Update frequency: Hourly
+   File: ip2country-v4-u32.tsv.gz (IPv4 in 32-bit unsigned integer format)
+   Download: curl -o ip2country-v4-u32.tsv.gz https://iptoasn.com/data/ip2country-v4-u32.tsv.gz
+             gunzip ip2country-v4-u32.tsv.gz
+
+2. SAVE TO REPOSITORY
+   Target directory: projects/ores.sql/populate/data/ip2country/
+   Target file: ip2country-v4-u32.tsv
+   Format: TSV with columns (range_start, range_end, country_code)
+   Commit: git add projects/ores.sql/populate/data/ip2country/ip2country-v4-u32.tsv
+           git commit -m "[data] Update IP to country mapping from iptoasn.com"
+
+3. IMPORT TO DATABASE
+   Script: projects/ores.sql/populate/geo_ip2country_import.sql
+   Command: psql -d <database> \
+                 -v data_file=''projects/ores.sql/populate/data/ip2country/ip2country-v4-u32.tsv'' \
+                 -f projects/ores.sql/populate/geo_ip2country_import.sql
+   Process: Truncate existing data, import via staging table, convert to int8range
+
+4. VERIFY IMPORT
+   Test lookups for known IPs (8.8.8.8 -> US, 1.1.1.1 -> US)
+   Check statistics: total ranges, unique countries, unrouted ranges
+
+Note: This data uses direct import pattern (truncate-and-reload) rather than
+DQ artefact staging due to bulk size (~500k rows) and frequent update cycle.'
+);
+
+select ores.upsert_dq_methodologies(
     'Synthetic Data Generation',
     'Test data generated programmatically using the ores.synthetic library with seeded random generation',
     'https://github.com/cieslarmichal/faker-cxx',

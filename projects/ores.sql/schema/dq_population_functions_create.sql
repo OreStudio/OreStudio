@@ -114,6 +114,25 @@ begin
     group by d.id, d.name, d.subject_area_name, d.domain_name,
              d.source_system_id, d.as_of_date, d.license_info
 
+    union all
+
+    -- IP to Country datasets
+    select
+        d.id,
+        d.name,
+        d.subject_area_name,
+        d.domain_name,
+        'ip2country'::text as artefact_type,
+        count(ip.range_start)::bigint as record_count,
+        d.source_system_id,
+        d.as_of_date,
+        d.license_info
+    from ores.dq_datasets_tbl d
+    join ores.dq_ip2country_artefact_tbl ip on ip.dataset_id = d.id
+    where d.valid_to = ores.utility_infinity_timestamp_fn()
+    group by d.id, d.name, d.subject_area_name, d.domain_name,
+             d.source_system_id, d.as_of_date, d.license_info
+
     order by artefact_type, dataset_name;
 end;
 $$ language plpgsql;
@@ -585,6 +604,98 @@ begin
     select 'inserted'::text, v_inserted
     union all select 'skipped'::text, v_skipped
     where v_skipped > 0
+    union all select 'deleted'::text, v_deleted
+    where v_deleted > 0;
+end;
+$$ language plpgsql;
+
+-- =============================================================================
+-- IP to Country Population Functions
+-- =============================================================================
+
+/**
+ * Preview what IP ranges would be copied from a DQ dataset.
+ * Shows summary statistics rather than individual ranges (too many rows).
+ */
+create or replace function ores.dq_preview_ip2country_population(p_dataset_id uuid)
+returns table (
+    metric text,
+    value bigint
+) as $$
+begin
+    return query
+    select 'total_ranges'::text, count(*)::bigint
+    from ores.dq_ip2country_artefact_tbl
+    where dataset_id = p_dataset_id
+    union all
+    select 'unique_countries'::text, count(distinct country_code)::bigint
+    from ores.dq_ip2country_artefact_tbl
+    where dataset_id = p_dataset_id
+    union all
+    select 'unrouted_ranges'::text, count(*)::bigint
+    from ores.dq_ip2country_artefact_tbl
+    where dataset_id = p_dataset_id and country_code = 'None'
+    union all
+    select 'existing_ranges'::text, count(*)::bigint
+    from ores.geo_ip2country_tbl;
+end;
+$$ language plpgsql;
+
+/**
+ * Populate geo_ip2country_tbl from a DQ IP to Country dataset.
+ *
+ * NOTE: This function always uses 'replace_all' behavior due to the nature
+ * of IP range data. The entire table is truncated and reloaded because:
+ * 1. IP ranges change frequently (iptoasn.com updates hourly)
+ * 2. Ranges are not individually identifiable (no unique key)
+ * 3. Partial updates would leave stale/overlapping ranges
+ *
+ * @param p_dataset_id  The DQ dataset to populate from.
+ * @param p_mode        Ignored - always performs replace_all.
+ */
+create or replace function ores.dq_populate_ip2country(
+    p_dataset_id uuid,
+    p_mode text default 'replace_all'
+)
+returns table (
+    action text,
+    record_count bigint
+) as $$
+declare
+    v_inserted bigint := 0;
+    v_deleted bigint := 0;
+    v_dataset_name text;
+begin
+    -- Validate dataset exists
+    select name into v_dataset_name
+    from ores.dq_datasets_tbl
+    where id = p_dataset_id
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_dataset_name is null then
+        raise exception 'Dataset not found: %', p_dataset_id;
+    end if;
+
+    -- Always truncate existing data (IP ranges must be fully replaced)
+    select count(*) into v_deleted from ores.geo_ip2country_tbl;
+    truncate table ores.geo_ip2country_tbl;
+
+    -- Insert from DQ artefact table, converting to int8range
+    insert into ores.geo_ip2country_tbl (ip_range, country_code)
+    select
+        int8range(range_start, range_end + 1, '[)'),
+        country_code
+    from ores.dq_ip2country_artefact_tbl
+    where dataset_id = p_dataset_id;
+
+    get diagnostics v_inserted = row_count;
+
+    -- Analyze table for query optimization
+    analyze ores.geo_ip2country_tbl;
+
+    -- Return summary
+    return query
+    select 'inserted'::text, v_inserted
     union all select 'deleted'::text, v_deleted
     where v_deleted > 0;
 end;

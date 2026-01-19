@@ -102,6 +102,7 @@
 \ir dq_currencies_artefact_populate.sql
 \ir dq_fpml_non_iso_currencies_artefact_populate.sql
 \ir dq_cryptocurrencies_artefact_populate.sql
+\ir dq_ip2country_artefact_populate.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''
@@ -211,4 +212,7 @@ from ores.dq_countries_artefact_tbl
 union all
 select 'Data Quality Currencies', count(*)
 from ores.dq_currencies_artefact_tbl
+union all
+select 'Data Quality IP Ranges', count(*)
+from ores.dq_ip2country_artefact_tbl
 order by entity;

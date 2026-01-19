@@ -44,6 +44,7 @@ declare
     v_currencies_dataset_id uuid;
     v_fpml_currencies_dataset_id uuid;
     v_cryptocurrencies_dataset_id uuid;
+    v_ip2country_dataset_id uuid;
     v_result record;
     v_total_inserted bigint := 0;
     v_total_updated bigint := 0;
@@ -127,6 +128,18 @@ begin
         raise exception 'Dataset not found: Cryptocurrency Reference Data';
     end if;
 
+    -- IP to Country dataset
+    select id into v_ip2country_dataset_id
+    from ores.dq_datasets_tbl
+    where name = 'IPv4 to Country Mapping'
+      and subject_area_name = 'IP Address to Country maps'
+      and domain_name = 'Reference Data'
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_ip2country_dataset_id is null then
+        raise exception 'Dataset not found: IPv4 to Country Mapping';
+    end if;
+
     raise notice 'All datasets found successfully';
     raise notice '';
 
@@ -190,6 +203,17 @@ begin
     end loop;
 
     -- ==========================================================================
+    -- Step 5: Populate IP to Country (bulk replace)
+    -- ==========================================================================
+
+    raise notice '';
+    raise notice '--- Populating IP to Country Mapping ---';
+    for v_result in select * from ores.dq_populate_ip2country(v_ip2country_dataset_id, 'replace_all') loop
+        raise notice '  %: %', v_result.action, v_result.record_count;
+        if v_result.action = 'inserted' then v_total_inserted := v_total_inserted + v_result.record_count; end if;
+    end loop;
+
+    -- ==========================================================================
     -- Summary
     -- ==========================================================================
 
@@ -237,4 +261,7 @@ from ores.refdata_currencies_tbl where currency_type = 'crypto.major' and valid_
 union all
 select 'Currencies with Images', count(*)
 from ores.refdata_currencies_tbl where image_id is not null and valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'IP to Country Ranges', count(*)
+from ores.geo_ip2country_tbl
 order by entity;

@@ -264,6 +264,31 @@ select ores.upsert_dq_tag(
     'Cryptocurrency reference data'
 );
 
+select ores.upsert_dq_datasets(
+    'IP Geolocation',
+    'IP Address to Country maps',
+    'Reference Data',
+    'ISO_3166_1_ALPHA_2',
+    'Primary',
+    'Actual',
+    'Raw',
+    'iptoasn.com IP to Country Download',
+    'IPv4 to Country Mapping',
+    'IPv4 address ranges mapped to ISO 3166-1 alpha-2 country codes. Contains ~512k IP ranges covering the full IPv4 address space.',
+    'IPTOASN',
+    'Geographic IP lookup for IPv4 addresses',
+    '2025-12-30'::date,
+    'PDDL v1.0'
+);
+
+select ores.upsert_dq_tag(
+    'IPv4 to Country Mapping',
+    'IP Address to Country maps',
+    'Reference Data',
+    'geolocation',
+    'IP address geolocation reference data'
+);
+
 -- =============================================================================
 -- Cleanup
 -- =============================================================================

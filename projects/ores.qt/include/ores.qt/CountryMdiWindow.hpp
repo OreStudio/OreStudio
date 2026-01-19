@@ -20,15 +20,13 @@
 #ifndef ORES_QT_COUNTRY_MDI_WINDOW_HPP
 #define ORES_QT_COUNTRY_MDI_WINDOW_HPP
 
-#include <QWidget>
 #include <QTableView>
 #include <QVBoxLayout>
 #include <QToolBar>
-#include <QIcon>
-#include <QTimer>
 #include <QSortFilterProxyModel>
 #include <QCloseEvent>
 #include <memory>
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientCountryModel.hpp"
@@ -41,7 +39,7 @@ class ImageCache;
 /**
  * @brief MDI window for displaying countries.
  */
-class CountryMdiWindow : public QWidget {
+class CountryMdiWindow : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
@@ -75,22 +73,12 @@ signals:
     void showCountryHistory(const QString& alpha2_code);
 
 public slots:
-    void reload();
+    void reload() override;
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
     void exportToCSV();
-
-    /**
-     * @brief Mark the data as stale (changed on server).
-     */
-    void markAsStale();
-
-    /**
-     * @brief Clear the stale indicator.
-     */
-    void clearStaleIndicator();
 
 private slots:
     void onDataLoaded();
@@ -99,11 +87,12 @@ private slots:
     void onSelectionChanged();
     void onConnectionStateChanged();
 
+protected:
+    QString normalRefreshTooltip() const override { return tr("Refresh countries"); }
+
 private:
     void updateActionStates();
     void setupReloadAction();
-    void startPulseAnimation();
-    void stopPulseAnimation();
     void setupColumnVisibility();
     void showHeaderContextMenu(const QPoint& pos);
     void saveSettings();
@@ -120,11 +109,6 @@ private:
 
     // Reload action with stale indicator
     QAction* reloadAction_;
-    QIcon normalReloadIcon_;
-    QIcon staleReloadIcon_;
-    QTimer* pulseTimer_;
-    bool pulseState_{false};
-    int pulseCount_{0};
 
     QAction* addAction_;
     QAction* editAction_;
@@ -136,7 +120,6 @@ private:
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     QString username_;
-    bool isStale_{false};
 };
 
 }

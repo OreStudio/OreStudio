@@ -41,7 +41,7 @@ ChangeReasonMdiWindow::ChangeReasonMdiWindow(
     ClientManager* clientManager,
     const QString& username,
     QWidget* parent)
-    : QWidget(parent),
+    : EntityListMdiWindow(parent),
       clientManager_(clientManager),
       username_(username),
       toolbar_(nullptr),
@@ -52,8 +52,7 @@ ChangeReasonMdiWindow::ChangeReasonMdiWindow(
       addAction_(nullptr),
       editAction_(nullptr),
       deleteAction_(nullptr),
-      historyAction_(nullptr),
-      pulseTimer_(new QTimer(this)) {
+      historyAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -83,17 +82,15 @@ void ChangeReasonMdiWindow::setupToolbar() {
     toolbar_->setIconSize(QSize(20, 20));
 
     const auto& iconColor = color_constants::icon_color;
-    const auto& staleColor = color_constants::stale_indicator;
 
-    normalReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor);
-    staleReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", staleColor);
-
-    reloadAction_ = toolbar_->addAction(normalReloadIcon_, tr("Reload"));
-    reloadAction_->setToolTip(tr("Reload reasons from server"));
+    reloadAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor),
+        tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
             &ChangeReasonMdiWindow::reload);
+
+    initializeStaleIndicator(reloadAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
 
     toolbar_->addSeparator();
 
@@ -131,18 +128,6 @@ void ChangeReasonMdiWindow::setupToolbar() {
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this,
             &ChangeReasonMdiWindow::viewHistorySelected);
-
-    // Pulse timer for stale indicator
-    pulseTimer_->setInterval(pulse_interval_ms_);
-    connect(pulseTimer_, &QTimer::timeout, this, [this]() {
-        pulseState_ = !pulseState_;
-        reloadAction_->setIcon(pulseState_ ? staleReloadIcon_ : normalReloadIcon_);
-        pulseCount_++;
-        if (pulseCount_ >= max_pulse_cycles_ * 2) {
-            pulseTimer_->stop();
-            reloadAction_->setIcon(staleReloadIcon_);
-        }
-    });
 }
 
 void ChangeReasonMdiWindow::setupTable() {
@@ -419,26 +404,6 @@ void ChangeReasonMdiWindow::deleteSelected() {
 
     QFuture<DeleteResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
-}
-
-void ChangeReasonMdiWindow::markAsStale() {
-    BOOST_LOG_SEV(lg(), debug) << "Marking as stale";
-    reloadAction_->setToolTip(tr("Data changed on server - click to reload"));
-    startPulseAnimation();
-}
-
-void ChangeReasonMdiWindow::clearStaleIndicator() {
-    pulseTimer_->stop();
-    pulseState_ = false;
-    pulseCount_ = 0;
-    reloadAction_->setIcon(normalReloadIcon_);
-    reloadAction_->setToolTip(tr("Reload reasons from server"));
-}
-
-void ChangeReasonMdiWindow::startPulseAnimation() {
-    pulseCount_ = 0;
-    pulseState_ = false;
-    pulseTimer_->start();
 }
 
 void ChangeReasonMdiWindow::setupColumnVisibility() {

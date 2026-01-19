@@ -41,12 +41,11 @@ FeatureFlagMdiWindow::
 FeatureFlagMdiWindow(ClientManager* clientManager,
                      const QString& username,
                      QWidget* parent)
-    : QWidget(parent),
+    : EntityListMdiWindow(parent),
       verticalLayout_(new QVBoxLayout(this)),
       featureFlagTableView_(new QTableView(this)),
       toolBar_(new QToolBar(this)),
       reloadAction_(new QAction("Reload", this)),
-      pulseTimer_(new QTimer(this)),
       addAction_(new QAction("Add", this)),
       editAction_(new QAction("Edit", this)),
       deleteAction_(new QAction("Delete", this)),
@@ -430,57 +429,13 @@ void FeatureFlagMdiWindow::updateActionStates() {
 }
 
 void FeatureFlagMdiWindow::setupReloadAction() {
-    const QColor normalColor(220, 220, 220);
-    const QColor staleColor(255, 165, 0);
+    const QColor iconColor(220, 220, 220);
 
-    normalReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", normalColor);
-    staleReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", staleColor);
-
-    reloadAction_->setIcon(normalReloadIcon_);
-    reloadAction_->setToolTip("Reload feature flags from server");
+    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
+        ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor));
     connect(reloadAction_, &QAction::triggered, this, &FeatureFlagMdiWindow::reload);
 
-    connect(pulseTimer_, &QTimer::timeout, this, [this]() {
-        pulseState_ = !pulseState_;
-        reloadAction_->setIcon(pulseState_ ? staleReloadIcon_ : normalReloadIcon_);
-
-        pulseCount_++;
-        if (pulseCount_ >= 6) {
-            pulseTimer_->stop();
-            reloadAction_->setIcon(staleReloadIcon_);
-        }
-    });
-}
-
-void FeatureFlagMdiWindow::startPulseAnimation() {
-    pulseCount_ = 0;
-    pulseState_ = false;
-    pulseTimer_->start(500);
-}
-
-void FeatureFlagMdiWindow::stopPulseAnimation() {
-    pulseTimer_->stop();
-    reloadAction_->setIcon(normalReloadIcon_);
-}
-
-void FeatureFlagMdiWindow::markAsStale() {
-    if (!isStale_) {
-        isStale_ = true;
-        reloadAction_->setToolTip("Data changed on server - click to reload");
-        startPulseAnimation();
-        BOOST_LOG_SEV(lg(), info) << "Feature flag data marked as stale";
-    }
-}
-
-void FeatureFlagMdiWindow::clearStaleIndicator() {
-    if (isStale_) {
-        isStale_ = false;
-        stopPulseAnimation();
-        reloadAction_->setToolTip("Reload feature flags from server");
-        BOOST_LOG_SEV(lg(), debug) << "Stale indicator cleared";
-    }
+    initializeStaleIndicator(reloadAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
 }
 
 void FeatureFlagMdiWindow::showHistory() {

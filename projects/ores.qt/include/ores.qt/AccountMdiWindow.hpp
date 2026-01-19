@@ -20,14 +20,12 @@
 #ifndef ORES_QT_ACCOUNT_MDI_WINDOW_HPP
 #define ORES_QT_ACCOUNT_MDI_WINDOW_HPP
 
-#include <QWidget>
 #include <QTableView>
 #include <QVBoxLayout>
 #include <QToolBar>
-#include <QIcon>
-#include <QTimer>
 #include <QSortFilterProxyModel>
 #include <memory>
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientAccountModel.hpp"
@@ -41,7 +39,7 @@ namespace ores::qt {
  * This window is only accessible to admin users and provides functionality
  * for viewing, creating, editing, deleting, and locking/unlocking accounts.
  */
-class AccountMdiWindow : public QWidget {
+class AccountMdiWindow : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
@@ -75,7 +73,7 @@ signals:
     void accountDeleted(const boost::uuids::uuid& account_id);
 
 public slots:
-    void reload();
+    void reload() override;
     void addNew();
     void editSelected();
     void deleteSelected();
@@ -85,22 +83,6 @@ public slots:
     void viewHistorySelected();
     void viewSessionsSelected();
 
-    /**
-     * @brief Mark the data as stale (changed on server).
-     *
-     * Shows a visual indicator that data may be out of date and
-     * should be refreshed. Called when an account change notification
-     * is received from the server.
-     */
-    void markAsStale();
-
-    /**
-     * @brief Clear the stale indicator.
-     *
-     * Called after data is reloaded to indicate data is fresh.
-     */
-    void clearStaleIndicator();
-
 private slots:
     void onDataLoaded();
     void onLoadError(const QString& error_message, const QString& details = {});
@@ -108,11 +90,14 @@ private slots:
     void onSelectionChanged();
     void onConnectionStateChanged();
 
+protected:
+    QString normalRefreshTooltip() const override {
+        return tr("Refresh accounts");
+    }
+
 private:
     void updateActionStates();
     void setupReloadAction();
-    void startPulseAnimation();
-    void stopPulseAnimation();
 
 private:
     QVBoxLayout* verticalLayout_;
@@ -122,11 +107,6 @@ private:
 
     // Reload action with stale indicator
     QAction* reloadAction_;
-    QIcon normalReloadIcon_;
-    QIcon staleReloadIcon_;
-    QTimer* pulseTimer_;
-    bool pulseState_{false};
-    int pulseCount_{0};
 
     QAction* addAction_;
     QAction* editAction_;
@@ -141,7 +121,6 @@ private:
     QSortFilterProxyModel* proxyModel_;
     ClientManager* clientManager_;
     QString username_;
-    bool isStale_{false};
 };
 
 }

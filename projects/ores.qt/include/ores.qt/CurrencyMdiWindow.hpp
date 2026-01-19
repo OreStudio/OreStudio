@@ -20,15 +20,13 @@
 #ifndef ORES_QT_CURRENCY_MDI_WINDOW_HPP
 #define ORES_QT_CURRENCY_MDI_WINDOW_HPP
 
-#include <QWidget>
 #include <QTableView>
 #include <QVBoxLayout>
 #include <QToolBar>
-#include <QIcon>
-#include <QTimer>
 #include <QSortFilterProxyModel>
 #include <QCloseEvent>
 #include <memory>
+#include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientCurrencyModel.hpp"
@@ -41,7 +39,7 @@ class ImageCache;
 /**
  * @brief MDI window for displaying currencies.
  */
-class CurrencyMdiWindow : public QWidget {
+class CurrencyMdiWindow : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
@@ -75,7 +73,7 @@ signals:
     void showCurrencyHistory(const QString& iso_code);
 
 public slots:
-    void reload();
+    void reload() override;
     void addNew();
     void editSelected();
     void deleteSelected();
@@ -84,22 +82,6 @@ public slots:
     void exportToCSV();
     void exportToXML();
     void generateSynthetic();
-
-    /**
-     * @brief Mark the data as stale (changed on server).
-     *
-     * Shows a visual indicator that data may be out of date and
-     * should be refreshed. Called when a currency change notification
-     * is received from the server.
-     */
-    void markAsStale();
-
-    /**
-     * @brief Clear the stale indicator.
-     *
-     * Called after data is reloaded to indicate data is fresh.
-     */
-    void clearStaleIndicator();
 
 private slots:
     void onDataLoaded();
@@ -110,13 +92,16 @@ private slots:
     void onFeatureFlagNotification(const QString& eventType, const QDateTime& timestamp,
                                     const QStringList& entityIds);
 
+protected:
+    QString normalRefreshTooltip() const override {
+        return tr("Refresh currencies");
+    }
+
 private:
     void updateActionStates();
     void setupReloadAction();
     void setupGenerateAction();
     void updateGenerateActionVisibility();
-    void startPulseAnimation();
-    void stopPulseAnimation();
     void setupColumnVisibility();
     void showHeaderContextMenu(const QPoint& pos);
     void saveSettings();
@@ -133,11 +118,6 @@ private:
 
     // Reload action with stale indicator
     QAction* reloadAction_;
-    QIcon normalReloadIcon_;
-    QIcon staleReloadIcon_;
-    QTimer* pulseTimer_;
-    bool pulseState_{false};
-    int pulseCount_{0};
 
     QAction* addAction_;
     QAction* editAction_;
@@ -150,7 +130,6 @@ private:
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     QString username_;
-    bool isStale_{false};
 };
 
 }

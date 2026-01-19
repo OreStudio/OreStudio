@@ -21,11 +21,12 @@
 #define ORES_QT_CLIENT_CATALOG_MODEL_HPP
 
 #include <QAbstractTableModel>
-#include <QSet>
-#include <chrono>
+#include <QDateTime>
+#include <unordered_set>
 #include <vector>
 #include "ores.dq/domain/catalog.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
@@ -34,7 +35,8 @@ namespace ores::qt {
  * @brief Table model for displaying catalogs in a QTableView.
  *
  * Provides async loading from server with recency highlighting for
- * recently modified records.
+ * recently modified records. Records modified since the last reload
+ * are highlighted with a pulsing color effect.
  */
 class ClientCatalogModel : public QAbstractTableModel {
     Q_OBJECT
@@ -77,14 +79,21 @@ signals:
     void loadFinished();
     void errorOccurred(const QString& message, const QString& details = {});
 
+private slots:
+    void onPulseStateChanged(bool isOn);
+    void onPulsingComplete();
+
 private:
-    void markRecentlyModified(const QString& name);
-    bool isRecentlyModified(const QString& name) const;
+    void updateRecentCatalogs();
+    QVariant foregroundColor(const std::string& name) const;
 
     ClientManager* clientManager_;
     std::vector<dq::domain::catalog> catalogs_;
-    QSet<QString> recentlyModifiedKeys_;
-    std::chrono::steady_clock::time_point lastLoadTime_;
+
+    // Recency highlighting
+    std::unordered_set<std::string> recentNames_;
+    QDateTime lastReloadTime_;
+    RecencyPulseManager* pulseManager_;
 };
 
 }

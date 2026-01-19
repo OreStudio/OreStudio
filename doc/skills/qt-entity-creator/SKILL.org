@@ -254,6 +254,100 @@ void Client<Entity>Model::onDataLoaded() {
 
 The =wrap_async_fetch= template catches any =std::exception= thrown inside the lambda and populates the =error_message= and =error_details= fields with full =boost::diagnostic_information=. This preserves exception details that would otherwise be lost when Qt wraps exceptions in =QUnhandledException=.
 
+**** Optional: Recency highlighting for modified records
+
+If you want to highlight recently-modified records in the table view with a
+pulsing color effect, use the =RecencyPulseManager= utility class:
+
+1. Add to header:
+
+#+begin_src cpp
+#include "ores.qt/RecencyPulseManager.hpp"
+
+private slots:
+    void onPulseStateChanged(bool isOn);
+    void onPulsingComplete();
+
+private:
+    void updateRecentEntries();
+    QVariant foregroundColor(const std::string& identifier) const;
+
+    std::unordered_set<std::string> recentIdentifiers_;
+    QDateTime lastReloadTime_;
+    RecencyPulseManager* pulseManager_;
+#+end_src
+
+2. In constructor, connect signals:
+
+#+begin_src cpp
+pulseManager_ = new RecencyPulseManager(this);
+connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
+        this, &Client<Entity>Model::onPulseStateChanged);
+connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
+        this, &Client<Entity>Model::onPulsingComplete);
+#+end_src
+
+3. In =data()= method, handle =Qt::ForegroundRole=:
+
+#+begin_src cpp
+if (role == Qt::ForegroundRole) {
+    return foregroundColor(entry.identifier);
+}
+#+end_src
+
+4. Implement the helper methods:
+
+#+begin_src cpp
+void Client<Entity>Model::updateRecentEntries() {
+    recentIdentifiers_.clear();
+    const QDateTime now = QDateTime::currentDateTime();
+
+    // First load: set baseline timestamp, no highlighting
+    if (!lastReloadTime_.isValid()) {
+        lastReloadTime_ = now;
+        return;
+    }
+
+    // Find entries with recorded_at newer than last reload
+    for (const auto& entry : entries_) {
+        const auto msecs = std::chrono::duration_cast<std::chrono::milliseconds>(
+            entry.recorded_at.time_since_epoch()).count();
+        QDateTime recordedAt = QDateTime::fromMSecsSinceEpoch(msecs);
+        if (recordedAt.isValid() && recordedAt > lastReloadTime_) {
+            recentIdentifiers_.insert(entry.identifier);
+        }
+    }
+    lastReloadTime_ = now;
+}
+
+QVariant Client<Entity>Model::foregroundColor(const std::string& id) const {
+    if (recentIdentifiers_.count(id) && pulseManager_->is_pulse_on()) {
+        return color_constants::stale_indicator;
+    }
+    return {};
+}
+
+void Client<Entity>Model::onPulseStateChanged(bool /*isOn*/) {
+    if (!entries_.empty()) {
+        emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
+            {Qt::ForegroundRole});
+    }
+}
+
+void Client<Entity>Model::onPulsingComplete() {
+    recentIdentifiers_.clear();
+}
+#+end_src
+
+5. After loading data, call =updateRecentEntries()= and start pulsing if needed:
+
+#+begin_src cpp
+updateRecentEntries();
+if (!recentIdentifiers_.empty() && !pulseManager_->is_pulsing()) {
+    pulseManager_->start_pulsing();
+}
+#+end_src
+
 *** Commit message
 
 #+begin_example

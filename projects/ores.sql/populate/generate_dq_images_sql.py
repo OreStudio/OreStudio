@@ -26,7 +26,7 @@ import sys
 # Predefined configurations for common datasets
 CONFIGS = {
     'flags': {
-        'dataset_name': 'Country Flags from lipis/flag-icons',
+        'dataset_name': 'Country Flag Images',
         'subject_area_name': 'Countries',
         'domain_name': 'Reference Data',
         'source_dir': 'projects/ores.sql/populate/data/flags',
@@ -34,7 +34,7 @@ CONFIGS = {
         'description_template': 'Flag of {key}',
     },
     'crypto': {
-        'dataset_name': 'Cryptocurrency Icons from spothq/cryptocurrency-icons',
+        'dataset_name': 'Cryptocurrency Icon Images',
         'subject_area_name': 'Cryptocurrencies',
         'domain_name': 'Reference Data',
         'source_dir': 'projects/ores.sql/populate/data/cryptocurrency-icons',

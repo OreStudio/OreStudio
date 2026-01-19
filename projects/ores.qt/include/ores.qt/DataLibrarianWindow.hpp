@@ -27,6 +27,7 @@
 #include <QToolBar>
 #include <QStatusBar>
 #include <QLabel>
+#include <QLineEdit>
 #include <QProgressBar>
 #include <QStackedWidget>
 #include <QSortFilterProxyModel>
@@ -164,9 +165,9 @@ private:
     QLabel* datasetNameLabel_;
     QLabel* datasetUuidLabel_;
     QLabel* catalogLabel_;
-    QLabel* originLabel_;
-    QLabel* natureLabel_;
-    QLabel* treatmentLabel_;
+    QLineEdit* originEdit_;      // Using QLineEdit for better tooltip behavior
+    QLineEdit* natureEdit_;
+    QLineEdit* treatmentEdit_;
     QLabel* methodologyLabel_;
     QLabel* descriptionLabel_;
     QGraphicsView* lineageView_;

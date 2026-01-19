@@ -107,12 +107,27 @@ DataLibrarianWindow::DataLibrarianWindow(
     loadingProgressBar_->setFixedWidth(120);
     loadingProgressBar_->setFixedHeight(16);
 
-    // Load data
-    statusLabel_->setText(tr("Loading data..."));
+    // Load data with detailed status
+    BOOST_LOG_SEV(lg(), info) << "Starting data load for Data Librarian window";
+
+    statusLabel_->setText(tr("Loading domains..."));
+    BOOST_LOG_SEV(lg(), debug) << "Requesting domains...";
     dataDomainModel_->refresh();
+
+    statusLabel_->setText(tr("Loading subject areas..."));
+    BOOST_LOG_SEV(lg(), debug) << "Requesting subject areas...";
     subjectAreaModel_->refresh();
+
+    statusLabel_->setText(tr("Loading catalogs..."));
+    BOOST_LOG_SEV(lg(), debug) << "Requesting catalogs...";
     catalogModel_->loadData();
+
+    statusLabel_->setText(tr("Loading methodologies..."));
+    BOOST_LOG_SEV(lg(), debug) << "Requesting methodologies...";
     methodologyModel_->refresh();
+
+    statusLabel_->setText(tr("Loading datasets..."));
+    BOOST_LOG_SEV(lg(), debug) << "Requesting datasets...";
     datasetModel_->refresh();
 }
 
@@ -274,34 +289,46 @@ void DataLibrarianWindow::setupDetailPanel() {
 
     classificationLayout->addRow(new QLabel(tr("")));
 
-    auto* originRowLabel = new QLabel(tr("Origin:"), detailPanel_);
-    originRowLabel->setToolTip(tr(
+    // Use QLineEdit instead of QLabel for classification fields
+    // to get better tooltip behavior
+    auto createClassificationField = [this](const QString& tooltip) {
+        auto* edit = new QLineEdit(tr("-"), detailPanel_);
+        edit->setReadOnly(true);
+        edit->setFrame(false);
+        edit->setToolTip(tooltip);
+        edit->setCursor(Qt::ArrowCursor);
+        edit->setStyleSheet("QLineEdit { background: transparent; }");
+        return edit;
+    };
+
+    QString originTooltip = tr(
         "Origin indicates where the data came from:\n"
         "- Source: Primary data directly from originating system\n"
-        "- Derived: Data computed or aggregated from other datasets"));
-    originLabel_ = new QLabel(tr("-"), detailPanel_);
-    originLabel_->setToolTip(originRowLabel->toolTip());
-    classificationLayout->addRow(originRowLabel, originLabel_);
+        "- Derived: Data computed or aggregated from other datasets");
+    auto* originRowLabel = new QLabel(tr("Origin:"), detailPanel_);
+    originRowLabel->setToolTip(originTooltip);
+    originEdit_ = createClassificationField(originTooltip);
+    classificationLayout->addRow(originRowLabel, originEdit_);
 
-    auto* natureRowLabel = new QLabel(tr("Nature:"), detailPanel_);
-    natureRowLabel->setToolTip(tr(
+    QString natureTooltip = tr(
         "Nature describes the type of values in the data:\n"
         "- Actual: Real observed values\n"
         "- Estimated: Calculated or projected values\n"
-        "- Simulated: Model-generated values"));
-    natureLabel_ = new QLabel(tr("-"), detailPanel_);
-    natureLabel_->setToolTip(natureRowLabel->toolTip());
-    classificationLayout->addRow(natureRowLabel, natureLabel_);
+        "- Simulated: Model-generated values");
+    auto* natureRowLabel = new QLabel(tr("Nature:"), detailPanel_);
+    natureRowLabel->setToolTip(natureTooltip);
+    natureEdit_ = createClassificationField(natureTooltip);
+    classificationLayout->addRow(natureRowLabel, natureEdit_);
 
-    auto* treatmentRowLabel = new QLabel(tr("Treatment:"), detailPanel_);
-    treatmentRowLabel->setToolTip(tr(
+    QString treatmentTooltip = tr(
         "Treatment indicates how the data has been processed:\n"
         "- Raw: Unprocessed original data\n"
         "- Cleaned: Data with corrections applied\n"
-        "- Enriched: Data augmented with additional information"));
-    treatmentLabel_ = new QLabel(tr("-"), detailPanel_);
-    treatmentLabel_->setToolTip(treatmentRowLabel->toolTip());
-    classificationLayout->addRow(treatmentRowLabel, treatmentLabel_);
+        "- Enriched: Data augmented with additional information");
+    auto* treatmentRowLabel = new QLabel(tr("Treatment:"), detailPanel_);
+    treatmentRowLabel->setToolTip(treatmentTooltip);
+    treatmentEdit_ = createClassificationField(treatmentTooltip);
+    classificationLayout->addRow(treatmentRowLabel, treatmentEdit_);
 
     contentLayout->addWidget(classificationGroup);
 
@@ -459,13 +486,15 @@ void DataLibrarianWindow::onDatasetDoubleClicked(const QModelIndex& index) {
 }
 
 void DataLibrarianWindow::onRefreshClicked() {
+    BOOST_LOG_SEV(lg(), info) << "Refresh clicked - reloading all data";
+
     // Reset and show progress bar
     totalLoads_ = 5;
     pendingLoads_ = totalLoads_;
     loadingProgressBar_->setRange(0, totalLoads_);
     loadingProgressBar_->setValue(0);
     loadingProgressBar_->setVisible(true);
-    statusLabel_->setText(tr("Refreshing data..."));
+    statusLabel_->setText(tr("Refreshing domains..."));
 
     emit statusChanged(tr("Refreshing data..."));
     dataDomainModel_->refresh();
@@ -476,68 +505,80 @@ void DataLibrarianWindow::onRefreshClicked() {
 }
 
 void DataLibrarianWindow::onDataLoaded() {
+    BOOST_LOG_SEV(lg(), info) << "Datasets loaded: " << datasetModel_->rowCount()
+                              << " (pending: " << pendingLoads_ - 1 << ")";
     --pendingLoads_;
     loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    statusLabel_->setText(tr("Loaded %1 datasets").arg(datasetModel_->rowCount()));
     if (pendingLoads_ <= 0) {
         loadingProgressBar_->setVisible(false);
-        statusLabel_->setText(tr("Loaded %1 datasets").arg(datasetModel_->rowCount()));
+        BOOST_LOG_SEV(lg(), info) << "All data loading complete";
     }
     emit statusChanged(tr("Loaded %1 datasets").arg(datasetModel_->rowCount()));
 }
 
 void DataLibrarianWindow::onLoadError(const QString& error_message,
                                        const QString& details) {
-    BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
+    BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString()
+                               << " - " << details.toStdString();
     statusLabel_->setText(tr("Error: %1").arg(error_message));
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
 }
 
 void DataLibrarianWindow::onDomainsLoaded() {
+    BOOST_LOG_SEV(lg(), info) << "Domains loaded: " << dataDomainModel_->rowCount()
+                              << " (pending: " << pendingLoads_ - 1 << ")";
     --pendingLoads_;
     loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    statusLabel_->setText(tr("Loaded %1 domains...").arg(dataDomainModel_->rowCount()));
     if (pendingLoads_ <= 0) {
         loadingProgressBar_->setVisible(false);
         statusLabel_->setText(tr("Ready"));
+        BOOST_LOG_SEV(lg(), info) << "All data loading complete";
     }
-    BOOST_LOG_SEV(lg(), debug) << "Domains loaded: "
-                               << dataDomainModel_->rowCount();
     buildNavigationTree();
 }
 
 void DataLibrarianWindow::onSubjectAreasLoaded() {
+    BOOST_LOG_SEV(lg(), info) << "Subject areas loaded: " << subjectAreaModel_->rowCount()
+                              << " (pending: " << pendingLoads_ - 1 << ")";
     --pendingLoads_;
     loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    statusLabel_->setText(tr("Loaded %1 subject areas...").arg(subjectAreaModel_->rowCount()));
     if (pendingLoads_ <= 0) {
         loadingProgressBar_->setVisible(false);
         statusLabel_->setText(tr("Ready"));
+        BOOST_LOG_SEV(lg(), info) << "All data loading complete";
     }
-    BOOST_LOG_SEV(lg(), debug) << "Subject areas loaded: "
-                               << subjectAreaModel_->rowCount();
     buildNavigationTree();
 }
 
 void DataLibrarianWindow::onCatalogsLoaded() {
+    BOOST_LOG_SEV(lg(), info) << "Catalogs loaded: " << catalogModel_->rowCount()
+                              << " (pending: " << pendingLoads_ - 1 << ")";
     --pendingLoads_;
     loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    statusLabel_->setText(tr("Loaded %1 catalogs...").arg(catalogModel_->rowCount()));
     if (pendingLoads_ <= 0) {
         loadingProgressBar_->setVisible(false);
         statusLabel_->setText(tr("Ready"));
+        BOOST_LOG_SEV(lg(), info) << "All data loading complete";
     }
-    BOOST_LOG_SEV(lg(), debug) << "Catalogs loaded: "
-                               << catalogModel_->rowCount();
     buildNavigationTree();
 }
 
 void DataLibrarianWindow::onMethodologiesLoaded() {
+    BOOST_LOG_SEV(lg(), info) << "Methodologies loaded: " << methodologyModel_->rowCount()
+                              << " (pending: " << pendingLoads_ - 1 << ")";
     --pendingLoads_;
     loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    statusLabel_->setText(tr("Loaded %1 methodologies...").arg(methodologyModel_->rowCount()));
     if (pendingLoads_ <= 0) {
         loadingProgressBar_->setVisible(false);
         statusLabel_->setText(tr("Ready"));
+        BOOST_LOG_SEV(lg(), info) << "All data loading complete";
     }
-    BOOST_LOG_SEV(lg(), debug) << "Methodologies loaded: "
-                               << methodologyModel_->rowCount();
 }
 
 void DataLibrarianWindow::buildNavigationTree() {
@@ -631,6 +672,9 @@ void DataLibrarianWindow::buildNavigationTree() {
             catalogsParent->appendRow(catalogItem);
         }
     }
+
+    // Expand all tree items so hierarchy is visible on startup
+    navigationTree_->expandAll();
 }
 
 void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) {
@@ -638,9 +682,9 @@ void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) 
         datasetNameLabel_->setText(tr("-"));
         datasetUuidLabel_->setText(tr("-"));
         catalogLabel_->setText(tr("-"));
-        originLabel_->setText(tr("-"));
-        natureLabel_->setText(tr("-"));
-        treatmentLabel_->setText(tr("-"));
+        originEdit_->setText(tr("-"));
+        natureEdit_->setText(tr("-"));
+        treatmentEdit_->setText(tr("-"));
         methodologyLabel_->setText(tr("Methodology: -"));
         descriptionLabel_->setText(tr(""));
         return;
@@ -654,9 +698,9 @@ void DataLibrarianWindow::updateDetailPanel(const dq::domain::dataset* dataset) 
         : tr("-"));
 
     // Dimensions (stored as codes, not UUIDs)
-    originLabel_->setText(QString::fromStdString(dataset->origin_code));
-    natureLabel_->setText(QString::fromStdString(dataset->nature_code));
-    treatmentLabel_->setText(QString::fromStdString(dataset->treatment_code));
+    originEdit_->setText(QString::fromStdString(dataset->origin_code));
+    natureEdit_->setText(QString::fromStdString(dataset->nature_code));
+    treatmentEdit_->setText(QString::fromStdString(dataset->treatment_code));
 
     // Methodology
     methodologyLabel_->setText(
@@ -815,12 +859,12 @@ void DataLibrarianWindow::applyDefaultColumnVisibility() {
     header->setSectionHidden(ClientDatasetModel::RecordedBy, true);
     header->setSectionHidden(ClientDatasetModel::RecordedAt, true);
 
-    // Reorder columns: Name, Version, SourceSystem, AsOfDate, Catalog, Tags
+    // Reorder columns: Name, Version, SourceSystem, AsOfDate, Tags, Catalog
     header->moveSection(header->visualIndex(ClientDatasetModel::Version), 1);
     header->moveSection(header->visualIndex(ClientDatasetModel::SourceSystem), 2);
     header->moveSection(header->visualIndex(ClientDatasetModel::AsOfDate), 3);
-    header->moveSection(header->visualIndex(ClientDatasetModel::Catalog), 4);
-    header->moveSection(header->visualIndex(ClientDatasetModel::Tags), 5);
+    header->moveSection(header->visualIndex(ClientDatasetModel::Tags), 4);
+    header->moveSection(header->visualIndex(ClientDatasetModel::Catalog), 5);
 
     // Set reasonable column widths
     header->resizeSection(ClientDatasetModel::Name, 240);

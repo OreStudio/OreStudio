@@ -24,6 +24,7 @@
 #include <string>
 #include <unordered_set>
 #include <QDateTime>
+#include <ores.platform/attributes.hpp>
 
 namespace ores::qt {
 
@@ -180,7 +181,7 @@ public:
 
 private:
     KeyExtractor key_extractor_;
-    [[no_unique_address]] TimestampExtractor timestamp_extractor_;
+    ORES_NO_UNIQUE_ADDRESS TimestampExtractor timestamp_extractor_;
     std::unordered_set<std::string> recent_keys_;
     QDateTime last_reload_time_;
 };

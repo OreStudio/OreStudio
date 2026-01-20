@@ -75,6 +75,14 @@ public:
     void loadAll();
 
     /**
+     * @brief Clear all caches and reload images.
+     *
+     * Use this after data changes (e.g., publishing datasets) to refresh
+     * the cache with current server data. Emits allLoaded() when complete.
+     */
+    void reload();
+
+    /**
      * @brief Get icon for an image by its UUID.
      *
      * If the image is cached, returns it immediately.

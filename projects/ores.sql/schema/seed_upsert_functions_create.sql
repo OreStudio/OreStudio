@@ -574,16 +574,15 @@ begin
             p_dataset_name, p_subject_area_name, p_domain_name;
     end if;
 
-    -- Only insert if tag doesn't already exist for this dataset (true idempotency)
-    if not exists (
-        select 1 from ores.dq_tags_artefact_tbl
-        where dataset_id = v_dataset_id and name = p_tag_name
-    ) then
-        insert into ores.dq_tags_artefact_tbl (
-            dataset_id, tag_id, version, name, description
-        ) values (
-            v_dataset_id, gen_random_uuid(), 0, p_tag_name, p_tag_description
-        );
+    -- Insert tag if it doesn't exist (uses unique constraint for atomicity)
+    insert into ores.dq_tags_artefact_tbl (
+        dataset_id, tag_id, version, name, description
+    ) values (
+        v_dataset_id, gen_random_uuid(), 0, p_tag_name, p_tag_description
+    )
+    on conflict (dataset_id, name) do nothing;
+
+    if found then
         raise notice 'Created dq_tag: % for dataset %', p_tag_name, p_dataset_name;
     else
         raise notice 'Tag already exists: % for dataset %', p_tag_name, p_dataset_name;

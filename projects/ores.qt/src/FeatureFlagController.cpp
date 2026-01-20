@@ -396,8 +396,6 @@ void FeatureFlagController::onOpenFeatureFlagVersion(
         return;
     }
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new FeatureFlagDetailDialog();
     if (clientManager_) {
         detailDialog->setClientManager(clientManager_);
@@ -432,7 +430,7 @@ void FeatureFlagController::onOpenFeatureFlagVersion(
     detailWindow->setWindowTitle(QString("Feature Flag: %1 (Version %2 - Read Only)")
         .arg(flagName).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
+        Icon::Flag, IconUtils::DefaultIconColor));
 
     // Track this version window
     track_window(windowKey, detailWindow);

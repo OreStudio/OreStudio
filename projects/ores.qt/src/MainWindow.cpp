@@ -118,57 +118,6 @@ MainWindow::MainWindow(QWidget* parent) :
     disconnectedIcon_ = IconUtils::createRecoloredIcon(Icon::PlugDisconnected, IconUtils::DisconnectedColor);
     reconnectingIcon_ = IconUtils::createRecoloredIcon(Icon::PlugDisconnected, IconUtils::ReconnectingColor);
 
-    ui_->ActionConnect->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_plug_connected_20_regular.svg", iconColor));
-    ui_->ActionDisconnect->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_plug_disconnected_20_regular.svg", iconColor));
-    ui_->CurrenciesAction->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg", iconColor));
-    ui_->CountriesAction->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_globe_20_regular.svg", iconColor));
-    ui_->ActionAbout->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_star_20_regular.svg", iconColor));
-    ui_->ActionAccounts->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
-    ui_->ActionRoles->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_lock_closed_20_regular.svg", iconColor));
-    ui_->ActionFeatureFlags->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
-    ui_->ActionChangeReasonCategories->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
-    ui_->ActionChangeReasons->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_note_edit_20_regular.svg", iconColor));
-    ui_->ActionOriginDimensions->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
-    ui_->ActionNatureDimensions->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
-    ui_->ActionTreatmentDimensions->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
-    ui_->ActionCodingSchemeAuthorityTypes->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_tag_20_regular.svg", iconColor));
-    ui_->ActionDataDomains->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_folder_20_regular.svg", iconColor));
-    ui_->ActionCodingSchemes->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_code_20_regular.svg", iconColor));
-    ui_->ActionMethodologies->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_book_20_regular.svg", iconColor));
-    ui_->ActionDataLibrarian->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_library_20_regular.svg", iconColor));
-    ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_person_20_regular.svg", iconColor));
-    ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_clock_16_regular.svg", iconColor));
-    ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
-    ui_->ActionOpenRecording->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_folder_open_20_regular.svg", iconColor));
-    ui_->ActionSetRecordingDirectory->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_folder_20_regular.svg", iconColor));
-    ui_->ActionTelemetrySettings->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_settings_20_regular.svg", iconColor));
-    ui_->ActionConnectionBrowser->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_server_link_20_regular.svg", iconColor));
-
     ui_->ActionConnect->setIcon(IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::DefaultIconColor));
     ui_->ActionDisconnect->setIcon(IconUtils::createRecoloredIcon(Icon::PlugDisconnected, IconUtils::DefaultIconColor));
     ui_->CurrenciesAction->setIcon(IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));
@@ -186,7 +135,6 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionDataDomains->setIcon(IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
     ui_->ActionCodingSchemes->setIcon(IconUtils::createRecoloredIcon(Icon::Code, IconUtils::DefaultIconColor));
     ui_->ActionMethodologies->setIcon(IconUtils::createRecoloredIcon(Icon::Book, IconUtils::DefaultIconColor));
-    ui_->ActionDatasets->setIcon(IconUtils::createRecoloredIcon(Icon::Database, IconUtils::DefaultIconColor));
     ui_->ActionDataLibrarian->setIcon(IconUtils::createRecoloredIcon(Icon::Library, IconUtils::DefaultIconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(Icon::Person, IconUtils::DefaultIconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));

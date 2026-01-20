@@ -125,49 +125,44 @@ QIcon IconUtils::createRecoloredIcon(Icon icon, const QColor& color) {
 }
 
 QIcon IconUtils::createRecoloredIcon(const QString& svgPath, const QColor& color) {
-    QIcon originalIcon(svgPath);
-    if (originalIcon.isNull()) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to load icon: "
+    QSvgRenderer renderer(svgPath);
+    if (!renderer.isValid()) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to load SVG for recoloring: "
                                   << svgPath.toStdString();
-        return {};
+        return QIcon(svgPath);
     }
 
     QIcon recoloredIcon;
-    // Disabled color should be visible but clearly dimmed against #1A1A1A background
     const QColor disabledColor = DisabledIconColor;
 
     for (int size : {16, 20, 24, 32, 48, 64}) {
-        QPixmap pixmap = originalIcon.pixmap(size, size);
+        // Normal state
+        QImage normalImage(size, size, QImage::Format_ARGB32);
+        normalImage.fill(Qt::transparent);
+        
+        QPainter painter(&normalImage);
+        renderer.render(&painter);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+        painter.fillRect(normalImage.rect(), color);
+        painter.end();
+        
+        QPixmap normalPixmap = QPixmap::fromImage(normalImage);
+        recoloredIcon.addPixmap(normalPixmap, QIcon::Normal, QIcon::On);
+        recoloredIcon.addPixmap(normalPixmap, QIcon::Normal, QIcon::Off);
 
-        // Create normal state image
-        QImage normalImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-        for (int y = 0; y < normalImage.height(); ++y) {
-            for (int x = 0; x < normalImage.width(); ++x) {
-                QColor pixelColor = normalImage.pixelColor(x, y);
-                if (pixelColor.alpha() > 0) {
-                    pixelColor.setRed(color.red());
-                    pixelColor.setGreen(color.green());
-                    pixelColor.setBlue(color.blue());
-                    normalImage.setPixelColor(x, y, pixelColor);
-                }
-            }
-        }
-        recoloredIcon.addPixmap(QPixmap::fromImage(normalImage), QIcon::Normal);
-
-        // Create disabled state image
-        QImage disabledImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-        for (int y = 0; y < disabledImage.height(); ++y) {
-            for (int x = 0; x < disabledImage.width(); ++x) {
-                QColor pixelColor = disabledImage.pixelColor(x, y);
-                if (pixelColor.alpha() > 0) {
-                    pixelColor.setRed(disabledColor.red());
-                    pixelColor.setGreen(disabledColor.green());
-                    pixelColor.setBlue(disabledColor.blue());
-                    disabledImage.setPixelColor(x, y, pixelColor);
-                }
-            }
-        }
-        recoloredIcon.addPixmap(QPixmap::fromImage(disabledImage), QIcon::Disabled);
+        // Disabled state
+        QImage disabledImage(size, size, QImage::Format_ARGB32);
+        disabledImage.fill(Qt::transparent);
+        
+        painter.begin(&disabledImage);
+        renderer.render(&painter);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+        painter.fillRect(disabledImage.rect(), disabledColor);
+        painter.end();
+        
+        QPixmap disabledPixmap = QPixmap::fromImage(disabledImage);
+        recoloredIcon.addPixmap(disabledPixmap, QIcon::Disabled, QIcon::On);
+        recoloredIcon.addPixmap(disabledPixmap, QIcon::Disabled, QIcon::Off);
     }
 
     return recoloredIcon;

@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setApplicationVersion(ORES_VERSION);
 
     // Set global icon theme
-    ores::qt::IconUtils::setTheme(ores::qt::IconTheme::SolarizedLinear);
+    ores::qt::IconUtils::setTheme(ores::qt::IconTheme::SolarizedBold);
 
     ores::qt::CommandLineParser parser;
     parser.process(app);

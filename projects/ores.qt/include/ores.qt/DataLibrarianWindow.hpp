@@ -31,7 +31,6 @@
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.qt/DatasetViewDialog.hpp"
 #include "ores.qt/ClientDatasetModel.hpp"
 #include "ores.qt/ClientDataDomainModel.hpp"
 #include "ores.qt/ClientSubjectAreaModel.hpp"
@@ -152,9 +151,6 @@ private:
     QTableView* datasetTable_;
     ClientDatasetModel* datasetModel_;
     QSortFilterProxyModel* datasetProxyModel_;
-
-    // Dataset view dialog (modeless)
-    DatasetViewDialog* datasetViewDialog_{nullptr};
 
     // Data models for navigation
     ClientDataDomainModel* dataDomainModel_;

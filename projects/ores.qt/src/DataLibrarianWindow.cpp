@@ -29,6 +29,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/DatasetItemDelegate.hpp"
+#include "ores.qt/DatasetViewDialog.hpp"
 
 namespace ores::qt {
 
@@ -416,11 +417,9 @@ void DataLibrarianWindow::showDatasetDetailDialog(const dq::domain::dataset* dat
         return;
     }
 
-    // Create dialog if it doesn't exist
-    if (!datasetViewDialog_) {
-        datasetViewDialog_ = new DatasetViewDialog(clientManager_, this);
-        datasetViewDialog_->setAttribute(Qt::WA_DeleteOnClose, false);
-    }
+    // Create a new dialog for each dataset (allows multiple windows)
+    auto* dialog = new DatasetViewDialog(clientManager_, this);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);  // Auto-delete when closed
 
     // Collect methodologies for the dialog
     std::vector<dq::domain::methodology> methodologies;
@@ -430,14 +429,12 @@ void DataLibrarianWindow::showDatasetDetailDialog(const dq::domain::dataset* dat
             methodologies.push_back(*methodology);
         }
     }
-    datasetViewDialog_->setMethodologies(methodologies);
-    datasetViewDialog_->setCatalogDependencies(catalogDependencyModel_->dependencies());
-    datasetViewDialog_->setDataset(*dataset);
+    dialog->setMethodologies(methodologies);
+    dialog->setCatalogDependencies(catalogDependencyModel_->dependencies());
+    dialog->setDataset(*dataset);
 
     // Show modeless dialog
-    datasetViewDialog_->show();
-    datasetViewDialog_->raise();
-    datasetViewDialog_->activateWindow();
+    dialog->show();
 }
 
 void DataLibrarianWindow::onRefreshClicked() {

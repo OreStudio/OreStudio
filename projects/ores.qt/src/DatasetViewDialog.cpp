@@ -54,7 +54,7 @@ void DatasetViewDialog::setupUi() {
     tabWidget_->addTab(createOverviewTab(), tr("Overview"));
     tabWidget_->addTab(createProvenanceTab(), tr("Provenance"));
     tabWidget_->addTab(createMethodologyTab(), tr("Methodology"));
-    tabWidget_->addTab(createLineageTab(), tr("Lineage"));
+    tabWidget_->addTab(createLineageTab(), tr("Dependencies"));
 
     mainLayout->addWidget(tabWidget_);
 }

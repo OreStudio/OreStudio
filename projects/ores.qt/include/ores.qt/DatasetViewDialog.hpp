@@ -163,7 +163,7 @@ private:
     QColor lineageHeaderMethod_{0x8B, 0x5C, 0xF6};
     QColor lineageHeaderDataset_{0x22, 0xC5, 0x5E};
     QColor lineageHeaderCatalog_{0xF9, 0x73, 0x16};  // Orange for catalog
-    qreal lineageNodeWidth_{140};
+    qreal lineageNodeWidth_{200};  // Wider to accommodate long dataset names
     qreal lineageHeaderHeight_{18};
     qreal lineageRowHeight_{14};
     qreal lineageNodeSpacing_{60};

@@ -66,6 +66,11 @@ create index if not exists dq_catalog_dependencies_dependency_idx
 on "ores"."dq_catalog_dependencies_tbl" (dependency_name)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
+-- Unique constraint on active records for ON CONFLICT support
+create unique index if not exists dq_catalog_dependencies_uniq_idx
+on "ores"."dq_catalog_dependencies_tbl" (catalog_name, dependency_name)
+where valid_to = ores.utility_infinity_timestamp_fn();
+
 create or replace function ores.dq_catalog_dependencies_insert_fn()
 returns trigger as $$
 begin

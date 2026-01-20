@@ -181,22 +181,20 @@ begin
     perform ores.seed_validate_not_empty(p_catalog_name, 'Catalog name');
     perform ores.seed_validate_not_empty(p_dependency_name, 'Dependency name');
 
-    if not exists (
-        select 1 from ores.dq_catalog_dependencies_tbl
-        where catalog_name = p_catalog_name
-          and dependency_name = p_dependency_name
-          and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_catalog_dependencies_tbl (
-            catalog_name, dependency_name,
-            recorded_by, change_reason_code, change_commentary,
-            valid_from, valid_to
-        )
-        values (
-            p_catalog_name, p_dependency_name,
-            'system', 'system.new_record', 'System seed data - catalog dependency',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
+    insert into ores.dq_catalog_dependencies_tbl (
+        catalog_name, dependency_name,
+        recorded_by, change_reason_code, change_commentary,
+        valid_from, valid_to
+    )
+    values (
+        p_catalog_name, p_dependency_name,
+        'system', 'system.new_record', 'System seed data - catalog dependency',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (catalog_name, dependency_name)
+        where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created catalog dependency: % depends on %', p_catalog_name, p_dependency_name;
     else
         raise notice 'Catalog dependency already exists: % depends on %', p_catalog_name, p_dependency_name;
@@ -663,15 +661,13 @@ begin
         raise exception 'Permission not found: %', p_permission_code;
     end if;
 
-    -- Check if assignment already exists
-    if not exists (
-        select 1 from ores.iam_role_permissions_tbl
-        where role_id = v_role_id
-          and permission_id = v_permission_id
-          and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.iam_role_permissions_tbl (role_id, permission_id, valid_from, valid_to)
-        values (v_role_id, v_permission_id, current_timestamp, ores.utility_infinity_timestamp_fn());
+    -- Insert assignment if it doesn't exist
+    insert into ores.iam_role_permissions_tbl (role_id, permission_id, valid_from, valid_to)
+    values (v_role_id, v_permission_id, current_timestamp, ores.utility_infinity_timestamp_fn())
+    on conflict (role_id, permission_id)
+        where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Assigned permission % to role %', p_permission_code, p_role_name;
     else
         raise notice 'Permission % already assigned to role %', p_permission_code, p_role_name;
@@ -694,18 +690,16 @@ create or replace function ores.upsert_system_flag(
 begin
     perform ores.seed_validate_not_empty(p_name, 'System flag name');
 
-    -- Only insert if flag doesn't exist (preserve existing values)
-    if not exists (
-        select 1 from ores.variability_feature_flags_tbl
-        where name = p_name and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        -- The variability_feature_flags_insert_trg trigger will set version and valid_from/valid_to
-        -- Cast boolean to integer for the enabled column
-        insert into ores.variability_feature_flags_tbl (name, enabled, description, modified_by,
-            change_reason_code, change_commentary, valid_from, valid_to)
-        values (p_name, p_enabled::int, p_description, 'system',
-                'system.new_record', 'System seed data',
-                current_timestamp, ores.utility_infinity_timestamp_fn());
+    -- Insert flag if it doesn't exist (preserve existing values)
+    -- Cast boolean to integer for the enabled column
+    insert into ores.variability_feature_flags_tbl (name, enabled, description, modified_by,
+        change_reason_code, change_commentary, valid_from, valid_to)
+    values (p_name, p_enabled::int, p_description, 'system',
+            'system.new_record', 'System seed data',
+            current_timestamp, ores.utility_infinity_timestamp_fn())
+    on conflict (name) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created system flag: % (default: %)', p_name, p_enabled;
     else
         raise notice 'System flag already exists: %', p_name;

@@ -43,6 +43,11 @@ create unique index if not exists variability_feature_flags_version_uniq_idx
 on "ores"."variability_feature_flags_tbl" (name, version)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
+-- Unique constraint on active records for ON CONFLICT support
+create unique index if not exists variability_feature_flags_name_uniq_idx
+on "ores"."variability_feature_flags_tbl" (name)
+where valid_to = ores.utility_infinity_timestamp_fn();
+
 create or replace function ores.variability_feature_flags_insert_fn()
 returns trigger as $$
 declare

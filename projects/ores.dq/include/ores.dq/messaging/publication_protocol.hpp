@@ -122,6 +122,7 @@ struct publish_datasets_response final {
      *   - 2 bytes: target_table length
      *   - N bytes: target_table (UTF-8)
      *   - 8 bytes: records_inserted
+     *   - 8 bytes: records_updated
      *   - 8 bytes: records_skipped
      *   - 8 bytes: records_deleted
      *   - 1 byte: success
@@ -205,6 +206,7 @@ struct get_publications_response final {
      *   - 2 bytes: target_table length
      *   - N bytes: target_table (UTF-8)
      *   - 8 bytes: records_inserted
+     *   - 8 bytes: records_updated
      *   - 8 bytes: records_skipped
      *   - 8 bytes: records_deleted
      *   - 2 bytes: published_by length

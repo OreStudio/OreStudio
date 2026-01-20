@@ -47,6 +47,7 @@ domain::publication publication_mapper::map(const publication_entity& entity) {
         .value_or(domain::publication_mode::upsert);
     result.target_table = entity.target_table;
     result.records_inserted = static_cast<std::uint64_t>(entity.records_inserted);
+    result.records_updated = static_cast<std::uint64_t>(entity.records_updated);
     result.records_skipped = static_cast<std::uint64_t>(entity.records_skipped);
     result.records_deleted = static_cast<std::uint64_t>(entity.records_deleted);
     result.published_by = entity.published_by;
@@ -75,6 +76,7 @@ publication_entity publication_mapper::to_entity(const domain::publication& doma
     entity.mode = to_string(domain.mode);
     entity.target_table = domain.target_table;
     entity.records_inserted = static_cast<std::int64_t>(domain.records_inserted);
+    entity.records_updated = static_cast<std::int64_t>(domain.records_updated);
     entity.records_skipped = static_cast<std::int64_t>(domain.records_skipped);
     entity.records_deleted = static_cast<std::int64_t>(domain.records_deleted);
     entity.published_by = domain.published_by;

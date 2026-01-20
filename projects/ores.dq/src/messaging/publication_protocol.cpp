@@ -46,6 +46,7 @@ void write_publication_result(std::vector<std::byte>& buffer,
     writer::write_string(buffer, r.dataset_name);
     writer::write_string(buffer, r.target_table);
     writer::write_uint64(buffer, r.records_inserted);
+    writer::write_uint64(buffer, r.records_updated);
     writer::write_uint64(buffer, r.records_skipped);
     writer::write_uint64(buffer, r.records_deleted);
     writer::write_bool(buffer, r.success);
@@ -75,6 +76,10 @@ read_publication_result(std::span<const std::byte>& data) {
     auto records_inserted_result = reader::read_uint64(data);
     if (!records_inserted_result) return std::unexpected(records_inserted_result.error());
     r.records_inserted = *records_inserted_result;
+
+    auto records_updated_result = reader::read_uint64(data);
+    if (!records_updated_result) return std::unexpected(records_updated_result.error());
+    r.records_updated = *records_updated_result;
 
     auto records_skipped_result = reader::read_uint64(data);
     if (!records_skipped_result) return std::unexpected(records_skipped_result.error());
@@ -250,6 +255,7 @@ void write_publication(std::vector<std::byte>& buffer,
     writer::write_uint8(buffer, static_cast<std::uint8_t>(p.mode));
     writer::write_string(buffer, p.target_table);
     writer::write_uint64(buffer, p.records_inserted);
+    writer::write_uint64(buffer, p.records_updated);
     writer::write_uint64(buffer, p.records_skipped);
     writer::write_uint64(buffer, p.records_deleted);
     writer::write_string(buffer, p.published_by);
@@ -287,6 +293,10 @@ read_publication(std::span<const std::byte>& data) {
     auto records_inserted_result = reader::read_uint64(data);
     if (!records_inserted_result) return std::unexpected(records_inserted_result.error());
     p.records_inserted = *records_inserted_result;
+
+    auto records_updated_result = reader::read_uint64(data);
+    if (!records_updated_result) return std::unexpected(records_updated_result.error());
+    p.records_updated = *records_updated_result;
 
     auto records_skipped_result = reader::read_uint64(data);
     if (!records_skipped_result) return std::unexpected(records_skipped_result.error());

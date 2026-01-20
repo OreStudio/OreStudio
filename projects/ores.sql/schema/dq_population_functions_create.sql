@@ -181,9 +181,12 @@ $$ language plpgsql;
  * IMPORTANT: Images must be populated before countries/currencies
  * to ensure image_id references are valid.
  *
- * NOTE: For images, 'upsert' mode behaves like 'insert_only' because
- * SVG images are immutable - if a key already exists, we skip it.
- * This allows multiple datasets to contribute images without conflicts.
+ * The trigger on assets_images_tbl automatically handles versioning:
+ * - New records get version = 1
+ * - Existing records are closed (valid_to set) and new version inserted
+ *
+ * For upsert mode with existing keys, we use the existing image_id to
+ * preserve referential integrity with countries/currencies tables.
  */
 create or replace function ores.dq_populate_images(
     p_dataset_id uuid,
@@ -195,10 +198,13 @@ returns table (
 ) as $$
 declare
     v_inserted bigint := 0;
+    v_updated bigint := 0;
     v_skipped bigint := 0;
     v_deleted bigint := 0;
     v_dataset_name text;
     r record;
+    v_existing_image_id uuid;
+    v_new_version integer;
 begin
     -- Validate dataset exists
     select name into v_dataset_name
@@ -226,7 +232,6 @@ begin
     end if;
 
     -- Process each image from DQ dataset
-    -- Skip images where the key already exists (images are immutable)
     for r in
         select
             dq.image_id,
@@ -235,37 +240,46 @@ begin
             dq.svg_data
         from ores.dq_images_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
-          and not exists (
-              select 1 from ores.assets_images_tbl existing
-              where existing.key = dq.key
-                and existing.valid_to = ores.utility_infinity_timestamp_fn()
-          )
     loop
-        -- Insert new image (preserve the DQ image_id for referential integrity)
+        -- Check if an image with this key already exists
+        select image_id into v_existing_image_id
+        from ores.assets_images_tbl existing
+        where existing.key = r.key
+          and existing.valid_to = ores.utility_infinity_timestamp_fn();
+
+        -- In insert_only mode, skip existing records
+        if p_mode = 'insert_only' and v_existing_image_id is not null then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
+        -- Insert image - trigger handles versioning automatically
+        -- Use existing image_id if updating to preserve referential integrity,
+        -- otherwise use the DQ image_id for new images
         insert into ores.assets_images_tbl (
             image_id, version, key, description, svg_data,
             modified_by, change_reason_code, change_commentary
         ) values (
-            r.image_id, 0, r.key, r.description, r.svg_data,
+            coalesce(v_existing_image_id, r.image_id), 0, r.key, r.description, r.svg_data,
             'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
-        );
-        v_inserted := v_inserted + 1;
-    end loop;
+        )
+        returning version into v_new_version;
 
-    -- Count skipped (keys that already existed)
-    select count(*) into v_skipped
-    from ores.dq_images_artefact_tbl dq
-    where dq.dataset_id = p_dataset_id
-      and exists (
-          select 1 from ores.assets_images_tbl existing
-          where existing.key = dq.key
-            and existing.valid_to = ores.utility_infinity_timestamp_fn()
-      );
+        -- Track whether this was an insert (version=1) or update (version>1)
+        if v_new_version = 1 then
+            v_inserted := v_inserted + 1;
+        else
+            v_updated := v_updated + 1;
+        end if;
+    end loop;
 
     -- Return summary
     return query
     select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'updated'::text, v_updated
+    where v_updated > 0
     union all select 'skipped'::text, v_skipped
     where v_skipped > 0
     union all select 'deleted'::text, v_deleted
@@ -317,9 +331,9 @@ $$ language plpgsql;
  * IMPORTANT: Ensure images are populated first if you want image_id
  * references to resolve correctly.
  *
- * NOTE: For countries, 'upsert' mode behaves like 'insert_only' because
- * if an alpha2_code already exists, we skip it. The first dataset to
- * claim a code wins.
+ * The trigger on refdata_countries_tbl automatically handles versioning:
+ * - New records get version = 1
+ * - Existing records are closed (valid_to set) and new version inserted
  *
  * The coding_scheme_code is copied from the dataset to track data provenance.
  */
@@ -333,12 +347,15 @@ returns table (
 ) as $$
 declare
     v_inserted bigint := 0;
+    v_updated bigint := 0;
     v_skipped bigint := 0;
     v_deleted bigint := 0;
     v_dataset_name text;
     v_coding_scheme_code text;
     r record;
     v_resolved_image_id uuid;
+    v_exists boolean;
+    v_new_version integer;
 begin
     -- Validate dataset exists and get metadata
     select name, coding_scheme_code into v_dataset_name, v_coding_scheme_code
@@ -365,7 +382,6 @@ begin
     end if;
 
     -- Process each country from DQ dataset
-    -- Skip countries where the alpha2_code already exists
     for r in
         select
             dq.alpha2_code,
@@ -376,12 +392,20 @@ begin
             dq.image_id
         from ores.dq_countries_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
-          and not exists (
-              select 1 from ores.refdata_countries_tbl existing
-              where existing.alpha2_code = dq.alpha2_code
-                and existing.valid_to = ores.utility_infinity_timestamp_fn()
-          )
     loop
+        -- Check if record already exists (for mode handling and reporting)
+        select exists (
+            select 1 from ores.refdata_countries_tbl existing
+            where existing.alpha2_code = r.alpha2_code
+              and existing.valid_to = ores.utility_infinity_timestamp_fn()
+        ) into v_exists;
+
+        -- In insert_only mode, skip existing records
+        if p_mode = 'insert_only' and v_exists then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
         -- Resolve image_id: check if image exists in assets_images_tbl
         if r.image_id is not null then
             select image_id into v_resolved_image_id
@@ -398,7 +422,8 @@ begin
             v_resolved_image_id := null;
         end if;
 
-        -- Insert new country with coding_scheme_code from dataset
+        -- Insert country - trigger handles versioning automatically
+        -- version=0 tells trigger to auto-increment from current version
         insert into ores.refdata_countries_tbl (
             alpha2_code, version, alpha3_code, numeric_code, name, official_name,
             coding_scheme_code, image_id,
@@ -408,23 +433,23 @@ begin
             v_coding_scheme_code, v_resolved_image_id,
             'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
-        );
-        v_inserted := v_inserted + 1;
-    end loop;
+        )
+        returning version into v_new_version;
 
-    -- Count skipped (alpha2_codes that already existed)
-    select count(*) into v_skipped
-    from ores.dq_countries_artefact_tbl dq
-    where dq.dataset_id = p_dataset_id
-      and exists (
-          select 1 from ores.refdata_countries_tbl existing
-          where existing.alpha2_code = dq.alpha2_code
-            and existing.valid_to = ores.utility_infinity_timestamp_fn()
-      );
+        -- Track whether this was an insert (version=1) or update (version>1)
+        if v_new_version = 1 then
+            v_inserted := v_inserted + 1;
+        else
+            v_updated := v_updated + 1;
+        end if;
+    end loop;
 
     -- Return summary
     return query
     select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'updated'::text, v_updated
+    where v_updated > 0
     union all select 'skipped'::text, v_skipped
     where v_skipped > 0
     union all select 'deleted'::text, v_deleted
@@ -484,9 +509,9 @@ $$ language plpgsql;
  * IMPORTANT: Ensure images are populated first if you want image_id
  * references to resolve correctly.
  *
- * NOTE: For currencies, 'upsert' mode behaves like 'insert_only' because
- * if an iso_code already exists (e.g., fiat 'BAM' vs crypto 'BAM'),
- * we skip it. The first dataset to claim a code wins.
+ * The trigger on refdata_currencies_tbl automatically handles versioning:
+ * - New records get version = 1
+ * - Existing records are closed (valid_to set) and new version inserted
  *
  * The coding_scheme_code is copied from the dataset to track data provenance.
  */
@@ -501,12 +526,15 @@ returns table (
 ) as $$
 declare
     v_inserted bigint := 0;
+    v_updated bigint := 0;
     v_skipped bigint := 0;
     v_deleted bigint := 0;
     v_dataset_name text;
     v_coding_scheme_code text;
     r record;
     v_resolved_image_id uuid;
+    v_exists boolean;
+    v_new_version integer;
 begin
     -- Validate dataset exists and get metadata
     select name, coding_scheme_code into v_dataset_name, v_coding_scheme_code
@@ -533,7 +561,6 @@ begin
     end if;
 
     -- Process each currency from DQ dataset
-    -- Skip currencies where the iso_code already exists
     -- Apply currency_type filter if specified
     for r in
         select
@@ -551,12 +578,20 @@ begin
         from ores.dq_currencies_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
           and (p_currency_type_filter is null or dq.currency_type = p_currency_type_filter)
-          and not exists (
-              select 1 from ores.refdata_currencies_tbl existing
-              where existing.iso_code = dq.iso_code
-                and existing.valid_to = ores.utility_infinity_timestamp_fn()
-          )
     loop
+        -- Check if record already exists (for mode handling and reporting)
+        select exists (
+            select 1 from ores.refdata_currencies_tbl existing
+            where existing.iso_code = r.iso_code
+              and existing.valid_to = ores.utility_infinity_timestamp_fn()
+        ) into v_exists;
+
+        -- In insert_only mode, skip existing records
+        if p_mode = 'insert_only' and v_exists then
+            v_skipped := v_skipped + 1;
+            continue;
+        end if;
+
         -- Resolve image_id
         if r.image_id is not null then
             select image_id into v_resolved_image_id
@@ -572,7 +607,8 @@ begin
             v_resolved_image_id := null;
         end if;
 
-        -- Insert new currency with coding_scheme_code from dataset
+        -- Insert currency - trigger handles versioning automatically
+        -- version=0 tells trigger to auto-increment from current version
         insert into ores.refdata_currencies_tbl (
             iso_code, version, name, numeric_code, symbol, fraction_symbol,
             fractions_per_unit, rounding_type, rounding_precision, format, currency_type,
@@ -584,24 +620,23 @@ begin
             v_coding_scheme_code, v_resolved_image_id,
             'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
-        );
-        v_inserted := v_inserted + 1;
-    end loop;
+        )
+        returning version into v_new_version;
 
-    -- Count skipped (iso_codes that already existed)
-    select count(*) into v_skipped
-    from ores.dq_currencies_artefact_tbl dq
-    where dq.dataset_id = p_dataset_id
-      and (p_currency_type_filter is null or dq.currency_type = p_currency_type_filter)
-      and exists (
-          select 1 from ores.refdata_currencies_tbl existing
-          where existing.iso_code = dq.iso_code
-            and existing.valid_to = ores.utility_infinity_timestamp_fn()
-      );
+        -- Track whether this was an insert (version=1) or update (version>1)
+        if v_new_version = 1 then
+            v_inserted := v_inserted + 1;
+        else
+            v_updated := v_updated + 1;
+        end if;
+    end loop;
 
     -- Return summary
     return query
     select 'inserted'::text, v_inserted
+    where v_inserted > 0
+    union all select 'updated'::text, v_updated
+    where v_updated > 0
     union all select 'skipped'::text, v_skipped
     where v_skipped > 0
     union all select 'deleted'::text, v_deleted

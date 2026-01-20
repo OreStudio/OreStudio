@@ -63,6 +63,14 @@ struct publication_result final {
     std::uint64_t records_inserted = 0;
 
     /**
+     * @brief Number of records updated during publication.
+     *
+     * Records are updated when they already exist and upsert mode
+     * is used. The version is incremented automatically by triggers.
+     */
+    std::uint64_t records_updated = 0;
+
+    /**
      * @brief Number of records skipped during publication.
      *
      * Records are skipped when they already exist and the mode

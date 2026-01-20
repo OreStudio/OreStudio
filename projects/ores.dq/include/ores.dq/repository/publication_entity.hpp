@@ -40,6 +40,7 @@ struct publication_entity final {
     std::string mode;
     std::string target_table;
     std::int64_t records_inserted = 0;
+    std::int64_t records_updated = 0;
     std::int64_t records_skipped = 0;
     std::int64_t records_deleted = 0;
     std::string published_by;

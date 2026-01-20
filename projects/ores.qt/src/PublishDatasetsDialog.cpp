@@ -469,11 +469,12 @@ ResultsPage::ResultsPage(PublishDatasetsDialog* wizard)
     layout->addSpacing(10);
 
     resultsTable_ = new QTableWidget(this);
-    resultsTable_->setColumnCount(6);
+    resultsTable_->setColumnCount(7);
     resultsTable_->setHorizontalHeaderLabels({
         tr("Dataset"),
         tr("Target Table"),
         tr("Inserted"),
+        tr("Updated"),
         tr("Skipped"),
         tr("Deleted"),
         tr("Status")
@@ -492,6 +493,7 @@ void ResultsPage::initializePage() {
     resultsTable_->setRowCount(static_cast<int>(results.size()));
 
     std::uint64_t totalInserted = 0;
+    std::uint64_t totalUpdated = 0;
     std::uint64_t totalSkipped = 0;
     std::uint64_t totalDeleted = 0;
     int successCount = 0;
@@ -513,27 +515,33 @@ void ResultsPage::initializePage() {
         insertedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         resultsTable_->setItem(row, 2, insertedItem);
 
+        auto* updatedItem = new QTableWidgetItem(
+            QString::number(r.records_updated));
+        updatedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        resultsTable_->setItem(row, 3, updatedItem);
+
         auto* skippedItem = new QTableWidgetItem(
             QString::number(r.records_skipped));
         skippedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        resultsTable_->setItem(row, 3, skippedItem);
+        resultsTable_->setItem(row, 4, skippedItem);
 
         auto* deletedItem = new QTableWidgetItem(
             QString::number(r.records_deleted));
         deletedItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-        resultsTable_->setItem(row, 4, deletedItem);
+        resultsTable_->setItem(row, 5, deletedItem);
 
         QString statusText = r.success ? tr("Success") : tr("Failed");
         auto* statusItem = new QTableWidgetItem(statusText);
         if (!r.success) {
             statusItem->setToolTip(QString::fromStdString(r.error_message));
         }
-        resultsTable_->setItem(row, 5, statusItem);
+        resultsTable_->setItem(row, 6, statusItem);
 
         // Accumulate totals
         if (r.success) {
             ++successCount;
             totalInserted += r.records_inserted;
+            totalUpdated += r.records_updated;
             totalSkipped += r.records_skipped;
             totalDeleted += r.records_deleted;
         } else {
@@ -547,18 +555,20 @@ void ResultsPage::initializePage() {
         summary = tr("No datasets were published.");
     } else if (failureCount == 0) {
         summary = tr("Successfully published %1 dataset(s).\n"
-                     "Total: %2 inserted, %3 skipped, %4 deleted.")
+                     "Total: %2 inserted, %3 updated, %4 skipped, %5 deleted.")
             .arg(successCount)
             .arg(totalInserted)
+            .arg(totalUpdated)
             .arg(totalSkipped)
             .arg(totalDeleted);
     } else {
         summary = tr("Published %1 dataset(s): %2 succeeded, %3 failed.\n"
-                     "Total: %4 inserted, %5 skipped, %6 deleted.")
+                     "Total: %4 inserted, %5 updated, %6 skipped, %7 deleted.")
             .arg(results.size())
             .arg(successCount)
             .arg(failureCount)
             .arg(totalInserted)
+            .arg(totalUpdated)
             .arg(totalSkipped)
             .arg(totalDeleted);
     }

@@ -90,6 +90,7 @@ std::vector<domain::publication_result> publication_service::publish(
         if (result.success) {
             BOOST_LOG_SEV(lg(), info) << "Successfully published " << dataset.code
                 << " - inserted: " << result.records_inserted
+                << ", updated: " << result.records_updated
                 << ", skipped: " << result.records_skipped
                 << ", deleted: " << result.records_deleted;
 
@@ -281,13 +282,14 @@ void publication_service::record_publication(
     const auto sql = std::format(
         "INSERT INTO ores.dq_publications_tbl ("
         "dataset_id, dataset_code, mode, target_table, "
-        "records_inserted, records_skipped, records_deleted, published_by"
-        ") VALUES ('{}', '{}', '{}', '{}', {}, {}, {}, '{}')",
+        "records_inserted, records_updated, records_skipped, records_deleted, published_by"
+        ") VALUES ('{}', '{}', '{}', '{}', {}, {}, {}, {}, '{}')",
         boost::uuids::to_string(result.dataset_id),
         result.dataset_code,
         to_string(mode),
         result.target_table,
         result.records_inserted,
+        result.records_updated,
         result.records_skipped,
         result.records_deleted,
         published_by);
@@ -350,6 +352,8 @@ domain::publication_result publication_service::call_populate_function(
 
                 if (action == "inserted") {
                     result.records_inserted += count;
+                } else if (action == "updated") {
+                    result.records_updated += count;
                 } else if (action == "skipped") {
                     result.records_skipped += count;
                 } else if (action == "deleted") {
@@ -362,6 +366,7 @@ domain::publication_result publication_service::call_populate_function(
 
         BOOST_LOG_SEV(lg(), debug) << "Populate function completed: "
             << "inserted=" << result.records_inserted
+            << ", updated=" << result.records_updated
             << ", skipped=" << result.records_skipped
             << ", deleted=" << result.records_deleted;
 

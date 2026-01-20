@@ -33,6 +33,7 @@ create table if not exists "ores"."dq_publications_tbl" (
     "mode" text not null,
     "target_table" text not null,
     "records_inserted" bigint not null default 0,
+    "records_updated" bigint not null default 0,
     "records_skipped" bigint not null default 0,
     "records_deleted" bigint not null default 0,
     "published_by" text not null,
@@ -44,6 +45,7 @@ create table if not exists "ores"."dq_publications_tbl" (
     check ("mode" in ('upsert', 'insert_only', 'replace_all')),
     check ("target_table" <> ''),
     check ("records_inserted" >= 0),
+    check ("records_updated" >= 0),
     check ("records_skipped" >= 0),
     check ("records_deleted" >= 0),
     check ("published_by" <> '')
@@ -69,6 +71,9 @@ comment on column ores.dq_publications_tbl.target_table is
 
 comment on column ores.dq_publications_tbl.records_inserted is
     'Number of records inserted during publication.';
+
+comment on column ores.dq_publications_tbl.records_updated is
+    'Number of records updated during publication (upsert mode).';
 
 comment on column ores.dq_publications_tbl.records_skipped is
     'Number of records skipped during publication.';

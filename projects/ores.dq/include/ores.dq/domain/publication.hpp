@@ -69,6 +69,11 @@ struct publication final {
     std::uint64_t records_inserted = 0;
 
     /**
+     * @brief Number of records updated during publication.
+     */
+    std::uint64_t records_updated = 0;
+
+    /**
      * @brief Number of records skipped during publication.
      */
     std::uint64_t records_skipped = 0;

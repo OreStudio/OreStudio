@@ -164,7 +164,8 @@ find_package(Boost 1.88 REQUIRED COMPONENTS
     scope_exit
     program_options
     iostreams
-    process)
+    process
+    graph)
 
 # OpenSSL
 find_package(OpenSSL REQUIRED)

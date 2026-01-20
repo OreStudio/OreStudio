@@ -17,6 +17,7 @@
         "magic-enum",
         "boost-system",
         "boost-exception",
+        "boost-graph",
         "boost-log",
         "boost-program-options",
         "boost-uuid",

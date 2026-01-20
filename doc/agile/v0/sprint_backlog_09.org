@@ -9,7 +9,7 @@
 
 * Sprint Mission
 
-- continue reference data.
+- Implement data management infrastructure.
 
 * Stories
 
@@ -17,51 +17,55 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-19 Mon 21:54], for Monday, January 19, 2026.
-|       | <75>                               |        |      |      |       |
-| Tags  | Headline                           | Time   |      |      |     % |
-|-------+------------------------------------+--------+------+------+-------|
-|       | *Total time*                       | *8:58* |      |      | 100.0 |
-|-------+------------------------------------+--------+------+------+-------|
-|       | Stories                            | 8:58   |      |      | 100.0 |
-|       | Active                             |        | 8:58 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint |        |      | 1:34 |  17.5 |
-| code  | Add UI support for data sets       |        |      | 5:36 |  62.5 |
-| code  | Data Librarian improvements        |        |      | 1:48 |  20.1 |
+#+CAPTION: Clock summary at [2026-01-20 Tue 11:01], for Tuesday, January 20, 2026.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *2:46* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 2:46   |      |      | 100.0 |
+|       | Active                                |        | 2:46 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:23 |  13.9 |
+| infra | OCR scan notebooks for this sprint    |        |      | 1:03 |  38.0 |
+| code  | Add coloured icons                    |        |      | 0:38 |  22.9 |
+| code  | Add fake world dataset                |        |      | 0:42 |  25.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-19 Mon 21:54]
+#+CAPTION: Clock summary at [2026-01-20 Tue 11:01]
 |       | <75>                                               |         |       |       |       |
 | Tags  | Headline                                           | Time    |       |       |     % |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                       | *68:13* |       |       | 100.0 |
+|       | *Total time*                                       | *73:04* |       |       | 100.0 |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                            | 68:13   |       |       | 100.0 |
-|       | Active                                             |         | 68:13 |       | 100.0 |
-| agile | Sprint and product backlog refinement              |         |       |  2:11 |   3.2 |
-| infra | OCR scan notebooks for this sprint                 |         |       |  9:53 |  14.5 |
-| infra | Clean up system models and component models        |         |       |  0:28 |   0.7 |
-| code  | Add missing entities to CLI                        |         |       |  1:55 |   2.8 |
+|       | Stories                                            | 73:04   |       |       | 100.0 |
+|       | Active                                             |         | 73:04 |       | 100.0 |
+| agile | Sprint and product backlog refinement              |         |       |  2:34 |   3.5 |
+| infra | OCR scan notebooks for this sprint                 |         |       | 10:56 |  15.0 |
+| infra | Clean up system models and component models        |         |       |  0:28 |   0.6 |
+| code  | Add missing entities to CLI                        |         |       |  1:55 |   2.6 |
 | infra | Refactor PR related skills                         |         |       |  0:18 |   0.4 |
-| code  | Fix valgrind errors in nightly                     |         |       |  1:25 |   2.1 |
-| code  | Create security module                             |         |       |  1:23 |   2.0 |
-| code  | Prodigy should support multiple environments       |         |       |  0:19 |   0.5 |
-| code  | Add named environment sets                         |         |       |  4:17 |   6.3 |
-| code  | Rename risk to refdata                             |         |       |  0:43 |   1.1 |
-| code  | Prefix database entities with component            |         |       |  3:15 |   4.8 |
-| code  | Implement data quality                             |         |       |  9:42 |  14.2 |
-| code  | Improvements to connection browser                 |         |       |  2:05 |   3.1 |
-| code  | Disconnect shows reconnect message                 |         |       |  2:24 |   3.5 |
-| code  | Add UI support for data sets                       |         |       | 19:18 |  28.3 |
-| infra | Refactor documentation                             |         |       |  6:29 |   9.5 |
+| code  | Fix valgrind errors in nightly                     |         |       |  1:25 |   1.9 |
+| code  | Create security module                             |         |       |  1:23 |   1.9 |
+| code  | Prodigy should support multiple environments       |         |       |  0:19 |   0.4 |
+| code  | Add named environment sets                         |         |       |  4:17 |   5.9 |
+| code  | Rename risk to refdata                             |         |       |  0:43 |   1.0 |
+| code  | Prefix database entities with component            |         |       |  3:15 |   4.4 |
+| code  | Implement data quality                             |         |       |  9:42 |  13.3 |
+| code  | Improvements to connection browser                 |         |       |  2:05 |   2.9 |
+| code  | Disconnect shows reconnect message                 |         |       |  2:24 |   3.3 |
+| code  | Add UI support for data sets                       |         |       | 19:18 |  26.4 |
+| infra | Refactor documentation                             |         |       |  6:29 |   8.9 |
 | code  | Implement party related entities at database level |         |       |  0:20 |   0.5 |
-| code  | Data Librarian improvements                        |         |       |  1:48 |   2.6 |
+| code  | Data Librarian improvements                        |         |       |  1:48 |   2.5 |
+| code  | Add coloured icons                                 |         |       |  0:38 |   0.9 |
+| code  | Add fake world dataset                             |         |       |  2:47 |   3.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2026-01-20 Tue 10:38]--[2026-01-20 Tue 11:01] =>  0:23
     CLOCK: [2026-01-16 Fri 11:04]--[2026-01-16 Fri 11:36] =>  0:32
     CLOCK: [2026-01-11 Sun 22:00]--[2026-01-11 Sun 23:39] =>  1:39
     :END:
@@ -214,6 +218,7 @@ print(p)
 
 *** STARTED OCR scan notebooks for this sprint                        :infra:
     :LOGBOOK:
+    CLOCK: [2026-01-20 Tue 09:34]--[2026-01-20 Tue 10:37] =>  1:03
     CLOCK: [2026-01-19 Mon 09:00]--[2026-01-19 Mon 10:34] =>  1:34
     CLOCK: [2026-01-18 Sun 11:22]--[2026-01-18 Sun 12:55] =>  1:33
     CLOCK: [2026-01-16 Fri 09:30]--[2026-01-16 Fri 11:03] =>  1:33
@@ -1251,10 +1256,52 @@ Notes:
   information. Tabs should be on the left hand side.
 - add licence to FPML data: https://www.fpml.org/the_standard/fpml-public-license/
 
-*** Add coloured icons                                                 :code:
+*** STARTED Add coloured icons                                         :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-20 Tue 08:55]--[2026-01-20 Tue 09:33] =>  0:38
+    :END:
 
 At present we are using black and white icons. These are a bit hard to see. We
 should try the coloured ones and see if it improves readability.
+
+**** Refactor Icon use
+
+#+begin_quote
+This pull request significantly refactors how icons are managed and used
+throughout the Qt application. By introducing semantic enumerations for icons
+and themes, and centralizing the logic for retrieving and recoloring them, the
+changes aim to improve code maintainability, consistency, and flexibility for
+future UI adjustments. This update touches a large portion of the UI-related C++
+files, standardizing icon instantiation.
+
+Highlights:
+
+- Centralized Icon Management: Introduced enum class Icon and enum class
+  IconTheme in IconUtils.hpp to provide a semantic and theme-aware way to
+  reference application icons, replacing scattered string literals for SVG
+  paths.
+- Streamlined Icon Retrieval and Recoloring: Added new static methods iconPath
+  and an overloaded createRecoloredIcon to IconUtils, allowing icons to be
+  retrieved and recolored using the new enums, simplifying icon usage throughout
+  the codebase.
+- Standardized Icon Colors: Defined common icon colors (e.g., DefaultIconColor,
+  ConnectedColor, DisconnectedColor) as static inline constants within
+  IconUtils.hpp, promoting consistency and easier modification of UI themes.
+- Extensive Codebase Update: Updated numerous files across various controllers,
+  dialogs, and MDI windows to adopt the new icon management system, replacing
+  direct SVG path strings and hardcoded colors with the Icon enum and IconUtils
+  methods.
+- New Icon Resources: Added a comprehensive set of Solarized (Linear and Bold)
+  SVG icons to resources.qrc, expanding the available icon themes.
+- Dependency Update: The vcpkg submodule has been updated to a newer commit,
+  indicating potential library updates or build system changes.
+#+end_quote
+
+*** Add fake world dataset                                             :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-20 Tue 00:22]--[2026-01-20 Tue 00:42] =>  0:20
+    CLOCK: [2026-01-19 Mon 21:55]--[2026-01-20 Tue 00:22] =>  2:27
+    :END:
 
 *** Add a "is alive" message                                           :code:
 

@@ -190,8 +190,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // breaking change as the message type IDs have changed. Change management is
 // now properly located in the Data Quality subsystem alongside other DQ types.
 // The dq_message_handler now handles all DQ messages including change reasons.
+//
+// Version 22.1 adds catalog dependency messages for querying dependencies
+// between catalogs. New messages: get_catalog_dependencies_request/response,
+// get_catalog_dependencies_by_catalog_request/response.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 22;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -468,6 +472,12 @@ enum class message_type {
     delete_change_reason_category_response = 0x607F,
     get_change_reason_category_history_request = 0x6080,
     get_change_reason_category_history_response = 0x6081,
+
+    // Catalog Dependency (0x6082 - 0x6087)
+    get_catalog_dependencies_request = 0x6082,
+    get_catalog_dependencies_response = 0x6083,
+    get_catalog_dependencies_by_catalog_request = 0x6084,
+    get_catalog_dependencies_by_catalog_response = 0x6085,
 
     last_value
 };

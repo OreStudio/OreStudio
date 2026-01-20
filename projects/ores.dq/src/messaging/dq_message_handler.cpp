@@ -21,6 +21,7 @@
 
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.iam/domain/permission.hpp"
+#include "ores.dq/messaging/catalog_dependency_protocol.hpp"
 #include "ores.dq/messaging/change_management_protocol.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.dq/messaging/dataset_protocol.hpp"
@@ -79,6 +80,12 @@ dq_message_handler::handle_message(message_type type,
         co_return co_await handle_delete_catalog_request(payload, remote_address);
     case message_type::get_catalog_history_request:
         co_return co_await handle_get_catalog_history_request(payload, remote_address);
+
+    // Catalog dependency messages
+    case message_type::get_catalog_dependencies_request:
+        co_return co_await handle_get_catalog_dependencies_request(payload, remote_address);
+    case message_type::get_catalog_dependencies_by_catalog_request:
+        co_return co_await handle_get_catalog_dependencies_by_catalog_request(payload, remote_address);
 
     // Data domain messages
     case message_type::get_data_domains_request:
@@ -680,6 +687,71 @@ handle_get_catalog_history_request(std::span<const std::byte> payload,
         response.message = e.what();
     }
 
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Catalog Dependency Handlers
+// ============================================================================
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_catalog_dependencies_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_catalog_dependencies_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List catalog dependencies");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_catalog_dependencies_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_catalog_dependencies_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto dependencies = data_organization_service_.list_catalog_dependencies();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << dependencies.size()
+                              << " catalog dependencies.";
+
+    get_catalog_dependencies_response response{
+        .dependencies = std::move(dependencies)
+    };
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_catalog_dependencies_by_catalog_request(
+    std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_catalog_dependencies_by_catalog_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "List catalog dependencies by catalog");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result =
+        get_catalog_dependencies_by_catalog_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_catalog_dependencies_by_catalog_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    auto dependencies = data_organization_service_.list_catalog_dependencies_by_catalog(
+        request.catalog_name);
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << dependencies.size()
+                              << " catalog dependencies for catalog: "
+                              << request.catalog_name;
+
+    get_catalog_dependencies_by_catalog_response response{
+        .dependencies = std::move(dependencies)
+    };
     co_return response.serialize();
 }
 

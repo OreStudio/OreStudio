@@ -26,9 +26,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq/domain/catalog.hpp"
+#include "ores.dq/domain/catalog_dependency.hpp"
 #include "ores.dq/domain/data_domain.hpp"
 #include "ores.dq/domain/subject_area.hpp"
 #include "ores.dq/repository/catalog_repository.hpp"
+#include "ores.dq/repository/catalog_dependency_repository.hpp"
 #include "ores.dq/repository/data_domain_repository.hpp"
 #include "ores.dq/repository/subject_area_repository.hpp"
 
@@ -108,6 +110,22 @@ public:
      * @return Vector of all versions, newest first
      */
     std::vector<domain::catalog> get_catalog_history(const std::string& name);
+
+    // ========================================================================
+    // Catalog Dependency Management
+    // ========================================================================
+
+    /**
+     * @brief Lists all catalog dependencies.
+     */
+    std::vector<domain::catalog_dependency> list_catalog_dependencies();
+
+    /**
+     * @brief Lists catalog dependencies for a specific catalog.
+     * @param catalog_name The name of the catalog to query dependencies for
+     */
+    std::vector<domain::catalog_dependency>
+    list_catalog_dependencies_by_catalog(const std::string& catalog_name);
 
     // ========================================================================
     // Data Domain Management
@@ -206,6 +224,7 @@ public:
 
 private:
     repository::catalog_repository catalog_repo_;
+    repository::catalog_dependency_repository catalog_dependency_repo_;
     repository::data_domain_repository data_domain_repo_;
     repository::subject_area_repository subject_area_repo_;
 };

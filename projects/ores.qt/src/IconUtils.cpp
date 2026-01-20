@@ -32,6 +32,7 @@ using namespace ores::logging;
 struct IconDef {
     const char* fluent;
     const char* solar;
+    bool forceFilled = false;
 };
 
 static IconDef getIconDef(Icon icon) {
@@ -76,15 +77,15 @@ static IconDef getIconDef(Icon icon) {
         case Icon::PersonAccounts: return {"ic_fluent_person_accounts_20", "users-group-rounded.svg"};
         case Icon::PersonAdd: return {"ic_fluent_person_add_20", "user-plus-rounded.svg"};
         case Icon::PlugConnected: return {"ic_fluent_plug_connected_20", "plug-circle.svg"};
-        case Icon::PlugConnectedFilled: return {"ic_fluent_plug_connected_20", "plug-circle.svg"};
+        case Icon::PlugConnectedFilled: return {"ic_fluent_plug_connected_20", "plug-circle.svg", true};
         case Icon::PlugDisconnected: return {"ic_fluent_plug_disconnected_20", "link-broken.svg"};
         case Icon::Question: return {"ic_fluent_question_20", "question-circle.svg"};
         case Icon::Record: return {"ic_fluent_record_20", "record-circle.svg"};
-        case Icon::RecordFilled: return {"ic_fluent_record_20", "record-circle.svg"};
+        case Icon::RecordFilled: return {"ic_fluent_record_20", "record-circle.svg", true};
         case Icon::Save: return {"ic_fluent_save_20", "diskette.svg"};
         case Icon::Server: return {"ic_fluent_server_20", "server-square.svg"};
         case Icon::ServerLink: return {"ic_fluent_server_link_20", "server-square.svg"};
-        case Icon::ServerLinkFilled: return {"ic_fluent_server_link_20", "server-square.svg"};
+        case Icon::ServerLinkFilled: return {"ic_fluent_server_link_20", "server-square.svg", true};
         case Icon::Settings: return {"ic_fluent_settings_20", "settings.svg"};
         case Icon::Star: return {"ic_fluent_star_20", "star-circle.svg"};
         case Icon::Table: return {"ic_fluent_table_20", "document-add.svg"};
@@ -95,11 +96,15 @@ static IconDef getIconDef(Icon icon) {
     return {};
 }
 
-QString IconUtils::iconPath(Icon icon, std::optional<IconTheme> theme) {
+QString IconUtils::iconPath(Icon icon) {
     auto def = getIconDef(icon);
     if (!def.fluent) return {};
 
-    IconTheme activeTheme = theme.value_or(currentTheme_);
+    IconTheme activeTheme = currentTheme_;
+    if (def.forceFilled) {
+        if (activeTheme == IconTheme::FluentUIRegular) activeTheme = IconTheme::FluentUIFilled;
+        else if (activeTheme == IconTheme::SolarizedLinear) activeTheme = IconTheme::SolarizedBold;
+    }
 
     switch (activeTheme) {
         case IconTheme::FluentUIRegular:
@@ -114,8 +119,8 @@ QString IconUtils::iconPath(Icon icon, std::optional<IconTheme> theme) {
     return {};
 }
 
-QIcon IconUtils::createRecoloredIcon(Icon icon, const QColor& color, std::optional<IconTheme> theme) {
-    return createRecoloredIcon(iconPath(icon, theme), color);
+QIcon IconUtils::createRecoloredIcon(Icon icon, const QColor& color) {
+    return createRecoloredIcon(iconPath(icon), color);
 }
 
 QIcon IconUtils::createRecoloredIcon(const QString& svgPath, const QColor& color) {

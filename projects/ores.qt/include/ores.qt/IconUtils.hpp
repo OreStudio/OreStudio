@@ -137,21 +137,19 @@ public:
     static IconTheme currentTheme() { return currentTheme_; }
 
     /**
-     * @brief Gets the resource path for a semantic icon in a specific theme.
+     * @brief Gets the resource path for a semantic icon using the current global theme.
      * @param icon The semantic icon identifier
-     * @param theme The icon theme/style to use (defaults to global theme)
      * @return The resource path string (e.g. ":/icons/...")
      */
-    static QString iconPath(Icon icon, std::optional<IconTheme> theme = std::nullopt);
+    static QString iconPath(Icon icon);
 
     /**
-     * @brief Creates a recolored version of a semantic icon.
+     * @brief Creates a recolored version of a semantic icon using the current global theme.
      * @param icon The semantic icon identifier
      * @param color Color to apply to the icon in normal state
-     * @param theme The icon theme/style to use (defaults to global theme)
      * @return QIcon with recolored normal and disabled states
      */
-    static QIcon createRecoloredIcon(Icon icon, const QColor& color, std::optional<IconTheme> theme = std::nullopt);
+    static QIcon createRecoloredIcon(Icon icon, const QColor& color);
 
     /**
      * @brief Creates a recolored version of an SVG icon.

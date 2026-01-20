@@ -79,12 +79,11 @@ void TreatmentDimensionController::showListWindow() {
     connect(listWindow_, &TreatmentDimensionMdiWindow::showDimensionHistory,
             this, &TreatmentDimensionController::onShowHistory);
 
-    const QColor iconColor(220, 220, 220);
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Treatment Dimensions");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+        Icon::Database, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -144,7 +143,6 @@ void TreatmentDimensionController::onShowHistory(const QString& code) {
 void TreatmentDimensionController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new treatment dimension";
 
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new TreatmentDimensionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -167,7 +165,7 @@ void TreatmentDimensionController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Treatment Dimension");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+        Icon::Database, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -188,7 +186,6 @@ void TreatmentDimensionController::showDetailWindow(
 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << dimension.code;
 
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new TreatmentDimensionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -218,7 +215,7 @@ void TreatmentDimensionController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Treatment Dimension: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+        Icon::Database, IconUtils::DefaultIconColor));
 
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
@@ -249,7 +246,6 @@ void TreatmentDimensionController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << code.toStdString();
-    const QColor iconColor(220, 220, 220);
 
     auto* historyDialog = new TreatmentDimensionHistoryDialog(code, clientManager_, mainWindow_);
 
@@ -275,7 +271,7 @@ void TreatmentDimensionController::showHistoryWindow(const QString& code) {
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Treatment Dimension History: %1").arg(code));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
@@ -305,7 +301,6 @@ void TreatmentDimensionController::onOpenVersion(
         return;
     }
 
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new TreatmentDimensionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -330,7 +325,7 @@ void TreatmentDimensionController::onOpenVersion(
     detailWindow->setWindowTitle(QString("Treatment Dimension: %1 (Version %2)")
         .arg(code).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
@@ -370,14 +365,13 @@ void TreatmentDimensionController::onRevertVersion(
         self->handleEntitySaved();
     });
 
-    const QColor iconColor(220, 220, 220);
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Revert Treatment Dimension: %1")
         .arg(QString::fromStdString(dimension.code)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

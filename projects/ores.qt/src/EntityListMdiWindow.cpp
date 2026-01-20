@@ -19,6 +19,7 @@
  */
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ColorConstants.hpp"
 
 namespace ores::qt {
 
@@ -38,7 +39,7 @@ void EntityListMdiWindow::initializeStaleIndicator(QAction* refreshAction,
 
     // Store normal icon and create pulse (orange) icon
     normalReloadIcon_ = refreshAction_->icon();
-    pulseReloadIcon_ = IconUtils::createRecoloredIcon(iconPath, QColor(255, 165, 0));
+    pulseReloadIcon_ = IconUtils::createRecoloredIcon(iconPath, color_constants::stale_indicator);
 
     // Set initial tooltip
     refreshAction_->setToolTip(normalRefreshTooltip());

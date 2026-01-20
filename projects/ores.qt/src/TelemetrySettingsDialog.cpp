@@ -112,7 +112,7 @@ void TelemetrySettingsDialog::setupUI() {
     log_directory_edit_->setPlaceholderText("Leave empty for current directory");
     log_dir_layout->addWidget(log_directory_edit_);
     log_directory_browse_->setIcon(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_folder_20_regular.svg", iconColor));
+        IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
     log_directory_browse_->setFixedWidth(100);
     log_dir_layout->addWidget(log_directory_browse_);
     logging_layout->addRow("Directory:", log_dir_layout);
@@ -144,7 +144,7 @@ void TelemetrySettingsDialog::setupUI() {
     telemetry_directory_edit_->setPlaceholderText("Leave empty for current directory");
     telem_dir_layout->addWidget(telemetry_directory_edit_);
     telemetry_directory_browse_->setIcon(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_folder_20_regular.svg", iconColor));
+        IconUtils::createRecoloredIcon(Icon::Folder, IconUtils::DefaultIconColor));
     telemetry_directory_browse_->setFixedWidth(100);
     telem_dir_layout->addWidget(telemetry_directory_browse_);
     telemetry_layout->addRow("Directory:", telem_dir_layout);
@@ -185,9 +185,9 @@ void TelemetrySettingsDialog::setupUI() {
 
     // Dialog buttons
     apply_button_->setIcon(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_checkmark_20_regular.svg", iconColor));
+        IconUtils::createRecoloredIcon(Icon::Checkmark, IconUtils::DefaultIconColor));
     cancel_button_->setIcon(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
     auto* button_layout = new QHBoxLayout();
     button_layout->addStretch();

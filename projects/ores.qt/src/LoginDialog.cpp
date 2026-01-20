@@ -227,7 +227,7 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
     // Saved connections button (icon only)
     savedConnectionsButton_ = new QToolButton(parent);
     savedConnectionsButton_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_server_link_20_filled.svg", QColor("#909090")));
+        Icon::ServerLinkFilled, IconUtils::DefaultIconColor));
     savedConnectionsButton_->setIconSize(QSize(14, 14));
     savedConnectionsButton_->setStyleSheet(dialog_styles::saved_connections_button);
     savedConnectionsButton_->setToolTip(tr("Saved connections"));

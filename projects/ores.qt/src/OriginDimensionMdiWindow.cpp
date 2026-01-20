@@ -80,22 +80,20 @@ void OriginDimensionMdiWindow::setupToolbar() {
     toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     toolbar_->setIconSize(QSize(20, 20));
 
-    const auto& iconColor = color_constants::icon_color;
-
     reloadAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor),
+            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
             &OriginDimensionMdiWindow::reload);
 
-    initializeStaleIndicator(reloadAction_, ":/icons/ic_fluent_arrow_clockwise_16_regular.svg");
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_add_20_regular.svg", iconColor),
+            Icon::Add, IconUtils::DefaultIconColor),
         tr("Add"));
     addAction_->setToolTip(tr("Add new origin dimension"));
     connect(addAction_, &QAction::triggered, this,
@@ -103,7 +101,7 @@ void OriginDimensionMdiWindow::setupToolbar() {
 
     editAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_edit_20_regular.svg", iconColor),
+            Icon::Edit, IconUtils::DefaultIconColor),
         tr("Edit"));
     editAction_->setToolTip(tr("Edit selected origin dimension"));
     editAction_->setEnabled(false);
@@ -112,7 +110,7 @@ void OriginDimensionMdiWindow::setupToolbar() {
 
     deleteAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_delete_20_regular.svg", iconColor),
+            Icon::Delete, IconUtils::DefaultIconColor),
         tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected origin dimension"));
     deleteAction_->setEnabled(false);
@@ -121,7 +119,7 @@ void OriginDimensionMdiWindow::setupToolbar() {
 
     historyAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_history_20_regular.svg", iconColor),
+            Icon::History, IconUtils::DefaultIconColor),
         tr("History"));
     historyAction_->setToolTip(tr("View origin dimension history"));
     historyAction_->setEnabled(false);

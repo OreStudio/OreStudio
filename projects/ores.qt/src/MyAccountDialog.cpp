@@ -102,7 +102,7 @@ void MyAccountDialog::setupUI() {
     email_edit_->setPlaceholderText("Enter email address");
     email_layout->addWidget(email_edit_);
     save_email_button_->setIcon(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_save_20_regular.svg", iconColor));
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
     save_email_button_->setFixedWidth(80);
     email_layout->addWidget(save_email_button_);
     account_layout->addRow("Email:", email_layout);
@@ -125,7 +125,7 @@ void MyAccountDialog::setupUI() {
     sessions_layout->addRow("", current_session_label_);
 
     view_sessions_button_->setIcon(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
     auto* sessions_button_layout = new QHBoxLayout();
     sessions_button_layout->addStretch();
     sessions_button_layout->addWidget(view_sessions_button_);
@@ -151,7 +151,7 @@ void MyAccountDialog::setupUI() {
 
     // Change password button
     change_password_button_->setIcon(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_key_20_regular.svg", iconColor));
+        IconUtils::createRecoloredIcon(Icon::Key, IconUtils::DefaultIconColor));
 
     auto* password_button_layout = new QHBoxLayout();
     password_button_layout->addWidget(password_status_label_);
@@ -162,7 +162,7 @@ void MyAccountDialog::setupUI() {
 
     // Close button
     close_button_->setIcon(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_dismiss_20_regular.svg", iconColor));
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
 
     auto* button_layout = new QHBoxLayout();
     button_layout->addStretch();

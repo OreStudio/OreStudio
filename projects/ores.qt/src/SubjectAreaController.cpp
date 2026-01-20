@@ -79,12 +79,11 @@ void SubjectAreaController::showListWindow() {
     connect(listWindow_, &SubjectAreaMdiWindow::showSubjectAreaHistory,
             this, &SubjectAreaController::onShowHistory);
 
-    const QColor iconColor(220, 220, 220);
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Subject Areas");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_table_20_regular.svg", iconColor));
+        Icon::Table, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -148,7 +147,6 @@ void SubjectAreaController::onShowHistory(const QString& name,
 void SubjectAreaController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new subject area";
 
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new SubjectAreaDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -173,7 +171,7 @@ void SubjectAreaController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Subject Area");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_table_20_regular.svg", iconColor));
+        Icon::Table, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -197,7 +195,6 @@ void SubjectAreaController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: "
                                << subject_area.name;
 
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new SubjectAreaDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -230,7 +227,7 @@ void SubjectAreaController::showDetailWindow(
     detailWindow->setWindowTitle(QString("Subject Area: %1")
         .arg(QString::fromStdString(subject_area.name)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_table_20_regular.svg", iconColor));
+        Icon::Table, IconUtils::DefaultIconColor));
 
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
@@ -264,7 +261,6 @@ void SubjectAreaController::showHistoryWindow(const QString& name,
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << name.toStdString();
-    const QColor iconColor(220, 220, 220);
 
     auto* historyDialog = new SubjectAreaHistoryDialog(
         name, domain_name, clientManager_, mainWindow_);
@@ -292,7 +288,7 @@ void SubjectAreaController::showHistoryWindow(const QString& name,
     historyWindow->setWindowTitle(
         QString("Subject Area History: %1").arg(name));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
@@ -323,7 +319,6 @@ void SubjectAreaController::onOpenVersion(
         return;
     }
 
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new SubjectAreaDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -349,7 +344,7 @@ void SubjectAreaController::onOpenVersion(
     detailWindow->setWindowTitle(QString("Subject Area: %1 (Version %2)")
         .arg(name).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
@@ -392,15 +387,13 @@ void SubjectAreaController::onRevertVersion(
         self->handleEntitySaved();
     });
 
-    const QColor iconColor(220, 220, 220);
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Revert Subject Area: %1")
         .arg(QString::fromStdString(subject_area.name)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg",
-        iconColor));
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

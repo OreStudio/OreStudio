@@ -74,6 +74,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::PasswordReset: return {"ic_fluent_password_reset_48", "lock-password-unlocked.svg"};
         case Icon::Person: return {"ic_fluent_person_20", "user-circle.svg"};
         case Icon::PersonAccounts: return {"ic_fluent_person_accounts_20", "users-group-rounded.svg"};
+        case Icon::PersonAdd: return {"ic_fluent_person_add_20", "user-plus-rounded.svg"};
         case Icon::PlugConnected: return {"ic_fluent_plug_connected_20", "plug-circle.svg"};
         case Icon::PlugConnectedFilled: return {"ic_fluent_plug_connected_20", "plug-circle.svg"};
         case Icon::PlugDisconnected: return {"ic_fluent_plug_disconnected_20", "link-broken.svg"};

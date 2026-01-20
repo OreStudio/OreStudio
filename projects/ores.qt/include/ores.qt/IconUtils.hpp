@@ -70,6 +70,7 @@ enum class Icon {
     PasswordReset,
     Person,
     PersonAccounts,
+    PersonAdd,
     PlugConnected,
     PlugConnectedFilled,
     PlugDisconnected,

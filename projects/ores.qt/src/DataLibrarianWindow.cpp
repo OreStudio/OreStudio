@@ -156,7 +156,7 @@ void DataLibrarianWindow::setupToolbar() {
 
     viewDatasetAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_info_20_regular.svg", iconColor),
+            Icon::Info, IconUtils::DefaultIconColor),
         tr("View"));
     viewDatasetAction_->setToolTip(tr("View selected dataset details"));
     viewDatasetAction_->setEnabled(false);

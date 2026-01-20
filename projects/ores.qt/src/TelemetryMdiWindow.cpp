@@ -224,13 +224,10 @@ void TelemetryMdiWindow::applyLevelFilter() {
 }
 
 void TelemetryMdiWindow::setupReloadAction() {
-    const auto& iconColor = color_constants::icon_color;
-    const auto& staleColor = color_constants::stale_indicator;
-
     normalReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor);
+        Icon::ArrowSync, IconUtils::DefaultIconColor);
     staleReloadIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_sync_20_regular.svg", staleColor);
+        Icon::ArrowSync, color_constants::stale_indicator);
 
     reloadAction_ = new QAction("Reload", this);
     reloadAction_->setIcon(normalReloadIcon_);

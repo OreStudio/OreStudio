@@ -79,12 +79,11 @@ void OriginDimensionController::showListWindow() {
             this, &OriginDimensionController::onShowHistory);
 
     // Create MDI subwindow
-    const QColor iconColor(220, 220, 220);
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Origin Dimensions");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+        Icon::Database, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -147,8 +146,6 @@ void OriginDimensionController::onShowHistory(const QString& code) {
 void OriginDimensionController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new origin dimension";
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new OriginDimensionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -170,7 +167,7 @@ void OriginDimensionController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Origin Dimension");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+        Icon::Database, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -190,8 +187,6 @@ void OriginDimensionController::showDetailWindow(
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << dimension.code;
-
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new OriginDimensionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -221,7 +216,7 @@ void OriginDimensionController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Origin Dimension: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_database_20_regular.svg", iconColor));
+        Icon::Database, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);
@@ -254,7 +249,6 @@ void OriginDimensionController::showHistoryWindow(const QString& code) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << code.toStdString();
-    const QColor iconColor(220, 220, 220);
 
     auto* historyDialog = new OriginDimensionHistoryDialog(code, clientManager_, mainWindow_);
 
@@ -281,7 +275,7 @@ void OriginDimensionController::showHistoryWindow(const QString& code) {
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Origin Dimension History: %1").arg(code));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -313,8 +307,6 @@ void OriginDimensionController::onOpenVersion(
         return;
     }
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new OriginDimensionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -338,7 +330,7 @@ void OriginDimensionController::onOpenVersion(
     detailWindow->setWindowTitle(QString("Origin Dimension: %1 (Version %2)")
         .arg(code).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
@@ -379,14 +371,13 @@ void OriginDimensionController::onRevertVersion(
         self->handleEntitySaved();
     });
 
-    const QColor iconColor(220, 220, 220);
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Revert Origin Dimension: %1")
         .arg(QString::fromStdString(dimension.code)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

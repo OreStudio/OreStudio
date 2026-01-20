@@ -29,7 +29,12 @@
 #include <QGraphicsScene>
 #include "ores.dq/domain/dataset.hpp"
 #include "ores.dq/domain/methodology.hpp"
+#include "ores.dq/domain/catalog_dependency.hpp"
 #include "ores.logging/make_logger.hpp"
+
+namespace ores::qt {
+class ClientManager;
+}
 
 namespace ores::qt {
 
@@ -57,6 +62,7 @@ class DatasetViewDialog : public QDialog {
     Q_PROPERTY(QColor lineageHeaderOrigin MEMBER lineageHeaderOrigin_)
     Q_PROPERTY(QColor lineageHeaderMethod MEMBER lineageHeaderMethod_)
     Q_PROPERTY(QColor lineageHeaderDataset MEMBER lineageHeaderDataset_)
+    Q_PROPERTY(QColor lineageHeaderCatalog MEMBER lineageHeaderCatalog_)
     Q_PROPERTY(qreal lineageNodeWidth MEMBER lineageNodeWidth_)
     Q_PROPERTY(qreal lineageHeaderHeight MEMBER lineageHeaderHeight_)
     Q_PROPERTY(qreal lineageRowHeight MEMBER lineageRowHeight_)
@@ -75,11 +81,14 @@ private:
     }
 
 public:
-    explicit DatasetViewDialog(QWidget* parent = nullptr);
+    explicit DatasetViewDialog(ClientManager* clientManager,
+                               QWidget* parent = nullptr);
     ~DatasetViewDialog() override;
 
     void setDataset(const dq::domain::dataset& dataset);
     void setMethodologies(const std::vector<dq::domain::methodology>& methodologies);
+    void setCatalogDependencies(
+        const std::vector<dq::domain::catalog_dependency>& dependencies);
 
 private:
     void setupUi();
@@ -136,8 +145,10 @@ private:
     QGraphicsView* lineageView_;
 
     // Data
+    ClientManager* clientManager_;
     dq::domain::dataset dataset_;
     std::vector<dq::domain::methodology> methodologies_;
+    std::vector<dq::domain::catalog_dependency> catalogDependencies_;
 
     // Lineage styling properties (QSS-configurable)
     QColor lineageBackground_{0x2D, 0x2D, 0x30};
@@ -151,6 +162,7 @@ private:
     QColor lineageHeaderOrigin_{0x3B, 0x82, 0xF6};
     QColor lineageHeaderMethod_{0x8B, 0x5C, 0xF6};
     QColor lineageHeaderDataset_{0x22, 0xC5, 0x5E};
+    QColor lineageHeaderCatalog_{0xF9, 0x73, 0x16};  // Orange for catalog
     qreal lineageNodeWidth_{140};
     qreal lineageHeaderHeight_{18};
     qreal lineageRowHeight_{14};

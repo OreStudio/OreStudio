@@ -36,6 +36,7 @@
 #include "ores.qt/ClientDataDomainModel.hpp"
 #include "ores.qt/ClientSubjectAreaModel.hpp"
 #include "ores.qt/ClientCatalogModel.hpp"
+#include "ores.qt/ClientCatalogDependencyModel.hpp"
 #include "ores.qt/ClientMethodologyModel.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/dataset.hpp"
@@ -60,7 +61,7 @@ class DataLibrarianWindow final : public QWidget {
 
 private:
     inline static std::string_view logger_name = "ores.qt.data_librarian_window";
-    static constexpr int total_model_loads = 5;
+    static constexpr int total_model_loads = 6;
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -104,6 +105,7 @@ private slots:
     void onDomainsLoaded();
     void onSubjectAreasLoaded();
     void onCatalogsLoaded();
+    void onCatalogDependenciesLoaded();
     void onMethodologiesLoaded();
 
     // Column visibility context menu
@@ -158,6 +160,7 @@ private:
     ClientDataDomainModel* dataDomainModel_;
     ClientSubjectAreaModel* subjectAreaModel_;
     ClientCatalogModel* catalogModel_;
+    ClientCatalogDependencyModel* catalogDependencyModel_;
     ClientMethodologyModel* methodologyModel_;
 
     // Status bar with loading indicator

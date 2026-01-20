@@ -75,6 +75,7 @@ DataLibrarianWindow::DataLibrarianWindow(
       dataDomainModel_(new ClientDataDomainModel(clientManager, this)),
       subjectAreaModel_(new ClientSubjectAreaModel(clientManager, this)),
       catalogModel_(new ClientCatalogModel(clientManager, this)),
+      catalogDependencyModel_(new ClientCatalogDependencyModel(clientManager, this)),
       methodologyModel_(new ClientMethodologyModel(clientManager, this)),
       statusBar_(new QStatusBar(this)),
       loadingProgressBar_(new QProgressBar(this)),
@@ -112,6 +113,10 @@ DataLibrarianWindow::DataLibrarianWindow(
     statusLabel_->setText(tr("Loading catalogs..."));
     BOOST_LOG_SEV(lg(), debug) << "Requesting catalogs...";
     catalogModel_->loadData();
+
+    statusLabel_->setText(tr("Loading catalog dependencies..."));
+    BOOST_LOG_SEV(lg(), debug) << "Requesting catalog dependencies...";
+    catalogDependencyModel_->loadData();
 
     statusLabel_->setText(tr("Loading methodologies..."));
     BOOST_LOG_SEV(lg(), debug) << "Requesting methodologies...";
@@ -321,6 +326,8 @@ void DataLibrarianWindow::setupConnections() {
             this, &DataLibrarianWindow::onSubjectAreasLoaded);
     connect(catalogModel_, &ClientCatalogModel::loadFinished,
             this, &DataLibrarianWindow::onCatalogsLoaded);
+    connect(catalogDependencyModel_, &ClientCatalogDependencyModel::loadFinished,
+            this, &DataLibrarianWindow::onCatalogDependenciesLoaded);
     connect(methodologyModel_, &ClientMethodologyModel::dataLoaded,
             this, &DataLibrarianWindow::onMethodologiesLoaded);
 
@@ -411,7 +418,7 @@ void DataLibrarianWindow::showDatasetDetailDialog(const dq::domain::dataset* dat
 
     // Create dialog if it doesn't exist
     if (!datasetViewDialog_) {
-        datasetViewDialog_ = new DatasetViewDialog(this);
+        datasetViewDialog_ = new DatasetViewDialog(clientManager_, this);
         datasetViewDialog_->setAttribute(Qt::WA_DeleteOnClose, false);
     }
 
@@ -424,6 +431,7 @@ void DataLibrarianWindow::showDatasetDetailDialog(const dq::domain::dataset* dat
         }
     }
     datasetViewDialog_->setMethodologies(methodologies);
+    datasetViewDialog_->setCatalogDependencies(catalogDependencyModel_->dependencies());
     datasetViewDialog_->setDataset(*dataset);
 
     // Show modeless dialog
@@ -447,6 +455,7 @@ void DataLibrarianWindow::onRefreshClicked() {
     dataDomainModel_->refresh();
     subjectAreaModel_->refresh();
     catalogModel_->loadData();
+    catalogDependencyModel_->loadData();
     methodologyModel_->refresh();
     datasetModel_->refresh();
 }
@@ -514,6 +523,20 @@ void DataLibrarianWindow::onCatalogsLoaded() {
         BOOST_LOG_SEV(lg(), info) << "All data loading complete";
     }
     buildNavigationTree();
+}
+
+void DataLibrarianWindow::onCatalogDependenciesLoaded() {
+    const auto& deps = catalogDependencyModel_->dependencies();
+    BOOST_LOG_SEV(lg(), info) << "Catalog dependencies loaded: " << deps.size()
+                              << " (pending: " << pendingLoads_ - 1 << ")";
+    --pendingLoads_;
+    loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    statusLabel_->setText(tr("Loaded %1 catalog dependencies...").arg(deps.size()));
+    if (pendingLoads_ <= 0) {
+        loadingProgressBar_->setVisible(false);
+        statusLabel_->setText(tr("Ready"));
+        BOOST_LOG_SEV(lg(), info) << "All data loading complete";
+    }
 }
 
 void DataLibrarianWindow::onMethodologiesLoaded() {

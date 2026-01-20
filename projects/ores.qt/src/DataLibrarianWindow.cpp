@@ -31,6 +31,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/DatasetItemDelegate.hpp"
 #include "ores.qt/DatasetViewDialog.hpp"
+#include "ores.qt/PublishDatasetsDialog.hpp"
 
 namespace ores::qt {
 
@@ -168,6 +169,13 @@ void DataLibrarianWindow::setupToolbar() {
     viewDatasetAction_->setToolTip(tr("View selected dataset details"));
     viewDatasetAction_->setEnabled(false);
 
+    publishAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::ServerLink, IconUtils::DefaultIconColor),
+        tr("Publish"));
+    publishAction_->setToolTip(tr("Publish selected datasets to production tables"));
+    publishAction_->setEnabled(false);
+
     toolbar_->addSeparator();
 
     // Related windows - dimensions
@@ -304,6 +312,8 @@ void DataLibrarianWindow::setupConnections() {
             this, &DataLibrarianWindow::onRefreshClicked);
     connect(viewDatasetAction_, &QAction::triggered,
             this, &DataLibrarianWindow::onViewDatasetClicked);
+    connect(publishAction_, &QAction::triggered,
+            this, &DataLibrarianWindow::onPublishClicked);
 
     connect(originDimensionsAction_, &QAction::triggered,
             this, &DataLibrarianWindow::openOriginDimensionsRequested);
@@ -381,9 +391,10 @@ void DataLibrarianWindow::onNavigationSelectionChanged(
 }
 
 void DataLibrarianWindow::onDatasetSelectionChanged() {
-    // Enable/disable view action based on selection
+    // Enable/disable view/publish actions based on selection
     const auto selection = datasetTable_->selectionModel()->selectedRows();
     viewDatasetAction_->setEnabled(!selection.isEmpty());
+    publishAction_->setEnabled(!selection.isEmpty());
 }
 
 void DataLibrarianWindow::onDatasetDoubleClicked(const QModelIndex& index) {
@@ -411,6 +422,35 @@ void DataLibrarianWindow::onViewDatasetClicked() {
     if (dataset) {
         showDatasetDetailDialog(dataset);
     }
+}
+
+void DataLibrarianWindow::onPublishClicked() {
+    const auto selection = datasetTable_->selectionModel()->selectedRows();
+    if (selection.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No datasets selected for publish";
+        return;
+    }
+
+    // Collect selected datasets
+    std::vector<dq::domain::dataset> selectedDatasets;
+    selectedDatasets.reserve(selection.size());
+
+    for (const auto& proxyIndex : selection) {
+        const auto sourceIndex = datasetProxyModel_->mapToSource(proxyIndex);
+        const auto* dataset = datasetModel_->getDataset(sourceIndex.row());
+        if (dataset) {
+            selectedDatasets.push_back(*dataset);
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Opening publish dialog for "
+        << selectedDatasets.size() << " datasets";
+
+    // Open publish dialog
+    auto* dialog = new PublishDatasetsDialog(clientManager_, username_, this);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->setDatasets(selectedDatasets);
+    dialog->exec();
 }
 
 void DataLibrarianWindow::showDatasetDetailDialog(const dq::domain::dataset* dataset) {

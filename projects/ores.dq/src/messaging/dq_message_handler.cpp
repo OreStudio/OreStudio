@@ -27,6 +27,7 @@
 #include "ores.dq/messaging/dataset_protocol.hpp"
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq/messaging/dimension_protocol.hpp"
+#include "ores.dq/messaging/publication_protocol.hpp"
 
 namespace ores::dq::messaging {
 
@@ -42,7 +43,8 @@ dq_message_handler::dq_message_handler(database::context ctx,
       data_organization_service_(ctx),
       dataset_service_(ctx),
       coding_scheme_service_(ctx),
-      dimension_service_(ctx) {}
+      dimension_service_(ctx),
+      publication_service_(ctx) {}
 
 dq_message_handler::handler_result
 dq_message_handler::handle_message(message_type type,
@@ -180,6 +182,10 @@ dq_message_handler::handle_message(message_type type,
         co_return co_await handle_delete_treatment_dimension_request(payload, remote_address);
     case message_type::get_treatment_dimension_history_request:
         co_return co_await handle_get_treatment_dimension_history_request(payload, remote_address);
+
+    // Publication messages
+    case message_type::publish_datasets_request:
+        co_return co_await handle_publish_datasets_request(payload, remote_address);
 
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown DQ message type " << type;
@@ -2100,6 +2106,68 @@ handle_get_treatment_dimension_history_request(std::span<const std::byte> payloa
                                    << e.what();
         response.success = false;
         response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// =============================================================================
+// Publication Handlers
+// =============================================================================
+
+dq_message_handler::handler_result dq_message_handler::
+handle_publish_datasets_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing publish_datasets_request from "
+                               << remote_address;
+
+    auto auth_result = check_authorization(remote_address,
+        "datasets:publish", "Publish datasets");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = publish_datasets_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize publish_datasets_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), info) << "Publishing " << request.dataset_ids.size()
+                              << " datasets, mode: " << request.mode
+                              << ", resolve_dependencies: "
+                              << request.resolve_dependencies;
+
+    publish_datasets_response response;
+    try {
+        response.results = publication_service_.publish(
+            request.dataset_ids,
+            request.mode,
+            request.published_by,
+            request.resolve_dependencies);
+
+        std::uint64_t total_inserted = 0;
+        std::uint64_t total_failed = 0;
+        for (const auto& result : response.results) {
+            if (result.success) {
+                total_inserted += result.records_inserted;
+            } else {
+                ++total_failed;
+            }
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Publication complete: "
+                                  << response.results.size() << " datasets, "
+                                  << total_inserted << " total records inserted, "
+                                  << total_failed << " failures";
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Publication failed: " << e.what();
+        // Return a single error result
+        domain::publication_result error_result;
+        error_result.success = false;
+        error_result.error_message = e.what();
+        response.results.push_back(error_result);
     }
 
     co_return response.serialize();

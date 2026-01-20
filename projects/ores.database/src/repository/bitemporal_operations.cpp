@@ -204,4 +204,50 @@ std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_qu
     return result;
 }
 
+void execute_raw_command(context ctx, const std::string& sql,
+    logging::logger_t& lg, const std::string& operation_desc) {
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
+
+    // Create direct libpq connection using credentials from context
+    const auto conn_str = build_connection_string(ctx.credentials());
+    pg_connection_guard conn_guard(PQconnectdb(conn_str.c_str()));
+
+    if (PQstatus(conn_guard.conn) != CONNECTION_OK) {
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "Connection failed: " << err_msg;
+        throw std::runtime_error("Database connection failed: " + err_msg);
+    }
+
+    // Begin transaction
+    pg_result_guard begin_guard(PQexec(conn_guard.conn, "BEGIN"));
+    if (PQresultStatus(begin_guard.result) != PGRES_COMMAND_OK) {
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "BEGIN failed: " << err_msg;
+        throw std::runtime_error("Transaction begin failed: " + err_msg);
+    }
+
+    // Execute the command
+    pg_result_guard result_guard(PQexec(conn_guard.conn, sql.c_str()));
+
+    if (PQresultStatus(result_guard.result) != PGRES_COMMAND_OK &&
+        PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
+        // Rollback on error
+        PQexec(conn_guard.conn, "ROLLBACK");
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "Command failed: " << err_msg;
+        throw std::runtime_error("Command execution failed: " + err_msg);
+    }
+
+    // Commit transaction
+    pg_result_guard commit_guard(PQexec(conn_guard.conn, "COMMIT"));
+    if (PQresultStatus(commit_guard.result) != PGRES_COMMAND_OK) {
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "COMMIT failed: " << err_msg;
+        throw std::runtime_error("Transaction commit failed: " + err_msg);
+    }
+
+    BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
+}
+
 }

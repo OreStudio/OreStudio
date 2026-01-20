@@ -200,8 +200,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 22.2 adds artefact_type field to dataset serialization. This field
 // indicates which population function to call when publishing the dataset.
 // Valid values: "images", "countries", "currencies", "ip2country".
+//
+// Version 22.3 adds publish_datasets_request/response messages (0x6090-0x6091)
+// for publishing datasets from artefact tables to production tables.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 22;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 2;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 3;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -484,6 +487,10 @@ enum class message_type {
     get_dataset_dependencies_response = 0x6083,
     get_dataset_dependencies_by_dataset_request = 0x6084,
     get_dataset_dependencies_by_dataset_response = 0x6085,
+
+    // Publication (0x6090 - 0x6093)
+    publish_datasets_request = 0x6090,
+    publish_datasets_response = 0x6091,
 
     last_value
 };

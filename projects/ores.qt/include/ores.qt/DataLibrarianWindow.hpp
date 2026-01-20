@@ -97,6 +97,7 @@ private slots:
     void onDatasetDoubleClicked(const QModelIndex& index);
     void onRefreshClicked();
     void onViewDatasetClicked();
+    void onPublishClicked();
     void onDataLoaded();
     void onLoadError(const QString& error_message, const QString& details = {});
 
@@ -141,6 +142,7 @@ private:
     QToolBar* toolbar_;
     QAction* refreshAction_;
     QAction* viewDatasetAction_;
+    QAction* publishAction_;
     QAction* originDimensionsAction_;
     QAction* natureDimensionsAction_;
     QAction* treatmentDimensionsAction_;

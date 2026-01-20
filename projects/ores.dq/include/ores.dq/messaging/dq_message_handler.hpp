@@ -31,6 +31,7 @@
 #include "ores.dq/service/dataset_service.hpp"
 #include "ores.dq/service/coding_scheme_service.hpp"
 #include "ores.dq/service/dimension_service.hpp"
+#include "ores.dq/service/publication_service.hpp"
 
 namespace ores::dq::messaging {
 
@@ -399,6 +400,20 @@ private:
     handle_get_treatment_dimension_history_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    // =========================================================================
+    // Publication Handlers
+    // =========================================================================
+
+    /**
+     * @brief Handle publish_datasets_request message.
+     *
+     * Requires authentication and datasets:publish permission.
+     * Publishes datasets from artefact tables to production tables.
+     */
+    handler_result
+    handle_publish_datasets_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     /**
      * @brief Result type for authentication checks.
      *
@@ -446,6 +461,7 @@ private:
     service::dataset_service dataset_service_;
     service::coding_scheme_service coding_scheme_service_;
     service::dimension_service dimension_service_;
+    service::publication_service publication_service_;
 };
 
 }

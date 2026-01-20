@@ -222,6 +222,25 @@ std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_qu
     context ctx, const std::string& sql, logging::logger_t& lg,
     const std::string& operation_desc);
 
+/**
+ * @brief Executes a raw SQL command that doesn't return results.
+ *
+ * This helper is useful for INSERT, UPDATE, DELETE, or calling functions
+ * that don't return a result set. Uses a transaction for atomicity.
+ *
+ * @param ctx The repository context
+ * @param sql The raw SQL command string
+ * @param lg The logger to use
+ * @param operation_desc Description of the operation for logging
+ *
+ * @example
+ * execute_raw_command(ctx_,
+ *     "INSERT INTO publications_tbl (dataset_id) VALUES ('...')",
+ *     lg(), "Recording publication");
+ */
+void execute_raw_command(context ctx, const std::string& sql,
+    logging::logger_t& lg, const std::string& operation_desc);
+
 }
 
 #endif

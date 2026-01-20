@@ -29,9 +29,12 @@
  * 1. Change Control: Change reasons and categories
  * 2. Data Quality: Dimensions, domains, subject areas, methodologies, datasets
  * 3. DQ Artefacts: Images, countries, currencies (staging data)
- * 4. Production Data: Images, countries, currencies (via DQ population functions)
- * 5. RBAC: Permissions, roles, role-permission assignments
- * 6. System Flags: Bootstrap mode, user signups, etc.
+ * 4. RBAC: Permissions, roles, role-permission assignments
+ * 5. System Flags: Bootstrap mode, user signups, etc.
+ *
+ * NOTE: Production tables (countries, currencies, images) are NOT populated
+ * here. Use the "Publish Datasets" feature in the Data Librarian window to
+ * publish data from DQ artefact tables to production tables.
  *
  * Usage:
  *   psql -U ores -d your_database -f populate/populate.sql
@@ -115,11 +118,6 @@
 \echo '--- System Flags ---'
 \ir variability_system_flags_populate.sql
 
--- Production Data (populated from DQ staging tables)
-\echo ''
-\echo '--- Production Data (from DQ) ---'
-\ir dq_populate_production.sql
-
 \echo ''
 \echo '=== System Population Complete ==='
 
@@ -132,44 +130,11 @@
 select 'Change Reasons' as entity, count(*) as count
 from ores.dq_change_reasons_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Countries', count(*)
-from ores.refdata_countries_tbl where valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'Countries with Flags', count(*)
-from ores.refdata_countries_tbl where image_id is not null and valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'Currencies (fiat.major)', count(*)
-from ores.refdata_currencies_tbl where currency_type = 'fiat.major' and valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'Currencies (fiat.emerging)', count(*)
-from ores.refdata_currencies_tbl where currency_type = 'fiat.emerging' and valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'Currencies (commodity)', count(*)
-from ores.refdata_currencies_tbl where currency_type = 'commodity' and valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'Currencies (supranational)', count(*)
-from ores.refdata_currencies_tbl where currency_type = 'supranational' and valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'Currencies (fiat.offshore)', count(*)
-from ores.refdata_currencies_tbl where currency_type = 'fiat.offshore' and valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'Currencies (fiat.historical)', count(*)
-from ores.refdata_currencies_tbl where currency_type = 'fiat.historical' and valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'Currencies (crypto.major)', count(*)
-from ores.refdata_currencies_tbl where currency_type = 'crypto.major' and valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'Currencies with Images', count(*)
-from ores.refdata_currencies_tbl where image_id is not null and valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'Flag Images', count(*)
-from ores.assets_images_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+select 'Change Reason Categories', count(*)
+from ores.dq_change_reason_categories_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Permissions', count(*)
 from ores.iam_permissions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'Change Reason Categories', count(*)
-from ores.dq_change_reason_categories_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Roles', count(*)
 from ores.iam_roles_tbl where valid_to = ores.utility_infinity_timestamp_fn()
@@ -177,42 +142,45 @@ union all
 select 'System Flags', count(*)
 from ores.variability_feature_flags_tbl where name like 'system.%' and valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Data Quality Origin Dimensions', count(*)
+select 'DQ Origin Dimensions', count(*)
 from ores.dq_origin_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Data Quality Nature Dimensions', count(*)
+select 'DQ Nature Dimensions', count(*)
 from ores.dq_nature_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Data Quality Treatment Dimensions', count(*)
+select 'DQ Treatment Dimensions', count(*)
 from ores.dq_treatment_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Data Quality Catalogs', count(*)
+select 'DQ Catalogs', count(*)
 from ores.dq_catalogs_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Data Quality Data Domains', count(*)
+select 'DQ Data Domains', count(*)
 from ores.dq_data_domains_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Data Quality Subject Areas', count(*)
+select 'DQ Subject Areas', count(*)
 from ores.dq_subject_areas_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'DQ Coding Scheme Authority Types', count(*)
 from ores.dq_coding_scheme_authority_types_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Data Quality Coding Schemes', count(*)
+select 'DQ Coding Schemes', count(*)
 from ores.dq_coding_schemes_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Data Quality Datasets', count(*)
+select 'DQ Datasets', count(*)
 from ores.dq_datasets_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Data Quality Images', count(*)
+select 'DQ Dataset Dependencies', count(*)
+from ores.dq_dataset_dependencies_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'DQ Artefact: Images', count(*)
 from ores.dq_images_artefact_tbl
 union all
-select 'Data Quality Countries', count(*)
+select 'DQ Artefact: Countries', count(*)
 from ores.dq_countries_artefact_tbl
 union all
-select 'Data Quality Currencies', count(*)
+select 'DQ Artefact: Currencies', count(*)
 from ores.dq_currencies_artefact_tbl
 union all
-select 'Data Quality IP Ranges', count(*)
+select 'DQ Artefact: IP Ranges', count(*)
 from ores.dq_ip2country_artefact_tbl
 order by entity;

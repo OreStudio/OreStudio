@@ -206,8 +206,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 //
 // Version 22.4 adds get_publications_request/response messages (0x6092-0x6093)
 // for querying publication history.
+//
+// Version 22.5 adds resolve_dependencies_request/response messages (0x6094-0x6095)
+// for client-side dependency resolution before publishing. This allows clients
+// to preview the dependency order without actually publishing.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 22;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 4;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 5;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -496,6 +500,8 @@ enum class message_type {
     publish_datasets_response = 0x6091,
     get_publications_request = 0x6092,
     get_publications_response = 0x6093,
+    resolve_dependencies_request = 0x6094,
+    resolve_dependencies_response = 0x6095,
 
     last_value
 };

@@ -27,6 +27,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
+#include "ores.dq/domain/dataset.hpp"
 #include "ores.dq/domain/publication.hpp"
 #include "ores.dq/domain/publication_mode.hpp"
 #include "ores.dq/domain/publication_result.hpp"
@@ -222,6 +223,86 @@ struct get_publications_response final {
 
 std::ostream& operator<<(std::ostream& s, const get_publications_response& v);
 
+// ============================================================================
+// Dependency Resolution Messages
+// ============================================================================
+
+/**
+ * @brief Request to resolve dependencies for datasets before publishing.
+ *
+ * This allows clients to preview which datasets will be published and in
+ * what order, including any dependencies that will be automatically included.
+ * The response returns the full ordered list of datasets.
+ */
+struct resolve_dependencies_request final {
+    /**
+     * @brief IDs of datasets to resolve dependencies for.
+     */
+    std::vector<boost::uuids::uuid> dataset_ids;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 4 bytes: dataset_ids count
+     * - N * 16 bytes: dataset_ids (UUIDs)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<resolve_dependencies_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const resolve_dependencies_request& v);
+
+/**
+ * @brief Response containing the resolved publication order.
+ *
+ * Returns datasets in the order they should be published, with dependencies
+ * appearing before the datasets that depend on them.
+ */
+struct resolve_dependencies_response final {
+    /**
+     * @brief Datasets in publication order.
+     *
+     * Dependencies appear first, followed by datasets that depend on them.
+     * Includes both explicitly requested datasets and their dependencies.
+     */
+    std::vector<domain::dataset> datasets;
+
+    /**
+     * @brief IDs of datasets that were explicitly requested (not dependencies).
+     *
+     * This allows the client to distinguish between requested datasets and
+     * automatically included dependencies in the UI.
+     */
+    std::vector<boost::uuids::uuid> requested_ids;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 4 bytes: datasets count
+     * - For each dataset: (full dataset serialization)
+     * - 4 bytes: requested_ids count
+     * - N * 16 bytes: requested_ids (UUIDs)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<resolve_dependencies_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const resolve_dependencies_response& v);
+
 }
 
 namespace ores::comms::messaging {
@@ -246,6 +327,17 @@ struct message_traits<dq::messaging::get_publications_request> {
     using response_type = dq::messaging::get_publications_response;
     static constexpr message_type request_message_type =
         message_type::get_publications_request;
+};
+
+/**
+ * @brief Message traits for resolve_dependencies_request.
+ */
+template<>
+struct message_traits<dq::messaging::resolve_dependencies_request> {
+    using request_type = dq::messaging::resolve_dependencies_request;
+    using response_type = dq::messaging::resolve_dependencies_response;
+    static constexpr message_type request_message_type =
+        message_type::resolve_dependencies_request;
 };
 
 }

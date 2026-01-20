@@ -172,7 +172,7 @@ void DataLibrarianWindow::setupToolbar() {
 
     publishAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            Icon::ServerLink, IconUtils::DefaultIconColor),
+            Icon::Publish, IconUtils::DefaultIconColor),
         tr("Publish"));
     publishAction_->setToolTip(tr("Publish selected datasets to production tables"));
     publishAction_->setEnabled(false);
@@ -283,7 +283,8 @@ void DataLibrarianWindow::setupCentralWorkspace() {
     datasetTable_->setItemDelegate(new DatasetItemDelegate(datasetTable_));
     datasetTable_->setSortingEnabled(true);
     datasetTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    datasetTable_->setSelectionMode(QAbstractItemView::SingleSelection);
+    datasetTable_->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    datasetTable_->setContextMenuPolicy(Qt::CustomContextMenu);
     datasetTable_->setAlternatingRowColors(true);
     datasetTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     datasetTable_->horizontalHeader()->setStretchLastSection(true);
@@ -313,6 +314,10 @@ void DataLibrarianWindow::setupConnections() {
 
     connect(datasetTable_, &QTableView::doubleClicked,
             this, &DataLibrarianWindow::onDatasetDoubleClicked);
+
+    // Dataset context menu
+    connect(datasetTable_, &QTableView::customContextMenuRequested,
+            this, &DataLibrarianWindow::showDatasetContextMenu);
 
     // Toolbar actions
     connect(refreshAction_, &QAction::triggered,
@@ -850,6 +855,39 @@ void DataLibrarianWindow::showHeaderContextMenu(const QPoint& pos) {
     }
 
     menu.exec(header->mapToGlobal(pos));
+}
+
+void DataLibrarianWindow::showDatasetContextMenu(const QPoint& pos) {
+    const auto selection = datasetTable_->selectionModel()->selectedRows();
+    if (selection.isEmpty()) {
+        return;
+    }
+
+    QMenu menu(this);
+
+    // View action (only for single selection)
+    QAction* viewAction = menu.addAction(
+        IconUtils::createRecoloredIcon(Icon::Info, IconUtils::DefaultIconColor),
+        tr("View Details"));
+    viewAction->setEnabled(selection.size() == 1);
+
+    menu.addSeparator();
+
+    // Publish action
+    QAction* publishAction = menu.addAction(
+        IconUtils::createRecoloredIcon(Icon::Publish, IconUtils::DefaultIconColor),
+        selection.size() == 1
+            ? tr("Publish Dataset")
+            : tr("Publish %1 Datasets").arg(selection.size()));
+
+    // Execute menu and handle selection
+    QAction* selectedAction = menu.exec(datasetTable_->viewport()->mapToGlobal(pos));
+
+    if (selectedAction == viewAction) {
+        onViewDatasetClicked();
+    } else if (selectedAction == publishAction) {
+        onPublishClicked();
+    }
 }
 
 }

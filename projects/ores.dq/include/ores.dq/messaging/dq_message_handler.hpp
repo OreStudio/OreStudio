@@ -424,6 +424,17 @@ private:
         const std::string& remote_address);
 
     /**
+     * @brief Handle resolve_dependencies_request message.
+     *
+     * Requires authentication. Resolves dataset dependencies and returns
+     * the ordered list of datasets that would be published, including
+     * any dependencies that would be automatically included.
+     */
+    handler_result
+    handle_resolve_dependencies_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
      * @brief Result type for authentication checks.
      *
      * Contains the session info if authenticated, or an error code if not.

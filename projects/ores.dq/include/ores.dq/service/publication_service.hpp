@@ -31,6 +31,7 @@
 #include "ores.dq/domain/publication_result.hpp"
 #include "ores.dq/repository/dataset_repository.hpp"
 #include "ores.dq/repository/dataset_dependency_repository.hpp"
+#include "ores.dq/repository/publication_repository.hpp"
 
 namespace ores::dq::service {
 
@@ -168,6 +169,7 @@ private:
     context ctx_;
     repository::dataset_repository dataset_repo_;
     repository::dataset_dependency_repository dependency_repo_;
+    repository::publication_repository publication_repo_;
 };
 
 }

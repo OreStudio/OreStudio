@@ -188,6 +188,8 @@ dq_message_handler::handle_message(message_type type,
         co_return co_await handle_publish_datasets_request(payload, remote_address);
     case message_type::get_publications_request:
         co_return co_await handle_get_publications_request(payload, remote_address);
+    case message_type::resolve_dependencies_request:
+        co_return co_await handle_resolve_dependencies_request(payload, remote_address);
 
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown DQ message type " << type;
@@ -2215,6 +2217,48 @@ handle_get_publications_request(std::span<const std::byte> payload,
                                    << " publication records";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to get publications: " << e.what();
+        co_return std::unexpected(
+            ores::utility::serialization::error_code::handler_error);
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_resolve_dependencies_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing resolve_dependencies_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Resolve dependencies");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = resolve_dependencies_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize resolve_dependencies_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Resolving dependencies for "
+                               << request.dataset_ids.size() << " datasets";
+
+    resolve_dependencies_response response;
+    try {
+        // Use publication_service to resolve the publication order
+        response.datasets = publication_service_.resolve_publication_order(
+            request.dataset_ids);
+
+        // Store the originally requested IDs
+        response.requested_ids = request.dataset_ids;
+
+        BOOST_LOG_SEV(lg(), debug) << "Resolved to " << response.datasets.size()
+                                   << " datasets (including dependencies)";
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to resolve dependencies: " << e.what();
         co_return std::unexpected(
             ores::utility::serialization::error_code::handler_error);
     }

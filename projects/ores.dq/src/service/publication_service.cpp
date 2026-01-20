@@ -36,7 +36,8 @@ using namespace ores::database::repository;
 publication_service::publication_service(context ctx)
     : ctx_(std::move(ctx)),
       dataset_repo_(ctx_),
-      dependency_repo_(ctx_) {
+      dependency_repo_(ctx_),
+      publication_repo_(ctx_) {
     BOOST_LOG_SEV(lg(), debug) << "publication_service initialized";
 }
 
@@ -224,8 +225,7 @@ std::vector<domain::publication> publication_service::get_publication_history(
     BOOST_LOG_SEV(lg(), debug) << "Getting publication history for dataset: "
         << dataset_id;
 
-    // TODO: Implement once we have publication_repository
-    return {};
+    return publication_repo_.read_by_dataset(dataset_id);
 }
 
 std::vector<domain::publication> publication_service::get_recent_publications(
@@ -233,8 +233,7 @@ std::vector<domain::publication> publication_service::get_recent_publications(
 
     BOOST_LOG_SEV(lg(), debug) << "Getting recent publications, limit: " << limit;
 
-    // TODO: Implement once we have publication_repository
-    return {};
+    return publication_repo_.read_recent(limit);
 }
 
 domain::publication_result publication_service::publish_dataset(

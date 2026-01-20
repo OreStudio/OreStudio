@@ -139,6 +139,8 @@
     <property name="title">
      <string>&amp;Window</string>
     </property>
+    <addaction name="ActionDataLibrarian"/>
+    <addaction name="separator"/>
     <addaction name="ActionDetachAll"/>
     <addaction name="separator"/>
    </widget>

@@ -6,6 +6,8 @@
   <qresource prefix="/">
     <file>icons/ic_fluent_arrow_download_20_regular.svg</file>
     <file>icons/ic_fluent_arrow_download_20_filled.svg</file>
+    <file>icons/ic_fluent_arrow_upload_20_regular.svg</file>
+    <file>icons/ic_fluent_arrow_upload_20_filled.svg</file>
     <file>icons/ic_fluent_arrow_previous_20_regular.svg</file>
     <file>icons/ic_fluent_arrow_previous_20_filled.svg</file>
     <file>icons/ic_fluent_arrow_next_20_regular.svg</file>
@@ -151,6 +153,7 @@
     <file>icons/solarized/Bold/text-underline.svg</file>
     <file>icons/solarized/Bold/trash-bin-trash.svg</file>
     <file>icons/solarized/Bold/undo-left-round.svg</file>
+    <file>icons/solarized/Bold/upload-square.svg</file>
     <file>icons/solarized/Bold/user-circle.svg</file>
     <file>icons/solarized/Bold/user-plus-rounded.svg</file>
     <file>icons/solarized/Bold/users-group-rounded.svg</file>
@@ -196,6 +199,7 @@
     <file>icons/solarized/Linear/text-underline.svg</file>
     <file>icons/solarized/Linear/trash-bin-trash.svg</file>
     <file>icons/solarized/Linear/undo-left-round.svg</file>
+    <file>icons/solarized/Linear/upload-square.svg</file>
     <file>icons/solarized/Linear/user-circle.svg</file>
     <file>icons/solarized/Linear/user-plus-rounded.svg</file>
     <file>icons/solarized/Linear/users-group-rounded.svg</file>

@@ -112,6 +112,9 @@ private slots:
     // Column visibility context menu
     void showHeaderContextMenu(const QPoint& pos);
 
+    // Dataset context menu
+    void showDatasetContextMenu(const QPoint& pos);
+
 private:
     void setupUi();
     void setupNavigationSidebar();

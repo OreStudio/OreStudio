@@ -67,6 +67,50 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Ensure DQ dataset checks use code                                  :code:
+
+We are still checking for Name:
+
+#+begin_src sql
+    -- Get the flags dataset ID (for linking images)
+    select id into v_flags_dataset_id
+    from ores.dq_datasets_tbl
+    where name = 'Country Flag Images'
+      and subject_area_name = 'Country Flags'
+      and domain_name = 'Reference Data'
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_flags_dataset_id is null then
+        raise exception 'Dataset not found: Country Flag Images';
+    end if;
+#+end_src
+
+*** Create subsets of datasets                                         :code:
+
+In some cases we may just want to publish a subset of a dataset. For example,
+Majors, G11, etc. Or maybe these are just separate datasets?
+
+In fact that is what they are. Break apart the larger sets - in particular
+currencies, countries, cryptos.
+
+*** Fix code review comments for librarian                             :code:
+
+We ran out of tokens to address code review comments from:
+
+- https://github.com/OreStudio/OreStudio/pull/348
+
+Notes:
+
+- check to see if the diagram is using the new message to retrieve dependencies.
+- most countries don't seem to have flags. How and when is the mapping done?
+  actually after a restart I can now see the flags. It seems we need to force a
+  load.
+- headers in data set are the same colour as rows. Make them different.
+- crypto currencies sometimes overlap with countries and iso currencies. we
+  should "namespace" them somehow to avoid having a country flag being
+  overwritten by a crypto icon (happens with AE).
+
+
 *** Management of roles                                                :code:
 
 At present we have system level roles. This is not ideal, you may want to delete

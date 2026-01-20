@@ -31,6 +31,7 @@
 #include "ores.dq/service/dataset_service.hpp"
 #include "ores.dq/service/coding_scheme_service.hpp"
 #include "ores.dq/service/dimension_service.hpp"
+#include "ores.dq/service/publication_service.hpp"
 
 namespace ores::dq::messaging {
 
@@ -191,6 +192,19 @@ private:
 
     handler_result
     handle_get_catalog_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // =========================================================================
+    // Dataset Dependency Handlers
+    // =========================================================================
+
+    handler_result
+    handle_get_dataset_dependencies_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_dataset_dependencies_by_dataset_request(
+        std::span<const std::byte> payload,
         const std::string& remote_address);
 
     // =========================================================================
@@ -386,6 +400,40 @@ private:
     handle_get_treatment_dimension_history_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    // =========================================================================
+    // Publication Handlers
+    // =========================================================================
+
+    /**
+     * @brief Handle publish_datasets_request message.
+     *
+     * Requires authentication and datasets:publish permission.
+     * Publishes datasets from artefact tables to production tables.
+     */
+    handler_result
+    handle_publish_datasets_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle get_publications_request message.
+     *
+     * Requires authentication. Returns publication history.
+     */
+    handler_result
+    handle_get_publications_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
+     * @brief Handle resolve_dependencies_request message.
+     *
+     * Requires authentication. Resolves dataset dependencies and returns
+     * the ordered list of datasets that would be published, including
+     * any dependencies that would be automatically included.
+     */
+    handler_result
+    handle_resolve_dependencies_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     /**
      * @brief Result type for authentication checks.
      *
@@ -433,6 +481,7 @@ private:
     service::dataset_service dataset_service_;
     service::coding_scheme_service coding_scheme_service_;
     service::dimension_service dimension_service_;
+    service::publication_service publication_service_;
 };
 
 }

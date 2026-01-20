@@ -54,6 +54,7 @@ dataset_mapper::map(const dataset_entity& v) {
     domain::dataset r;
     r.version = v.version;
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.code = v.code;
     r.catalog_name = v.catalog_name;
     r.subject_area_name = v.subject_area_name;
     r.domain_name = v.domain_name;
@@ -71,6 +72,7 @@ dataset_mapper::map(const dataset_entity& v) {
     r.as_of_date = timestamp_to_timepoint(v.as_of_date);
     r.ingestion_timestamp = timestamp_to_timepoint(v.ingestion_timestamp);
     r.license_info = v.license_info;
+    r.artefact_type = v.artefact_type;
     r.recorded_by = v.modified_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -86,6 +88,7 @@ dataset_mapper::map(const domain::dataset& v) {
     dataset_entity r;
     r.id = boost::uuids::to_string(v.id);
     r.version = v.version;
+    r.code = v.code;
     r.catalog_name = v.catalog_name;
     r.subject_area_name = v.subject_area_name;
     r.domain_name = v.domain_name;
@@ -103,6 +106,7 @@ dataset_mapper::map(const domain::dataset& v) {
     r.as_of_date = timepoint_to_timestamp(v.as_of_date, lg());
     r.ingestion_timestamp = timepoint_to_timestamp(v.ingestion_timestamp, lg());
     r.license_info = v.license_info;
+    r.artefact_type = v.artefact_type;
     r.modified_by = v.recorded_by;
     r.change_commentary = v.change_commentary;
 

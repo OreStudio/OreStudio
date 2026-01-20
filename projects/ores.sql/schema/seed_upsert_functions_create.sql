@@ -171,33 +171,35 @@ end;
 $$ language plpgsql;
 
 /**
- * Upsert a catalog dependency (declares load order between catalogs).
+ * Upsert a dataset dependency (declares load order between datasets).
  */
-create or replace function ores.upsert_dq_catalog_dependency(
-    p_catalog_name text,
-    p_dependency_name text
+create or replace function ores.upsert_dq_dataset_dependency(
+    p_dataset_code text,
+    p_dependency_code text,
+    p_role text
 ) returns void as $$
 begin
-    perform ores.seed_validate_not_empty(p_catalog_name, 'Catalog name');
-    perform ores.seed_validate_not_empty(p_dependency_name, 'Dependency name');
+    perform ores.seed_validate_not_empty(p_dataset_code, 'Dataset code');
+    perform ores.seed_validate_not_empty(p_dependency_code, 'Dependency code');
+    perform ores.seed_validate_not_empty(p_role, 'Role');
 
-    insert into ores.dq_catalog_dependencies_tbl (
-        catalog_name, dependency_name,
+    insert into ores.dq_dataset_dependencies_tbl (
+        dataset_code, dependency_code, role,
         recorded_by, change_reason_code, change_commentary,
         valid_from, valid_to
     )
     values (
-        p_catalog_name, p_dependency_name,
-        'system', 'system.new_record', 'System seed data - catalog dependency',
+        p_dataset_code, p_dependency_code, p_role,
+        'system', 'system.new_record', 'System seed data - dataset dependency',
         current_timestamp, ores.utility_infinity_timestamp_fn()
     )
-    on conflict (catalog_name, dependency_name)
+    on conflict (dataset_code, dependency_code)
         where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created catalog dependency: % depends on %', p_catalog_name, p_dependency_name;
+        raise notice 'Created dataset dependency: % depends on % (role: %)', p_dataset_code, p_dependency_code, p_role;
     else
-        raise notice 'Catalog dependency already exists: % depends on %', p_catalog_name, p_dependency_name;
+        raise notice 'Dataset dependency already exists: % depends on %', p_dataset_code, p_dependency_code;
     end if;
 end;
 $$ language plpgsql;
@@ -475,8 +477,14 @@ $$ language plpgsql;
 
 /**
  * Upsert a dataset.
+ *
+ * @param p_artefact_type The type of artefact this dataset populates.
+ *        Valid values: 'images', 'countries', 'currencies', 'ip2country'.
+ *        Used by the publication service to determine which population
+ *        function to call when publishing the dataset.
  */
 create or replace function ores.upsert_dq_datasets(
+    p_code text,
     p_catalog_name text,
     p_subject_area_name text,
     p_domain_name text,
@@ -490,11 +498,13 @@ create or replace function ores.upsert_dq_datasets(
     p_source_system_id text,
     p_business_context text,
     p_as_of_date date,
-    p_license_info text default null
+    p_license_info text default null,
+    p_artefact_type text default null
 ) returns void as $$
 declare
     v_methodology_id uuid;
 begin
+    perform ores.seed_validate_not_empty(p_code, 'Dataset code');
     perform ores.seed_validate_not_empty(p_name, 'Dataset name');
 
     -- Get methodology ID (only table that still uses UUID PK)
@@ -503,18 +513,20 @@ begin
     if v_methodology_id is null then raise exception 'Methodology not found: %', p_methodology_name; end if;
 
     insert into ores.dq_datasets_tbl (
-        id, version, catalog_name, subject_area_name, domain_name, coding_scheme_code,
+        id, version, code, catalog_name, subject_area_name, domain_name, coding_scheme_code,
         origin_code, nature_code, treatment_code, methodology_id,
         name, description, source_system_id, business_context,
         upstream_derivation_id, lineage_depth, as_of_date, ingestion_timestamp, license_info,
+        artefact_type,
         modified_by, change_reason_code, change_commentary,
         valid_from, valid_to
     )
     values (
-        gen_random_uuid(), 0, p_catalog_name, p_subject_area_name, p_domain_name, p_coding_scheme_code,
+        gen_random_uuid(), 0, p_code, p_catalog_name, p_subject_area_name, p_domain_name, p_coding_scheme_code,
         p_origin_code, p_nature_code, p_treatment_code, v_methodology_id,
         p_name, p_description, p_source_system_id, p_business_context,
         null, 0, p_as_of_date, current_timestamp, p_license_info,
+        p_artefact_type,
         'system', 'system.new_record', 'System seed data',
         current_timestamp, ores.utility_infinity_timestamp_fn()
     )

@@ -26,9 +26,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq/domain/catalog.hpp"
+#include "ores.dq/domain/dataset_dependency.hpp"
 #include "ores.dq/domain/data_domain.hpp"
 #include "ores.dq/domain/subject_area.hpp"
 #include "ores.dq/repository/catalog_repository.hpp"
+#include "ores.dq/repository/dataset_dependency_repository.hpp"
 #include "ores.dq/repository/data_domain_repository.hpp"
 #include "ores.dq/repository/subject_area_repository.hpp"
 
@@ -108,6 +110,22 @@ public:
      * @return Vector of all versions, newest first
      */
     std::vector<domain::catalog> get_catalog_history(const std::string& name);
+
+    // ========================================================================
+    // Dataset Dependency Management
+    // ========================================================================
+
+    /**
+     * @brief Lists all dataset dependencies.
+     */
+    std::vector<domain::dataset_dependency> list_dataset_dependencies();
+
+    /**
+     * @brief Lists dataset dependencies for a specific dataset.
+     * @param dataset_code The code of the dataset to query dependencies for
+     */
+    std::vector<domain::dataset_dependency>
+    list_dataset_dependencies_by_dataset(const std::string& dataset_code);
 
     // ========================================================================
     // Data Domain Management
@@ -206,6 +224,7 @@ public:
 
 private:
     repository::catalog_repository catalog_repo_;
+    repository::dataset_dependency_repository dataset_dependency_repo_;
     repository::data_domain_repository data_domain_repo_;
     repository::subject_area_repository subject_area_repo_;
 };

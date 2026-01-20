@@ -24,6 +24,7 @@
 #include <iomanip>
 #include <sstream>
 #include <rfl/json.hpp>
+#include <QTimer>
 #include <QtConcurrent>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -83,6 +84,30 @@ void ImageCache::loadAll() {
 
     // Start by loading currency image IDs
     loadCurrencyImageIds();
+}
+
+void ImageCache::reload() {
+    BOOST_LOG_SEV(lg(), info) << "reload() called - clearing caches and reloading.";
+
+    // Wait for any in-progress loads to settle
+    if (load_all_in_progress_ || is_loading_images_ || is_loading_all_available_) {
+        BOOST_LOG_SEV(lg(), warn) << "Load in progress, will retry reload.";
+        // Schedule a retry after a short delay
+        QTimer::singleShot(500, this, &ImageCache::reload);
+        return;
+    }
+
+    // Clear all caches
+    image_svg_cache_.clear();
+    image_icons_.clear();
+    pending_image_ids_.clear();
+    pending_image_requests_.clear();
+    available_images_.clear();
+
+    BOOST_LOG_SEV(lg(), debug) << "Caches cleared, starting loadAll().";
+
+    // Reload everything
+    loadAll();
 }
 
 void ImageCache::loadCurrencyImageIds() {

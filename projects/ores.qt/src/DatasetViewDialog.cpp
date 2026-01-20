@@ -18,8 +18,10 @@
  *
  */
 #include "ores.qt/DatasetViewDialog.hpp"
+#include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
+#include <cmath>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QSplitter>
@@ -30,8 +32,9 @@
 
 namespace ores::qt {
 
-DatasetViewDialog::DatasetViewDialog(QWidget* parent)
-    : QDialog(parent) {
+DatasetViewDialog::DatasetViewDialog(ClientManager* clientManager,
+                                     QWidget* parent)
+    : QDialog(parent), clientManager_(clientManager) {
     setupUi();
 }
 
@@ -52,7 +55,7 @@ void DatasetViewDialog::setupUi() {
     tabWidget_->addTab(createOverviewTab(), tr("Overview"));
     tabWidget_->addTab(createProvenanceTab(), tr("Provenance"));
     tabWidget_->addTab(createMethodologyTab(), tr("Methodology"));
-    tabWidget_->addTab(createLineageTab(), tr("Lineage"));
+    tabWidget_->addTab(createLineageTab(), tr("Dependencies"));
 
     mainLayout->addWidget(tabWidget_);
 }
@@ -211,12 +214,23 @@ void DatasetViewDialog::setMethodologies(const std::vector<dq::domain::methodolo
     methodologies_ = methodologies;
 }
 
+void DatasetViewDialog::setDatasetDependencies(
+    const std::vector<dq::domain::dataset_dependency>& dependencies) {
+    datasetDependencies_ = dependencies;
+}
+
+void DatasetViewDialog::setDatasetNames(
+    const std::map<std::string, std::string>& codeToName) {
+    datasetNames_ = codeToName;
+}
+
 void DatasetViewDialog::updateOverviewTab() {
     overviewTree_->clear();
 
     // General section
     addSectionHeader(overviewTree_, tr("General"));
     addProperty(overviewTree_, tr("Name"), QString::fromStdString(dataset_.name));
+    addProperty(overviewTree_, tr("Code"), QString::fromStdString(dataset_.code));
     addProperty(overviewTree_, tr("Version"), QString::number(dataset_.version));
     addProperty(overviewTree_, tr("ID"),
         QString::fromStdString(boost::uuids::to_string(dataset_.id)));
@@ -328,51 +342,82 @@ void DatasetViewDialog::updateLineageView() {
     auto* scene = lineageView_->scene();
     scene->clear();
 
-    // Calculate node positions using member dimension properties
-    const qreal node1X = 0;
-    const qreal node2X = lineageNodeWidth_ + lineageNodeSpacing_;
-    const qreal node3X = 2 * (lineageNodeWidth_ + lineageNodeSpacing_);
-    const qreal nodeY = 0;
+    // Layout parameters
+    const qreal rowSpacing = 50;  // Vertical spacing between rows
+    qreal currentX = 0;
+    qreal dependencyRow = 0;
+    qreal datasetRow = rowSpacing + lineageHeaderHeight_ + lineageRowHeight_ * 3;  // 3 rows: header + Code + Name
 
-    // Create nodes using helper methods
-    qreal node1Height = createLineageNode(scene, node1X, nodeY, tr("Primary"),
-        {tr("Origin"), tr("Nature"), tr("Treatment")},
-        {QString::fromStdString(dataset_.origin_code),
-         QString::fromStdString(dataset_.nature_code),
-         QString::fromStdString(dataset_.treatment_code)},
-        lineageHeaderOrigin_, false, true);
+    // Row 1: Dependency datasets (datasets this dataset depends on)
+    struct DepInfo {
+        std::string code;
+        std::string name;
+        std::string role;
+        qreal nodeX;
+        qreal nodeHeight;
+    };
+    std::vector<DepInfo> dependencies;
 
-    qreal node2Height = createLineageNode(scene, node2X, nodeY, tr("Process"),
-        {tr("Method"), tr("System")},
-        {findMethodologyName(dataset_.methodology_id),
-         QString::fromStdString(dataset_.source_system_id)},
-        lineageHeaderMethod_, true, true);
+    if (!datasetDependencies_.empty()) {
+        // Find dependencies where this dataset depends on others
+        for (const auto& dep : datasetDependencies_) {
+            if (dep.dataset_code == dataset_.code) {
+                std::string name;
+                auto it = datasetNames_.find(dep.dependency_code);
+                if (it != datasetNames_.end()) {
+                    name = it->second;
+                }
+                dependencies.push_back({dep.dependency_code, name, dep.role, 0, 0});
+            }
+        }
 
-    qreal node3Height = createLineageNode(scene, node3X, nodeY, tr("Output"),
-        {tr("Name"), tr("Version"), tr("As Of")},
-        {QString::fromStdString(dataset_.name),
-         QString::number(dataset_.version),
-         relative_time_helper::format(dataset_.as_of_date)},
-        lineageHeaderDataset_, true, false);
+        // Create nodes for dependency datasets (shown as Dataset nodes, not Dependency)
+        for (auto& dep : dependencies) {
+            dep.nodeX = currentX;
+            dep.nodeHeight = createLineageNode(scene, currentX, dependencyRow,
+                tr("Dataset"),
+                {tr("Code"), tr("Name")},
+                {QString::fromStdString(dep.code),
+                 QString::fromStdString(dep.name)},
+                lineageHeaderCatalog_, false, true);
 
-    // Draw connections between nodes
-    qreal connY1 = nodeY + node1Height / 2;
-    qreal connY2 = nodeY + node2Height / 2;
-    qreal connY3 = nodeY + node3Height / 2;
+            currentX += lineageNodeWidth_ + lineageNodeSpacing_;
+        }
+    }
 
-    drawLineageConnection(scene,
-        node1X + lineageNodeWidth_ + lineageSocketRadius_, connY1,
-        node2X - lineageSocketRadius_, connY2);
-    drawLineageConnection(scene,
-        node2X + lineageNodeWidth_ + lineageSocketRadius_, connY2,
-        node3X - lineageSocketRadius_, connY3);
+    // Row 2: Current dataset node
+    qreal datasetX = 0;
+    if (!dependencies.empty()) {
+        // Center dataset under the dependency nodes
+        qreal totalWidth = currentX - lineageNodeSpacing_;
+        datasetX = (totalWidth - lineageNodeWidth_) / 2;
+    }
+
+    qreal datasetHeight = createLineageNode(scene, datasetX, datasetRow,
+        tr("Dataset"),
+        {tr("Code"), tr("Name")},
+        {QString::fromStdString(dataset_.code),
+         QString::fromStdString(dataset_.name)},
+        lineageHeaderDataset_, !dependencies.empty(), false);
+
+    // Draw labeled connections from dependencies to dataset
+    if (!dependencies.empty()) {
+        qreal datasetCenterX = datasetX + lineageNodeWidth_ / 2;
+        qreal datasetTopY = datasetRow - lineageSocketRadius_;
+        for (const auto& dep : dependencies) {
+            qreal depRightX = dep.nodeX + lineageNodeWidth_ + lineageSocketRadius_;
+            qreal depCenterY = dependencyRow + dep.nodeHeight / 2;
+            drawLabeledConnection(scene, depRightX, depCenterY,
+                datasetCenterX, datasetTopY, QString::fromStdString(dep.role));
+        }
+    }
 
     // Set scene background
     scene->setBackgroundBrush(QBrush(lineageBackground_));
 
     // Fit view with some margin
     QRectF sceneRect = scene->itemsBoundingRect();
-    sceneRect.adjust(-8, -8, 8, 8);
+    sceneRect.adjust(-16, -16, 16, 16);
     lineageView_->fitInView(sceneRect, Qt::KeepAspectRatio);
 }
 
@@ -508,6 +553,40 @@ void DatasetViewDialog::drawLineageConnection(QGraphicsScene* scene,
     qreal ctrlOffset = (x2 - x1) * 0.4;
     path.cubicTo(x1 + ctrlOffset, y1, x2 - ctrlOffset, y2, x2, y2);
     scene->addPath(path, QPen(lineageConnection_, 1.2));
+}
+
+void DatasetViewDialog::drawLabeledConnection(QGraphicsScene* scene,
+    qreal x1, qreal y1, qreal x2, qreal y2, const QString& label) const {
+
+    // Draw the connection line
+    QPainterPath path;
+    path.moveTo(x1, y1);
+    qreal ctrlOffset = std::abs(x2 - x1) * 0.4;
+    qreal ctrlOffsetY = std::abs(y2 - y1) * 0.4;
+    path.cubicTo(x1 + ctrlOffset, y1, x2, y2 - ctrlOffsetY, x2, y2);
+    scene->addPath(path, QPen(lineageConnection_, 1.5));
+
+    // Add label at midpoint of the connection
+    qreal midX = (x1 + x2) / 2;
+    qreal midY = (y1 + y2) / 2;
+
+    QFont labelFont;
+    labelFont.setPointSize(5);
+    labelFont.setItalic(true);
+    QFontMetrics fm(labelFont);
+
+    // Create background for label
+    qreal labelWidth = fm.horizontalAdvance(label) + 4;
+    qreal labelHeight = fm.height() + 2;
+    scene->addRect(midX - labelWidth / 2, midY - labelHeight / 2,
+        labelWidth, labelHeight,
+        QPen(Qt::NoPen), QBrush(lineageBackground_));
+
+    // Add label text
+    auto* textItem = scene->addText(label);
+    textItem->setFont(labelFont);
+    textItem->setDefaultTextColor(lineageLabel_);
+    textItem->setPos(midX - fm.horizontalAdvance(label) / 2, midY - fm.height() / 2);
 }
 
 }

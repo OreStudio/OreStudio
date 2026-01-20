@@ -80,6 +80,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::PlugConnected: return {"ic_fluent_plug_connected_20", "plug-circle.svg"};
         case Icon::PlugConnectedFilled: return {"ic_fluent_plug_connected_20", "plug-circle.svg", true};
         case Icon::PlugDisconnected: return {"ic_fluent_plug_disconnected_20", "link-broken.svg"};
+        case Icon::Publish: return {"ic_fluent_arrow_upload_20", "upload-square.svg"};
         case Icon::Question: return {"ic_fluent_question_20", "question-circle.svg"};
         case Icon::Record: return {"ic_fluent_record_20", "record-circle.svg"};
         case Icon::RecordFilled: return {"ic_fluent_record_20", "record-circle.svg", true};

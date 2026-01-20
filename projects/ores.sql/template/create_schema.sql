@@ -95,7 +95,7 @@ grant create on schema ores to ores;
 -- Data Quality tables
 \ir ../schema/dq_catalog_create.sql
 \ir ../schema/dq_catalogs_notify_trigger.sql
-\ir ../schema/dq_catalog_dependency_create.sql
+\ir ../schema/dq_dataset_dependency_create.sql
 \ir ../schema/dq_data_domain_create.sql
 \ir ../schema/dq_data_domains_notify_trigger.sql
 \ir ../schema/dq_subject_area_create.sql
@@ -122,6 +122,7 @@ grant create on schema ores to ores;
 \ir ../schema/dq_ip2country_artefact_create.sql
 \ir ../schema/dq_functions_create.sql
 \ir ../schema/dq_population_functions_create.sql
+\ir ../schema/dq_publication_create.sql
 \ir ../schema/seed_upsert_functions_create.sql
 
 -- NOTE: The template database contains schema only, no data.

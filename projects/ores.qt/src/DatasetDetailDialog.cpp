@@ -399,6 +399,7 @@ void DatasetDetailDialog::setDataset(const dq::domain::dataset& dataset) {
     dataset_ = dataset;
 
     ui_->nameEdit->setText(QString::fromStdString(dataset.name));
+    ui_->codeEdit->setText(QString::fromStdString(dataset.code));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(dataset.description));
     ui_->commentaryEdit->setPlainText(QString::fromStdString(dataset.change_commentary));
     ui_->sourceSystemEdit->setText(QString::fromStdString(dataset.source_system_id));
@@ -457,6 +458,7 @@ void DatasetDetailDialog::setReadOnly(bool readOnly) {
 
 void DatasetDetailDialog::updateUiState() {
     ui_->nameEdit->setReadOnly(isReadOnly_);
+    ui_->codeEdit->setReadOnly(isReadOnly_);
     ui_->descriptionEdit->setReadOnly(isReadOnly_);
     ui_->commentaryEdit->setReadOnly(isReadOnly_);
     ui_->sourceSystemEdit->setReadOnly(isReadOnly_);
@@ -479,6 +481,7 @@ void DatasetDetailDialog::updateUiState() {
 
 void DatasetDetailDialog::onSaveClicked() {
     QString name = ui_->nameEdit->text().trimmed();
+    QString code = ui_->codeEdit->text().trimmed();
 
     if (name.isEmpty()) {
         MessageBoxHelper::warning(this, tr("Validation Error"),
@@ -486,9 +489,16 @@ void DatasetDetailDialog::onSaveClicked() {
         return;
     }
 
+    if (code.isEmpty()) {
+        MessageBoxHelper::warning(this, tr("Validation Error"),
+                                  tr("Code is required."));
+        return;
+    }
+
     dq::domain::dataset dataset;
     dataset.id = isCreateMode_ ? boost::uuids::random_generator()() : dataset_.id;
     dataset.name = name.toStdString();
+    dataset.code = code.toStdString();
     dataset.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     dataset.change_commentary = ui_->commentaryEdit->toPlainText().trimmed().toStdString();
     dataset.source_system_id = ui_->sourceSystemEdit->text().trimmed().toStdString();

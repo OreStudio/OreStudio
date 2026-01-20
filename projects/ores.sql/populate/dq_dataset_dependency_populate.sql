@@ -19,15 +19,16 @@
  */
 
 /**
- * Data Quality Catalog Dependency Population Script
+ * Data Quality Dataset Dependency Population Script
  *
- * Seeds the database with catalog dependencies. These declare which catalogs
- * must be loaded before others.
+ * Seeds the database with dataset dependencies using stable dataset codes.
+ * These declare which datasets depend on others for visual assets or reference data.
  *
  * Dependencies:
- * - ISO Standards depends on Visual Assets (countries/currencies use flag images)
- * - Cryptocurrency depends on Visual Assets (crypto data uses icon images)
- * - FpML Standards depends on Visual Assets (non-ISO currencies use flag images)
+ * - iso.countries depends on assets.country_flags for flag display
+ * - iso.currencies depends on assets.country_flags for flag display
+ * - fpml.currencies depends on assets.country_flags for flag display
+ * - crypto.reference depends on assets.crypto_icons for icon display
  */
 
 set schema 'ores';
@@ -36,24 +37,34 @@ set schema 'ores';
 -- Seed Data
 -- =============================================================================
 
-\echo '--- Catalog Dependencies ---'
+\echo '--- Dataset Dependencies ---'
 
--- ISO Standards uses flag images from Visual Assets for countries and currencies
-select ores.upsert_dq_catalog_dependency(
-    'ISO Standards',
-    'Visual Assets'
+-- ISO countries uses flag images from Visual Assets
+select ores.upsert_dq_dataset_dependency(
+    'iso.countries',
+    'assets.country_flags',
+    'visual_assets'
 );
 
--- Cryptocurrency uses icon images from Visual Assets for crypto display
-select ores.upsert_dq_catalog_dependency(
-    'Cryptocurrency',
-    'Visual Assets'
+-- ISO currencies uses flag images from Visual Assets
+select ores.upsert_dq_dataset_dependency(
+    'iso.currencies',
+    'assets.country_flags',
+    'visual_assets'
 );
 
--- FpML Standards uses flag images from Visual Assets for non-ISO currency display
-select ores.upsert_dq_catalog_dependency(
-    'FpML Standards',
-    'Visual Assets'
+-- FpML non-ISO currencies uses flag images from Visual Assets
+select ores.upsert_dq_dataset_dependency(
+    'fpml.currencies',
+    'assets.country_flags',
+    'visual_assets'
+);
+
+-- Cryptocurrency reference uses icon images from Visual Assets
+select ores.upsert_dq_dataset_dependency(
+    'crypto.reference',
+    'assets.crypto_icons',
+    'visual_assets'
 );
 
 -- =============================================================================
@@ -63,7 +74,7 @@ select ores.upsert_dq_catalog_dependency(
 \echo ''
 \echo '--- Summary ---'
 
-select catalog_name, dependency_name
-from ores.dq_catalog_dependencies_tbl
+select dataset_code, dependency_code, role
+from ores.dq_dataset_dependencies_tbl
 where valid_to = ores.utility_infinity_timestamp_fn()
-order by catalog_name, dependency_name;
+order by dataset_code, dependency_code;

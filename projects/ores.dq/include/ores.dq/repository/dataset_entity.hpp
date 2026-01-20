@@ -36,6 +36,7 @@ struct dataset_entity {
 
     sqlgen::PrimaryKey<std::string> id;
     int version = 0;
+    std::string code;
     std::optional<std::string> catalog_name;
     std::string subject_area_name;
     std::string domain_name;
@@ -53,6 +54,7 @@ struct dataset_entity {
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> as_of_date = "9999-12-31 23:59:59";
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> ingestion_timestamp = "9999-12-31 23:59:59";
     std::optional<std::string> license_info;
+    std::optional<std::string> artefact_type;
     std::string modified_by;
     std::string change_commentary;
     sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";

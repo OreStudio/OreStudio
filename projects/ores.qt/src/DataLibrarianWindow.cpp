@@ -19,6 +19,7 @@
  */
 #include "ores.qt/DataLibrarianWindow.hpp"
 
+#include <map>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -29,6 +30,9 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/DatasetItemDelegate.hpp"
+#include "ores.qt/DatasetViewDialog.hpp"
+#include "ores.qt/PublishDatasetsDialog.hpp"
+#include "ores.qt/PublicationHistoryDialog.hpp"
 
 namespace ores::qt {
 
@@ -75,6 +79,7 @@ DataLibrarianWindow::DataLibrarianWindow(
       dataDomainModel_(new ClientDataDomainModel(clientManager, this)),
       subjectAreaModel_(new ClientSubjectAreaModel(clientManager, this)),
       catalogModel_(new ClientCatalogModel(clientManager, this)),
+      datasetDependencyModel_(new ClientDatasetDependencyModel(clientManager, this)),
       methodologyModel_(new ClientMethodologyModel(clientManager, this)),
       statusBar_(new QStatusBar(this)),
       loadingProgressBar_(new QProgressBar(this)),
@@ -112,6 +117,10 @@ DataLibrarianWindow::DataLibrarianWindow(
     statusLabel_->setText(tr("Loading catalogs..."));
     BOOST_LOG_SEV(lg(), debug) << "Requesting catalogs...";
     catalogModel_->loadData();
+
+    statusLabel_->setText(tr("Loading dataset dependencies..."));
+    BOOST_LOG_SEV(lg(), debug) << "Requesting dataset dependencies...";
+    datasetDependencyModel_->loadData();
 
     statusLabel_->setText(tr("Loading methodologies..."));
     BOOST_LOG_SEV(lg(), debug) << "Requesting methodologies...";
@@ -160,6 +169,19 @@ void DataLibrarianWindow::setupToolbar() {
         tr("View"));
     viewDatasetAction_->setToolTip(tr("View selected dataset details"));
     viewDatasetAction_->setEnabled(false);
+
+    publishAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::Publish, IconUtils::DefaultIconColor),
+        tr("Publish"));
+    publishAction_->setToolTip(tr("Publish selected datasets to production tables"));
+    publishAction_->setEnabled(false);
+
+    publicationHistoryAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::History, IconUtils::DefaultIconColor),
+        tr("History"));
+    publicationHistoryAction_->setToolTip(tr("View publication history"));
 
     toolbar_->addSeparator();
 
@@ -261,7 +283,8 @@ void DataLibrarianWindow::setupCentralWorkspace() {
     datasetTable_->setItemDelegate(new DatasetItemDelegate(datasetTable_));
     datasetTable_->setSortingEnabled(true);
     datasetTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    datasetTable_->setSelectionMode(QAbstractItemView::SingleSelection);
+    datasetTable_->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    datasetTable_->setContextMenuPolicy(Qt::CustomContextMenu);
     datasetTable_->setAlternatingRowColors(true);
     datasetTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     datasetTable_->horizontalHeader()->setStretchLastSection(true);
@@ -292,11 +315,19 @@ void DataLibrarianWindow::setupConnections() {
     connect(datasetTable_, &QTableView::doubleClicked,
             this, &DataLibrarianWindow::onDatasetDoubleClicked);
 
+    // Dataset context menu
+    connect(datasetTable_, &QTableView::customContextMenuRequested,
+            this, &DataLibrarianWindow::showDatasetContextMenu);
+
     // Toolbar actions
     connect(refreshAction_, &QAction::triggered,
             this, &DataLibrarianWindow::onRefreshClicked);
     connect(viewDatasetAction_, &QAction::triggered,
             this, &DataLibrarianWindow::onViewDatasetClicked);
+    connect(publishAction_, &QAction::triggered,
+            this, &DataLibrarianWindow::onPublishClicked);
+    connect(publicationHistoryAction_, &QAction::triggered,
+            this, &DataLibrarianWindow::onPublicationHistoryClicked);
 
     connect(originDimensionsAction_, &QAction::triggered,
             this, &DataLibrarianWindow::openOriginDimensionsRequested);
@@ -321,6 +352,8 @@ void DataLibrarianWindow::setupConnections() {
             this, &DataLibrarianWindow::onSubjectAreasLoaded);
     connect(catalogModel_, &ClientCatalogModel::loadFinished,
             this, &DataLibrarianWindow::onCatalogsLoaded);
+    connect(datasetDependencyModel_, &ClientDatasetDependencyModel::loadFinished,
+            this, &DataLibrarianWindow::onDatasetDependenciesLoaded);
     connect(methodologyModel_, &ClientMethodologyModel::dataLoaded,
             this, &DataLibrarianWindow::onMethodologiesLoaded);
 
@@ -372,9 +405,10 @@ void DataLibrarianWindow::onNavigationSelectionChanged(
 }
 
 void DataLibrarianWindow::onDatasetSelectionChanged() {
-    // Enable/disable view action based on selection
+    // Enable/disable view/publish actions based on selection
     const auto selection = datasetTable_->selectionModel()->selectedRows();
     viewDatasetAction_->setEnabled(!selection.isEmpty());
+    publishAction_->setEnabled(!selection.isEmpty());
 }
 
 void DataLibrarianWindow::onDatasetDoubleClicked(const QModelIndex& index) {
@@ -404,16 +438,52 @@ void DataLibrarianWindow::onViewDatasetClicked() {
     }
 }
 
+void DataLibrarianWindow::onPublishClicked() {
+    const auto selection = datasetTable_->selectionModel()->selectedRows();
+    if (selection.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No datasets selected for publish";
+        return;
+    }
+
+    // Collect selected datasets
+    std::vector<dq::domain::dataset> selectedDatasets;
+    selectedDatasets.reserve(selection.size());
+
+    for (const auto& proxyIndex : selection) {
+        const auto sourceIndex = datasetProxyModel_->mapToSource(proxyIndex);
+        const auto* dataset = datasetModel_->getDataset(sourceIndex.row());
+        if (dataset) {
+            selectedDatasets.push_back(*dataset);
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Opening publish dialog for "
+        << selectedDatasets.size() << " datasets";
+
+    // Open publish dialog
+    auto* dialog = new PublishDatasetsDialog(clientManager_, username_, this);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->setDatasets(selectedDatasets);
+    dialog->exec();
+}
+
+void DataLibrarianWindow::onPublicationHistoryClicked() {
+    BOOST_LOG_SEV(lg(), debug) << "Opening publication history dialog";
+
+    auto* dialog = new PublicationHistoryDialog(clientManager_, this);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->refresh();
+    dialog->show();
+}
+
 void DataLibrarianWindow::showDatasetDetailDialog(const dq::domain::dataset* dataset) {
     if (!dataset) {
         return;
     }
 
-    // Create dialog if it doesn't exist
-    if (!datasetViewDialog_) {
-        datasetViewDialog_ = new DatasetViewDialog(this);
-        datasetViewDialog_->setAttribute(Qt::WA_DeleteOnClose, false);
-    }
+    // Create a new dialog for each dataset (allows multiple windows)
+    auto* dialog = new DatasetViewDialog(clientManager_, this);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);  // Auto-delete when closed
 
     // Collect methodologies for the dialog
     std::vector<dq::domain::methodology> methodologies;
@@ -423,13 +493,23 @@ void DataLibrarianWindow::showDatasetDetailDialog(const dq::domain::dataset* dat
             methodologies.push_back(*methodology);
         }
     }
-    datasetViewDialog_->setMethodologies(methodologies);
-    datasetViewDialog_->setDataset(*dataset);
+    dialog->setMethodologies(methodologies);
+    dialog->setDatasetDependencies(datasetDependencyModel_->dependencies());
+
+    // Build code-to-name lookup for dependency display
+    std::map<std::string, std::string> datasetNames;
+    for (int i = 0; i < datasetModel_->rowCount(); ++i) {
+        const auto* ds = datasetModel_->getDataset(i);
+        if (ds) {
+            datasetNames[ds->code] = ds->name;
+        }
+    }
+    dialog->setDatasetNames(datasetNames);
+
+    dialog->setDataset(*dataset);
 
     // Show modeless dialog
-    datasetViewDialog_->show();
-    datasetViewDialog_->raise();
-    datasetViewDialog_->activateWindow();
+    dialog->show();
 }
 
 void DataLibrarianWindow::onRefreshClicked() {
@@ -447,6 +527,7 @@ void DataLibrarianWindow::onRefreshClicked() {
     dataDomainModel_->refresh();
     subjectAreaModel_->refresh();
     catalogModel_->loadData();
+    datasetDependencyModel_->loadData();
     methodologyModel_->refresh();
     datasetModel_->refresh();
 }
@@ -514,6 +595,20 @@ void DataLibrarianWindow::onCatalogsLoaded() {
         BOOST_LOG_SEV(lg(), info) << "All data loading complete";
     }
     buildNavigationTree();
+}
+
+void DataLibrarianWindow::onDatasetDependenciesLoaded() {
+    const auto& deps = datasetDependencyModel_->dependencies();
+    BOOST_LOG_SEV(lg(), info) << "Catalog dependencies loaded: " << deps.size()
+                              << " (pending: " << pendingLoads_ - 1 << ")";
+    --pendingLoads_;
+    loadingProgressBar_->setValue(totalLoads_ - pendingLoads_);
+    statusLabel_->setText(tr("Loaded %1 dataset dependencies...").arg(deps.size()));
+    if (pendingLoads_ <= 0) {
+        loadingProgressBar_->setVisible(false);
+        statusLabel_->setText(tr("Ready"));
+        BOOST_LOG_SEV(lg(), info) << "All data loading complete";
+    }
 }
 
 void DataLibrarianWindow::onMethodologiesLoaded() {
@@ -760,6 +855,39 @@ void DataLibrarianWindow::showHeaderContextMenu(const QPoint& pos) {
     }
 
     menu.exec(header->mapToGlobal(pos));
+}
+
+void DataLibrarianWindow::showDatasetContextMenu(const QPoint& pos) {
+    const auto selection = datasetTable_->selectionModel()->selectedRows();
+    if (selection.isEmpty()) {
+        return;
+    }
+
+    QMenu menu(this);
+
+    // View action (only for single selection)
+    QAction* viewAction = menu.addAction(
+        IconUtils::createRecoloredIcon(Icon::Info, IconUtils::DefaultIconColor),
+        tr("View Details"));
+    viewAction->setEnabled(selection.size() == 1);
+
+    menu.addSeparator();
+
+    // Publish action
+    QAction* publishAction = menu.addAction(
+        IconUtils::createRecoloredIcon(Icon::Publish, IconUtils::DefaultIconColor),
+        selection.size() == 1
+            ? tr("Publish Dataset")
+            : tr("Publish %1 Datasets").arg(selection.size()));
+
+    // Execute menu and handle selection
+    QAction* selectedAction = menu.exec(datasetTable_->viewport()->mapToGlobal(pos));
+
+    if (selectedAction == viewAction) {
+        onViewDatasetClicked();
+    } else if (selectedAction == publishAction) {
+        onPublishClicked();
+    }
 }
 
 }

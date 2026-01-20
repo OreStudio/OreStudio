@@ -49,6 +49,7 @@ private:
 public:
     enum Column {
         Name,
+        Code,
         Catalog,
         SubjectArea,
         Domain,

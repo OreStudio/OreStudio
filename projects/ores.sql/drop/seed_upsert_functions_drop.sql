@@ -35,7 +35,9 @@ drop function if exists ores.upsert_dq_subject_areas(text, text, text);
 
 -- Data Quality: Catalogs
 drop function if exists ores.upsert_dq_catalogs(text, text, text);
-drop function if exists ores.upsert_dq_catalog_dependency(text, text);
+
+-- Data Quality: Dataset Dependencies
+drop function if exists ores.upsert_dq_dataset_dependency(text, text, text);
 
 -- Data Quality: Dimensions
 drop function if exists ores.upsert_dq_origin_dimensions(text, text, text);
@@ -54,7 +56,7 @@ drop function if exists ores.upsert_dq_coding_schemes(text, text, text, text, te
 drop function if exists ores.upsert_dq_methodologies(text, text, text, text);
 
 -- Data Quality: Datasets and Tags
-drop function if exists ores.upsert_dq_datasets(text, text, text, text, text, text, text, text, text, text, text, text, date, text);
+drop function if exists ores.upsert_dq_datasets(text, text, text, text, text, text, text, text, text, text, text, text, text, date, text);
 drop function if exists ores.upsert_dq_tag(text, text, text, text, text);
 
 -- IAM: Permissions

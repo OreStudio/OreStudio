@@ -31,11 +31,11 @@
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.qt/DatasetViewDialog.hpp"
 #include "ores.qt/ClientDatasetModel.hpp"
 #include "ores.qt/ClientDataDomainModel.hpp"
 #include "ores.qt/ClientSubjectAreaModel.hpp"
 #include "ores.qt/ClientCatalogModel.hpp"
+#include "ores.qt/ClientDatasetDependencyModel.hpp"
 #include "ores.qt/ClientMethodologyModel.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/dataset.hpp"
@@ -60,7 +60,7 @@ class DataLibrarianWindow final : public QWidget {
 
 private:
     inline static std::string_view logger_name = "ores.qt.data_librarian_window";
-    static constexpr int total_model_loads = 5;
+    static constexpr int total_model_loads = 6;
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -97,6 +97,8 @@ private slots:
     void onDatasetDoubleClicked(const QModelIndex& index);
     void onRefreshClicked();
     void onViewDatasetClicked();
+    void onPublishClicked();
+    void onPublicationHistoryClicked();
     void onDataLoaded();
     void onLoadError(const QString& error_message, const QString& details = {});
 
@@ -104,10 +106,14 @@ private slots:
     void onDomainsLoaded();
     void onSubjectAreasLoaded();
     void onCatalogsLoaded();
+    void onDatasetDependenciesLoaded();
     void onMethodologiesLoaded();
 
     // Column visibility context menu
     void showHeaderContextMenu(const QPoint& pos);
+
+    // Dataset context menu
+    void showDatasetContextMenu(const QPoint& pos);
 
 private:
     void setupUi();
@@ -140,6 +146,8 @@ private:
     QToolBar* toolbar_;
     QAction* refreshAction_;
     QAction* viewDatasetAction_;
+    QAction* publishAction_;
+    QAction* publicationHistoryAction_;
     QAction* originDimensionsAction_;
     QAction* natureDimensionsAction_;
     QAction* treatmentDimensionsAction_;
@@ -151,13 +159,11 @@ private:
     ClientDatasetModel* datasetModel_;
     QSortFilterProxyModel* datasetProxyModel_;
 
-    // Dataset view dialog (modeless)
-    DatasetViewDialog* datasetViewDialog_{nullptr};
-
     // Data models for navigation
     ClientDataDomainModel* dataDomainModel_;
     ClientSubjectAreaModel* subjectAreaModel_;
     ClientCatalogModel* catalogModel_;
+    ClientDatasetDependencyModel* datasetDependencyModel_;
     ClientMethodologyModel* methodologyModel_;
 
     // Status bar with loading indicator

@@ -76,6 +76,7 @@ enum class Icon {
     PlugConnected,
     PlugConnectedFilled,
     PlugDisconnected,
+    Publish,
     Question,
     Record,
     RecordFilled,

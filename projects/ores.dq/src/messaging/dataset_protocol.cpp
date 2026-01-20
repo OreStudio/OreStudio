@@ -42,6 +42,7 @@ namespace {
 void write_dataset(std::vector<std::byte>& buffer, const domain::dataset& d) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>(d.version));
     writer::write_uuid(buffer, d.id);
+    writer::write_string(buffer, d.code);
 
     writer::write_bool(buffer, d.catalog_name.has_value());
     if (d.catalog_name.has_value()) {
@@ -86,6 +87,11 @@ void write_dataset(std::vector<std::byte>& buffer, const domain::dataset& d) {
         writer::write_string(buffer, *d.license_info);
     }
 
+    writer::write_bool(buffer, d.artefact_type.has_value());
+    if (d.artefact_type.has_value()) {
+        writer::write_string(buffer, *d.artefact_type);
+    }
+
     writer::write_string(buffer, d.recorded_by);
     writer::write_string(buffer, d.change_commentary);
     writer::write_string(buffer,
@@ -103,6 +109,10 @@ read_dataset(std::span<const std::byte>& data) {
     auto id_result = reader::read_uuid(data);
     if (!id_result) return std::unexpected(id_result.error());
     d.id = *id_result;
+
+    auto code_result = reader::read_string(data);
+    if (!code_result) return std::unexpected(code_result.error());
+    d.code = *code_result;
 
     auto has_catalog_name_result = reader::read_bool(data);
     if (!has_catalog_name_result) return std::unexpected(has_catalog_name_result.error());
@@ -198,6 +208,14 @@ read_dataset(std::span<const std::byte>& data) {
         auto license_info_result = reader::read_string(data);
         if (!license_info_result) return std::unexpected(license_info_result.error());
         d.license_info = *license_info_result;
+    }
+
+    auto has_artefact_type_result = reader::read_bool(data);
+    if (!has_artefact_type_result) return std::unexpected(has_artefact_type_result.error());
+    if (*has_artefact_type_result) {
+        auto artefact_type_result = reader::read_string(data);
+        if (!artefact_type_result) return std::unexpected(artefact_type_result.error());
+        d.artefact_type = *artefact_type_result;
     }
 
     auto recorded_by_result = reader::read_string(data);

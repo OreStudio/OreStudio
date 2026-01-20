@@ -25,6 +25,7 @@ set schema 'ores';
 -- =============================================================================
 
 select ores.upsert_dq_datasets(
+    'iso.countries',
     'ISO Standards',
     'Countries',
     'Reference Data',
@@ -38,10 +39,12 @@ select ores.upsert_dq_datasets(
     'WIKIPEDIA',
     'Reference data for country codes',
     current_date,
-    'CC BY-SA 3.0'
+    'CC BY-SA 3.0',
+    'countries'
 );
 
 select ores.upsert_dq_datasets(
+    'assets.country_flags',
     'Visual Assets',
     'Country Flags',
     'Reference Data',
@@ -55,7 +58,8 @@ select ores.upsert_dq_datasets(
     'GITHUB',
     'Visual assets for countries',
     '2025-12-20'::date,
-    'MIT'
+    'MIT',
+    'images'
 );
 
 select ores.upsert_dq_tag(
@@ -67,6 +71,7 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_datasets(
+    'assets.crypto_icons',
     'Visual Assets',
     'Cryptocurrencies',
     'Reference Data',
@@ -80,7 +85,8 @@ select ores.upsert_dq_datasets(
     'GITHUB',
     'Visual assets for cryptocurrencies',
     '2025-01-15'::date,
-    'CC0 1.0 Universal'
+    'CC0 1.0 Universal',
+    'images'
 );
 
 select ores.upsert_dq_tag(
@@ -92,6 +98,7 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_datasets(
+    'iso.currencies',
     'ISO Standards',
     'Currencies',
     'Reference Data',
@@ -105,7 +112,8 @@ select ores.upsert_dq_datasets(
     'WIKIPEDIA',
     'Reference data for currency codes',
     current_date,
-    'CC BY-SA 3.0'
+    'CC BY-SA 3.0',
+    'currencies'
 );
 
 select ores.upsert_dq_tag(
@@ -117,6 +125,7 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_datasets(
+    'fpml.currencies',
     'FpML Standards',
     'Currencies',
     'Reference Data',
@@ -130,7 +139,8 @@ select ores.upsert_dq_datasets(
     'FPML',
     'Reference data for non-ISO currency codes used in derivatives trading',
     '2023-11-03'::date,
-    null
+    'FpML Public License 2.0',
+    'currencies'
 );
 
 select ores.upsert_dq_tag(
@@ -142,6 +152,7 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_datasets(
+    'crypto.reference',
     'Cryptocurrency',
     'Cryptocurrencies',
     'Reference Data',
@@ -155,7 +166,8 @@ select ores.upsert_dq_datasets(
     'GITHUB',
     'Reference data for cryptocurrency codes',
     current_date,
-    'MIT'
+    'MIT',
+    'currencies'
 );
 
 select ores.upsert_dq_tag(
@@ -167,6 +179,7 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_datasets(
+    'geo.ip2country',
     'IP Geolocation',
     'IP Address to Country maps',
     'Reference Data',
@@ -180,7 +193,8 @@ select ores.upsert_dq_datasets(
     'IPTOASN',
     'Geographic IP lookup for IPv4 addresses',
     '2025-12-30'::date,
-    'PDDL v1.0'
+    'PDDL v1.0',
+    'ip2country'
 );
 
 select ores.upsert_dq_tag(

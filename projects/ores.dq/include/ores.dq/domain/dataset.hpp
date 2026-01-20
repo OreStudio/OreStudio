@@ -47,6 +47,14 @@ struct dataset final {
     boost::uuids::uuid id;
 
     /**
+     * @brief Unique code for stable referencing.
+     *
+     * Uses dot notation for namespacing (e.g., "iso.currencies",
+     * "fpml.currencies", "crypto.reference").
+     */
+    std::string code;
+
+    /**
      * @brief Optional catalog this dataset belongs to.
      *
      * Links to catalog for organizational grouping.
@@ -152,6 +160,14 @@ struct dataset final {
      * @brief Optional license information for the data.
      */
     std::optional<std::string> license_info;
+
+    /**
+     * @brief Type of artefact this dataset populates.
+     *
+     * Used by the publication service to determine which population function
+     * to call. Valid values: "images", "countries", "currencies", "ip2country".
+     */
+    std::optional<std::string> artefact_type;
 
     /**
      * @brief Username of the person who last modified this dataset.

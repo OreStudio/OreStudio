@@ -152,6 +152,15 @@ Start recording, capture session.
 
 *Usage*: Recording controls. Filled indicates actively recording.
 
+*** Publish
+Deploy data to production, upload, send to target system.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_20_filled.svg]]
+
+*Usage*: Publish buttons, deploy actions, upload data to production tables.
+Represents sending data "upward" to a target system.
+
 *** Reload
 Refresh data from server, reload content.
 
@@ -535,6 +544,103 @@ Text validation, spell check, language processing.
 | Currency             | currency_dollar_euro_20          | Default | Active |
 | Time                 | clock_16                         | Default | Active |
 | History              | history_20                       | Default | Active |
+| Publish              | arrow_upload_20                  | Default | Active |
+
+* Adding New Icons
+
+When adding a new icon to ORE Studio, follow these steps:
+
+** Step 1: Locate Icons in Source Repositories
+
+ORE Studio supports two icon sets:
+
+- *Fluent UI System Icons*: ~/Development/fluentui-system-icons-main/assets/
+- *Solar Icons*: ~/Development/solar-icons/packages/core/svgs/
+
+Search for a semantically appropriate icon in both sets. For Fluent UI, look for
+20px variants (regular and filled). For Solar, look for Linear and Bold variants.
+
+Example search:
+#+begin_example
+find ~/Development/fluentui-system-icons-main/assets -name "*upload*20*"
+find ~/Development/solar-icons/packages/core/svgs -name "*upload*"
+#+end_example
+
+** Step 2: Copy Icons to Project
+
+Copy the icons to the correct locations:
+
+#+begin_example
+# Fluent UI icons (regular and filled variants)
+cp ".../Arrow Upload/SVG/ic_fluent_arrow_upload_20_regular.svg" \
+   projects/ores.qt/resources/icons/
+
+cp ".../Arrow Upload/SVG/ic_fluent_arrow_upload_20_filled.svg" \
+   projects/ores.qt/resources/icons/
+
+# Solar icons (Linear and Bold variants)
+cp ".../arrows-action/Linear/upload-square.svg" \
+   projects/ores.qt/resources/icons/solarized/Linear/
+
+cp ".../arrows-action/Bold/upload-square.svg" \
+   projects/ores.qt/resources/icons/solarized/Bold/
+#+end_example
+
+** Step 3: Update Resource File
+
+Add the new icons to =projects/ores.qt/resources/resources.qrc=:
+
+#+begin_src xml
+<!-- Fluent UI icons -->
+<file>icons/ic_fluent_arrow_upload_20_regular.svg</file>
+<file>icons/ic_fluent_arrow_upload_20_filled.svg</file>
+
+<!-- Solar icons -->
+<file>icons/solarized/Linear/upload-square.svg</file>
+<file>icons/solarized/Bold/upload-square.svg</file>
+#+end_src
+
+** Step 4: Add Enum Entry
+
+Add the new icon to the =Icon= enum in =IconUtils.hpp=:
+
+#+begin_src cpp
+enum class Icon {
+    // ... existing entries (alphabetically sorted)
+    PlugDisconnected,
+    Publish,       // <- New entry
+    Question,
+    // ...
+};
+#+end_src
+
+** Step 5: Add Icon Mapping
+
+Add the mapping in =IconUtils.cpp= in the =getIconDef()= function:
+
+#+begin_src cpp
+case Icon::Publish: return {"ic_fluent_arrow_upload_20", "upload-square.svg"};
+#+end_src
+
+The mapping format is:
+- First string: Fluent UI icon base name (without =_regular.svg= / =_filled.svg=)
+- Second string: Solar icon filename
+- Optional third parameter: =true= to force filled/bold variant
+
+** Step 6: Use the Icon
+
+Use the new icon in code:
+
+#+begin_src cpp
+action->setIcon(IconUtils::createRecoloredIcon(
+    Icon::Publish, IconUtils::DefaultIconColor));
+#+end_src
+
+** Step 7: Document the Icon
+
+Update this skill document:
+1. Add the icon to the appropriate category in the Icon Inventory section
+2. Add an entry to the Quick Reference Table
 
 * Artefacts                                                        :noexport:
 

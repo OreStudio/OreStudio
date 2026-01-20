@@ -22,6 +22,7 @@
 \ir ./drop/geo_ip2country_drop.sql
 
 -- Data Quality
+\ir ./drop/dq_publication_drop.sql
 \ir ./drop/dq_ip2country_artefact_drop.sql
 \ir ./drop/dq_countries_artefact_drop.sql
 \ir ./drop/dq_dataset_drop.sql
@@ -33,7 +34,7 @@
 \ir ./drop/dq_coding_scheme_authority_type_drop.sql
 \ir ./drop/dq_subject_area_drop.sql
 \ir ./drop/dq_data_domain_drop.sql
-\ir ./drop/dq_catalog_dependency_drop.sql
+\ir ./drop/dq_dataset_dependency_drop.sql
 \ir ./drop/dq_catalog_drop.sql
 
 -- Assets

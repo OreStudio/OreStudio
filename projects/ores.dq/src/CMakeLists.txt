@@ -45,6 +45,7 @@ target_link_libraries(${lib_target_name}
         sqlgen::sqlgen
         faker-cxx::faker-cxx
         libfort::fort
+        Boost::graph
         Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -20,6 +20,7 @@
 #ifndef ORES_QT_DATASET_VIEW_DIALOG_HPP
 #define ORES_QT_DATASET_VIEW_DIALOG_HPP
 
+#include <map>
 #include <vector>
 #include <QDialog>
 #include <QTabWidget>
@@ -29,7 +30,12 @@
 #include <QGraphicsScene>
 #include "ores.dq/domain/dataset.hpp"
 #include "ores.dq/domain/methodology.hpp"
+#include "ores.dq/domain/dataset_dependency.hpp"
 #include "ores.logging/make_logger.hpp"
+
+namespace ores::qt {
+class ClientManager;
+}
 
 namespace ores::qt {
 
@@ -57,6 +63,7 @@ class DatasetViewDialog : public QDialog {
     Q_PROPERTY(QColor lineageHeaderOrigin MEMBER lineageHeaderOrigin_)
     Q_PROPERTY(QColor lineageHeaderMethod MEMBER lineageHeaderMethod_)
     Q_PROPERTY(QColor lineageHeaderDataset MEMBER lineageHeaderDataset_)
+    Q_PROPERTY(QColor lineageHeaderCatalog MEMBER lineageHeaderCatalog_)
     Q_PROPERTY(qreal lineageNodeWidth MEMBER lineageNodeWidth_)
     Q_PROPERTY(qreal lineageHeaderHeight MEMBER lineageHeaderHeight_)
     Q_PROPERTY(qreal lineageRowHeight MEMBER lineageRowHeight_)
@@ -75,11 +82,15 @@ private:
     }
 
 public:
-    explicit DatasetViewDialog(QWidget* parent = nullptr);
+    explicit DatasetViewDialog(ClientManager* clientManager,
+                               QWidget* parent = nullptr);
     ~DatasetViewDialog() override;
 
     void setDataset(const dq::domain::dataset& dataset);
     void setMethodologies(const std::vector<dq::domain::methodology>& methodologies);
+    void setDatasetDependencies(
+        const std::vector<dq::domain::dataset_dependency>& dependencies);
+    void setDatasetNames(const std::map<std::string, std::string>& codeToName);
 
 private:
     void setupUi();
@@ -118,6 +129,8 @@ private:
         qreal nodeHeight, bool hasInputSocket, bool hasOutputSocket) const;
     void drawLineageConnection(QGraphicsScene* scene,
         qreal x1, qreal y1, qreal x2, qreal y2) const;
+    void drawLabeledConnection(QGraphicsScene* scene,
+        qreal x1, qreal y1, qreal x2, qreal y2, const QString& label) const;
 
     // Tab widget
     QTabWidget* tabWidget_;
@@ -136,8 +149,11 @@ private:
     QGraphicsView* lineageView_;
 
     // Data
+    ClientManager* clientManager_;
     dq::domain::dataset dataset_;
     std::vector<dq::domain::methodology> methodologies_;
+    std::vector<dq::domain::dataset_dependency> datasetDependencies_;
+    std::map<std::string, std::string> datasetNames_;  // code -> name lookup
 
     // Lineage styling properties (QSS-configurable)
     QColor lineageBackground_{0x2D, 0x2D, 0x30};
@@ -151,7 +167,8 @@ private:
     QColor lineageHeaderOrigin_{0x3B, 0x82, 0xF6};
     QColor lineageHeaderMethod_{0x8B, 0x5C, 0xF6};
     QColor lineageHeaderDataset_{0x22, 0xC5, 0x5E};
-    qreal lineageNodeWidth_{140};
+    QColor lineageHeaderCatalog_{0xF9, 0x73, 0x16};  // Orange for catalog
+    qreal lineageNodeWidth_{200};  // Wider to accommodate long dataset names
     qreal lineageHeaderHeight_{18};
     qreal lineageRowHeight_{14};
     qreal lineageNodeSpacing_{60};

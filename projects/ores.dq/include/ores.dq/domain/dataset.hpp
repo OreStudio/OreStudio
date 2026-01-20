@@ -47,6 +47,14 @@ struct dataset final {
     boost::uuids::uuid id;
 
     /**
+     * @brief Unique code for stable referencing.
+     *
+     * Uses dot notation for namespacing (e.g., "iso.currencies",
+     * "fpml.currencies", "crypto.reference").
+     */
+    std::string code;
+
+    /**
      * @brief Optional catalog this dataset belongs to.
      *
      * Links to catalog for organizational grouping.

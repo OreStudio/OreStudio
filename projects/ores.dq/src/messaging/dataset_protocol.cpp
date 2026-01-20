@@ -42,6 +42,7 @@ namespace {
 void write_dataset(std::vector<std::byte>& buffer, const domain::dataset& d) {
     writer::write_uint32(buffer, static_cast<std::uint32_t>(d.version));
     writer::write_uuid(buffer, d.id);
+    writer::write_string(buffer, d.code);
 
     writer::write_bool(buffer, d.catalog_name.has_value());
     if (d.catalog_name.has_value()) {
@@ -103,6 +104,10 @@ read_dataset(std::span<const std::byte>& data) {
     auto id_result = reader::read_uuid(data);
     if (!id_result) return std::unexpected(id_result.error());
     d.id = *id_result;
+
+    auto code_result = reader::read_string(data);
+    if (!code_result) return std::unexpected(code_result.error());
+    d.code = *code_result;
 
     auto has_catalog_name_result = reader::read_bool(data);
     if (!has_catalog_name_result) return std::unexpected(has_catalog_name_result.error());

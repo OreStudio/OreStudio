@@ -194,15 +194,15 @@ private:
         const std::string& remote_address);
 
     // =========================================================================
-    // Catalog Dependency Handlers
+    // Dataset Dependency Handlers
     // =========================================================================
 
     handler_result
-    handle_get_catalog_dependencies_request(std::span<const std::byte> payload,
+    handle_get_dataset_dependencies_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     handler_result
-    handle_get_catalog_dependencies_by_catalog_request(
+    handle_get_dataset_dependencies_by_dataset_request(
         std::span<const std::byte> payload,
         const std::string& remote_address);
 

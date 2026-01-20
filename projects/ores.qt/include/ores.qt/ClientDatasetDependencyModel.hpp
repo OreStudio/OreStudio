@@ -17,29 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_CLIENT_CATALOG_DEPENDENCY_MODEL_HPP
-#define ORES_QT_CLIENT_CATALOG_DEPENDENCY_MODEL_HPP
+#ifndef ORES_QT_CLIENT_DATASET_DEPENDENCY_MODEL_HPP
+#define ORES_QT_CLIENT_DATASET_DEPENDENCY_MODEL_HPP
 
 #include <QAbstractTableModel>
 #include <vector>
-#include "ores.dq/domain/catalog_dependency.hpp"
+#include "ores.dq/domain/dataset_dependency.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
 
 /**
- * @brief Table model for displaying catalog dependencies.
+ * @brief Table model for displaying dataset dependencies.
  *
  * Provides async loading from server. This is a read-only model
- * for viewing dependencies between catalogs.
+ * for viewing dependencies between datasets.
  */
-class ClientCatalogDependencyModel : public QAbstractTableModel {
+class ClientDatasetDependencyModel : public QAbstractTableModel {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.client_catalog_dependency_model";
+        "ores.qt.client_dataset_dependency_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -49,14 +49,15 @@ private:
 
 public:
     enum Column {
-        CatalogName = 0,
-        DependencyName,
+        DatasetCode = 0,
+        DependencyCode,
+        Role,
         RecordedBy,
         RecordedAt,
         ColumnCount
     };
 
-    explicit ClientCatalogDependencyModel(ClientManager* clientManager,
+    explicit ClientDatasetDependencyModel(ClientManager* clientManager,
                                           QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -67,18 +68,18 @@ public:
                         int role = Qt::DisplayRole) const override;
 
     void loadData();
-    void loadDataByCatalog(const std::string& catalog_name);
+    void loadDataByDataset(const std::string& dataset_code);
 
-    const std::vector<dq::domain::catalog_dependency>& dependencies() const;
+    const std::vector<dq::domain::dataset_dependency>& dependencies() const;
 
     /**
-     * @brief Gets dependencies for a specific catalog from the loaded data.
+     * @brief Gets dependencies for a specific dataset from the loaded data.
      *
-     * @param catalog_name The catalog to get dependencies for
-     * @return Dependencies where this catalog is the dependent (has dependencies on others)
+     * @param dataset_code The dataset code to get dependencies for
+     * @return Dependencies where this dataset is the dependent (has dependencies on others)
      */
-    std::vector<dq::domain::catalog_dependency>
-    dependenciesForCatalog(const std::string& catalog_name) const;
+    std::vector<dq::domain::dataset_dependency>
+    dependenciesForDataset(const std::string& dataset_code) const;
 
 signals:
     void loadStarted();
@@ -87,7 +88,7 @@ signals:
 
 private:
     ClientManager* clientManager_;
-    std::vector<dq::domain::catalog_dependency> dependencies_;
+    std::vector<dq::domain::dataset_dependency> dependencies_;
 };
 
 }

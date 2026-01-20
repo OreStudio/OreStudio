@@ -35,7 +35,7 @@
 #include "ores.qt/ClientDataDomainModel.hpp"
 #include "ores.qt/ClientSubjectAreaModel.hpp"
 #include "ores.qt/ClientCatalogModel.hpp"
-#include "ores.qt/ClientCatalogDependencyModel.hpp"
+#include "ores.qt/ClientDatasetDependencyModel.hpp"
 #include "ores.qt/ClientMethodologyModel.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/dataset.hpp"
@@ -104,7 +104,7 @@ private slots:
     void onDomainsLoaded();
     void onSubjectAreasLoaded();
     void onCatalogsLoaded();
-    void onCatalogDependenciesLoaded();
+    void onDatasetDependenciesLoaded();
     void onMethodologiesLoaded();
 
     // Column visibility context menu
@@ -156,7 +156,7 @@ private:
     ClientDataDomainModel* dataDomainModel_;
     ClientSubjectAreaModel* subjectAreaModel_;
     ClientCatalogModel* catalogModel_;
-    ClientCatalogDependencyModel* catalogDependencyModel_;
+    ClientDatasetDependencyModel* datasetDependencyModel_;
     ClientMethodologyModel* methodologyModel_;
 
     // Status bar with loading indicator

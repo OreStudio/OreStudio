@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_MESSAGING_CATALOG_DEPENDENCY_PROTOCOL_HPP
-#define ORES_DQ_MESSAGING_CATALOG_DEPENDENCY_PROTOCOL_HPP
+#ifndef ORES_DQ_MESSAGING_DATASET_DEPENDENCY_PROTOCOL_HPP
+#define ORES_DQ_MESSAGING_DATASET_DEPENDENCY_PROTOCOL_HPP
 
 #include <span>
 #include <iosfwd>
@@ -26,82 +26,82 @@
 #include <expected>
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
-#include "ores.dq/domain/catalog_dependency.hpp"
+#include "ores.dq/domain/dataset_dependency.hpp"
 
 namespace ores::dq::messaging {
 
 /**
- * @brief Request to retrieve all catalog dependencies.
+ * @brief Request to retrieve all dataset dependencies.
  */
-struct get_catalog_dependencies_request final {
+struct get_dataset_dependencies_request final {
     std::vector<std::byte> serialize() const;
-    static std::expected<get_catalog_dependencies_request,
+    static std::expected<get_dataset_dependencies_request,
                          ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_catalog_dependencies_request& v);
+std::ostream& operator<<(std::ostream& s, const get_dataset_dependencies_request& v);
 
 /**
- * @brief Response containing all catalog dependencies.
+ * @brief Response containing all dataset dependencies.
  */
-struct get_catalog_dependencies_response final {
-    std::vector<domain::catalog_dependency> dependencies;
+struct get_dataset_dependencies_response final {
+    std::vector<domain::dataset_dependency> dependencies;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<get_catalog_dependencies_response,
+    static std::expected<get_dataset_dependencies_response,
                          ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_catalog_dependencies_response& v);
+std::ostream& operator<<(std::ostream& s, const get_dataset_dependencies_response& v);
 
 /**
- * @brief Request to retrieve catalog dependencies for a specific catalog.
+ * @brief Request to retrieve dataset dependencies for a specific dataset.
  */
-struct get_catalog_dependencies_by_catalog_request final {
-    std::string catalog_name;
+struct get_dataset_dependencies_by_dataset_request final {
+    std::string dataset_code;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<get_catalog_dependencies_by_catalog_request,
+    static std::expected<get_dataset_dependencies_by_dataset_request,
                          ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_catalog_dependencies_by_catalog_request& v);
+std::ostream& operator<<(std::ostream& s, const get_dataset_dependencies_by_dataset_request& v);
 
 /**
- * @brief Response containing catalog dependencies for a specific catalog.
+ * @brief Response containing dataset dependencies for a specific dataset.
  */
-struct get_catalog_dependencies_by_catalog_response final {
-    std::vector<domain::catalog_dependency> dependencies;
+struct get_dataset_dependencies_by_dataset_response final {
+    std::vector<domain::dataset_dependency> dependencies;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<get_catalog_dependencies_by_catalog_response,
+    static std::expected<get_dataset_dependencies_by_dataset_response,
                          ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_catalog_dependencies_by_catalog_response& v);
+std::ostream& operator<<(std::ostream& s, const get_dataset_dependencies_by_dataset_response& v);
 
 }
 
 namespace ores::comms::messaging {
 
 template<>
-struct message_traits<dq::messaging::get_catalog_dependencies_request> {
-    using request_type = dq::messaging::get_catalog_dependencies_request;
-    using response_type = dq::messaging::get_catalog_dependencies_response;
+struct message_traits<dq::messaging::get_dataset_dependencies_request> {
+    using request_type = dq::messaging::get_dataset_dependencies_request;
+    using response_type = dq::messaging::get_dataset_dependencies_response;
     static constexpr message_type request_message_type =
-        message_type::get_catalog_dependencies_request;
+        message_type::get_dataset_dependencies_request;
 };
 
 template<>
-struct message_traits<dq::messaging::get_catalog_dependencies_by_catalog_request> {
-    using request_type = dq::messaging::get_catalog_dependencies_by_catalog_request;
-    using response_type = dq::messaging::get_catalog_dependencies_by_catalog_response;
+struct message_traits<dq::messaging::get_dataset_dependencies_by_dataset_request> {
+    using request_type = dq::messaging::get_dataset_dependencies_by_dataset_request;
+    using response_type = dq::messaging::get_dataset_dependencies_by_dataset_response;
     static constexpr message_type request_message_type =
-        message_type::get_catalog_dependencies_by_catalog_request;
+        message_type::get_dataset_dependencies_by_dataset_request;
 };
 
 }

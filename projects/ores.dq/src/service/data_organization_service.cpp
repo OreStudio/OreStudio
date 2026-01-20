@@ -26,7 +26,7 @@ namespace ores::dq::service {
 using namespace ores::logging;
 
 data_organization_service::data_organization_service(context ctx)
-    : catalog_repo_(ctx), catalog_dependency_repo_(ctx),
+    : catalog_repo_(ctx), dataset_dependency_repo_(ctx),
       data_domain_repo_(ctx), subject_area_repo_(ctx) {}
 
 // ============================================================================
@@ -82,21 +82,21 @@ data_organization_service::get_catalog_history(const std::string& name) {
 }
 
 // ============================================================================
-// Catalog Dependency Management
+// Dataset Dependency Management
 // ============================================================================
 
-std::vector<domain::catalog_dependency>
-data_organization_service::list_catalog_dependencies() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all catalog dependencies";
-    return catalog_dependency_repo_.read_latest();
+std::vector<domain::dataset_dependency>
+data_organization_service::list_dataset_dependencies() {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all dataset dependencies";
+    return dataset_dependency_repo_.read_latest();
 }
 
-std::vector<domain::catalog_dependency>
-data_organization_service::list_catalog_dependencies_by_catalog(
-    const std::string& catalog_name) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing dependencies for catalog: "
-                               << catalog_name;
-    return catalog_dependency_repo_.read_latest_by_catalog(catalog_name);
+std::vector<domain::dataset_dependency>
+data_organization_service::list_dataset_dependencies_by_dataset(
+    const std::string& dataset_code) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing dependencies for dataset: "
+                               << dataset_code;
+    return dataset_dependency_repo_.read_latest_by_dataset(dataset_code);
 }
 
 // ============================================================================

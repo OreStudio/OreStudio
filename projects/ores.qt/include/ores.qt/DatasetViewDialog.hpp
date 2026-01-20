@@ -29,7 +29,7 @@
 #include <QGraphicsScene>
 #include "ores.dq/domain/dataset.hpp"
 #include "ores.dq/domain/methodology.hpp"
-#include "ores.dq/domain/catalog_dependency.hpp"
+#include "ores.dq/domain/dataset_dependency.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
@@ -87,8 +87,8 @@ public:
 
     void setDataset(const dq::domain::dataset& dataset);
     void setMethodologies(const std::vector<dq::domain::methodology>& methodologies);
-    void setCatalogDependencies(
-        const std::vector<dq::domain::catalog_dependency>& dependencies);
+    void setDatasetDependencies(
+        const std::vector<dq::domain::dataset_dependency>& dependencies);
 
 private:
     void setupUi();
@@ -148,7 +148,7 @@ private:
     ClientManager* clientManager_;
     dq::domain::dataset dataset_;
     std::vector<dq::domain::methodology> methodologies_;
-    std::vector<dq::domain::catalog_dependency> catalogDependencies_;
+    std::vector<dq::domain::dataset_dependency> datasetDependencies_;
 
     // Lineage styling properties (QSS-configurable)
     QColor lineageBackground_{0x2D, 0x2D, 0x30};

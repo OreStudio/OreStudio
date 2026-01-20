@@ -90,10 +90,10 @@
 \echo '--- Data Quality Datasets ---'
 \ir dq_dataset_populate.sql
 
--- Data Quality Catalog Dependencies
+-- Data Quality Dataset Dependencies
 \echo ''
-\echo '--- Data Quality Catalog Dependencies ---'
-\ir dq_catalog_dependency_populate.sql
+\echo '--- Data Quality Dataset Dependencies ---'
+\ir dq_dataset_dependency_populate.sql
 
 -- Data Quality Artefacts
 \ir dq_flags_images_artefact_populate.sql

@@ -17,34 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_REPOSITORY_CATALOG_DEPENDENCY_MAPPER_HPP
-#define ORES_DQ_REPOSITORY_CATALOG_DEPENDENCY_MAPPER_HPP
+#ifndef ORES_DQ_DOMAIN_DATASET_DEPENDENCY_TABLE_HPP
+#define ORES_DQ_DOMAIN_DATASET_DEPENDENCY_TABLE_HPP
 
-#include "ores.dq/domain/catalog_dependency.hpp"
-#include "ores.dq/repository/catalog_dependency_entity.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <string>
+#include <vector>
+#include "ores.dq/domain/dataset_dependency.hpp"
 
-namespace ores::dq::repository {
+namespace ores::dq::domain {
 
 /**
- * @brief Maps catalog_dependency domain entities to data storage and vice-versa.
+ * @brief Converts dataset dependencies to the table format.
  */
-class catalog_dependency_mapper {
-private:
-    inline static std::string_view logger_name =
-        "ores.dq.repository.catalog_dependency_mapper";
-
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-public:
-    static domain::catalog_dependency map(const catalog_dependency_entity& v);
-
-    static std::vector<domain::catalog_dependency>
-    map(const std::vector<catalog_dependency_entity>& v);
-};
+std::string convert_to_table(const std::vector<dataset_dependency>& v);
 
 }
 

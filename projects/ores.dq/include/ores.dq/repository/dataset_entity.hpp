@@ -36,6 +36,7 @@ struct dataset_entity {
 
     sqlgen::PrimaryKey<std::string> id;
     int version = 0;
+    std::string code;
     std::optional<std::string> catalog_name;
     std::string subject_area_name;
     std::string domain_name;

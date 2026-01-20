@@ -17,25 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_REPOSITORY_CATALOG_DEPENDENCY_REPOSITORY_HPP
-#define ORES_DQ_REPOSITORY_CATALOG_DEPENDENCY_REPOSITORY_HPP
+#ifndef ORES_DQ_REPOSITORY_DATASET_DEPENDENCY_REPOSITORY_HPP
+#define ORES_DQ_REPOSITORY_DATASET_DEPENDENCY_REPOSITORY_HPP
 
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.dq/domain/catalog_dependency.hpp"
+#include "ores.dq/domain/dataset_dependency.hpp"
 
 namespace ores::dq::repository {
 
 /**
- * @brief Reads catalog dependencies from data storage.
+ * @brief Reads dataset dependencies from data storage.
  */
-class catalog_dependency_repository {
+class dataset_dependency_repository {
 private:
     inline static std::string_view logger_name =
-        "ores.dq.repository.catalog_dependency_repository";
+        "ores.dq.repository.dataset_dependency_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -46,19 +46,19 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit catalog_dependency_repository(context ctx);
+    explicit dataset_dependency_repository(context ctx);
 
     /**
-     * @brief Reads all active catalog dependencies.
+     * @brief Reads all active dataset dependencies.
      */
-    std::vector<domain::catalog_dependency> read_latest();
+    std::vector<domain::dataset_dependency> read_latest();
 
     /**
-     * @brief Reads all active dependencies for a specific catalog.
-     * @param catalog_name The name of the catalog to query dependencies for
+     * @brief Reads all active dependencies for a specific dataset.
+     * @param dataset_code The code of the dataset to query dependencies for
      */
-    std::vector<domain::catalog_dependency>
-    read_latest_by_catalog(const std::string& catalog_name);
+    std::vector<domain::dataset_dependency>
+    read_latest_by_dataset(const std::string& dataset_code);
 
 private:
     context ctx_;

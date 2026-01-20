@@ -17,32 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_REPOSITORY_CATALOG_DEPENDENCY_ENTITY_HPP
-#define ORES_DQ_REPOSITORY_CATALOG_DEPENDENCY_ENTITY_HPP
+#ifndef ORES_DQ_DOMAIN_DATASET_DEPENDENCY_TABLE_IO_HPP
+#define ORES_DQ_DOMAIN_DATASET_DEPENDENCY_TABLE_IO_HPP
 
-#include <string>
-#include "sqlgen/Timestamp.hpp"
-#include "sqlgen/PrimaryKey.hpp"
+#include <iosfwd>
+#include <vector>
+#include "ores.dq/domain/dataset_dependency.hpp"
 
-namespace ores::dq::repository {
+namespace ores::dq::domain {
 
 /**
- * @brief Represents a catalog dependency in the database.
+ * @brief Outputs dataset dependencies as a formatted table.
  */
-struct catalog_dependency_entity {
-    constexpr static const char* schema = "ores";
-    constexpr static const char* tablename = "dq_catalog_dependencies_tbl";
-
-    sqlgen::PrimaryKey<std::string> catalog_name;
-    std::string dependency_name;
-    std::string recorded_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_from = "9999-12-31 23:59:59";
-    sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S"> valid_to = "9999-12-31 23:59:59";
-};
-
-std::ostream& operator<<(std::ostream& s, const catalog_dependency_entity& v);
+std::ostream& operator<<(std::ostream& s, const std::vector<dataset_dependency>& v);
 
 }
 

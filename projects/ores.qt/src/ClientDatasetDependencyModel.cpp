@@ -17,38 +17,38 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/ClientCatalogDependencyModel.hpp"
+#include "ores.qt/ClientDatasetDependencyModel.hpp"
 
 #include <QFutureWatcher>
 #include <QtConcurrent>
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.dq/messaging/catalog_dependency_protocol.hpp"
+#include "ores.dq/messaging/dataset_dependency_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
-ClientCatalogDependencyModel::ClientCatalogDependencyModel(
+ClientDatasetDependencyModel::ClientDatasetDependencyModel(
     ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager) {
 }
 
-int ClientCatalogDependencyModel::rowCount(const QModelIndex& parent) const {
+int ClientDatasetDependencyModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
     return static_cast<int>(dependencies_.size());
 }
 
-int ClientCatalogDependencyModel::columnCount(const QModelIndex& parent) const {
+int ClientDatasetDependencyModel::columnCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
     return ColumnCount;
 }
 
-QVariant ClientCatalogDependencyModel::data(const QModelIndex& index,
+QVariant ClientDatasetDependencyModel::data(const QModelIndex& index,
                                             int role) const {
     if (!index.isValid() || index.row() >= static_cast<int>(dependencies_.size()))
         return {};
@@ -59,10 +59,12 @@ QVariant ClientCatalogDependencyModel::data(const QModelIndex& index,
     const auto& dep = dependencies_[index.row()];
 
     switch (index.column()) {
-    case CatalogName:
-        return QString::fromStdString(dep.catalog_name);
-    case DependencyName:
-        return QString::fromStdString(dep.dependency_name);
+    case DatasetCode:
+        return QString::fromStdString(dep.dataset_code);
+    case DependencyCode:
+        return QString::fromStdString(dep.dependency_code);
+    case Role:
+        return QString::fromStdString(dep.role);
     case RecordedBy:
         return QString::fromStdString(dep.recorded_by);
     case RecordedAt:
@@ -72,22 +74,23 @@ QVariant ClientCatalogDependencyModel::data(const QModelIndex& index,
     }
 }
 
-QVariant ClientCatalogDependencyModel::headerData(int section,
+QVariant ClientDatasetDependencyModel::headerData(int section,
                                                   Qt::Orientation orientation,
                                                   int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
 
     switch (section) {
-    case CatalogName: return tr("Catalog");
-    case DependencyName: return tr("Depends On");
+    case DatasetCode: return tr("Dataset Code");
+    case DependencyCode: return tr("Depends On");
+    case Role: return tr("Role");
     case RecordedBy: return tr("Recorded By");
     case RecordedAt: return tr("Recorded At");
     default: return {};
     }
 }
 
-void ClientCatalogDependencyModel::loadData() {
+void ClientDatasetDependencyModel::loadData() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         emit errorOccurred("Not connected to server");
         return;
@@ -95,11 +98,11 @@ void ClientCatalogDependencyModel::loadData() {
 
     emit loadStarted();
 
-    QPointer<ClientCatalogDependencyModel> self = this;
+    QPointer<ClientDatasetDependencyModel> self = this;
 
     struct LoadResult {
         bool success;
-        std::vector<dq::domain::catalog_dependency> dependencies;
+        std::vector<dq::domain::dataset_dependency> dependencies;
         QString error_message;
         QString error_details;
     };
@@ -112,11 +115,11 @@ void ClientCatalogDependencyModel::loadData() {
                         .error_details = {}};
             }
 
-            dq::messaging::get_catalog_dependencies_request request;
+            dq::messaging::get_dataset_dependencies_request request;
             auto payload = request.serialize();
 
             comms::messaging::frame request_frame(
-                comms::messaging::message_type::get_catalog_dependencies_request,
+                comms::messaging::message_type::get_dataset_dependencies_request,
                 0, std::move(payload));
 
             auto response_result =
@@ -145,7 +148,7 @@ void ClientCatalogDependencyModel::loadData() {
             }
 
             auto response =
-                dq::messaging::get_catalog_dependencies_response::deserialize(
+                dq::messaging::get_dataset_dependencies_response::deserialize(
                     *payload_result);
             if (!response) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
@@ -156,11 +159,11 @@ void ClientCatalogDependencyModel::loadData() {
 
             BOOST_LOG_SEV(lg(), debug) << "Fetched "
                                        << response->dependencies.size()
-                                       << " catalog dependencies";
+                                       << " dataset dependencies";
             return {.success = true,
                     .dependencies = std::move(response->dependencies),
                     .error_message = {}, .error_details = {}};
-        }, "catalog dependencies");
+        }, "dataset dependencies");
     };
 
     auto* watcher = new QFutureWatcher<LoadResult>(this);
@@ -172,7 +175,7 @@ void ClientCatalogDependencyModel::loadData() {
         if (!self) return;
 
         if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch catalog dependencies: "
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch dataset dependencies: "
                                        << result.error_message.toStdString();
             emit self->errorOccurred(result.error_message, result.error_details);
             return;
@@ -185,14 +188,14 @@ void ClientCatalogDependencyModel::loadData() {
         emit self->loadFinished();
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Loaded " << self->dependencies_.size() << " catalog dependencies";
+            << "Loaded " << self->dependencies_.size() << " dataset dependencies";
     });
 
     watcher->setFuture(QtConcurrent::run(task));
 }
 
-void ClientCatalogDependencyModel::loadDataByCatalog(
-    const std::string& catalog_name) {
+void ClientDatasetDependencyModel::loadDataByDataset(
+    const std::string& dataset_code) {
     if (!clientManager_ || !clientManager_->isConnected()) {
         emit errorOccurred("Not connected to server");
         return;
@@ -200,17 +203,17 @@ void ClientCatalogDependencyModel::loadDataByCatalog(
 
     emit loadStarted();
 
-    QPointer<ClientCatalogDependencyModel> self = this;
-    std::string name_copy = catalog_name;
+    QPointer<ClientDatasetDependencyModel> self = this;
+    std::string code_copy = dataset_code;
 
     struct LoadResult {
         bool success;
-        std::vector<dq::domain::catalog_dependency> dependencies;
+        std::vector<dq::domain::dataset_dependency> dependencies;
         QString error_message;
         QString error_details;
     };
 
-    auto task = [self, name_copy]() -> LoadResult {
+    auto task = [self, code_copy]() -> LoadResult {
         return exception_helper::wrap_async_fetch<LoadResult>([&]() -> LoadResult {
             if (!self || !self->clientManager_) {
                 return {.success = false, .dependencies = {},
@@ -218,12 +221,12 @@ void ClientCatalogDependencyModel::loadDataByCatalog(
                         .error_details = {}};
             }
 
-            dq::messaging::get_catalog_dependencies_by_catalog_request request;
-            request.catalog_name = name_copy;
+            dq::messaging::get_dataset_dependencies_by_dataset_request request;
+            request.dataset_code = code_copy;
             auto payload = request.serialize();
 
             comms::messaging::frame request_frame(
-                comms::messaging::message_type::get_catalog_dependencies_by_catalog_request,
+                comms::messaging::message_type::get_dataset_dependencies_by_dataset_request,
                 0, std::move(payload));
 
             auto response_result =
@@ -252,7 +255,7 @@ void ClientCatalogDependencyModel::loadDataByCatalog(
             }
 
             auto response =
-                dq::messaging::get_catalog_dependencies_by_catalog_response::deserialize(
+                dq::messaging::get_dataset_dependencies_by_dataset_response::deserialize(
                     *payload_result);
             if (!response) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
@@ -263,12 +266,12 @@ void ClientCatalogDependencyModel::loadDataByCatalog(
 
             BOOST_LOG_SEV(lg(), debug) << "Fetched "
                                        << response->dependencies.size()
-                                       << " dependencies for catalog: "
-                                       << name_copy;
+                                       << " dependencies for dataset: "
+                                       << code_copy;
             return {.success = true,
                     .dependencies = std::move(response->dependencies),
                     .error_message = {}, .error_details = {}};
-        }, "catalog dependencies by catalog");
+        }, "dataset dependencies by dataset");
     };
 
     auto* watcher = new QFutureWatcher<LoadResult>(this);
@@ -280,7 +283,7 @@ void ClientCatalogDependencyModel::loadDataByCatalog(
         if (!self) return;
 
         if (!result.success) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch catalog dependencies: "
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch dataset dependencies: "
                                        << result.error_message.toStdString();
             emit self->errorOccurred(result.error_message, result.error_details);
             return;
@@ -293,23 +296,23 @@ void ClientCatalogDependencyModel::loadDataByCatalog(
         emit self->loadFinished();
 
         BOOST_LOG_SEV(lg(), debug)
-            << "Loaded " << self->dependencies_.size() << " catalog dependencies";
+            << "Loaded " << self->dependencies_.size() << " dataset dependencies";
     });
 
     watcher->setFuture(QtConcurrent::run(task));
 }
 
-const std::vector<dq::domain::catalog_dependency>&
-ClientCatalogDependencyModel::dependencies() const {
+const std::vector<dq::domain::dataset_dependency>&
+ClientDatasetDependencyModel::dependencies() const {
     return dependencies_;
 }
 
-std::vector<dq::domain::catalog_dependency>
-ClientCatalogDependencyModel::dependenciesForCatalog(
-    const std::string& catalog_name) const {
-    std::vector<dq::domain::catalog_dependency> result;
+std::vector<dq::domain::dataset_dependency>
+ClientDatasetDependencyModel::dependenciesForDataset(
+    const std::string& dataset_code) const {
+    std::vector<dq::domain::dataset_dependency> result;
     for (const auto& dep : dependencies_) {
-        if (dep.catalog_name == catalog_name) {
+        if (dep.dataset_code == dataset_code) {
             result.push_back(dep);
         }
     }

@@ -21,6 +21,7 @@
 create table if not exists "ores"."dq_datasets_tbl" (
     "id" uuid not null,
     "version" integer not null,
+    "code" text not null,
     "catalog_name" text,
     "subject_area_name" text not null,
     "domain_name" text not null,
@@ -54,6 +55,10 @@ create table if not exists "ores"."dq_datasets_tbl" (
 
 create unique index if not exists dq_datasets_name_uniq_idx
 on "ores"."dq_datasets_tbl" (name, subject_area_name, domain_name)
+where valid_to = ores.utility_infinity_timestamp_fn();
+
+create unique index if not exists dq_datasets_code_uniq_idx
+on "ores"."dq_datasets_tbl" (code)
 where valid_to = ores.utility_infinity_timestamp_fn();
 
 create unique index if not exists dq_datasets_version_uniq_idx

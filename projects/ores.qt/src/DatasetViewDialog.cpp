@@ -213,9 +213,9 @@ void DatasetViewDialog::setMethodologies(const std::vector<dq::domain::methodolo
     methodologies_ = methodologies;
 }
 
-void DatasetViewDialog::setCatalogDependencies(
-    const std::vector<dq::domain::catalog_dependency>& dependencies) {
-    catalogDependencies_ = dependencies;
+void DatasetViewDialog::setDatasetDependencies(
+    const std::vector<dq::domain::dataset_dependency>& dependencies) {
+    datasetDependencies_ = dependencies;
 }
 
 void DatasetViewDialog::updateOverviewTab() {
@@ -338,101 +338,61 @@ void DatasetViewDialog::updateLineageView() {
     // Layout parameters
     const qreal rowSpacing = 50;  // Vertical spacing between rows
     qreal currentX = 0;
-    qreal catalogRow = 0;
+    qreal dependencyRow = 0;
     qreal datasetRow = rowSpacing + lineageHeaderHeight_ + lineageRowHeight_ * 3;
 
-    std::vector<std::pair<qreal, qreal>> catalogNodeCenters;  // X, Y for connections
+    std::vector<std::pair<qreal, qreal>> dependencyNodeCenters;  // X, Y for connections
 
-    // Row 1: Catalog dependencies (if dataset has a catalog)
-    if (dataset_.catalog_name.has_value() && !catalogDependencies_.empty()) {
-        const std::string& datasetCatalog = *dataset_.catalog_name;
-
-        // Find dependencies where the dataset's catalog depends on others
-        std::vector<std::string> dependencyNames;
-        for (const auto& dep : catalogDependencies_) {
-            if (dep.catalog_name == datasetCatalog) {
-                dependencyNames.push_back(dep.dependency_name);
+    // Row 1: Dataset dependencies (datasets this dataset depends on)
+    if (!datasetDependencies_.empty()) {
+        // Find dependencies where this dataset depends on others
+        std::vector<std::pair<std::string, std::string>> dependencies;  // code, role
+        for (const auto& dep : datasetDependencies_) {
+            if (dep.dataset_code == dataset_.code) {
+                dependencies.emplace_back(dep.dependency_code, dep.role);
             }
         }
 
-        // Create nodes for dependency catalogs
-        for (const auto& depName : dependencyNames) {
-            qreal height = createLineageNode(scene, currentX, catalogRow,
-                tr("Catalog"),
-                {tr("Name")},
-                {QString::fromStdString(depName)},
+        // Create nodes for dependency datasets
+        for (const auto& [depCode, role] : dependencies) {
+            qreal height = createLineageNode(scene, currentX, dependencyRow,
+                tr("Dependency"),
+                {tr("Code"), tr("Role")},
+                {QString::fromStdString(depCode), QString::fromStdString(role)},
                 lineageHeaderCatalog_, false, true);
 
-            catalogNodeCenters.emplace_back(
+            dependencyNodeCenters.emplace_back(
                 currentX + lineageNodeWidth_ + lineageSocketRadius_,
-                catalogRow + height / 2);
+                dependencyRow + height / 2);
 
             currentX += lineageNodeWidth_ + lineageNodeSpacing_;
         }
-
-        // Create node for dataset's catalog
-        if (!dependencyNames.empty()) {
-            qreal catalogHeight = createLineageNode(scene, currentX, catalogRow,
-                tr("Catalog"),
-                {tr("Name")},
-                {QString::fromStdString(datasetCatalog)},
-                lineageHeaderCatalog_, true, true);
-
-            qreal catalogCenterY = catalogRow + catalogHeight / 2;
-
-            // Draw connections from dependency catalogs to dataset's catalog
-            for (const auto& [depX, depY] : catalogNodeCenters) {
-                drawLineageConnection(scene, depX, depY,
-                    currentX - lineageSocketRadius_, catalogCenterY);
-            }
-
-            // Store for connection to dataset
-            catalogNodeCenters.clear();
-            catalogNodeCenters.emplace_back(
-                currentX + lineageNodeWidth_ / 2,
-                catalogRow + catalogHeight);
-
-            currentX += lineageNodeWidth_ + lineageNodeSpacing_;
-        }
-    } else if (dataset_.catalog_name.has_value()) {
-        // Dataset has a catalog but no dependencies - show just the catalog
-        qreal height = createLineageNode(scene, currentX, catalogRow,
-            tr("Catalog"),
-            {tr("Name")},
-            {QString::fromStdString(*dataset_.catalog_name)},
-            lineageHeaderCatalog_, false, true);
-
-        catalogNodeCenters.emplace_back(
-            currentX + lineageNodeWidth_ / 2,
-            catalogRow + height);
-
-        currentX += lineageNodeWidth_ + lineageNodeSpacing_;
     }
 
-    // Row 2: Dataset node
+    // Row 2: Current dataset node
     qreal datasetX = 0;
-    if (!catalogNodeCenters.empty()) {
-        // Center dataset under the last catalog node
-        datasetX = catalogNodeCenters.back().first - lineageNodeWidth_ / 2;
+    if (!dependencyNodeCenters.empty()) {
+        // Center dataset under the dependency nodes
+        qreal totalWidth = currentX - lineageNodeSpacing_;
+        datasetX = (totalWidth - lineageNodeWidth_) / 2;
     }
 
     qreal datasetHeight = createLineageNode(scene, datasetX, datasetRow,
         tr("Dataset"),
-        {tr("Name"), tr("Origin"), tr("Nature"), tr("Treatment")},
-        {QString::fromStdString(dataset_.name),
+        {tr("Code"), tr("Name"), tr("Origin"), tr("Nature")},
+        {QString::fromStdString(dataset_.code),
+         QString::fromStdString(dataset_.name),
          QString::fromStdString(dataset_.origin_code),
-         QString::fromStdString(dataset_.nature_code),
-         QString::fromStdString(dataset_.treatment_code)},
-        lineageHeaderDataset_, !catalogNodeCenters.empty(), false);
+         QString::fromStdString(dataset_.nature_code)},
+        lineageHeaderDataset_, !dependencyNodeCenters.empty(), false);
 
-    // Draw connection from catalog to dataset
-    if (!catalogNodeCenters.empty()) {
+    // Draw connections from dependencies to dataset
+    if (!dependencyNodeCenters.empty()) {
         qreal datasetCenterX = datasetX + lineageNodeWidth_ / 2;
-        drawLineageConnection(scene,
-            catalogNodeCenters.back().first,
-            catalogNodeCenters.back().second,
-            datasetCenterX,
-            datasetRow - lineageSocketRadius_);
+        qreal datasetTopY = datasetRow - lineageSocketRadius_;
+        for (const auto& [depX, depY] : dependencyNodeCenters) {
+            drawLineageConnection(scene, depX, depY, datasetCenterX, datasetTopY);
+        }
     }
 
     // Set scene background

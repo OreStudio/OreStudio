@@ -26,11 +26,11 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq/domain/catalog.hpp"
-#include "ores.dq/domain/catalog_dependency.hpp"
+#include "ores.dq/domain/dataset_dependency.hpp"
 #include "ores.dq/domain/data_domain.hpp"
 #include "ores.dq/domain/subject_area.hpp"
 #include "ores.dq/repository/catalog_repository.hpp"
-#include "ores.dq/repository/catalog_dependency_repository.hpp"
+#include "ores.dq/repository/dataset_dependency_repository.hpp"
 #include "ores.dq/repository/data_domain_repository.hpp"
 #include "ores.dq/repository/subject_area_repository.hpp"
 
@@ -112,20 +112,20 @@ public:
     std::vector<domain::catalog> get_catalog_history(const std::string& name);
 
     // ========================================================================
-    // Catalog Dependency Management
+    // Dataset Dependency Management
     // ========================================================================
 
     /**
-     * @brief Lists all catalog dependencies.
+     * @brief Lists all dataset dependencies.
      */
-    std::vector<domain::catalog_dependency> list_catalog_dependencies();
+    std::vector<domain::dataset_dependency> list_dataset_dependencies();
 
     /**
-     * @brief Lists catalog dependencies for a specific catalog.
-     * @param catalog_name The name of the catalog to query dependencies for
+     * @brief Lists dataset dependencies for a specific dataset.
+     * @param dataset_code The code of the dataset to query dependencies for
      */
-    std::vector<domain::catalog_dependency>
-    list_catalog_dependencies_by_catalog(const std::string& catalog_name);
+    std::vector<domain::dataset_dependency>
+    list_dataset_dependencies_by_dataset(const std::string& dataset_code);
 
     // ========================================================================
     // Data Domain Management
@@ -224,7 +224,7 @@ public:
 
 private:
     repository::catalog_repository catalog_repo_;
-    repository::catalog_dependency_repository catalog_dependency_repo_;
+    repository::dataset_dependency_repository dataset_dependency_repo_;
     repository::data_domain_repository data_domain_repo_;
     repository::subject_area_repository subject_area_repo_;
 };

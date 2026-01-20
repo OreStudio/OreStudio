@@ -191,9 +191,11 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // now properly located in the Data Quality subsystem alongside other DQ types.
 // The dq_message_handler now handles all DQ messages including change reasons.
 //
-// Version 22.1 adds catalog dependency messages for querying dependencies
-// between catalogs. New messages: get_catalog_dependencies_request/response,
-// get_catalog_dependencies_by_catalog_request/response.
+// Version 22.1 adds dataset dependency messages for querying dependencies
+// between datasets using stable dataset codes. New messages:
+// get_dataset_dependencies_request/response,
+// get_dataset_dependencies_by_dataset_request/response.
+// Replaces catalog dependency messages.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 22;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
@@ -473,11 +475,11 @@ enum class message_type {
     get_change_reason_category_history_request = 0x6080,
     get_change_reason_category_history_response = 0x6081,
 
-    // Catalog Dependency (0x6082 - 0x6087)
-    get_catalog_dependencies_request = 0x6082,
-    get_catalog_dependencies_response = 0x6083,
-    get_catalog_dependencies_by_catalog_request = 0x6084,
-    get_catalog_dependencies_by_catalog_response = 0x6085,
+    // Dataset Dependency (0x6082 - 0x6087)
+    get_dataset_dependencies_request = 0x6082,
+    get_dataset_dependencies_response = 0x6083,
+    get_dataset_dependencies_by_dataset_request = 0x6084,
+    get_dataset_dependencies_by_dataset_response = 0x6085,
 
     last_value
 };

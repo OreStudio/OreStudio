@@ -73,6 +73,7 @@ QVariant ClientDatasetModel::data(const QModelIndex& index, int role) const {
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
         case Name: return QString::fromStdString(dataset.name);
+        case Code: return QString::fromStdString(dataset.code);
         case Catalog:
             return dataset.catalog_name
                 ? QString::fromStdString(*dataset.catalog_name)
@@ -119,6 +120,7 @@ QVariant ClientDatasetModel::headerData(int section,
 
     switch (section) {
     case Name: return tr("Name");
+    case Code: return tr("Code");
     case Catalog: return tr("Catalog");
     case SubjectArea: return tr("Subject Area");
     case Domain: return tr("Domain");

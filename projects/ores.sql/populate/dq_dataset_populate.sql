@@ -25,6 +25,7 @@ set schema 'ores';
 -- =============================================================================
 
 select ores.upsert_dq_datasets(
+    'iso.countries',
     'ISO Standards',
     'Countries',
     'Reference Data',
@@ -42,6 +43,7 @@ select ores.upsert_dq_datasets(
 );
 
 select ores.upsert_dq_datasets(
+    'assets.country_flags',
     'Visual Assets',
     'Country Flags',
     'Reference Data',
@@ -67,6 +69,7 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_datasets(
+    'assets.crypto_icons',
     'Visual Assets',
     'Cryptocurrencies',
     'Reference Data',
@@ -92,6 +95,7 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_datasets(
+    'iso.currencies',
     'ISO Standards',
     'Currencies',
     'Reference Data',
@@ -117,6 +121,7 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_datasets(
+    'fpml.currencies',
     'FpML Standards',
     'Currencies',
     'Reference Data',
@@ -142,6 +147,7 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_datasets(
+    'crypto.reference',
     'Cryptocurrency',
     'Cryptocurrencies',
     'Reference Data',
@@ -167,6 +173,7 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_datasets(
+    'geo.ip2country',
     'IP Geolocation',
     'IP Address to Country maps',
     'Reference Data',

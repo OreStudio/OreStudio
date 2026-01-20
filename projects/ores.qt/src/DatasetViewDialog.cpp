@@ -218,6 +218,11 @@ void DatasetViewDialog::setDatasetDependencies(
     datasetDependencies_ = dependencies;
 }
 
+void DatasetViewDialog::setDatasetNames(
+    const std::map<std::string, std::string>& codeToName) {
+    datasetNames_ = codeToName;
+}
+
 void DatasetViewDialog::updateOverviewTab() {
     overviewTree_->clear();
 
@@ -339,26 +344,34 @@ void DatasetViewDialog::updateLineageView() {
     const qreal rowSpacing = 50;  // Vertical spacing between rows
     qreal currentX = 0;
     qreal dependencyRow = 0;
-    qreal datasetRow = rowSpacing + lineageHeaderHeight_ + lineageRowHeight_ * 3;
+    qreal datasetRow = rowSpacing + lineageHeaderHeight_ + lineageRowHeight_ * 4;  // 4 rows: Code, Name, Role + padding
 
     std::vector<std::pair<qreal, qreal>> dependencyNodeCenters;  // X, Y for connections
 
     // Row 1: Dataset dependencies (datasets this dataset depends on)
     if (!datasetDependencies_.empty()) {
         // Find dependencies where this dataset depends on others
-        std::vector<std::pair<std::string, std::string>> dependencies;  // code, role
+        struct DepInfo { std::string code; std::string name; std::string role; };
+        std::vector<DepInfo> dependencies;
         for (const auto& dep : datasetDependencies_) {
             if (dep.dataset_code == dataset_.code) {
-                dependencies.emplace_back(dep.dependency_code, dep.role);
+                std::string name;
+                auto it = datasetNames_.find(dep.dependency_code);
+                if (it != datasetNames_.end()) {
+                    name = it->second;
+                }
+                dependencies.push_back({dep.dependency_code, name, dep.role});
             }
         }
 
         // Create nodes for dependency datasets
-        for (const auto& [depCode, role] : dependencies) {
+        for (const auto& dep : dependencies) {
             qreal height = createLineageNode(scene, currentX, dependencyRow,
                 tr("Dependency"),
-                {tr("Code"), tr("Role")},
-                {QString::fromStdString(depCode), QString::fromStdString(role)},
+                {tr("Code"), tr("Name"), tr("Role")},
+                {QString::fromStdString(dep.code),
+                 QString::fromStdString(dep.name),
+                 QString::fromStdString(dep.role)},
                 lineageHeaderCatalog_, false, true);
 
             dependencyNodeCenters.emplace_back(

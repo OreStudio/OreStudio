@@ -19,6 +19,7 @@
  */
 #include "ores.qt/DataLibrarianWindow.hpp"
 
+#include <map>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -431,6 +432,17 @@ void DataLibrarianWindow::showDatasetDetailDialog(const dq::domain::dataset* dat
     }
     dialog->setMethodologies(methodologies);
     dialog->setDatasetDependencies(datasetDependencyModel_->dependencies());
+
+    // Build code-to-name lookup for dependency display
+    std::map<std::string, std::string> datasetNames;
+    for (int i = 0; i < datasetModel_->rowCount(); ++i) {
+        const auto* ds = datasetModel_->getDataset(i);
+        if (ds) {
+            datasetNames[ds->code] = ds->name;
+        }
+    }
+    dialog->setDatasetNames(datasetNames);
+
     dialog->setDataset(*dataset);
 
     // Show modeless dialog

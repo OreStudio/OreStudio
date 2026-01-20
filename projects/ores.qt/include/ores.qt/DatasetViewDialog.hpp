@@ -20,6 +20,7 @@
 #ifndef ORES_QT_DATASET_VIEW_DIALOG_HPP
 #define ORES_QT_DATASET_VIEW_DIALOG_HPP
 
+#include <map>
 #include <vector>
 #include <QDialog>
 #include <QTabWidget>
@@ -89,6 +90,7 @@ public:
     void setMethodologies(const std::vector<dq::domain::methodology>& methodologies);
     void setDatasetDependencies(
         const std::vector<dq::domain::dataset_dependency>& dependencies);
+    void setDatasetNames(const std::map<std::string, std::string>& codeToName);
 
 private:
     void setupUi();
@@ -149,6 +151,7 @@ private:
     dq::domain::dataset dataset_;
     std::vector<dq::domain::methodology> methodologies_;
     std::vector<dq::domain::dataset_dependency> datasetDependencies_;
+    std::map<std::string, std::string> datasetNames_;  // code -> name lookup
 
     // Lineage styling properties (QSS-configurable)
     QColor lineageBackground_{0x2D, 0x2D, 0x30};

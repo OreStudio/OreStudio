@@ -638,16 +638,15 @@ create or replace function ores.upsert_role(
 begin
     perform ores.seed_validate_not_empty(p_name, 'Role name');
 
-    -- Check if role already exists
-    if not exists (
-        select 1 from ores.iam_roles_tbl
-        where name = p_name and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.iam_roles_tbl (id, version, name, description, modified_by,
-            change_reason_code, change_commentary, valid_from, valid_to)
-        values (gen_random_uuid(), 1, p_name, p_description, p_recorded_by,
-                'system.new_record', 'System seed data',
-                current_timestamp, ores.utility_infinity_timestamp_fn());
+    -- Insert role if it doesn't exist (uses partial unique index for atomicity)
+    insert into ores.iam_roles_tbl (id, version, name, description, modified_by,
+        change_reason_code, change_commentary, valid_from, valid_to)
+    values (gen_random_uuid(), 1, p_name, p_description, p_recorded_by,
+            'system.new_record', 'System seed data',
+            current_timestamp, ores.utility_infinity_timestamp_fn())
+    on conflict (name) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created role: %', p_name;
     else
         raise notice 'Role already exists: %', p_name;

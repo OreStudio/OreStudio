@@ -40,35 +40,14 @@ apt-get install tj3
 *** Project Start
     :PROPERTIES:
     :task_id: start
-    :start: 2025-12-13
+    :start: 2025-01-20
     :END:
-
-*** Setup Infrastructure
-    :PROPERTIES:
-    :EFFORT:   1d
-    :BLOCKER:  previous-sibling
-    :allocate: s06
-    :END:
-
-Setup all of the fundamental infrastructure including cross platform CI, sprint
-management, project management, integration with AI, packaging, deployment, etc.
-
-*** Finish Reference Implementation
-    :PROPERTIES:
-    :EFFORT:   2d
-    :BLOCKER:  previous-sibling
-    :allocate: s07
-    :END:
-
-Create all of the key facets for the entities under the reference
-implementation. Implementation is front to back, from database to UI. Must
-include basic testing and start of documentation generation (PDF manual, etc).
 
 *** Implement Reference Data
     :PROPERTIES:
     :EFFORT:   5d
     :BLOCKER:  previous-sibling
-    :allocate: s08
+    :allocate: s09
     :END:
 
 Add all reference data from ORE, including Calendars, etc.
@@ -100,21 +79,109 @@ Add all market data from ORE, including Calendars, etc.
 
 Add all market data from ORE, including Calendars, etc.
 
-* Sprints
+* Sprints                                              :taskjuggler_resource:
 
 This version is made up of the following sprints, organised by their [[id:57A7FABC-21FE-5124-45EB-9685D0712176][Sprint
 Backlogs]]. The last entry is the active sprint.
 
-| Sprint | Backlog                                                          | Mission                                                                             |
-|--------+------------------------------------------------------------------+-------------------------------------------------------------------------------------|
-|     01 | [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01]] | Create basic project infrastructure; handle currencies front to back.              |
-|     02 | [[id:0DFDAF4D-E299-98E4-25C3-5BB6500E5BA8][Sprint Backlog 02]] | Create basic project infrastructure; add client and server support.                |
-|     03 | [[id:D35D43C9-46BF-9A94-F03B-A3B706020498][Sprint Backlog 03]] | Update UI layer to use new socket code; finish login related functionality.        |
-|     04 | [[id:5A85BDB5-E915-3A44-04AB-771ACE91992B][Sprint Backlog 04]] | Code review all code using LLMs; implement claude code skills for common features. |
-|     05 | [[id:2A3C7481-0984-D344-575B-7BFBB8D5A98B][Sprint Backlog 05]] | Implement bootstrap mode; finish up all remaining tasks around domain entities.    |
-|     06 | [[id:DBBD0C4F-EA14-4684-7583-D78AAF7AABFF][Sprint Backlog 06]] | Finish domain entity tasks; templatise domain entity generation.                   |
-|     07 | [[id:44AD3D04-EC5A-4039-91DD-7CEA0A18CA92][Sprint Backlog 07]] | Finish reference implementation.                                                   |
-|     08 | [[id:A9FB22A0-E067-46D4-A217-AF10C20DFB90][Sprint Backlog 08]] | Implement reference data.                                                          |
-|     09 | [[id:B13DD349-0341-416E-8A31-6765A9EFCD6F][Sprint Backlog 09]] | Implement data quality.                                    |
+** Sprint 01
+   :PROPERTIES:
+   :resource_id: s01
+   :END:
+
+- [[id:34EDDBB5-CB52-35C4-E123-E0A70FB32799][Sprint Backlog 01:]] Create basic project infrastructure; handle currencies front to back.
+
+** Sprint 02
+   :PROPERTIES:
+   :resource_id: s02
+   :END:
+
+- [[id:0DFDAF4D-E299-98E4-25C3-5BB6500E5BA8][Sprint Backlog 02]]: Create basic project infrastructure; add client and server support.
+
+** Sprint 03
+   :PROPERTIES:
+   :resource_id: s03
+   :END:
+
+- [[id:D35D43C9-46BF-9A94-F03B-A3B706020498][Sprint Backlog 03]]: Update UI layer to use new socket code; finish login related functionality.
+
+** Sprint 04
+   :PROPERTIES:
+   :resource_id: s04
+   :END:
+
+- [[id:5A85BDB5-E915-3A44-04AB-771ACE91992B][Sprint Backlog 04]]: Code review all code using LLMs; implement claude code skills for common functionality.
+
+** Sprint 05
+   :PROPERTIES:
+   :resource_id: s05
+   :END:
+
+- [[id:2A3C7481-0984-D344-575B-7BFBB8D5A98B][Sprint Backlog 05]]: Implement bootstrap mode; finish up all remaining tasks around domain entities.
+
+** Sprint 06
+   :PROPERTIES:
+   :resource_id: s06
+   :END:
+
+- [[id:DBBD0C4F-EA14-4684-7583-D78AAF7AABFF][Sprint Backlog 06]]: Finish domain entity tasks; templatise domain entity generation.
+
+** Sprint 07
+   :PROPERTIES:
+   :resource_id: s07
+   :END:
+
+- [[id:44AD3D04-EC5A-4039-91DD-7CEA0A18CA92][Sprint Backlog 07]]: Finish reference implementation.
+
+** Sprint 08
+   :PROPERTIES:
+   :resource_id: s08
+   :END:
+
+- [[id:A9FB22A0-E067-46D4-A217-AF10C20DFB90][Sprint Backlog 08]] | Implement reference data.
+
+** Sprint 09
+   :PROPERTIES:
+   :resource_id: s09
+   :END:
+
+- [[id:B13DD349-0341-416E-8A31-6765A9EFCD6F][Sprint Backlog 09]] | Implement data quality.
+
+** Sprint 10
+   :PROPERTIES:
+   :resource_id: s10
+   :END:
+
+** Sprint 11
+   :PROPERTIES:
+   :resource_id: s11
+   :END:
+
+** Sprint 12
+   :PROPERTIES:
+   :resource_id: s12
+   :END:
+
+** Sprint 13
+   :PROPERTIES:
+   :resource_id: s13
+   :END:
+
+** Sprint 14
+   :PROPERTIES:
+   :resource_id: s14
+   :END:
+
+** Sprint 15
+   :PROPERTIES:
+   :resource_id: s15
+   :END:
+
+** Sprint 16
+   :PROPERTIES:
+   :resource_id: s16
+   :END:
+
+* Footer
 
 | Previous: [[id:57A7FABC-21FE-5124-45EB-9685D0712176][Sprint Backlog]] |

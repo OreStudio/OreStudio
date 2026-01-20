@@ -17,54 +17,54 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-20 Tue 18:34], for Tuesday, January 20, 2026.
+#+CAPTION: Clock summary at [2026-01-20 Tue 20:04], for Tuesday, January 20, 2026.
 |       | <75>                                  |        |      |      |       |
 | Tags  | Headline                              | Time   |      |      |     % |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *8:19* |      |      | 100.0 |
+|       | *Total time*                          | *9:23* |      |      | 100.0 |
 |-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 8:19   |      |      | 100.0 |
-|       | Active                                |        | 8:19 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 0:45 |   9.0 |
-| infra | OCR scan notebooks for this sprint    |        |      | 1:38 |  19.6 |
-| code  | Refactor Qt icon implementation       |        |      | 0:38 |   7.6 |
-| code  | Data Librarian improvements           |        |      | 4:36 |  55.3 |
-| code  | Add fake world dataset                |        |      | 0:42 |   8.4 |
+|       | Stories                               | 9:23   |      |      | 100.0 |
+|       | Active                                |        | 9:23 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:45 |   8.0 |
+| infra | OCR scan notebooks for this sprint    |        |      | 1:38 |  17.4 |
+| code  | Refactor Qt icon implementation       |        |      | 0:38 |   6.7 |
+| code  | Data Librarian improvements           |        |      | 4:36 |  49.0 |
+| code  | Add fake world dataset                |        |      | 1:46 |  18.8 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-20 Tue 18:34]
+#+CAPTION: Clock summary at [2026-01-20 Tue 20:04]
 |       | <75>                                               |         |       |       |       |
 | Tags  | Headline                                           | Time    |       |       |     % |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                       | *78:37* |       |       | 100.0 |
+|       | *Total time*                                       | *79:41* |       |       | 100.0 |
 |-------+----------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                            | 78:37   |       |       | 100.0 |
-|       | Active                                             |         | 78:37 |       | 100.0 |
+|       | Stories                                            | 79:41   |       |       | 100.0 |
+|       | Active                                             |         | 79:41 |       | 100.0 |
 | agile | Sprint and product backlog refinement              |         |       |  2:56 |   3.7 |
-| infra | OCR scan notebooks for this sprint                 |         |       | 11:31 |  14.6 |
+| infra | OCR scan notebooks for this sprint                 |         |       | 11:31 |  14.5 |
 | infra | Clean up system models and component models        |         |       |  0:28 |   0.6 |
 | code  | Add missing entities to CLI                        |         |       |  1:55 |   2.4 |
 | infra | Refactor PR related skills                         |         |       |  0:18 |   0.4 |
 | code  | Fix valgrind errors in nightly                     |         |       |  1:25 |   1.8 |
-| code  | Create security module                             |         |       |  1:23 |   1.8 |
+| code  | Create security module                             |         |       |  1:23 |   1.7 |
 | code  | Prodigy should support multiple environments       |         |       |  0:19 |   0.4 |
 | code  | Add named environment sets                         |         |       |  4:17 |   5.4 |
 | code  | Rename risk to refdata                             |         |       |  0:43 |   0.9 |
 | code  | Prefix database entities with component            |         |       |  3:15 |   4.1 |
-| code  | Implement data quality                             |         |       |  9:42 |  12.3 |
+| code  | Implement data quality                             |         |       |  9:42 |  12.2 |
 | code  | Improvements to connection browser                 |         |       |  2:05 |   2.6 |
-| code  | Disconnect shows reconnect message                 |         |       |  2:24 |   3.1 |
-| code  | Add UI support for data sets                       |         |       | 19:18 |  24.5 |
+| code  | Disconnect shows reconnect message                 |         |       |  2:24 |   3.0 |
+| code  | Add UI support for data sets                       |         |       | 19:18 |  24.2 |
 | code  | Refactor Qt icon implementation                    |         |       |  0:38 |   0.8 |
-| code  | Data Librarian improvements                        |         |       |  6:24 |   8.1 |
+| code  | Data Librarian improvements                        |         |       |  6:24 |   8.0 |
 | code  | Implement party related entities at database level |         |       |  0:20 |   0.4 |
-| infra | Refactor documentation                             |         |       |  6:29 |   8.2 |
-| code  | Add fake world dataset                             |         |       |  2:47 |   3.5 |
+| infra | Refactor documentation                             |         |       |  6:29 |   8.1 |
+| code  | Add fake world dataset                             |         |       |  3:51 |   4.8 |
 #+end:
 
-*** STARTED Sprint and product backlog refinement                     :agile:
+*** COMPLETED Sprint and product backlog refinement                   :agile:
     :LOGBOOK:
     CLOCK: [2026-01-20 Tue 18:03]--[2026-01-20 Tue 18:25] =>  0:22
     CLOCK: [2026-01-20 Tue 10:38]--[2026-01-20 Tue 11:01] =>  0:23
@@ -218,7 +218,7 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_09_tags.png]]
 
-*** STARTED OCR scan notebooks for this sprint                        :infra:
+*** COMPLETED OCR scan notebooks for this sprint                      :infra:
     :LOGBOOK:
     CLOCK: [2026-01-20 Tue 11:31]--[2026-01-20 Tue 12:06] =>  0:35
     CLOCK: [2026-01-20 Tue 09:34]--[2026-01-20 Tue 10:37] =>  1:03
@@ -1295,7 +1295,7 @@ schema level.
 | =status=             | Enum        | Active/Inactive | Controls whether trades can be booked against this entity.                                        |
 | =created_at=         | Timestamp   |                 | Audit trail for when the entity was onboarded.                                                    |
 
-*** STARTED Refactor documentation                                    :infra:
+*** POSTPONED Refactor documentation                                  :infra:
     :LOGBOOK:
     CLOCK: [2026-01-13 Tue 15:01]--[2026-01-13 Tue 16:02] =>  1:01
     CLOCK: [2026-01-13 Tue 08:50]--[2026-01-13 Tue 09:00] =>  0:10
@@ -1335,39 +1335,17 @@ Highlights:
   and observations related to the 'Clean up seed data' task.
 #+end_quote
 
-*** Add fake world dataset                                             :code:
+*** COMPLETED Add fake world dataset                                   :code:
     :LOGBOOK:
+    CLOCK: [2026-01-20 Tue 19:27]--[2026-01-20 Tue 19:57] =>  0:30
+    CLOCK: [2026-01-20 Tue 18:47]--[2026-01-20 Tue 19:00] =>  0:13
+    CLOCK: [2026-01-20 Tue 18:26]--[2026-01-20 Tue 18:47] =>  0:21
     CLOCK: [2026-01-20 Tue 00:22]--[2026-01-20 Tue 00:42] =>  0:20
     CLOCK: [2026-01-19 Mon 21:55]--[2026-01-20 Tue 00:22] =>  2:27
     :END:
 
 We have spec'd out the "fake world" data set. Use it to test that dataset
 infrastructure is setup correctly.
-
-*** Create subsets of datasets                                         :code:
-
-In some cases we may just want to publish a subset of a dataset. For example,
-Majors, G11, etc. Or maybe these are just separate datasets?
-
-In fact that is what they are. Break apart the larger sets - in particular
-currencies, countries, cryptos.
-
-*** Fix code review comments for librarian                             :code:
-
-We ran out of tokens to address code review comments from:
-
-- https://github.com/OreStudio/OreStudio/pull/348
-
-Notes:
-
-- check to see if the diagram is using the new message to retrieve dependencies.
-- most countries don't seem to have flags. How and when is the mapping done?
-  actually after a restart I can now see the flags. It seems we need to force a
-  load.
-- headers in data set are the same colour as rows. Make them different.
-- crypto currencies sometimes overlap with countries and iso currencies. we
-  should "namespace" them somehow to avoid having a country flag being
-  overwritten by a crypto icon (happens with AE).
 
 * Footer
 

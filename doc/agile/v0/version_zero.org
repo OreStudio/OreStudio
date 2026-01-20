@@ -115,6 +115,6 @@ Backlogs]]. The last entry is the active sprint.
 |     06 | [[id:DBBD0C4F-EA14-4684-7583-D78AAF7AABFF][Sprint Backlog 06]] | Finish domain entity tasks; templatise domain entity generation.                   |
 |     07 | [[id:44AD3D04-EC5A-4039-91DD-7CEA0A18CA92][Sprint Backlog 07]] | Finish reference implementation.                                                   |
 |     08 | [[id:A9FB22A0-E067-46D4-A217-AF10C20DFB90][Sprint Backlog 08]] | Implement reference data.                                                          |
-|     09 | [[id:B13DD349-0341-416E-8A31-6765A9EFCD6F][Sprint Backlog 09]] | Continue reference data.                                                           |
+|     09 | [[id:B13DD349-0341-416E-8A31-6765A9EFCD6F][Sprint Backlog 09]] | Implement data quality.                                    |
 
 | Previous: [[id:57A7FABC-21FE-5124-45EB-9685D0712176][Sprint Backlog]] |

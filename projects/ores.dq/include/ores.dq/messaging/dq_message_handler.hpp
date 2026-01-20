@@ -415,6 +415,15 @@ private:
         const std::string& remote_address);
 
     /**
+     * @brief Handle get_publications_request message.
+     *
+     * Requires authentication. Returns publication history.
+     */
+    handler_result
+    handle_get_publications_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    /**
      * @brief Result type for authentication checks.
      *
      * Contains the session info if authenticated, or an error code if not.

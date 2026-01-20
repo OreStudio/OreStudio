@@ -186,6 +186,8 @@ dq_message_handler::handle_message(message_type type,
     // Publication messages
     case message_type::publish_datasets_request:
         co_return co_await handle_publish_datasets_request(payload, remote_address);
+    case message_type::get_publications_request:
+        co_return co_await handle_get_publications_request(payload, remote_address);
 
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown DQ message type " << type;
@@ -2168,6 +2170,53 @@ handle_publish_datasets_request(std::span<const std::byte> payload,
         error_result.success = false;
         error_result.error_message = e.what();
         response.results.push_back(error_result);
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_publications_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_publications_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address,
+        "Get publications");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_publications_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_publications_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    BOOST_LOG_SEV(lg(), debug) << "Getting publications, dataset_id: "
+                               << request.dataset_id
+                               << ", limit: " << request.limit;
+
+    get_publications_response response;
+    try {
+        // Check if dataset_id is nil (all zeros)
+        const bool filter_by_dataset = !request.dataset_id.is_nil();
+
+        if (filter_by_dataset) {
+            response.publications = publication_service_.get_publication_history(
+                request.dataset_id);
+        } else {
+            response.publications = publication_service_.get_recent_publications(
+                request.limit);
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Returning " << response.publications.size()
+                                   << " publication records";
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get publications: " << e.what();
+        co_return std::unexpected(
+            ores::utility::serialization::error_code::handler_error);
     }
 
     co_return response.serialize();

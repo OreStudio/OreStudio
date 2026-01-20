@@ -204,4 +204,148 @@ std::ostream& operator<<(std::ostream& s, const publish_datasets_response& v) {
     return s;
 }
 
+// ============================================================================
+// get_publications_request
+// ============================================================================
+
+std::vector<std::byte> get_publications_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uuid(buffer, dataset_id);
+    writer::write_uint32(buffer, limit);
+    return buffer;
+}
+
+std::expected<get_publications_request, error_code>
+get_publications_request::deserialize(std::span<const std::byte> data) {
+    get_publications_request request;
+
+    auto dataset_id_result = reader::read_uuid(data);
+    if (!dataset_id_result) return std::unexpected(dataset_id_result.error());
+    request.dataset_id = *dataset_id_result;
+
+    auto limit_result = reader::read_uint32(data);
+    if (!limit_result) return std::unexpected(limit_result.error());
+    request.limit = *limit_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const get_publications_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// get_publications_response
+// ============================================================================
+
+namespace {
+
+void write_publication(std::vector<std::byte>& buffer,
+    const domain::publication& p) {
+    writer::write_uuid(buffer, p.id);
+    writer::write_uuid(buffer, p.dataset_id);
+    writer::write_string(buffer, p.dataset_code);
+    writer::write_uint8(buffer, static_cast<std::uint8_t>(p.mode));
+    writer::write_string(buffer, p.target_table);
+    writer::write_uint64(buffer, p.records_inserted);
+    writer::write_uint64(buffer, p.records_skipped);
+    writer::write_uint64(buffer, p.records_deleted);
+    writer::write_string(buffer, p.published_by);
+
+    // Write published_at as milliseconds since epoch
+    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        p.published_at.time_since_epoch()).count();
+    writer::write_int64(buffer, ms);
+}
+
+std::expected<domain::publication, error_code>
+read_publication(std::span<const std::byte>& data) {
+    domain::publication p;
+
+    auto id_result = reader::read_uuid(data);
+    if (!id_result) return std::unexpected(id_result.error());
+    p.id = *id_result;
+
+    auto dataset_id_result = reader::read_uuid(data);
+    if (!dataset_id_result) return std::unexpected(dataset_id_result.error());
+    p.dataset_id = *dataset_id_result;
+
+    auto dataset_code_result = reader::read_string(data);
+    if (!dataset_code_result) return std::unexpected(dataset_code_result.error());
+    p.dataset_code = *dataset_code_result;
+
+    auto mode_result = reader::read_uint8(data);
+    if (!mode_result) return std::unexpected(mode_result.error());
+    p.mode = static_cast<domain::publication_mode>(*mode_result);
+
+    auto target_table_result = reader::read_string(data);
+    if (!target_table_result) return std::unexpected(target_table_result.error());
+    p.target_table = *target_table_result;
+
+    auto records_inserted_result = reader::read_uint64(data);
+    if (!records_inserted_result) return std::unexpected(records_inserted_result.error());
+    p.records_inserted = *records_inserted_result;
+
+    auto records_skipped_result = reader::read_uint64(data);
+    if (!records_skipped_result) return std::unexpected(records_skipped_result.error());
+    p.records_skipped = *records_skipped_result;
+
+    auto records_deleted_result = reader::read_uint64(data);
+    if (!records_deleted_result) return std::unexpected(records_deleted_result.error());
+    p.records_deleted = *records_deleted_result;
+
+    auto published_by_result = reader::read_string(data);
+    if (!published_by_result) return std::unexpected(published_by_result.error());
+    p.published_by = *published_by_result;
+
+    auto published_at_result = reader::read_int64(data);
+    if (!published_at_result) return std::unexpected(published_at_result.error());
+    p.published_at = std::chrono::system_clock::time_point{
+        std::chrono::milliseconds{*published_at_result}};
+
+    return p;
+}
+
+} // anonymous namespace
+
+std::vector<std::byte> get_publications_response::serialize() const {
+    std::vector<std::byte> buffer;
+
+    // Write publications count
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(publications.size()));
+
+    // Write each publication
+    for (const auto& pub : publications) {
+        write_publication(buffer, pub);
+    }
+
+    return buffer;
+}
+
+std::expected<get_publications_response, error_code>
+get_publications_response::deserialize(std::span<const std::byte> data) {
+    get_publications_response response;
+
+    // Read publications count
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    const auto count = *count_result;
+
+    // Read each publication
+    response.publications.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto result = read_publication(data);
+        if (!result) return std::unexpected(result.error());
+        response.publications.push_back(*result);
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const get_publications_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

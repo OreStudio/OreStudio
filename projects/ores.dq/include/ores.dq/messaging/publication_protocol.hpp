@@ -27,6 +27,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
+#include "ores.dq/domain/publication.hpp"
 #include "ores.dq/domain/publication_mode.hpp"
 #include "ores.dq/domain/publication_result.hpp"
 
@@ -138,6 +139,89 @@ struct publish_datasets_response final {
 
 std::ostream& operator<<(std::ostream& s, const publish_datasets_response& v);
 
+// ============================================================================
+// Publication History Messages
+// ============================================================================
+
+/**
+ * @brief Request to get publication history.
+ *
+ * Can optionally filter by dataset_id. If dataset_id is nil, returns
+ * recent publications across all datasets.
+ */
+struct get_publications_request final {
+    /**
+     * @brief Optional dataset ID to filter by.
+     *
+     * If nil (all zeros), returns recent publications across all datasets.
+     */
+    boost::uuids::uuid dataset_id;
+
+    /**
+     * @brief Maximum number of records to return.
+     */
+    std::uint32_t limit = 100;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 16 bytes: dataset_id (UUID)
+     * - 4 bytes: limit
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize request from bytes.
+     */
+    static std::expected<get_publications_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_publications_request& v);
+
+/**
+ * @brief Response containing publication history.
+ */
+struct get_publications_response final {
+    /**
+     * @brief Publication records, newest first.
+     */
+    std::vector<domain::publication> publications;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 4 bytes: publications count
+     * - For each publication:
+     *   - 16 bytes: id (UUID)
+     *   - 16 bytes: dataset_id (UUID)
+     *   - 2 bytes: dataset_code length
+     *   - N bytes: dataset_code (UTF-8)
+     *   - 1 byte: mode
+     *   - 2 bytes: target_table length
+     *   - N bytes: target_table (UTF-8)
+     *   - 8 bytes: records_inserted
+     *   - 8 bytes: records_skipped
+     *   - 8 bytes: records_deleted
+     *   - 2 bytes: published_by length
+     *   - N bytes: published_by (UTF-8)
+     *   - 8 bytes: published_at (milliseconds since epoch)
+     */
+    std::vector<std::byte> serialize() const;
+
+    /**
+     * @brief Deserialize response from bytes.
+     */
+    static std::expected<get_publications_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const get_publications_response& v);
+
 }
 
 namespace ores::comms::messaging {
@@ -151,6 +235,17 @@ struct message_traits<dq::messaging::publish_datasets_request> {
     using response_type = dq::messaging::publish_datasets_response;
     static constexpr message_type request_message_type =
         message_type::publish_datasets_request;
+};
+
+/**
+ * @brief Message traits for get_publications_request.
+ */
+template<>
+struct message_traits<dq::messaging::get_publications_request> {
+    using request_type = dq::messaging::get_publications_request;
+    using response_type = dq::messaging::get_publications_response;
+    static constexpr message_type request_message_type =
+        message_type::get_publications_request;
 };
 
 }

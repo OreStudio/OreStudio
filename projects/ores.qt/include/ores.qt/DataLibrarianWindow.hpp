@@ -98,6 +98,7 @@ private slots:
     void onRefreshClicked();
     void onViewDatasetClicked();
     void onPublishClicked();
+    void onPublicationHistoryClicked();
     void onDataLoaded();
     void onLoadError(const QString& error_message, const QString& details = {});
 
@@ -143,6 +144,7 @@ private:
     QAction* refreshAction_;
     QAction* viewDatasetAction_;
     QAction* publishAction_;
+    QAction* publicationHistoryAction_;
     QAction* originDimensionsAction_;
     QAction* natureDimensionsAction_;
     QAction* treatmentDimensionsAction_;

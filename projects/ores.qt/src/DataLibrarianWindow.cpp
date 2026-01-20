@@ -32,6 +32,7 @@
 #include "ores.qt/DatasetItemDelegate.hpp"
 #include "ores.qt/DatasetViewDialog.hpp"
 #include "ores.qt/PublishDatasetsDialog.hpp"
+#include "ores.qt/PublicationHistoryDialog.hpp"
 
 namespace ores::qt {
 
@@ -176,6 +177,12 @@ void DataLibrarianWindow::setupToolbar() {
     publishAction_->setToolTip(tr("Publish selected datasets to production tables"));
     publishAction_->setEnabled(false);
 
+    publicationHistoryAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::History, IconUtils::DefaultIconColor),
+        tr("History"));
+    publicationHistoryAction_->setToolTip(tr("View publication history"));
+
     toolbar_->addSeparator();
 
     // Related windows - dimensions
@@ -314,6 +321,8 @@ void DataLibrarianWindow::setupConnections() {
             this, &DataLibrarianWindow::onViewDatasetClicked);
     connect(publishAction_, &QAction::triggered,
             this, &DataLibrarianWindow::onPublishClicked);
+    connect(publicationHistoryAction_, &QAction::triggered,
+            this, &DataLibrarianWindow::onPublicationHistoryClicked);
 
     connect(originDimensionsAction_, &QAction::triggered,
             this, &DataLibrarianWindow::openOriginDimensionsRequested);
@@ -451,6 +460,15 @@ void DataLibrarianWindow::onPublishClicked() {
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->setDatasets(selectedDatasets);
     dialog->exec();
+}
+
+void DataLibrarianWindow::onPublicationHistoryClicked() {
+    BOOST_LOG_SEV(lg(), debug) << "Opening publication history dialog";
+
+    auto* dialog = new PublicationHistoryDialog(clientManager_, this);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    dialog->refresh();
+    dialog->show();
 }
 
 void DataLibrarianWindow::showDatasetDetailDialog(const dq::domain::dataset* dataset) {

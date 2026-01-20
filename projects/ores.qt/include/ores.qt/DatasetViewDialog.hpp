@@ -129,6 +129,8 @@ private:
         qreal nodeHeight, bool hasInputSocket, bool hasOutputSocket) const;
     void drawLineageConnection(QGraphicsScene* scene,
         qreal x1, qreal y1, qreal x2, qreal y2) const;
+    void drawLabeledConnection(QGraphicsScene* scene,
+        qreal x1, qreal y1, qreal x2, qreal y2, const QString& label) const;
 
     // Tab widget
     QTabWidget* tabWidget_;

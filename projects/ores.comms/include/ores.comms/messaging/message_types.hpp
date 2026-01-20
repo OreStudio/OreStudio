@@ -196,8 +196,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // get_dataset_dependencies_request/response,
 // get_dataset_dependencies_by_dataset_request/response.
 // Replaces catalog dependency messages.
+//
+// Version 22.2 adds artefact_type field to dataset serialization. This field
+// indicates which population function to call when publishing the dataset.
+// Valid values: "images", "countries", "currencies", "ip2country".
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 22;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 2;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

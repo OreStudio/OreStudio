@@ -162,6 +162,14 @@ struct dataset final {
     std::optional<std::string> license_info;
 
     /**
+     * @brief Type of artefact this dataset populates.
+     *
+     * Used by the publication service to determine which population function
+     * to call. Valid values: "images", "countries", "currencies", "ip2country".
+     */
+    std::optional<std::string> artefact_type;
+
+    /**
      * @brief Username of the person who last modified this dataset.
      */
     std::string recorded_by;

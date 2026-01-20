@@ -39,6 +39,7 @@ create table if not exists "ores"."dq_datasets_tbl" (
     "as_of_date" timestamp with time zone not null,
     "ingestion_timestamp" timestamp with time zone not null,
     "license_info" text,
+    "artefact_type" text,
     "modified_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,

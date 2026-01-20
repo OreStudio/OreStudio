@@ -72,6 +72,7 @@ dataset_mapper::map(const dataset_entity& v) {
     r.as_of_date = timestamp_to_timepoint(v.as_of_date);
     r.ingestion_timestamp = timestamp_to_timepoint(v.ingestion_timestamp);
     r.license_info = v.license_info;
+    r.artefact_type = v.artefact_type;
     r.recorded_by = v.modified_by;
     r.change_commentary = v.change_commentary;
     r.recorded_at = timestamp_to_timepoint(v.valid_from);
@@ -105,6 +106,7 @@ dataset_mapper::map(const domain::dataset& v) {
     r.as_of_date = timepoint_to_timestamp(v.as_of_date, lg());
     r.ingestion_timestamp = timepoint_to_timestamp(v.ingestion_timestamp, lg());
     r.license_info = v.license_info;
+    r.artefact_type = v.artefact_type;
     r.modified_by = v.recorded_by;
     r.change_commentary = v.change_commentary;
 

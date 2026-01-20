@@ -87,6 +87,11 @@ void write_dataset(std::vector<std::byte>& buffer, const domain::dataset& d) {
         writer::write_string(buffer, *d.license_info);
     }
 
+    writer::write_bool(buffer, d.artefact_type.has_value());
+    if (d.artefact_type.has_value()) {
+        writer::write_string(buffer, *d.artefact_type);
+    }
+
     writer::write_string(buffer, d.recorded_by);
     writer::write_string(buffer, d.change_commentary);
     writer::write_string(buffer,
@@ -203,6 +208,14 @@ read_dataset(std::span<const std::byte>& data) {
         auto license_info_result = reader::read_string(data);
         if (!license_info_result) return std::unexpected(license_info_result.error());
         d.license_info = *license_info_result;
+    }
+
+    auto has_artefact_type_result = reader::read_bool(data);
+    if (!has_artefact_type_result) return std::unexpected(has_artefact_type_result.error());
+    if (*has_artefact_type_result) {
+        auto artefact_type_result = reader::read_string(data);
+        if (!artefact_type_result) return std::unexpected(artefact_type_result.error());
+        d.artefact_type = *artefact_type_result;
     }
 
     auto recorded_by_result = reader::read_string(data);

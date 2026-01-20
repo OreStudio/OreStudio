@@ -122,6 +122,7 @@ grant create on schema ores to ores;
 \ir ../schema/dq_ip2country_artefact_create.sql
 \ir ../schema/dq_functions_create.sql
 \ir ../schema/dq_population_functions_create.sql
+\ir ../schema/dq_publication_create.sql
 \ir ../schema/seed_upsert_functions_create.sql
 
 -- NOTE: The template database contains schema only, no data.

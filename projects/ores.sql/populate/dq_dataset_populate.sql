@@ -135,7 +135,7 @@ select ores.upsert_dq_datasets(
     'FPML',
     'Reference data for non-ISO currency codes used in derivatives trading',
     '2023-11-03'::date,
-    null
+    'FpML Public License 2.0'
 );
 
 select ores.upsert_dq_tag(

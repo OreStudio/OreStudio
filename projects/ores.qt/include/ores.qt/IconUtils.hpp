@@ -24,6 +24,7 @@
 #include <QIcon>
 #include <QColor>
 #include <QString>
+#include <optional>
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
@@ -113,6 +114,7 @@ public:
     static inline const QColor DisabledIconColor{100, 100, 100};
 
 private:
+    static inline IconTheme currentTheme_{IconTheme::FluentUIRegular};
     inline static std::string_view logger_name = "ores.qt.icon_utils";
 
     static auto& lg() {
@@ -123,21 +125,33 @@ private:
 
 public:
     /**
+     * @brief Sets the global icon theme.
+     * @param theme The theme to use globally.
+     */
+    static void setTheme(IconTheme theme) { currentTheme_ = theme; }
+
+    /**
+     * @brief Gets the current global icon theme.
+     * @return The current global theme.
+     */
+    static IconTheme currentTheme() { return currentTheme_; }
+
+    /**
      * @brief Gets the resource path for a semantic icon in a specific theme.
      * @param icon The semantic icon identifier
-     * @param theme The icon theme/style to use (defaults to FluentUIRegular)
+     * @param theme The icon theme/style to use (defaults to global theme)
      * @return The resource path string (e.g. ":/icons/...")
      */
-    static QString iconPath(Icon icon, IconTheme theme = IconTheme::FluentUIRegular);
+    static QString iconPath(Icon icon, std::optional<IconTheme> theme = std::nullopt);
 
     /**
      * @brief Creates a recolored version of a semantic icon.
      * @param icon The semantic icon identifier
      * @param color Color to apply to the icon in normal state
-     * @param theme The icon theme/style to use (defaults to FluentUIRegular)
+     * @param theme The icon theme/style to use (defaults to global theme)
      * @return QIcon with recolored normal and disabled states
      */
-    static QIcon createRecoloredIcon(Icon icon, const QColor& color, IconTheme theme = IconTheme::FluentUIRegular);
+    static QIcon createRecoloredIcon(Icon icon, const QColor& color, std::optional<IconTheme> theme = std::nullopt);
 
     /**
      * @brief Creates a recolored version of an SVG icon.

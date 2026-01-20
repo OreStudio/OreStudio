@@ -95,11 +95,13 @@ static IconDef getIconDef(Icon icon) {
     return {};
 }
 
-QString IconUtils::iconPath(Icon icon, IconTheme theme) {
+QString IconUtils::iconPath(Icon icon, std::optional<IconTheme> theme) {
     auto def = getIconDef(icon);
     if (!def.fluent) return {};
 
-    switch (theme) {
+    IconTheme activeTheme = theme.value_or(currentTheme_);
+
+    switch (activeTheme) {
         case IconTheme::FluentUIRegular:
             return QString(":/icons/%1_regular.svg").arg(def.fluent);
         case IconTheme::FluentUIFilled:
@@ -112,7 +114,7 @@ QString IconUtils::iconPath(Icon icon, IconTheme theme) {
     return {};
 }
 
-QIcon IconUtils::createRecoloredIcon(Icon icon, const QColor& color, IconTheme theme) {
+QIcon IconUtils::createRecoloredIcon(Icon icon, const QColor& color, std::optional<IconTheme> theme) {
     return createRecoloredIcon(iconPath(icon, theme), color);
 }
 

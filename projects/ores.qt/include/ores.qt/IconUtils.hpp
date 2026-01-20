@@ -60,6 +60,7 @@ enum class Icon {
     FolderOpen,
     Globe,
     History,
+    Histogram,
     Info,
     Key,
     KeyMultiple,

@@ -51,6 +51,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::Clock: return {"ic_fluent_clock_16", "clock-circle.svg"};
         case Icon::Code: return {"ic_fluent_code_20", "code-file.svg"};
         case Icon::Currency: return {"ic_fluent_currency_dollar_euro_20", "dollar-minimalistic.svg"};
+        case Icon::Histogram: return {"ic_fluent_column_triple_20", "chart-square.svg"};
         case Icon::Database: return {"ic_fluent_database_20", "server-square.svg"};
         case Icon::Delete: return {"ic_fluent_delete_20", "trash-bin-trash.svg"};
         case Icon::DeleteDismiss: return {"ic_fluent_delete_dismiss_20", "trash-bin-trash.svg"};
@@ -69,7 +70,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::KeyMultiple: return {"ic_fluent_key_multiple_20", "key-minimalistic-square.svg"};
         case Icon::Library: return {"ic_fluent_library_20", "folder.svg"};
         case Icon::LockClosed: return {"ic_fluent_lock_closed_20", "lock-password.svg"};
-        case Icon::LockOpen: return {"ic_fluent_lock_open_20", "lock-unlocked.svg"};
+        case Icon::LockOpen: return {"ic_fluent_lock_unlocked_20", "lock-unlocked.svg"};
         case Icon::NoteEdit: return {"ic_fluent_note_edit_20", "notes-minimalistic.svg"};
         case Icon::Open: return {"ic_fluent_open_20", "folder-open.svg"};
         case Icon::PasswordReset: return {"ic_fluent_password_reset_48", "lock-password-unlocked.svg"};

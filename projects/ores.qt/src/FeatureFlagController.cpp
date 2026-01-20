@@ -120,12 +120,11 @@ void FeatureFlagController::showListWindow() {
             this, &FeatureFlagController::onFeatureFlagDeleted);
 
     // Create MDI subwindow
-    const QColor iconColor(220, 220, 220);
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Feature Flags");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
+        Icon::Flag, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -216,7 +215,6 @@ void FeatureFlagController::showDetailWindow(
             this, &FeatureFlagController::onFeatureFlagDeleted);
 
     // Create MDI subwindow
-    const QColor iconColor(220, 220, 220);
     auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
     subWindow->setWidget(detailDialog);
 
@@ -224,7 +222,7 @@ void FeatureFlagController::showDetailWindow(
         QString("Feature Flag: %1").arg(QString::fromStdString(flag.name));
     subWindow->setWindowTitle(title);
     subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
+        Icon::Flag, IconUtils::DefaultIconColor));
     subWindow->setAttribute(Qt::WA_DeleteOnClose);
     subWindow->resize(detailDialog->sizeHint());
 
@@ -328,7 +326,6 @@ void FeatureFlagController::showHistoryWindow(const QString& name) {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: "
                               << name.toStdString();
-    const QColor iconColor(220, 220, 220);
 
     auto* historyDialog = new FeatureFlagHistoryDialog(name, clientManager_, mainWindow_);
 
@@ -355,7 +352,7 @@ void FeatureFlagController::showHistoryWindow(const QString& name) {
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Feature Flag History: %1").arg(name));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     // Track this history window
     track_window(windowKey, historyWindow);
@@ -399,8 +396,6 @@ void FeatureFlagController::onOpenFeatureFlagVersion(
         return;
     }
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new FeatureFlagDetailDialog();
     if (clientManager_) {
         detailDialog->setClientManager(clientManager_);
@@ -435,7 +430,7 @@ void FeatureFlagController::onOpenFeatureFlagVersion(
     detailWindow->setWindowTitle(QString("Feature Flag: %1 (Version %2 - Read Only)")
         .arg(flagName).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_flag_20_regular.svg", iconColor));
+        Icon::Flag, IconUtils::DefaultIconColor));
 
     // Track this version window
     track_window(windowKey, detailWindow);

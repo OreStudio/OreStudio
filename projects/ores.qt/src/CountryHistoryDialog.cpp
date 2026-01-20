@@ -40,7 +40,7 @@ using comms::messaging::message_type;
 using namespace ores::logging;
 
 const QIcon& CountryHistoryDialog::getHistoryIcon() const {
-    static const QIcon historyIcon(":/icons/ic_fluent_history_20_regular.svg");
+    static const QIcon historyIcon = IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor);
     return historyIcon;
 }
 
@@ -387,12 +387,10 @@ void CountryHistoryDialog::setupToolbar() {
     toolBar_->setMovable(false);
     toolBar_->setFloatable(false);
 
-    const QColor iconColor(220, 220, 220);
-
     // Create Reload action
     reloadAction_ = new QAction("Reload", this);
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor));
+        Icon::ArrowClockwise, IconUtils::DefaultIconColor));
     reloadAction_->setToolTip("Reload history from server");
     connect(reloadAction_, &QAction::triggered, this,
         &CountryHistoryDialog::onReloadClicked);
@@ -403,7 +401,7 @@ void CountryHistoryDialog::setupToolbar() {
     // Create Open action
     openAction_ = new QAction("Open", this);
     openAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_edit_20_regular.svg", iconColor));
+        Icon::Edit, IconUtils::DefaultIconColor));
     openAction_->setToolTip("Open this version in read-only mode");
     connect(openAction_, &QAction::triggered, this,
         &CountryHistoryDialog::onOpenClicked);
@@ -412,7 +410,7 @@ void CountryHistoryDialog::setupToolbar() {
     // Create Revert action
     revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
     revertAction_->setToolTip("Revert country to this version");
     connect(revertAction_, &QAction::triggered, this,
         &CountryHistoryDialog::onRevertClicked);

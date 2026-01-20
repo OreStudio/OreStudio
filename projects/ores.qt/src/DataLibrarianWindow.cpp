@@ -47,15 +47,15 @@ enum class NavigationItemType {
     Catalog
 };
 
-QString iconPathForSubjectArea(const QString& subjectAreaName) {
+Icon iconForSubjectArea(const QString& subjectAreaName) {
     if (subjectAreaName == "Countries") {
-        return ":/icons/ic_fluent_globe_20_regular.svg";
+        return Icon::Globe;
     } else if (subjectAreaName == "Currencies") {
-        return ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg";
+        return Icon::Currency;
     } else if (subjectAreaName == "Cryptocurrencies") {
-        return ":/icons/ic_fluent_currency_dollar_euro_20_regular.svg";
+        return Icon::Currency;
     }
-    return ":/icons/ic_fluent_table_20_regular.svg";
+    return Icon::Table;
 }
 
 }
@@ -148,17 +148,15 @@ void DataLibrarianWindow::setupToolbar() {
     toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     toolbar_->setIconSize(QSize(20, 20));
 
-    const auto& iconColor = color_constants::icon_color;
-
     refreshAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor),
+            Icon::ArrowSync, IconUtils::DefaultIconColor),
         tr("Refresh"));
     refreshAction_->setToolTip(tr("Refresh all data"));
 
     viewDatasetAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_info_20_regular.svg", iconColor),
+            Icon::Info, IconUtils::DefaultIconColor),
         tr("View"));
     viewDatasetAction_->setToolTip(tr("View selected dataset details"));
     viewDatasetAction_->setEnabled(false);
@@ -168,19 +166,19 @@ void DataLibrarianWindow::setupToolbar() {
     // Related windows - dimensions
     originDimensionsAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_database_20_regular.svg", iconColor),
+            Icon::Database, IconUtils::DefaultIconColor),
         tr("Origin"));
     originDimensionsAction_->setToolTip(tr("Open Origin Dimensions window"));
 
     natureDimensionsAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_database_20_regular.svg", iconColor),
+            Icon::Database, IconUtils::DefaultIconColor),
         tr("Nature"));
     natureDimensionsAction_->setToolTip(tr("Open Nature Dimensions window"));
 
     treatmentDimensionsAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_database_20_regular.svg", iconColor),
+            Icon::Database, IconUtils::DefaultIconColor),
         tr("Treatment"));
     treatmentDimensionsAction_->setToolTip(tr("Open Treatment Dimensions window"));
 
@@ -188,13 +186,13 @@ void DataLibrarianWindow::setupToolbar() {
 
     codingSchemesAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_code_20_regular.svg", iconColor),
+            Icon::Code, IconUtils::DefaultIconColor),
         tr("Schemes"));
     codingSchemesAction_->setToolTip(tr("Open Coding Schemes window"));
 
     methodologiesAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_book_20_regular.svg", iconColor),
+            Icon::Book, IconUtils::DefaultIconColor),
         tr("Methods"));
     methodologiesAction_->setToolTip(tr("Open Methodologies window"));
 }
@@ -234,14 +232,14 @@ void DataLibrarianWindow::setupNavigationSidebar() {
     auto* allDatasetsItem = new QStandardItem(tr("All Datasets"));
     allDatasetsItem->setData(static_cast<int>(NavigationItemType::Root), ItemTypeRole);
     allDatasetsItem->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_database_20_regular.svg", color_constants::icon_color));
+        Icon::Database, IconUtils::DefaultIconColor));
     rootItem->appendRow(allDatasetsItem);
 
     // Add "Domains" parent item
     auto* domainsItem = new QStandardItem(tr("Domains"));
     domainsItem->setData(static_cast<int>(NavigationItemType::Root), ItemTypeRole);
     domainsItem->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_folder_20_regular.svg", color_constants::icon_color));
+        Icon::Folder, IconUtils::DefaultIconColor));
     rootItem->appendRow(domainsItem);
 }
 
@@ -558,7 +556,7 @@ void DataLibrarianWindow::buildNavigationTree() {
         catalogsParent = new QStandardItem(tr("Catalogs"));
         catalogsParent->setData(static_cast<int>(NavigationItemType::Root), ItemTypeRole);
         catalogsParent->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_library_20_regular.svg", color_constants::icon_color));
+            Icon::Library, IconUtils::DefaultIconColor));
         rootItem->appendRow(catalogsParent);
     }
 
@@ -577,7 +575,7 @@ void DataLibrarianWindow::buildNavigationTree() {
             // Store name as string for filtering
             domainItem->setData(QString::fromStdString(domain->name), ItemIdRole);
             domainItem->setIcon(IconUtils::createRecoloredIcon(
-                ":/icons/ic_fluent_folder_20_regular.svg", color_constants::icon_color));
+                Icon::Folder, IconUtils::DefaultIconColor));
 
             // Find subject areas for this domain (using domain_name string FK)
             for (int s = 0; s < subjectAreaModel_->rowCount(); ++s) {
@@ -592,7 +590,7 @@ void DataLibrarianWindow::buildNavigationTree() {
                     static_cast<int>(NavigationItemType::SubjectArea), ItemTypeRole);
                 subjectAreaItem->setData(saName, ItemIdRole);
                 subjectAreaItem->setIcon(IconUtils::createRecoloredIcon(
-                    iconPathForSubjectArea(saName), color_constants::icon_color));
+                    iconForSubjectArea(saName), IconUtils::DefaultIconColor));
 
                 domainItem->appendRow(subjectAreaItem);
             }
@@ -617,7 +615,7 @@ void DataLibrarianWindow::buildNavigationTree() {
             catalogItem->setData(
                 QString::fromStdString(catalog.name), ItemIdRole);
             catalogItem->setIcon(IconUtils::createRecoloredIcon(
-                ":/icons/ic_fluent_library_20_regular.svg", color_constants::icon_color));
+                Icon::Library, IconUtils::DefaultIconColor));
 
             catalogsParent->appendRow(catalogItem);
         }

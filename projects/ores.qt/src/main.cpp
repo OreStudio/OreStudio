@@ -29,6 +29,7 @@
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/service/telemetry_streaming_service.hpp"
 #include "ores.qt/CommandLineParser.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/SplashScreen.hpp"
 #include "ores.qt/TelemetrySettingsDialog.hpp"
@@ -45,6 +46,9 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
     QCoreApplication::setApplicationName("ores.qt");
     QCoreApplication::setApplicationVersion(ORES_VERSION);
+
+    // Set global icon theme
+    ores::qt::IconUtils::setTheme(ores::qt::IconTheme::SolarizedBold);
 
     ores::qt::CommandLineParser parser;
     parser.process(app);

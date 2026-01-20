@@ -88,9 +88,6 @@ public:
         QWidget* parent,
         const QString& title,
         const QString& text);
-
-private:
-    static QIcon createColoredIcon(const QString& svgPath, const QColor& color);
 };
 
 } // namespace ores::qt

@@ -52,17 +52,16 @@ AccountRolesWidget::AccountRolesWidget(QWidget* parent)
 
     // Buttons layout
     auto* buttonsLayout = new QHBoxLayout();
-    const QColor iconColor(220, 220, 220);
 
     assignButton_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_add_20_regular.svg", iconColor));
+        Icon::Add, IconUtils::DefaultIconColor));
     assignButton_->setToolTip("Assign a role to this account");
     assignButton_->setToolButtonStyle(Qt::ToolButtonIconOnly);
     connect(assignButton_, &QToolButton::clicked, this,
         &AccountRolesWidget::onAssignRoleClicked);
 
     revokeButton_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_delete_20_regular.svg", iconColor));
+        Icon::Delete, IconUtils::DefaultIconColor));
     revokeButton_->setToolTip("Revoke selected role from this account");
     revokeButton_->setToolButtonStyle(Qt::ToolButtonIconOnly);
     connect(revokeButton_, &QToolButton::clicked, this,

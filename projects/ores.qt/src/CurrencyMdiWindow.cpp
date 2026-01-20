@@ -96,7 +96,6 @@ CurrencyMdiWindow(ClientManager* clientManager,
 
     toolBar_->setMovable(false);
     toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    const auto& iconColor = color_constants::icon_color;
 
     // Setup reload action with normal and stale icons
     setupReloadAction();
@@ -105,13 +104,13 @@ CurrencyMdiWindow(ClientManager* clientManager,
     toolBar_->addSeparator();
 
     addAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_add_20_regular.svg", iconColor));
+            Icon::Add, IconUtils::DefaultIconColor));
     addAction_->setToolTip("Add new currency");
     connect(addAction_, &QAction::triggered, this, &CurrencyMdiWindow::addNew);
     toolBar_->addAction(addAction_);
 
     editAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_edit_20_regular.svg", iconColor));
+            Icon::Edit, IconUtils::DefaultIconColor));
     editAction_->setToolTip("Edit selected currency");
     connect(editAction_, &QAction::triggered, this,
         &CurrencyMdiWindow::editSelected);
@@ -119,7 +118,7 @@ CurrencyMdiWindow(ClientManager* clientManager,
 
 
     deleteAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_delete_20_regular.svg", iconColor));
+            Icon::Delete, IconUtils::DefaultIconColor));
     deleteAction_->setToolTip("Delete selected currency/currencies");
     connect(deleteAction_, &QAction::triggered, this,
         &CurrencyMdiWindow::deleteSelected);
@@ -127,7 +126,7 @@ CurrencyMdiWindow(ClientManager* clientManager,
 
     historyAction_ = new QAction("History", this);
     historyAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+            Icon::History, IconUtils::DefaultIconColor));
     historyAction_->setToolTip("View currency history");
     connect(historyAction_, &QAction::triggered, this,
         &CurrencyMdiWindow::viewHistorySelected);
@@ -140,7 +139,7 @@ CurrencyMdiWindow(ClientManager* clientManager,
 
     auto importXMLAction = new QAction("Import XML", this);
     importXMLAction->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_document_code_16_regular.svg", iconColor));
+            Icon::DocumentCode, IconUtils::DefaultIconColor));
     importXMLAction->setToolTip("Import currencies from ORE XML");
     connect(importXMLAction, &QAction::triggered, this,
         &CurrencyMdiWindow::importFromXML);
@@ -148,7 +147,7 @@ CurrencyMdiWindow(ClientManager* clientManager,
 
     auto exportCSVAction = new QAction("Export CSV", this);
     exportCSVAction->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_document_table_20_regular.svg", iconColor));
+            Icon::DocumentTable, IconUtils::DefaultIconColor));
     exportCSVAction->setToolTip("Export currencies to CSV");
     connect(exportCSVAction, &QAction::triggered, this,
         &CurrencyMdiWindow::exportToCSV);
@@ -156,7 +155,7 @@ CurrencyMdiWindow(ClientManager* clientManager,
 
     auto exportXMLAction = new QAction("Export XML", this);
     exportXMLAction->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_document_code_16_regular.svg", iconColor));
+            Icon::DocumentCode, IconUtils::DefaultIconColor));
     exportXMLAction->setToolTip("Export currencies to ORE XML");
     connect(exportXMLAction, &QAction::triggered, this,
         &CurrencyMdiWindow::exportToXML);
@@ -824,10 +823,10 @@ void CurrencyMdiWindow::updateActionStates() {
 
 void CurrencyMdiWindow::setupReloadAction() {
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_sync_20_regular.svg", color_constants::icon_color));
+        Icon::ArrowSync, IconUtils::DefaultIconColor));
     connect(reloadAction_, &QAction::triggered, this, &CurrencyMdiWindow::reload);
 
-    initializeStaleIndicator(reloadAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }
 
 void CurrencyMdiWindow::setupColumnVisibility() {
@@ -927,11 +926,9 @@ void CurrencyMdiWindow::closeEvent(QCloseEvent* event) {
 }
 
 void CurrencyMdiWindow::setupGenerateAction() {
-    const auto& iconColor = color_constants::icon_color;
-
     generateAction_ = new QAction("Generate", this);
     generateAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_wand_20_regular.svg", iconColor));
+            Icon::Wand, IconUtils::DefaultIconColor));
     generateAction_->setToolTip("Generate synthetic test currencies");
     connect(generateAction_, &QAction::triggered, this,
         &CurrencyMdiWindow::generateSynthetic);

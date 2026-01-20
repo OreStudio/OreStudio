@@ -77,12 +77,11 @@ void MethodologyController::showListWindow() {
     connect(listWindow_, &MethodologyMdiWindow::showMethodologyHistory,
             this, &MethodologyController::onShowHistory);
 
-    const QColor iconColor(220, 220, 220);
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Methodologies");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_book_20_regular.svg", iconColor));
+        Icon::Book, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -141,8 +140,6 @@ void MethodologyController::onShowHistory(const boost::uuids::uuid& id) {
 void MethodologyController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new methodology";
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new MethodologyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -164,7 +161,7 @@ void MethodologyController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Methodology");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_book_20_regular.svg", iconColor));
+        Icon::Book, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -182,8 +179,6 @@ void MethodologyController::showDetailWindow(const dq::domain::methodology& meth
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << methodology.id;
-
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new MethodologyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -214,7 +209,7 @@ void MethodologyController::showDetailWindow(const dq::domain::methodology& meth
     detailWindow->setWindowTitle(QString("Methodology: %1").arg(
         QString::fromStdString(methodology.name)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_book_20_regular.svg", iconColor));
+        Icon::Book, IconUtils::DefaultIconColor));
 
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
@@ -243,7 +238,6 @@ void MethodologyController::showHistoryWindow(const boost::uuids::uuid& id) {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << id;
-    const QColor iconColor(220, 220, 220);
 
     auto* historyDialog = new MethodologyHistoryDialog(id, clientManager_, mainWindow_);
 
@@ -269,7 +263,7 @@ void MethodologyController::showHistoryWindow(const boost::uuids::uuid& id) {
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Methodology History: %1").arg(idStr));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
@@ -299,8 +293,6 @@ void MethodologyController::onOpenVersion(
         return;
     }
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new MethodologyDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
@@ -324,7 +316,7 @@ void MethodologyController::onOpenVersion(
     detailWindow->setWindowTitle(QString("Methodology: %1 (Version %2)")
         .arg(QString::fromStdString(methodology.name)).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     track_window(windowKey, detailWindow);
     register_detachable_window(detailWindow);
@@ -364,14 +356,13 @@ void MethodologyController::onRevertVersion(
         self->handleEntitySaved();
     });
 
-    const QColor iconColor(220, 220, 220);
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Revert Methodology: %1")
         .arg(QString::fromStdString(methodology.name)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

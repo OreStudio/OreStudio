@@ -65,7 +65,6 @@ void RoleController::showListWindow() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new roles MDI window";
-    const QColor iconColor(220, 220, 220);
 
     auto* roleWidget = new RoleMdiWindow(clientManager_, username_, mainWindow_);
 
@@ -90,7 +89,7 @@ void RoleController::showListWindow() {
     roleListWindow_->setWidget(roleWidget);
     roleListWindow_->setWindowTitle("Roles");
     roleListWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_lock_closed_20_regular.svg", iconColor));
+        Icon::LockClosed, IconUtils::DefaultIconColor));
 
     // Track window for detach/reattach operations
     register_detachable_window(roleListWindow_);
@@ -127,8 +126,6 @@ void RoleController::reloadListWindow() {
 void RoleController::onShowRoleDetails(const iam::domain::role& role) {
     BOOST_LOG_SEV(lg(), info) << "Showing role details for: " << role.name;
 
-    const QColor iconColor(220, 220, 220);
-
     auto* detailDialog = new RoleDetailDialog(mainWindow_);
     detailDialog->setRole(role);
 
@@ -151,7 +148,7 @@ void RoleController::onShowRoleDetails(const iam::domain::role& role) {
     detailWindow->setWindowTitle(QString("Role: %1")
         .arg(QString::fromStdString(role.name)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_lock_closed_20_regular.svg", iconColor));
+        Icon::LockClosed, IconUtils::DefaultIconColor));
 
     // Track window for cleanup
     register_detachable_window(detailWindow);

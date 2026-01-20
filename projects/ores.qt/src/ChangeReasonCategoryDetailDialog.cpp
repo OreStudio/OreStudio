@@ -60,7 +60,7 @@ ChangeReasonCategoryDetailDialog::ChangeReasonCategoryDetailDialog(QWidget* pare
     // Create Save action
     saveAction_ = new QAction("Save", this);
     saveAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_save_20_regular.svg", iconColor));
+        Icon::Save, IconUtils::DefaultIconColor));
     saveAction_->setToolTip("Save changes");
     connect(saveAction_, &QAction::triggered, this,
         &ChangeReasonCategoryDetailDialog::onSaveClicked);
@@ -69,7 +69,7 @@ ChangeReasonCategoryDetailDialog::ChangeReasonCategoryDetailDialog(QWidget* pare
     // Create Delete action
     deleteAction_ = new QAction("Delete", this);
     deleteAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_delete_20_regular.svg", iconColor));
+        Icon::Delete, IconUtils::DefaultIconColor));
     deleteAction_->setToolTip("Delete category");
     connect(deleteAction_, &QAction::triggered, this,
         &ChangeReasonCategoryDetailDialog::onDeleteClicked);
@@ -80,7 +80,7 @@ ChangeReasonCategoryDetailDialog::ChangeReasonCategoryDetailDialog(QWidget* pare
     // Create Revert action (initially hidden)
     revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_rotate_counterclockwise_20_regular.svg", iconColor));
+        Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
     revertAction_->setToolTip("Revert category to this historical version");
     toolBar_->addAction(revertAction_);
     revertAction_->setVisible(false);
@@ -90,7 +90,7 @@ ChangeReasonCategoryDetailDialog::ChangeReasonCategoryDetailDialog(QWidget* pare
 
     firstVersionAction_ = new QAction("First", this);
     firstVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_previous_20_regular.svg", iconColor));
+        Icon::ArrowPrevious, IconUtils::DefaultIconColor));
     firstVersionAction_->setToolTip(tr("First version"));
     connect(firstVersionAction_, &QAction::triggered, this,
         &ChangeReasonCategoryDetailDialog::onFirstVersionClicked);
@@ -99,7 +99,7 @@ ChangeReasonCategoryDetailDialog::ChangeReasonCategoryDetailDialog(QWidget* pare
 
     prevVersionAction_ = new QAction("Previous", this);
     prevVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_left_20_regular.svg", iconColor));
+        Icon::ArrowLeft, IconUtils::DefaultIconColor));
     prevVersionAction_->setToolTip(tr("Previous version"));
     connect(prevVersionAction_, &QAction::triggered, this,
         &ChangeReasonCategoryDetailDialog::onPrevVersionClicked);
@@ -108,7 +108,7 @@ ChangeReasonCategoryDetailDialog::ChangeReasonCategoryDetailDialog(QWidget* pare
 
     nextVersionAction_ = new QAction("Next", this);
     nextVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_right_20_regular.svg", iconColor));
+        Icon::ArrowRight, IconUtils::DefaultIconColor));
     nextVersionAction_->setToolTip(tr("Next version"));
     connect(nextVersionAction_, &QAction::triggered, this,
         &ChangeReasonCategoryDetailDialog::onNextVersionClicked);
@@ -117,7 +117,7 @@ ChangeReasonCategoryDetailDialog::ChangeReasonCategoryDetailDialog(QWidget* pare
 
     lastVersionAction_ = new QAction("Last", this);
     lastVersionAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_next_20_regular.svg", iconColor));
+        Icon::ArrowNext, IconUtils::DefaultIconColor));
     lastVersionAction_->setToolTip(tr("Last version"));
     connect(lastVersionAction_, &QAction::triggered, this,
         &ChangeReasonCategoryDetailDialog::onLastVersionClicked);

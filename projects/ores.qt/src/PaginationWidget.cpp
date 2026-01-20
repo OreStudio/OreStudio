@@ -52,38 +52,36 @@ PaginationWidget::PaginationWidget(QWidget* parent)
     nav_toolbar_->setFloatable(false);
 
     // Configure navigation actions - use addAction() so toolbar style applies
-    const QColor iconColor(220, 220, 220);
-
     auto* firstAction = nav_toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_previous_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowPrevious, IconUtils::DefaultIconColor),
         "First");
     firstAction->setToolTip("First page");
     firstAction->setEnabled(false);
     connect(firstAction, &QAction::triggered, this, &PaginationWidget::on_first_clicked);
 
     auto* prevAction = nav_toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_left_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowLeft, IconUtils::DefaultIconColor),
         "Previous");
     prevAction->setToolTip("Previous page");
     prevAction->setEnabled(false);
     connect(prevAction, &QAction::triggered, this, &PaginationWidget::on_prev_clicked);
 
     auto* nextAction = nav_toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_right_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowRight, IconUtils::DefaultIconColor),
         "Next");
     nextAction->setToolTip("Next page");
     nextAction->setEnabled(false);
     connect(nextAction, &QAction::triggered, this, &PaginationWidget::on_next_clicked);
 
     auto* lastAction = nav_toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_next_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowNext, IconUtils::DefaultIconColor),
         "Last");
     lastAction->setToolTip("Last page");
     lastAction->setEnabled(false);
     connect(lastAction, &QAction::triggered, this, &PaginationWidget::on_last_clicked);
 
     auto* loadAllAction = nav_toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_download_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowDownload, IconUtils::DefaultIconColor),
         "Load All");
     loadAllAction->setToolTip("Load all remaining records (max 1000)");
     loadAllAction->setEnabled(false);

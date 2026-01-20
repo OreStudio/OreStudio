@@ -29,51 +29,140 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+struct IconDef {
+    const char* fluent;
+    const char* solar;
+    bool forceFilled = false;
+};
+
+static IconDef getIconDef(Icon icon) {
+    switch (icon) {
+        case Icon::Add: return {"ic_fluent_add_20", "add-circle.svg"};
+        case Icon::ArrowClockwise: return {"ic_fluent_arrow_clockwise_16", "restart-circle.svg"};
+        case Icon::ArrowDownload: return {"ic_fluent_arrow_download_20", "download-square.svg"};
+        case Icon::ArrowLeft: return {"ic_fluent_arrow_left_20", "arrow-left.svg"};
+        case Icon::ArrowNext: return {"ic_fluent_arrow_next_20", "double-alt-arrow-right.svg"};
+        case Icon::ArrowPrevious: return {"ic_fluent_arrow_previous_20", "double-alt-arrow-left.svg"};
+        case Icon::ArrowRight: return {"ic_fluent_arrow_right_20", "arrow-right.svg"};
+        case Icon::ArrowRotateCounterclockwise: return {"ic_fluent_arrow_rotate_counterclockwise_20", "undo-left-round.svg"};
+        case Icon::ArrowSync: return {"ic_fluent_arrow_sync_20", "refresh-circle.svg"};
+        case Icon::Book: return {"ic_fluent_book_20", "notes-minimalistic.svg"};
+        case Icon::Checkmark: return {"ic_fluent_checkmark_20", "check-circle.svg"};
+        case Icon::Clock: return {"ic_fluent_clock_16", "clock-circle.svg"};
+        case Icon::Code: return {"ic_fluent_code_20", "code-file.svg"};
+        case Icon::Currency: return {"ic_fluent_currency_dollar_euro_20", "dollar-minimalistic.svg"};
+        case Icon::Histogram: return {"ic_fluent_column_triple_20", "chart-square.svg"};
+        case Icon::Database: return {"ic_fluent_database_20", "server-square.svg"};
+        case Icon::Delete: return {"ic_fluent_delete_20", "trash-bin-trash.svg"};
+        case Icon::DeleteDismiss: return {"ic_fluent_delete_dismiss_20", "trash-bin-trash.svg"};
+        case Icon::Dismiss: return {"ic_fluent_dismiss_20", "close-circle.svg"};
+        case Icon::DocumentCode: return {"ic_fluent_document_code_16", "code-file.svg"};
+        case Icon::DocumentTable: return {"ic_fluent_document_table_20", "document-add.svg"};
+        case Icon::Edit: return {"ic_fluent_edit_20", "pen-new-square.svg"};
+        case Icon::Error: return {"ic_fluent_error_circle_20", "forbidden-circle.svg"};
+        case Icon::Flag: return {"ic_fluent_flag_20", "flag.svg"};
+        case Icon::Folder: return {"ic_fluent_folder_20", "folder.svg"};
+        case Icon::FolderOpen: return {"ic_fluent_folder_open_20", "folder-open.svg"};
+        case Icon::Globe: return {"ic_fluent_globe_20", "earth.svg"};
+        case Icon::History: return {"ic_fluent_history_20", "history.svg"};
+        case Icon::Info: return {"ic_fluent_info_20", "info-circle.svg"};
+        case Icon::Key: return {"ic_fluent_key_20", "key-minimalistic-square.svg"};
+        case Icon::KeyMultiple: return {"ic_fluent_key_multiple_20", "key-minimalistic-square.svg"};
+        case Icon::Library: return {"ic_fluent_library_20", "folder.svg"};
+        case Icon::LockClosed: return {"ic_fluent_lock_closed_20", "lock-password.svg"};
+        case Icon::LockOpen: return {"ic_fluent_lock_unlocked_20", "lock-unlocked.svg"};
+        case Icon::NoteEdit: return {"ic_fluent_note_edit_20", "notes-minimalistic.svg"};
+        case Icon::Open: return {"ic_fluent_open_20", "folder-open.svg"};
+        case Icon::PasswordReset: return {"ic_fluent_password_reset_48", "lock-password-unlocked.svg"};
+        case Icon::Person: return {"ic_fluent_person_20", "user-circle.svg"};
+        case Icon::PersonAccounts: return {"ic_fluent_person_accounts_20", "users-group-rounded.svg"};
+        case Icon::PersonAdd: return {"ic_fluent_person_add_20", "user-plus-rounded.svg"};
+        case Icon::PlugConnected: return {"ic_fluent_plug_connected_20", "plug-circle.svg"};
+        case Icon::PlugConnectedFilled: return {"ic_fluent_plug_connected_20", "plug-circle.svg", true};
+        case Icon::PlugDisconnected: return {"ic_fluent_plug_disconnected_20", "link-broken.svg"};
+        case Icon::Question: return {"ic_fluent_question_20", "question-circle.svg"};
+        case Icon::Record: return {"ic_fluent_record_20", "record-circle.svg"};
+        case Icon::RecordFilled: return {"ic_fluent_record_20", "record-circle.svg", true};
+        case Icon::Save: return {"ic_fluent_save_20", "diskette.svg"};
+        case Icon::Server: return {"ic_fluent_server_20", "server-square.svg"};
+        case Icon::ServerLink: return {"ic_fluent_server_link_20", "server-square.svg"};
+        case Icon::ServerLinkFilled: return {"ic_fluent_server_link_20", "server-square.svg", true};
+        case Icon::Settings: return {"ic_fluent_settings_20", "settings.svg"};
+        case Icon::Star: return {"ic_fluent_star_20", "star-circle.svg"};
+        case Icon::Table: return {"ic_fluent_table_20", "document-add.svg"};
+        case Icon::Tag: return {"ic_fluent_tag_20", "tag.svg"};
+        case Icon::Wand: return {"ic_fluent_wand_20", "magic-stick-3.svg"};
+        case Icon::Warning: return {"ic_fluent_warning_20", "danger-circle.svg"};
+    }
+    return {};
+}
+
+QString IconUtils::iconPath(Icon icon) {
+    auto def = getIconDef(icon);
+    if (!def.fluent) return {};
+
+    IconTheme activeTheme = currentTheme_;
+    if (def.forceFilled) {
+        if (activeTheme == IconTheme::FluentUIRegular) activeTheme = IconTheme::FluentUIFilled;
+        else if (activeTheme == IconTheme::SolarizedLinear) activeTheme = IconTheme::SolarizedBold;
+    }
+
+    switch (activeTheme) {
+        case IconTheme::FluentUIRegular:
+            return QString(":/icons/%1_regular.svg").arg(def.fluent);
+        case IconTheme::FluentUIFilled:
+            return QString(":/icons/%1_filled.svg").arg(def.fluent);
+        case IconTheme::SolarizedLinear:
+            return QString(":/icons/solarized/Linear/%1").arg(def.solar);
+        case IconTheme::SolarizedBold:
+            return QString(":/icons/solarized/Bold/%1").arg(def.solar);
+    }
+    return {};
+}
+
+QIcon IconUtils::createRecoloredIcon(Icon icon, const QColor& color) {
+    return createRecoloredIcon(iconPath(icon), color);
+}
+
 QIcon IconUtils::createRecoloredIcon(const QString& svgPath, const QColor& color) {
-    QIcon originalIcon(svgPath);
-    if (originalIcon.isNull()) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to load icon: "
+    QSvgRenderer renderer(svgPath);
+    if (!renderer.isValid()) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to load SVG for recoloring: "
                                   << svgPath.toStdString();
-        return {};
+        return QIcon(svgPath);
     }
 
     QIcon recoloredIcon;
-    // Disabled color should be visible but clearly dimmed against #1A1A1A background
-    // Using #646464 (100, 100, 100) - matches disabled text styling
-    const QColor disabledColor(100, 100, 100);
+    const QColor disabledColor = DisabledIconColor;
 
     for (int size : {16, 20, 24, 32, 48, 64}) {
-        QPixmap pixmap = originalIcon.pixmap(size, size);
+        // Normal state
+        QImage normalImage(size, size, QImage::Format_ARGB32);
+        normalImage.fill(Qt::transparent);
+        
+        QPainter painter(&normalImage);
+        renderer.render(&painter);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+        painter.fillRect(normalImage.rect(), color);
+        painter.end();
+        
+        QPixmap normalPixmap = QPixmap::fromImage(normalImage);
+        recoloredIcon.addPixmap(normalPixmap, QIcon::Normal, QIcon::On);
+        recoloredIcon.addPixmap(normalPixmap, QIcon::Normal, QIcon::Off);
 
-        // Create normal state image
-        QImage normalImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-        for (int y = 0; y < normalImage.height(); ++y) {
-            for (int x = 0; x < normalImage.width(); ++x) {
-                QColor pixelColor = normalImage.pixelColor(x, y);
-                if (pixelColor.alpha() > 0) {
-                    pixelColor.setRed(color.red());
-                    pixelColor.setGreen(color.green());
-                    pixelColor.setBlue(color.blue());
-                    normalImage.setPixelColor(x, y, pixelColor);
-                }
-            }
-        }
-        recoloredIcon.addPixmap(QPixmap::fromImage(normalImage), QIcon::Normal);
-
-        // Create disabled state image
-        QImage disabledImage = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-        for (int y = 0; y < disabledImage.height(); ++y) {
-            for (int x = 0; x < disabledImage.width(); ++x) {
-                QColor pixelColor = disabledImage.pixelColor(x, y);
-                if (pixelColor.alpha() > 0) {
-                    pixelColor.setRed(disabledColor.red());
-                    pixelColor.setGreen(disabledColor.green());
-                    pixelColor.setBlue(disabledColor.blue());
-                    disabledImage.setPixelColor(x, y, pixelColor);
-                }
-            }
-        }
-        recoloredIcon.addPixmap(QPixmap::fromImage(disabledImage), QIcon::Disabled);
+        // Disabled state
+        QImage disabledImage(size, size, QImage::Format_ARGB32);
+        disabledImage.fill(Qt::transparent);
+        
+        painter.begin(&disabledImage);
+        renderer.render(&painter);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+        painter.fillRect(disabledImage.rect(), disabledColor);
+        painter.end();
+        
+        QPixmap disabledPixmap = QPixmap::fromImage(disabledImage);
+        recoloredIcon.addPixmap(disabledPixmap, QIcon::Disabled, QIcon::On);
+        recoloredIcon.addPixmap(disabledPixmap, QIcon::Disabled, QIcon::Off);
     }
 
     return recoloredIcon;

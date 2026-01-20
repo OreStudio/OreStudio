@@ -80,22 +80,20 @@ void ChangeReasonCategoryMdiWindow::setupToolbar() {
     toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     toolbar_->setIconSize(QSize(20, 20));
 
-    const auto& iconColor = color_constants::icon_color;
-
     reloadAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor),
+            Icon::ArrowSync, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
             &ChangeReasonCategoryMdiWindow::reload);
 
-    initializeStaleIndicator(reloadAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_add_20_regular.svg", iconColor),
+            Icon::Add, IconUtils::DefaultIconColor),
         tr("Add"));
     addAction_->setToolTip(tr("Add new category"));
     connect(addAction_, &QAction::triggered, this,
@@ -103,7 +101,7 @@ void ChangeReasonCategoryMdiWindow::setupToolbar() {
 
     editAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_edit_20_regular.svg", iconColor),
+            Icon::Edit, IconUtils::DefaultIconColor),
         tr("Edit"));
     editAction_->setToolTip(tr("Edit selected category"));
     editAction_->setEnabled(false);
@@ -112,7 +110,7 @@ void ChangeReasonCategoryMdiWindow::setupToolbar() {
 
     deleteAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_delete_20_regular.svg", iconColor),
+            Icon::Delete, IconUtils::DefaultIconColor),
         tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected category"));
     deleteAction_->setEnabled(false);
@@ -121,7 +119,7 @@ void ChangeReasonCategoryMdiWindow::setupToolbar() {
 
     historyAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_history_20_regular.svg", iconColor),
+            Icon::History, IconUtils::DefaultIconColor),
         tr("History"));
     historyAction_->setToolTip(tr("View category history"));
     historyAction_->setEnabled(false);

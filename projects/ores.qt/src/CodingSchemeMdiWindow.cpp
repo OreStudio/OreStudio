@@ -78,21 +78,19 @@ void CodingSchemeMdiWindow::setupToolbar() {
     toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     toolbar_->setIconSize(QSize(20, 20));
 
-    const auto& iconColor = color_constants::icon_color;
-
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_add_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
         tr("Add"));
     addAction_->setToolTip(tr("Add new coding scheme"));
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_edit_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor),
         tr("Edit"));
     editAction_->setToolTip(tr("Edit selected coding scheme"));
     editAction_->setEnabled(false);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_delete_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
         tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected coding scheme(s)"));
     deleteAction_->setEnabled(false);
@@ -100,7 +98,7 @@ void CodingSchemeMdiWindow::setupToolbar() {
     toolbar_->addSeparator();
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_history_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor),
         tr("History"));
     historyAction_->setToolTip(tr("View version history"));
     historyAction_->setEnabled(false);
@@ -108,10 +106,10 @@ void CodingSchemeMdiWindow::setupToolbar() {
     toolbar_->addSeparator();
 
     refreshAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor),
         tr("Refresh"));
     refreshAction_->setToolTip(tr("Refresh coding schemes"));
-    initializeStaleIndicator(refreshAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
+    initializeStaleIndicator(refreshAction_, IconUtils::iconPath(Icon::ArrowSync));
 
     if (auto* layout = qobject_cast<QVBoxLayout*>(this->layout())) {
         layout->insertWidget(0, toolbar_);

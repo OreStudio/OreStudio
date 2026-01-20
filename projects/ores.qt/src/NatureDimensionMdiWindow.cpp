@@ -76,40 +76,38 @@ void NatureDimensionMdiWindow::setupToolbar() {
     toolbar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     toolbar_->setIconSize(QSize(20, 20));
 
-    const auto& iconColor = color_constants::icon_color;
-
     reloadAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_arrow_clockwise_16_regular.svg", iconColor),
+            Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this, &NatureDimensionMdiWindow::reload);
 
-    initializeStaleIndicator(reloadAction_, ":/icons/ic_fluent_arrow_clockwise_16_regular.svg");
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
     toolbar_->addSeparator();
 
     addAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_add_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
         tr("Add"));
     addAction_->setToolTip(tr("Add new nature dimension"));
     connect(addAction_, &QAction::triggered, this, &NatureDimensionMdiWindow::addNew);
 
     editAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_edit_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::Edit, IconUtils::DefaultIconColor),
         tr("Edit"));
     editAction_->setToolTip(tr("Edit selected nature dimension"));
     editAction_->setEnabled(false);
     connect(editAction_, &QAction::triggered, this, &NatureDimensionMdiWindow::editSelected);
 
     deleteAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_delete_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
         tr("Delete"));
     deleteAction_->setToolTip(tr("Delete selected nature dimension"));
     deleteAction_->setEnabled(false);
     connect(deleteAction_, &QAction::triggered, this, &NatureDimensionMdiWindow::deleteSelected);
 
     historyAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_history_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor),
         tr("History"));
     historyAction_->setToolTip(tr("View nature dimension history"));
     historyAction_->setEnabled(false);

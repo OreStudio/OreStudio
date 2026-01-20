@@ -150,17 +150,15 @@ void AddItemDialog::setupToolbar() {
     toolBar_ = new QToolBar(this);
     toolBar_->setIconSize(QSize(20, 20));
 
-    const QColor iconColor(220, 220, 220);
-
     saveAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_save_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor),
         tr("Save"));
     saveAction_->setToolTip(tr("Save changes"));
 
     toolBar_->addSeparator();
 
     testAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_plug_connected_20_regular.svg", iconColor),
+        IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::DefaultIconColor),
         tr("Test"));
     testAction_->setToolTip(tr("Test connection"));
     testAction_->setVisible(false);

@@ -49,14 +49,12 @@ NatureDimensionDetailDialog::~NatureDimensionDetailDialog() {
 }
 
 void NatureDimensionDetailDialog::setupUi() {
-    const auto& iconColor = color_constants::icon_color;
-
     ui_->saveButton->setIcon(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_save_20_regular.svg", iconColor));
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
     ui_->saveButton->setEnabled(false);
 
     ui_->deleteButton->setIcon(
-        IconUtils::createRecoloredIcon(":/icons/ic_fluent_delete_20_regular.svg", iconColor));
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor));
 }
 
 void NatureDimensionDetailDialog::setupConnections() {

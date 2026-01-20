@@ -18,40 +18,13 @@
  *
  */
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/IconUtils.hpp"
 
 #include <QAbstractButton>
 #include <QPixmap>
 #include <QImage>
 
 namespace ores::qt {
-
-QIcon MessageBoxHelper::createColoredIcon(const QString& svgPath, const QColor& color) {
-    QIcon originalIcon(svgPath);
-    if (originalIcon.isNull())
-        return {};
-
-    QIcon coloredIcon;
-    for (int size : {16, 20, 24, 32, 48, 64}) {
-        QPixmap pixmap = originalIcon.pixmap(size, size);
-        QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-
-        for (int y = 0; y < image.height(); ++y) {
-            for (int x = 0; x < image.width(); ++x) {
-                QColor pixelColor = image.pixelColor(x, y);
-                if (pixelColor.alpha() > 0) {
-                    pixelColor.setRed(color.red());
-                    pixelColor.setGreen(color.green());
-                    pixelColor.setBlue(color.blue());
-                    image.setPixelColor(x, y, pixelColor);
-                }
-            }
-        }
-
-        coloredIcon.addPixmap(QPixmap::fromImage(image));
-    }
-
-    return coloredIcon;
-}
 
 QMessageBox::StandardButton MessageBoxHelper::question(
     QWidget* parent,
@@ -65,8 +38,7 @@ QMessageBox::StandardButton MessageBoxHelper::question(
     msgBox.setStandardButtons(buttons);
 
     // Set custom question icon
-    const QColor iconColor(220, 220, 220);
-    QIcon questionIcon = createColoredIcon(":/icons/ic_fluent_question_20_regular.svg", iconColor);
+    QIcon questionIcon = IconUtils::createRecoloredIcon(Icon::Question, IconUtils::DefaultIconColor);
     if (!questionIcon.isNull()) {
         msgBox.setIconPixmap(questionIcon.pixmap(48, 48));
     }
@@ -75,7 +47,7 @@ QMessageBox::StandardButton MessageBoxHelper::question(
     if (buttons & QMessageBox::Yes) {
         QAbstractButton* yesButton = msgBox.button(QMessageBox::Yes);
         if (yesButton) {
-            QIcon checkIcon = createColoredIcon(":/icons/ic_fluent_checkmark_20_regular.svg", iconColor);
+            QIcon checkIcon = IconUtils::createRecoloredIcon(Icon::Checkmark, IconUtils::DefaultIconColor);
             if (!checkIcon.isNull()) {
                 yesButton->setIcon(checkIcon);
             }
@@ -85,7 +57,7 @@ QMessageBox::StandardButton MessageBoxHelper::question(
     if (buttons & QMessageBox::No) {
         QAbstractButton* noButton = msgBox.button(QMessageBox::No);
         if (noButton) {
-            QIcon dismissIcon = createColoredIcon(":/icons/ic_fluent_dismiss_20_regular.svg", iconColor);
+            QIcon dismissIcon = IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor);
             if (!dismissIcon.isNull()) {
                 noButton->setIcon(dismissIcon);
             }
@@ -106,8 +78,7 @@ void MessageBoxHelper::warning(
     msgBox.setStandardButtons(QMessageBox::Ok);
 
     // Use warning icon
-    const QColor iconColor(220, 220, 220);
-    QIcon warningIcon = createColoredIcon(":/icons/ic_fluent_warning_20_regular.svg", iconColor);
+    QIcon warningIcon = IconUtils::createRecoloredIcon(Icon::Warning, IconUtils::DefaultIconColor);
     if (!warningIcon.isNull()) {
         msgBox.setIconPixmap(warningIcon.pixmap(48, 48));
     }
@@ -138,8 +109,7 @@ void MessageBoxHelper::critical(
     }
 
     // Use error icon for critical errors
-    const QColor iconColor(220, 220, 220);
-    QIcon criticalIcon = createColoredIcon(":/icons/ic_fluent_error_circle_20_regular.svg", iconColor);
+    QIcon criticalIcon = IconUtils::createRecoloredIcon(Icon::Error, IconUtils::DefaultIconColor);
     if (!criticalIcon.isNull()) {
         msgBox.setIconPixmap(criticalIcon.pixmap(48, 48));
     }
@@ -158,8 +128,7 @@ void MessageBoxHelper::information(
     msgBox.setStandardButtons(QMessageBox::Ok);
 
     // Use info icon for information
-    const QColor iconColor(220, 220, 220);
-    QIcon infoIcon = createColoredIcon(":/icons/ic_fluent_info_20_regular.svg", iconColor);
+    QIcon infoIcon = IconUtils::createRecoloredIcon(Icon::Info, IconUtils::DefaultIconColor);
     if (!infoIcon.isNull()) {
         msgBox.setIconPixmap(infoIcon.pixmap(48, 48));
     }

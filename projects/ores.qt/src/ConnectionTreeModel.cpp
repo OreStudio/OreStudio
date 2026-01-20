@@ -45,13 +45,12 @@ ConnectionTreeModel::ConnectionTreeModel(
       rootNode_(std::make_unique<ConnectionTreeNode>()) {
 
     // Use bright icons for visibility in dark theme
-    const QColor iconColor(220, 220, 220);
     folderIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_folder_20_regular.svg", iconColor);
+        Icon::Folder, IconUtils::DefaultIconColor);
     folderOpenIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_folder_open_20_regular.svg", iconColor);
+        Icon::FolderOpen, IconUtils::DefaultIconColor);
     serverIcon_ = IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_server_link_20_regular.svg", iconColor);
+        Icon::ServerLink, IconUtils::DefaultIconColor);
 
     rootNode_->type = ConnectionTreeNode::Type::Root;
     rootNode_->name = "Root";

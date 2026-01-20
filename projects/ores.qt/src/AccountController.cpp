@@ -118,7 +118,6 @@ void AccountController::showListWindow() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Creating new accounts MDI window";
-    const QColor iconColor(220, 220, 220);
 
     auto* accountWidget = new AccountMdiWindow(clientManager_, username_, mainWindow_);
 
@@ -149,7 +148,7 @@ void AccountController::showListWindow() {
     accountListWindow_->setWidget(accountWidget);
     accountListWindow_->setWindowTitle("Accounts");
     accountListWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
+        Icon::PersonAccounts, IconUtils::DefaultIconColor));
 
     // Track window for detach/reattach operations
     register_detachable_window(accountListWindow_);
@@ -251,8 +250,6 @@ void AccountController::onShowAccountHistory(const QString& username) {
     BOOST_LOG_SEV(lg(), info) << "Showing account history for: "
                              << username.toStdString();
 
-    const QColor iconColor(220, 220, 220);
-
     auto* historyDialog = new AccountHistoryDialog(username, clientManager_, mainWindow_);
 
     // Connect status signals
@@ -279,7 +276,7 @@ void AccountController::onShowAccountHistory(const QString& username) {
     historyWindow->setWidget(historyDialog);
     historyWindow->setWindowTitle(QString("Account History: %1").arg(username));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_history_20_regular.svg", iconColor));
+        Icon::History, IconUtils::DefaultIconColor));
 
     // Track window for cleanup
     register_detachable_window(historyWindow);
@@ -294,8 +291,6 @@ void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId
                                               const QString& username) {
     BOOST_LOG_SEV(lg(), info) << "Showing session history for: "
                              << username.toStdString();
-
-    const QColor iconColor(220, 220, 220);
 
     auto* sessionDialog = new SessionHistoryDialog(clientManager_, mainWindow_);
 
@@ -317,7 +312,7 @@ void AccountController::onShowSessionHistory(const boost::uuids::uuid& accountId
     sessionWindow->setWidget(sessionDialog);
     sessionWindow->setWindowTitle(QString("Session History: %1").arg(username));
     sessionWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_clock_16_regular.svg", iconColor));
+        Icon::Clock, IconUtils::DefaultIconColor));
 
     // Track window for cleanup
     register_detachable_window(sessionWindow);
@@ -341,7 +336,6 @@ void AccountController::markAccountListAsStale() {
 void AccountController::showDetailWindow(
     const std::optional<AccountWithLoginInfo>& accountWithLoginInfo) {
     const bool isCreateMode = !accountWithLoginInfo.has_value();
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new AccountDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -398,7 +392,7 @@ void AccountController::showDetailWindow(
     }
 
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
+        Icon::PersonAccounts, IconUtils::DefaultIconColor));
 
     // Track window for cleanup
     register_detachable_window(detailWindow);
@@ -413,7 +407,6 @@ void AccountController::onOpenAccountVersion(
                               << " for account: " << account.username;
 
     const QString username = QString::fromStdString(account.username);
-    const QColor iconColor(220, 220, 220);
 
     auto* detailDialog = new AccountDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
@@ -444,7 +437,7 @@ void AccountController::onOpenAccountVersion(
     detailWindow->setWindowTitle(QString("Account: %1 (Version %2 - Read Only)")
         .arg(username).arg(versionNumber));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_person_accounts_20_regular.svg", iconColor));
+        Icon::PersonAccounts, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 

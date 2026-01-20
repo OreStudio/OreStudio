@@ -71,7 +71,7 @@ RoleMdiWindow(ClientManager* clientManager,
     toolBar_->addSeparator();
 
     viewAction_->setIcon(IconUtils::createRecoloredIcon(
-            ":/icons/ic_fluent_edit_20_regular.svg", iconColor));
+            Icon::Edit, IconUtils::DefaultIconColor));
     viewAction_->setToolTip("View role details");
     connect(viewAction_, &QAction::triggered, this,
         &RoleMdiWindow::viewSelected);
@@ -238,13 +238,11 @@ void RoleMdiWindow::updateActionStates() {
 }
 
 void RoleMdiWindow::setupReloadAction() {
-    const auto& iconColor = color_constants::icon_color;
-
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
-        ":/icons/ic_fluent_arrow_sync_20_regular.svg", iconColor));
+        Icon::ArrowSync, IconUtils::DefaultIconColor));
     connect(reloadAction_, &QAction::triggered, this, &RoleMdiWindow::reload);
 
-    initializeStaleIndicator(reloadAction_, ":/icons/ic_fluent_arrow_sync_20_regular.svg");
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }
 
 }

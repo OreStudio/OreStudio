@@ -82,19 +82,18 @@ create or replace function ores.upsert_dq_data_domains(
 begin
     perform ores.seed_validate_not_empty(p_name, 'Data domain name');
 
-    if not exists (
-        select 1 from ores.dq_data_domains_tbl
-        where name = p_name and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_data_domains_tbl (
-            name, version, description,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_name, 0, p_description,
-            'system', 'system.new_record', 'System seed data - data quality data domain',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
+    insert into ores.dq_data_domains_tbl (
+        name, version, description,
+        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+    )
+    values (
+        p_name, 0, p_description,
+        'system', 'system.new_record', 'System seed data - data quality data domain',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (name) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created data quality data domain: %', p_name;
     else
         raise notice 'Data quality data domain already exists: %', p_name;
@@ -118,19 +117,18 @@ begin
     perform ores.seed_validate_not_empty(p_name, 'Subject area name');
     perform ores.seed_validate_not_empty(p_domain_name, 'Domain name');
 
-    if not exists (
-        select 1 from ores.dq_subject_areas_tbl
-        where name = p_name and domain_name = p_domain_name and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_subject_areas_tbl (
-            name, version, domain_name, description,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_name, 0, p_domain_name, p_description,
-            'system', 'system.new_record', 'System seed data - data quality subject area',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
+    insert into ores.dq_subject_areas_tbl (
+        name, version, domain_name, description,
+        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+    )
+    values (
+        p_name, 0, p_domain_name, p_description,
+        'system', 'system.new_record', 'System seed data - data quality subject area',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (name, domain_name) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created data quality subject area: % in domain %', p_name, p_domain_name;
     else
         raise notice 'Data quality subject area already exists: % in domain %', p_name, p_domain_name;
@@ -153,19 +151,18 @@ create or replace function ores.upsert_dq_catalogs(
 begin
     perform ores.seed_validate_not_empty(p_name, 'Catalog name');
 
-    if not exists (
-        select 1 from ores.dq_catalogs_tbl
-        where name = p_name and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_catalogs_tbl (
-            name, version, description, owner,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_name, 0, p_description, p_owner,
-            'system', 'system.new_record', 'System seed data - data quality catalog',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
+    insert into ores.dq_catalogs_tbl (
+        name, version, description, owner,
+        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+    )
+    values (
+        p_name, 0, p_description, p_owner,
+        'system', 'system.new_record', 'System seed data - data quality catalog',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (name) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created data quality catalog: %', p_name;
     else
         raise notice 'Data quality catalog already exists: %', p_name;
@@ -222,19 +219,18 @@ create or replace function ores.upsert_dq_origin_dimensions(
 begin
     perform ores.seed_validate_not_empty(p_code, 'Origin dimension code');
 
-    if not exists (
-        select 1 from ores.dq_origin_dimensions_tbl
-        where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_origin_dimensions_tbl (
-            code, version, name, description,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_code, 0, p_name, p_description,
-            'system', 'system.new_record', 'System seed data - data quality origin dimension',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
+    insert into ores.dq_origin_dimensions_tbl (
+        code, version, name, description,
+        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+    )
+    values (
+        p_code, 0, p_name, p_description,
+        'system', 'system.new_record', 'System seed data - data quality origin dimension',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (code) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created data quality origin: %', p_code;
     else
         raise notice 'Data quality origin already exists: %', p_code;
@@ -253,19 +249,18 @@ create or replace function ores.upsert_dq_nature_dimensions(
 begin
     perform ores.seed_validate_not_empty(p_code, 'Nature dimension code');
 
-    if not exists (
-        select 1 from ores.dq_nature_dimensions_tbl
-        where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_nature_dimensions_tbl (
-            code, version, name, description,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_code, 0, p_name, p_description,
-            'system', 'system.new_record', 'System seed data - data quality nature dimension',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
+    insert into ores.dq_nature_dimensions_tbl (
+        code, version, name, description,
+        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+    )
+    values (
+        p_code, 0, p_name, p_description,
+        'system', 'system.new_record', 'System seed data - data quality nature dimension',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (code) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created data quality nature: %', p_code;
     else
         raise notice 'Data quality nature already exists: %', p_code;
@@ -284,19 +279,18 @@ create or replace function ores.upsert_dq_treatment_dimensions(
 begin
     perform ores.seed_validate_not_empty(p_code, 'Treatment dimension code');
 
-    if not exists (
-        select 1 from ores.dq_treatment_dimensions_tbl
-        where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_treatment_dimensions_tbl (
-            code, version, name, description,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_code, 0, p_name, p_description,
-            'system', 'system.new_record', 'System seed data - data quality treatment dimension',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
+    insert into ores.dq_treatment_dimensions_tbl (
+        code, version, name, description,
+        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+    )
+    values (
+        p_code, 0, p_name, p_description,
+        'system', 'system.new_record', 'System seed data - data quality treatment dimension',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (code) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created data quality treatment: %', p_code;
     else
         raise notice 'Data quality treatment already exists: %', p_code;
@@ -318,19 +312,18 @@ create or replace function ores.upsert_change_reason_category(
 begin
     perform ores.seed_validate_not_empty(p_code, 'Change reason category code');
 
-    if not exists (
-        select 1 from ores.dq_change_reason_categories_tbl
-        where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_change_reason_categories_tbl (
-            code, description, modified_by, change_commentary,
-            valid_from, valid_to
-        )
-        values (
-            p_code, p_description, 'system',
-            'System seed data - standard regulatory taxonomy',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
+    insert into ores.dq_change_reason_categories_tbl (
+        code, description, modified_by, change_commentary,
+        valid_from, valid_to
+    )
+    values (
+        p_code, p_description, 'system',
+        'System seed data - standard regulatory taxonomy',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (code) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created change reason category: %', p_code;
     else
         raise notice 'Change reason category already exists: %', p_code;
@@ -353,21 +346,20 @@ create or replace function ores.upsert_change_reason(
 begin
     perform ores.seed_validate_not_empty(p_code, 'Change reason code');
 
-    if not exists (
-        select 1 from ores.dq_change_reasons_tbl
-        where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_change_reasons_tbl (
-            code, description, category_code,
-            applies_to_amend, applies_to_delete, requires_commentary, display_order,
-            modified_by, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_code, p_description, p_category_code,
-            p_applies_to_amend, p_applies_to_delete, p_requires_commentary, p_display_order,
-            'system', 'System seed data - standard regulatory taxonomy',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
+    insert into ores.dq_change_reasons_tbl (
+        code, description, category_code,
+        applies_to_amend, applies_to_delete, requires_commentary, display_order,
+        modified_by, change_commentary, valid_from, valid_to
+    )
+    values (
+        p_code, p_description, p_category_code,
+        p_applies_to_amend, p_applies_to_delete, p_requires_commentary, p_display_order,
+        'system', 'System seed data - standard regulatory taxonomy',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (code) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created change reason: %', p_code;
     else
         raise notice 'Change reason already exists: %', p_code;
@@ -390,19 +382,18 @@ create or replace function ores.upsert_dq_coding_scheme_authority_type(
 begin
     perform ores.seed_validate_not_empty(p_code, 'Coding scheme authority type code');
 
-    if not exists (
-        select 1 from ores.dq_coding_scheme_authority_types_tbl
-        where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_coding_scheme_authority_types_tbl (
-            code, version, name, description,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_code, 0, p_name, p_description,
-            'system', 'system.new_record', 'System seed data - coding scheme authority type',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
+    insert into ores.dq_coding_scheme_authority_types_tbl (
+        code, version, name, description,
+        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+    )
+    values (
+        p_code, 0, p_name, p_description,
+        'system', 'system.new_record', 'System seed data - coding scheme authority type',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (code) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created coding scheme authority type: %', p_code;
     else
         raise notice 'Coding scheme authority type already exists: %', p_code;
@@ -425,19 +416,18 @@ create or replace function ores.upsert_dq_coding_schemes(
 begin
     perform ores.seed_validate_not_empty(p_code, 'Coding scheme code');
 
-    if not exists (
-        select 1 from ores.dq_coding_schemes_tbl
-        where code = p_code and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_coding_schemes_tbl (
-            code, version, name, authority_type, subject_area_name, domain_name, uri, description,
-            modified_by, change_reason_code, change_commentary, valid_from, valid_to
-        )
-        values (
-            p_code, 0, p_name, p_authority_type, p_subject_area_name, p_domain_name, p_uri, p_description,
-            'system', 'system.new_record', 'System seed data - coding scheme',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
+    insert into ores.dq_coding_schemes_tbl (
+        code, version, name, authority_type, subject_area_name, domain_name, uri, description,
+        modified_by, change_reason_code, change_commentary, valid_from, valid_to
+    )
+    values (
+        p_code, 0, p_name, p_authority_type, p_subject_area_name, p_domain_name, p_uri, p_description,
+        'system', 'system.new_record', 'System seed data - coding scheme',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (code) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created coding scheme: %', p_code;
     else
         raise notice 'Coding scheme already exists: %', p_code;
@@ -461,21 +451,19 @@ create or replace function ores.upsert_dq_methodologies(
 begin
     perform ores.seed_validate_not_empty(p_name, 'Methodology name');
 
-    if not exists (
-        select 1 from ores.dq_methodologies_tbl
-        where name = p_name
-          and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_methodologies_tbl (
-            id, version, name, description, logic_reference, implementation_details,
-            modified_by, change_reason_code, change_commentary,
-            valid_from, valid_to
-        )
-        values (
-            gen_random_uuid(), 0, p_name, p_description, p_logic_reference, p_implementation_details,
-            'system', 'system.new_record', 'System seed data',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
+    insert into ores.dq_methodologies_tbl (
+        id, version, name, description, logic_reference, implementation_details,
+        modified_by, change_reason_code, change_commentary,
+        valid_from, valid_to
+    )
+    values (
+        gen_random_uuid(), 0, p_name, p_description, p_logic_reference, p_implementation_details,
+        'system', 'system.new_record', 'System seed data',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (name) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created dq_methodologies: %', p_name;
     else
         raise notice 'dq_methodologies already exists: %', p_name;
@@ -516,29 +504,26 @@ begin
 
     if v_methodology_id is null then raise exception 'Methodology not found: %', p_methodology_name; end if;
 
-    if not exists (
-        select 1 from ores.dq_datasets_tbl
-        where name = p_name
-          and subject_area_name = p_subject_area_name
-          and domain_name = p_domain_name
-          and valid_to = ores.utility_infinity_timestamp_fn()
-    ) then
-        insert into ores.dq_datasets_tbl (
-            id, version, catalog_name, subject_area_name, domain_name, coding_scheme_code,
-            origin_code, nature_code, treatment_code, methodology_id,
-            name, description, source_system_id, business_context,
-            upstream_derivation_id, lineage_depth, as_of_date, ingestion_timestamp, license_info,
-            modified_by, change_reason_code, change_commentary,
-            valid_from, valid_to
-        )
-        values (
-            gen_random_uuid(), 0, p_catalog_name, p_subject_area_name, p_domain_name, p_coding_scheme_code,
-            p_origin_code, p_nature_code, p_treatment_code, v_methodology_id,
-            p_name, p_description, p_source_system_id, p_business_context,
-            null, 0, p_as_of_date, current_timestamp, p_license_info,
-            'system', 'system.new_record', 'System seed data',
-            current_timestamp, ores.utility_infinity_timestamp_fn()
-        );
+    insert into ores.dq_datasets_tbl (
+        id, version, catalog_name, subject_area_name, domain_name, coding_scheme_code,
+        origin_code, nature_code, treatment_code, methodology_id,
+        name, description, source_system_id, business_context,
+        upstream_derivation_id, lineage_depth, as_of_date, ingestion_timestamp, license_info,
+        modified_by, change_reason_code, change_commentary,
+        valid_from, valid_to
+    )
+    values (
+        gen_random_uuid(), 0, p_catalog_name, p_subject_area_name, p_domain_name, p_coding_scheme_code,
+        p_origin_code, p_nature_code, p_treatment_code, v_methodology_id,
+        p_name, p_description, p_source_system_id, p_business_context,
+        null, 0, p_as_of_date, current_timestamp, p_license_info,
+        'system', 'system.new_record', 'System seed data',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (name, subject_area_name, domain_name)
+        where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
         raise notice 'Created dq_datasets: %', p_name;
     else
         raise notice 'dq_datasets already exists: %', p_name;
@@ -601,21 +586,15 @@ create or replace function ores.upsert_permission(
     p_code text,
     p_description text
 ) returns void as $$
-declare
-    v_id uuid;
 begin
     perform ores.seed_validate_not_empty(p_code, 'Permission code');
 
-    -- Check if permission already exists
-    select id into v_id
-    from ores.iam_permissions_tbl
-    where code = p_code and valid_to = ores.utility_infinity_timestamp_fn();
+    insert into ores.iam_permissions_tbl (id, code, description, valid_from, valid_to)
+    values (gen_random_uuid(), p_code, p_description,
+            current_timestamp, ores.utility_infinity_timestamp_fn())
+    on conflict (code) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
 
-    if v_id is null then
-        -- The update_permissions trigger will set valid_from/valid_to
-        insert into ores.iam_permissions_tbl (id, code, description, valid_from, valid_to)
-        values (gen_random_uuid(), p_code, p_description,
-                current_timestamp, ores.utility_infinity_timestamp_fn());
+    if found then
         raise notice 'Created permission: %', p_code;
     else
         raise notice 'Permission already exists: %', p_code;

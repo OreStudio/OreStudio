@@ -166,6 +166,7 @@ def get_template_mappings():
     """
     return {
         "catalogs.json": ["sql_catalog_populate.mustache"],
+        "datasets.json": ["sql_dataset_populate.mustache"],
         "methodologies.json": ["sql_methodology_populate.mustache"]
     }
 
@@ -247,6 +248,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir):
     model_key = Path(model_path).stem
     data[model_key] = model
 
+    # Handle file references in the model data (e.g., steps_file pointing to methodology.txt)
+    model_dir = Path(model_path).parent
+    _resolve_file_references(data[model_key], model_dir, data)
+
     # Find the git directory to calculate relative paths
     current_path = Path.cwd()
     git_path = None
@@ -283,6 +288,45 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir):
         # Calculate and show relative path
         relative_path = get_relative_path(output_path.resolve(), git_path)
         print(f"Generated {relative_path}")
+
+
+def _resolve_file_references(model_data, model_dir, global_data):
+    """
+    Resolve file references in the model data by reading content from external files.
+
+    Args:
+        model_data (dict or list): The model data that may contain file references
+        model_dir (Path): Directory where the model file is located
+        global_data (dict): Global data dictionary to update with resolved content
+    """
+    if isinstance(model_data, dict):
+        # Collect keys to process to avoid modifying dict during iteration
+        keys_to_process = []
+        for key, value in model_data.items():
+            if key.endswith('_file') and isinstance(value, str):
+                keys_to_process.append(key)
+            elif isinstance(value, (dict, list)):
+                # Recursively resolve references in nested structures
+                _resolve_file_references(value, model_dir, global_data)
+
+        # Process the collected keys
+        for key in keys_to_process:
+            value = model_data[key]
+            # This is a file reference, read the content
+            file_path = model_dir / value
+            if file_path.exists():
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    # Replace the _file key with content under the base key
+                    base_key = key[:-5]  # Remove '_file' suffix
+                    model_data[base_key] = f.read()
+                    # Remove the _file reference
+                    del model_data[key]
+            else:
+                print(f"Warning: Referenced file not found: {file_path}")
+    elif isinstance(model_data, list):
+        for item in model_data:
+            if isinstance(item, (dict, list)):
+                _resolve_file_references(item, model_dir, global_data)
 
 
 def main():

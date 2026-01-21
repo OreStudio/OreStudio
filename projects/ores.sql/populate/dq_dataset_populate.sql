@@ -62,14 +62,6 @@ select ores.upsert_dq_datasets(
     'images'
 );
 
-select ores.upsert_dq_tag(
-    'Country Flag Images',
-    'Country Flags',
-    'Reference Data',
-    'flag',
-    'Country and region flag images'
-);
-
 select ores.upsert_dq_datasets(
     'assets.crypto_icons',
     'Visual Assets',
@@ -87,14 +79,6 @@ select ores.upsert_dq_datasets(
     '2025-01-15'::date,
     'CC0 1.0 Universal',
     'images'
-);
-
-select ores.upsert_dq_tag(
-    'Cryptocurrency Icon Images',
-    'Cryptocurrencies',
-    'Reference Data',
-    'cryptocurrency',
-    'Cryptocurrency icon images'
 );
 
 select ores.upsert_dq_datasets(
@@ -116,14 +100,6 @@ select ores.upsert_dq_datasets(
     'currencies'
 );
 
-select ores.upsert_dq_tag(
-    'ISO 4217 Currency Codes',
-    'Currencies',
-    'Reference Data',
-    'currency',
-    'Currency reference data'
-);
-
 select ores.upsert_dq_datasets(
     'fpml.currencies',
     'FpML Standards',
@@ -141,14 +117,6 @@ select ores.upsert_dq_datasets(
     '2023-11-03'::date,
     'FpML Public License 2.0',
     'currencies'
-);
-
-select ores.upsert_dq_tag(
-    'FpML Non-ISO Currency Codes',
-    'Currencies',
-    'Reference Data',
-    'currency',
-    'Non-ISO currency reference data'
 );
 
 select ores.upsert_dq_datasets(
@@ -170,14 +138,6 @@ select ores.upsert_dq_datasets(
     'currencies'
 );
 
-select ores.upsert_dq_tag(
-    'Cryptocurrency Reference Data',
-    'Cryptocurrencies',
-    'Reference Data',
-    'cryptocurrency',
-    'Cryptocurrency reference data'
-);
-
 select ores.upsert_dq_datasets(
     'geo.ip2country',
     'IP Geolocation',
@@ -197,17 +157,12 @@ select ores.upsert_dq_datasets(
     'ip2country'
 );
 
-select ores.upsert_dq_tag(
-    'IPv4 to Country Mapping',
-    'IP Address to Country maps',
-    'Reference Data',
-    'geolocation',
-    'IP address geolocation reference data'
-);
-
 -- =============================================================================
 -- Summary
 -- =============================================================================
+
+\echo ''
+\echo '--- Summary ---'
 
 select 'dq_datasets' as entity, count(*) as count
 from ores.dq_datasets_tbl

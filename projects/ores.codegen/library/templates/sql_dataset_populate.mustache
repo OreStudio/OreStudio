@@ -1,0 +1,42 @@
+{{! Template to generate SQL with enhanced GPL v3 license and dataset data }}
+{{{enhanced_license}}}
+
+set schema 'ores';
+
+-- =============================================================================
+-- Data Quality Slovaris Datasets
+-- =============================================================================
+
+\echo '--- Data Quality Slovaris Datasets ---'
+
+{{#datasets}}
+select ores.upsert_dq_datasets(
+    '{{code}}',
+    '{{catalog_name}}',
+    '{{subject_area_name}}',
+    '{{domain_name}}',
+    '{{coding_scheme_code}}',
+    '{{origin_code}}',
+    '{{nature_code}}',
+    '{{treatment_code}}',
+    '{{methodology_name}}',
+    '{{name}}',
+    '{{description}}',
+    '{{source_system_id}}',
+    '{{business_context}}',
+    current_date,
+    '{{license_info}}',
+    '{{asset_type}}'
+);
+{{/datasets}}
+
+-- =============================================================================
+-- Summary
+-- =============================================================================
+
+\echo ''
+\echo '--- Summary ---'
+
+select 'Data Quality Total Datasets' as entity, count(*) as count
+from ores.dq_datasets_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+order by entity;

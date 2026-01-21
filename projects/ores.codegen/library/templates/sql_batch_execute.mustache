@@ -1,0 +1,20 @@
+{{! Template to generate SQL that executes all other SQL files in sequence }}
+{{{enhanced_license}}}
+
+set schema 'ores';
+
+-- =============================================================================
+-- Batch Execution of {{model_name}} Data Quality Artefacts
+-- =============================================================================
+
+\echo '--- Starting Batch Execution of {{model_name}} Data Quality Artefacts ---'
+
+{{#model}}
+{{#files}}
+-- {{description}}
+\ir ./{{model_name}}_{{name}}
+{{/files}}
+{{/model}}
+
+\echo ''
+\echo '--- Batch Execution Completed Successfully ---'

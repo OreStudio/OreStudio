@@ -93,6 +93,11 @@
 \echo '--- Data Quality Datasets ---'
 \ir dq_dataset_populate.sql
 
+-- Data Quality Dataset Tags
+\echo ''
+\echo '--- Data Quality Dataset Tags ---'
+\ir dq_dataset_tag_populate.sql
+
 -- Data Quality Dataset Dependencies
 \echo ''
 \echo '--- Data Quality Dataset Dependencies ---'
@@ -106,6 +111,7 @@
 \ir dq_fpml_non_iso_currencies_artefact_populate.sql
 \ir dq_cryptocurrencies_artefact_populate.sql
 \ir dq_ip2country_artefact_populate.sql
+\ir solvaris_batch_execute.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''

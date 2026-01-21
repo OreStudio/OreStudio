@@ -1,0 +1,23 @@
+[
+    {
+        "dataset_name": "Solvaris Countries",
+        "subject_area_name": "Countries",
+        "domain_name": "Reference Data",
+        "tag_name": "country",
+        "tag_description": "Country reference data"
+    },
+    {
+        "dataset_name": "Solvaris Currencies",
+        "subject_area_name": "Currencies",
+        "domain_name": "Reference Data",
+        "tag_name": "currency",
+        "tag_description": "Currency reference data"
+    },
+    {
+        "dataset_name": "Solvaris Country Flag Images",
+        "subject_area_name": "Country Flags",
+        "domain_name": "Reference Data",
+        "tag_name": "flag",
+        "tag_description": "Country and region flag images"
+    }
+]

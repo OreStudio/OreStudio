@@ -1,0 +1,8 @@
+[
+    {
+        "name": "OreStudio Code Generation Methodology",
+        "description": "Methodology for generating artefact files using the OreStudio code generator",
+        "url": "https://github.com/OreStudio/OreStudio/tree/main/projects/ores.codegen",
+        "steps_file": "methodology.txt"
+    }
+]

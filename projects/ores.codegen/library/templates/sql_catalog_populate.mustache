@@ -1,0 +1,29 @@
+{{! Template to generate SQL with enhanced GPL v3 license and catalog data }}
+{{{enhanced_license}}}
+
+set schema 'ores';
+
+-- =============================================================================
+-- Data Quality Slovaris Catalogs
+-- =============================================================================
+
+\echo '--- Data Quality Slovaris Catalogs ---'
+
+{{#catalogs}}
+select ores.upsert_dq_catalogs(
+    '{{name}}',
+    '{{description}}',
+    '{{owner}}'
+);
+{{/catalogs}}
+
+-- =============================================================================
+-- Summary
+-- =============================================================================
+
+\echo ''
+\echo '--- Summary ---'
+
+select 'Data Quality Total Catalogs' as entity, count(*) as count
+from ores.dq_catalogs_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+order by entity;

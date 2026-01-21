@@ -1,0 +1,30 @@
+{{! Template to generate SQL with enhanced GPL v3 license and methodology data }}
+{{{enhanced_license}}}
+
+set schema 'ores';
+
+-- =============================================================================
+-- Data Quality Slovaris Methodologies
+-- =============================================================================
+
+\echo '--- Data Quality Slovaris Methodologies ---'
+
+{{#methodologies}}
+select ores.upsert_dq_methodologies(
+    '{{name}}',
+    '{{description}}',
+    '{{url}}',
+    '{{{steps}}}'
+);
+{{/methodologies}}
+
+-- =============================================================================
+-- Summary
+-- =============================================================================
+
+\echo ''
+\echo '--- Summary ---'
+
+select 'Data Quality Total Methodologies' as entity, count(*) as count
+from ores.dq_methodologies_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+order by entity;

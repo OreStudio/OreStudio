@@ -1,0 +1,101 @@
+{{! Template to generate SQL with enhanced GPL v3 license and country data }}
+{{{enhanced_license}}}
+
+/**
+ * Data Quality Solvaris Countries Artefact Population Script
+ *
+ * Populates the dq_countries_artefact_tbl with Solvaris country data.
+ * Source: country_currency.json model
+ *
+ * This script is idempotent.
+ */
+
+set schema 'ores';
+
+DO $$
+declare
+    v_dataset_id uuid;
+    v_flags_dataset_id uuid;
+    v_placeholder_image_id uuid;
+    v_count integer := 0;
+begin
+    -- Get the countries dataset ID from the datasets model
+    select id into v_dataset_id
+    from ores.dq_datasets_tbl
+    where name = '{{countries_dataset.name}}'
+      and subject_area_name = 'Countries'
+      and domain_name = 'Reference Data'
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_dataset_id is null then
+        raise exception 'Dataset not found for countries';
+    end if;
+
+    -- Get the flags dataset ID (for linking images)
+    select id into v_flags_dataset_id
+    from ores.dq_datasets_tbl
+    where name = '{{flags_dataset.name}}'
+      and subject_area_name = 'Country Flags'
+      and domain_name = 'Reference Data'
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_flags_dataset_id is null then
+        raise exception 'Dataset not found for flag images';
+    end if;
+
+    -- Get the placeholder image (xx.svg = "no flag available")
+    select image_id into v_placeholder_image_id
+    from ores.dq_images_artefact_tbl
+    where dataset_id = v_flags_dataset_id
+      and key = 'xx';
+
+    if v_placeholder_image_id is null then
+        raise warning 'Placeholder image (xx) not found - countries without flags will have NULL image_id';
+    end if;
+
+    -- Clear existing countries for this dataset (idempotency)
+    delete from ores.dq_countries_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    raise notice 'Populating countries for dataset: %', (select name from ores.dq_datasets_tbl where id = v_dataset_id);
+
+    -- Insert Solvaris countries with flag image links
+    insert into ores.dq_countries_artefact_tbl (
+        dataset_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id
+    )
+    select
+        v_dataset_id,
+        c.alpha2_code,
+        0,
+        c.alpha3_code,
+        c.numeric_code::text,
+        c.name,
+        c.official_name,
+        coalesce(i.image_id, v_placeholder_image_id)
+    from (values
+{{#country_currency}}
+        ('{{country_code}}', '{{country_alpha3}}', {{country_numeric}}, '{{{country_name}}}', '{{{country_official_name}}}'){{^last}},{{/last}}
+{{/country_currency}}
+    ) as c(alpha2_code, alpha3_code, numeric_code, name, official_name)
+    left join ores.dq_images_artefact_tbl i
+        on i.dataset_id = v_flags_dataset_id
+        and i.key = lower(c.alpha2_code);
+
+    get diagnostics v_count = row_count;
+
+    raise notice 'Successfully populated % countries for dataset: %', v_count, (select name from ores.dq_datasets_tbl where id = v_dataset_id);
+end $$;
+
+-- =============================================================================
+-- Summary
+-- =============================================================================
+
+\echo ''
+\echo '--- DQ Solvaris Countries Summary ---'
+
+select 'Total Solvaris Countries' as metric, count(*) as count
+from ores.dq_countries_artefact_tbl c
+join ores.dq_datasets_tbl d on c.dataset_id = d.id
+where d.subject_area_name = 'Countries'
+  and d.domain_name = 'Reference Data'
+  and d.valid_to = ores.utility_infinity_timestamp_fn();

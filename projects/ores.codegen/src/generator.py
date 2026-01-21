@@ -171,7 +171,7 @@ def get_template_mappings():
     return {
         "batch_execution.json": ["sql_batch_execute.mustache"],
         "catalogs.json": ["sql_catalog_populate.mustache"],
-        "country_currency.json": ["sql_flag_populate.mustache", "sql_currency_populate.mustache"],
+        "country_currency.json": ["sql_flag_populate.mustache", "sql_currency_populate.mustache", "sql_country_populate.mustache"],
         "country_currency_flags.json": ["sql_flag_populate.mustache"],  # Keep for backward compatibility
         "datasets.json": ["sql_dataset_populate.mustache"],
         "methodologies.json": ["sql_methodology_populate.mustache"],
@@ -258,7 +258,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             "sql_dataset_populate.sql": "datasets.json",
             "sql_tag_populate.sql": "tags.json",
             "sql_flag_populate.sql": "country_currency.json",
-            "sql_currency_populate.sql": "country_currency.json"
+            "sql_currency_populate.sql": "country_currency.json",
+            "sql_country_populate.sql": "country_currency.json"
         }
 
         # Generate all dependent files listed in the batch execution model
@@ -309,6 +310,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 data['currencies_dataset'] = ds
             elif ds.get('subject_area_name') == 'Country Flags':
                 data['flags_dataset'] = ds
+            elif ds.get('subject_area_name') == 'Countries':
+                data['countries_dataset'] = ds
 
     # Generate enhanced license with modeline and copyright header
     if 'licence-GPL-v3' in data and 'modelines' in data:
@@ -329,6 +332,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Use the model filename (without extension) as the key
     model_key = Path(model_path).stem
     data[model_key] = model
+    
+    # If the model is a list, mark the last item for Mustache templates
+    if isinstance(data[model_key], list) and data[model_key]:
+        # Only add if it's a list of dictionaries
+        if isinstance(data[model_key][-1], dict):
+            data[model_key][-1]['last'] = True
 
     # Handle file references in the model data (e.g., steps_file pointing to methodology.txt)
     model_dir = Path(model_path).parent
@@ -356,11 +365,25 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             processed_item.setdefault('format', defaults['format'])
             processed_item.setdefault('currency_type', defaults['currency_type'])
             
+            # Add country specific defaults
+            country_code = item.get('country_code', 'XX')
+            country_name = item.get('country_name', 'Unknown')
+            processed_item.setdefault('country_alpha3', f"X{country_code}")
+            # Use a deterministic numeric code based on the alpha2 code
+            numeric_base = sum(ord(c) for c in country_code) + 1000
+            processed_item.setdefault('country_numeric', numeric_base)
+            processed_item.setdefault('country_official_name', f"Republic of {country_name}")
+            
             # Pre-calculate lowercase country code for template use
             if 'country_code' in processed_item:
                 processed_item['country_code_lower'] = processed_item['country_code'].lower()
             
             processed_data.append(processed_item)
+        
+        # Mark the last item for Mustache templates
+        if processed_data:
+            processed_data[-1]['last'] = True
+            
         # Store the processed data under the original key for templates to use
         data[model_key] = processed_data
 

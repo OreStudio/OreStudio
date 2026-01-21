@@ -23,6 +23,10 @@
     {
       "name": "sql_currency_populate.sql",
       "description": "Currencies data for Slovaris"
+    },
+    {
+      "name": "sql_country_populate.sql",
+      "description": "Countries data for Slovaris"
     }
   ]
 }

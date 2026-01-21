@@ -32,7 +32,7 @@ begin
     insert into ores.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
-        v_dataset_id, gen_random_uuid(), 0, '{{country_code|lower}}', 'Flag of {{country_code|lower}}', $svg${{{generated_svg}}}$svg$
+        v_dataset_id, gen_random_uuid(), 0, '{{country_code_lower}}', 'Flag of {{country_code_lower}}', $svg${{{generated_svg}}}$svg$
     );
 {{/country_currency}}
 

@@ -13,7 +13,8 @@
         "description": "SVG flag images for each Solvaris country.",
         "source_system_id": "SOLVARIS",
         "business_context": "Visual assets for solvaris countries",
-        "license_info": " CC BY 4.0"
+        "license_info": " CC BY 4.0",
+        "asset_type":"images"
     },
     {
         "code": "slovaris.countries",
@@ -29,7 +30,8 @@
         "description": "Solvaris country codes and official names.",
         "source_system_id": "SOLVARIS",
         "business_context": "Reference data for solvaris country codes",
-        "license_info": " CC BY 4.0"
+        "license_info": " CC BY 4.0",
+        "asset_type":"countries"
     },
     {
         "code": "slovaris.currencies",
@@ -45,6 +47,7 @@
         "description": "Solvaris alphabetic and numeric currency codes.",
         "source_system_id": "SOLVARIS",
         "business_context": "Reference data for solvaris country codes",
-        "license_info": " CC BY 4.0"
+        "license_info": " CC BY 4.0",
+        "asset_type":"currencies"
     }
 ]

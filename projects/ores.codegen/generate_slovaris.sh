@@ -26,7 +26,6 @@ echo "Generating all Slovaris artefacts from batch execution model..."
 
 # Generate all artefacts by processing the batch execution model
 # This will automatically generate all dependent files first, then the batch execution file
-echo "Generating all artefacts from batch execution model..."
 python src/generator.py models/slovaris/batch_execution.json
 
 echo ""

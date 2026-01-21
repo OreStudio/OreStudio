@@ -3,6 +3,7 @@ Simple code generator that loads data and applies templates.
 """
 import json
 import os
+import random
 from pathlib import Path
 import pystache
 from datetime import datetime
@@ -229,6 +230,19 @@ CURRENCY_DEFAULTS_POOL = [
 ]
 
 
+def _mark_last_item(data_list):
+    """
+    Mark the last item in a list of dictionaries with a 'last' flag.
+
+    Args:
+        data_list (list): List to process
+    """
+    if isinstance(data_list, list) and data_list:
+        # Only add if it's a list of dictionaries
+        if isinstance(data_list[-1], dict):
+            data_list[-1]['last'] = True
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False):
     """
     Generate output files from a model using the appropriate templates.
@@ -335,10 +349,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     data[model_key] = model
     
     # If the model is a list, mark the last item for Mustache templates
-    if isinstance(data[model_key], list) and data[model_key]:
-        # Only add if it's a list of dictionaries
-        if isinstance(data[model_key][-1], dict):
-            data[model_key][-1]['last'] = True
+    _mark_last_item(data[model_key])
 
     # Handle file references in the model data (e.g., steps_file pointing to methodology.txt)
     model_dir = Path(model_path).parent
@@ -382,8 +393,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             processed_data.append(processed_item)
         
         # Mark the last item for Mustache templates
-        if processed_data:
-            processed_data[-1]['last'] = True
+        _mark_last_item(processed_data)
             
         # Store the processed data under the original key for templates to use
         data[model_key] = processed_data
@@ -401,8 +411,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                         'role': 'visual_assets'  # Default role
                     })
                 # Mark last for SQL formatting if needed
-                if ds['dataset_dependencies']:
-                    ds['dataset_dependencies'][-1]['last'] = True
+                _mark_last_item(ds['dataset_dependencies'])
 
     # Find the git directory to calculate relative paths
     current_path = Path.cwd()
@@ -462,8 +471,6 @@ def generate_flag_svg(country_code_num):
         num = int(country_code_num)
 
     # Use the number to deterministically generate colors and patterns
-    import random
-
     # Set seed to ensure deterministic output for the same input
     random.seed(num)
 

@@ -98,25 +98,16 @@ end $$;
 \echo ''
 \echo '--- DQ Solvaris Currencies Summary ---'
 
-select 'Total Solvaris Currencies' as metric, count(*) as count
-from ores.dq_currencies_artefact_tbl c
-join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.subject_area_name = 'Currencies'
-  and d.domain_name = 'Reference Data'
-  and d.valid_to = ores.utility_infinity_timestamp_fn()
+with currencies as (
+    select c.currency_type
+    from ores.dq_currencies_artefact_tbl c
+    join ores.dq_datasets_tbl d on c.dataset_id = d.id
+    where d.subject_area_name = 'Currencies'
+      and d.domain_name = 'Reference Data'
+      and d.valid_to = ores.utility_infinity_timestamp_fn()
+)
+select 'Total Solvaris Currencies' as metric, count(*) as count from currencies
 union all
-select 'Fiat Currencies', count(*)
-from ores.dq_currencies_artefact_tbl c
-join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.subject_area_name = 'Currencies'
-  and d.domain_name = 'Reference Data'
-  and d.valid_to = ores.utility_infinity_timestamp_fn()
-  and c.currency_type = 'fiat.standard'
+select 'Fiat Currencies', count(*) from currencies where currency_type = 'fiat.standard'
 union all
-select 'Synthetic Currencies', count(*)
-from ores.dq_currencies_artefact_tbl c
-join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.subject_area_name = 'Currencies'
-  and d.domain_name = 'Reference Data'
-  and d.valid_to = ores.utility_infinity_timestamp_fn()
-  and c.currency_type = 'synthetic';
+select 'Synthetic Currencies', count(*) from currencies where currency_type = 'synthetic';

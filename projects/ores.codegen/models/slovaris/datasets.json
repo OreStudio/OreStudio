@@ -31,7 +31,8 @@
         "source_system_id": "SOLVARIS",
         "business_context": "Reference data for solvaris country codes",
         "license_info": " CC BY 4.0",
-        "asset_type":"countries"
+        "asset_type":"countries",
+        "dependencies": [ "slovaris.country_flags" ]
     },
     {
         "code": "slovaris.currencies",
@@ -48,6 +49,7 @@
         "source_system_id": "SOLVARIS",
         "business_context": "Reference data for solvaris country codes",
         "license_info": " CC BY 4.0",
-        "asset_type":"currencies"
+        "asset_type":"currencies",
+        "dependencies": [ "slovaris.country_flags" ]
     }
 ]

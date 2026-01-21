@@ -13,6 +13,10 @@
       "description": "Datasets data for Slovaris"
     },
     {
+      "name": "sql_dataset_dependency_populate.sql",
+      "description": "Dataset dependencies for Slovaris"
+    },
+    {
       "name": "sql_tag_populate.sql",
       "description": "Tags data for Slovaris"
     },

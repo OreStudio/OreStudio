@@ -173,7 +173,7 @@ def get_template_mappings():
         "catalogs.json": ["sql_catalog_populate.mustache"],
         "country_currency.json": ["sql_flag_populate.mustache", "sql_currency_populate.mustache", "sql_country_populate.mustache"],
         "country_currency_flags.json": ["sql_flag_populate.mustache"],  # Keep for backward compatibility
-        "datasets.json": ["sql_dataset_populate.mustache"],
+        "datasets.json": ["sql_dataset_populate.mustache", "sql_dataset_dependency_populate.mustache"],
         "methodologies.json": ["sql_methodology_populate.mustache"],
         "tags.json": ["sql_tag_populate.mustache"]
     }
@@ -256,6 +256,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             "sql_catalog_populate.sql": "catalogs.json",
             "sql_methodology_populate.sql": "methodologies.json",
             "sql_dataset_populate.sql": "datasets.json",
+            "sql_dataset_dependency_populate.sql": "datasets.json",
             "sql_tag_populate.sql": "tags.json",
             "sql_flag_populate.sql": "country_currency.json",
             "sql_currency_populate.sql": "country_currency.json",
@@ -386,6 +387,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             
         # Store the processed data under the original key for templates to use
         data[model_key] = processed_data
+
+    # Special processing for datasets model to handle dependencies
+    if model_key == 'datasets':
+        for ds in data[model_key]:
+            if 'dependencies' in ds:
+                # Transform simple string list to objects for Mustache
+                ds['dataset_dependencies'] = []
+                for dep_code in ds['dependencies']:
+                    ds['dataset_dependencies'].append({
+                        'parent_code': ds['code'],
+                        'dependency_code': dep_code,
+                        'role': 'visual_assets'  # Default role
+                    })
+                # Mark last for SQL formatting if needed
+                if ds['dataset_dependencies']:
+                    ds['dataset_dependencies'][-1]['last'] = True
 
     # Find the git directory to calculate relative paths
     current_path = Path.cwd()

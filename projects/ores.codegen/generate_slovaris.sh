@@ -36,9 +36,10 @@ python src/generator.py models/slovaris/datasets.json
 echo "Generating methodologies..."
 python src/generator.py models/slovaris/methodologies.json
 
+# Generate tags
+echo "Generating tags..."
+python src/generator.py models/slovaris/tags.json
+
 echo ""
 echo "All Slovaris artefacts generated successfully!"
 echo "Output files are in: $SCRIPT_DIR/output/"
-echo ""
-echo "Generated files:"
-ls -la output/

@@ -11,6 +11,10 @@
     {
       "name": "sql_methodology_populate.sql",
       "description": "Methodologies data for Slovaris"
+    },
+    {
+      "name": "sql_tag_populate.sql",
+      "description": "Tags data for Slovaris"
     }
   ]
 }

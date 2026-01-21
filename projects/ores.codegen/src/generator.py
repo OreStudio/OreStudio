@@ -168,7 +168,8 @@ def get_template_mappings():
         "batch_execution.json": ["sql_batch_execute.mustache"],
         "catalogs.json": ["sql_catalog_populate.mustache"],
         "datasets.json": ["sql_dataset_populate.mustache"],
-        "methodologies.json": ["sql_methodology_populate.mustache"]
+        "methodologies.json": ["sql_methodology_populate.mustache"],
+        "tags.json": ["sql_tag_populate.mustache"]
     }
 
 

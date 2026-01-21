@@ -143,18 +143,22 @@ def generate_license_with_header(license_text, modeline_info, lang='sql'):
 def render_template(template_path, data):
     """
     Render a mustache template with the provided data.
-    
+
     Args:
         template_path (str): Path to the template file
         data (dict): Data to use for rendering
-        
+
     Returns:
         str: Rendered template content
     """
     with open(template_path, 'r', encoding='utf-8') as f:
         template_content = f.read()
-    
-    return pystache.render(template_content, data)
+
+    # Add utility functions to the data context
+    extended_data = data.copy()
+    extended_data['generate_flag_svg'] = generate_flag_svg
+
+    return pystache.render(template_content, extended_data)
 
 
 def get_template_mappings():
@@ -167,6 +171,8 @@ def get_template_mappings():
     return {
         "batch_execution.json": ["sql_batch_execute.mustache"],
         "catalogs.json": ["sql_catalog_populate.mustache"],
+        "country_currency.json": ["sql_flag_populate.mustache"],  # Generate flags from country_currency
+        "country_currency_flags.json": ["sql_flag_populate.mustache"],  # Keep for backward compatibility
         "datasets.json": ["sql_dataset_populate.mustache"],
         "methodologies.json": ["sql_methodology_populate.mustache"],
         "tags.json": ["sql_tag_populate.mustache"]
@@ -205,7 +211,7 @@ def get_relative_path(abs_path, base_path):
         return str(abs_path)
 
 
-def generate_from_model(model_path, data_dir, templates_dir, output_dir):
+def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False):
     """
     Generate output files from a model using the appropriate templates.
 
@@ -214,10 +220,45 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir):
         data_dir (Path): Path to the data directory
         templates_dir (Path): Path to the templates directory
         output_dir (Path): Path to the output directory
+        is_processing_batch (bool): Flag to indicate if we're already processing a batch to avoid recursion
     """
     # Load the model
     model = load_model(model_path)
     model_filename = Path(model_path).name
+
+    # Special handling for batch_execution.json - generate all dependent models first
+    if model_filename == "batch_execution.json" and not is_processing_batch:
+        print("Processing batch execution model...")
+
+        # Extract model directory
+        model_dir = Path(model_path).parent
+
+        # Map from output filenames to input model filenames
+        output_to_model_map = {
+            "sql_catalog_populate.sql": "catalogs.json",
+            "sql_methodology_populate.sql": "methodologies.json",
+            "sql_dataset_populate.sql": "datasets.json",
+            "sql_tag_populate.sql": "tags.json",
+            "sql_flag_populate.sql": "country_currency.json"
+        }
+
+        # Generate all dependent files listed in the batch execution model
+        for file_entry in model.get("files", []):
+            output_filename = file_entry.get("name")
+            if output_filename in output_to_model_map:
+                model_filename_for_output = output_to_model_map[output_filename]
+                dependent_model_path = model_dir / model_filename_for_output
+
+                if dependent_model_path.exists():
+                    print(f"Generating dependent model: {dependent_model_path}")
+                    generate_from_model(dependent_model_path, data_dir, templates_dir, output_dir, is_processing_batch=True)
+                else:
+                    print(f"Warning: Dependent model not found: {dependent_model_path}")
+
+        # After generating all dependencies, now generate the batch execution file itself
+        # Continue with the original batch execution generation process
+        # But skip the recursive processing by setting is_processing_batch=True
+        is_processing_batch = True
 
     # Get template mappings
     template_map = get_template_mappings()
@@ -253,6 +294,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir):
     # Handle file references in the model data (e.g., steps_file pointing to methodology.txt)
     model_dir = Path(model_path).parent
     _resolve_file_references(data[model_key], model_dir, data)
+
+    # Special processing for country_currency model to generate SVG flags
+    if model_key in ['country_currency', 'country_currency_flags']:
+        # Process each country currency to generate SVG flag data
+        processed_data = []
+        for item in data[model_key]:
+            # Create a copy of the item and add the generated SVG
+            processed_item = item.copy()
+            processed_item['generated_svg'] = generate_flag_svg(item.get('country_code', ''))
+            processed_data.append(processed_item)
+        # Store the processed data under the original key for templates to use
+        data[model_key] = processed_data
 
     # Find the git directory to calculate relative paths
     current_path = Path.cwd()
@@ -290,6 +343,72 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir):
         # Calculate and show relative path
         relative_path = get_relative_path(output_path.resolve(), git_path)
         print(f"Generated {relative_path}")
+
+
+def generate_flag_svg(country_code_num):
+    """
+    Generate a deterministic SVG flag based on a country code number.
+
+    Args:
+        country_code_num (int or str): A number representing the country code
+
+    Returns:
+        str: SVG string for the flag
+    """
+    # Convert to integer if it's a string
+    if isinstance(country_code_num, str):
+        # Convert string like "AL" to a number for deterministic generation
+        num = 0
+        for char in country_code_num.upper():
+            num = num * 100 + ord(char)  # Use ASCII values to create a unique number
+    else:
+        num = int(country_code_num)
+
+    # Use the number to deterministically generate colors and patterns
+    import random
+
+    # Set seed to ensure deterministic output for the same input
+    random.seed(num)
+
+    # Generate random but deterministic colors based on the seed
+    r1, g1, b1 = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
+    r2, g2, b2 = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
+    r3, g3, b3 = random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)
+
+    # Choose a flag pattern based on the number
+    pattern_choice = num % 4
+
+    if pattern_choice == 0:
+        # Horizontal stripes
+        svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480">
+  <rect width="640" height="160" y="0" fill="#{r1:02x}{g1:02x}{b1:02x}"/>
+  <rect width="640" height="160" y="160" fill="#{r2:02x}{g2:02x}{b2:02x}"/>
+  <rect width="640" height="160" y="320" fill="#{r3:02x}{g3:02x}{b3:02x}"/>
+</svg>'''
+    elif pattern_choice == 1:
+        # Vertical stripes
+        svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480">
+  <rect width="213.33" height="480" x="0" fill="#{r1:02x}{g1:02x}{b1:02x}"/>
+  <rect width="213.33" height="480" x="213.33" fill="#{r2:02x}{g2:02x}{b2:02x}"/>
+  <rect width="213.34" height="480" x="426.66" fill="#{r3:02x}{g3:02x}{b3:02x}"/>
+</svg>'''
+    elif pattern_choice == 2:
+        # Diagonal pattern
+        svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480">
+  <rect width="640" height="480" fill="#{r1:02x}{g1:02x}{b1:02x}"/>
+  <polygon points="0,0 200,0 640,480 440,480" fill="#{r2:02x}{g2:02x}{b2:02x}"/>
+  <polygon points="440,0 640,0 640,200 600,240 560,280 520,320 480,360 440,400 400,440 400,480 240,480 240,440 200,400 160,360 120,320 80,280 40,240 0,200 0,0" fill="#{r3:02x}{g3:02x}{b3:02x}"/>
+</svg>'''
+    else:
+        # Central emblem pattern
+        svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480">
+  <rect width="640" height="480" fill="#{r1:02x}{g1:02x}{b1:02x}"/>
+  <circle cx="320" cy="240" r="80" fill="#{r2:02x}{g2:02x}{b2:02x}"/>
+  <rect x="280" y="160" width="80" height="160" fill="#{r3:02x}{g3:02x}{b3:02x}"/>
+  <rect x="240" y="200" width="160" height="80" fill="#{r3:02x}{g3:02x}{b3:02x}"/>
+</svg>'''
+
+    return svg
 
 
 def _resolve_file_references(model_data, model_dir, global_data):
@@ -359,7 +478,7 @@ def main():
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Generate from the specified model
-    generate_from_model(model_path, data_dir, templates_dir, output_dir)
+    generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False)
 
 
 if __name__ == "__main__":

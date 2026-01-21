@@ -15,6 +15,10 @@
     {
       "name": "sql_tag_populate.sql",
       "description": "Tags data for Slovaris"
+    },
+    {
+      "name": "sql_flag_populate.sql",
+      "description": "Flags data for Slovaris"
     }
   ]
 }

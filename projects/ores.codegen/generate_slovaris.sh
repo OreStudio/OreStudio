@@ -22,26 +22,11 @@ source "$VENV_PATH/bin/activate"
 # Change to the project directory
 cd "$SCRIPT_DIR"
 
-echo "Generating all Slovaris artefacts..."
+echo "Generating all Slovaris artefacts from batch execution model..."
 
-# Generate catalogs
-echo "Generating catalogs..."
-python src/generator.py models/slovaris/catalogs.json
-
-# Generate datasets
-echo "Generating datasets..."
-python src/generator.py models/slovaris/datasets.json
-
-# Generate methodologies
-echo "Generating methodologies..."
-python src/generator.py models/slovaris/methodologies.json
-
-# Generate tags
-echo "Generating tags..."
-python src/generator.py models/slovaris/tags.json
-
-# Generate batch execution file
-echo "Generating batch execution file..."
+# Generate all artefacts by processing the batch execution model
+# This will automatically generate all dependent files first, then the batch execution file
+echo "Generating all artefacts from batch execution model..."
 python src/generator.py models/slovaris/batch_execution.json
 
 echo ""

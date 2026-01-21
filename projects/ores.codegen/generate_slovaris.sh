@@ -26,8 +26,8 @@ echo "Generating all Slovaris artefacts from batch execution model..."
 
 # Generate all artefacts by processing the batch execution model
 # This will automatically generate all dependent files first, then the batch execution file
-python src/generator.py models/slovaris/batch_execution.json
+python src/generator.py models/slovaris/model.json "$SCRIPT_DIR/../ores.sql/populate"
 
 echo ""
 echo "All Slovaris artefacts generated successfully!"
-echo "Output files are in: $SCRIPT_DIR/output/"
+echo "Output files are in: projects/ores.sql/populate/"

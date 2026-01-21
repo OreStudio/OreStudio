@@ -170,7 +170,7 @@ def get_template_mappings():
         dict: Mapping of model filenames to lists of template names
     """
     return {
-        "batch_execution.json": ["sql_batch_execute.mustache"],
+        "model.json": ["sql_batch_execute.mustache"],
         "catalogs.json": ["sql_catalog_populate.mustache"],
         "country_currency.json": ["sql_flag_populate.mustache", "sql_currency_populate.mustache", "sql_country_populate.mustache"],
         "country_currency_flags.json": ["sql_flag_populate.mustache"],  # Keep for backward compatibility
@@ -243,7 +243,7 @@ def _mark_last_item(data_list):
             data_list[-1]['last'] = True
 
 
-def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False):
+def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None):
     """
     Generate output files from a model using the appropriate templates.
 
@@ -252,65 +252,76 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         data_dir (Path): Path to the data directory
         templates_dir (Path): Path to the templates directory
         output_dir (Path): Path to the output directory
-        is_processing_batch (bool): Flag to indicate if we're already processing a batch to avoid recursion
+        is_processing_batch (bool): Flag to indicate if we're already processing a batch
+        prefix (str): Optional prefix for output filenames
+        target_template (str): Optional override for the template to use
+        target_output (str): Optional override for the output filename
     """
     # Load the model
     model = load_model(model_path)
     model_filename = Path(model_path).name
 
-    # Special handling for batch_execution.json - generate all dependent models first
-    if model_filename == "batch_execution.json" and not is_processing_batch:
-        print("Processing batch execution model...")
+    # Special handling for model.json - generate all dependent models first
+    if model_filename == "model.json" and not is_processing_batch:
+        print(f"Processing overall model: {model_filename}...")
+        
+        # Get prefix from overall model
+        prefix = model.get("model_name")
 
         # Extract model directory
         model_dir = Path(model_path).parent
 
-        # Map from output filenames to input model filenames
-        output_to_model_map = {
-            "sql_catalog_populate.sql": "catalogs.json",
-            "sql_methodology_populate.sql": "methodologies.json",
-            "sql_dataset_populate.sql": "datasets.json",
-            "sql_dataset_dependency_populate.sql": "datasets.json",
-            "sql_tag_populate.sql": "tags.json",
-            "sql_flag_populate.sql": "country_currency.json",
-            "sql_currency_populate.sql": "country_currency.json",
-            "sql_country_populate.sql": "country_currency.json"
-        }
-
-        # Generate all dependent files listed in the batch execution model
+        # Generate all dependent files listed in the model manifest
         for file_entry in model.get("files", []):
+            dependent_model_filename = file_entry.get("model")
+            template_filename = file_entry.get("template")
             output_filename = file_entry.get("name")
-            if output_filename in output_to_model_map:
-                model_filename_for_output = output_to_model_map[output_filename]
-                dependent_model_path = model_dir / model_filename_for_output
+
+            if dependent_model_filename and template_filename:
+                dependent_model_path = model_dir / dependent_model_filename
 
                 if dependent_model_path.exists():
-                    print(f"Generating dependent model: {dependent_model_path}")
-                    generate_from_model(dependent_model_path, data_dir, templates_dir, output_dir, is_processing_batch=True)
+                    print(f"Generating dependent item: {output_filename} (from {dependent_model_filename})")
+                    generate_from_model(
+                        dependent_model_path, 
+                        data_dir, 
+                        templates_dir, 
+                        output_dir, 
+                        is_processing_batch=True, 
+                        prefix=prefix,
+                        target_template=template_filename,
+                        target_output=output_filename
+                    )
                 else:
                     print(f"Warning: Dependent model not found: {dependent_model_path}")
 
-        # After generating all dependencies, now generate the batch execution file itself
-        # Continue with the original batch execution generation process
-        # But skip the recursive processing by setting is_processing_batch=True
+        # After generating all dependencies, now generate the overall model file itself
         is_processing_batch = True
 
     # Get template mappings
     template_map = get_template_mappings()
 
-    # Check if this model has associated templates
-    if model_filename not in template_map:
+    # Determine which templates to process
+    if target_template:
+        templates_to_process = [target_template]
+    elif model_filename in template_map:
+        templates_to_process = template_map[model_filename]
+    else:
         print(f"No templates found for model: {model_filename}")
         return
 
     # Load library data
     data = load_data(data_dir)
+    
+    # Add prefix to data context if available
+    if prefix:
+        data['model_name'] = prefix
 
     # Load sibling models (other JSON files in the same directory)
     # Only load files that are recognized as models in our mappings
     model_dir = Path(model_path).parent
     known_model_filenames = set(get_template_mappings().keys())
-    known_model_filenames.add("batch_execution.json")
+    known_model_filenames.add("model.json")
 
     for json_file in model_dir.glob("*.json"):
         if json_file.name in known_model_filenames:
@@ -428,7 +439,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         git_path = current_path
 
     # Process each associated template
-    for template_name in template_map[model_filename]:
+    for template_name in templates_to_process:
         template_path = templates_dir / template_name
         if not template_path.exists():
             print(f"Template not found: {template_path}")
@@ -437,9 +448,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Render the template with the combined data
         rendered_content = render_template(template_path, data)
 
-        # Determine output filename (replace .mustache with appropriate extension)
-        output_ext = '.sql' if template_name.endswith('.mustache') else ''
-        output_filename = template_name.replace('.mustache', output_ext)
+        # Determine output filename
+        if target_output:
+            output_filename = target_output
+        else:
+            output_ext = '.sql' if template_name.endswith('.mustache') else ''
+            output_filename = template_name.replace('.mustache', output_ext)
+        
+        # Apply prefix if provided, replacing 'sql_' with prefix + '_'
+        if prefix:
+            if output_filename.startswith('sql_'):
+                output_filename = f"{prefix}_{output_filename[4:]}"
+            elif not output_filename.startswith(f"{prefix}_"):
+                output_filename = f"{prefix}_{output_filename}"
+
         output_path = output_dir / output_filename
 
         # Write output to file

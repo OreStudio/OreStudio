@@ -1,0 +1,53 @@
+{
+  "model_name": "solvaris",
+  "files": [
+    {
+      "name": "catalog_populate.sql",
+      "model": "catalogs.json",
+      "template": "sql_catalog_populate.mustache",
+      "description": "Catalogs data for Slovaris"
+    },
+    {
+      "name": "methodology_populate.sql",
+      "model": "methodologies.json",
+      "template": "sql_methodology_populate.mustache",
+      "description": "Methodologies data for Slovaris"
+    },
+    {
+      "name": "dataset_populate.sql",
+      "model": "datasets.json",
+      "template": "sql_dataset_populate.mustache",
+      "description": "Datasets data for Slovaris"
+    },
+    {
+      "name": "dataset_dependency_populate.sql",
+      "model": "datasets.json",
+      "template": "sql_dataset_dependency_populate.mustache",
+      "description": "Dataset dependencies for Slovaris"
+    },
+    {
+      "name": "tag_populate.sql",
+      "model": "tags.json",
+      "template": "sql_tag_populate.mustache",
+      "description": "Tags data for Slovaris"
+    },
+    {
+      "name": "flag_populate.sql",
+      "model": "country_currency.json",
+      "template": "sql_flag_populate.mustache",
+      "description": "Flags data for Slovaris"
+    },
+    {
+      "name": "currency_populate.sql",
+      "model": "country_currency.json",
+      "template": "sql_currency_populate.mustache",
+      "description": "Currencies data for Slovaris"
+    },
+    {
+      "name": "country_populate.sql",
+      "model": "country_currency.json",
+      "template": "sql_country_populate.mustache",
+      "description": "Countries data for Slovaris"
+    }
+  ]
+}

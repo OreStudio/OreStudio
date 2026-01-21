@@ -12,7 +12,7 @@ set schema 'ores';
 {{#batch_execution}}
 {{#files}}
 -- {{description}}
-\ir {{{name}}}
+\ir ./{{model_name}}_{{name}}
 {{/files}}
 {{/batch_execution}}
 

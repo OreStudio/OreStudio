@@ -4,17 +4,17 @@
 set schema 'ores';
 
 -- =============================================================================
--- Batch Execution of Slovaris Data Quality Artefacts
+-- Batch Execution of {{model_name}} Data Quality Artefacts
 -- =============================================================================
 
-\echo '--- Starting Batch Execution of Slovaris Data Quality Artefacts ---'
+\echo '--- Starting Batch Execution of {{model_name}} Data Quality Artefacts ---'
 
-{{#batch_execution}}
+{{#model}}
 {{#files}}
 -- {{description}}
 \ir ./{{model_name}}_{{name}}
 {{/files}}
-{{/batch_execution}}
+{{/model}}
 
 \echo ''
 \echo '--- Batch Execution Completed Successfully ---'

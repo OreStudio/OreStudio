@@ -38,5 +38,3 @@ select set_config('ores.skip_validation', :'skip_validation', false);
 \ir setup_template.sql
 \ir create_instance.sql
 \ir populate/populate.sql
--- Note: reference_data.sql is a standalone convenience wrapper; its content
--- (dq_populate_production.sql) is already included at the end of populate.sql

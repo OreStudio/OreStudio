@@ -93,6 +93,11 @@
 \echo '--- Data Quality Datasets ---'
 \ir dq_dataset_populate.sql
 
+-- Data Quality Dataset Tags
+\echo ''
+\echo '--- Data Quality Dataset Tags ---'
+\ir dq_dataset_tag_populate.sql
+
 -- Data Quality Dataset Dependencies
 \echo ''
 \echo '--- Data Quality Dataset Dependencies ---'

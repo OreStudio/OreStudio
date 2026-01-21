@@ -4,10 +4,10 @@
 set schema 'ores';
 
 -- =============================================================================
--- Data Quality Catalogs
+-- Data Quality Slovaris Catalogs
 -- =============================================================================
 
-\echo '--- Data Quality Catalogs ---'
+\echo '--- Data Quality Slovaris Catalogs ---'
 
 {{#catalogs}}
 select ores.upsert_dq_catalogs(
@@ -16,3 +16,14 @@ select ores.upsert_dq_catalogs(
     '{{owner}}'
 );
 {{/catalogs}}
+
+-- =============================================================================
+-- Summary
+-- =============================================================================
+
+\echo ''
+\echo '--- Summary ---'
+
+select 'Data Quality Total Catalogs' as entity, count(*) as count
+from ores.dq_catalogs_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+order by entity;

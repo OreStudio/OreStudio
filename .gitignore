@@ -54,3 +54,6 @@ projects/ores.utility/include/ores.utility/version/version.hpp
 
 # Open Code
 .opencode/
+
+# python codegen
+projects/ores.codegen/output/

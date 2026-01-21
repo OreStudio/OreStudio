@@ -1,0 +1,359 @@
+[
+  {
+    "country_code": "AL",
+    "country_name": "Aerilon",
+    "currency_code": "ALD",
+    "currency_number": 10001,
+    "currency": "Aerilonian Ducat"
+  },
+  {
+    "country_code": "AR",
+    "country_name": "Arcturia",
+    "currency_code": "ARA",
+    "currency_number": 10002,
+    "currency": "Arcturian Aurum"
+  },
+  {
+    "country_code": "BA",
+    "country_name": "Balthoria",
+    "currency_code": "BAF",
+    "currency_number": 10003,
+    "currency": "Balthorian Florin"
+  },
+  {
+    "country_code": "BE",
+    "country_name": "Belloria",
+    "currency_code": "BEB",
+    "currency_number": 10004,
+    "currency": "Bellorian Bezant"
+  },
+  {
+    "country_code": "CA",
+    "country_name": "Calandria",
+    "currency_code": "CAC",
+    "currency_number": 10005,
+    "currency": "Calandrian Crown"
+  },
+  {
+    "country_code": "CD",
+    "country_name": "Caledonia",
+    "currency_code": "CDC",
+    "currency_number": 10006,
+    "currency": "Caledonian Credit"
+  },
+  {
+    "country_code": "DA",
+    "country_name": "Daeloria",
+    "currency_code": "DAD",
+    "currency_number": 10007,
+    "currency": "Daelorian Dinar"
+  },
+  {
+    "country_code": "DE",
+    "country_name": "Delvadia",
+    "currency_code": "DED",
+    "currency_number": 10008,
+    "currency": "Delvadian Drachma"
+  },
+  {
+    "country_code": "ER",
+    "country_name": "Eriador",
+    "currency_code": "ERE",
+    "currency_number": 10009,
+    "currency": "Eriadoran Ecu"
+  },
+  {
+    "country_code": "ES",
+    "country_name": "Esteria",
+    "currency_code": "ESE",
+    "currency_number": 10010,
+    "currency": "Esterian Escudo"
+  },
+  {
+    "country_code": "FE",
+    "country_name": "Feloria",
+    "currency_code": "FEF",
+    "currency_number": 10011,
+    "currency": "Felorian Franc"
+  },
+  {
+    "country_code": "FN",
+    "country_name": "Fendaria",
+    "currency_code": "FNF",
+    "currency_number": 10012,
+    "currency": "Fendarian Farthing"
+  },
+  {
+    "country_code": "GA",
+    "country_name": "Galdoria",
+    "currency_code": "GAG",
+    "currency_number": 10013,
+    "currency": "Galdorian Galleon"
+  },
+  {
+    "country_code": "GR",
+    "country_name": "Grendoria",
+    "currency_code": "GRG",
+    "currency_number": 10014,
+    "currency": "Grendorian Guilder"
+  },
+  {
+    "country_code": "HE",
+    "country_name": "Helvetia",
+    "currency_code": "HEF",
+    "currency_number": 10015,
+    "currency": "Helvetian Florin"
+  },
+  {
+    "country_code": "HY",
+    "country_name": "Hydronia",
+    "currency_code": "HYH",
+    "currency_number": 10016,
+    "currency": "Hydronian Helix"
+  },
+  {
+    "country_code": "IR",
+    "country_name": "Iridia",
+    "currency_code": "IRD",
+    "currency_number": 10017,
+    "currency": "Iridian Ducat"
+  },
+  {
+    "country_code": "IT",
+    "country_name": "Ithaca",
+    "currency_code": "ITI",
+    "currency_number": 10018,
+    "currency": "Ithacan Ion"
+  },
+  {
+    "country_code": "JE",
+    "country_name": "Jethro",
+    "currency_code": "JEJ",
+    "currency_number": 10019,
+    "currency": "Jethronian Jewel"
+  },
+  {
+    "country_code": "JO",
+    "country_name": "Jorvik",
+    "currency_code": "JOK",
+    "currency_number": 10020,
+    "currency": "Jorvikian Krona"
+  },
+  {
+    "country_code": "KA",
+    "country_name": "Kaelor",
+    "currency_code": "KAK",
+    "currency_number": 10021,
+    "currency": "Kaelorian Krone"
+  },
+  {
+    "country_code": "KR",
+    "country_name": "Krynn",
+    "currency_code": "KRK",
+    "currency_number": 10022,
+    "currency": "Krynnish Kredit"
+  },
+  {
+    "country_code": "LU",
+    "country_name": "Luminia",
+    "currency_code": "LUL",
+    "currency_number": 10023,
+    "currency": "Luminian Lumen"
+  },
+  {
+    "country_code": "LY",
+    "country_name": "Lysandria",
+    "currency_code": "LYL",
+    "currency_number": 10024,
+    "currency": "Lysandrian Lira"
+  },
+  {
+    "country_code": "MA",
+    "country_name": "Maldoria",
+    "currency_code": "MAM",
+    "currency_number": 10025,
+    "currency": "Maldorian Mark"
+  },
+  {
+    "country_code": "MR",
+    "country_name": "Mariposa",
+    "currency_code": "MRP",
+    "currency_number": 10026,
+    "currency": "Mariposan Peso"
+  },
+  {
+    "country_code": "NE",
+    "country_name": "Nektonia",
+    "currency_code": "NEN",
+    "currency_number": 10027,
+    "currency": "Nektonian Nexus"
+  },
+  {
+    "country_code": "NT",
+    "country_name": "Netharia",
+    "currency_code": "NTN",
+    "currency_number": 10028,
+    "currency": "Netharian Naira"
+  },
+  {
+    "country_code": "OR",
+    "country_name": "Orinoco",
+    "currency_code": "ORB",
+    "currency_number": 10029,
+    "currency": "Orinocan Bolivar"
+  },
+  {
+    "country_code": "OL",
+    "country_name": "Orlanthia",
+    "currency_code": "OLO",
+    "currency_number": 10030,
+    "currency": "Orlanthian Orb"
+  },
+  {
+    "country_code": "PA",
+    "country_name": "Paldoria",
+    "currency_code": "PAP",
+    "currency_number": 10031,
+    "currency": "Paldorian Pound"
+  },
+  {
+    "country_code": "PY",
+    "country_name": "Pyrrhia",
+    "currency_code": "PYP",
+    "currency_number": 10032,
+    "currency": "Pyrrhian Pyre"
+  },
+  {
+    "country_code": "QU",
+    "country_name": "Quentaria",
+    "currency_code": "QUQ",
+    "currency_number": 10033,
+    "currency": "Quentarian Quill"
+  },
+  {
+    "country_code": "QN",
+    "country_name": "Quinaria",
+    "currency_code": "QNQ",
+    "currency_number": 10034,
+    "currency": "Quinarian Quetzal"
+  },
+  {
+    "country_code": "RE",
+    "country_name": "Rendellia",
+    "currency_code": "RER",
+    "currency_number": 10035,
+    "currency": "Rendellian Real"
+  },
+  {
+    "country_code": "RI",
+    "country_name": "Rivenia",
+    "currency_code": "RIR",
+    "currency_number": 10036,
+    "currency": "Rivenian Ruble"
+  },
+  {
+    "country_code": "SE",
+    "country_name": "Serendia",
+    "currency_code": "SES",
+    "currency_number": 10037,
+    "currency": "Serendian Shilling"
+  },
+  {
+    "country_code": "SI",
+    "country_name": "Sildoria",
+    "currency_code": "SIS",
+    "currency_number": 10038,
+    "currency": "Sildorian Sovereign"
+  },
+  {
+    "country_code": "TA",
+    "country_name": "Tandor",
+    "currency_code": "TAT",
+    "currency_number": 10039,
+    "currency": "Tandorian Taka"
+  },
+  {
+    "country_code": "TE",
+    "country_name": "Tenebria",
+    "currency_code": "TET",
+    "currency_number": 10040,
+    "currency": "Tenebrian Talon"
+  },
+  {
+    "country_code": "UL",
+    "country_name": "Uldoria",
+    "currency_code": "ULU",
+    "currency_number": 10041,
+    "currency": "Uldorian Unit"
+  },
+  {
+    "country_code": "UT",
+    "country_name": "Utopia",
+    "currency_code": "UTU",
+    "currency_number": 10042,
+    "currency": "Utopian Utopia"
+  },
+  {
+    "country_code": "VA",
+    "country_name": "Valoria",
+    "currency_code": "VAV",
+    "currency_number": 10043,
+    "currency": "Valorian Valor"
+  },
+  {
+    "country_code": "VL",
+    "country_name": "Valtaria",
+    "currency_code": "VLV",
+    "currency_number": 10044,
+    "currency": "Valtarian Vault"
+  },
+  {
+    "country_code": "WI",
+    "country_name": "Wintervale",
+    "currency_code": "WIW",
+    "currency_number": 10045,
+    "currency": "Wintervalean Win"
+  },
+  {
+    "country_code": "WY",
+    "country_name": "Wysteria",
+    "currency_code": "WYW",
+    "currency_number": 10046,
+    "currency": "Wysterian Wyre"
+  },
+  {
+    "country_code": "XA",
+    "country_name": "Xandria",
+    "currency_code": "XAX",
+    "currency_number": 10047,
+    "currency": "Xandrian Xenon"
+  },
+  {
+    "country_code": "XE",
+    "country_name": "Xenoria",
+    "currency_code": "XEX",
+    "currency_number": 10048,
+    "currency": "Xenorian Xerxes"
+  },
+  {
+    "country_code": "YS",
+    "country_name": "Yslandia",
+    "currency_code": "YSY",
+    "currency_number": 10049,
+    "currency": "Yslandian Ysol"
+  },
+  {
+    "country_code": "ZE",
+    "country_name": "Zephyria",
+    "currency_code": "ZEZ",
+    "currency_number": 10050,
+    "currency": "Zephyrian Zephyr"
+  },
+  {
+    "country_code": "FA",
+    "country_name": "Faeland",
+    "currency_code": "FAF",
+    "currency_number": 10100,
+    "currency": "Faelandian Fae"
+  }
+]

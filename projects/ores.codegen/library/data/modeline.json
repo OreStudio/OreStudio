@@ -1,0 +1,10 @@
+[
+    {
+        "name": "sql",
+        "content": "sql-product: postgres; tab-width: 4; indent-tabs-mode: nil"
+    },
+    {
+        "name": "c++",
+        "content": "mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4"
+    }
+]

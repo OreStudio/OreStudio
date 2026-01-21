@@ -1,0 +1,18 @@
+{{! Template to generate SQL with enhanced GPL v3 license and catalog data }}
+{{{enhanced_license}}}
+
+set schema 'ores';
+
+-- =============================================================================
+-- Data Quality Catalogs
+-- =============================================================================
+
+\echo '--- Data Quality Catalogs ---'
+
+{{#catalogs}}
+select ores.upsert_dq_catalogs(
+    '{{name}}',
+    '{{description}}',
+    '{{owner}}'
+);
+{{/catalogs}}

@@ -1,5 +1,9 @@
 # ORE Studio Developer Guide
 
+## Conventions
+
+Use UNIX line terminations for all new files.
+
 ## Build Commands
 
 The project is implemented in C++ 23 and uses CMake as the build system.

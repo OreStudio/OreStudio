@@ -16,12 +16,22 @@ pip install -r requirements.txt
 Run the code generator using the provided script:
 
 ```bash
-./run_generator.sh <model_path>
+./run_generator.sh <model_path> [output_dir]
 ```
 
-Example:
+Examples:
 ```bash
+# Using default output directory (output/)
 ./run_generator.sh models/slovaris/catalogs.json
+
+# Using custom output directory
+./run_generator.sh models/slovaris/catalogs.json custom_output/
+```
+
+You can also run the generator directly with Python:
+
+```bash
+python src/generator.py <model_path> [output_dir]
 ```
 
 ## Architecture

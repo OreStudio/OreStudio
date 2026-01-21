@@ -183,6 +183,24 @@ def load_model(model_path):
         return json.load(f)
 
 
+def get_relative_path(abs_path, base_path):
+    """
+    Get the relative path of abs_path from base_path.
+
+    Args:
+        abs_path (Path): Absolute path
+        base_path (Path): Base path to calculate relative path from
+
+    Returns:
+        str: Relative path string
+    """
+    try:
+        return str(abs_path.relative_to(base_path))
+    except ValueError:
+        # If abs_path is not within base_path, return the full path
+        return str(abs_path)
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir):
     """
     Generate output files from a model using the appropriate templates.
@@ -228,6 +246,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir):
     model_key = Path(model_path).stem
     data[model_key] = model
 
+    # Find the git directory to calculate relative paths
+    current_path = Path.cwd()
+    git_path = None
+    search_path = current_path
+    while search_path.parent != search_path:  # Stop at root directory
+        if (search_path / '.git').exists():
+            git_path = search_path
+            break
+        search_path = search_path.parent
+
+    # If no git directory found, use the current directory as base
+    if git_path is None:
+        git_path = current_path
+
     # Process each associated template
     for template_name in template_map[model_filename]:
         template_path = templates_dir / template_name
@@ -247,9 +279,9 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir):
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(rendered_content)
 
-        print(f"Generated {output_path}")
-        print("Content preview:")
-        print(rendered_content[:500] + "..." if len(rendered_content) > 500 else rendered_content)
+        # Calculate and show relative path
+        relative_path = get_relative_path(output_path.resolve(), git_path)
+        print(f"Generated {relative_path}")
 
 
 def main():
@@ -258,8 +290,9 @@ def main():
 
     # Check if a model path was provided as command-line argument
     if len(sys.argv) < 2:
-        print("Usage: python generator.py <model_path>")
+        print("Usage: python generator.py <model_path> [output_dir]")
         print("Example: python generator.py models/slovaris/catalogs.json")
+        print("Example with custom output: python generator.py models/slovaris/catalogs.json custom_output/")
         return
 
     model_path = sys.argv[1]
@@ -268,10 +301,15 @@ def main():
     base_dir = Path(__file__).parent.parent
     data_dir = base_dir / "library" / "data"
     templates_dir = base_dir / "library" / "templates"
-    output_dir = base_dir / "output"
+
+    # Use provided output directory or default to 'output'
+    if len(sys.argv) > 2:
+        output_dir = Path(sys.argv[2])
+    else:
+        output_dir = base_dir / "output"
 
     # Create output directory if it doesn't exist
-    output_dir.mkdir(exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # Generate from the specified model
     generate_from_model(model_path, data_dir, templates_dir, output_dir)

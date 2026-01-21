@@ -17,28 +17,29 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-20 Tue 21:06], for Tuesday, January 20, 2026.
-|       | <75>                                          |        |      |      |       |
-| Tags  | Headline                                      | Time   |      |      |     % |
-|-------+-----------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                  | *1:04* |      |      | 100.0 |
-|-------+-----------------------------------------------+--------+------+------+-------|
-|       | Stories                                       | 1:04   |      |      | 100.0 |
-|       | Active                                        |        | 1:04 |      | 100.0 |
-| agile | STARTED Sprint and product backlog refinement |        |      | 1:04 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-21 Wed 11:18], for Wednesday, January 21, 2026.
+|       | <75>                               |        |      |      |       |
+| Tags  | Headline                           | Time   |      |      |     % |
+|-------+------------------------------------+--------+------+------+-------|
+|       | *Total time*                       | *1:48* |      |      | 100.0 |
+|-------+------------------------------------+--------+------+------+-------|
+|       | Stories                            | 1:48   |      |      | 100.0 |
+|       | Active                             |        | 1:48 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint |        |      | 1:48 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-20 Tue 21:06]
-|       | <75>                                          |        |      |      |       |
-| Tags  | Headline                                      | Time   |      |      |     % |
-|-------+-----------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                  | *1:04* |      |      | 100.0 |
-|-------+-----------------------------------------------+--------+------+------+-------|
-|       | Stories                                       | 1:04   |      |      | 100.0 |
-|       | Active                                        |        | 1:04 |      | 100.0 |
-| agile | STARTED Sprint and product backlog refinement |        |      | 1:04 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-21 Wed 11:18]
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *2:52* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 2:52   |      |      | 100.0 |
+|       | Active                                |        | 2:52 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 1:04 |  37.2 |
+| infra | OCR scan notebooks for this sprint    |        |      | 1:48 |  62.8 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -192,10 +193,21 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_10_tags.png]]
 
-*** OCR scan notebooks for this sprint                                :infra:
+*** STARTED OCR scan notebooks for this sprint                        :infra:
+    :LOGBOOK:
+    CLOCK: [2026-01-21 Wed 09:30]--[2026-01-21 Wed 11:18] =>  1:48
+    :END:
 
 We need to scan all of our finance notebooks so we can use them with AI. Each
 sprint will have a story similar to this until we scan and process them all.
+
+*** STARTED Create a simple code generator                             :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-21 Wed 11:19]
+    :END:
+
+We keep running out of claude code tokens. One way out of it is to generate the
+basic infrastructure via code generation and then use claude to fix any issues.
 
 *** Ensure DQ dataset checks use code                                  :code:
 

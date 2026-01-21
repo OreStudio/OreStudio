@@ -165,6 +165,7 @@ def get_template_mappings():
         dict: Mapping of model filenames to lists of template names
     """
     return {
+        "batch_execution.json": ["sql_batch_execute.mustache"],
         "catalogs.json": ["sql_catalog_populate.mustache"],
         "datasets.json": ["sql_dataset_populate.mustache"],
         "methodologies.json": ["sql_methodology_populate.mustache"]

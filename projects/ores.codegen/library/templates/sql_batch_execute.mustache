@@ -1,0 +1,20 @@
+{{! Template to generate SQL that executes all other SQL files in sequence }}
+{{{enhanced_license}}}
+
+set schema 'ores';
+
+-- =============================================================================
+-- Batch Execution of Slovaris Data Quality Artefacts
+-- =============================================================================
+
+\echo '--- Starting Batch Execution of Slovaris Data Quality Artefacts ---'
+
+{{#batch_execution}}
+{{#files}}
+-- {{description}}
+\ir {{{name}}}
+{{/files}}
+{{/batch_execution}}
+
+\echo ''
+\echo '--- Batch Execution Completed Successfully ---'

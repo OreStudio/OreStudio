@@ -11,22 +11,22 @@ set schema 'ores';
 
 {{#datasets}}
 select ores.upsert_dq_datasets(
-    '{{key}}',
-    '{{domain}}',
+    '{{code}}',
+    '{{catalog_name}}',
+    '{{subject_area_name}}',
+    '{{domain_name}}',
+    '{{coding_scheme_code}}',
+    '{{origin_code}}',
+    '{{nature_code}}',
+    '{{treatment_code}}',
+    '{{methodology_name}}',
     '{{name}}',
-    '{{category}}',
-    '{{identifier}}',
-    '{{classification}}',
-    '{{status}}',
-    '{{quality_level}}',
-    '{{methodology}}',
-    '{{title}}',
     '{{description}}',
-    '{{origin}}',
-    '{{notes}}',
+    '{{source_system_id}}',
+    '{{business_context}}',
     current_date,
-    '{{license}}',
-    '{{tags}}'
+    '{{license_info}}',
+    '{{name}}'
 );
 {{/datasets}}
 

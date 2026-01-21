@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 08FBD248-257A-A474-DD43-DB08949978F1
+:END:
+#+title: ORE Studio Codegen
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Basic code generation support for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* Instructions
+
+Codegen is simple code generator that uses JSON models and Mustache templates to
+generate code.
+
+** Setup
+
+1. Install dependencies:
+
+#+begin_src sh
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+#+end_src
+
+** Usage
+
+Run the code generator using the provided script:
+
+#+begin_src sh
+./run_generator.sh <model_path> [output_dir]
+#+end_src
+
+Examples:
+
+#+begin_src sh
+# Using default output directory (output/)
+./run_generator.sh models/slovaris/catalogs.json
+
+# Using custom output directory
+./run_generator.sh models/slovaris/catalogs.json custom_output/
+#+end_src
+
+You can also run the generator directly with Python:
+
+#+begin_src sh
+python src/generator.py <model_path> [output_dir]
+#+end_src
+
+* Architecture
+
+- =src/= - Python source code for the generator
+- =library/data/= - Static data files (licenses, modelines, etc.)
+- =library/templates/= - Mustache templates
+- =models/= - JSON model files
+- =output/= - Generated files
+
+** Model-Template Mapping
+
+The generator maps model files to templates based on their filenames:
+
+- =catalogs.json= → =sql_catalog_populate.mustache=
+
+** Extending
+
+To add a new model-template pair:
+
+1. Add your JSON model to the =models/= directory
+2. Add your Mustache template to =library/templates/=
+3. Update the mapping in =src/generator.py= in the =get_template_mappings()=
+   function

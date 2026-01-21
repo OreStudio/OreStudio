@@ -50,6 +50,7 @@ The system is organised into four architectural layers:
 - [[id:D7BCB9B1-43C9-4DEF-8B1D-BABD23494DC2][ores.security]]: Shared security primitives for cryptography (password hashing
   with scrypt, AES-256-GCM encryption) and validation (password policy, email
   format). Used by ores.iam and ores.connections.
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]]: Basic code-generation utility.
 - Dependency order: utility → platform → logging → telemetry → database.
 
 ** Infrastructure Layer

@@ -19,6 +19,10 @@
     {
       "name": "sql_flag_populate.sql",
       "description": "Flags data for Slovaris"
+    },
+    {
+      "name": "sql_currency_populate.sql",
+      "description": "Currencies data for Slovaris"
     }
   ]
 }

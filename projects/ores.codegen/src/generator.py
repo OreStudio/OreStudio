@@ -211,6 +211,24 @@ def get_relative_path(abs_path, base_path):
         return str(abs_path)
 
 
+# Diverse pool of currency defaults based on common patterns
+CURRENCY_DEFAULTS_POOL = [
+    {'symbol': '$', 'fraction_symbol': '¢', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': '$#,##0.00', 'currency_type': 'fiat.emerging'},
+    {'symbol': '€', 'fraction_symbol': 'c', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': '€#,##0.00', 'currency_type': 'fiat.major'},
+    {'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': '£#,##0.00', 'currency_type': 'fiat.major'},
+    {'symbol': '¥', 'fraction_symbol': '', 'fractions_per_unit': 0, 'rounding_type': 'standard', 'rounding_precision': 0, 'format': '¥#,##0', 'currency_type': 'fiat.emerging'},
+    {'symbol': 'kr', 'fraction_symbol': 'ø', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': 'kr #,##0.00', 'currency_type': 'fiat.major'},
+    {'symbol': 'zł', 'fraction_symbol': 'gr', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': '#,##0.00 zł', 'currency_type': 'fiat.emerging'},
+    {'symbol': '₹', 'fraction_symbol': 'p', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': '₹#,##0.00', 'currency_type': 'fiat.emerging'},
+    {'symbol': 'د.إ', 'fraction_symbol': 'ف', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': 'د.إ#,##0.00', 'currency_type': 'fiat.emerging'},
+    {'symbol': 'R', 'fraction_symbol': 'c', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': 'R#,##0.00', 'currency_type': 'fiat.emerging'},
+    {'symbol': 'ƒ', 'fraction_symbol': '¢', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': 'ƒ#,##0.00', 'currency_type': 'fiat.emerging'},
+    {'symbol': 'د.ك', 'fraction_symbol': 'ف', 'fractions_per_unit': 1000, 'rounding_type': 'standard', 'rounding_precision': 3, 'format': 'د.ك#,##0.000', 'currency_type': 'fiat.emerging'},
+    {'symbol': 'S/', 'fraction_symbol': '¢', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': 'S/#,##0.00', 'currency_type': 'fiat.emerging'},
+    {'symbol': '฿', 'fraction_symbol': 'ส', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': '฿#,##0.00', 'currency_type': 'fiat.emerging'},
+]
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False):
     """
     Generate output files from a model using the appropriate templates.
@@ -239,7 +257,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             "sql_methodology_populate.sql": "methodologies.json",
             "sql_dataset_populate.sql": "datasets.json",
             "sql_tag_populate.sql": "tags.json",
-            "sql_flag_populate.sql": "country_currency.json"
+            "sql_flag_populate.sql": "country_currency.json",
+            "sql_currency_populate.sql": "country_currency.json"
         }
 
         # Generate all dependent files listed in the batch execution model
@@ -272,11 +291,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     data = load_data(data_dir)
 
     # Load sibling models (other JSON files in the same directory)
+    # Only load files that are recognized as models in our mappings
     model_dir = Path(model_path).parent
+    known_model_filenames = set(get_template_mappings().keys())
+    known_model_filenames.add("batch_execution.json")
+
     for json_file in model_dir.glob("*.json"):
-        key = json_file.stem
-        if key not in data:
-            data[key] = load_model(json_file)
+        if json_file.name in known_model_filenames:
+            key = json_file.stem
+            if key not in data:
+                data[key] = load_model(json_file)
 
     # Identify specific datasets for cross-referencing in templates
     if 'datasets' in data:
@@ -286,7 +310,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             elif ds.get('subject_area_name') == 'Country Flags':
                 data['flags_dataset'] = ds
 
-    # Generate enhanced license with modeline and copyright
+    # Generate enhanced license with modeline and copyright header
     if 'licence-GPL-v3' in data and 'modelines' in data:
         # Get the SQL modeline
         sql_modeline = data['modelines'].get('sql', '')
@@ -314,19 +338,23 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     if model_key in ['country_currency', 'country_currency_flags']:
         # Process each country currency to generate SVG flag data
         processed_data = []
-        for item in data[model_key]:
+        for i, item in enumerate(data[model_key]):
             # Create a copy of the item and add the generated SVG
             processed_item = item.copy()
             processed_item['generated_svg'] = generate_flag_svg(item.get('country_code', ''))
             
+            # Select a default from the pool based on the item index for diversity
+            pool_index = i % len(CURRENCY_DEFAULTS_POOL)
+            defaults = CURRENCY_DEFAULTS_POOL[pool_index]
+            
             # Add hardcoded defaults for missing fields
-            processed_item.setdefault('currency_symbol', '$')
-            processed_item.setdefault('fraction_symbol', '¢')
-            processed_item.setdefault('fractions_per_unit', 100)
-            processed_item.setdefault('rounding_type', 'standard')
-            processed_item.setdefault('rounding_precision', 2)
-            processed_item.setdefault('format', '$#,##0.00')
-            processed_item.setdefault('currency_type', 'fiat.standard')
+            processed_item.setdefault('currency_symbol', defaults['symbol'])
+            processed_item.setdefault('fraction_symbol', defaults['fraction_symbol'])
+            processed_item.setdefault('fractions_per_unit', defaults['fractions_per_unit'])
+            processed_item.setdefault('rounding_type', defaults['rounding_type'])
+            processed_item.setdefault('rounding_precision', defaults['rounding_precision'])
+            processed_item.setdefault('format', defaults['format'])
+            processed_item.setdefault('currency_type', defaults['currency_type'])
             
             # Pre-calculate lowercase country code for template use
             if 'country_code' in processed_item:

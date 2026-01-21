@@ -26,6 +26,9 @@ select ores.upsert_dq_tag(
 \echo ''
 \echo '--- Summary ---'
 
-select 'Data Quality Total Tags' as entity, count(*) as count
-from ores.dq_tags_artefact_tbl where valid_to = ores.utility_infinity_timestamp_fn()
-order by entity;
+select 'dq_datasets' as entity, count(*) as count
+from ores.dq_datasets_tbl
+where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'dq_tags_artefact', count(*)
+from ores.dq_tags_artefact_tbl;

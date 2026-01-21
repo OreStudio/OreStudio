@@ -5,12 +5,12 @@
       "description": "Catalogs data for Slovaris"
     },
     {
-      "name": "sql_dataset_populate.sql",
-      "description": "Datasets data for Slovaris"
-    },
-    {
       "name": "sql_methodology_populate.sql",
       "description": "Methodologies data for Slovaris"
+    },
+    {
+      "name": "sql_dataset_populate.sql",
+      "description": "Datasets data for Slovaris"
     },
     {
       "name": "sql_tag_populate.sql",

@@ -40,6 +40,10 @@ python src/generator.py models/slovaris/methodologies.json
 echo "Generating tags..."
 python src/generator.py models/slovaris/tags.json
 
+# Generate batch execution file
+echo "Generating batch execution file..."
+python src/generator.py models/slovaris/batch_execution.json
+
 echo ""
 echo "All Slovaris artefacts generated successfully!"
 echo "Output files are in: $SCRIPT_DIR/output/"

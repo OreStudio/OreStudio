@@ -171,7 +171,7 @@ def get_template_mappings():
     return {
         "batch_execution.json": ["sql_batch_execute.mustache"],
         "catalogs.json": ["sql_catalog_populate.mustache"],
-        "country_currency.json": ["sql_flag_populate.mustache"],  # Generate flags from country_currency
+        "country_currency.json": ["sql_flag_populate.mustache", "sql_currency_populate.mustache"],
         "country_currency_flags.json": ["sql_flag_populate.mustache"],  # Keep for backward compatibility
         "datasets.json": ["sql_dataset_populate.mustache"],
         "methodologies.json": ["sql_methodology_populate.mustache"],
@@ -271,6 +271,21 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Load library data
     data = load_data(data_dir)
 
+    # Load sibling models (other JSON files in the same directory)
+    model_dir = Path(model_path).parent
+    for json_file in model_dir.glob("*.json"):
+        key = json_file.stem
+        if key not in data:
+            data[key] = load_model(json_file)
+
+    # Identify specific datasets for cross-referencing in templates
+    if 'datasets' in data:
+        for ds in data['datasets']:
+            if ds.get('subject_area_name') == 'Currencies':
+                data['currencies_dataset'] = ds
+            elif ds.get('subject_area_name') == 'Country Flags':
+                data['flags_dataset'] = ds
+
     # Generate enhanced license with modeline and copyright
     if 'licence-GPL-v3' in data and 'modelines' in data:
         # Get the SQL modeline
@@ -303,6 +318,20 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Create a copy of the item and add the generated SVG
             processed_item = item.copy()
             processed_item['generated_svg'] = generate_flag_svg(item.get('country_code', ''))
+            
+            # Add hardcoded defaults for missing fields
+            processed_item.setdefault('currency_symbol', '$')
+            processed_item.setdefault('fraction_symbol', '¢')
+            processed_item.setdefault('fractions_per_unit', 100)
+            processed_item.setdefault('rounding_type', 'standard')
+            processed_item.setdefault('rounding_precision', 2)
+            processed_item.setdefault('format', '$#,##0.00')
+            processed_item.setdefault('currency_type', 'fiat.standard')
+            
+            # Pre-calculate lowercase country code for template use
+            if 'country_code' in processed_item:
+                processed_item['country_code_lower'] = processed_item['country_code'].lower()
+            
             processed_data.append(processed_item)
         # Store the processed data under the original key for templates to use
         data[model_key] = processed_data

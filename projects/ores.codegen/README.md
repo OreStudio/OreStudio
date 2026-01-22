@@ -43,6 +43,41 @@ A dedicated script is provided to generate all Solvaris artefacts and place them
 ./generate_slovaris.sh
 ```
 
+### FPML Reference Data Generation
+
+Generate SQL schema and populate scripts from FPML Genericode XML files:
+
+```bash
+# Generate all FPML reference data (parses XML + generates SQL)
+./generate_fpml_refdata.sh
+
+# Generate only specific entities
+./generate_fpml_refdata.sh --entities 'party-roles person-roles'
+
+# Skip parsing, just regenerate SQL from existing models
+./generate_fpml_refdata.sh --skip-parse
+
+# Show help
+./generate_fpml_refdata.sh --help
+```
+
+This script:
+1. Parses FPML XML files from `projects/ores.sql/populate/data/`
+2. Generates JSON entity models to `output/models/`
+3. Generates SQL schema files to `projects/ores.sql/schema/`
+4. Generates SQL populate files to `projects/ores.sql/populate/`
+
+**Output files per entity** (e.g., `party_roles`):
+
+| File | Location |
+|------|----------|
+| `refdata_party_roles_create.sql` | `projects/ores.sql/schema/` |
+| `refdata_party_roles_notify_trigger.sql` | `projects/ores.sql/schema/` |
+| `dq_party_roles_artefact_create.sql` | `projects/ores.sql/schema/` |
+| `refdata_party_roles_populate.sql` | `projects/ores.sql/populate/` |
+
+Plus the shared coding schemes file: `fpml_coding_schemes_populate.sql`
+
 ## Features
 
 - **Overall Models**: Support for `model.json` files that orchestrate the generation of multiple artefacts.
@@ -53,7 +88,8 @@ A dedicated script is provided to generate all Solvaris artefacts and place them
 
 ## Architecture
 
-- `src/` - Python source code for the generator
+- `src/generator.py` - Main code generator (JSON models + Mustache templates → SQL)
+- `src/fpml_parser.py` - FPML Genericode XML parser (XML → JSON models)
 - `library/data/` - Static data files (licenses, modelines, etc.)
 - `library/templates/` - Mustache templates
 - `models/` - JSON model files
@@ -62,12 +98,22 @@ A dedicated script is provided to generate all Solvaris artefacts and place them
 ## Model-Template Mapping
 
 The generator maps model files to templates based on their filenames:
+
+**Standard mappings:**
 - `model.json` → `sql_batch_execute.mustache`
 - `catalogs.json` → `sql_catalog_populate.mustache`
 - `country_currency.json` → `sql_flag_populate.mustache`, `sql_currency_populate.mustache`, `sql_country_populate.mustache`
 - `datasets.json` → `sql_dataset_populate.mustache`, `sql_dataset_dependency_populate.mustache`
 - `methodologies.json` → `sql_methodology_populate.mustache`
 - `tags.json` → `sql_tag_populate.mustache`
+
+**Entity schema mappings** (`*_entity.json` files):
+- `sql_schema_table_create.mustache` → `{component}_{entity}_create.sql`
+- `sql_schema_notify_trigger.mustache` → `{component}_{entity}_notify_trigger.sql`
+- `sql_schema_artefact_create.mustache` → `dq_{entity}_artefact_create.sql`
+
+**Entity populate mappings** (`*_data.json` files):
+- `sql_populate_refdata.mustache` → `{component}_{entity}_populate.sql`
 
 ## Extending
 

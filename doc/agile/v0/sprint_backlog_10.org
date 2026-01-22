@@ -17,33 +17,34 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-22 Thu 17:18], for Thursday, January 22, 2026.
-|       | <75>                               |        |      |      |       |
-| Tags  | Headline                           | Time   |      |      |     % |
-|-------+------------------------------------+--------+------+------+-------|
-|       | *Total time*                       | *5:28* |      |      | 100.0 |
-|-------+------------------------------------+--------+------+------+-------|
-|       | Stories                            | 5:28   |      |      | 100.0 |
-|       | Active                             |        | 5:28 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint |        |      | 3:12 |  58.5 |
-| code  | Party related schemes              |        |      | 2:16 |  41.5 |
+#+CAPTION: Clock summary at [2026-01-22 Thu 21:34], for Thursday, January 22, 2026.
+|       | <75>                                             |        |      |      |       |
+| Tags  | Headline                                         | Time   |      |      |     % |
+|-------+--------------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                     | *8:43* |      |      | 100.0 |
+|-------+--------------------------------------------------+--------+------+------+-------|
+|       | Stories                                          | 8:43   |      |      | 100.0 |
+|       | Active                                           |        | 8:43 |      | 100.0 |
+| infra | OCR scan notebooks for this sprint               |        |      | 3:12 |  36.7 |
+| code  | Add code generation support for domain types SQL |        |      | 1:11 |  13.6 |
+| code  | Party related schemes                            |        |      | 4:20 |  49.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-22 Thu 17:18]
+#+CAPTION: Clock summary at [2026-01-22 Thu 21:34]
 |       | <75>                                             |         |       |      |       |
 | Tags  | Headline                                         | Time    |       |      |     % |
 |-------+--------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                     | *16:07* |       |      | 100.0 |
+|       | *Total time*                                     | *19:22* |       |      | 100.0 |
 |-------+--------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                          | 16:07   |       |      | 100.0 |
-|       | Active                                           |         | 16:07 |      | 100.0 |
-| agile | Sprint and product backlog refinement            |         |       | 1:04 |   6.6 |
-| infra | OCR scan notebooks for this sprint               |         |       | 5:00 |  31.0 |
-| code  | Create a simple code generator                   |         |       | 7:38 |  47.4 |
-| code  | Add code generation support for domain types SQL |         |       | 0:09 |   0.9 |
-| code  | Party related schemes                            |         |       | 2:16 |  14.1 |
+|       | Stories                                          | 19:22   |       |      | 100.0 |
+|       | Active                                           |         | 19:22 |      | 100.0 |
+| agile | Sprint and product backlog refinement            |         |       | 1:04 |   5.5 |
+| infra | OCR scan notebooks for this sprint               |         |       | 5:00 |  25.8 |
+| code  | Create a simple code generator                   |         |       | 7:38 |  39.4 |
+| code  | Add code generation support for domain types SQL |         |       | 1:20 |   6.9 |
+| code  | Party related schemes                            |         |       | 4:20 |  22.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -220,6 +221,7 @@ basic infrastructure via code generation and then use claude to fix any issues.
 
 *** STARTED Add code generation support for domain types SQL           :code:
     :LOGBOOK:
+    CLOCK: [2026-01-22 Thu 17:19]--[2026-01-22 Thu 18:30] =>  1:11
     CLOCK: [2026-01-21 Wed 23:47]--[2026-01-21 Wed 23:56] =>  0:09
     :END:
 
@@ -228,21 +230,18 @@ generating the SQL for domain types.
 
 *** STARTED Party related schemes                                      :code:
     :LOGBOOK:
+    CLOCK: [2026-01-22 Thu 19:30]--[2026-01-22 Thu 21:34] =>  2:04
     CLOCK: [2026-01-22 Thu 16:09]--[2026-01-22 Thu 17:18] =>  1:09
     CLOCK: [2026-01-22 Thu 12:23]--[2026-01-22 Thu 13:30] =>  1:07
     :END:
 
 We need to implement these before we can implement party:
 
-- entity type: https://www.fpml.org/coding-scheme/entity-type-1-0.xml
-- party role: https://www.fpml.org/coding-scheme/party-role-4-1.xml
-- local jurisdiction: https://www.fpml.org/coding-scheme/local-jurisdiction-1-1.xml
-- business center: https://www.fpml.org/coding-scheme/business-center-9-4.xml
-- party identifier scheme: we need a way to list the schemes which are accepted
-  as party identifiers, and which ones are mandatory. Joins table
-  dq_coding_schemes_tbl. This is probably a DQ requirement. A party can then
-  have a "mandatory IDs". We already have "subject areas".
-- person-role: https://www.fpml.org/coding-scheme/person-role-1-3.xml
+- entity type
+- party role
+- local jurisdiction
+- business center
+- person-role
 - account-types
 - entity-classifications
 - local-jurisdictions
@@ -252,6 +251,18 @@ We need to implement these before we can implement party:
 - regulatory-corporate-sectors
 - reporting-regimes
 - supervisory-bodies
+
+*** Listener error in comms service                                    :code:
+
+Investigate this:
+
+#+begin_src logview
+2026-01-22 20:40:20.194383 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
+2026-01-22 20:40:20.194413 [INFO] [ores.comms.net.server_session] Sent notification for event type 'ores.refdata.currency_changed' with 1 entity IDs to 127.0.0.1:49354
+2026-01-22 20:40:21.698972 [ERROR] [ores.eventing.service.postgres_listener_service] Connection error while consuming input.
+2026-01-22 20:40:21.699059 [INFO] [ores.eventing.service.postgres_listener_service] Listener thread stopped.
+#+end_src
+
 
 
 *** Add party identifier scheme entity                                 :code:

@@ -82,6 +82,7 @@
 \echo ''
 \echo '--- Data Quality Coding Schemes ---'
 \ir dq_coding_scheme_populate.sql
+\ir fpml_coding_schemes_populate.sql
 
 -- Data Quality Methodologies
 \echo ''
@@ -112,6 +113,50 @@
 \ir dq_cryptocurrencies_artefact_populate.sql
 \ir dq_ip2country_artefact_populate.sql
 \ir solvaris_batch_execute.sql
+
+-- FPML Reference Data Datasets (18 datasets for 15 entity types)
+\echo ''
+\echo '--- FPML Reference Data Datasets ---'
+\ir fpml_account_type_dataset_populate.sql
+\ir fpml_asset_class_dataset_populate.sql
+\ir fpml_asset_measure_dataset_populate.sql
+\ir fpml_benchmark_rate_dataset_populate.sql
+\ir fpml_business_center_dataset_populate.sql
+\ir fpml_business_process_dataset_populate.sql
+\ir fpml_cashflow_type_dataset_populate.sql
+\ir fpml_cftc_entity_classification_dataset_populate.sql
+\ir fpml_cftc_organization_type_dataset_populate.sql
+\ir fpml_entity_type_dataset_populate.sql
+\ir fpml_hkma_rewrite_party_relationship_type_dataset_populate.sql
+\ir fpml_hkma_rewrite_regulatory_corporate_sector_dataset_populate.sql
+\ir fpml_local_jurisdiction_dataset_populate.sql
+\ir fpml_party_relationship_type_dataset_populate.sql
+\ir fpml_party_role_dataset_populate.sql
+\ir fpml_person_role_dataset_populate.sql
+\ir fpml_reporting_regime_dataset_populate.sql
+\ir fpml_supervisory_body_dataset_populate.sql
+
+-- FPML Reference Data Artefacts (18 datasets for 15 entity types)
+\echo ''
+\echo '--- FPML Reference Data Artefacts ---'
+\ir dq_account_type_artefact_populate.sql
+\ir dq_asset_class_artefact_populate.sql
+\ir dq_asset_measure_artefact_populate.sql
+\ir dq_benchmark_rate_artefact_populate.sql
+\ir dq_business_center_artefact_populate.sql
+\ir dq_business_process_artefact_populate.sql
+\ir dq_cashflow_type_artefact_populate.sql
+\ir dq_cftc_entity_classification_artefact_populate.sql
+\ir dq_cftc_organization_type_artefact_populate.sql
+\ir dq_entity_type_artefact_populate.sql
+\ir dq_hkma_rewrite_party_relationship_type_artefact_populate.sql
+\ir dq_hkma_rewrite_regulatory_corporate_sector_artefact_populate.sql
+\ir dq_local_jurisdiction_artefact_populate.sql
+\ir dq_party_relationship_type_artefact_populate.sql
+\ir dq_party_role_artefact_populate.sql
+\ir dq_person_role_artefact_populate.sql
+\ir dq_reporting_regime_artefact_populate.sql
+\ir dq_supervisory_body_artefact_populate.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''
@@ -189,4 +234,49 @@ from ores.dq_currencies_artefact_tbl
 union all
 select 'DQ Artefact: IP Ranges', count(*)
 from ores.dq_ip2country_artefact_tbl
+union all
+select 'DQ Artefact: Account Types', count(*)
+from ores.dq_account_types_artefact_tbl
+union all
+select 'DQ Artefact: Asset Classes', count(*)
+from ores.dq_asset_classes_artefact_tbl
+union all
+select 'DQ Artefact: Asset Measures', count(*)
+from ores.dq_asset_measures_artefact_tbl
+union all
+select 'DQ Artefact: Benchmark Rates', count(*)
+from ores.dq_benchmark_rates_artefact_tbl
+union all
+select 'DQ Artefact: Business Centres', count(*)
+from ores.dq_business_centres_artefact_tbl
+union all
+select 'DQ Artefact: Business Processes', count(*)
+from ores.dq_business_processes_artefact_tbl
+union all
+select 'DQ Artefact: Cashflow Types', count(*)
+from ores.dq_cashflow_types_artefact_tbl
+union all
+select 'DQ Artefact: Entity Classifications', count(*)
+from ores.dq_entity_classifications_artefact_tbl
+union all
+select 'DQ Artefact: Local Jurisdictions', count(*)
+from ores.dq_local_jurisdictions_artefact_tbl
+union all
+select 'DQ Artefact: Party Relationships', count(*)
+from ores.dq_party_relationships_artefact_tbl
+union all
+select 'DQ Artefact: Party Roles', count(*)
+from ores.dq_party_roles_artefact_tbl
+union all
+select 'DQ Artefact: Person Roles', count(*)
+from ores.dq_person_roles_artefact_tbl
+union all
+select 'DQ Artefact: Regulatory Corporate Sectors', count(*)
+from ores.dq_regulatory_corporate_sectors_artefact_tbl
+union all
+select 'DQ Artefact: Reporting Regimes', count(*)
+from ores.dq_reporting_regimes_artefact_tbl
+union all
+select 'DQ Artefact: Supervisory Bodies', count(*)
+from ores.dq_supervisory_bodies_artefact_tbl
 order by entity;

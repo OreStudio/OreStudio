@@ -1,0 +1,38 @@
+{{! Template to generate SQL dataset entry for FPML reference data }}
+{{{enhanced_license}}}
+
+/**
+ * {{dataset.name}} Dataset Population Script
+ *
+ * Creates the dataset entry for {{dataset.code}}.
+ * This must be run before populating the artefact table.
+ */
+
+set schema 'ores';
+
+-- =============================================================================
+-- {{dataset.name}} Dataset
+-- =============================================================================
+
+\echo '--- {{dataset.name}} Dataset ---'
+
+select ores.upsert_dq_datasets(
+    '{{dataset.code}}',
+    'FpML Standards',
+    '{{entity.subject_area}}',
+    'Reference Data',
+    '{{dataset.coding_scheme_code}}',
+    'Primary',
+    'Actual',
+    'Raw',
+    'FpML Genericode Download',
+    '{{dataset.name}}',
+    '{{dataset.description}}',
+    'FPML',
+    'Reference data for {{dataset.name}}',
+    current_date,
+    'FpML Public License 2.0',
+    '{{entity.entity_plural}}',
+    'refdata_{{entity.entity_plural}}_tbl',
+    'dq_populate_{{entity.entity_plural}}'
+);

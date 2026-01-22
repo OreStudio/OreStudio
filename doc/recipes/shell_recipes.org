@@ -354,11 +354,11 @@ EOF
   System in BOOTSTRAP MODE - awaiting initial admin account creation
   Use 'bootstrap <username> <password> <email>' to create the initial admin account.
 
-ORE Studio Shell REPL v0.0.9
+ORE Studio Shell REPL v0.0.10
 Type 'help' for available commands, 'exit' to quit.
 
 ores-shell> ✓ Initial admin account created successfully!
-  Account ID: 019bd6b1-65f8-7d0f-829d-46c4546ae885
+  Account ID: 019be79e-ebef-70f6-918d-4c6717bc8eda
   You can now login with the credentials provided.
 ores-shell> Bye!
 #+end_example

@@ -106,7 +106,7 @@ select ores.upsert_dq_coding_schemes(
 );
 
 select ores.upsert_dq_coding_schemes(
-    'DTCC',
+    'DTCC_PARTICIPANT_ID',
     'Depository Trust & Clearing Corporation Participant ID',
     'industry',
     'Parties',

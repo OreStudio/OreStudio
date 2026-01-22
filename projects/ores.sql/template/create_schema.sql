@@ -62,6 +62,38 @@ grant create on schema ores to ores;
 \ir ../schema/refdata_countries_create.sql
 \ir ../schema/refdata_countries_notify_trigger.sql
 
+-- FPML Reference data tables
+\ir ../schema/refdata_account_types_create.sql
+\ir ../schema/refdata_account_types_notify_trigger.sql
+\ir ../schema/refdata_asset_classes_create.sql
+\ir ../schema/refdata_asset_classes_notify_trigger.sql
+\ir ../schema/refdata_asset_measures_create.sql
+\ir ../schema/refdata_asset_measures_notify_trigger.sql
+\ir ../schema/refdata_benchmark_rates_create.sql
+\ir ../schema/refdata_benchmark_rates_notify_trigger.sql
+\ir ../schema/refdata_business_centres_create.sql
+\ir ../schema/refdata_business_centres_notify_trigger.sql
+\ir ../schema/refdata_business_processes_create.sql
+\ir ../schema/refdata_business_processes_notify_trigger.sql
+\ir ../schema/refdata_cashflow_types_create.sql
+\ir ../schema/refdata_cashflow_types_notify_trigger.sql
+\ir ../schema/refdata_entity_classifications_create.sql
+\ir ../schema/refdata_entity_classifications_notify_trigger.sql
+\ir ../schema/refdata_local_jurisdictions_create.sql
+\ir ../schema/refdata_local_jurisdictions_notify_trigger.sql
+\ir ../schema/refdata_party_relationships_create.sql
+\ir ../schema/refdata_party_relationships_notify_trigger.sql
+\ir ../schema/refdata_party_roles_create.sql
+\ir ../schema/refdata_party_roles_notify_trigger.sql
+\ir ../schema/refdata_person_roles_create.sql
+\ir ../schema/refdata_person_roles_notify_trigger.sql
+\ir ../schema/refdata_regulatory_corporate_sectors_create.sql
+\ir ../schema/refdata_regulatory_corporate_sectors_notify_trigger.sql
+\ir ../schema/refdata_reporting_regimes_create.sql
+\ir ../schema/refdata_reporting_regimes_notify_trigger.sql
+\ir ../schema/refdata_supervisory_bodies_create.sql
+\ir ../schema/refdata_supervisory_bodies_notify_trigger.sql
+
 -- IAM tables
 \ir ../schema/iam_accounts_create.sql
 \ir ../schema/iam_accounts_notify_trigger.sql
@@ -120,8 +152,44 @@ grant create on schema ores to ores;
 \ir ../schema/dq_tags_artefact_create.sql
 \ir ../schema/dq_image_tags_artefact_create.sql
 \ir ../schema/dq_ip2country_artefact_create.sql
+
+-- FPML Reference data artefact tables
+\ir ../schema/dq_account_types_artefact_create.sql
+\ir ../schema/dq_asset_classes_artefact_create.sql
+\ir ../schema/dq_asset_measures_artefact_create.sql
+\ir ../schema/dq_benchmark_rates_artefact_create.sql
+\ir ../schema/dq_business_centres_artefact_create.sql
+\ir ../schema/dq_business_processes_artefact_create.sql
+\ir ../schema/dq_cashflow_types_artefact_create.sql
+\ir ../schema/dq_entity_classifications_artefact_create.sql
+\ir ../schema/dq_local_jurisdictions_artefact_create.sql
+\ir ../schema/dq_party_relationships_artefact_create.sql
+\ir ../schema/dq_party_roles_artefact_create.sql
+\ir ../schema/dq_person_roles_artefact_create.sql
+\ir ../schema/dq_regulatory_corporate_sectors_artefact_create.sql
+\ir ../schema/dq_reporting_regimes_artefact_create.sql
+\ir ../schema/dq_supervisory_bodies_artefact_create.sql
+
 \ir ../schema/dq_functions_create.sql
 \ir ../schema/dq_population_functions_create.sql
+
+-- FPML entity population functions (15 entity types)
+\ir ../schema/dq_account_types_population_functions.sql
+\ir ../schema/dq_asset_classes_population_functions.sql
+\ir ../schema/dq_asset_measures_population_functions.sql
+\ir ../schema/dq_benchmark_rates_population_functions.sql
+\ir ../schema/dq_business_centres_population_functions.sql
+\ir ../schema/dq_business_processes_population_functions.sql
+\ir ../schema/dq_cashflow_types_population_functions.sql
+\ir ../schema/dq_entity_classifications_population_functions.sql
+\ir ../schema/dq_local_jurisdictions_population_functions.sql
+\ir ../schema/dq_party_relationships_population_functions.sql
+\ir ../schema/dq_party_roles_population_functions.sql
+\ir ../schema/dq_person_roles_population_functions.sql
+\ir ../schema/dq_regulatory_corporate_sectors_population_functions.sql
+\ir ../schema/dq_reporting_regimes_population_functions.sql
+\ir ../schema/dq_supervisory_bodies_population_functions.sql
+
 \ir ../schema/dq_publication_create.sql
 \ir ../schema/seed_upsert_functions_create.sql
 

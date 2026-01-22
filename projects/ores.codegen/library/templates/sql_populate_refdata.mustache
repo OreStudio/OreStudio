@@ -1,0 +1,145 @@
+{{! Template to generate SQL populate script for FPML reference data artefacts }}
+{{{enhanced_license}}}
+
+/**
+ * DQ Artefact {{dataset.name}} Population Script
+ *
+ * Populates the dq_{{entity.entity_plural}}_artefact_tbl with reference data.
+ * Dataset: {{dataset.code}}
+ *
+ * This script is idempotent - clears and repopulates for the dataset.
+ * Use dq_populate_{{entity.entity_plural}}() to publish to production.
+ */
+
+set schema 'ores';
+
+-- =============================================================================
+-- DQ Artefact {{dataset.name}}
+-- =============================================================================
+
+\echo '--- DQ Artefact {{dataset.name}} ---'
+
+do $$
+declare
+    v_dataset_id uuid;
+    v_count integer := 0;
+begin
+    -- Get the dataset ID
+    select id into v_dataset_id
+    from ores.dq_datasets_tbl
+    where code = '{{dataset.code}}'
+    and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_dataset_id is null then
+        raise exception 'Dataset {{dataset.code}} not found. Run dataset population first.';
+    end if;
+
+    -- Clear existing data for this dataset
+    delete from ores.dq_{{entity.entity_plural}}_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    -- Insert reference data
+{{#items}}
+    insert into ores.dq_{{entity.entity_plural}}_artefact_tbl (
+        dataset_id, code, version, coding_scheme_code, source, description
+    ) values (
+        v_dataset_id,
+        '{{code}}',
+        1,
+        '{{coding_scheme_code}}',
+        {{#source}}'{{{source}}}'{{/source}}{{^source}}null{{/source}},
+        {{#description}}'{{{description}}}'{{/description}}{{^description}}null{{/description}}
+    );
+    v_count := v_count + 1;
+{{/items}}
+
+    raise notice 'Populated % records into dq_{{entity.entity_plural}}_artefact_tbl', v_count;
+end;
+$$;
+{{#image_linking}}
+
+-- =============================================================================
+-- Link to flag images
+-- =============================================================================
+
+\echo '--- Linking to Flag Images ---'
+
+do $$
+declare
+    v_dataset_id uuid;
+    v_flags_dataset_id uuid;
+    v_placeholder_image_id uuid;
+    v_updated integer;
+begin
+    -- Get the dataset ID
+    select id into v_dataset_id
+    from ores.dq_datasets_tbl
+    where code = '{{dataset.code}}'
+    and valid_to = ores.utility_infinity_timestamp_fn();
+
+    -- Get the flags dataset ID
+    select id into v_flags_dataset_id
+    from ores.dq_datasets_tbl
+    where code = '{{flags_dataset_code}}'
+    and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_flags_dataset_id is null then
+        raise exception 'Flags dataset {{flags_dataset_code}} not found. Check dataset dependencies.';
+    end if;
+
+    -- Get the placeholder image
+    select image_id into v_placeholder_image_id
+    from ores.dq_images_artefact_tbl
+    where dataset_id = v_flags_dataset_id
+      and key = '{{placeholder_key}}';
+
+    -- Update records with their flag image_id
+    update ores.dq_{{entity.entity_plural}}_artefact_tbl bc
+    set image_id = coalesce(i.image_id, v_placeholder_image_id)
+    from ores.dq_images_artefact_tbl i
+    where bc.dataset_id = v_dataset_id
+      and i.dataset_id = v_flags_dataset_id
+      and i.key = {{{key_expression}}};
+
+    get diagnostics v_updated = row_count;
+    raise notice 'Updated % records with flag images', v_updated;
+
+    -- Set placeholder for any without matching flags
+    update ores.dq_{{entity.entity_plural}}_artefact_tbl
+    set image_id = v_placeholder_image_id
+    where dataset_id = v_dataset_id
+      and image_id is null
+      and v_placeholder_image_id is not null;
+
+    get diagnostics v_updated = row_count;
+    if v_updated > 0 then
+        raise notice 'Set placeholder image for % records without matching flags', v_updated;
+    end if;
+end;
+$$;
+{{/image_linking}}
+
+-- =============================================================================
+-- Summary
+-- =============================================================================
+
+\echo ''
+\echo '--- Summary ---'
+
+select 'dq_{{entity.entity_plural}}_artefact' as entity, count(*) as count
+from ores.dq_{{entity.entity_plural}}_artefact_tbl;
+
+select coding_scheme_code, count(*) as count
+from ores.dq_{{entity.entity_plural}}_artefact_tbl
+group by coding_scheme_code
+order by coding_scheme_code;
+{{#image_linking}}
+
+select 'With flag images' as status, count(*) as count
+from ores.dq_{{entity.entity_plural}}_artefact_tbl
+where image_id is not null
+union all
+select 'Without flag images', count(*)
+from ores.dq_{{entity.entity_plural}}_artefact_tbl
+where image_id is null;
+{{/image_linking}}

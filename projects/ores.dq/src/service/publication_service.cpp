@@ -242,31 +242,31 @@ domain::publication_result publication_service::publish_dataset(
     domain::publication_mode mode) {
 
     BOOST_LOG_SEV(lg(), debug) << "Publishing dataset: " << dataset.code
-        << " with artefact_type: "
-        << (dataset.artefact_type.value_or("none"));
+        << " with target_table: " << dataset.target_table.value_or("none")
+        << ", populate_function: " << dataset.populate_function.value_or("none");
 
     domain::publication_result result;
     result.dataset_id = dataset.id;
     result.dataset_code = dataset.code;
     result.dataset_name = dataset.name;
 
-    if (!dataset.artefact_type.has_value()) {
+    if (!dataset.target_table.has_value() || dataset.target_table->empty()) {
         result.success = false;
-        result.error_message = "Dataset has no artefact_type specified";
+        result.error_message = "Dataset has no target_table specified";
         BOOST_LOG_SEV(lg(), warn) << result.error_message
             << " for dataset: " << dataset.code;
         return result;
     }
 
-    result.target_table = get_target_table(*dataset.artefact_type);
-    if (result.target_table.empty()) {
+    if (!dataset.populate_function.has_value() || dataset.populate_function->empty()) {
         result.success = false;
-        result.error_message = "Unknown artefact_type: " + *dataset.artefact_type;
-        BOOST_LOG_SEV(lg(), error) << result.error_message
+        result.error_message = "Dataset has no populate_function specified";
+        BOOST_LOG_SEV(lg(), warn) << result.error_message
             << " for dataset: " << dataset.code;
         return result;
     }
 
+    result.target_table = *dataset.target_table;
     return call_populate_function(dataset, mode);
 }
 
@@ -310,29 +310,14 @@ domain::publication_result publication_service::call_populate_function(
     result.dataset_id = dataset.id;
     result.dataset_code = dataset.code;
     result.dataset_name = dataset.name;
-    result.target_table = get_target_table(*dataset.artefact_type);
+    result.target_table = *dataset.target_table;
 
     const std::string mode_str = to_string(mode);
-    const std::string artefact_type = *dataset.artefact_type;
+    const std::string function_name = *dataset.populate_function;
     const std::string dataset_id_str = boost::uuids::to_string(dataset.id);
 
-    BOOST_LOG_SEV(lg(), debug) << "Calling populate function for artefact_type: "
-        << artefact_type << ", mode: " << mode_str;
-
-    std::string function_name;
-    if (artefact_type == "images") {
-        function_name = "dq_populate_images";
-    } else if (artefact_type == "countries") {
-        function_name = "dq_populate_countries";
-    } else if (artefact_type == "currencies") {
-        function_name = "dq_populate_currencies";
-    } else if (artefact_type == "ip2country") {
-        function_name = "dq_populate_ip2country";
-    } else {
-        result.success = false;
-        result.error_message = "Unknown artefact_type: " + artefact_type;
-        return result;
-    }
+    BOOST_LOG_SEV(lg(), debug) << "Calling populate function: "
+        << function_name << ", mode: " << mode_str;
 
     const auto sql = std::format(
         "SELECT * FROM ores.{}('{}', '{}')",
@@ -377,19 +362,6 @@ domain::publication_result publication_service::call_populate_function(
     }
 
     return result;
-}
-
-std::string publication_service::get_target_table(const std::string& artefact_type) {
-    if (artefact_type == "images") {
-        return "assets_images_tbl";
-    } else if (artefact_type == "countries") {
-        return "refdata_countries_tbl";
-    } else if (artefact_type == "currencies") {
-        return "refdata_currencies_tbl";
-    } else if (artefact_type == "ip2country") {
-        return "geo_ip2country_tbl";
-    }
-    return "";
 }
 
 }

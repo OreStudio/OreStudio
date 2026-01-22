@@ -67,6 +67,13 @@ select ores.upsert_dq_dataset_dependency(
     'visual_assets'
 );
 
+-- FpML business centres uses flag images from Visual Assets
+select ores.upsert_dq_dataset_dependency(
+    'fpml.business_center',
+    'assets.country_flags',
+    'visual_assets'
+);
+
 -- =============================================================================
 -- Summary
 -- =============================================================================

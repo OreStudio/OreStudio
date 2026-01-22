@@ -172,6 +172,7 @@ grant create on schema ores to ores;
 
 \ir ../schema/dq_functions_create.sql
 \ir ../schema/dq_population_functions_create.sql
+\ir ../schema/dq_fpml_population_functions.sql
 \ir ../schema/dq_publication_create.sql
 \ir ../schema/seed_upsert_functions_create.sql
 

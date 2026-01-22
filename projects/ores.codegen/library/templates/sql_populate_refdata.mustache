@@ -1,44 +1,61 @@
-{{! Template to generate SQL populate script for FPML reference data }}
+{{! Template to generate SQL populate script for FPML reference data artefacts }}
 {{{enhanced_license}}}
 
 /**
- * Reference Data {{entity.entity_plural}} Population Script
+ * DQ Artefact {{dataset.name}} Population Script
  *
- * Populates the refdata_{{entity.entity_plural}}_tbl with reference data.
- * Source: {{entity.entity_plural}}_data.json
+ * Populates the dq_{{entity.entity_plural}}_artefact_tbl with reference data.
+ * Dataset: {{dataset.code}}
  *
- * This script is idempotent - uses INSERT with version handling.
+ * This script is idempotent - clears and repopulates for the dataset.
+ * Use dq_populate_{{entity.entity_plural}}() to publish to production.
  */
 
 set schema 'ores';
 
 -- =============================================================================
--- Reference Data {{entity.entity_plural}}
+-- DQ Artefact {{dataset.name}}
 -- =============================================================================
 
-\echo '--- Reference Data {{entity.entity_plural}} ---'
+\echo '--- DQ Artefact {{dataset.name}} ---'
 
+do $$
+declare
+    v_dataset_id uuid;
+    v_count integer := 0;
+begin
+    -- Get the dataset ID
+    select id into v_dataset_id
+    from ores.dq_datasets_tbl
+    where code = '{{dataset.code}}'
+    and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_dataset_id is null then
+        raise exception 'Dataset {{dataset.code}} not found. Run dataset population first.';
+    end if;
+
+    -- Clear existing data for this dataset
+    delete from ores.dq_{{entity.entity_plural}}_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    -- Insert reference data
 {{#items}}
-insert into ores.refdata_{{entity.entity_plural}}_tbl (
-    code, version, coding_scheme_code, source, description,
-    modified_by, change_reason_code, change_commentary
-)
-select
-    '{{code}}',
-    0,
-    '{{coding_scheme_code}}',
-    {{#source}}'{{{source}}}'{{/source}}{{^source}}null{{/source}},
-    {{#description}}'{{{description}}}'{{/description}}{{^description}}null{{/description}},
-    'system',
-    'system.initial_load',
-    'FPML reference data import'
-where not exists (
-    select 1 from ores.refdata_{{entity.entity_plural}}_tbl
-    where code = '{{code}}'
-    and coding_scheme_code = '{{coding_scheme_code}}'
-    and valid_to = ores.utility_infinity_timestamp_fn()
-);
+    insert into ores.dq_{{entity.entity_plural}}_artefact_tbl (
+        dataset_id, code, version, coding_scheme_code, source, description
+    ) values (
+        v_dataset_id,
+        '{{code}}',
+        1,
+        '{{coding_scheme_code}}',
+        {{#source}}'{{{source}}}'{{/source}}{{^source}}null{{/source}},
+        {{#description}}'{{{description}}}'{{/description}}{{^description}}null{{/description}}
+    );
+    v_count := v_count + 1;
 {{/items}}
+
+    raise notice 'Populated % records into dq_{{entity.entity_plural}}_artefact_tbl', v_count;
+end;
+$$;
 
 -- =============================================================================
 -- Summary
@@ -47,12 +64,10 @@ where not exists (
 \echo ''
 \echo '--- Summary ---'
 
-select '{{entity.entity_plural}}' as entity, count(*) as count
-from ores.refdata_{{entity.entity_plural}}_tbl
-where valid_to = ores.utility_infinity_timestamp_fn();
+select 'dq_{{entity.entity_plural}}_artefact' as entity, count(*) as count
+from ores.dq_{{entity.entity_plural}}_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from ores.refdata_{{entity.entity_plural}}_tbl
-where valid_to = ores.utility_infinity_timestamp_fn()
+from ores.dq_{{entity.entity_plural}}_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;

@@ -191,6 +191,7 @@ def get_schema_template_mappings():
         ("sql_schema_table_create.mustache", "_create.sql"),
         ("sql_schema_notify_trigger.mustache", "_notify_trigger.sql"),
         ("sql_schema_artefact_create.mustache", "_artefact_create.sql"),
+        ("sql_populate_function_refdata.mustache", "_population_functions.sql"),
     ]
 
 
@@ -222,13 +223,14 @@ def is_entity_data_model(model_filename):
 
 def get_populate_template_mappings():
     """
-    Define the mapping for entity populate templates.
+    Define the mapping for entity populate templates (per-dataset).
 
     Returns:
-        list: List of tuples (template_name, output_suffix) for populate generation
+        list: List of tuples (template_name, output_prefix, output_suffix) for populate generation
     """
     return [
-        ("sql_populate_refdata.mustache", "_populate.sql"),
+        ("sql_populate_refdata.mustache", "dq_", "_artefact_populate.sql"),
+        ("sql_dataset_refdata.mustache", "fpml_", "_dataset_populate.sql"),
     ]
 
 
@@ -503,30 +505,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
 
     # Special processing for entity data models (populate scripts)
     if is_data_model and isinstance(model, dict):
-        # Find the entity plural name from the data (it's the first key that's not 'coding_schemes')
-        entity_plural = None
-        items = None
-        for key, value in model.items():
-            if key != 'coding_schemes' and isinstance(value, list):
-                entity_plural = key
-                items = value
-                break
-
-        if entity_plural and items:
-            # Try to load the corresponding entity schema file
-            entity_file = Path(model_path).parent / f"{entity_plural}_entity.json"
-            if entity_file.exists():
-                entity_model = load_model(entity_file)
-                if 'entity' in entity_model:
-                    data['entity'] = entity_model['entity']
-            else:
-                # Create minimal entity info from the data
-                entity_singular = entity_plural[:-1] if entity_plural.endswith('s') else entity_plural
-                data['entity'] = {
-                    'entity_singular': entity_singular,
-                    'entity_plural': entity_plural,
-                    'component': 'refdata'
-                }
+        # New format: model has 'dataset', 'entity' and 'items' keys (per-coding-scheme)
+        if 'dataset' in model and 'entity' in model and 'items' in model:
+            data['dataset'] = model['dataset']
+            data['entity'] = model['entity']
+            items = model['items']
 
             # Escape single quotes in string fields for SQL
             for item in items:
@@ -534,10 +517,70 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     if isinstance(value, str):
                         item[key] = value.replace("'", "''")
 
+            # Also escape dataset and entity descriptions
+            if 'description' in data['dataset'] and isinstance(data['dataset']['description'], str):
+                data['dataset']['description'] = data['dataset']['description'].replace("'", "''")
+            if 'description' in data['entity'] and isinstance(data['entity']['description'], str):
+                data['entity']['description'] = data['entity']['description'].replace("'", "''")
+
+            # Mark last item for comma handling
+            _mark_last_item(items)
+            data['items'] = items
+        # Legacy format: model has 'entity' and 'items' keys (per-entity)
+        elif 'entity' in model and 'items' in model:
+            data['entity'] = model['entity']
+            items = model['items']
+
+            # Escape single quotes in string fields for SQL
+            for item in items:
+                for key, value in item.items():
+                    if isinstance(value, str):
+                        item[key] = value.replace("'", "''")
+
+            # Also escape entity description
+            if 'description' in data['entity'] and isinstance(data['entity']['description'], str):
+                data['entity']['description'] = data['entity']['description'].replace("'", "''")
+
             # Mark last item for comma handling
             _mark_last_item(items)
             data['items'] = items
             data['coding_schemes'] = model.get('coding_schemes', [])
+        else:
+            # Old format: Find the entity plural name from the data (it's the first key that's not 'coding_schemes')
+            entity_plural = None
+            items = None
+            for key, value in model.items():
+                if key != 'coding_schemes' and isinstance(value, list):
+                    entity_plural = key
+                    items = value
+                    break
+
+            if entity_plural and items:
+                # Try to load the corresponding entity schema file
+                entity_file = Path(model_path).parent / f"{entity_plural}_entity.json"
+                if entity_file.exists():
+                    entity_model = load_model(entity_file)
+                    if 'entity' in entity_model:
+                        data['entity'] = entity_model['entity']
+                else:
+                    # Create minimal entity info from the data
+                    entity_singular = entity_plural[:-1] if entity_plural.endswith('s') else entity_plural
+                    data['entity'] = {
+                        'entity_singular': entity_singular,
+                        'entity_plural': entity_plural,
+                        'component': 'refdata'
+                    }
+
+                # Escape single quotes in string fields for SQL
+                for item in items:
+                    for key, value in item.items():
+                        if isinstance(value, str):
+                            item[key] = value.replace("'", "''")
+
+                # Mark last item for comma handling
+                _mark_last_item(items)
+                data['items'] = items
+                data['coding_schemes'] = model.get('coding_schemes', [])
 
     # Find the git directory to calculate relative paths
     current_path = Path.cwd()
@@ -574,20 +617,31 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Find the suffix for this template
             schema_mappings = get_schema_template_mappings()
             suffix = next((s for t, s in schema_mappings if t == template_name), '_create.sql')
-            # Artefact tables use 'dq_' prefix
-            if 'artefact' in template_name:
+            # Artefact tables and population functions use 'dq_' prefix
+            if 'artefact' in template_name or 'populate_function' in template_name:
                 output_filename = f"dq_{entity_plural}{suffix}"
             else:
                 output_filename = f"{component}_{entity_plural}{suffix}"
         elif is_data_model and 'entity' in data:
-            # For entity data models, derive filename from entity definition
-            entity = data['entity']
-            component = entity.get('component', 'unknown')
-            entity_plural = entity.get('entity_plural', 'unknown')
-            # Find the suffix for this template
+            # For entity data models, derive filename from dataset or entity definition
+            # Find the prefix and suffix for this template
             populate_mappings = get_populate_template_mappings()
-            suffix = next((s for t, s in populate_mappings if t == template_name), '_populate.sql')
-            output_filename = f"{component}_{entity_plural}{suffix}"
+            mapping = next(((t, p, s) for t, p, s in populate_mappings if t == template_name), None)
+            if mapping:
+                file_prefix, suffix = mapping[1], mapping[2]
+            else:
+                file_prefix, suffix = 'refdata_', '_populate.sql'
+
+            # Use dataset code for filename if available (e.g., fpml.entity_type -> entity_type)
+            if 'dataset' in data:
+                dataset_code = data['dataset'].get('code', 'unknown')
+                # Remove fpml. prefix and use as base name
+                base_name = dataset_code.replace('fpml.', '').replace('.', '_')
+            else:
+                # Fall back to entity_plural for legacy data models
+                base_name = data['entity'].get('entity_plural', 'unknown')
+
+            output_filename = f"{file_prefix}{base_name}{suffix}"
         else:
             output_ext = '.sql' if template_name.endswith('.mustache') else ''
             output_filename = template_name.replace('.mustache', output_ext)

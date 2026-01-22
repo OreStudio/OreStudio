@@ -142,6 +142,7 @@ class MergedEntity:
                 "entity_singular": self.entity_name,
                 "entity_plural": self.entity_plural,
                 "description": self.description,
+                "subject_area": self.subject_area,
                 "primary_key": {
                     "column": "code",
                     "type": "text"
@@ -164,20 +165,66 @@ class MergedEntity:
             }
         }
 
-    def to_populate_data(self) -> dict:
-        """Generate JSON data for populate script generation."""
-        items = []
-        for row in self.rows:
-            items.append({
-                "code": row.code,
-                "coding_scheme_code": row.coding_scheme_code,
-                "source": row.source,
-                "description": row.description
+    def get_datasets(self) -> list[dict]:
+        """Generate a list of dataset info dicts, one per coding scheme.
+
+        For entities with multiple coding schemes (e.g., entity_classifications),
+        this produces multiple datasets. Each dataset contains only the rows
+        belonging to that coding scheme.
+        """
+        datasets = []
+        for cs in self.coding_schemes:
+            coding_scheme_code = cs.to_code()
+            # Filter rows for this coding scheme
+            scheme_rows = [r for r in self.rows if r.coding_scheme_code == coding_scheme_code]
+
+            # Derive dataset code from coding scheme (e.g., FPML_ENTITY_TYPE -> fpml.entity_types)
+            # Remove FPML_ prefix and convert to lowercase with dots
+            scheme_suffix = coding_scheme_code.replace('FPML_', '').lower()
+            dataset_code = f"fpml.{scheme_suffix}"
+
+            # Convert to display name (e.g., FPML_ENTITY_TYPE -> FpML Entity Type)
+            display_name = 'FpML ' + ' '.join(
+                word.capitalize() for word in scheme_suffix.split('_')
+            )
+
+            items = []
+            for row in scheme_rows:
+                items.append({
+                    "code": row.code,
+                    "coding_scheme_code": row.coding_scheme_code,
+                    "source": row.source,
+                    "description": row.description
+                })
+
+            datasets.append({
+                "dataset": {
+                    "code": dataset_code,
+                    "name": display_name,
+                    "coding_scheme_code": coding_scheme_code,
+                    "description": cs.definition or f"Reference data for {display_name}",
+                },
+                "entity": {
+                    "entity_singular": self.entity_name,
+                    "entity_plural": self.entity_plural,
+                    "subject_area": self.subject_area,
+                },
+                "items": items,
             })
-        return {
-            self.entity_plural: items,
-            "coding_schemes": [cs.to_code() for cs in self.coding_schemes]
-        }
+
+        return datasets
+
+    def to_populate_data(self) -> dict:
+        """Generate JSON data for populate script generation.
+
+        DEPRECATED: Use get_datasets() instead for proper per-coding-scheme datasets.
+        This method is kept for backward compatibility but returns data for first scheme only.
+        """
+        datasets = self.get_datasets()
+        if not datasets:
+            return {}
+        # Return first dataset for backward compatibility
+        return datasets[0]
 
 
 def find_element(parent: ET.Element, local_name: str) -> Optional[ET.Element]:
@@ -418,14 +465,24 @@ def generate_entity_model(entity: MergedEntity, output_dir: Path):
 
 
 def generate_populate_data(entity: MergedEntity, output_dir: Path):
-    """Generate JSON data file for populate script generation."""
-    output_path = output_dir / f"{entity.entity_plural}_data.json"
-    data = entity.to_populate_data()
+    """Generate JSON data files for populate script generation.
 
-    with open(output_path, 'w') as f:
-        json.dump(data, f, indent=2)
+    Generates one file per coding scheme/dataset. For entities with multiple
+    coding schemes, multiple files are created.
+    """
+    datasets = entity.get_datasets()
 
-    print(f"Generated: {output_path}")
+    for dataset in datasets:
+        # Use dataset code for filename (e.g., fpml.entity_type -> entity_type_data.json)
+        dataset_code = dataset['dataset']['code']
+        # Remove fpml. prefix and use as filename
+        filename_base = dataset_code.replace('fpml.', '').replace('.', '_')
+        output_path = output_dir / f"{filename_base}_data.json"
+
+        with open(output_path, 'w') as f:
+            json.dump(dataset, f, indent=2)
+
+        print(f"Generated: {output_path}")
 
 
 def main():

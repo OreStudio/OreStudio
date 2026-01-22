@@ -63,7 +63,7 @@ TEST_CASE("dataset_dependency_uses_standard_codes", tags) {
     dep1.recorded_by = "system";
 
     dataset_dependency dep2;
-    dep2.dataset_code = "crypto.reference";
+    dep2.dataset_code = "crypto.coins";
     dep2.dependency_code = "assets.crypto_icons";
     dep2.role = "visual_assets";
     dep2.recorded_by = "system";
@@ -71,7 +71,7 @@ TEST_CASE("dataset_dependency_uses_standard_codes", tags) {
     CHECK(dep1.dataset_code == "iso.currencies");
     CHECK(dep1.dependency_code == "assets.country_flags");
     CHECK(dep1.role == "visual_assets");
-    CHECK(dep2.dataset_code == "crypto.reference");
+    CHECK(dep2.dataset_code == "crypto.coins");
     CHECK(dep2.dependency_code == "assets.crypto_icons");
 
     BOOST_LOG_SEV(lg, info) << "Standard dataset codes work correctly";
@@ -106,7 +106,7 @@ TEST_CASE("dataset_dependency_convert_to_table", tags) {
     dep1.recorded_at = std::chrono::system_clock::now();
 
     dataset_dependency dep2;
-    dep2.dataset_code = "crypto.reference";
+    dep2.dataset_code = "crypto.coins";
     dep2.dependency_code = "assets.crypto_icons";
     dep2.role = "visual_assets";
     dep2.recorded_by = "admin";

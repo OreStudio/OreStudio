@@ -111,6 +111,7 @@
 \ir dq_currencies_artefact_populate.sql
 \ir dq_fpml_non_iso_currencies_artefact_populate.sql
 \ir dq_cryptocurrencies_artefact_populate.sql
+\ir dq_cryptocurrencies_top100_artefact_populate.sql
 \ir dq_ip2country_artefact_populate.sql
 \ir solvaris_batch_execute.sql
 

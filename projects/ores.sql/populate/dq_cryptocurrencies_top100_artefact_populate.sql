@@ -143,6 +143,7 @@ begin
         ('AAVE', 'Aave', '', 'AAVE', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('VET', 'VeChain', '', 'VET', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('FET', 'Fetch.AI', '', 'FET', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
+        ('MNT', 'Mantle', '', 'MNT', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('FIL', 'FileCoin', '', 'FIL', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('ARB', 'Arbitrum', '', 'ARB', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('ATOM', 'Cosmos', '', 'ATOM', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
@@ -169,6 +170,7 @@ begin
         ('EGLD', 'eGold', '', 'EGLD', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('ROSE', 'Oasis Labs', '', 'ROSE', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('LUNC', 'Terra Classic', '', 'LUNC', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
+        ('MIOTA', 'IOTA', '', 'MIOTA', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('CRO', 'Cronos', '', 'CRO', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('QNT', 'Quant', '', 'QNT', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('FLOKI', 'Floki Inu', '', 'FLOKI', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
@@ -213,12 +215,13 @@ begin
 
     raise notice 'Successfully populated % cryptocurrencies for dataset: Cryptocurrencies Top 100 Coins', v_count;
 
-    -- Report cryptocurrencies with icons
-    raise notice 'Cryptocurrencies with matching icons:';
-    perform iso_code
-    from ores.dq_currencies_artefact_tbl
-    where dataset_id = v_dataset_id
-      and image_id is not null;
+    -- Report count of cryptocurrencies with icons
+    raise notice 'Cryptocurrencies with matching icons: %', (
+        select count(*)
+        from ores.dq_currencies_artefact_tbl
+        where dataset_id = v_dataset_id
+          and image_id is not null
+    );
 end $$;
 
 -- =============================================================================

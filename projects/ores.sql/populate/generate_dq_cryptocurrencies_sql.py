@@ -21,7 +21,7 @@ import sys
 
 # Default configuration
 DEFAULT_CONFIG = {
-    'dataset_name': 'Cryptocurrencies Top 12242 Coins',
+    'dataset_name': 'Cryptocurrencies Top 12243 Coins',
     'subject_area_name': 'Cryptocurrencies',
     'domain_name': 'Reference Data',
     'icons_dataset_name': 'Cryptocurrency Icon Images',
@@ -112,7 +112,7 @@ TOP_100_CRYPTOS = [
     'EGLD',  # 62. MultiversX
     'ROSE',  # 63. Oasis Network
     'LUNC',  # 64. Terra Classic
-    'IOTA',  # 65. IOTA
+    'MIOTA', # 65. IOTA
     'CRO',   # 66. Cronos
     'QNT',   # 67. Quant
     'FLOKI', # 68. Floki
@@ -286,12 +286,13 @@ def get_footer(dataset_name: str, count: int) -> str:
 
     raise notice 'Successfully populated % cryptocurrencies for dataset: {dataset_name}', v_count;
 
-    -- Report cryptocurrencies with icons
-    raise notice 'Cryptocurrencies with matching icons:';
-    perform iso_code
-    from ores.dq_currencies_artefact_tbl
-    where dataset_id = v_dataset_id
-      and image_id is not null;
+    -- Report count of cryptocurrencies with icons
+    raise notice 'Cryptocurrencies with matching icons: %', (
+        select count(*)
+        from ores.dq_currencies_artefact_tbl
+        where dataset_id = v_dataset_id
+          and image_id is not null
+    );
 end $$;
 
 -- =============================================================================

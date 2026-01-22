@@ -73,11 +73,11 @@ select ores.upsert_dq_tag(
 );
 
 select ores.upsert_dq_tag(
-    'Cryptocurrencies Top 12242 Coins',
+    'Cryptocurrencies Top 12243 Coins',
     'Cryptocurrencies',
     'Reference Data',
     'cryptocurrency',
-    'Cryptocurrency reference data for top 12242 coins'
+    'Cryptocurrency reference data for top 12243 coins'
 );
 
 select ores.upsert_dq_tag(

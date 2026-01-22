@@ -25,7 +25,7 @@
  * Links cryptocurrencies to their icons from the cryptocurrency-icons dataset.
  * This script is idempotent.
  *
- * Dataset: Cryptocurrencies Top 12242 Coins
+ * Dataset: Cryptocurrencies Top 12243 Coins
  * Subject Area: Cryptocurrencies
  * Domain: Reference Data
  *
@@ -48,13 +48,13 @@ begin
     -- Get the cryptocurrencies dataset ID
     select id into v_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'Cryptocurrencies Top 12242 Coins'
+    where name = 'Cryptocurrencies Top 12243 Coins'
       and subject_area_name = 'Cryptocurrencies'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: Cryptocurrencies Top 12242 Coins';
+        raise exception 'Dataset not found: Cryptocurrencies Top 12243 Coins';
     end if;
 
     -- Get the cryptocurrency icons dataset ID (for linking images)
@@ -83,7 +83,7 @@ begin
     delete from ores.dq_currencies_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating cryptocurrencies for dataset: Cryptocurrencies Top 12242 Coins';
+    raise notice 'Populating cryptocurrencies for dataset: Cryptocurrencies Top 12243 Coins';
 
     -- Insert cryptocurrencies with icon links
     -- Icons are keyed by lowercase symbol (e.g., 'btc', 'eth')
@@ -7129,6 +7129,7 @@ begin
         ('MNRCH', 'Monarch', '', 'MNRCH', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('MNS', 'Monnos', '', 'MNS', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('MNST', 'MoonStarter', '', 'MNST', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
+        ('MNT', 'Mantle', '', 'MNT', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('MNTC', 'Manet Coin', '', 'MNTC', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('MNTG', 'Monetas', '', 'MNTG', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
         ('MNTL', 'AssetMantle', '', 'MNTL', '', 100000000, 'standard', 8, '#,##0.00000000', 'crypto.minor'),
@@ -12355,14 +12356,15 @@ begin
 
     get diagnostics v_count = row_count;
 
-    raise notice 'Successfully populated % cryptocurrencies for dataset: Cryptocurrencies Top 12242 Coins', v_count;
+    raise notice 'Successfully populated % cryptocurrencies for dataset: Cryptocurrencies Top 12243 Coins', v_count;
 
-    -- Report cryptocurrencies with icons
-    raise notice 'Cryptocurrencies with matching icons:';
-    perform iso_code
-    from ores.dq_currencies_artefact_tbl
-    where dataset_id = v_dataset_id
-      and image_id is not null;
+    -- Report count of cryptocurrencies with icons
+    raise notice 'Cryptocurrencies with matching icons: %', (
+        select count(*)
+        from ores.dq_currencies_artefact_tbl
+        where dataset_id = v_dataset_id
+          and image_id is not null
+    );
 end $$;
 
 -- =============================================================================
@@ -12375,28 +12377,28 @@ end $$;
 select 'Total DQ Cryptocurrencies' as metric, count(*) as count
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.name = 'Cryptocurrencies Top 12242 Coins'
+where d.name = 'Cryptocurrencies Top 12243 Coins'
 union all
 select 'Major Cryptocurrencies (crypto.major)', count(*)
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.name = 'Cryptocurrencies Top 12242 Coins'
+where d.name = 'Cryptocurrencies Top 12243 Coins'
   and c.currency_type = 'crypto.major'
 union all
 select 'Minor Cryptocurrencies (crypto.minor)', count(*)
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.name = 'Cryptocurrencies Top 12242 Coins'
+where d.name = 'Cryptocurrencies Top 12243 Coins'
   and c.currency_type = 'crypto.minor'
 union all
 select 'Cryptocurrencies with Icons', count(*)
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.name = 'Cryptocurrencies Top 12242 Coins'
+where d.name = 'Cryptocurrencies Top 12243 Coins'
   and c.image_id is not null
 union all
 select 'Cryptocurrencies without Icons', count(*)
 from ores.dq_currencies_artefact_tbl c
 join ores.dq_datasets_tbl d on c.dataset_id = d.id
-where d.name = 'Cryptocurrencies Top 12242 Coins'
+where d.name = 'Cryptocurrencies Top 12243 Coins'
   and c.image_id is null;

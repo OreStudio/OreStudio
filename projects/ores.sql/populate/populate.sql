@@ -82,6 +82,7 @@
 \echo ''
 \echo '--- Data Quality Coding Schemes ---'
 \ir dq_coding_scheme_populate.sql
+\ir fpml_coding_schemes_populate.sql
 
 -- Data Quality Methodologies
 \echo ''
@@ -112,6 +113,25 @@
 \ir dq_cryptocurrencies_artefact_populate.sql
 \ir dq_ip2country_artefact_populate.sql
 \ir solvaris_batch_execute.sql
+
+-- FPML Reference Data
+\echo ''
+\echo '--- FPML Reference Data ---'
+\ir refdata_account_types_populate.sql
+\ir refdata_asset_classes_populate.sql
+\ir refdata_asset_measures_populate.sql
+\ir refdata_benchmark_rates_populate.sql
+\ir refdata_business_centres_populate.sql
+\ir refdata_business_processes_populate.sql
+\ir refdata_cashflow_types_populate.sql
+\ir refdata_entity_classifications_populate.sql
+\ir refdata_local_jurisdictions_populate.sql
+\ir refdata_party_relationships_populate.sql
+\ir refdata_party_roles_populate.sql
+\ir refdata_person_roles_populate.sql
+\ir refdata_regulatory_corporate_sectors_populate.sql
+\ir refdata_reporting_regimes_populate.sql
+\ir refdata_supervisory_bodies_populate.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''

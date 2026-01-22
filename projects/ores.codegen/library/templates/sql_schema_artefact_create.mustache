@@ -1,0 +1,69 @@
+{{! Template to generate SQL schema for entity artefact/staging table }}
+{{{enhanced_license}}}
+set schema 'ores';
+
+-- =============================================================================
+-- {{entity.description}} - Artefact Table
+-- =============================================================================
+
+create table if not exists "ores"."dq_{{entity.entity_plural}}_artefact_tbl" (
+    "dataset_id" uuid not null,
+    "{{entity.primary_key.column}}" {{entity.primary_key.type}} not null,
+    "version" integer not null,
+{{#entity.columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{default}}{{/default}}{{^last}},{{/last}}
+{{/entity.columns}}
+{{#entity.has_image_id}}
+    ,"image_id" uuid
+{{/entity.has_image_id}}
+{{#entity.has_coding_scheme}}
+    ,"coding_scheme_code" text not null
+{{/entity.has_coding_scheme}}
+);
+
+create index if not exists dq_{{entity.entity_plural}}_artefact_dataset_idx
+on "ores"."dq_{{entity.entity_plural}}_artefact_tbl" (dataset_id);
+
+create index if not exists dq_{{entity.entity_plural}}_artefact_{{entity.primary_key.column}}_idx
+on "ores"."dq_{{entity.entity_plural}}_artefact_tbl" ({{entity.primary_key.column}});
+{{#entity.artefact_indexes}}
+
+create index if not exists dq_{{entity.entity_plural}}_artefact_{{name}}_idx
+on "ores"."dq_{{entity.entity_plural}}_artefact_tbl" ({{columns}});
+{{/entity.artefact_indexes}}
+{{#entity.has_artefact_insert_fn}}
+
+-- Function to insert {{entity.entity_plural}} into the artefact table
+create or replace function ores.dq_{{entity.entity_plural}}_artefact_insert_fn(
+    p_dataset_id uuid,
+    p_{{entity.primary_key.column}} {{entity.primary_key.type}},
+    p_version integer,
+{{#entity.columns}}
+    p_{{name}} {{type}}{{#default}} default {{default}}{{/default}}{{^last}},{{/last}}
+{{/entity.columns}}
+{{#entity.has_image_id}}
+    ,p_image_id uuid default null
+{{/entity.has_image_id}}
+) returns void as $$
+begin
+    insert into ores.dq_{{entity.entity_plural}}_artefact_tbl (
+        dataset_id, {{entity.primary_key.column}}, version,
+{{#entity.columns}}
+        {{name}}{{^last}},{{/last}}
+{{/entity.columns}}
+{{#entity.has_image_id}}
+        ,image_id
+{{/entity.has_image_id}}
+    )
+    values (
+        p_dataset_id, p_{{entity.primary_key.column}}, p_version,
+{{#entity.columns}}
+        p_{{name}}{{^last}},{{/last}}
+{{/entity.columns}}
+{{#entity.has_image_id}}
+        ,p_image_id
+{{/entity.has_image_id}}
+    );
+end;
+$$ language plpgsql;
+{{/entity.has_artefact_insert_fn}}

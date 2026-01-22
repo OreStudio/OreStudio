@@ -1,0 +1,58 @@
+{{! Template to generate SQL populate script for FPML reference data }}
+{{{enhanced_license}}}
+
+/**
+ * Reference Data {{entity.entity_plural}} Population Script
+ *
+ * Populates the refdata_{{entity.entity_plural}}_tbl with reference data.
+ * Source: {{entity.entity_plural}}_data.json
+ *
+ * This script is idempotent - uses INSERT with version handling.
+ */
+
+set schema 'ores';
+
+-- =============================================================================
+-- Reference Data {{entity.entity_plural}}
+-- =============================================================================
+
+\echo '--- Reference Data {{entity.entity_plural}} ---'
+
+{{#items}}
+insert into ores.refdata_{{entity.entity_plural}}_tbl (
+    code, version, coding_scheme_code, source, description,
+    modified_by, change_reason_code, change_commentary
+)
+select
+    '{{code}}',
+    0,
+    '{{coding_scheme_code}}',
+    {{#source}}'{{{source}}}'{{/source}}{{^source}}null{{/source}},
+    {{#description}}'{{{description}}}'{{/description}}{{^description}}null{{/description}},
+    'system',
+    'INITIAL_LOAD',
+    'FPML reference data import'
+where not exists (
+    select 1 from ores.refdata_{{entity.entity_plural}}_tbl
+    where code = '{{code}}'
+    and coding_scheme_code = '{{coding_scheme_code}}'
+    and valid_to = ores.utility_infinity_timestamp_fn()
+);
+{{/items}}
+
+-- =============================================================================
+-- Summary
+-- =============================================================================
+
+\echo ''
+\echo '--- Summary ---'
+
+select '{{entity.entity_plural}}' as entity, count(*) as count
+from ores.refdata_{{entity.entity_plural}}_tbl
+where valid_to = ores.utility_infinity_timestamp_fn();
+
+select coding_scheme_code, count(*) as count
+from ores.refdata_{{entity.entity_plural}}_tbl
+where valid_to = ores.utility_infinity_timestamp_fn()
+group by coding_scheme_code
+order by coding_scheme_code;

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/css" href="FpML.CodeList.genericode.css"?>
+<gcl:CodeList xmlns:gcl="http://docs.oasis-open.org/codelist/ns/genericode/1.0/" xmlns:doc="http://www.fpml.org/coding-scheme/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://docs.oasis-open.org/codelist/ns/genericode/1.0/ genericode.xsd">
+   <Annotation>
+      <Description>
+         <doc:definition>Indicates the relationship between two parties as defined by Hong Kong
+            Monetary Authority (HKMA) Rewrite field 189 - Intragroup.</doc:definition>
+         <doc:publicationDate>2025-04-25</doc:publicationDate>
+      </Description>
+   </Annotation>
+   <Identification>
+      <ShortName>partyRelationshipTypeScheme</ShortName>
+      <Version>1-0</Version>
+      <CanonicalUri>http://www.fpml.org/coding-scheme/hkma-rewrite-party-relationship-type</CanonicalUri>
+      <CanonicalVersionUri>http://www.fpml.org/coding-scheme/hkma-rewrite-party-relationship-type-1-0</CanonicalVersionUri>
+      <LocationUri>http://www.fpml.org/coding-scheme/hkma-rewrite-party-relationship-type-1-0.xml</LocationUri>
+   </Identification>
+   <ColumnSet>
+      <Column Id="Code" Use="required">
+         <ShortName>Code</ShortName>
+         <Data Type="token">
+            <Parameter ShortName="maxLength">63</Parameter>
+         </Data>
+      </Column>
+      <Column Id="Source" Use="optional">
+         <ShortName>Source</ShortName>
+         <Data Type="string"/>
+      </Column>
+      <Column Id="Description" Use="optional">
+         <ShortName>Description</ShortName>
+         <Data Type="string"/>
+      </Column>
+      <Key Id="PrimaryKey">
+         <ShortName>key</ShortName>
+         <ColumnRef Ref="Code"/>
+      </Key>
+   </ColumnSet>
+   <SimpleCodeList>
+      <Row>
+         <Value>
+            <SimpleValue>Intragroup</SimpleValue>
+         </Value>
+         <Value>
+            <SimpleValue>FpML</SimpleValue>
+         </Value>
+         <Value>
+            <SimpleValue>Intragroup as defined by Hong Kong Monetary Authority (HKMA) Rewrite
+                    field 189 - Intragroup.</SimpleValue>
+         </Value>
+      </Row>
+      <Row>
+         <Value>
+            <SimpleValue>NotIntragroup</SimpleValue>
+         </Value>
+         <Value>
+            <SimpleValue>FpML</SimpleValue>
+         </Value>
+         <Value>
+            <SimpleValue>Not intragroup as defined by Hong Kong Monetary Authority (HKMA) Rewrite
+                    field 189 - Intragroup.</SimpleValue>
+         </Value>
+      </Row>
+   </SimpleCodeList>
+</gcl:CodeList>

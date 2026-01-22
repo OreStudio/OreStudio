@@ -444,6 +444,9 @@ void ProgressPage::performPublish() {
     publishSuccess_ = true;
     emit completeChanged();
 
+    // Notify that datasets were published (for cache refresh)
+    emit wizard_->datasetsPublished();
+
     // Auto-advance to results
     wizard_->next();
 }

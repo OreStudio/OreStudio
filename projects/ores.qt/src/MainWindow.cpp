@@ -471,6 +471,10 @@ MainWindow::MainWindow(QWidget* parent) :
                         methodologyController_->showListWindow();
                 });
 
+        // Reload image cache when datasets are published
+        connect(librarianWindow, &DataLibrarianWindow::datasetsPublished,
+                imageCache_, &ImageCache::reload);
+
         // Track window destruction
         dataLibrarianWindow_ = subWindow;
         connect(subWindow, &QObject::destroyed, this, [this]() {

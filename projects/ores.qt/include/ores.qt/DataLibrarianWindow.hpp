@@ -80,6 +80,13 @@ signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
 
+    /**
+     * @brief Emitted when datasets are successfully published.
+     *
+     * Connect to this signal to trigger cache refreshes (e.g., ImageCache).
+     */
+    void datasetsPublished();
+
     // Signals to open related windows
     void openOriginDimensionsRequested();
     void openNatureDimensionsRequested();

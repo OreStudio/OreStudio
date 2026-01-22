@@ -464,6 +464,11 @@ void DataLibrarianWindow::onPublishClicked() {
     auto* dialog = new PublishDatasetsDialog(clientManager_, username_, this);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->setDatasets(selectedDatasets);
+
+    // Forward published signal (for cache refresh)
+    connect(dialog, &PublishDatasetsDialog::datasetsPublished,
+            this, &DataLibrarianWindow::datasetsPublished);
+
     dialog->exec();
 }
 

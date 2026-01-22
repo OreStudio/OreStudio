@@ -62,6 +62,15 @@ private:
     }
 
 public:
+signals:
+    /**
+     * @brief Emitted when datasets are successfully published.
+     *
+     * Connect to this signal to trigger cache refreshes or UI updates.
+     */
+    void datasetsPublished();
+
+public:
     // Page IDs
     enum PageId {
         Page_Selection,

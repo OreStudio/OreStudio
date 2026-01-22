@@ -350,6 +350,349 @@
     "currency": "Zephyrian Zephyr"
   },
   {
+    "country_code": "AB",
+    "country_name": "Abyssal",
+    "currency_code": "ABD",
+    "currency_number": 10051,
+    "currency": "Abyssal Abyss"
+  },
+  {
+    "country_code": "AD",
+    "country_name": "Adoria",
+    "currency_code": "ADD",
+    "currency_number": 10052,
+    "currency": "Adorian Aureus"
+  },
+  {
+    "country_code": "AG",
+    "country_name": "Agraria",
+    "currency_code": "AGA",
+    "currency_number": 10053,
+    "currency": "Agrarian Agri"
+  },
+  {
+    "country_code": "AK",
+    "country_name": "Akoria",
+    "currency_code": "AKA",
+    "currency_number": 10054,
+    "currency": "Akorian Akka"
+  },
+  {
+    "country_code": "AM",
+    "country_name": "Amethia",
+    "currency_code": "AMA",
+    "currency_number": 10055,
+    "currency": "Amethian Amethyst"
+  },
+  {
+    "country_code": "AN",
+    "country_name": "Andoria",
+    "currency_code": "ANA",
+    "currency_number": 10056,
+    "currency": "Andorian Andar"
+  },
+  {
+    "country_code": "AO",
+    "country_name": "Aorland",
+    "currency_code": "AOA",
+    "currency_number": 10057,
+    "currency": "Aorlandian Aureole"
+  },
+  {
+    "country_code": "AP",
+    "country_name": "Apollia",
+    "currency_code": "APA",
+    "currency_number": 10058,
+    "currency": "Apollonian Apex"
+  },
+  {
+    "country_code": "AS",
+    "country_name": "Astralia",
+    "currency_code": "ASA",
+    "currency_number": 10059,
+    "currency": "Astralian Astra"
+  },
+  {
+    "country_code": "AT",
+    "country_name": "Atlantia",
+    "currency_code": "ATA",
+    "currency_number": 10060,
+    "currency": "Atlantian Atlante"
+  },
+  {
+    "country_code": "AV",
+    "country_name": "Avalon",
+    "currency_code": "AVA",
+    "currency_number": 10061,
+    "currency": "Avalonian Avalon"
+  },
+  {
+    "country_code": "AZ",
+    "country_name": "Azuria",
+    "currency_code": "AZA",
+    "currency_number": 10062,
+    "currency": "Azurian Azure"
+  },
+  {
+    "country_code": "BI",
+    "country_name": "Birelia",
+    "currency_code": "BIB",
+    "currency_number": 10063,
+    "currency": "Birelian Bit"
+  },
+  {
+    "country_code": "BL",
+    "country_name": "Blightor",
+    "currency_code": "BLB",
+    "currency_number": 10064,
+    "currency": "Blightorian Blight"
+  },
+  {
+    "country_code": "BO",
+    "country_name": "Borandia",
+    "currency_code": "BOB",
+    "currency_number": 10065,
+    "currency": "Borandian Bora"
+  },
+  {
+    "country_code": "BR",
+    "country_name": "Bravuria",
+    "currency_code": "BRB",
+    "currency_number": 10066,
+    "currency": "Bravurian Bravo"
+  },
+  {
+    "country_code": "BU",
+    "country_name": "Burandia",
+    "currency_code": "BUB",
+    "currency_number": 10067,
+    "currency": "Burandian Bur"
+  },
+  {
+    "country_code": "BY",
+    "country_name": "Byzantia",
+    "currency_code": "BYB",
+    "currency_number": 10068,
+    "currency": "Byzantian Byzant"
+  },
+  {
+    "country_code": "CE",
+    "country_name": "Celestia",
+    "currency_code": "CEC",
+    "currency_number": 10069,
+    "currency": "Celestian Celestial"
+  },
+  {
+    "country_code": "CH",
+    "country_name": "Chronia",
+    "currency_code": "CHC",
+    "currency_number": 10070,
+    "currency": "Chronian Chron"
+  },
+  {
+    "country_code": "CI",
+    "country_name": "Ciridia",
+    "currency_code": "CIC",
+    "currency_number": 10071,
+    "currency": "Ciridian Cirrus"
+  },
+  {
+    "country_code": "CL",
+    "country_name": "Clarion",
+    "currency_code": "CLC",
+    "currency_number": 10072,
+    "currency": "Clarionian Clarion"
+  },
+  {
+    "country_code": "CO",
+    "country_name": "Corvusia",
+    "currency_code": "COC",
+    "currency_number": 10073,
+    "currency": "Corvusian Corvus"
+  },
+  {
+    "country_code": "CR",
+    "country_name": "Crystalia",
+    "currency_code": "CRC",
+    "currency_number": 10074,
+    "currency": "Crystalian Crystal"
+  },
+  {
+    "country_code": "CU",
+    "country_name": "Cumbria",
+    "currency_code": "CUC",
+    "currency_number": 10075,
+    "currency": "Cumbrian Cumbr"
+  },
+  {
+    "country_code": "CY",
+    "country_name": "Cymeria",
+    "currency_code": "CYC",
+    "currency_number": 10076,
+    "currency": "Cymerian Cymbal"
+  },
+  {
+    "country_code": "DI",
+    "country_name": "Divinia",
+    "currency_code": "DID",
+    "currency_number": 10077,
+    "currency": "Divinian Divine"
+  },
+  {
+    "country_code": "DO",
+    "country_name": "Doravia",
+    "currency_code": "DOD",
+    "currency_number": 10078,
+    "currency": "Doravian Dora"
+  },
+  {
+    "country_code": "DR",
+    "country_name": "Drakonia",
+    "currency_code": "DRD",
+    "currency_number": 10079,
+    "currency": "Drakonian Dragon"
+  },
+  {
+    "country_code": "DU",
+    "country_name": "Dulcoria",
+    "currency_code": "DUD",
+    "currency_number": 10080,
+    "currency": "Dulcorian Dulce"
+  },
+  {
+    "country_code": "DY",
+    "country_name": "Dystopia",
+    "currency_code": "DYD",
+    "currency_number": 10081,
+    "currency": "Dystopian Dyst"
+  },
+  {
+    "country_code": "EB",
+    "country_name": "Ebonia",
+    "currency_code": "EBE",
+    "currency_number": 10082,
+    "currency": "Ebonian Ebony"
+  },
+  {
+    "country_code": "EC",
+    "country_name": "Echoria",
+    "currency_code": "ECE",
+    "currency_number": 10083,
+    "currency": "Echorian Echo"
+  },
+  {
+    "country_code": "ED",
+    "country_name": "Edenia",
+    "currency_code": "EDE",
+    "currency_number": 10084,
+    "currency": "Edenian Eden"
+  },
+  {
+    "country_code": "EF",
+    "country_name": "Effluvia",
+    "currency_code": "EFE",
+    "currency_number": 10085,
+    "currency": "Effluvian Efflux"
+  },
+  {
+    "country_code": "EG",
+    "country_name": "Egloria",
+    "currency_code": "EGE",
+    "currency_number": 10086,
+    "currency": "Eglorian Eglantine"
+  },
+  {
+    "country_code": "EI",
+    "country_name": "Eiridia",
+    "currency_code": "EIE",
+    "currency_number": 10087,
+    "currency": "Eiridian Eir"
+  },
+  {
+    "country_code": "EL",
+    "country_name": "Eldoria",
+    "currency_code": "ELE",
+    "currency_number": 10088,
+    "currency": "Eldorian Elder"
+  },
+  {
+    "country_code": "EM",
+    "country_name": "Emberia",
+    "currency_code": "EME",
+    "currency_number": 10089,
+    "currency": "Emberian Ember"
+  },
+  {
+    "country_code": "EN",
+    "country_name": "Enigma",
+    "currency_code": "ENE",
+    "currency_number": 10090,
+    "currency": "Enigman Enigma"
+  },
+  {
+    "country_code": "EO",
+    "country_name": "Eoland",
+    "currency_code": "EOE",
+    "currency_number": 10091,
+    "currency": "Eolandian Eon"
+  },
+  {
+    "country_code": "EP",
+    "country_name": "Ephemera",
+    "currency_code": "EPE",
+    "currency_number": 10092,
+    "currency": "Ephemeran Eph"
+  },
+  {
+    "country_code": "EQ",
+    "country_name": "Equatoria",
+    "currency_code": "EQE",
+    "currency_number": 10093,
+    "currency": "Equatorian Equus"
+  },
+  {
+    "country_code": "ET",
+    "country_name": "Etheria",
+    "currency_code": "ETE",
+    "currency_number": 10094,
+    "currency": "Etherian Ether"
+  },
+  {
+    "country_code": "EU",
+    "country_name": "Eudoria",
+    "currency_code": "EUE",
+    "currency_number": 10095,
+    "currency": "Eudorian Eudox"
+  },
+  {
+    "country_code": "EV",
+    "country_name": "Everon",
+    "currency_code": "EVE",
+    "currency_number": 10096,
+    "currency": "Everonian Ever"
+  },
+  {
+    "country_code": "EX",
+    "country_name": "Exandia",
+    "currency_code": "EXE",
+    "currency_number": 10097,
+    "currency": "Exandian Exalt"
+  },
+  {
+    "country_code": "EY",
+    "country_name": "Elysia",
+    "currency_code": "EYE",
+    "currency_number": 10098,
+    "currency": "Elysian Elyse"
+  },
+  {
+    "country_code": "EZ",
+    "country_name": "Ezoria",
+    "currency_code": "EZE",
+    "currency_number": 10099,
+    "currency": "Ezorian Eze"
+  },
+  {
     "country_code": "FA",
     "country_name": "Faeland",
     "currency_code": "FAF",

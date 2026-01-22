@@ -49,5 +49,7 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Hkma Rewrite Regulatory Corporate Sector',
     current_date,
     'FpML Public License 2.0',
-    'regulatory_corporate_sectors'
+    'regulatory_corporate_sectors',
+    'refdata_regulatory_corporate_sectors_tbl',
+    'dq_populate_regulatory_corporate_sectors'
 );

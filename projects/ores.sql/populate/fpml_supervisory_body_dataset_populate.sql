@@ -49,5 +49,7 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Supervisory Body',
     current_date,
     'FpML Public License 2.0',
-    'supervisory_bodies'
+    'supervisory_bodies',
+    'refdata_supervisory_bodies_tbl',
+    'dq_populate_supervisory_bodies'
 );

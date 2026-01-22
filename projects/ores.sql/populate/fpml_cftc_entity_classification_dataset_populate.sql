@@ -49,5 +49,7 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Cftc Entity Classification',
     current_date,
     'FpML Public License 2.0',
-    'entity_classifications'
+    'entity_classifications',
+    'refdata_entity_classifications_tbl',
+    'dq_populate_entity_classifications'
 );

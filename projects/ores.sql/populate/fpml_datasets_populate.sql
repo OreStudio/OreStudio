@@ -49,7 +49,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Account Type',
     current_date,
     'FpML Public License 2.0',
-    'account_types'
+    'account_types',
+    'refdata_account_types_tbl',
+    'dq_populate_account_types'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -102,7 +104,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Asset Class',
     current_date,
     'FpML Public License 2.0',
-    'asset_classes'
+    'asset_classes',
+    'refdata_asset_classes_tbl',
+    'dq_populate_asset_classes'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -155,7 +159,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Asset Measure',
     current_date,
     'FpML Public License 2.0',
-    'asset_measures'
+    'asset_measures',
+    'refdata_asset_measures_tbl',
+    'dq_populate_asset_measures'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -208,7 +214,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Benchmark Rate',
     current_date,
     'FpML Public License 2.0',
-    'benchmark_rates'
+    'benchmark_rates',
+    'refdata_benchmark_rates_tbl',
+    'dq_populate_benchmark_rates'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -261,7 +269,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Business Center',
     current_date,
     'FpML Public License 2.0',
-    'business_centres'
+    'business_centres',
+    'refdata_business_centres_tbl',
+    'dq_populate_business_centres'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -314,7 +324,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Business Process',
     current_date,
     'FpML Public License 2.0',
-    'business_processes'
+    'business_processes',
+    'refdata_business_processes_tbl',
+    'dq_populate_business_processes'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -367,7 +379,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Cashflow Type',
     current_date,
     'FpML Public License 2.0',
-    'cashflow_types'
+    'cashflow_types',
+    'refdata_cashflow_types_tbl',
+    'dq_populate_cashflow_types'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -420,7 +434,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Cftc Entity Classification',
     current_date,
     'FpML Public License 2.0',
-    'entity_classifications'
+    'entity_classifications',
+    'refdata_entity_classifications_tbl',
+    'dq_populate_entity_classifications'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -473,7 +489,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Cftc Organization Type',
     current_date,
     'FpML Public License 2.0',
-    'entity_classifications'
+    'entity_classifications',
+    'refdata_entity_classifications_tbl',
+    'dq_populate_entity_classifications'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -526,7 +544,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Entity Type',
     current_date,
     'FpML Public License 2.0',
-    'entity_classifications'
+    'entity_classifications',
+    'refdata_entity_classifications_tbl',
+    'dq_populate_entity_classifications'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -579,7 +599,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Hkma Rewrite Party Relationship Type',
     current_date,
     'FpML Public License 2.0',
-    'party_relationships'
+    'party_relationships',
+    'refdata_party_relationships_tbl',
+    'dq_populate_party_relationships'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -632,7 +654,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Hkma Rewrite Regulatory Corporate Sector',
     current_date,
     'FpML Public License 2.0',
-    'regulatory_corporate_sectors'
+    'regulatory_corporate_sectors',
+    'refdata_regulatory_corporate_sectors_tbl',
+    'dq_populate_regulatory_corporate_sectors'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -685,7 +709,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Local Jurisdiction',
     current_date,
     'FpML Public License 2.0',
-    'local_jurisdictions'
+    'local_jurisdictions',
+    'refdata_local_jurisdictions_tbl',
+    'dq_populate_local_jurisdictions'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -738,7 +764,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Party Relationship Type',
     current_date,
     'FpML Public License 2.0',
-    'party_relationships'
+    'party_relationships',
+    'refdata_party_relationships_tbl',
+    'dq_populate_party_relationships'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -791,7 +819,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Party Role',
     current_date,
     'FpML Public License 2.0',
-    'party_roles'
+    'party_roles',
+    'refdata_party_roles_tbl',
+    'dq_populate_party_roles'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -844,7 +874,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Person Role',
     current_date,
     'FpML Public License 2.0',
-    'person_roles'
+    'person_roles',
+    'refdata_person_roles_tbl',
+    'dq_populate_person_roles'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -897,7 +929,9 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Reporting Regime',
     current_date,
     'FpML Public License 2.0',
-    'reporting_regimes'
+    'reporting_regimes',
+    'refdata_reporting_regimes_tbl',
+    'dq_populate_reporting_regimes'
 );
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
@@ -950,5 +984,7 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Supervisory Body',
     current_date,
     'FpML Public License 2.0',
-    'supervisory_bodies'
+    'supervisory_bodies',
+    'refdata_supervisory_bodies_tbl',
+    'dq_populate_supervisory_bodies'
 );

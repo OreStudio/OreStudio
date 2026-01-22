@@ -49,5 +49,7 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Business Process',
     current_date,
     'FpML Public License 2.0',
-    'business_processes'
+    'business_processes',
+    'refdata_business_processes_tbl',
+    'dq_populate_business_processes'
 );

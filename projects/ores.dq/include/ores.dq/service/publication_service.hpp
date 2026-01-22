@@ -148,7 +148,7 @@ private:
         const std::string& published_by);
 
     /**
-     * @brief Calls the appropriate dq_populate_* function.
+     * @brief Calls the dataset's populate function.
      *
      * @param dataset The dataset to publish.
      * @param mode The publication mode.
@@ -157,14 +157,6 @@ private:
     domain::publication_result call_populate_function(
         const domain::dataset& dataset,
         domain::publication_mode mode);
-
-    /**
-     * @brief Gets the target table name for an artefact type.
-     *
-     * @param artefact_type The artefact type (images, countries, etc.)
-     * @return The production table name.
-     */
-    std::string get_target_table(const std::string& artefact_type);
 
     context ctx_;
     repository::dataset_repository dataset_repo_;

@@ -49,5 +49,7 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Business Center',
     current_date,
     'FpML Public License 2.0',
-    'business_centres'
+    'business_centres',
+    'refdata_business_centres_tbl',
+    'dq_populate_business_centres'
 );

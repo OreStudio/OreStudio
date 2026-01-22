@@ -32,5 +32,7 @@ select ores.upsert_dq_datasets(
     'Reference data for {{dataset.name}}',
     current_date,
     'FpML Public License 2.0',
-    '{{entity.entity_plural}}'
+    '{{entity.entity_plural}}',
+    'refdata_{{entity.entity_plural}}_tbl',
+    'dq_populate_{{entity.entity_plural}}'
 );

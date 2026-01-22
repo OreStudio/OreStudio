@@ -49,5 +49,7 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Cashflow Type',
     current_date,
     'FpML Public License 2.0',
-    'cashflow_types'
+    'cashflow_types',
+    'refdata_cashflow_types_tbl',
+    'dq_populate_cashflow_types'
 );

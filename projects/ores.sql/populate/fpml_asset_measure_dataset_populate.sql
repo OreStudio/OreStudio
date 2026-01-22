@@ -49,5 +49,7 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Asset Measure',
     current_date,
     'FpML Public License 2.0',
-    'asset_measures'
+    'asset_measures',
+    'refdata_asset_measures_tbl',
+    'dq_populate_asset_measures'
 );

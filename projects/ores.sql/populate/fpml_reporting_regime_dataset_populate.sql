@@ -49,5 +49,7 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Reporting Regime',
     current_date,
     'FpML Public License 2.0',
-    'reporting_regimes'
+    'reporting_regimes',
+    'refdata_reporting_regimes_tbl',
+    'dq_populate_reporting_regimes'
 );

@@ -49,5 +49,7 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Benchmark Rate',
     current_date,
     'FpML Public License 2.0',
-    'benchmark_rates'
+    'benchmark_rates',
+    'refdata_benchmark_rates_tbl',
+    'dq_populate_benchmark_rates'
 );

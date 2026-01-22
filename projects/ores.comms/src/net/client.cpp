@@ -483,8 +483,9 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
             co_await perform_connection();
 
             // Check state again after connection completes - disconnect() may have
-            // been called while we were connecting
-            if (state_.load(std::memory_order_acquire) != connection_state::reconnecting) {
+            // been called while we were connecting. After successful perform_connection(),
+            // state will be 'connected'. If it's not, something cancelled the connection.
+            if (state_.load(std::memory_order_acquire) != connection_state::connected) {
                 BOOST_LOG_SEV(lg(), info) << "Reconnect cancelled after connection established, "
                                           << "closing new connection";
                 {

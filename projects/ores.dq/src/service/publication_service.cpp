@@ -320,6 +320,7 @@ domain::publication_result publication_service::call_populate_function(
         << artefact_type << ", mode: " << mode_str;
 
     std::string function_name;
+    // Core artefact types
     if (artefact_type == "images") {
         function_name = "dq_populate_images";
     } else if (artefact_type == "countries") {
@@ -328,6 +329,38 @@ domain::publication_result publication_service::call_populate_function(
         function_name = "dq_populate_currencies";
     } else if (artefact_type == "ip2country") {
         function_name = "dq_populate_ip2country";
+    }
+    // FPML reference data artefact types
+    else if (artefact_type == "account_types") {
+        function_name = "dq_populate_account_types";
+    } else if (artefact_type == "asset_classes") {
+        function_name = "dq_populate_asset_classes";
+    } else if (artefact_type == "asset_measures") {
+        function_name = "dq_populate_asset_measures";
+    } else if (artefact_type == "benchmark_rates") {
+        function_name = "dq_populate_benchmark_rates";
+    } else if (artefact_type == "business_centres") {
+        function_name = "dq_populate_business_centres";
+    } else if (artefact_type == "business_processes") {
+        function_name = "dq_populate_business_processes";
+    } else if (artefact_type == "cashflow_types") {
+        function_name = "dq_populate_cashflow_types";
+    } else if (artefact_type == "entity_classifications") {
+        function_name = "dq_populate_entity_classifications";
+    } else if (artefact_type == "local_jurisdictions") {
+        function_name = "dq_populate_local_jurisdictions";
+    } else if (artefact_type == "party_relationships") {
+        function_name = "dq_populate_party_relationships";
+    } else if (artefact_type == "party_roles") {
+        function_name = "dq_populate_party_roles";
+    } else if (artefact_type == "person_roles") {
+        function_name = "dq_populate_person_roles";
+    } else if (artefact_type == "regulatory_corporate_sectors") {
+        function_name = "dq_populate_regulatory_corporate_sectors";
+    } else if (artefact_type == "reporting_regimes") {
+        function_name = "dq_populate_reporting_regimes";
+    } else if (artefact_type == "supervisory_bodies") {
+        function_name = "dq_populate_supervisory_bodies";
     } else {
         result.success = false;
         result.error_message = "Unknown artefact_type: " + artefact_type;
@@ -380,6 +413,7 @@ domain::publication_result publication_service::call_populate_function(
 }
 
 std::string publication_service::get_target_table(const std::string& artefact_type) {
+    // Core artefact types
     if (artefact_type == "images") {
         return "assets_images_tbl";
     } else if (artefact_type == "countries") {
@@ -388,6 +422,38 @@ std::string publication_service::get_target_table(const std::string& artefact_ty
         return "refdata_currencies_tbl";
     } else if (artefact_type == "ip2country") {
         return "geo_ip2country_tbl";
+    }
+    // FPML reference data artefact types
+    else if (artefact_type == "account_types") {
+        return "refdata_account_types_tbl";
+    } else if (artefact_type == "asset_classes") {
+        return "refdata_asset_classes_tbl";
+    } else if (artefact_type == "asset_measures") {
+        return "refdata_asset_measures_tbl";
+    } else if (artefact_type == "benchmark_rates") {
+        return "refdata_benchmark_rates_tbl";
+    } else if (artefact_type == "business_centres") {
+        return "refdata_business_centres_tbl";
+    } else if (artefact_type == "business_processes") {
+        return "refdata_business_processes_tbl";
+    } else if (artefact_type == "cashflow_types") {
+        return "refdata_cashflow_types_tbl";
+    } else if (artefact_type == "entity_classifications") {
+        return "refdata_entity_classifications_tbl";
+    } else if (artefact_type == "local_jurisdictions") {
+        return "refdata_local_jurisdictions_tbl";
+    } else if (artefact_type == "party_relationships") {
+        return "refdata_party_relationships_tbl";
+    } else if (artefact_type == "party_roles") {
+        return "refdata_party_roles_tbl";
+    } else if (artefact_type == "person_roles") {
+        return "refdata_person_roles_tbl";
+    } else if (artefact_type == "regulatory_corporate_sectors") {
+        return "refdata_regulatory_corporate_sectors_tbl";
+    } else if (artefact_type == "reporting_regimes") {
+        return "refdata_reporting_regimes_tbl";
+    } else if (artefact_type == "supervisory_bodies") {
+        return "refdata_supervisory_bodies_tbl";
     }
     return "";
 }

@@ -46,7 +46,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -65,7 +65,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -84,7 +84,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -103,7 +103,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -122,7 +122,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -141,7 +141,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -160,7 +160,7 @@ select
     'ISDA',
     '"EFFR" or "Fed Funds" per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -179,7 +179,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -198,7 +198,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -217,7 +217,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -236,7 +236,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -255,7 +255,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -274,7 +274,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -293,7 +293,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -312,7 +312,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -331,7 +331,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -350,7 +350,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -369,7 +369,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -388,7 +388,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -407,7 +407,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -426,7 +426,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -445,7 +445,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -464,7 +464,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -483,7 +483,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -502,7 +502,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -521,7 +521,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -540,7 +540,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definition up to V3, Section 10.3 Overnight Rate Benchmarks. What is defined as "SEK OIS" in the 2006 ISDA Collateral Cash Price Matrix up to November 10, 2021 publication.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -559,7 +559,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -578,7 +578,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -597,7 +597,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -616,7 +616,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -635,7 +635,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks. What is defined as "TONAR" in the 2006 ISDA Collateral Cash Price Matrix.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl
@@ -654,7 +654,7 @@ select
     'ISDA',
     'Per 2021 ISDA Definitions, Section 10.3 Overnight Rate Benchmarks.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_benchmark_rates_tbl

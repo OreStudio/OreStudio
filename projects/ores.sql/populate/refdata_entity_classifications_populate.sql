@@ -46,7 +46,7 @@ select
     'FpML',
     'A commodity pool as defined in CFTC CEA § 2(h)(7)(C).',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -65,7 +65,7 @@ select
     'FpML',
     'An employee benefit plan as defined in paragraphs (3) and (32) of section 1002 of title 29 of the Commodity Exchange Act (CEA).',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -84,7 +84,7 @@ select
     'FpML',
     'A person predominantly engaged in activities that are in the business of banking, or in activities that are financial in nature, as defined in section 1843(k) of title 12 of the Commodity Exchange Act (CEA).',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -103,7 +103,7 @@ select
     'FpML',
     'A major security based swap participant as defined in CFTC CEA § 2(h)(7)(C).',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -122,7 +122,7 @@ select
     'FpML',
     'A major swap participant as defined in CFTC CEA § 2(h)(7)(C).',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -141,7 +141,7 @@ select
     'FpML',
     'None of the listed in the scheme.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -160,7 +160,7 @@ select
     'FpML',
     'A private fund as defined in section 80b-2(a) of title 15 of the Commodity Exchange Act (CEA).',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -179,7 +179,7 @@ select
     'FpML',
     'A security-based swap dealer as defined in CFTC CEA § 2(h)(7)(C).',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -198,7 +198,7 @@ select
     'FpML',
     'A swap dealer as defined in CFTC CEA § 2(h)(7)(C).',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -217,7 +217,7 @@ select
     'FpML',
     'An agency as defined in 5 U.S.C. 551(1), a federal instrumentality, or a federal authority.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -236,7 +236,7 @@ select
     'FpML',
     'An entity chartered pursuant to federal law after formation (example: an organization listed in title 36 of the U.S. Code).',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -255,7 +255,7 @@ select
     'FpML',
     'An entity that was established by, or at the direction of, one or more of the entities listed in clause (1), or has an ultimate parent listed in its LEI reference data that is an entity listed in clause (1) or in the first part of this clause (2).',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -274,7 +274,7 @@ select
     'FpML',
     'A federally funded research and development center on the master list referenced in 48 CFR 35.017-6.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -293,7 +293,7 @@ select
     'FpML',
     'A government corporation (examples: as such term is defined in 5 U.S.C. 103(1) or in 31 U.S.C. 9101).',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -312,7 +312,7 @@ select
     'FpML',
     'A government-sponsored enterprise (example: as such term is defined in 2 U.S.C. 622(8)).',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -331,7 +331,7 @@ select
     'FpML',
     'An executive department listed in 5 U.S.C. 101.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -350,7 +350,7 @@ select
     'FpML',
     'Entity Type of Asian.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -369,7 +369,7 @@ select
     'FpML',
     'Entity Type of Australian and New Zealand.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -388,7 +388,7 @@ select
     'FpML',
     'Entity Type of European Emerging Markets.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -407,7 +407,7 @@ select
     'FpML',
     'Entity Type of Japanese.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -426,7 +426,7 @@ select
     'FpML',
     'Entity Type of North American High Yield.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -445,7 +445,7 @@ select
     'FpML',
     'Entity Type of North American Insurance.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -464,7 +464,7 @@ select
     'FpML',
     'Entity Type of North American Investment Grade.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -483,7 +483,7 @@ select
     'FpML',
     'Entity Type of Singaporean.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -502,7 +502,7 @@ select
     'FpML',
     'Entity Type of Western European.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl
@@ -521,7 +521,7 @@ select
     'FpML',
     'Entity Type of Western European Insurance.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_entity_classifications_tbl

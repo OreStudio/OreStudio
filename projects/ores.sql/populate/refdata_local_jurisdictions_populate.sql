@@ -46,7 +46,7 @@ select
     'FpML',
     'Afghan Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -65,7 +65,7 @@ select
     'FpML',
     'Follows Local Jurisdiction as per MCA to this Transaction.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -84,7 +84,7 @@ select
     'FpML',
     'Australian Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -103,7 +103,7 @@ select
     'FpML',
     'Chinese Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -122,7 +122,7 @@ select
     'FpML',
     'Hong Kong Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -141,7 +141,7 @@ select
     'FpML',
     'Indian Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -160,7 +160,7 @@ select
     'FpML',
     'Indonesian Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -179,7 +179,7 @@ select
     'FpML',
     'Japanese Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -198,7 +198,7 @@ select
     'FpML',
     'Korean Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -217,7 +217,7 @@ select
     'FpML',
     'Malaysian Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -236,7 +236,7 @@ select
     'FpML',
     'New Zealand Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -255,7 +255,7 @@ select
     'FpML',
     'No Local Jurisdiction applies to this Transaction.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -274,7 +274,7 @@ select
     'FpML',
     'Pakistani Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -293,7 +293,7 @@ select
     'FpML',
     'Philippine Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -312,7 +312,7 @@ select
     'FpML',
     'Singaporean Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -331,7 +331,7 @@ select
     'FpML',
     'Taiwanese Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -350,7 +350,7 @@ select
     'FpML',
     'Thai Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl
@@ -369,7 +369,7 @@ select
     'FpML',
     'Vietnamese Local Jurisdiction applies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_local_jurisdictions_tbl

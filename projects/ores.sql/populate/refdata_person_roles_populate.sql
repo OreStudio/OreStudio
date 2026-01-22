@@ -46,7 +46,7 @@ select
     'FpML',
     'The person who arranged with a client to execute the trade.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_person_roles_tbl
@@ -65,7 +65,7 @@ select
     'FpML',
     'Acquirer of the legal title to the financial instrument.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_person_roles_tbl
@@ -84,7 +84,7 @@ select
     'FpML',
     'The operational contact at the custodian.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_person_roles_tbl
@@ -103,7 +103,7 @@ select
     'FpML',
     'The party or person with legal responsibility for authorization of the execution of the transaction.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_person_roles_tbl
@@ -122,7 +122,7 @@ select
     'FpML',
     'Person within the firm who is responsible for execution of the transaction.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_person_roles_tbl
@@ -141,7 +141,7 @@ select
     'FpML',
     'Person who is responsible for making the investment decision.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_person_roles_tbl
@@ -160,7 +160,7 @@ select
     'FpML',
     'Individual responsible for managing the closing-related operational servicing of an asset.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_person_roles_tbl
@@ -179,7 +179,7 @@ select
     'FpML',
     'Individual responsible for ongoing operational servicing of the asset. E.g. managing principal draws and repayments, interest and fee payments, etc.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_person_roles_tbl
@@ -198,7 +198,7 @@ select
     'FpML',
     'Seller of the legal title to the financial instrument.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_person_roles_tbl
@@ -217,7 +217,7 @@ select
     'FpML',
     'The person who executed the trade.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_person_roles_tbl

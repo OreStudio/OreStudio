@@ -35,6 +35,34 @@ NAMESPACES = {
     'doc': 'http://www.fpml.org/coding-scheme/documentation',
 }
 
+# Mapping of entity directory names to subject areas
+ENTITY_SUBJECT_AREA_MAP = {
+    # Parties - party identification and classification
+    'party-roles': 'Parties',
+    'person-roles': 'Parties',
+    'party-relationships': 'Parties',
+    'entity-classifications': 'Parties',
+    # Trading - trading infrastructure
+    'account-types': 'Trading',
+    'business-centres': 'Trading',
+    'business-processes': 'Trading',
+    'cashflow-types': 'Trading',
+    # Market Data - asset and benchmark reference
+    'asset-classes': 'Market Data',
+    'asset-measures': 'Market Data',
+    'benchmark-rates': 'Market Data',
+    # Regulatory - regulatory bodies and regimes
+    'local-jurisdictions': 'Regulatory',
+    'regulatory-corporate-sectors': 'Regulatory',
+    'reporting-regimes': 'Regulatory',
+    'supervisory-bodies': 'Regulatory',
+}
+
+
+def get_subject_area(entity_dir_name: str) -> str:
+    """Get the subject area for an entity based on its directory name."""
+    return ENTITY_SUBJECT_AREA_MAP.get(entity_dir_name, 'General')
+
 
 @dataclass
 class CodingScheme:
@@ -56,7 +84,7 @@ class CodingScheme:
         code = 'FPML_' + scheme_name.upper().replace('-', '_')
         return code
 
-    def to_sql_insert(self) -> str:
+    def to_sql_insert(self, subject_area: str = 'General') -> str:
         """Generate SQL upsert statement for this coding scheme."""
         code = self.to_code()
         name = self.short_name.replace("'", "''")
@@ -66,7 +94,7 @@ class CodingScheme:
     '{code}',
     '{name}',
     'industry',
-    'Reference Data',
+    '{subject_area}',
     'Reference Data',
     '{self.canonical_uri}',
     '{definition}'
@@ -96,6 +124,7 @@ class MergedEntity:
     entity_name: str
     entity_plural: str
     description: str
+    subject_area: str = 'General'
     coding_schemes: list[CodingScheme] = field(default_factory=list)
     rows: list[CodeListRow] = field(default_factory=list)
 
@@ -310,11 +339,13 @@ def process_directory(dir_path: Path) -> MergedEntity:
         raise ValueError(f"No XML files found in {dir_path}")
 
     entity_singular, entity_plural = derive_entity_name(dir_path.name)
+    subject_area = get_subject_area(dir_path.name)
 
     merged = MergedEntity(
         entity_name=entity_singular,
         entity_plural=entity_plural,
-        description=f"Reference data for {entity_plural.replace('_', ' ')}"
+        description=f"Reference data for {entity_plural.replace('_', ' ')}",
+        subject_area=subject_area
     )
 
     seen_codes: dict[tuple[str, str], CodeListRow] = {}
@@ -368,7 +399,7 @@ def generate_coding_schemes_sql(entities: list[MergedEntity], output_path: Path)
             code = cs.to_code()
             if code not in seen_schemes:
                 seen_schemes.add(code)
-                lines.append(cs.to_sql_insert())
+                lines.append(cs.to_sql_insert(entity.subject_area))
                 lines.append("")
 
     output_path.write_text('\n'.join(lines))

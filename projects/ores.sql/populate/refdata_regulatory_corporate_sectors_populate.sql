@@ -46,7 +46,7 @@ select
     'HKMA',
     'Alternative Investment Fund.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_regulatory_corporate_sectors_tbl
@@ -65,7 +65,7 @@ select
     'HKMA',
     'Assurance Undertaking.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_regulatory_corporate_sectors_tbl
@@ -84,7 +84,7 @@ select
     'HKMA',
     'Central Counterparty.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_regulatory_corporate_sectors_tbl
@@ -103,7 +103,7 @@ select
     'HKMA',
     'Credit Institution.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_regulatory_corporate_sectors_tbl
@@ -122,7 +122,7 @@ select
     'HKMA',
     'Central Securities Depository.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_regulatory_corporate_sectors_tbl
@@ -141,7 +141,7 @@ select
     'HKMA',
     'Insurance Undertaking.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_regulatory_corporate_sectors_tbl
@@ -160,7 +160,7 @@ select
     'HKMA',
     'Investment Firm.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_regulatory_corporate_sectors_tbl
@@ -179,7 +179,7 @@ select
     'HKMA',
     'Occupational Retirement Provision Institution.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_regulatory_corporate_sectors_tbl
@@ -198,7 +198,7 @@ select
     'HKMA',
     'Other.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_regulatory_corporate_sectors_tbl
@@ -217,7 +217,7 @@ select
     'HKMA',
     'Reinsurance Undertaking.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_regulatory_corporate_sectors_tbl
@@ -236,7 +236,7 @@ select
     'HKMA',
     'UCITS Management Company.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_regulatory_corporate_sectors_tbl

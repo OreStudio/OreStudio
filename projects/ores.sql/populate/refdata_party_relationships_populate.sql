@@ -46,7 +46,7 @@ select
     'FpML',
     'Intragroup as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_party_relationships_tbl
@@ -65,7 +65,7 @@ select
     'FpML',
     'Not intragroup as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_party_relationships_tbl
@@ -84,7 +84,7 @@ select
     'FpML',
     'Indicates whether the transaction is between two affiliated entities. It is referred to as Inter-affiliate under the Canadian CSA reporting regime.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_party_relationships_tbl
@@ -103,7 +103,7 @@ select
     'FpML',
     'Indicates the transaction is between two dealers.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_party_relationships_tbl
@@ -122,7 +122,7 @@ select
     'FpML',
     'Indicates whether the contract was concluded as an intra-group transaction, defined in Article 3, 4(2), 11(6) to 11(10) of EMIR.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_party_relationships_tbl

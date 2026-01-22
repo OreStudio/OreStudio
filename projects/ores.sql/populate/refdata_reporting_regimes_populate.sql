@@ -46,7 +46,7 @@ select
     'FpML',
     'Australian Securities and Investments Commission Derivative Transaction Rules (Reporting)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_reporting_regimes_tbl
@@ -65,7 +65,7 @@ select
     'FpML',
     'Rule 91-507 Derivatives: Trade Repositories and Derivatives Data. Harmonized rule adopted by Canadian provinces and territories.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_reporting_regimes_tbl
@@ -84,7 +84,7 @@ select
     'FpML',
     'Dodd-Frank Act (US)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_reporting_regimes_tbl
@@ -103,7 +103,7 @@ select
     'FpML',
     'European Markets Infrastructure Regulation',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_reporting_regimes_tbl
@@ -122,7 +122,7 @@ select
     'FpML',
     'Hong Kong Monetary Authority',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_reporting_regimes_tbl
@@ -141,7 +141,7 @@ select
     'FpML',
     'Japan Financial Services Authority',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_reporting_regimes_tbl
@@ -160,7 +160,7 @@ select
     'FpML',
     'The Monetary Authority of Singapore',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_reporting_regimes_tbl
@@ -179,7 +179,7 @@ select
     'FpML',
     'Markets in Financial Instruments Directive',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_reporting_regimes_tbl
@@ -198,7 +198,7 @@ select
     'FpML',
     'Markets in Financial Instruments Directive II',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_reporting_regimes_tbl
@@ -217,7 +217,7 @@ select
     'FpML',
     'Markets in Financial Instruments Regulation',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_reporting_regimes_tbl
@@ -236,7 +236,7 @@ select
     'FpML',
     'OTC Derivatives Regulators Forum',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_reporting_regimes_tbl
@@ -255,7 +255,7 @@ select
     'FpML',
     'Russian regulatory reporting',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_reporting_regimes_tbl
@@ -274,7 +274,7 @@ select
     'FpML',
     'Securities Financing Transactions Regulation',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_reporting_regimes_tbl
@@ -293,7 +293,7 @@ select
     'FpML',
     'United Kingdom European Markets Infrastructure Regulation',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_reporting_regimes_tbl

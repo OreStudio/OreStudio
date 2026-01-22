@@ -46,7 +46,7 @@ select
     'FpML',
     'Commodity.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_asset_classes_tbl
@@ -65,7 +65,7 @@ select
     'FpML',
     'Credit.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_asset_classes_tbl
@@ -84,7 +84,7 @@ select
     'FpML',
     'Equity.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_asset_classes_tbl
@@ -103,7 +103,7 @@ select
     'FpML',
     'ForeignExchange.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_asset_classes_tbl
@@ -122,7 +122,7 @@ select
     'FpML',
     'InterestRate.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_asset_classes_tbl
@@ -141,7 +141,7 @@ select
     'FpML',
     'SecuritiesFinancing.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_asset_classes_tbl

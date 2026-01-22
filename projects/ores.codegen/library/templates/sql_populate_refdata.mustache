@@ -30,7 +30,7 @@ select
     {{#source}}'{{{source}}}'{{/source}}{{^source}}null{{/source}},
     {{#description}}'{{{description}}}'{{/description}}{{^description}}null{{/description}},
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_{{entity.entity_plural}}_tbl

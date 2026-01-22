@@ -46,7 +46,7 @@ select
     'FpML',
     'Australian Securities and Investments Commission',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -65,7 +65,7 @@ select
     'FpML',
     'Central Bank of the Russian Federation',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -84,7 +84,7 @@ select
     'FpML',
     'Alberta Securities Commission',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -103,7 +103,7 @@ select
     'FpML',
     'British Columbia Securities Commission',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -122,7 +122,7 @@ select
     'FpML',
     'The Manitoba Securities Commission',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -141,7 +141,7 @@ select
     'FpML',
     'Financial and Consumer Services Commission',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -160,7 +160,7 @@ select
     'FpML',
     'Deputy Superintendent of Securities, Service Newfoundland and Labrador',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -179,7 +179,7 @@ select
     'FpML',
     'Nova Scotia Securities Commission',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -198,7 +198,7 @@ select
     'FpML',
     'Northwest Territories Securities Office',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -217,7 +217,7 @@ select
     'FpML',
     'Nunavut Securities Office, Government of Nunavut',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -236,7 +236,7 @@ select
     'FpML',
     'Ontario Securities Commission',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -255,7 +255,7 @@ select
     'FpML',
     'Office of the Superintendent of Securities',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -274,7 +274,7 @@ select
     'FpML',
     'Autorite des marches financiers',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -293,7 +293,7 @@ select
     'FpML',
     'Financial and Consumer Affairs Authority of Saskatchewan',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -312,7 +312,7 @@ select
     'FpML',
     'Office of the Superintendent of Securities',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -331,7 +331,7 @@ select
     'FpML',
     'Commodity Futures Trading Commission (US)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -350,7 +350,7 @@ select
     'FpML',
     'European Securities and Markets Authority (European Union)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -369,7 +369,7 @@ select
     'FpML',
     'Financial Conduct Authority (UK)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -388,7 +388,7 @@ select
     'FpML',
     'Federal Reserve (US)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -407,7 +407,7 @@ select
     'FpML',
     'Hong Kong Monetary Authority (China)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -426,7 +426,7 @@ select
     'FpML',
     'Japan Financial Services Authority (Japan)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -445,7 +445,7 @@ select
     'FpML',
     'The Monetary Authority of Singapore',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -464,7 +464,7 @@ select
     'FpML',
     'OTC Derivatives Regulators Forum',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -483,7 +483,7 @@ select
     'FpML',
     'Securities and Exchange Commission (US)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl
@@ -502,7 +502,7 @@ select
     'FpML',
     'Deprecated usage: FCA replaces UKFSA',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_supervisory_bodies_tbl

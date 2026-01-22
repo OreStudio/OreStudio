@@ -46,7 +46,7 @@ select
     'FpML',
     'Process for splitting a trade across accounts.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_processes_tbl
@@ -65,7 +65,7 @@ select
     'FpML',
     'Process for novating a trade to a central counterparty (with margining) for credit risk mitigation.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_processes_tbl
@@ -84,7 +84,7 @@ select
     'FpML',
     'Process for verifying the terms of a trade.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_processes_tbl
@@ -103,7 +103,7 @@ select
     'FpML',
     'Process for executing a trade.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_processes_tbl
@@ -122,7 +122,7 @@ select
     'FpML',
     'Process for comparing representations of a trade or portfolio for the purpose of identifying and resolving discrepancies.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_processes_tbl
@@ -141,7 +141,7 @@ select
     'FpML',
     'Process for calculating payment amounts and performing payments as required by the terms of a transaction.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_processes_tbl

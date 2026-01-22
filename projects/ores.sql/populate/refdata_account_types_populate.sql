@@ -46,7 +46,7 @@ select
     'FpML',
     'The account contains trading activity or positions that belong to a client of the firm that opened the account.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_account_types_tbl
@@ -65,7 +65,7 @@ select
     'FpML',
     'The account contains proprietary trading activity or positions, belonging to the firm that is the owner of the account.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_account_types_tbl

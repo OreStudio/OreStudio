@@ -30,6 +30,11 @@
  * - Country Flags: Flag image data associated with countries
  * - IP Address to Country maps: IP geolocation mapping data
  * - Cryptocurrencies: Cryptocurrency reference data including icons
+ * - Parties: Party identification schemes and entity classifications
+ * - Trading: Trading infrastructure (accounts, business centres, cashflows)
+ * - Market Data: Asset classes, measures, and benchmark rates
+ * - Regulatory: Regulatory bodies, regimes, and jurisdictions
+ * - General: Cross-cutting reference data
  */
 
 set schema 'ores';
@@ -80,6 +85,24 @@ select ores.upsert_dq_subject_areas(
     'Reference Data',
     'General',
     'Cross-cutting reference data not specific to a particular domain.'
+);
+
+select ores.upsert_dq_subject_areas(
+    'Reference Data',
+    'Trading',
+    'Trading infrastructure reference data including account types, business centres, and cashflow types.'
+);
+
+select ores.upsert_dq_subject_areas(
+    'Reference Data',
+    'Market Data',
+    'Market data reference including asset classes, asset measures, and benchmark rates.'
+);
+
+select ores.upsert_dq_subject_areas(
+    'Reference Data',
+    'Regulatory',
+    'Regulatory reference data including supervisory bodies, reporting regimes, and jurisdictions.'
 );
 
 -- =============================================================================

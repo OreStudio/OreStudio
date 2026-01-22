@@ -46,7 +46,7 @@ select
     'ISDA',
     'Abu Dhabi, Business Day (as defined in 2021 ISDA Definitions Section 2.1.10 (ii))',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -65,7 +65,7 @@ select
     'ISDA',
     'Abu Dhabi, Settlement Day (as defined in 2021 ISDA Definitions Section 2.1.10 (i))',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -84,7 +84,7 @@ select
     'ISDA',
     'Dubai, United Arab Emirates',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -103,7 +103,7 @@ select
     'ISDA',
     'Yerevan, Armenia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -122,7 +122,7 @@ select
     'ISDA',
     'Luanda, Angola',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -141,7 +141,7 @@ select
     'ISDA',
     'Buenos Aires, Argentina',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -160,7 +160,7 @@ select
     'ISDA',
     'Vienna, Austria',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -179,7 +179,7 @@ select
     'ISDA',
     'Adelaide, Australia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -198,7 +198,7 @@ select
     'ISDA',
     'Brisbane, Australia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -217,7 +217,7 @@ select
     'ISDA',
     'Canberra, Australia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -236,7 +236,7 @@ select
     'ISDA',
     'Darwin, Australia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -255,7 +255,7 @@ select
     'ISDA',
     'Melbourne, Australia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -274,7 +274,7 @@ select
     'ISDA',
     'Perth, Australia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -293,7 +293,7 @@ select
     'ISDA',
     'Sydney, Australia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -312,7 +312,7 @@ select
     'ISDA',
     'Baku, Azerbaijan',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -331,7 +331,7 @@ select
     'ISDA',
     'Bridgetown, Barbados',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -350,7 +350,7 @@ select
     'ISDA',
     'Dhaka, Bangladesh',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -369,7 +369,7 @@ select
     'ISDA',
     'Brussels, Belgium',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -388,7 +388,7 @@ select
     'ISDA',
     'Sofia, Bulgaria',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -407,7 +407,7 @@ select
     'ISDA',
     'Manama, Bahrain',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -426,7 +426,7 @@ select
     'ISDA',
     'Hamilton, Bermuda',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -445,7 +445,7 @@ select
     'ISDA',
     'Bandar Seri Begawan, Brunei',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -464,7 +464,7 @@ select
     'ISDA',
     'La Paz, Bolivia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -483,7 +483,7 @@ select
     'ISDA',
     'Brazil Business Day.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -502,7 +502,7 @@ select
     'ISDA',
     'Brasilia, Brazil.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -521,7 +521,7 @@ select
     'ISDA',
     'Rio de Janeiro, Brazil.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -540,7 +540,7 @@ select
     'ISDA',
     'Sao Paulo, Brazil.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -559,7 +559,7 @@ select
     'ISDA',
     'Nassau, Bahamas',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -578,7 +578,7 @@ select
     'ISDA',
     'Gaborone, Botswana',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -597,7 +597,7 @@ select
     'ISDA',
     'Minsk, Belarus',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -616,7 +616,7 @@ select
     'ISDA',
     'Calgary, Canada',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -635,7 +635,7 @@ select
     'ISDA',
     'Fredericton, Canada.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -654,7 +654,7 @@ select
     'ISDA',
     'Montreal, Canada',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -673,7 +673,7 @@ select
     'ISDA',
     'Ottawa, Canada',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -692,7 +692,7 @@ select
     'ISDA',
     'Toronto, Canada',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -711,7 +711,7 @@ select
     'ISDA',
     'Vancouver, Canada',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -730,7 +730,7 @@ select
     'ISDA',
     'Winnipeg, Canada',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -749,7 +749,7 @@ select
     'ISDA',
     'Basel, Switzerland',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -768,7 +768,7 @@ select
     'ISDA',
     'Geneva, Switzerland',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -787,7 +787,7 @@ select
     'ISDA',
     'Zurich, Switzerland',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -806,7 +806,7 @@ select
     'ISDA',
     'Abidjan, Cote d''Ivoire',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -825,7 +825,7 @@ select
     'ISDA',
     'Santiago, Chile',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -844,7 +844,7 @@ select
     'ISDA',
     'Yaounde, Cameroon',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -863,7 +863,7 @@ select
     'ISDA',
     'Beijing, China',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -882,7 +882,7 @@ select
     'ISDA',
     'Shanghai, China',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -901,7 +901,7 @@ select
     'ISDA',
     'Bogota, Colombia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -920,7 +920,7 @@ select
     'ISDA',
     'San Jose, Costa Rica',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -939,7 +939,7 @@ select
     'ISDA',
     'Willemstad, Curacao',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -958,7 +958,7 @@ select
     'ISDA',
     'Nicosia, Cyprus',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -977,7 +977,7 @@ select
     'ISDA',
     'Prague, Czech Republic',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -996,7 +996,7 @@ select
     'ISDA',
     'Cologne, Germany',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1015,7 +1015,7 @@ select
     'ISDA',
     'Dusseldorf, Germany',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1034,7 +1034,7 @@ select
     'ISDA',
     'Frankfurt, Germany',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1053,7 +1053,7 @@ select
     'ISDA',
     'Hannover, Germany',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1072,7 +1072,7 @@ select
     'ISDA',
     'Hamburg, Germany',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1091,7 +1091,7 @@ select
     'ISDA',
     'Leipzig, Germany',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1110,7 +1110,7 @@ select
     'ISDA',
     'Mainz, Germany',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1129,7 +1129,7 @@ select
     'ISDA',
     'Munich, Germany',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1148,7 +1148,7 @@ select
     'ISDA',
     'Stuttgart, Germany',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1167,7 +1167,7 @@ select
     'ISDA',
     'Copenhagen, Denmark',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1186,7 +1186,7 @@ select
     'ISDA',
     'Santo Domingo, Dominican Republic',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1205,7 +1205,7 @@ select
     'ISDA',
     'Algiers, Algeria',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1224,7 +1224,7 @@ select
     'ISDA',
     'Guayaquil, Ecuador',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1243,7 +1243,7 @@ select
     'ISDA',
     'Tallinn, Estonia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1262,7 +1262,7 @@ select
     'ISDA',
     'Cairo, Egypt',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1281,7 +1281,7 @@ select
     'ISDA',
     'ESAS Settlement Day (as defined in 2006 ISDA Definitions Section 7.1 and Supplement Number 15 to the 2000 ISDA Definitions)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1300,7 +1300,7 @@ select
     'ISDA',
     'Barcelona, Spain',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1319,7 +1319,7 @@ select
     'ISDA',
     'Madrid, Spain',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1338,7 +1338,7 @@ select
     'ISDA',
     'San Sebastian, Spain',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1357,7 +1357,7 @@ select
     'ISDA',
     'Addis Ababa, Ethiopia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1376,7 +1376,7 @@ select
     'ISDA',
     'Publication dates for ICE Swap rates based on EUR-EURIBOR rates',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1395,7 +1395,7 @@ select
     'ISDA',
     'TARGET Settlement Day',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1414,7 +1414,7 @@ select
     'ISDA',
     'Helsinki, Finland',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1433,7 +1433,7 @@ select
     'ISDA',
     'Paris, France',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1452,7 +1452,7 @@ select
     'ISDA',
     'Edinburgh, Scotland',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1471,7 +1471,7 @@ select
     'ISDA',
     'London, United Kingdom',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1490,7 +1490,7 @@ select
     'ISDA',
     'Publication dates for GBP ICE Swap rates',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1509,7 +1509,7 @@ select
     'ISDA',
     'Tbilisi, Georgia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1528,7 +1528,7 @@ select
     'ISDA',
     'Saint Peter Port, Guernsey',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1547,7 +1547,7 @@ select
     'ISDA',
     'Accra, Ghana',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1566,7 +1566,7 @@ select
     'ISDA',
     'Gibraltar, Gibraltar',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1585,7 +1585,7 @@ select
     'ISDA',
     'Banjul, Gambia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1604,7 +1604,7 @@ select
     'ISDA',
     'Conakry, Guinea',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1623,7 +1623,7 @@ select
     'ISDA',
     'Athens, Greece',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1642,7 +1642,7 @@ select
     'ISDA',
     'Guatemala City, Guatemala',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1661,7 +1661,7 @@ select
     'ISDA',
     'Guatemala City, Guatemala [DEPRECATED, to be removed in 2024. Replaced by GTGC.]',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1680,7 +1680,7 @@ select
     'ISDA',
     'Hong Kong, Hong Kong',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1699,7 +1699,7 @@ select
     'ISDA',
     'Tegucigalpa, Honduras',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1718,7 +1718,7 @@ select
     'ISDA',
     'Zagreb, Republic of Croatia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1737,7 +1737,7 @@ select
     'ISDA',
     'Budapest, Hungary',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1756,7 +1756,7 @@ select
     'ISDA',
     'Jakarta, Indonesia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1775,7 +1775,7 @@ select
     'ISDA',
     'Dublin, Ireland',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1794,7 +1794,7 @@ select
     'ISDA',
     'Jerusalem, Israel',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1813,7 +1813,7 @@ select
     'ISDA',
     'Publication dates of the ILS-SHIR index.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1832,7 +1832,7 @@ select
     'ISDA',
     'Publication dates of the ILS-TELBOR index.',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1851,7 +1851,7 @@ select
     'ISDA',
     'Tel Aviv, Israel',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1870,7 +1870,7 @@ select
     'ISDA',
     'Ahmedabad, India',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1889,7 +1889,7 @@ select
     'ISDA',
     'Bangalore, India',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1908,7 +1908,7 @@ select
     'ISDA',
     'Chennai, India',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1927,7 +1927,7 @@ select
     'ISDA',
     'Hyderabad, India',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1946,7 +1946,7 @@ select
     'ISDA',
     'Kolkata, India',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1965,7 +1965,7 @@ select
     'ISDA',
     'Mumbai, India',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -1984,7 +1984,7 @@ select
     'ISDA',
     'New Delhi, India',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2003,7 +2003,7 @@ select
     'ISDA',
     'Baghdad, Iraq',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2022,7 +2022,7 @@ select
     'ISDA',
     'Teheran, Iran',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2041,7 +2041,7 @@ select
     'ISDA',
     'Reykjavik, Iceland',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2060,7 +2060,7 @@ select
     'ISDA',
     'Milan, Italy',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2079,7 +2079,7 @@ select
     'ISDA',
     'Rome, Italy',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2098,7 +2098,7 @@ select
     'ISDA',
     'Turin, Italy',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2117,7 +2117,7 @@ select
     'ISDA',
     'St. Helier, Channel Islands, Jersey',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2136,7 +2136,7 @@ select
     'ISDA',
     'Kingston, Jamaica',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2155,7 +2155,7 @@ select
     'ISDA',
     'Amman, Jordan',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2174,7 +2174,7 @@ select
     'ISDA',
     'Tokyo, Japan',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2193,7 +2193,7 @@ select
     'ISDA',
     'Nairobi, Kenya',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2212,7 +2212,7 @@ select
     'ISDA',
     'Phnom Penh, Cambodia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2231,7 +2231,7 @@ select
     'ISDA',
     'Seoul, Republic of Korea',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2250,7 +2250,7 @@ select
     'ISDA',
     'Kuwait City, Kuwait',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2269,7 +2269,7 @@ select
     'ISDA',
     'George Town, Cayman Islands',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2288,7 +2288,7 @@ select
     'ISDA',
     'Almaty, Kazakhstan',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2307,7 +2307,7 @@ select
     'ISDA',
     'Vientiane, Laos',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2326,7 +2326,7 @@ select
     'ISDA',
     'Beirut, Lebanon',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2345,7 +2345,7 @@ select
     'ISDA',
     'Colombo, Sri Lanka',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2364,7 +2364,7 @@ select
     'ISDA',
     'Luxembourg, Luxembourg',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2383,7 +2383,7 @@ select
     'ISDA',
     'Riga, Latvia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2402,7 +2402,7 @@ select
     'ISDA',
     'Casablanca, Morocco',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2421,7 +2421,7 @@ select
     'ISDA',
     'Rabat, Morocco',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2440,7 +2440,7 @@ select
     'ISDA',
     'Monaco, Monaco',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2459,7 +2459,7 @@ select
     'ISDA',
     'Ulan Bator, Mongolia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2478,7 +2478,7 @@ select
     'ISDA',
     'Macau, Macao',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2497,7 +2497,7 @@ select
     'ISDA',
     'Valletta, Malta',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2516,7 +2516,7 @@ select
     'ISDA',
     'Port Louis, Mauritius',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2535,7 +2535,7 @@ select
     'ISDA',
     'Male, Maldives',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2554,7 +2554,7 @@ select
     'ISDA',
     'Lilongwe, Malawi',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2573,7 +2573,7 @@ select
     'ISDA',
     'Mexico City, Mexico',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2592,7 +2592,7 @@ select
     'ISDA',
     'Kuala Lumpur, Malaysia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2611,7 +2611,7 @@ select
     'ISDA',
     'Labuan, Malaysia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2630,7 +2630,7 @@ select
     'ISDA',
     'Maputo, Mozambique',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2649,7 +2649,7 @@ select
     'ISDA',
     'Windhoek, Namibia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2668,7 +2668,7 @@ select
     'ISDA',
     'Abuja, Nigeria',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2687,7 +2687,7 @@ select
     'ISDA',
     'Lagos, Nigeria',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2706,7 +2706,7 @@ select
     'ISDA',
     'Amsterdam, Netherlands',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2725,7 +2725,7 @@ select
     'ISDA',
     'Rotterdam, Netherlands',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2744,7 +2744,7 @@ select
     'ISDA',
     'Oslo, Norway',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2763,7 +2763,7 @@ select
     'ISDA',
     'Kathmandu, Nepal',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2782,7 +2782,7 @@ select
     'ISDA',
     'New York Fed Business Day (as defined in 2006 ISDA Definitions Section 1.9, 2000 ISDA Definitions Section 1.9, and 2021 ISDA Definitions Section 2.1.7)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2801,7 +2801,7 @@ select
     'ISDA',
     'New York Stock Exchange Business Day (as defined in 2006 ISDA Definitions Section 1.10, 2000 ISDA Definitions Section 1.10, and 2021 ISDA Definitions Section 2.1.8)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2820,7 +2820,7 @@ select
     'ISDA',
     'Auckland, New Zealand',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2839,7 +2839,7 @@ select
     'ISDA',
     'New Zealand Business Day (proposed effective date: 2025-10-06)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2858,7 +2858,7 @@ select
     'ISDA',
     'Wellington, New Zealand',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2877,7 +2877,7 @@ select
     'ISDA',
     'Muscat, Oman',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2896,7 +2896,7 @@ select
     'ISDA',
     'Panama City, Panama',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2915,7 +2915,7 @@ select
     'ISDA',
     'Lima, Peru',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2934,7 +2934,7 @@ select
     'ISDA',
     'Manila, Philippines',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2953,7 +2953,7 @@ select
     'ISDA',
     'Makati, Philippines',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2972,7 +2972,7 @@ select
     'ISDA',
     'Karachi, Pakistan',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -2991,7 +2991,7 @@ select
     'ISDA',
     'Warsaw, Poland',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3010,7 +3010,7 @@ select
     'ISDA',
     'San Juan, Puerto Rico',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3029,7 +3029,7 @@ select
     'ISDA',
     'Lisbon, Portugal',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3048,7 +3048,7 @@ select
     'ISDA',
     'Doha, Qatar',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3067,7 +3067,7 @@ select
     'ISDA',
     'Bucharest, Romania',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3086,7 +3086,7 @@ select
     'ISDA',
     'Belgrade, Serbia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3105,7 +3105,7 @@ select
     'ISDA',
     'Moscow, Russian Federation',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3124,7 +3124,7 @@ select
     'ISDA',
     'Abha, Saudi Arabia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3143,7 +3143,7 @@ select
     'ISDA',
     'Jeddah, Saudi Arabia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3162,7 +3162,7 @@ select
     'ISDA',
     'Riyadh, Saudi Arabia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3181,7 +3181,7 @@ select
     'ISDA',
     'Stockholm, Sweden',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3200,7 +3200,7 @@ select
     'ISDA',
     'Singapore, Singapore',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3219,7 +3219,7 @@ select
     'ISDA',
     'Ljubljana, Slovenia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3238,7 +3238,7 @@ select
     'ISDA',
     'Bratislava, Slovakia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3257,7 +3257,7 @@ select
     'ISDA',
     'Freetown, Sierra Leone',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3276,7 +3276,7 @@ select
     'ISDA',
     'Dakar, Senegal',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3295,7 +3295,7 @@ select
     'ISDA',
     'San Salvador, El Salvador',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3314,7 +3314,7 @@ select
     'ISDA',
     'Bangkok, Thailand',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3333,7 +3333,7 @@ select
     'ISDA',
     'Tunis, Tunisia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3352,7 +3352,7 @@ select
     'ISDA',
     'Ankara, Turkey',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3371,7 +3371,7 @@ select
     'ISDA',
     'Istanbul, Turkey',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3390,7 +3390,7 @@ select
     'ISDA',
     'Port of Spain, Trinidad and Tobago',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3409,7 +3409,7 @@ select
     'ISDA',
     'Taipei, Taiwan',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3428,7 +3428,7 @@ select
     'ISDA',
     'Dar es Salaam, Tanzania',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3447,7 +3447,7 @@ select
     'ISDA',
     'Dodoma, Tanzania',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3466,7 +3466,7 @@ select
     'ISDA',
     'Kiev, Ukraine',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3485,7 +3485,7 @@ select
     'ISDA',
     'Kampala, Uganda',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3504,7 +3504,7 @@ select
     'ISDA',
     'Boston, Massachusetts, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3523,7 +3523,7 @@ select
     'ISDA',
     'Chicago, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3542,7 +3542,7 @@ select
     'ISDA',
     'Charlotte, North Carolina, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3561,7 +3561,7 @@ select
     'ISDA',
     'Washington, District of Columbia, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3580,7 +3580,7 @@ select
     'ISDA',
     'Publication dates for ICE Swap rates based on USD-LIBOR rates',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3599,7 +3599,7 @@ select
     'ISDA',
     'Publication dates for the USD-Municipal Swap Index',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3618,7 +3618,7 @@ select
     'ISDA',
     'Denver, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3637,7 +3637,7 @@ select
     'ISDA',
     'Detroit, Michigan, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3656,7 +3656,7 @@ select
     'ISDA',
     'U.S. Government Securities Business Day (as defined in 2006 ISDA Definitions Section 1.11 and 2000 ISDA Definitions Section 1.11)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3675,7 +3675,7 @@ select
     'ISDA',
     'Honolulu, Hawaii, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3694,7 +3694,7 @@ select
     'ISDA',
     'Houston, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3713,7 +3713,7 @@ select
     'ISDA',
     'Los Angeles, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3732,7 +3732,7 @@ select
     'ISDA',
     'Mobile, Alabama, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3751,7 +3751,7 @@ select
     'ISDA',
     'Minneapolis, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3770,7 +3770,7 @@ select
     'ISDA',
     'New York, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3789,7 +3789,7 @@ select
     'ISDA',
     'Portland, Oregon, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3808,7 +3808,7 @@ select
     'ISDA',
     'Sacramento, California, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3827,7 +3827,7 @@ select
     'ISDA',
     'Seattle, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3846,7 +3846,7 @@ select
     'ISDA',
     'San Francisco, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3865,7 +3865,7 @@ select
     'ISDA',
     'Wichita, United States',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3884,7 +3884,7 @@ select
     'ISDA',
     'Montevideo, Uruguay',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3903,7 +3903,7 @@ select
     'ISDA',
     'Tashkent, Uzbekistan',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3922,7 +3922,7 @@ select
     'ISDA',
     'Caracas, Venezuela',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3941,7 +3941,7 @@ select
     'ISDA',
     'Road Town, Virgin Islands (British)',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3960,7 +3960,7 @@ select
     'ISDA',
     'Hanoi, Vietnam',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3979,7 +3979,7 @@ select
     'ISDA',
     'Ho Chi Minh (formerly Saigon), Vietnam',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -3998,7 +3998,7 @@ select
     'ISDA',
     'Aden, Yemen',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -4017,7 +4017,7 @@ select
     'ISDA',
     'Johannesburg, South Africa',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -4036,7 +4036,7 @@ select
     'ISDA',
     'Lusaka, Zambia',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl
@@ -4055,7 +4055,7 @@ select
     'ISDA',
     'Harare, Zimbabwe',
     'system',
-    'INITIAL_LOAD',
+    'system.initial_load',
     'FPML reference data import'
 where not exists (
     select 1 from ores.refdata_business_centres_tbl

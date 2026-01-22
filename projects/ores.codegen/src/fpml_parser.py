@@ -161,7 +161,12 @@ class MergedEntity:
                 "artefact_indexes": [
                     {"name": "coding_scheme", "columns": "coding_scheme_code"}
                 ],
-                "has_artefact_insert_fn": False
+                "has_artefact_insert_fn": False,
+                **({"image_linking": {
+                    "flags_dataset_code": "assets.country_flags",
+                    "key_expression": "lower(substring(bc.code, 1, 2))",
+                    "placeholder_key": "xx"
+                }} if self.entity_plural == "business_centres" else {})
             }
         }
 
@@ -197,6 +202,19 @@ class MergedEntity:
                     "description": row.description
                 })
 
+            entity_data = {
+                "entity_singular": self.entity_name,
+                "entity_plural": self.entity_plural,
+                "subject_area": self.subject_area,
+            }
+            # Add image linking config for entities that need it
+            if self.entity_plural == "business_centres":
+                entity_data["image_linking"] = {
+                    "flags_dataset_code": "assets.country_flags",
+                    "key_expression": "lower(substring(bc.code, 1, 2))",
+                    "placeholder_key": "xx"
+                }
+
             datasets.append({
                 "dataset": {
                     "code": dataset_code,
@@ -204,11 +222,7 @@ class MergedEntity:
                     "coding_scheme_code": coding_scheme_code,
                     "description": cs.definition or f"Reference data for {display_name}",
                 },
-                "entity": {
-                    "entity_singular": self.entity_name,
-                    "entity_plural": self.entity_plural,
-                    "subject_area": self.subject_area,
-                },
+                "entity": entity_data,
                 "items": items,
             })
 

@@ -70,7 +70,9 @@ begin
     select version into current_version
     from "ores"."refdata_party_roles_tbl"
     where code = new.code
-    and valid_to = ores.utility_infinity_timestamp_fn();
+      and coding_scheme_code = new.coding_scheme_code
+    and valid_to = ores.utility_infinity_timestamp_fn()
+    for update;
 
     if found then
         if new.version != 0 and new.version != current_version then
@@ -83,6 +85,7 @@ begin
         update "ores"."refdata_party_roles_tbl"
         set valid_to = current_timestamp
         where code = new.code
+          and coding_scheme_code = new.coding_scheme_code
         and valid_to = ores.utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
@@ -112,4 +115,5 @@ do instead
   update "ores"."refdata_party_roles_tbl"
   set valid_to = current_timestamp
   where code = old.code
+  and coding_scheme_code = old.coding_scheme_code
   and valid_to = ores.utility_infinity_timestamp_fn();

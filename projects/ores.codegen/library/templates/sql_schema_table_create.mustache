@@ -63,7 +63,11 @@ begin
     select version into current_version
     from "ores"."{{entity.component}}_{{entity.entity_plural}}_tbl"
     where {{entity.primary_key.column}} = new.{{entity.primary_key.column}}
-    and valid_to = ores.utility_infinity_timestamp_fn();
+{{#entity.has_coding_scheme}}
+      and coding_scheme_code = new.coding_scheme_code
+{{/entity.has_coding_scheme}}
+    and valid_to = ores.utility_infinity_timestamp_fn()
+    for update;
 
     if found then
         if new.version != 0 and new.version != current_version then
@@ -76,6 +80,9 @@ begin
         update "ores"."{{entity.component}}_{{entity.entity_plural}}_tbl"
         set valid_to = current_timestamp
         where {{entity.primary_key.column}} = new.{{entity.primary_key.column}}
+{{#entity.has_coding_scheme}}
+          and coding_scheme_code = new.coding_scheme_code
+{{/entity.has_coding_scheme}}
         and valid_to = ores.utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
@@ -105,4 +112,7 @@ do instead
   update "ores"."{{entity.component}}_{{entity.entity_plural}}_tbl"
   set valid_to = current_timestamp
   where {{entity.primary_key.column}} = old.{{entity.primary_key.column}}
+{{#entity.has_coding_scheme}}
+  and coding_scheme_code = old.coding_scheme_code
+{{/entity.has_coding_scheme}}
   and valid_to = ores.utility_infinity_timestamp_fn();

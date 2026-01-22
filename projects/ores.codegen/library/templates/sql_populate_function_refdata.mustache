@@ -29,6 +29,9 @@ returns table (
     code text,
     coding_scheme_code text,
     description text,
+{{#image_linking}}
+    has_image boolean,
+{{/image_linking}}
     reason text
 ) as $$
 begin
@@ -41,6 +44,9 @@ begin
         dq.code,
         dq.coding_scheme_code,
         dq.description,
+{{#image_linking}}
+        dq.image_id is not null as has_image,
+{{/image_linking}}
         case
             when existing.code is not null then 'Record already exists'
             else 'New record'
@@ -113,7 +119,13 @@ begin
             dq.code,
             dq.coding_scheme_code,
             dq.source,
+{{#image_linking}}
+            dq.description,
+            dq.image_id
+{{/image_linking}}
+{{^image_linking}}
             dq.description
+{{/image_linking}}
         from ores.dq_{{entity.entity_plural}}_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
     loop
@@ -133,10 +145,20 @@ begin
 
         -- Insert record - trigger handles versioning automatically
         insert into ores.refdata_{{entity.entity_plural}}_tbl (
+{{#image_linking}}
+            code, version, coding_scheme_code, source, description, image_id,
+{{/image_linking}}
+{{^image_linking}}
             code, version, coding_scheme_code, source, description,
+{{/image_linking}}
             modified_by, change_reason_code, change_commentary
         ) values (
+{{#image_linking}}
+            r.code, 0, r.coding_scheme_code, r.source, r.description, r.image_id,
+{{/image_linking}}
+{{^image_linking}}
             r.code, 0, r.coding_scheme_code, r.source, r.description,
+{{/image_linking}}
             'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )

@@ -46,6 +46,7 @@ returns table (
     code text,
     coding_scheme_code text,
     description text,
+    has_image boolean,
     reason text
 ) as $$
 begin
@@ -58,6 +59,7 @@ begin
         dq.code,
         dq.coding_scheme_code,
         dq.description,
+        dq.image_id is not null as has_image,
         case
             when existing.code is not null then 'Record already exists'
             else 'New record'
@@ -130,7 +132,8 @@ begin
             dq.code,
             dq.coding_scheme_code,
             dq.source,
-            dq.description
+            dq.description,
+            dq.image_id
         from ores.dq_business_centres_artefact_tbl dq
         where dq.dataset_id = p_dataset_id
     loop
@@ -150,10 +153,10 @@ begin
 
         -- Insert record - trigger handles versioning automatically
         insert into ores.refdata_business_centres_tbl (
-            code, version, coding_scheme_code, source, description,
+            code, version, coding_scheme_code, source, description, image_id,
             modified_by, change_reason_code, change_commentary
         ) values (
-            r.code, 0, r.coding_scheme_code, r.source, r.description,
+            r.code, 0, r.coding_scheme_code, r.source, r.description, r.image_id,
             'data_importer', 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )

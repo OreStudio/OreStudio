@@ -172,7 +172,24 @@ grant create on schema ores to ores;
 
 \ir ../schema/dq_functions_create.sql
 \ir ../schema/dq_population_functions_create.sql
-\ir ../schema/dq_fpml_population_functions.sql
+
+-- FPML entity population functions (15 entity types)
+\ir ../schema/dq_account_types_population_functions.sql
+\ir ../schema/dq_asset_classes_population_functions.sql
+\ir ../schema/dq_asset_measures_population_functions.sql
+\ir ../schema/dq_benchmark_rates_population_functions.sql
+\ir ../schema/dq_business_centres_population_functions.sql
+\ir ../schema/dq_business_processes_population_functions.sql
+\ir ../schema/dq_cashflow_types_population_functions.sql
+\ir ../schema/dq_entity_classifications_population_functions.sql
+\ir ../schema/dq_local_jurisdictions_population_functions.sql
+\ir ../schema/dq_party_relationships_population_functions.sql
+\ir ../schema/dq_party_roles_population_functions.sql
+\ir ../schema/dq_person_roles_population_functions.sql
+\ir ../schema/dq_regulatory_corporate_sectors_population_functions.sql
+\ir ../schema/dq_reporting_regimes_population_functions.sql
+\ir ../schema/dq_supervisory_bodies_population_functions.sql
+
 \ir ../schema/dq_publication_create.sql
 \ir ../schema/seed_upsert_functions_create.sql
 

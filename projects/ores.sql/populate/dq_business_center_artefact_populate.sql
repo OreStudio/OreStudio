@@ -2394,6 +2394,66 @@ end;
 $$;
 
 -- =============================================================================
+-- Link to flag images
+-- =============================================================================
+
+\echo '--- Linking to Flag Images ---'
+
+do $$
+declare
+    v_dataset_id uuid;
+    v_flags_dataset_id uuid;
+    v_placeholder_image_id uuid;
+    v_updated integer;
+begin
+    -- Get the dataset ID
+    select id into v_dataset_id
+    from ores.dq_datasets_tbl
+    where code = 'fpml.business_center'
+    and valid_to = ores.utility_infinity_timestamp_fn();
+
+    -- Get the flags dataset ID
+    select id into v_flags_dataset_id
+    from ores.dq_datasets_tbl
+    where code = 'assets.country_flags'
+    and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_flags_dataset_id is null then
+        raise exception 'Flags dataset assets.country_flags not found. Check dataset dependencies.';
+    end if;
+
+    -- Get the placeholder image
+    select image_id into v_placeholder_image_id
+    from ores.dq_images_artefact_tbl
+    where dataset_id = v_flags_dataset_id
+      and key = 'xx';
+
+    -- Update records with their flag image_id
+    update ores.dq_business_centres_artefact_tbl bc
+    set image_id = coalesce(i.image_id, v_placeholder_image_id)
+    from ores.dq_images_artefact_tbl i
+    where bc.dataset_id = v_dataset_id
+      and i.dataset_id = v_flags_dataset_id
+      and i.key = lower(substring(bc.code, 1, 2));
+
+    get diagnostics v_updated = row_count;
+    raise notice 'Updated % records with flag images', v_updated;
+
+    -- Set placeholder for any without matching flags
+    update ores.dq_business_centres_artefact_tbl
+    set image_id = v_placeholder_image_id
+    where dataset_id = v_dataset_id
+      and image_id is null
+      and v_placeholder_image_id is not null;
+
+    get diagnostics v_updated = row_count;
+    if v_updated > 0 then
+        raise notice 'Set placeholder image for % records without matching flags', v_updated;
+    end if;
+end;
+$$;
+
+-- =============================================================================
 -- Summary
 -- =============================================================================
 
@@ -2407,3 +2467,11 @@ select coding_scheme_code, count(*) as count
 from ores.dq_business_centres_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;
+
+select 'With flag images' as status, count(*) as count
+from ores.dq_business_centres_artefact_tbl
+where image_id is not null
+union all
+select 'Without flag images', count(*)
+from ores.dq_business_centres_artefact_tbl
+where image_id is null;

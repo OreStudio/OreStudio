@@ -29,6 +29,7 @@ create table if not exists "ores"."dq_business_centres_artefact_tbl" (
     "version" integer not null,
     "source" text null,
     "description" text null
+    ,"image_id" uuid
     ,"coding_scheme_code" text not null
 );
 

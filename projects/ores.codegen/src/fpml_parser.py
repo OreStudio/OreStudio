@@ -154,7 +154,7 @@ class MergedEntity:
                     {"name": "description", "type": "text", "nullable": True}
                 ],
                 "has_coding_scheme": True,
-                "has_image_id": False,
+                "has_image_id": self.entity_plural == "business_centres",
                 "indexes": [
                     {"name": "coding_scheme", "columns": "coding_scheme_code", "current_only": True}
                 ],

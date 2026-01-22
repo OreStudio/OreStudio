@@ -29,6 +29,7 @@ create table if not exists "ores"."refdata_business_centres_tbl" (
     "source" text null,
     "description" text null,
     "coding_scheme_code" text not null,
+    "image_id" uuid,
     "modified_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,

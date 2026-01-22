@@ -503,6 +503,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Store entity at top level for easier template access
         data['entity'] = entity
 
+        # Add image linking configuration for entities that need it
+        # Business centres link to country flags using first 2 chars of code
+        if entity.get('entity_plural') == 'business_centres':
+            data['image_linking'] = {
+                'flags_dataset_code': 'assets.country_flags',
+                'key_expression': "lower(substring(bc.code, 1, 2))",
+                'placeholder_key': 'xx'
+            }
+
     # Special processing for entity data models (populate scripts)
     if is_data_model and isinstance(model, dict):
         # New format: model has 'dataset', 'entity' and 'items' keys (per-coding-scheme)
@@ -526,6 +535,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Mark last item for comma handling
             _mark_last_item(items)
             data['items'] = items
+
+            # Add image linking configuration for entities that need it
+            # Business centres link to country flags using first 2 chars of code
+            if data['entity'].get('entity_plural') == 'business_centres':
+                data['image_linking'] = {
+                    'flags_dataset_code': 'assets.country_flags',
+                    'key_expression': "lower(substring(bc.code, 1, 2))",
+                    'placeholder_key': 'xx'
+                }
         # Legacy format: model has 'entity' and 'items' keys (per-entity)
         elif 'entity' in model and 'items' in model:
             data['entity'] = model['entity']

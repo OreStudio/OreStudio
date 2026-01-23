@@ -173,43 +173,24 @@ std::vector<domain::image>
 image_repository::read_latest_since(context ctx,
     std::chrono::system_clock::time_point modified_since) {
 
-    // Format timestamp for SQL function call (thread-safe)
+    // Format timestamp for sqlgen query (thread-safe)
     const auto timestamp_str =
         platform::time::datetime::format_time_point_utc(modified_since);
 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest images modified since: "
                                << timestamp_str;
 
-    // Call PostgreSQL function with parameterized query
-    const std::string sql =
-        "SELECT * FROM ores.assets_images_read_since_fn($1::timestamptz)";
+    // Use sqlgen query with timestamp comparison
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto since_ts = make_timestamp(timestamp_str, lg());
 
-    auto rows = execute_parameterized_query(ctx, sql, {timestamp_str}, lg(),
-        "Reading latest images since timestamp");
+    const auto query = sqlgen::read<std::vector<image_entity>> |
+        where("valid_to"_c == max.value() && "valid_from"_c >= since_ts.value()) |
+        order_by("valid_from"_c.desc());
 
-    // Convert raw results to domain objects
-    std::vector<domain::image> results;
-    results.reserve(rows.size());
-
-    for (const auto& row : rows) {
-        if (row.size() < 8) continue;
-
-        image_entity entity;
-        entity.image_id = row[0].value_or("");
-        entity.version = row[1] ? std::stoi(*row[1]) : 0;
-        entity.key = row[2].value_or("");
-        entity.description = row[3].value_or("");
-        entity.svg_data = row[4].value_or("");
-        entity.modified_by = row[5].value_or("");
-        entity.valid_from = row[6].value_or("9999-12-31 23:59:59");
-        entity.valid_to = row[7].value_or("9999-12-31 23:59:59");
-
-        results.push_back(image_mapper::map(entity));
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Found " << results.size()
-                               << " images modified since timestamp";
-    return results;
+    return execute_read_query<image_entity, domain::image>(ctx, query,
+        [](const auto& entities) { return image_mapper::map(entities); },
+        lg(), "Reading latest images since timestamp");
 }
 
 std::uint32_t image_repository::get_total_image_count(context ctx) {

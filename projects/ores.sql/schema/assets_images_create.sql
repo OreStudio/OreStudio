@@ -98,36 +98,3 @@ do instead
   set valid_to = current_timestamp
   where image_id = old.image_id
   and valid_to = ores.utility_infinity_timestamp_fn();
-
--- Returns latest images modified since a given timestamp.
--- Used for incremental cache loading.
-create or replace function ores.assets_images_read_since_fn(
-    p_modified_since timestamptz
-)
-returns table (
-    image_id uuid,
-    version integer,
-    key text,
-    description text,
-    svg_data text,
-    modified_by text,
-    valid_from timestamptz,
-    valid_to timestamptz
-) as $$
-begin
-    return query
-    select
-        t.image_id,
-        t.version,
-        t.key,
-        t.description,
-        t.svg_data,
-        t.modified_by,
-        t.valid_from,
-        t.valid_to
-    from ores.assets_images_tbl t
-    where t.valid_to = ores.utility_infinity_timestamp_fn()
-    and t.valid_from >= p_modified_since
-    order by t.valid_from desc;
-end;
-$$ language plpgsql stable;

@@ -391,7 +391,7 @@ select ores.upsert_dq_datasets(
     'Primary',
     'Actual',
     'Raw',
-    'Cryptocurrency Icons Download',
+    'GitHub Cryptocurrency Icons Download',
     'Cryptocurrency Icon Images',
     'SVG icons for cryptocurrency symbols from the cryptocurrency-icons project.',
     'Cryptocurrency Icons',

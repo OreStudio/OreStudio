@@ -22,6 +22,7 @@
  * FpML Account Type Dataset Population Script
  *
  * Creates the dataset entry for fpml.account_type.
+ * Source version: 1-1
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Account Type',
     'Contains a code representing the type of an account, for example in a clearing or exchange model.',
     'FPML',
-    'Reference data for FpML Account Type',
-    current_date,
+    'Reference data for FpML Account Type (version 1-1)',
+    '2016-06-13'::date,
     'FpML Public License 2.0',
     'account_types',
     'refdata_account_types_tbl',

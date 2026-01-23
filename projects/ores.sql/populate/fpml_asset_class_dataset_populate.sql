@@ -22,6 +22,7 @@
  * FpML Asset Class Dataset Population Script
  *
  * Creates the dataset entry for fpml.asset_class.
+ * Source version: 2-1
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Asset Class',
     'Defines a simple asset class categorization. Used for classification of the risk class of the trade.',
     'FPML',
-    'Reference data for FpML Asset Class',
-    current_date,
+    'Reference data for FpML Asset Class (version 2-1)',
+    '2019-10-01'::date,
     'FpML Public License 2.0',
     'asset_classes',
     'refdata_asset_classes_tbl',

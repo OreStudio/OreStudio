@@ -22,6 +22,7 @@
  * FpML Non Iso Currency Dataset Population Script
  *
  * Creates the dataset entry for fpml.non_iso_currency.
+ * Source version: 1-1
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Non Iso Currency',
     'Includes the currency codes to expand the ISO 4217 currency list, including the offshore and historical currencies.',
     'FPML',
-    'Reference data for FpML Non Iso Currency',
-    current_date,
+    'Reference data for FpML Non Iso Currency (version 1-1)',
+    '2023-11-03'::date,
     'FpML Public License 2.0',
     'non_iso_currencies',
     'refdata_non_iso_currencies_tbl',

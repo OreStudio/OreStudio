@@ -22,6 +22,7 @@
  * FpML Entity Type Dataset Population Script
  *
  * Creates the dataset entry for fpml.entity_type.
+ * Source version: 1-0
  * This must be run before populating the artefact table.
  */
 
@@ -46,7 +47,7 @@ select ores.upsert_dq_datasets(
     'FpML Entity Type',
     'This specifies the reference entity types corresponding to a list of types defined in the ISDA First to Default documentation.',
     'FPML',
-    'Reference data for FpML Entity Type',
+    'Reference data for FpML Entity Type (version 1-0)',
     current_date,
     'FpML Public License 2.0',
     'entity_classifications',

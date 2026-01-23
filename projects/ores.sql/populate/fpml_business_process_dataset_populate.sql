@@ -22,6 +22,7 @@
  * FpML Business Process Dataset Population Script
  *
  * Creates the dataset entry for fpml.business_process.
+ * Source version: 1-0
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Business Process',
     'Contains a code representing the type of business process a message (e.g. a status request) applies to.',
     'FPML',
-    'Reference data for FpML Business Process',
-    current_date,
+    'Reference data for FpML Business Process (version 1-0)',
+    '2011-09-29'::date,
     'FpML Public License 2.0',
     'business_processes',
     'refdata_business_processes_tbl',

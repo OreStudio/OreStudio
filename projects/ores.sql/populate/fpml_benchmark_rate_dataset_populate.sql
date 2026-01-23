@@ -22,6 +22,7 @@
  * FpML Benchmark Rate Dataset Population Script
  *
  * Creates the dataset entry for fpml.benchmark_rate.
+ * Source version: 1-4
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Benchmark Rate',
     'FpML Benchmark rates',
     'FPML',
-    'Reference data for FpML Benchmark Rate',
-    current_date,
+    'Reference data for FpML Benchmark Rate (version 1-4)',
+    '2025-09-26'::date,
     'FpML Public License 2.0',
     'benchmark_rates',
     'refdata_benchmark_rates_tbl',

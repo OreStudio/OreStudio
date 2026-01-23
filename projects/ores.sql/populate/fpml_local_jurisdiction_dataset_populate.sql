@@ -22,6 +22,7 @@
  * FpML Local Jurisdiction Dataset Population Script
  *
  * Creates the dataset entry for fpml.local_jurisdiction.
+ * Source version: 1-1
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Local Jurisdiction',
     'This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply.',
     'FPML',
-    'Reference data for FpML Local Jurisdiction',
-    current_date,
+    'Reference data for FpML Local Jurisdiction (version 1-1)',
+    '2013-01-15'::date,
     'FpML Public License 2.0',
     'local_jurisdictions',
     'refdata_local_jurisdictions_tbl',

@@ -22,6 +22,7 @@
  * FpML Hkma Rewrite Regulatory Corporate Sector Dataset Population Script
  *
  * Creates the dataset entry for fpml.hkma_rewrite_regulatory_corporate_sector.
+ * Source version: 1-0
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Hkma Rewrite Regulatory Corporate Sector',
     'Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2.',
     'FPML',
-    'Reference data for FpML Hkma Rewrite Regulatory Corporate Sector',
-    current_date,
+    'Reference data for FpML Hkma Rewrite Regulatory Corporate Sector (version 1-0)',
+    '2025-04-25'::date,
     'FpML Public License 2.0',
     'regulatory_corporate_sectors',
     'refdata_regulatory_corporate_sectors_tbl',

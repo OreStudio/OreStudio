@@ -22,6 +22,7 @@
  * FpML Party Role Type Dataset Population Script
  *
  * Creates the dataset entry for fpml.party_role_type.
+ * Source version: 1-0
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Party Role Type',
     'Contains a code representing a related party role type. A type refining the role a role played by a party in one or more transactions. This can be extended to provide custom types.',
     'FPML',
-    'Reference data for FpML Party Role Type',
-    current_date,
+    'Reference data for FpML Party Role Type (version 1-0)',
+    '2011-04-24'::date,
     'FpML Public License 2.0',
     'party_roles',
     'refdata_party_roles_tbl',

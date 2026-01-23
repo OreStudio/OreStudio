@@ -17,22 +17,21 @@ set schema 'ores';
 select ores.upsert_dq_methodologies(
     'FpML Genericode Download',
     'Data downloaded from FpML coding scheme repository in Genericode XML format',
-    'http://www.fpml.org/coding-scheme/',
+    'https://www.fpml.org/the_standard/current/',
     'Last Download: 2026-01-23
 
 Data Sourcing and Generation Steps:
 
 1. SOURCE DATA DOWNLOAD
-   Repository: http://www.fpml.org/coding-scheme/
+   Specification: https://www.fpml.org/the_standard/current/
    Format: Genericode XML (OASIS standard for code lists)
-   Download: curl -o <scheme-name>.xml http://www.fpml.org/coding-scheme/<scheme-name>.xml
-   Example: curl -o non-iso-currency-1-1.xml http://www.fpml.org/coding-scheme/non-iso-currency-1-1.xml
+   Download: curl -o codelist.zip https://www.fpml.org/spec/coding-scheme/codelist.zip
+   Unpack: unzip codelist.zip -d external/fpml/codelist/
 
 2. SAVE TO REPOSITORY
    Target directory: external/fpml/codelist/
-   Example: external/fpml/codelist/non-iso-currency-1-1.xml
-   Commit: git add external/fpml/codelist/<scheme-name>.xml
-           git commit -m "[data] Add FpML <scheme-name> genericode file"
+   Commit: git add external/fpml/codelist/
+           git commit -m "[data] Update FpML genericode files"
 
 3. GENERATE SQL FILES
    Script: projects/ores.codegen/generate_fpml_refdata.sh

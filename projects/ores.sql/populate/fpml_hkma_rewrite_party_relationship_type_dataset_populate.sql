@@ -22,6 +22,7 @@
  * FpML Hkma Rewrite Party Relationship Type Dataset Population Script
  *
  * Creates the dataset entry for fpml.hkma_rewrite_party_relationship_type.
+ * Source version: 1-0
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Hkma Rewrite Party Relationship Type',
     'Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup.',
     'FPML',
-    'Reference data for FpML Hkma Rewrite Party Relationship Type',
-    current_date,
+    'Reference data for FpML Hkma Rewrite Party Relationship Type (version 1-0)',
+    '2025-04-25'::date,
     'FpML Public License 2.0',
     'party_relationships',
     'refdata_party_relationships_tbl',

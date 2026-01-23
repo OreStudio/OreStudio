@@ -22,6 +22,7 @@
  * FpML Person Role Dataset Population Script
  *
  * Creates the dataset entry for fpml.person_role.
+ * Source version: 1-3
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Person Role',
     'Indicates the role of a person in a transaction.',
     'FPML',
-    'Reference data for FpML Person Role',
-    current_date,
+    'Reference data for FpML Person Role (version 1-3)',
+    '2019-10-31'::date,
     'FpML Public License 2.0',
     'person_roles',
     'refdata_person_roles_tbl',

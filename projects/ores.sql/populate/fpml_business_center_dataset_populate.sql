@@ -22,6 +22,7 @@
  * FpML Business Center Dataset Population Script
  *
  * Creates the dataset entry for fpml.business_center.
+ * Source version: 9-4
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Business Center',
     'The coding-scheme accepts a 4 character code of the real geographical business calendar location or FpML format of the rate publication calendar. While the 4 character codes of the business calendar location are implicitly locatable and used for identifying a bad business day for the purpose of payment and rate calculation day adjustments, the rate publication calendar codes are used in the context of the fixing day offsets.',
     'FPML',
-    'Reference data for FpML Business Center',
-    current_date,
+    'Reference data for FpML Business Center (version 9-4)',
+    '2025-04-25'::date,
     'FpML Public License 2.0',
     'business_centres',
     'refdata_business_centres_tbl',

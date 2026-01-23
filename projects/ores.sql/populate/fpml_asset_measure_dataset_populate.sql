@@ -22,6 +22,7 @@
  * FpML Asset Measure Dataset Population Script
  *
  * Creates the dataset entry for fpml.asset_measure.
+ * Source version: 5-9
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Asset Measure',
     'The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures.',
     'FPML',
-    'Reference data for FpML Asset Measure',
-    current_date,
+    'Reference data for FpML Asset Measure (version 5-9)',
+    '2024-03-14'::date,
     'FpML Public License 2.0',
     'asset_measures',
     'refdata_asset_measures_tbl',

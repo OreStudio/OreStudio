@@ -22,6 +22,7 @@
  * FpML Cftc Organization Type Dataset Population Script
  *
  * Creates the dataset entry for fpml.cftc_organization_type.
+ * Source version: 2-0
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Cftc Organization Type',
     'Indicates whether a counterparty is an entity established pursuant to a U.S. federal law, including CFTC Amendments to Part 45 (2020).',
     'FPML',
-    'Reference data for FpML Cftc Organization Type',
-    current_date,
+    'Reference data for FpML Cftc Organization Type (version 2-0)',
+    '2022-11-18'::date,
     'FpML Public License 2.0',
     'entity_classifications',
     'refdata_entity_classifications_tbl',

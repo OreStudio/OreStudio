@@ -22,6 +22,7 @@
  * FpML Reporting Regime Dataset Population Script
  *
  * Creates the dataset entry for fpml.reporting_regime.
+ * Source version: 2-0
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Reporting Regime',
     'Contains a code representing a reporting regime under which this transaction may be reported.',
     'FPML',
-    'Reference data for FpML Reporting Regime',
-    current_date,
+    'Reference data for FpML Reporting Regime (version 2-0)',
+    '2025-09-26'::date,
     'FpML Public License 2.0',
     'reporting_regimes',
     'refdata_reporting_regimes_tbl',

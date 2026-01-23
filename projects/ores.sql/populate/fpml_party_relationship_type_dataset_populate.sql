@@ -22,6 +22,7 @@
  * FpML Party Relationship Type Dataset Population Script
  *
  * Creates the dataset entry for fpml.party_relationship_type.
+ * Source version: 1-1
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Party Relationship Type',
     'A type is containing a code representing how two parties are related, e.g. Affiliated, Intragroup.',
     'FPML',
-    'Reference data for FpML Party Relationship Type',
-    current_date,
+    'Reference data for FpML Party Relationship Type (version 1-1)',
+    '2015-05-10'::date,
     'FpML Public License 2.0',
     'party_relationships',
     'refdata_party_relationships_tbl',

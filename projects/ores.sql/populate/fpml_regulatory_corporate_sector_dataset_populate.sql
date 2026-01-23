@@ -22,6 +22,7 @@
  * FpML Regulatory Corporate Sector Dataset Population Script
  *
  * Creates the dataset entry for fpml.regulatory_corporate_sector.
+ * Source version: 1-2
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Regulatory Corporate Sector',
     'Specifies Corporate sector as defined by or for regulators including ESMA, CFTC, etc.',
     'FPML',
-    'Reference data for FpML Regulatory Corporate Sector',
-    current_date,
+    'Reference data for FpML Regulatory Corporate Sector (version 1-2)',
+    '2016-06-13'::date,
     'FpML Public License 2.0',
     'regulatory_corporate_sectors',
     'refdata_regulatory_corporate_sectors_tbl',

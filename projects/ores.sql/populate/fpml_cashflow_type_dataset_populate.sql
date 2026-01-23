@@ -22,6 +22,7 @@
  * FpML Cashflow Type Dataset Population Script
  *
  * Creates the dataset entry for fpml.cashflow_type.
+ * Source version: 2-0
  * This must be run before populating the artefact table.
  */
 
@@ -46,7 +47,7 @@ select ores.upsert_dq_datasets(
     'FpML Cashflow Type',
     'The type of cash flows associated with OTC derivatives contracts and their lifecycle events.',
     'FPML',
-    'Reference data for FpML Cashflow Type',
+    'Reference data for FpML Cashflow Type (version 2-0)',
     current_date,
     'FpML Public License 2.0',
     'cashflow_types',

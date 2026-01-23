@@ -22,6 +22,7 @@
  * FpML Cftc Entity Classification Dataset Population Script
  *
  * Creates the dataset entry for fpml.cftc_entity_classification.
+ * Source version: 1-0
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Cftc Entity Classification',
     'Financial Entity Indicator as defined by the CFTC.',
     'FPML',
-    'Reference data for FpML Cftc Entity Classification',
-    current_date,
+    'Reference data for FpML Cftc Entity Classification (version 1-0)',
+    '2022-11-18'::date,
     'FpML Public License 2.0',
     'entity_classifications',
     'refdata_entity_classifications_tbl',

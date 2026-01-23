@@ -22,6 +22,7 @@
  * FpML Supervisory Body Dataset Population Script
  *
  * Creates the dataset entry for fpml.supervisory_body.
+ * Source version: 2-1
  * This must be run before populating the artefact table.
  */
 
@@ -46,8 +47,8 @@ select ores.upsert_dq_datasets(
     'FpML Supervisory Body',
     'Contains a code representing a supervisory-body that may be supervising this transaction.',
     'FPML',
-    'Reference data for FpML Supervisory Body',
-    current_date,
+    'Reference data for FpML Supervisory Body (version 2-1)',
+    '2022-06-10'::date,
     'FpML Public License 2.0',
     'supervisory_bodies',
     'refdata_supervisory_bodies_tbl',

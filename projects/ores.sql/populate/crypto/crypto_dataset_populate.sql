@@ -38,7 +38,7 @@ set schema 'ores';
 -- Icons dataset
 select ores.upsert_dq_datasets(
     'Cryptocurrency Icon Images',
-    'Other',
+    'Cryptocurrency',
     'Cryptocurrencies',
     'Reference Data',
     'CRYPTO_ICONS',
@@ -60,7 +60,7 @@ select ores.upsert_dq_datasets(
 -- Large cryptocurrency dataset (all ~12K coins)
 select ores.upsert_dq_datasets(
     'Cryptocurrencies Large',
-    'Other',
+    'Cryptocurrency',
     'Cryptocurrencies',
     'Reference Data',
     'CRYPTO_LARGE',
@@ -82,7 +82,7 @@ select ores.upsert_dq_datasets(
 -- Small cryptocurrency dataset (top 100 by market cap)
 select ores.upsert_dq_datasets(
     'Cryptocurrencies Small',
-    'Other',
+    'Cryptocurrency',
     'Cryptocurrencies',
     'Reference Data',
     'CRYPTO_SMALL',

@@ -46,6 +46,7 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
       clientManager_(clientManager),
       currency_ids_watcher_(new QFutureWatcher<ImageIdsResult>(this)),
       country_ids_watcher_(new QFutureWatcher<ImageIdsResult>(this)),
+      incremental_changes_watcher_(new QFutureWatcher<ImageIdsResult>(this)),
       images_watcher_(new QFutureWatcher<ImagesResult>(this)),
       image_list_watcher_(new QFutureWatcher<ImageListResult>(this)),
       single_image_watcher_(new QFutureWatcher<SingleImageResult>(this)),
@@ -57,6 +58,8 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
         this, &ImageCache::onCurrencyImageIdsLoaded);
     connect(country_ids_watcher_, &QFutureWatcher<ImageIdsResult>::finished,
         this, &ImageCache::onCountryImageIdsLoaded);
+    connect(incremental_changes_watcher_, &QFutureWatcher<ImageIdsResult>::finished,
+        this, &ImageCache::onIncrementalChangesLoaded);
     connect(images_watcher_, &QFutureWatcher<ImagesResult>::finished,
         this, &ImageCache::onImagesLoaded);
     connect(image_list_watcher_, &QFutureWatcher<ImageListResult>::finished,
@@ -406,38 +409,29 @@ void ImageCache::loadIncrementalChanges() {
             return {.success = true, .image_ids = std::move(image_ids)};
         });
 
-    // Re-use currency_ids_watcher_ for this - it's not in use during incremental loads
-    currency_ids_watcher_->setFuture(future);
+    incremental_changes_watcher_->setFuture(future);
+}
 
-    // Disconnect and reconnect to a different handler for incremental mode
-    disconnect(currency_ids_watcher_, &QFutureWatcher<ImageIdsResult>::finished,
-        this, &ImageCache::onCurrencyImageIdsLoaded);
-    connect(currency_ids_watcher_, &QFutureWatcher<ImageIdsResult>::finished,
-        this, [this]() {
-            auto result = currency_ids_watcher_->result();
+void ImageCache::onIncrementalChangesLoaded() {
+    BOOST_LOG_SEV(lg(), debug) << "onIncrementalChangesLoaded() callback triggered.";
 
-            // Reconnect the original handler
-            disconnect(currency_ids_watcher_, nullptr, this, nullptr);
-            connect(currency_ids_watcher_, &QFutureWatcher<ImageIdsResult>::finished,
-                this, &ImageCache::onCurrencyImageIdsLoaded);
+    auto result = incremental_changes_watcher_->result();
 
-            if (!result.success) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to fetch incremental image changes.";
-                load_all_in_progress_ = false;
-                return;
-            }
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch incremental image changes.";
+        load_all_in_progress_ = false;
+        return;
+    }
 
-            if (result.image_ids.empty()) {
-                BOOST_LOG_SEV(lg(), info) << "No images changed since last load.";
-                load_all_in_progress_ = false;
-                // No changes, no need to emit signals
-                return;
-            }
+    if (result.image_ids.empty()) {
+        BOOST_LOG_SEV(lg(), info) << "No images changed since last load.";
+        load_all_in_progress_ = false;
+        return;
+    }
 
-            BOOST_LOG_SEV(lg(), info) << "Loading " << result.image_ids.size()
-                                      << " changed images.";
-            loadImagesByIds(result.image_ids);
-        });
+    BOOST_LOG_SEV(lg(), info) << "Loading " << result.image_ids.size()
+                              << " changed images.";
+    loadImagesByIds(result.image_ids);
 }
 
 void ImageCache::onImagesLoaded() {

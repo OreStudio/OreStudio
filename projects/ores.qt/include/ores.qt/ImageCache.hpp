@@ -228,6 +228,7 @@ private slots:
     void onCurrencyImageSet();
     void onCountryImageSet();
     void onAllAvailableImagesLoaded();
+    void onIncrementalChangesLoaded();
 
 private:
     /**
@@ -330,6 +331,7 @@ private:
 
     QFutureWatcher<ImageIdsResult>* currency_ids_watcher_;
     QFutureWatcher<ImageIdsResult>* country_ids_watcher_;
+    QFutureWatcher<ImageIdsResult>* incremental_changes_watcher_;
     QFutureWatcher<ImagesResult>* images_watcher_;
     QFutureWatcher<ImageListResult>* image_list_watcher_;
     QFutureWatcher<SingleImageResult>* single_image_watcher_;

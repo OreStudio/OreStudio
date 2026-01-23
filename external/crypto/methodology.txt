@@ -1,35 +1,45 @@
 Data Sourcing and Generation Steps:
 
 1. SOURCE DATA DOWNLOAD (Cryptocurrencies)
-   Source: CoinMarketCap or similar aggregator
+   Source: https://github.com/crypti/cryptocurrencies
    Format: JSON mapping symbol -> name
-   Manual: Export cryptocurrency list to external/crypto/cryptocurrencies/cryptocurrencies.json
+   Command: curl -o cryptocurrencies.json https://raw.githubusercontent.com/crypti/cryptocurrencies/master/cryptocurrencies.json
+   Target: external/crypto/cryptocurrencies/cryptocurrencies.json
 
 2. SOURCE DATA DOWNLOAD (Icons)
    Source: https://github.com/spothq/cryptocurrency-icons
    License: MIT
    Manual: Download SVG icons to external/crypto/cryptocurrency-icons/
 
-3. GENERATE SQL FILES
-   Script: projects/ores.codegen/src/crypto_generate_sql.py
-   Command: python3 crypto_generate_sql.py
-   Options:
-     --skip-images    Skip regenerating images SQL (large file)
+3. GENERATE ICON IMAGES SQL
+   Script: projects/ores.codegen/src/images_generate_sql.py
+   Command: python3 images_generate_sql.py --config crypto
+   Output: projects/ores.sql/populate/crypto/crypto_images_artefact_populate.sql
 
-   Output files (in projects/ores.sql/populate/):
-     - crypto_dataset_populate.sql
-     - crypto_images_artefact_populate.sql
-     - crypto_currencies_large_artefact_populate.sql
-     - crypto_currencies_small_artefact_populate.sql
-     - crypto.sql (master include)
+4. CURRENCY POPULATE FILES
+   The currency artefact files were manually created:
+     - crypto_currencies_large_artefact_populate.sql (~12K coins)
+     - crypto_currencies_small_artefact_populate.sql (top 100 coins)
 
-4. COMMIT GENERATED SQL
-   git add projects/ores.sql/populate/crypto*.sql
+   These files read from the cryptocurrencies.json and link to icons.
+   To update, edit the files directly or regenerate from source.
+
+5. COMMIT GENERATED SQL
+   git add projects/ores.sql/populate/crypto/
    git commit -m "[sql] Regenerate cryptocurrency reference data"
+
+DATASET STRUCTURE
+-----------------
+Output files (in projects/ores.sql/populate/crypto/):
+  - crypto.sql (master include)
+  - crypto_dataset_populate.sql (dataset definitions)
+  - crypto_images_artefact_populate.sql (icon images)
+  - crypto_currencies_large_artefact_populate.sql (all ~12K coins)
+  - crypto_currencies_small_artefact_populate.sql (top 100 coins)
 
 DATASET METHODOLOGY
 -------------------
-The generator creates two size variants:
+The data is organized into two size variants:
 
 Large Dataset (~12K coins):
   - All cryptocurrencies from the source JSON

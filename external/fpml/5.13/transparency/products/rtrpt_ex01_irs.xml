@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is transparency-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/transparency-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+
+  -->
+<publicExecutionReport xmlns="http://www.fpml.org/FpML-5/transparency" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/transparency ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+<!-- This represents the real-time reporting requirements published in draft form by the CFTC in 17 CFR 43 -->
+<!-- The comments indicate the reportable field name as described in Table A1 of Appendix A, on 
+     pp. 76177-76181 of the Federal Register -->
+<!-- This example shows an IR swap -->
+<!-- The data values are taken from "Example 1" in Appendix A, on page 76156 of the Federal Register -->
+<!-- 
+* unmapped fields:
+* Cancellation indicator -> currently in FpML this would be a separate message - should this be kept this way?
+* Price forming continuation data - normally in FpML each event would be a different payload type
+-->
+  <header>
+    <messageId messageIdScheme="http://www.sef.com/msg_id">SEF123</messageId>
+    <sentBy>SEFCORP</sentBy>
+    <sendTo>SDR01</sendTo>
+    <creationTimestamp>2011-02-04T15:38:00Z</creationTimestamp>
+<!-- Date stamp -->
+  </header>
+  <isCorrection>false</isCorrection>
+<!-- Correction indicator -->
+  <correlationId correlationIdScheme="http://fpml.org/universal_swap_id">123</correlationId>
+  <sequenceNumber>1</sequenceNumber>
+  <originatingEvent>Trade</originatingEvent>
+  <trade>
+<!-- equivalent to to "price forming continuation data -->
+    <tradeHeader>
+      <partyTradeIdentifier>
+        <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1031234567</issuer>
+        <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">712345678901234567890123456789012</tradeId>
+      </partyTradeIdentifier>
+      <tradeInformation>
+        <executionDateTime>2011-02-04T15:38:00Z</executionDateTime>
+<!-- Execution timestamp -->
+        <intentToClear>true</intentToClear>
+<!-- NEW: cleared or uncleared = "C" in CFTC doc -->
+        <nonStandardTerms>false</nonStandardTerms>
+<!-- NEW: indication of other price-affecting term -->
+        <offMarketPrice>false</offMarketPrice>
+<!-- NEW -->
+        <largeSizeTrade>false</largeSizeTrade>
+<!-- NEW: block trades and large notional swaps -->
+        <executionType>Electronic</executionType>
+<!-- NEW -->
+        <executionVenueType>SEF</executionVenueType>
+<!-- NEW: execution venue = "SWM" in CFTC doc -->
+      </tradeInformation>
+      <tradeDate>2011-02-04</tradeDate>
+    </tradeHeader>
+    <swap>
+      <primaryAssetClass>InterestRate</primaryAssetClass>
+<!-- asset class -->
+      <productType productTypeScheme="http://www.fpml.org/coding-scheme/product-taxonomy">InterestRate:IRSwap:FixedFloat</productType>
+<!-- contract type  = "S-" in CFTC doc -->
+      <swapStream>
+<!-- parties are not required to be reported 
+            <payerPartyReference href="partyX"/>
+            <receiverPartyReference href="partyY"/>
+            -->
+        <calculationPeriodDates id="floatingCalcPeriodDates">
+          <effectiveDate id="start">
+            <unadjustedDate>2011-02-08</unadjustedDate>
+<!-- start date  -->
+<!-- (not required)
+                  <dateAdjustments>
+                     <businessDayConvention>NONE</businessDayConvention>
+                  </dateAdjustments>
+                  -->
+          </effectiveDate>
+          <terminationDate>
+            <unadjustedDate>2016-02-08</unadjustedDate>
+<!-- end date  -->
+<!--
+                          <dateAdjustments>
+                             <businessDayConvention>NONE</businessDayConvention>
+                          </dateAdjustments>
+                          <businessCenters>
+                             <businessCenter>USNY</businessCenter>
+                          </businessCenters>
+                          -->
+          </terminationDate>
+<!-- (not required)
+               <calculationPeriodDatesAdjustments>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCentersReference href="primaryBusinessCenters"/>
+               </calculationPeriodDatesAdjustments>
+               <calculationPeriodFrequency>
+                  <periodMultiplier>6</periodMultiplier>
+                  <period>M</period>
+                  <rollConvention>14</rollConvention>
+               </calculationPeriodFrequency>
+               -->
+        </calculationPeriodDates>
+        <paymentDates>
+<!-- (not required)
+               <calculationPeriodDatesReference href="floatingCalcPeriodDates"/>
+               -->
+          <paymentFrequency>
+            <periodMultiplier>3</periodMultiplier>
+<!-- payment frequency 1 -->
+            <period>M</period>
+          </paymentFrequency>
+<!-- (not required)
+               <payRelativeTo>CalculationPeriodEndDate</payRelativeTo>
+               <paymentDatesAdjustments>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCentersReference href="primaryBusinessCenters"/>
+               </paymentDatesAdjustments>
+               -->
+        </paymentDates>
+        <resetDates id="resetDates">
+<!--
+               <calculationPeriodDatesReference href="floatingCalcPeriodDates"/>
+               <resetRelativeTo>CalculationPeriodStartDate</resetRelativeTo>
+               <fixingDates>
+                  <periodMultiplier>-2</periodMultiplier>
+                  <period>D</period>
+                  <dayType>Business</dayType>
+                  <businessDayConvention>NONE</businessDayConvention>
+                  <businessCenters>
+                     <businessCenter>USNY</businessCenter>
+                     <businessCenter>GBLO</businessCenter>
+                  </businessCenters>
+                  <dateRelativeTo href="resetDates"/>
+               </fixingDates>
+               -->
+          <resetFrequency>
+<!-- reset freqency 1 -->
+            <periodMultiplier>6</periodMultiplier>
+            <period>M</period>
+          </resetFrequency>
+<!--
+               <resetDatesAdjustments>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCentersReference href="primaryBusinessCenters"/>
+               </resetDatesAdjustments>
+               -->
+        </resetDates>
+        <calculationPeriodAmount>
+          <calculation>
+            <notionalSchedule>
+              <notionalStepSchedule>
+                <initialValue>10000000.00</initialValue>
+<!-- notional amount 1 -->
+                <currency>USD</currency>
+<!-- notional currency 1 -->
+              </notionalStepSchedule>
+            </notionalSchedule>
+            <floatingRateCalculation>
+<!-- underlying asset 1 -->
+              <floatingRateIndex>USD-LIBOR-BBA</floatingRateIndex>
+              <indexTenor>
+                <periodMultiplier>3</periodMultiplier>
+                <period>M</period>
+              </indexTenor>
+            </floatingRateCalculation>
+            <dayCountFraction>ACT/360</dayCountFraction>
+<!-- should this be included?  Not requested by CFTC, but has substantial impact on prices -->
+          </calculation>
+        </calculationPeriodAmount>
+      </swapStream>
+      <swapStream>
+<!-- (not required to be reported)
+            <payerPartyReference href="partyY"/>
+            <receiverPartyReference href="partyX"/>
+            -->
+        <calculationPeriodDates id="fixedCalcPeriodDates">
+          <effectiveDate>
+            <unadjustedDate>2011-02-08</unadjustedDate>
+<!--
+                  <dateAdjustments>
+                     <businessDayConvention>NONE</businessDayConvention>
+                  </dateAdjustments>
+                  -->
+          </effectiveDate>
+          <terminationDate>
+            <unadjustedDate>2016-02-08</unadjustedDate>
+<!-- end date  -->
+<!--
+                          <dateAdjustments>
+                             <businessDayConvention>NONE</businessDayConvention>
+                          </dateAdjustments>
+                          <businessCenters>
+                             <businessCenter>USNY</businessCenter>
+                          </businessCenters>
+                          -->
+          </terminationDate>
+<!-- not required 
+               <calculationPeriodDatesAdjustments>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCentersReference href="primaryBusinessCenters"/>
+               </calculationPeriodDatesAdjustments>
+               <calculationPeriodFrequency>
+                  <periodMultiplier>1</periodMultiplier>
+                  <period>Y</period>
+                  <rollConvention>14</rollConvention>
+               </calculationPeriodFrequency>
+               -->
+        </calculationPeriodDates>
+        <paymentDates>
+<!-- this is implied, can probably be omitted -->
+<!--
+               <calculationPeriodDatesReference href="fixedCalcPeriodDates"/>
+               -->
+          <paymentFrequency>
+<!-- payment frequency 2 -->
+            <periodMultiplier>6</periodMultiplier>
+            <period>M</period>
+          </paymentFrequency>
+<!--
+               <payRelativeTo>CalculationPeriodEndDate</payRelativeTo>
+               <paymentDatesAdjustments>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCentersReference href="primaryBusinessCenters"/>
+               </paymentDatesAdjustments>
+               -->
+        </paymentDates>
+        <calculationPeriodAmount>
+          <calculation>
+            <notionalSchedule>
+              <notionalStepSchedule>
+                <initialValue>10000000.00</initialValue>
+<!-- notional amount 2 -->
+                <currency>USD</currency>
+<!-- notional currency 2 -->
+              </notionalStepSchedule>
+            </notionalSchedule>
+            <fixedRateSchedule>
+              <initialValue>0.0253</initialValue>
+<!-- Price notation -->
+            </fixedRateSchedule>
+            <dayCountFraction>30E/360</dayCountFraction>
+<!-- should this be included?  Not requested by CFTC, but has substantial impact on prices -->
+          </calculation>
+        </calculationPeriodAmount>
+      </swapStream>
+    </swap>
+  </trade>
+<!--
+   <party id="sef">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">SEF01</partyId>
+      <partyName>Xequition Co.</partyName>
+   </party>
+   -->
+<!-- dco isn't actually reported, so this could be omitted -->
+<!--
+   <party id="dco">
+     <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">DC01</partyId>
+     <partyName>ClearitAll</partyName>
+   </party>
+   -->
+<!-- party X and Y are not actually referenced, so they could be omitted if this info isn't reportable -->
+<!--
+   <party id="partyX">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">Bank X</partyId>
+   </party>
+   <party id="partyY">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">Bank Y</partyId>
+   </party>
+   -->
+</publicExecutionReport>
+

@@ -1,0 +1,2516 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is reporting-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<!--View is reporting-->
+<!--Version is 5-0-->
+<!--NS is http://www.fpml.org/FpML-5/master-->
+<!--Omit some adjustments, details of procedures, and other information not required for a report-->
+<positionReport xmlns="http://www.fpml.org/FpML-5/reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/reporting ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.abc.com/mid">XXX00123</messageId>
+    <sentBy>ABCDUS33</sentBy>
+    <sendTo>HEDGUS33</sendTo>
+    <creationTimestamp>2004-08-02T15:38:00Z</creationTimestamp>
+  </header>
+  <asOfDate>2004-06-02</asOfDate>
+  <dataSetName>Sample positions</dataSetName>
+  <quotationCharacteristics>
+    <side>Mid</side>
+    <currency>USD</currency>
+    <timing>Close</timing>
+  </quotationCharacteristics>
+  <position>
+    <positionId positionIdScheme="http://www.abc.com/positionId">IRS-POS-01</positionId>
+    <reportingRoles>
+      <baseParty href="party2" />
+      <positionProvider href="party1" />
+    </reportingRoles>
+    <constituent>
+      <trade id="irs1-trade">
+        <tradeHeader>
+          <partyTradeIdentifier>
+            <partyReference href="party1" />
+            <tradeId tradeIdScheme="http://www.abc.com/swaps/trade-id">IRS-01</tradeId>
+          </partyTradeIdentifier>
+          <partyTradeIdentifier>
+            <partyReference href="party2" />
+            <tradeId tradeIdScheme="http://www.hedgeco.com/swaps/trade-id">swap-1</tradeId>
+          </partyTradeIdentifier>
+          <partyTradeInformation>
+            <partyReference href="party1" />
+            <reportingRole>Principal</reportingRole>
+            <unit>New York</unit>
+            <trader>Fred Watanabe</trader>
+          </partyTradeInformation>
+          <partyTradeInformation>
+            <partyReference href="party2" />
+            <reportingRole>VoluntaryParty</reportingRole>
+            <unit>San Fancisco Desk</unit>
+            <trader>Joe Bloggs</trader>
+          </partyTradeInformation>
+          <partyTradeInformation>
+            <partyReference href="party2" />
+            <reportingRole>VoluntaryParty</reportingRole>
+            <unit>San Fancisco Desk</unit>
+            <trader>Joe Bloggs</trader>
+          </partyTradeInformation>
+          <tradeDate>2004-12-12</tradeDate>
+        </tradeHeader>
+        <swap>
+<!-- used to represent the "swap type" -->
+          <productType productTypeScheme="http://www.datastandardsworkinggroup.org/products-1-0">IRS-FixedFloat-Uneven</productType>
+          <assetClass>InterestRate</assetClass>
+<!-- ABC pays the floating rate every 6 months, based on 6M EURIBOR-Telerate
+                    on an ACT/360 basis -->
+          <swapStream id="irs1-floatingStream">
+            <payerPartyReference href="party1" />
+            <calculationPeriodDates id="irs1-floatingCalcPeriodDates">
+              <terminationDate>
+                <unadjustedDate>2009-12-14</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCenters id="irs1-primaryBusinessCenters">
+                    <businessCenter>EUTA</businessCenter>
+                  </businessCenters>
+                </dateAdjustments>
+              </terminationDate>
+              <calculationPeriodDatesAdjustments>
+                <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                <businessCenters>
+                  <businessCenter>EUTA</businessCenter>
+                </businessCenters>
+              </calculationPeriodDatesAdjustments>
+              <calculationPeriodFrequency>
+                <periodMultiplier>6</periodMultiplier>
+                <period>M</period>
+              </calculationPeriodFrequency>
+            </calculationPeriodDates>
+            <paymentDates id="PaymentDatesID2">
+              <paymentFrequency>
+                <periodMultiplier>6</periodMultiplier>
+                <period>M</period>
+              </paymentFrequency>
+              <paymentDatesAdjustments>
+                <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                <businessCenters>
+                  <businessCenter>EUTA</businessCenter>
+                </businessCenters>
+              </paymentDatesAdjustments>
+            </paymentDates>
+            <resetDates id="irs1-resetDates">
+              <resetFrequency>
+                <periodMultiplier>6</periodMultiplier>
+                <period>M</period>
+              </resetFrequency>
+              <resetDatesAdjustments>
+                <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                <businessCenters>
+                  <businessCenter>EUTA</businessCenter>
+                </businessCenters>
+              </resetDatesAdjustments>
+            </resetDates>
+            <calculationPeriodAmount>
+              <calculation>
+                <notionalSchedule>
+                  <notionalStepSchedule>
+                    <initialValue>50000000.00</initialValue>
+                    <step>
+                      <stepDate>2004-12-14</stepDate>
+                      <stepValue>10000000.00</stepValue>
+                    </step>
+                    <step>
+                      <stepDate>2005-12-14</stepDate>
+                      <stepValue>20000000.00</stepValue>
+                    </step>
+                    <step>
+                      <stepDate>2006-12-14</stepDate>
+                      <stepValue>30000000.00</stepValue>
+                    </step>
+                    <step>
+                      <stepDate>2007-12-14</stepDate>
+                      <stepValue>40000000.00</stepValue>
+                    </step>
+                    <step>
+                      <stepDate>2008-12-14</stepDate>
+                      <stepValue>50000000.00</stepValue>
+                    </step>
+                    <step>
+                      <stepDate>2009-12-14</stepDate>
+                      <stepValue>60000000.00</stepValue>
+                    </step>
+                    <currency>EUR</currency>
+                  </notionalStepSchedule>
+                </notionalSchedule>
+                <floatingRateCalculation>
+                  <floatingRateIndex>EUR-EURIBOR-Telerate</floatingRateIndex>
+                  <indexTenor>
+                    <periodMultiplier>6</periodMultiplier>
+                    <period>M</period>
+                  </indexTenor>
+                  <spreadSchedule>
+                    <initialValue>0.01</initialValue>
+                  </spreadSchedule>
+                </floatingRateCalculation>
+                <dayCountFraction>ACT/360</dayCountFraction>
+              </calculation>
+            </calculationPeriodAmount>
+            <settlementProvision>
+              <settlementCurrency>USD</settlementCurrency>
+              <nonDeliverableSettlement>
+                <referenceCurrency>EUR</referenceCurrency>
+                <fxFixingDate>
+                  <periodMultiplier>2</periodMultiplier>
+                  <period>D</period>
+                  <dayType>Business</dayType>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCenters>
+                    <businessCenter>USNY</businessCenter>
+                    <businessCenter>GBLO</businessCenter>
+                  </businessCenters>
+                  <dateRelativeToPaymentDates>
+                    <paymentDatesReference href="PaymentDatesID2" />
+<!--
+                                                                <paymentDatesReference href="PrincipalExchanges"/>
+                                                                -->
+                  </dateRelativeToPaymentDates>
+                </fxFixingDate>
+                <settlementRateOption settlementRateOptionScheme="http://www.fpml.org/coding-scheme/settlement-rate-option-1-0">CURRENCY-IMPLIED.RATE.(ADR)/CURA1</settlementRateOption>
+              </nonDeliverableSettlement>
+            </settlementProvision>
+          </swapStream>
+<!-- HedgeCo pays the 6% fixed rate every year on a 30E/360 basis -->
+          <swapStream id="irs1-fixedStream">
+            <payerPartyReference href="party2" />
+            <calculationPeriodDates id="irs1-fixedCalcPeriodDates">
+              <calculationPeriodDatesAdjustments>
+                <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                <businessCenters>
+                  <businessCenter>EUTA</businessCenter>
+                </businessCenters>
+              </calculationPeriodDatesAdjustments>
+              <calculationPeriodFrequency>
+                <periodMultiplier>1</periodMultiplier>
+                <period>Y</period>
+              </calculationPeriodFrequency>
+            </calculationPeriodDates>
+            <paymentDates id="PaymentDatesID">
+              <paymentFrequency>
+                <periodMultiplier>1</periodMultiplier>
+                <period>Y</period>
+              </paymentFrequency>
+              <paymentDatesAdjustments>
+                <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                <businessCenters>
+                  <businessCenter>EUTA</businessCenter>
+                </businessCenters>
+              </paymentDatesAdjustments>
+            </paymentDates>
+            <calculationPeriodAmount>
+              <calculation>
+                <notionalSchedule>
+                  <notionalStepSchedule id="irs-notional">
+                    <initialValue>50000000.00</initialValue>
+                    <currency>EUR</currency>
+                  </notionalStepSchedule>
+                </notionalSchedule>
+                <fixedRateSchedule>
+                  <initialValue>0.06</initialValue>
+                </fixedRateSchedule>
+                <dayCountFraction>30E/360</dayCountFraction>
+              </calculation>
+            </calculationPeriodAmount>
+            <settlementProvision>
+              <settlementCurrency>USD</settlementCurrency>
+              <nonDeliverableSettlement>
+                <referenceCurrency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</referenceCurrency>
+                <fxFixingDate>
+                  <periodMultiplier>2</periodMultiplier>
+                  <period>D</period>
+                  <dayType>Business</dayType>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCenters>
+                    <businessCenter>USNY</businessCenter>
+                    <businessCenter>GBLO</businessCenter>
+                  </businessCenters>
+                  <dateRelativeToPaymentDates>
+                    <paymentDatesReference href="PaymentDatesID" />
+<!--
+                                                                <paymentDatesReference href="PrincipalExchanges"/>
+                                                                        -->
+                  </dateRelativeToPaymentDates>
+                </fxFixingDate>
+                <settlementRateOption settlementRateOptionScheme="http://www.fpml.org/coding-scheme/settlement-rate-option-1-0">CURRENCY-IMPLIED.RATE.(ADR)/CURA1</settlementRateOption>
+              </nonDeliverableSettlement>
+            </settlementProvision>
+          </swapStream>
+          <additionalPayment>
+            <payerPartyReference href="party2" />
+            <paymentAmount>
+              <currency>USD</currency>
+              <amount>15000.00</amount>
+            </paymentAmount>
+            <paymentDate>
+              <unadjustedDate>2005-04-27</unadjustedDate>
+              <dateAdjustments>
+                <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                <businessCenters>
+                  <businessCenter>EUTA</businessCenter>
+                </businessCenters>
+              </dateAdjustments>
+            </paymentDate>
+          </additionalPayment>
+        </swap>
+        <collateral>
+          <independentAmount>
+            <payerPartyReference href="party2" />
+            <paymentDetail>
+<!--
+              <adjustedPaymentDate>2004-01-01</adjustedPaymentDate>
+              -->
+              <paymentDate>
+                <adjustableDate>
+                  <adjustedDate>2004-01-01</adjustedDate>
+                </adjustableDate>
+              </paymentDate>
+              <paymentRule xsi:type="PercentageRule">
+                <paymentPercent>0.10</paymentPercent>
+                <notionalAmountReference href="irs-notional" />
+              </paymentRule>
+              <paymentAmount>
+                <currency>USD</currency>
+                <amount>1000</amount>
+              </paymentAmount>
+            </paymentDetail>
+          </independentAmount>
+        </collateral>
+        <documentation>
+          <creditSupportAgreement>
+            <identifier creditSupportAgreementIdScheme="http://abcd.com/csa-id">HEDG123-a</identifier>
+          </creditSupportAgreement>
+        </documentation>
+      </trade>
+    </constituent>
+    <scheduledDate>
+      <adjustedDate>2004-12-14</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousReset</type>
+      <assetReference href="irs1-floatingStream" />
+      <associatedValue>
+        <objectReference href="irs1-floatingStream" />
+        <quote>
+          <value>0.062</value>
+          <measureType>TreatedRate</measureType>
+        </quote>
+      </associatedValue>
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-03-14</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">FirstPayment</type>
+      <assetReference href="irs1-floatingStream" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-03-14</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousPayment</type>
+      <assetReference href="irs1-floatingStream" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-06-14</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">NextPayment</type>
+      <assetReference href="irs1-floatingStream" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2004-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousReset</type>
+      <assetReference href="irs1-floatingStream" />
+      <associatedValue>
+        <objectReference href="irs1-floatingStream" />
+        <quote>
+          <value>0.0350</value>
+          <measureType>TreatedRate</measureType>
+        </quote>
+      </associatedValue>
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2004-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">FirstPayment</type>
+      <assetReference href="irs1-fixedStream" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2004-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousPayment</type>
+      <assetReference href="irs1-fixedStream" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">NextPayment</type>
+      <assetReference href="irs1-fixedStream" />
+    </scheduledDate>
+    <valuation>
+      <objectReference href="irs1-floatingStream" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>AccruedInterest</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>3000000.00</value>
+        <measureType>CurrentNotional</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="irs1-fixedStream" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>AccruedInterest</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>3000000.00</value>
+        <measureType>CurrentNotional</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="irs1-trade" />
+      <quote>
+        <value>10000.00</value>
+        <measureType>NPVLocalCurrency</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>12300.00</value>
+        <measureType>NPV</measureType>
+      </quote>
+      <fxRate>
+        <quotedCurrencyPair>
+          <currency1>USD</currency1>
+          <currency2>EUR</currency2>
+          <quoteBasis>Currency1PerCurrency2</quoteBasis>
+        </quotedCurrencyPair>
+        <rate>1.23</rate>
+      </fxRate>
+    </valuation>
+  </position>
+<!--
+  <position>
+    <positionId positionIdScheme="http://www.abc.com/positionId">TRS-POS-01</positionId>
+    <reportingRoles>
+      <baseParty href="party2" />
+      <positionProvider href="party1" />
+    </reportingRoles>
+    <constituent>
+      <trade id="trs-eq1-trade">
+        <tradeHeader>
+          <partyTradeIdentifier>
+            <tradeId tradeIdScheme="http://www.abc.com/swaps/trade-id">TRS-01</tradeId>
+          </partyTradeIdentifier>
+          <partyTradeIdentifier>
+            <tradeId tradeIdScheme="http://www.hedgeco.com/swaps/trade-id">total-ret-swap-01</tradeId>
+          </partyTradeIdentifier>
+          <tradeDate id="trs-eq1-TradeDate">2004-10-10</tradeDate>
+        </tradeHeader>
+        <returnSwap>
+          <productType productTypeScheme="http://www.datastandardsworkinggroup.org/products-1-0">TRS-Equity-Single-EarlyTerm</productType>
+          -->
+<!--
+          <buyerPartyReference href="party1" />
+          -->
+<!--
+          <returnLeg id="trs-eq1-equityLeg">
+            <payerPartyReference href="party1" />
+            <paymentFrequency>
+              <periodMultiplier>3</periodMultiplier>
+              <period>M</period>
+            </paymentFrequency>
+            <effectiveDate id="trs-eq1-EffectiveDate">
+              <adjustableDate>
+                <unadjustedDate>2004-10-12</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>NONE</businessDayConvention>
+                </dateAdjustments>
+              </adjustableDate>
+            </effectiveDate>
+            <terminationDate id="trs-eq1-TerminationDate">
+              <adjustableDate>
+                <unadjustedDate>2006-10-12</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>NONE</businessDayConvention>
+                </dateAdjustments>
+              </adjustableDate>
+            </terminationDate>
+            <underlyer>
+              <singleUnderlyer>
+                <equity id="trs-eq1-equity-asset">
+                  <instrumentId instrumentIdScheme="http://www.fpml.org/coding-scheme/external/instrument-id-CUSIP">SHPGY.O</instrumentId>
+                  <description>Shire Pharmeceuticals Group - American Depositary Receipts</description>
+                  <currency>EUR</currency>
+                  <exchangeId exchangeIdScheme="http://www.fpml.org/schemes/4.1/exchangeId">NASDAQ</exchangeId>
+                </equity>
+                <openUnits>760400</openUnits>
+                <dividendPayout>
+                  <dividendPayoutRatio>0.85</dividendPayoutRatio>
+                  <dividendPayment>
+                    <paymentDate>2004-01-01</paymentDate>
+                    <amount>
+                      <currency>USD</currency>
+                      <amount>123456.00</amount>
+                    </amount>
+                    <accruedInterest>
+                      <currency>USD</currency>
+                      <amount>123.00</amount>
+                    </accruedInterest>
+                  </dividendPayment>
+                </dividendPayout>
+                -->
+<!--
+                                                                <underlyerPrice>
+                                                                        <netPrice>
+                                                                                <currency>EUR</currency>
+                                                                                <amount>19785157.16</amount>
+                                                                                <priceExpression>AbsoluteTerms</priceExpression>
+                                                                        </netPrice>
+                                                                        <accruedInterestPrice>1234.56</accruedInterestPrice>
+                                                                        <quotationCharacteristics>
+                                                                                <side>Mid</side>
+                                                                                <currency>USD</currency>
+                                                                                <timing>Close</timing>
+                                                                        </quotationCharacteristics>
+                                                                </underlyerPrice>
+                                                                        -->
+<!--
+                <couponPayment>
+                  <paymentDate>2004-01-01</paymentDate>
+                  <amount>
+                    <currency>USD</currency>
+                    <amount>123456.00</amount>
+                  </amount>
+                  <accruedInterest>
+                    <currency>USD</currency>
+                    <amount>123.00</amount>
+                  </accruedInterest>
+                </couponPayment>
+              </singleUnderlyer>
+            </underlyer>
+            <rateOfReturn>
+              <initialPrice>
+                <commission>
+                  <commissionDenomination>BPS</commissionDenomination>
+                  <commissionAmount>60</commissionAmount>
+                  <commissionPerTrade>1234</commissionPerTrade>
+                </commission>
+                <netPrice>
+                  <currency>USD</currency>
+                  <amount>37.44</amount>
+                  <priceExpression>AbsoluteTerms</priceExpression>
+                </netPrice>
+              </initialPrice>
+              <notionalReset>true</notionalReset>
+              <valuationPriceInterim>
+                <commission>
+                  <commissionDenomination>BPS</commissionDenomination>
+                  <commissionAmount>60</commissionAmount>
+                  <commissionPerTrade>1234</commissionPerTrade>
+                </commission>
+                <determinationMethod>PriceAtValuationTime</determinationMethod>
+                <valuationRules>
+                  <valuationDates id="trs-eq1-InterimValuationDate">
+                    <adjustableDates>
+                      <unadjustedDate>2004-10-12</unadjustedDate>
+                      <unadjustedDate>2004-11-13</unadjustedDate>
+                      <unadjustedDate>2004-12-12</unadjustedDate>
+                      <unadjustedDate>2005-01-14</unadjustedDate>
+                      <unadjustedDate>2005-02-12</unadjustedDate>
+                      <unadjustedDate>2005-03-12</unadjustedDate>
+                      <unadjustedDate>2005-04-12</unadjustedDate>
+                      <unadjustedDate>2005-05-13</unadjustedDate>
+                      <unadjustedDate>2005-06-12</unadjustedDate>
+                      <unadjustedDate>2005-07-12</unadjustedDate>
+                      <unadjustedDate>2005-08-12</unadjustedDate>
+                      <dateAdjustments>
+                        <businessDayConvention>NotApplicable</businessDayConvention>
+                      </dateAdjustments>
+                    </adjustableDates>
+                  </valuationDates>
+                  <valuationTimeType>Close</valuationTimeType>
+                </valuationRules>
+              </valuationPriceInterim>
+              <valuationPriceFinal>
+                <commission>
+                  <commissionDenomination>BPS</commissionDenomination>
+                  <commissionAmount>60</commissionAmount>
+                  <commissionPerTrade>1234</commissionPerTrade>
+                </commission>
+                <determinationMethod>HedgeExecution</determinationMethod>
+                <valuationRules>
+                  <valuationDate id="trs-eq1-FinalValuationDate">
+                    <adjustableDate>
+                      <unadjustedDate>2005-09-24</unadjustedDate>
+                      <dateAdjustments>
+                        <businessDayConvention>NotApplicable</businessDayConvention>
+                      </dateAdjustments>
+                    </adjustableDate>
+                  </valuationDate>
+                </valuationRules>
+              </valuationPriceFinal>
+              <paymentDates id="trs-eq1-EquityPaymentDate">
+                <paymentDatesInterim id="trs-eq1-InterimEquityPaymentDate">
+                  <adjustableDates>
+                    <unadjustedDate>2004-10-14</unadjustedDate>
+                    <unadjustedDate>2005-10-14</unadjustedDate>
+                    <unadjustedDate>2006-10-14</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>FOLLOWING</businessDayConvention>
+                      <businessCenters>
+                        <businessCenter>EUTA</businessCenter>
+                        <businessCenter>GBLO</businessCenter>
+                      </businessCenters>
+                    </dateAdjustments>
+                  </adjustableDates>
+                </paymentDatesInterim>
+                <paymentDateFinal id="trs-eq1-FinalEquityPaymentDate">
+                  <adjustableDate>
+                    <unadjustedDate>2006-10-14</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>FOLLOWING</businessDayConvention>
+                      <businessCenters>
+                        <businessCenter>EUTA</businessCenter>
+                        <businessCenter>GBLO</businessCenter>
+                      </businessCenters>
+                    </dateAdjustments>
+                  </adjustableDate>
+                </paymentDateFinal>
+              </paymentDates>
+            </rateOfReturn>
+            <notional id="trs-eq1-EquityNotionalAmount">
+              <notionalAmount>
+                <currency>USD</currency>
+                <amount>28469376</amount>
+              </notionalAmount>
+            </notional>
+            <amount>
+              <paymentCurrency id="trs-eq1-EquityPaymentCurrency">
+                <currency>USD</currency>
+              </paymentCurrency>
+              <referenceAmount>ISDA Standard</referenceAmount>
+              <cashSettlement>true</cashSettlement>
+            </amount>
+            <return>
+              <returnType>Total</returnType>
+              <dividendConditions>
+                <dividendReinvestment>false</dividendReinvestment>
+                <dividendEntitlement>ExDate</dividendEntitlement>
+                <dividendAmount>RecordAmount</dividendAmount>
+                <dividendPaymentDate>
+                  <dividendDateReference>EquityPaymentDate</dividendDateReference>
+                </dividendPaymentDate>
+                <dividendPeriodEffectiveDate href="trs-eq1-TradeDate" />
+                <dividendPeriodEndDate href="trs-eq1-TerminationDate" />
+                <extraOrdinaryDividends href="party1" />
+                <excessDividendAmount>RecordAmount</excessDividendAmount>
+                <paymentCurrency>
+                  <determinationMethod>DividendCurrency</determinationMethod>
+                </paymentCurrency>
+              </dividendConditions>
+            </return>
+            -->
+<!--The notionalAdjustments element indicates that this is an execution-style swap -->
+<!--
+          </returnLeg>
+          <interestLeg id="trs-eq1-interestLeg">
+            <payerPartyReference href="party2" />
+            <paymentFrequency>
+              <periodMultiplier>3</periodMultiplier>
+              <period>M</period>
+            </paymentFrequency>
+            <interestLegCalculationPeriodDates id="trs-eq1-InterestLegPeriodDates">
+              <interestLegResetDates></interestLegResetDates>
+              <interestLegPaymentDates>
+                <adjustableDates>
+                  <unadjustedDate>2004-10-12</unadjustedDate>
+                  <unadjustedDate>2005-10-12</unadjustedDate>
+                  <unadjustedDate>2006-10-12</unadjustedDate>
+                  <dateAdjustments>
+                    <businessDayConvention>FOLLOWING</businessDayConvention>
+                    <businessCenters>
+                      <businessCenter>EUTA</businessCenter>
+                      <businessCenter>GBLO</businessCenter>
+                    </businessCenters>
+                  </dateAdjustments>
+                </adjustableDates>
+              </interestLegPaymentDates>
+            </interestLegCalculationPeriodDates>
+            <notional>
+              <notionalAmount>
+                <currency>EUR</currency>
+                <amount>19785157.16</amount>
+              </notionalAmount>
+            </notional>
+            <interestAmount>
+              <paymentCurrency href="trs-eq1-EquityPaymentCurrency" />
+              <referenceAmount>Standard ISDA</referenceAmount>
+            </interestAmount>
+            <interestCalculation>
+              <floatingRateCalculation>
+                <floatingRateIndex>USD-LIBOR-BBA</floatingRateIndex>
+                <indexTenor>
+                  <periodMultiplier>1</periodMultiplier>
+                  <period>M</period>
+                </indexTenor>
+                <spreadSchedule>
+                  <initialValue>0.0020</initialValue>
+                </spreadSchedule>
+              </floatingRateCalculation>
+              <dayCountFraction>ACT/360</dayCountFraction>
+            </interestCalculation>
+          </interestLeg>
+          <earlyTermination>
+            <startingDate>
+              <adjustableDate>
+                <unadjustedDate>2005-10-12</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>NONE</businessDayConvention>
+                </dateAdjustments>
+              </adjustableDate>
+            </startingDate>
+          </earlyTermination>
+          <earlyTermination>
+            <startingDate>
+              <adjustableDate>
+                <unadjustedDate>2005-10-12</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>NONE</businessDayConvention>
+                </dateAdjustments>
+              </adjustableDate>
+            </startingDate>
+          </earlyTermination>
+        </returnSwap>
+        -->
+<!-- end of TRS product -->
+<!--
+        <collateral>
+          <independentAmount>
+            <payerPartyReference href="party2" />
+            <paymentDetail>
+                    -->
+<!--
+              <adjustedPaymentDate>2005-01-01</adjustedPaymentDate>
+              -->
+<!--
+              <paymentDate>
+                      <adjustableDate>
+                              <adjustedDate>2005-01-01</adjustedDate>
+                      </adjustableDate>
+              </paymentDate>
+              <paymentAmount>
+                <currency>USD</currency>
+                <amount>1000</amount>
+              </paymentAmount>
+            </paymentDetail>
+          </independentAmount>
+        </collateral>
+      </trade>
+    </constituent>
+    <scheduledDate>
+      <adjustedDate>2004-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousPayment</type>
+      <assetReference href="trs-eq1-equityLeg" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousReset</type>
+      <assetReference href="trs-eq1-interestLeg" />
+      <associatedValue>
+        <objectReference href="trs-eq1-interestLeg" />
+        <quote>
+          <value>0.0350</value>
+          <measureType>TreatedRate</measureType>
+        </quote>
+      </associatedValue>
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-03-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousPayment</type>
+      <assetReference href="trs-eq1-interestLeg" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-06-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">NextPayment</type>
+      <assetReference href="trs-eq1-interestLeg" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2006-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">FinalPayment</type>
+      <assetReference href="trs-eq1-trade" />
+    </scheduledDate>
+    <valuation>
+      <objectReference href="trs-eq1-equity-asset" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>RealizedTradingGains</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>InterestOnRealizedGains</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>19785157.16</value>
+        <measureType>DirtyNetCurrentMarketPrice</measureType>
+        <side>Mid</side>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+        <timing quoteTimingScheme="http://www.fpml.org/coding-scheme/quote-timing-1-0">Close</timing>
+      </quote>
+      <quote>
+        <value>1234.56</value>
+        <measureType>AccruedInterest</measureType>
+        <side>Mid</side>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+        <timing quoteTimingScheme="http://www.fpml.org/coding-scheme/quote-timing-1-0">Close</timing>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="trs-eq1-equityLeg" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>EquityAccrual</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>RealizedTradingGains</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>InterestOnRealizedGains</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="trs-eq1-interestLeg" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>AccruedInterest</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>FundingOnRealizedGains</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="trs-eq1-trade" />
+      <quote>
+        <value>10000.00</value>
+        <measureType>NPVLocalCurrency</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>12300.00</value>
+        <measureType>NPV</measureType>
+      </quote>
+      <fxRate>
+        <quotedCurrencyPair>
+          <currency1>USD</currency1>
+          <currency2>EUR</currency2>
+          <quoteBasis>Currency1PerCurrency2</quoteBasis>
+        </quotedCurrencyPair>
+        <rate>1.23</rate>
+      </fxRate>
+    </valuation>
+  </position>
+  -->
+<!--
+  <position>
+    <positionId positionIdScheme="http://www.abc.com/positionId">TRS-POS-02</positionId>
+    <reportingRoles>
+      <baseParty href="party2" />
+      <positionProvider href="party1" />
+    </reportingRoles>
+    <constituent>
+      <trade id="trs-eqbasket-trade">
+        <tradeHeader>
+          <partyTradeIdentifier>
+            <tradeId tradeIdScheme="http://www.abc.com/swaps/trade-id">TRS-02</tradeId>
+          </partyTradeIdentifier>
+          <partyTradeIdentifier>
+            <tradeId tradeIdScheme="http://www.hedgeco.com/swaps/trade-id">total-ret-swap-02</tradeId>
+          </partyTradeIdentifier>
+          <tradeDate id="trs-eqbasket-TradeDate">2004-12-12</tradeDate>
+        </tradeHeader>
+        <returnSwap>
+          <productType productTypeScheme="http://www.datastandardsworkinggroup.org/products-1-0">TRS-Equity-Basket-EarlyTerm</productType>
+          -->
+<!--
+          <buyerPartyReference href="party2" />
+          -->
+<!--
+          <returnLeg id="trs-eqbasket-equityLeg">
+            <payerPartyReference href="party2" />
+            <paymentFrequency>
+              <periodMultiplier>3</periodMultiplier>
+              <period>M</period>
+            </paymentFrequency>
+            <effectiveDate id="trs-eqbasket-EffectiveDate">
+              <adjustableDate>
+                <unadjustedDate>2004-12-14</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>NONE</businessDayConvention>
+                </dateAdjustments>
+              </adjustableDate>
+            </effectiveDate>
+            <terminationDate id="trs-eqbasket-TerminationDate">
+              <adjustableDate>
+                <unadjustedDate>2004-12-14</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>NONE</businessDayConvention>
+                </dateAdjustments>
+              </adjustableDate>
+            </terminationDate>
+            <underlyer>
+              <basket>
+                <openUnits>1</openUnits>
+                <basketConstituent id="trs-eqbasket-underlyer1">
+                  <equity>
+                    <instrumentId instrumentIdScheme="http://www.fpml.org/coding-scheme/external/instrument-id-ISIN">ISIN_XXXX</instrumentId>
+                    <description>Telecom Italia spa</description>
+                    <currency>EUR</currency>
+                    <exchangeId exchangeIdScheme="http://www.fpml.org/schemes/4-1/exchangeId">Milan Stock Exchange</exchangeId>
+                  </equity>
+                  <constituentWeight>
+                    <openUnits>432000</openUnits>
+                  </constituentWeight>
+                  <dividendPayout>
+                    <dividendPayoutRatio>0.85</dividendPayoutRatio>
+                    <dividendPayment>
+                      <paymentDate>2004-01-01</paymentDate>
+                      <amount>
+                        <currency>USD</currency>
+                        <amount>123456.00</amount>
+                      </amount>
+                      <accruedInterest>
+                        <currency>USD</currency>
+                        <amount>123.00</amount>
+                      </accruedInterest>
+                    </dividendPayment>
+                  </dividendPayout>
+                  <underlyerPrice>
+                    <netPrice>
+                      <currency>EUR</currency>
+                      <amount>19785157.16</amount>
+                      <priceExpression>AbsoluteTerms</priceExpression>
+                    </netPrice>
+                    <accruedInterestPrice>1234.56</accruedInterestPrice>
+                    <quotationCharacteristics>
+                      <side>Mid</side>
+                      <currency>USD</currency>
+                      <timing>Close</timing>
+                    </quotationCharacteristics>
+                  </underlyerPrice>
+                </basketConstituent>
+                <basketConstituent id="trs-eqbasket-underlyer2">
+                  <equity>
+                    <instrumentId instrumentIdScheme="http://www.fpml.org/coding-scheme/external/instrument-id-ISIN">ISIN_YYYY</instrumentId>
+                    <description>Nokya Oyj</description>
+                    <currency>EUR</currency>
+                    <exchangeId exchangeIdScheme="http://www.fpml.org/schemes/4-1/exchangeId">Helsinki Stock Exchange</exchangeId>
+                  </equity>
+                  <constituentWeight>
+                    <openUnits>227000</openUnits>
+                  </constituentWeight>
+                  <dividendPayout>
+                    <dividendPayoutRatio>0.85</dividendPayoutRatio>
+                    <dividendPayment>
+                      <paymentDate>2004-01-01</paymentDate>
+                      <amount>
+                        <currency>USD</currency>
+                        <amount>123456.00</amount>
+                      </amount>
+                      <accruedInterest>
+                        <currency>USD</currency>
+                        <amount>123.00</amount>
+                      </accruedInterest>
+                    </dividendPayment>
+                  </dividendPayout>
+                  <underlyerPrice>
+                    <netPrice>
+                      <currency>EUR</currency>
+                      <amount>19785157.16</amount>
+                      <priceExpression>AbsoluteTerms</priceExpression>
+                    </netPrice>
+                    <accruedInterestPrice>1234.56</accruedInterestPrice>
+                    <quotationCharacteristics>
+                      <side>Mid</side>
+                      <currency>USD</currency>
+                      <timing>Close</timing>
+                    </quotationCharacteristics>
+                  </underlyerPrice>
+                </basketConstituent>
+              </basket>
+            </underlyer>
+            <rateOfReturn>
+              <initialPrice>
+                <commission>
+                  <commissionDenomination>BPS</commissionDenomination>
+                  <commissionAmount>60</commissionAmount>
+                  <commissionPerTrade>1234</commissionPerTrade>
+                </commission>
+                <netPrice>
+                  <currency>EUR</currency>
+                  <amount>19785157.16</amount>
+                  <priceExpression>AbsoluteTerms</priceExpression>
+                </netPrice>
+              </initialPrice>
+              <notionalReset>true</notionalReset>
+              <valuationPriceInterim>
+                <commission>
+                  <commissionDenomination>BPS</commissionDenomination>
+                  <commissionAmount>60</commissionAmount>
+                  <commissionPerTrade>1234</commissionPerTrade>
+                </commission>
+                <determinationMethod>PriceAtValuationTime</determinationMethod>
+                <valuationRules>
+                  <valuationDates id="trs-eqbasket-InterimValuationDate">
+                    <adjustableDates>
+                      <unadjustedDate>2004-12-17</unadjustedDate>
+                      <dateAdjustments>
+                        <businessDayConvention>NotApplicable</businessDayConvention>
+                      </dateAdjustments>
+                    </adjustableDates>
+                  </valuationDates>
+                  <valuationTimeType>Close</valuationTimeType>
+                </valuationRules>
+              </valuationPriceInterim>
+              <valuationPriceFinal>
+                <commission>
+                  <commissionDenomination>BPS</commissionDenomination>
+                  <commissionAmount>60</commissionAmount>
+                  <commissionPerTrade>1234</commissionPerTrade>
+                </commission>
+                <determinationMethod>HedgeExecution</determinationMethod>
+                <valuationRules>
+                  <valuationDate id="trs-eqbasket-FinalValuationDate">
+                    <adjustableDate>
+                      <unadjustedDate>2006-01-17</unadjustedDate>
+                      <dateAdjustments>
+                        <businessDayConvention>NotApplicable</businessDayConvention>
+                      </dateAdjustments>
+                    </adjustableDate>
+                  </valuationDate>
+                </valuationRules>
+              </valuationPriceFinal>
+              <paymentDates id="trs-eqbasket-EquityPaymentDate">
+                <paymentDatesInterim id="trs-eqbasket-InterimEquityPaymentDate">
+                  <adjustableDates>
+                    <unadjustedDate>2004-12-14</unadjustedDate>
+                    <unadjustedDate>2005-12-14</unadjustedDate>
+                    <unadjustedDate>2006-12-14</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>FOLLOWING</businessDayConvention>
+                      <businessCenters>
+                        <businessCenter>EUTA</businessCenter>
+                        <businessCenter>GBLO</businessCenter>
+                      </businessCenters>
+                    </dateAdjustments>
+                  </adjustableDates>
+                </paymentDatesInterim>
+                <paymentDateFinal id="trs-eqbasket-FinalEquityPaymentDate">
+                  <adjustableDate>
+                    <unadjustedDate>2006-12-14</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>FOLLOWING</businessDayConvention>
+                      <businessCenters>
+                        <businessCenter>EUTA</businessCenter>
+                        <businessCenter>GBLO</businessCenter>
+                      </businessCenters>
+                    </dateAdjustments>
+                  </adjustableDate>
+                </paymentDateFinal>
+              </paymentDates>
+            </rateOfReturn>
+            <notional id="trs-eqbasket-EquityNotionalAmount">
+              <notionalAmount>
+                <currency>EUR</currency>
+                <amount>19785157.16</amount>
+              </notionalAmount>
+            </notional>
+            <amount>
+              <paymentCurrency id="trs-eqbasket-EquityPaymentCurrency">
+                <currency>USD</currency>
+              </paymentCurrency>
+              <referenceAmount>ISDA Standard</referenceAmount>
+              <cashSettlement>true</cashSettlement>
+            </amount>
+            <return>
+              <returnType>Total</returnType>
+              <dividendConditions>
+                <dividendReinvestment>false</dividendReinvestment>
+                <dividendEntitlement>ExDate</dividendEntitlement>
+                <dividendAmount>RecordAmount</dividendAmount>
+                <dividendPaymentDate>
+                  <dividendDateReference>EquityPaymentDate</dividendDateReference>
+                </dividendPaymentDate>
+                <dividendPeriodEffectiveDate href="trs-eqbasket-TradeDate" />
+                <dividendPeriodEndDate href="trs-eqbasket-FinalValuationDate" />
+                <excessDividendAmount>PaidAmount</excessDividendAmount>
+                <paymentCurrency id="trs-eqPaymentCurrency" href="trs-eqbasket-ReferenceCurrency" />
+              </dividendConditions>
+            </return>
+            <fxFeature>
+              <referenceCurrency id="trs-eqbasket-ReferenceCurrency">EUR</referenceCurrency>
+              <composite>
+                <determinationMethod>GoodFaith</determinationMethod>
+              </composite>
+            </fxFeature>
+          </returnLeg>
+          <interestLeg id="trs-eqbasket-interestLeg">
+            <payerPartyReference href="party1" />
+            <paymentFrequency>
+              <periodMultiplier>3</periodMultiplier>
+              <period>M</period>
+            </paymentFrequency>
+            <interestLegCalculationPeriodDates id="trs-eqbasket-InterestLegPeriodDates">
+              <interestLegResetDates></interestLegResetDates>
+              <interestLegPaymentDates>
+                <adjustableDates>
+                  <unadjustedDate>2004-12-14</unadjustedDate>
+                  <unadjustedDate>2005-12-14</unadjustedDate>
+                  <unadjustedDate>2006-12-14</unadjustedDate>
+                  <dateAdjustments>
+                    <businessDayConvention>FOLLOWING</businessDayConvention>
+                    <businessCenters>
+                      <businessCenter>EUTA</businessCenter>
+                      <businessCenter>GBLO</businessCenter>
+                    </businessCenters>
+                  </dateAdjustments>
+                </adjustableDates>
+              </interestLegPaymentDates>
+            </interestLegCalculationPeriodDates>
+            <notional>
+              <notionalAmount>
+                <currency>EUR</currency>
+                <amount>19785157.16</amount>
+              </notionalAmount>
+            </notional>
+            <interestAmount>
+              <paymentCurrency href="trs-eqbasket-ReferenceCurrency" />
+              <referenceAmount>Standard ISDA</referenceAmount>
+            </interestAmount>
+            <interestCalculation>
+              <floatingRateCalculation>
+                <floatingRateIndex>EUR-EURIBOR-Telerate</floatingRateIndex>
+                <indexTenor>
+                  <periodMultiplier>3</periodMultiplier>
+                  <period>M</period>
+                </indexTenor>
+                <spreadSchedule>
+                  <initialValue>0.0050</initialValue>
+                </spreadSchedule>
+              </floatingRateCalculation>
+              <dayCountFraction>ACT/360</dayCountFraction>
+            </interestCalculation>
+          </interestLeg>
+          <earlyTermination>
+            <startingDate>
+              <adjustableDate>
+                <unadjustedDate>2004-12-14</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>NONE</businessDayConvention>
+                </dateAdjustments>
+              </adjustableDate>
+            </startingDate>
+          </earlyTermination>
+          <earlyTermination>
+            <startingDate>
+              <adjustableDate>
+                <unadjustedDate>2004-12-14</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>NONE</businessDayConvention>
+                </dateAdjustments>
+              </adjustableDate>
+            </startingDate>
+          </earlyTermination>
+        </returnSwap>
+        <collateral>
+          <independentAmount>
+            <payerPartyReference href="party2" />
+            <paymentDetail>
+          -->
+<!--
+              <adjustedPaymentDate>2004-01-01</adjustedPaymentDate>
+              -->
+<!--
+              <paymentDate>
+                      <adjustableDate>
+                              <adjustedDate>2004-01-01</adjustedDate>
+                      </adjustableDate>
+              </paymentDate>
+              <paymentAmount>
+                <currency>USD</currency>
+                <amount>1000</amount>
+              </paymentAmount>
+            </paymentDetail>
+          </independentAmount>
+        </collateral>
+      </trade>
+    </constituent>
+    <scheduledDate>
+      <adjustedDate>2004-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousPayment</type>
+      <assetReference href="trs-eqbasket-equityLeg" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousReset</type>
+      <assetReference href="trs-eqbasket-interestLeg" />
+      <associatedValue>
+        <objectReference href="trs-eqbasket-interestLeg" />
+        <quote>
+          <value>0.0350</value>
+          <measureType>TreatedRate</measureType>
+        </quote>
+      </associatedValue>
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousPayment</type>
+      <assetReference href="trs-eqbasket-interestLeg" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2006-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">FinalPayment</type>
+      <assetReference href="trs-eqbasket-trade" />
+    </scheduledDate>
+    <valuation>
+      <objectReference href="trs-eqbasket-underlyer1" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>RealizedTradingGains</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>InterestOnRealizedGains</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>InterestOnRealizedGains</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>19785157.16</value>
+        <measureType>DirtyNetCurrentMarketPrice</measureType>
+        <side>Mid</side>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+        <timing quoteTimingScheme="http://www.fpml.org/coding-scheme/quote-timing-1-0">Close</timing>
+      </quote>
+      <quote>
+        <value>1234.56</value>
+        <measureType>AccruedInterest</measureType>
+        <side>Mid</side>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+        <timing quoteTimingScheme="http://www.fpml.org/coding-scheme/quote-timing-1-0">Close</timing>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="trs-eqbasket-underlyer2" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>RealizedTradingGains</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>InterestOnRealizedGains</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>19785157.16</value>
+        <measureType>DirtyNetCurrentMarketPrice</measureType>
+        <side>Mid</side>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+        <timing quoteTimingScheme="http://www.fpml.org/coding-scheme/quote-timing-1-0">Close</timing>
+      </quote>
+      <quote>
+        <value>1234.56</value>
+        <measureType>AccruedInterest</measureType>
+        <side>Mid</side>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+        <timing quoteTimingScheme="http://www.fpml.org/coding-scheme/quote-timing-1-0">Close</timing>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="trs-eqbasket-equityLeg" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>EquityAccrual</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>RealizedTradingGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>InterestOnRealizedGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="trs-eqbasket-interestLeg" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>AccruedInterest</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>FundingOnRealizedGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="trs-eqbasket-trade" />
+      <quote>
+        <value>10000.00</value>
+        <measureType>NPVLocalCurrency</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12300.00</value>
+        <measureType>NPV</measureType>
+      </quote>
+      <fxRate>
+        <quotedCurrencyPair>
+          <currency1>USD</currency1>
+          <currency2>EUR</currency2>
+          <quoteBasis>Currency1PerCurrency2</quoteBasis>
+        </quotedCurrencyPair>
+        <rate>1.23</rate>
+      </fxRate>
+    </valuation>
+  </position>
+          -->
+<!--
+  <position>
+    <positionId positionIdScheme="http://www.abc.com/positionId">TRS-POS-03</positionId>
+    <reportingRoles>
+      <baseParty href="party2" />
+      <positionProvider href="party1" />
+    </reportingRoles>
+    <constituent>
+      <trade id="trs-bond1-trade">
+        <tradeHeader>
+          <partyTradeIdentifier>
+            <tradeId tradeIdScheme="http://www.abc.com/swaps/trade-id">TRS-03</tradeId>
+          </partyTradeIdentifier>
+          <partyTradeIdentifier>
+            <tradeId tradeIdScheme="http://www.hedgeco.com/swaps/trade-id">total-ret-swap-03</tradeId>
+          </partyTradeIdentifier>
+          <tradeDate id="trs-bond1-TradeDate">2004-07-17</tradeDate>
+        </tradeHeader>
+        <returnSwap>
+          <productType productTypeScheme="http://www.datastandardsworkinggroup.org/products-1-0">TRS-Credit-Single</productType>
+          <buyerPartyReference href="party1" />
+          <returnLeg id="trs-bond1-equityLeg">
+            <payerPartyReference href="party2" />
+            <paymentFrequency>
+              <periodMultiplier>3</periodMultiplier>
+              <period>M</period>
+            </paymentFrequency>
+            <effectiveDate id="trs-bond1-EffectiveDate">
+              <adjustableDate>
+                <unadjustedDate>2004-07-20</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>NotApplicable</businessDayConvention>
+                </dateAdjustments>
+              </adjustableDate>
+            </effectiveDate>
+            <terminationDate id="trs-bond1-TerminationDate">
+              <adjustableDate>
+                <unadjustedDate>2006-07-20</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>FOLLOWING</businessDayConvention>
+                  <businessCenters>
+                    <businessCenter>EUTA</businessCenter>
+                    <businessCenter>GBLO</businessCenter>
+                  </businessCenters>
+                </dateAdjustments>
+              </adjustableDate>
+            </terminationDate>
+            <underlyer>
+              <singleUnderlyer>
+                <bond id="trs-bond1-bond-asset">
+                  <instrumentId instrumentIdScheme="http://www.fpml.org/coding-scheme/external/instrument-id-ISIN">67812345</instrumentId>
+                  <description>Telecom Italia spa</description>
+                  <currency>EUR</currency>
+                  <exchangeId exchangeIdScheme="http://www.fpml.org/schemes/4.0/exchangeId">Milan Stock Exchange</exchangeId>
+                  <parValue>100000</parValue>
+                </bond>
+                <openUnits>4320</openUnits>
+          -->
+<!-- Currently not supported by FpML
+                                                        <underlyerPrice>
+                                                                <netPrice>
+                                                                        <currency>EUR</currency>
+                                                                        <amount>91.46</amount>
+                                                                        <priceExpression>AbsoluteTerms</priceExpression>
+                                                                </netPrice>
+                                                                <accruedInterestPrice>0.23</accruedInterestPrice>
+                                                                <cleanNetPrice>91.25</cleanNetPrice>
+                                                                <quotationCharacteristics>
+                                                                        <side>Mid</side>
+                                                                        <currency>USD</currency>
+                                                                        <timing>Close</timing>
+                                                                </quotationCharacteristics>
+                                                        </underlyerPrice>
+                                                        -->
+<!--
+                <couponPayment>
+                  <paymentDate>2005-01-01</paymentDate>
+                  <amount>
+                    <currency>USD</currency>
+                    <amount>123456.00</amount>
+                  </amount>
+                  <accruedInterest>
+                    <currency>USD</currency>
+                    <amount>123.00</amount>
+                  </accruedInterest>
+                </couponPayment>
+              </singleUnderlyer>
+            </underlyer>
+            <rateOfReturn>
+              <initialPrice>
+                <commission>
+                  <commissionDenomination>BPS</commissionDenomination>
+                  <commissionAmount>60</commissionAmount>
+                  <commissionPerTrade>1234</commissionPerTrade>
+                </commission>
+                <determinationMethod>GoodFaith</determinationMethod>
+                <valuationRules>
+                  <valuationDate id="trs-bond1-FinalValuationDate">
+                    <adjustableDate>
+                      <unadjustedDate>2006-01-17</unadjustedDate>
+                      <dateAdjustments>
+                        <businessDayConvention>NotApplicable</businessDayConvention>
+                      </dateAdjustments>
+                    </adjustableDate>
+                  </valuationDate>
+                  <valuationTimeType>Close</valuationTimeType>
+                  <valuationTime>
+                    <hourMinuteTime>17:32:00</hourMinuteTime>
+                    <businessCenter>EUTA</businessCenter>
+                  </valuationTime>
+                </valuationRules>
+              </initialPrice>
+              <notionalReset>true</notionalReset>
+              <valuationPriceInterim>
+                <commission>
+                  <commissionDenomination>BPS</commissionDenomination>
+                  <commissionAmount>60</commissionAmount>
+                  <commissionPerTrade>1234</commissionPerTrade>
+                </commission>
+                <determinationMethod>PriceAtValuationTime</determinationMethod>
+                <valuationRules>
+                  <valuationDates id="trs-bond1-InterimValuationDates">
+                    <adjustableDates>
+                      <unadjustedDate>2004-07-26</unadjustedDate>
+                      <unadjustedDate>2004-08-28</unadjustedDate>
+                      <unadjustedDate>2004-09-26</unadjustedDate>
+                      <unadjustedDate>2004-10-27</unadjustedDate>
+                      <unadjustedDate>2004-11-28</unadjustedDate>
+                      <unadjustedDate>2004-12-26</unadjustedDate>
+                      <unadjustedDate>2005-01-29</unadjustedDate>
+                      <unadjustedDate>2005-02-26</unadjustedDate>
+                      <unadjustedDate>2005-03-26</unadjustedDate>
+                      <unadjustedDate>2005-04-28</unadjustedDate>
+                      <unadjustedDate>2005-05-28</unadjustedDate>
+                      <unadjustedDate>2005-06-26</unadjustedDate>
+                      <unadjustedDate>2005-07-29</unadjustedDate>
+                      <unadjustedDate>2005-08-27</unadjustedDate>
+                      <unadjustedDate>2005-09-26</unadjustedDate>
+                      <unadjustedDate>2005-10-29</unadjustedDate>
+                      <unadjustedDate>2005-11-26</unadjustedDate>
+                      <unadjustedDate>2005-12-29</unadjustedDate>
+                      <unadjustedDate>2006-01-28</unadjustedDate>
+                      <unadjustedDate>2006-02-25</unadjustedDate>
+                      <unadjustedDate>2006-03-26</unadjustedDate>
+                      <unadjustedDate>2006-04-28</unadjustedDate>
+                      <unadjustedDate>2006-05-27</unadjustedDate>
+                      <unadjustedDate>2006-06-28</unadjustedDate>
+                      <dateAdjustments>
+                        <businessDayConvention>NotApplicable</businessDayConvention>
+                      </dateAdjustments>
+                    </adjustableDates>
+                  </valuationDates>
+                  <valuationTimeType>Close</valuationTimeType>
+                </valuationRules>
+              </valuationPriceInterim>
+              <valuationPriceFinal>
+                <commission>
+                  <commissionDenomination>BPS</commissionDenomination>
+                  <commissionAmount>60</commissionAmount>
+                  <commissionPerTrade>1234</commissionPerTrade>
+                </commission>
+                <determinationMethod>HedgeExecution</determinationMethod>
+                <valuationRules>
+                  <valuationDate>
+                    <adjustableDate>
+                      <unadjustedDate>2006-07-15</unadjustedDate>
+                      <dateAdjustments>
+                        <businessDayConvention>NotApplicable</businessDayConvention>
+                      </dateAdjustments>
+                    </adjustableDate>
+                  </valuationDate>
+                </valuationRules>
+              </valuationPriceFinal>
+              <paymentDates id="trs-bond1-EquityPaymentDate">
+                <paymentDatesInterim id="trs-bond1-InterimEquityPaymentDate">
+                  <adjustableDates>
+                    <unadjustedDate>2004-12-14</unadjustedDate>
+                    <unadjustedDate>2005-12-14</unadjustedDate>
+                    <unadjustedDate>2006-12-14</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>FOLLOWING</businessDayConvention>
+                      <businessCenters>
+                        <businessCenter>EUTA</businessCenter>
+                        <businessCenter>GBLO</businessCenter>
+                      </businessCenters>
+                    </dateAdjustments>
+                  </adjustableDates>
+                </paymentDatesInterim>
+                <paymentDateFinal id="trs-bond1-FinalEquityPaymentDate">
+                  <adjustableDate>
+                    <unadjustedDate>2006-12-14</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>FOLLOWING</businessDayConvention>
+                      <businessCenters>
+                        <businessCenter>EUTA</businessCenter>
+                        <businessCenter>GBLO</businessCenter>
+                      </businessCenters>
+                    </dateAdjustments>
+                  </adjustableDate>
+                </paymentDateFinal>
+              </paymentDates>
+            </rateOfReturn>
+            <notional id="trs-bond1-EquityNotionalAmount">
+              <notionalAmount>
+                <currency>EUR</currency>
+                <amount>10500000.00</amount>
+              </notionalAmount>
+            </notional>
+            <amount>
+              <paymentCurrency id="trs-bond1-EquityPaymentCurrency">
+                <currency>EUR</currency>
+              </paymentCurrency>
+              <referenceAmount>ISDA Standard</referenceAmount>
+              <cashSettlement>false</cashSettlement>
+            </amount>
+            <return>
+              <returnType>Total</returnType>
+            </return>
+            <fxFeature>
+              <referenceCurrency id="trs-bond1-ReferenceCurrency">EUR</referenceCurrency>
+              <composite>
+                <determinationMethod>GoodFaith</determinationMethod>
+              </composite>
+            </fxFeature>
+          </returnLeg>
+          <interestLeg id="trs-bond1-interestLeg">
+            <payerPartyReference href="party1" />
+            <paymentFrequency>
+              <periodMultiplier>3</periodMultiplier>
+              <period>M</period>
+            </paymentFrequency>
+            <interestLegCalculationPeriodDates id="trs-bond1-InterestLegPeriodDates">
+              <interestLegResetDates></interestLegResetDates>
+              <interestLegPaymentDates>
+                <adjustableDates>
+                  <unadjustedDate>2004-12-14</unadjustedDate>
+                  <unadjustedDate>2005-12-14</unadjustedDate>
+                  <unadjustedDate>2006-12-14</unadjustedDate>
+                  <dateAdjustments>
+                    <businessDayConvention>FOLLOWING</businessDayConvention>
+                    <businessCenters>
+                      <businessCenter>EUTA</businessCenter>
+                      <businessCenter>GBLO</businessCenter>
+                    </businessCenters>
+                  </dateAdjustments>
+                </adjustableDates>
+              </interestLegPaymentDates>
+            </interestLegCalculationPeriodDates>
+            <notional>
+              <notionalAmount>
+                <currency>EUR</currency>
+                <amount>10500000.00</amount>
+              </notionalAmount>
+            </notional>
+            <interestAmount>
+              <paymentCurrency href="trs-bond1-ReferenceCurrency" />
+              <referenceAmount>Standard ISDA</referenceAmount>
+            </interestAmount>
+            <interestCalculation>
+              <floatingRateCalculation>
+                <floatingRateIndex>EUR-EURIBOR-Telerate</floatingRateIndex>
+                <indexTenor>
+                  <periodMultiplier>3</periodMultiplier>
+                  <period>M</period>
+                </indexTenor>
+                <spreadSchedule>
+                  <initialValue>0.0050</initialValue>
+                </spreadSchedule>
+              </floatingRateCalculation>
+              <dayCountFraction>ACT/365.FIXED</dayCountFraction>
+            </interestCalculation>
+            <stubCalculationPeriod>
+              <initialStub>
+                <stubRate>0.02125</stubRate>
+                <stubStartDate>
+                  <adjustableDate>
+                    <unadjustedDate>2004-07-20</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>NotApplicable</businessDayConvention>
+                    </dateAdjustments>
+                  </adjustableDate>
+                </stubStartDate>
+                <stubEndDate>
+                  <adjustableDate>
+                    <unadjustedDate>2004-08-01</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>NotApplicable</businessDayConvention>
+                    </dateAdjustments>
+                  </adjustableDate>
+                </stubEndDate>
+              </initialStub>
+              <finalStub>
+                <floatingRate>
+                  <floatingRateIndex>EUR-EURIBOR-Telerate</floatingRateIndex>
+                  <indexTenor>
+                    <periodMultiplier>1</periodMultiplier>
+                    <period>W</period>
+                  </indexTenor>
+                  <spreadSchedule>
+                    <initialValue>0.0050</initialValue>
+                  </spreadSchedule>
+                </floatingRate>
+                <stubStartDate>
+                  <adjustableDate>
+                    <unadjustedDate>2006-07-01</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>NotApplicable</businessDayConvention>
+                    </dateAdjustments>
+                  </adjustableDate>
+                </stubStartDate>
+                <stubEndDate>
+                  <adjustableDate>
+                    <unadjustedDate>2006-07-20</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>FOLLOWING</businessDayConvention>
+                      <businessCenters>
+                        <businessCenter>EUTA</businessCenter>
+                        <businessCenter>GBLO</businessCenter>
+                      </businessCenters>
+                    </dateAdjustments>
+                  </adjustableDate>
+                </stubEndDate>
+              </finalStub>
+            </stubCalculationPeriod>
+          </interestLeg>
+        </returnSwap>
+          -->
+<!-- end of TRS product -->
+<!--
+        <collateral>
+          <independentAmount>
+            <payerPartyReference href="party2" />
+            <paymentDetail>
+              <adjustedPaymentDate>2006-01-01</adjustedPaymentDate>
+              <paymentDate>
+                      <adjustableDate>
+                              <adjustedDate>2006-01-01</adjustedDate>
+                      </adjustableDate>
+              </paymentDate>
+              <paymentAmount>
+                <currency>USD</currency>
+                <amount>1000</amount>
+              </paymentAmount>
+            </paymentDetail>
+          </independentAmount>
+        </collateral>
+      </trade>
+    </constituent>
+    <scheduledDate>
+      <adjustedDate>2004-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousPayment</type>
+      <assetReference href="trs-bond1-equityLeg" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousReset</type>
+      <assetReference href="trs-bond1-interestLeg" />
+      <associatedValue>
+        <objectReference href="trs-bond1-interestLeg" />
+        <quote>
+          <value>0.0350</value>
+          <measureType>TreatedRate</measureType>
+        </quote>
+      </associatedValue>
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2004-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousPayment</type>
+      <assetReference href="trs-bond1-interestLeg" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2006-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">FinalPayment</type>
+      <assetReference href="trs-bond1-trade" />
+    </scheduledDate>
+    <valuation>
+      <objectReference href="trs-bond1-bond-asset" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>RealizedTradingGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>InterestOnRealizedGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>3967056.00</value>
+        <measureType>CashEquivalent</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>91.83</value>
+        <measureType>DirtyNetCurrentMarketPrice</measureType>
+        <side>Mid</side>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+        <timing quoteTimingScheme="http://www.fpml.org/coding-scheme/quote-timing-1-0">Close</timing>
+      </quote>
+      <quote>
+        <value>91.50</value>
+        <measureType>CleanNetCurrentMarketPrice</measureType>
+        <side>Mid</side>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+        <timing quoteTimingScheme="http://www.fpml.org/coding-scheme/quote-timing-1-0">Close</timing>
+      </quote>
+      <quote>
+        <value>0.23</value>
+        <measureType>AccruedInterest</measureType>
+        <side>Mid</side>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+        <timing quoteTimingScheme="http://www.fpml.org/coding-scheme/quote-timing-1-0">Close</timing>
+      </quote>
+      <quote>
+        <value>432000000</value>
+        <measureType>NumberOfUnderlyingSecurities</measureType>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="trs-bond1-equityLeg" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>EquityAccrual</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>RealizedTradingGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>InterestOnRealizedGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>AccruedCoupon</measureType>
+        <currency>EUR</currency>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="trs-bond1-interestLeg" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>AccruedInterest</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>FundingOnRealizedGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="trs-bond1-trade" />
+      <quote>
+        <value>10000.00</value>
+        <measureType>NPVLocalCurrency</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12300.00</value>
+        <measureType>NPV</measureType>
+      </quote>
+      <fxRate>
+        <quotedCurrencyPair>
+          <currency1>USD</currency1>
+          <currency2>EUR</currency2>
+          <quoteBasis>Currency1PerCurrency2</quoteBasis>
+        </quotedCurrencyPair>
+        <rate>1.23</rate>
+      </fxRate>
+    </valuation>
+  </position>
+  -->
+<!--
+  <position>
+    <positionId positionIdScheme="http://www.abc.com/positionId">TRS-POS-04</positionId>
+    <reportingRoles>
+      <baseParty href="party2" />
+      <positionProvider href="party1" />
+    </reportingRoles>
+    <constituent>
+      <trade id="trs-bondbasket-trade">
+        <tradeHeader>
+          <partyTradeIdentifier>
+            <tradeId tradeIdScheme="http://www.abc.com/swaps/trade-id">TRS-04</tradeId>
+          </partyTradeIdentifier>
+          <partyTradeIdentifier>
+            <tradeId tradeIdScheme="http://www.hedgeco.com/swaps/trade-id">total-ret-swap-04</tradeId>
+          </partyTradeIdentifier>
+          <tradeDate id="trs-bondbasket-TradeDate">2004-07-17</tradeDate>
+        </tradeHeader>
+        <returnSwap>
+          <productType productTypeScheme="http://www.datastandardsworkinggroup.org/products-1-0">TRS-Hybrid-Basket</productType>
+          <buyerPartyReference href="party1" />
+          <returnLeg id="trs-bondbasket-equityLeg">
+            <payerPartyReference href="party2" />
+            <paymentFrequency>
+              <periodMultiplier>3</periodMultiplier>
+              <period>M</period>
+            </paymentFrequency>
+            <effectiveDate id="trs-bondbasket-EffectiveDate">
+              <adjustableDate>
+                <unadjustedDate>2004-07-20</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>NotApplicable</businessDayConvention>
+                </dateAdjustments>
+              </adjustableDate>
+            </effectiveDate>
+            <terminationDate id="trs-bondbasket-TerminationDate">
+              <adjustableDate>
+                <unadjustedDate>2006-07-20</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>FOLLOWING</businessDayConvention>
+                  <businessCenters>
+                    <businessCenter>EUTA</businessCenter>
+                    <businessCenter>GBLO</businessCenter>
+                  </businessCenters>
+                </dateAdjustments>
+              </adjustableDate>
+            </terminationDate>
+            <underlyer>
+              <basket>
+                <openUnits>1</openUnits>
+                <basketConstituent>
+                  <bond id="trs-bondbasket-bond-asset">
+                    <instrumentId instrumentIdScheme="http://www.fpml.org/coding-scheme/external/instrument-id-ISIN">67812345</instrumentId>
+                    <description>Telecom Italia spa</description>
+                    <currency>EUR</currency>
+                    <exchangeId exchangeIdScheme="http://www.fpml.org/schemes/4.0/exchangeId">Milan Stock Exchange</exchangeId>
+                    <parValue>100000</parValue>
+                  </bond>
+                  <constituentWeight>
+                    <openUnits>4320</openUnits>
+                  </constituentWeight>
+                  <underlyerPrice>
+                    <netPrice>
+                      <currency>EUR</currency>
+                      <amount>91.46</amount>
+                      <priceExpression>AbsoluteTerms</priceExpression>
+                    </netPrice>
+                    <accruedInterestPrice>0.23</accruedInterestPrice>
+                    <cleanNetPrice>91.25</cleanNetPrice>
+                    <quotationCharacteristics>
+                      <side>Mid</side>
+                      <currency>USD</currency>
+                      <timing>Close</timing>
+                    </quotationCharacteristics>
+                  </underlyerPrice>
+                  <couponPayment>
+                    <paymentDate>2005-01-01</paymentDate>
+                    <amount>
+                      <currency>USD</currency>
+                      <amount>123456.00</amount>
+                    </amount>
+                    <accruedInterest>
+                      <currency>USD</currency>
+                      <amount>123.00</amount>
+                    </accruedInterest>
+                  </couponPayment>
+                </basketConstituent>
+                <basketConstituent>
+                  <convertibleBond id="trs-bondbasket-convertibleBond-asset">
+                    <instrumentId instrumentIdScheme="http://www.fpml.org/coding-scheme/external/instrument-id-ISIN">56781234</instrumentId>
+                    <description>Nokya Oyj</description>
+                    <currency>EUR</currency>
+                    <exchangeId exchangeIdScheme="http://www.fpml.org/schemes/4.0/exchangeId">Helsinki Stock Exchange</exchangeId>
+                    <parValue>100000</parValue>
+                    <underlyingEquity xsi:type="EquityAsset">
+                      <instrumentId instrumentIdScheme="http://www.fpml.org/coding-scheme/external/instrument-id-ISIN">ISIN_YYYY</instrumentId>
+                      <description>Nokya Oyj</description>
+                      <currency>EUR</currency>
+                      <exchangeId exchangeIdScheme="http://www.fpml.org/schemes/4-1/exchangeId">Helsinki Stock Exchange</exchangeId>
+                    </underlyingEquity>
+                  </convertibleBond>
+                  <constituentWeight>
+                    <openUnits>2270</openUnits>
+                  </constituentWeight>
+                  <underlyerPrice>
+                    <netPrice>
+                      <currency>EUR</currency>
+                      <amount>91.46</amount>
+                      <priceExpression>AbsoluteTerms</priceExpression>
+                    </netPrice>
+                    <accruedInterestPrice>0.23</accruedInterestPrice>
+                    <cleanNetPrice>91.25</cleanNetPrice>
+                    <quotationCharacteristics>
+                      <side>Mid</side>
+                      <currency>USD</currency>
+                      <timing>Close</timing>
+                    </quotationCharacteristics>
+                  </underlyerPrice>
+                  <couponPayment>
+                    <paymentDate>2005-01-01</paymentDate>
+                    <amount>
+                      <currency>USD</currency>
+                      <amount>123456.00</amount>
+                    </amount>
+                    <accruedInterest>
+                      <currency>USD</currency>
+                      <amount>123.00</amount>
+                    </accruedInterest>
+                  </couponPayment>
+                </basketConstituent>
+              </basket>
+            </underlyer>
+            <rateOfReturn>
+              <initialPrice>
+                <commission>
+                  <commissionDenomination>BPS</commissionDenomination>
+                  <commissionAmount>60</commissionAmount>
+                  <commissionPerTrade>1234</commissionPerTrade>
+                </commission>
+                <determinationMethod>GoodFaith</determinationMethod>
+                <valuationRules>
+                  <valuationDate>
+                    <adjustableDate>
+                      <unadjustedDate>2006-07-15</unadjustedDate>
+                      <dateAdjustments>
+                        <businessDayConvention>NotApplicable</businessDayConvention>
+                      </dateAdjustments>
+                    </adjustableDate>
+                  </valuationDate>
+                  <valuationTimeType>Close</valuationTimeType>
+                  <valuationTime>
+                    <hourMinuteTime>17:32:00</hourMinuteTime>
+                    <businessCenter>EUTA</businessCenter>
+                  </valuationTime>
+                </valuationRules>
+              </initialPrice>
+              <notionalReset>true</notionalReset>
+              <valuationPriceInterim>
+                <commission>
+                  <commissionDenomination>BPS</commissionDenomination>
+                  <commissionAmount>60</commissionAmount>
+                  <commissionPerTrade>1234</commissionPerTrade>
+                </commission>
+                <determinationMethod>PriceAtValuationTime</determinationMethod>
+                <valuationRules>
+                  <valuationDates id="trs-bondbasket-InterimValuationDates">
+                    <adjustableDates>
+                      <unadjustedDate>2004-07-26</unadjustedDate>
+                      <unadjustedDate>2004-08-28</unadjustedDate>
+                      <unadjustedDate>2004-09-26</unadjustedDate>
+                      <unadjustedDate>2004-10-27</unadjustedDate>
+                      <unadjustedDate>2004-11-28</unadjustedDate>
+                      <unadjustedDate>2004-12-26</unadjustedDate>
+                      <unadjustedDate>2005-01-29</unadjustedDate>
+                      <unadjustedDate>2005-02-26</unadjustedDate>
+                      <unadjustedDate>2005-03-26</unadjustedDate>
+                      <unadjustedDate>2005-04-28</unadjustedDate>
+                      <unadjustedDate>2005-05-28</unadjustedDate>
+                      <unadjustedDate>2005-06-26</unadjustedDate>
+                      <unadjustedDate>2005-07-29</unadjustedDate>
+                      <unadjustedDate>2005-08-27</unadjustedDate>
+                      <unadjustedDate>2005-09-26</unadjustedDate>
+                      <unadjustedDate>2005-10-29</unadjustedDate>
+                      <unadjustedDate>2005-11-26</unadjustedDate>
+                      <unadjustedDate>2005-12-29</unadjustedDate>
+                      <unadjustedDate>2006-01-28</unadjustedDate>
+                      <unadjustedDate>2006-02-25</unadjustedDate>
+                      <unadjustedDate>2006-03-26</unadjustedDate>
+                      <unadjustedDate>2006-04-28</unadjustedDate>
+                      <unadjustedDate>2006-05-27</unadjustedDate>
+                      <unadjustedDate>2006-06-28</unadjustedDate>
+                      <dateAdjustments>
+                        <businessDayConvention>NotApplicable</businessDayConvention>
+                      </dateAdjustments>
+                    </adjustableDates>
+                  </valuationDates>
+                  <valuationTimeType>Close</valuationTimeType>
+                </valuationRules>
+              </valuationPriceInterim>
+              <valuationPriceFinal>
+                <commission>
+                  <commissionDenomination>BPS</commissionDenomination>
+                  <commissionAmount>60</commissionAmount>
+                  <commissionPerTrade>1234</commissionPerTrade>
+                </commission>
+                <determinationMethod>HedgeExecution</determinationMethod>
+                <valuationRules id="trs-bondbasket-FinalValuationDate">
+                  <valuationDate>
+                    <adjustableDate>
+                      <unadjustedDate>2006-07-15</unadjustedDate>
+                      <dateAdjustments>
+                        <businessDayConvention>NotApplicable</businessDayConvention>
+                      </dateAdjustments>
+                    </adjustableDate>
+                  </valuationDate>
+                </valuationRules>
+              </valuationPriceFinal>
+              <paymentDates id="trs-bondbasket-EquityPaymentDate">
+                <paymentDatesInterim id="trs-bondbasket-InterimEquityPaymentDate">
+                  <adjustableDates>
+                    <unadjustedDate>2004-12-14</unadjustedDate>
+                    <unadjustedDate>2005-12-14</unadjustedDate>
+                    <unadjustedDate>2006-12-14</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>FOLLOWING</businessDayConvention>
+                      <businessCenters>
+                        <businessCenter>EUTA</businessCenter>
+                        <businessCenter>GBLO</businessCenter>
+                      </businessCenters>
+                    </dateAdjustments>
+                  </adjustableDates>
+                </paymentDatesInterim>
+                <paymentDateFinal id="trs-bondbasket-FinalEquityPaymentDate">
+                  <adjustableDate>
+                    <unadjustedDate>2006-12-14</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>FOLLOWING</businessDayConvention>
+                      <businessCenters>
+                        <businessCenter>EUTA</businessCenter>
+                        <businessCenter>GBLO</businessCenter>
+                      </businessCenters>
+                    </dateAdjustments>
+                  </adjustableDate>
+                </paymentDateFinal>
+              </paymentDates>
+            </rateOfReturn>
+            <notional id="trs-bondbasket-EquityNotionalAmount">
+              <notionalAmount>
+                <currency>EUR</currency>
+                <amount>10500000.00</amount>
+              </notionalAmount>
+            </notional>
+            <amount>
+              <paymentCurrency id="trs-bondbasket-EquityPaymentCurrency">
+                <currency>EUR</currency>
+              </paymentCurrency>
+              <referenceAmount>ISDA Standard</referenceAmount>
+              <cashSettlement>false</cashSettlement>
+            </amount>
+            <return>
+              <returnType>Total</returnType>
+            </return>
+            <fxFeature>
+              <referenceCurrency id="trs-bondbasket-ReferenceCurrency">EUR</referenceCurrency>
+              <composite>
+                <determinationMethod>GoodFaith</determinationMethod>
+              </composite>
+            </fxFeature>
+          </returnLeg>
+          <interestLeg id="trs-bondbasket-interestLeg">
+            <payerPartyReference href="party1" />
+            <paymentFrequency>
+              <periodMultiplier>3</periodMultiplier>
+              <period>M</period>
+            </paymentFrequency>
+            <interestLegCalculationPeriodDates id="trs-bondbasket-InterestLegPeriodDates">
+              <interestLegResetDates></interestLegResetDates>
+              <interestLegPaymentDates>
+                <adjustableDates>
+                  <unadjustedDate>2004-10-12</unadjustedDate>
+                  <unadjustedDate>2005-10-12</unadjustedDate>
+                  <unadjustedDate>2006-10-12</unadjustedDate>
+                  <dateAdjustments>
+                    <businessDayConvention>FOLLOWING</businessDayConvention>
+                    <businessCenters>
+                      <businessCenter>EUTA</businessCenter>
+                      <businessCenter>GBLO</businessCenter>
+                    </businessCenters>
+                  </dateAdjustments>
+                </adjustableDates>
+              </interestLegPaymentDates>
+            </interestLegCalculationPeriodDates>
+            <notional>
+              <notionalAmount>
+                <currency>EUR</currency>
+                <amount>10500000.00</amount>
+              </notionalAmount>
+            </notional>
+            <interestAmount>
+              <paymentCurrency href="trs-bondbasket-ReferenceCurrency" />
+              <referenceAmount>Standard ISDA</referenceAmount>
+            </interestAmount>
+            <interestCalculation>
+              <floatingRateCalculation>
+                <floatingRateIndex>EUR-EURIBOR-Telerate</floatingRateIndex>
+                <indexTenor>
+                  <periodMultiplier>3</periodMultiplier>
+                  <period>M</period>
+                </indexTenor>
+                <spreadSchedule>
+                  <initialValue>0.0050</initialValue>
+                </spreadSchedule>
+              </floatingRateCalculation>
+              <dayCountFraction>ACT/365.FIXED</dayCountFraction>
+            </interestCalculation>
+            <stubCalculationPeriod>
+              <initialStub>
+                <stubRate>0.02125</stubRate>
+                <stubStartDate>
+                  <adjustableDate>
+                    <unadjustedDate>2004-07-20</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>NotApplicable</businessDayConvention>
+                    </dateAdjustments>
+                  </adjustableDate>
+                </stubStartDate>
+                <stubEndDate>
+                  <adjustableDate>
+                    <unadjustedDate>2004-08-01</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>NotApplicable</businessDayConvention>
+                    </dateAdjustments>
+                  </adjustableDate>
+                </stubEndDate>
+              </initialStub>
+              <finalStub>
+                <floatingRate>
+                  <floatingRateIndex>EUR-EURIBOR-Telerate</floatingRateIndex>
+                  <indexTenor>
+                    <periodMultiplier>1</periodMultiplier>
+                    <period>W</period>
+                  </indexTenor>
+                  <spreadSchedule>
+                    <initialValue>0.0050</initialValue>
+                  </spreadSchedule>
+                </floatingRate>
+                <stubStartDate>
+                  <adjustableDate>
+                    <unadjustedDate>2006-07-01</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>NotApplicable</businessDayConvention>
+                    </dateAdjustments>
+                  </adjustableDate>
+                </stubStartDate>
+                <stubEndDate>
+                  <adjustableDate>
+                    <unadjustedDate>2006-07-20</unadjustedDate>
+                    <dateAdjustments>
+                      <businessDayConvention>FOLLOWING</businessDayConvention>
+                      <businessCenters>
+                        <businessCenter>EUTA</businessCenter>
+                        <businessCenter>GBLO</businessCenter>
+                      </businessCenters>
+                    </dateAdjustments>
+                  </adjustableDate>
+                </stubEndDate>
+              </finalStub>
+            </stubCalculationPeriod>
+          </interestLeg>
+        </returnSwap>
+        -->
+<!-- end of TRS product -->
+<!--
+        <collateral>
+          <independentAmount>
+            <payerPartyReference href="party2" />
+            <paymentDetail>
+              <adjustedPaymentDate>2004-01-01</adjustedPaymentDate>
+              <paymentDate>
+                      <adjustableDate>
+                              <adjustedDate>2004-01-01</adjustedDate>
+                      </adjustableDate>
+              </paymentDate>
+              <paymentAmount>
+                <currency>USD</currency>
+                <amount>1000</amount>
+              </paymentAmount>
+            </paymentDetail>
+          </independentAmount>
+        </collateral>
+      </trade>
+    </constituent>
+    <scheduledDate>
+      <adjustedDate>2004-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousPayment</type>
+      <assetReference href="trs-bondbasket-equityLeg" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousReset</type>
+      <assetReference href="trs-bondbasket-interestLeg" />
+      <associatedValue>
+        <objectReference href="trs-bondbasket-interestLeg" />
+        <quote>
+          <value>0.0350</value>
+          <measureType>TreatedRate</measureType>
+        </quote>
+      </associatedValue>
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2004-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousPayment</type>
+      <assetReference href="trs-bondbasket-interestLeg" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2006-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">FinalPayment</type>
+      <assetReference href="trs-bondbasket-trade" />
+    </scheduledDate>
+    <valuation>
+      <objectReference href="trs-bondbasket-bond-asset" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>RealizedTradingGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>InterestOnRealizedGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>91.83</value>
+        <measureType>DirtyNetCurrentMarketPrice</measureType>
+        <side>Mid</side>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+        <timing quoteTimingScheme="http://www.fpml.org/coding-scheme/quote-timing-1-0">Close</timing>
+      </quote>
+      <quote>
+        <value>0.23</value>
+        <measureType>AccruedInterest</measureType>
+        <side>Mid</side>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+        <timing quoteTimingScheme="http://www.fpml.org/coding-scheme/quote-timing-1-0">Close</timing>
+      </quote>
+      <quote>
+        <value>91.50</value>
+        <measureType>CleanNetCurrentMarketPrice</measureType>
+        <side>Mid</side>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+        <timing quoteTimingScheme="http://www.fpml.org/coding-scheme/quote-timing-1-0">Close</timing>
+      </quote>
+      <quote>
+        <value>432000000</value>
+        <measureType>NumberOfUnderlyingSecurities</measureType>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="trs-bondbasket-convertibleBond-asset" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>RealizedTradingGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>InterestOnRealizedGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>91.83</value>
+        <measureType>DirtyNetCurrentMarketPrice</measureType>
+        <side>Mid</side>
+        <currency>EUR</currency>
+        <timing>Close</timing>
+      </quote>
+      <quote>
+        <value>91.50</value>
+        <measureType>CleanNetCurrentMarketPrice</measureType>
+        <side>Mid</side>
+        <currency>EUR</currency>
+        <timing>Close</timing>
+      </quote>
+      <quote>
+        <value>0.23</value>
+        <measureType>AccruedInterest</measureType>
+        <side>Mid</side>
+        <currency>EUR</currency>
+        <timing>Close</timing>
+      </quote>
+      <quote>
+        <value>227000000</value>
+        <measureType>NumberOfUnderlyingSecurities</measureType>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="trs-bondbasket-equityLeg" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>EquityAccrual</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>RealizedTradingGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>InterestOnRealizedGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>AccruedCoupon</measureType>
+        <currency>EUR</currency>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="trs-bondbasket-interestLeg" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>AccruedInterest</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12345.00</value>
+        <measureType>FundingOnRealizedGains</measureType>
+        <currency>EUR</currency>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="trs-bondbasket-trade" />
+      <quote>
+        <value>10000.00</value>
+        <measureType>NPVLocalCurrency</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12300.00</value>
+        <measureType>NPV</measureType>
+      </quote>
+      <fxRate>
+        <quotedCurrencyPair>
+          <currency1>USD</currency1>
+          <currency2>EUR</currency2>
+          <quoteBasis>Currency1PerCurrency2</quoteBasis>
+        </quotedCurrencyPair>
+        <rate>1.23</rate>
+      </fxRate>
+    </valuation>
+  </position>
+  -->
+  <position>
+    <positionId positionIdScheme="http://www.abc.com/positionId">CDS-POS-01</positionId>
+    <reportingRoles>
+      <baseParty href="party2" />
+      <positionProvider href="party1" />
+    </reportingRoles>
+    <constituent>
+      <trade id="cds-trade">
+        <tradeHeader>
+          <partyTradeIdentifier>
+            <tradeId tradeIdScheme="http://www.abc.com/swaps/trade-id">CDS01</tradeId>
+          </partyTradeIdentifier>
+          <partyTradeIdentifier>
+            <tradeId tradeIdScheme="http://www.hedgeco.com/swaps/trade-id">cds-01</tradeId>
+          </partyTradeIdentifier>
+          <tradeDate>2002-12-02</tradeDate>
+        </tradeHeader>
+        <creditDefaultSwap>
+          <productType productTypeScheme="http://www.datastandardsworkinggroup.org/products-1-0">CDS-U</productType>
+          <generalTerms>
+            <scheduledTerminationDate>
+<!--<adjustableDate> -->
+              <unadjustedDate>2007-09-06</unadjustedDate>
+              <dateAdjustments>
+                <businessDayConvention>NONE</businessDayConvention>
+              </dateAdjustments>
+<!-- </adjustableDate> -->
+            </scheduledTerminationDate>
+            <buyerPartyReference href="party1" />
+            <dateAdjustments>
+              <businessDayConvention>FOLLOWING</businessDayConvention>
+              <businessCenters>
+                <businessCenter>GBLO</businessCenter>
+                <businessCenter>USNY</businessCenter>
+              </businessCenters>
+            </dateAdjustments>
+            <referenceInformation>
+              <referenceEntity id="cds-referenceEntity">
+                <entityName>Agrium Inc.</entityName>
+                <entityId entityIdScheme="http://www.fpml.org/coding-scheme/external/entity-id-RED">008HA7</entityId>
+              </referenceEntity>
+              <referenceObligation>
+                <bond>
+                  <instrumentId instrumentIdScheme="http://www.fpml.org/coding-scheme/external/instrument-id-CUSIP">008916AB4</instrumentId>
+                  <couponRate>0.077</couponRate>
+                  <maturity>2017-02-01</maturity>
+                </bond>
+                <primaryObligorReference href="cds-referenceEntity" />
+              </referenceObligation>
+              <allGuarantees>false</allGuarantees>
+              <referencePrice>1.0</referencePrice>
+            </referenceInformation>
+          </generalTerms>
+          <feeLeg>
+            <initialPayment>
+              <payerPartyReference href="party1" />
+              <adjustablePaymentDate>2005-01-01</adjustablePaymentDate>
+              <paymentAmount>
+                <currency>EUR</currency>
+                <amount>10000</amount>
+              </paymentAmount>
+            </initialPayment>
+            <periodicPayment>
+              <paymentFrequency>
+                <periodMultiplier>3</periodMultiplier>
+                <period>M</period>
+              </paymentFrequency>
+              <firstPaymentDate>2003-03-06</firstPaymentDate>
+              <fixedAmountCalculation>
+                <calculationAmount>
+                  <currency>USD</currency>
+                  <amount>5000000.0</amount>
+                </calculationAmount>
+                <fixedRate>0.01</fixedRate>
+                <dayCountFraction>ACT/360</dayCountFraction>
+              </fixedAmountCalculation>
+            </periodicPayment>
+          </feeLeg>
+          <protectionTerms>
+            <calculationAmount id="cds-notional">
+              <currency>USD</currency>
+              <amount>5000000.0</amount>
+            </calculationAmount>
+            <creditEvents>
+              <bankruptcy>true</bankruptcy>
+              <failureToPay>
+                <paymentRequirement>
+                  <currency>USD</currency>
+                  <amount>1000000.0</amount>
+                </paymentRequirement>
+              </failureToPay>
+              <restructuring>
+                <restructuringType>ModR</restructuringType>
+                <multipleHolderObligation>true</multipleHolderObligation>
+                <multipleCreditEventNotices>true</multipleCreditEventNotices>
+              </restructuring>
+              <defaultRequirement>
+                <currency>USD</currency>
+                <amount>10000000.0</amount>
+              </defaultRequirement>
+            </creditEvents>
+            <obligations>
+              <category>BorrowedMoney</category>
+            </obligations>
+          </protectionTerms>
+          <physicalSettlementTerms>
+            <settlementCurrency>USD</settlementCurrency>
+          </physicalSettlementTerms>
+        </creditDefaultSwap>
+        <collateral>
+          <independentAmount>
+            <payerPartyReference href="party2" />
+            <paymentDetail>
+<!--<adjustedPaymentDate>2004-01-01</adjustedPaymentDate>-->
+              <paymentDate>
+                <adjustableDate>
+                  <adjustedDate>2004-01-01</adjustedDate>
+                </adjustableDate>
+              </paymentDate>
+              <paymentRule xsi:type="PercentageRule">
+                <paymentPercent>0.10</paymentPercent>
+                <notionalAmountReference href="cds-notional" />
+              </paymentRule>
+              <paymentAmount>
+                <currency>USD</currency>
+                <amount>1000</amount>
+              </paymentAmount>
+            </paymentDetail>
+          </independentAmount>
+        </collateral>
+      </trade>
+    </constituent>
+    <scheduledDate>
+      <adjustedDate>2005-03-14</adjustedDate>
+      <type>FirstPayment</type>
+      <assetReference href="cds-trade" />
+    </scheduledDate>
+    <valuation>
+      <objectReference href="cds-trade" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>AccruedInterest</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>0.7</value>
+        <measureType>RecoveryRate</measureType>
+      </quote>
+      <quote>
+        <value>0.50</value>
+        <measureType>CreditSpread</measureType>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="cds-trade" />
+      <quote>
+        <value>10000.00</value>
+        <measureType>NPVLocalCurrency</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12300.00</value>
+        <measureType>NPV</measureType>
+      </quote>
+      <fxRate>
+        <quotedCurrencyPair>
+          <currency1>USD</currency1>
+          <currency2>EUR</currency2>
+          <quoteBasis>Currency1PerCurrency2</quoteBasis>
+        </quotedCurrencyPair>
+        <rate>1.23</rate>
+      </fxRate>
+    </valuation>
+  </position>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">ABCD123</partyId>
+    <partyName>ABCD Securities Inc.</partyName>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">J6W9XJWVE853A9CVRQ85</partyId>
+    <partyName>HedgeCo Capital L.L.C.</partyName>
+  </party>
+</positionReport>
+

@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+  == Copyright (c) 2022-2025 All rights reserved. 
+  == Financial Products Markup Language is subject to the FpML public license. 
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+-->
+<xsd:schema xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns="http://www.fpml.org/FpML-5/transparency" xmlns:fpml-annotation="http://www.fpml.org/annotation" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.fpml.org/FpML-5/transparency" ecore:documentRoot="FpML" ecore:nsPrefix="trnsp" ecore:package="org.fpml.transparency" version="$Revision: 11478 $" xml:lang="en" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xsd:include schemaLocation="fpml-fx-targets-5-13.xsd" />
+<!-- Complex Types -->
+  <xsd:complexType name="FxAccrual">
+    <xsd:annotation>
+      <xsd:documentation>Accrual calculation process.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="observable" type="FxRateObservable" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Contains the quoted currency pair, and the information source for fixing FX rate.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:ID" />
+  </xsd:complexType>
+  <xsd:complexType name="FxAccrualDigitalOption">
+    <xsd:annotation>
+      <xsd:documentation>An FX Accrual Digital Option product The product defines a list of fixing (or observation) dates. There are m total fixings. At the expiry date of the product, the buyer of the option has the right to an FX settlement with n/m * Notional. Payout can be cash or physical.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="Option">
+        <xsd:sequence>
+          <xsd:element name="notionalAmount" type="NonNegativeAmountSchedule">
+            <xsd:annotation>
+              <xsd:documentation>Notional amount Schedule. The notional value of the product. This number divided by the total number of fixings in the fixing schedule is the amount that is accrued at each fixing if the accrual factor is one.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="accrual" type="FxAccrual">
+            <xsd:annotation>
+              <xsd:documentation>Describes accrual features within the product.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:group ref="FxExpiryDateOrSchedule.model">
+            <xsd:annotation>
+              <xsd:documentation>Defines the expiry/observation date or schedule of the accrual product. The default dates' adjustments are as specified in the definitions.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:group>
+          <xsd:element name="trigger" type="FxAccrualTrigger">
+            <xsd:annotation>
+              <xsd:documentation>Defines one or more conditions under which the option will payout if exercisable.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="premium" type="FxOptionPremium" minOccurs="0" maxOccurs="unbounded">
+            <xsd:annotation>
+              <xsd:documentation>Premium amount or premium installment amount for an option.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="FxAccrualForward">
+    <xsd:annotation>
+      <xsd:documentation>The product defines a schedule of expiry and delivery dates which specify settlement periods. The product further defines a schedule of fixing (or observation) dates and defines regions of spot where the product settlement amounts will accrue. There are n total fixings. One accumulates a fixed proportion of Notional (1/n) for every observation date that spot fixes within the pre-defined limits of the accrual regions. If spot breaks the limits, the Notional stops accumulating during the fixings outside the limits, but continues accruing once spot comes back to the accruing region. At expiry, one buys the accrued Notional at the pre-agreed hedge rate. Payout can be cash or physical. The variation of this product include: Accrual Forward (European and American), Double Accrual Forward (DAF), Boosted Accrual Forward, Fading Forward, Leveraged Accrual Forward, Accrual Forward with Collars, etc.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="Product">
+        <xsd:sequence>
+          <xsd:element name="notionalAmount" type="NonNegativeAmountSchedule">
+            <xsd:annotation>
+              <xsd:documentation>Notional amount Schedule. The notional value of the product per settlement period. The notional amount may differ for each settlement period. This number divided by the total number of fixings in the settlement period is the amount that is accrued at each fixing if the accrual factor is one.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="accrual" type="FxAccrual">
+            <xsd:annotation>
+              <xsd:documentation>Describes accrual features within the product.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:group ref="FxExpiryDateOrSchedule.model">
+            <xsd:annotation>
+              <xsd:documentation>Defines the expiry/observation date or schedule of the accrual product.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:group>
+          <xsd:element name="linearPayoffRegion" type="FxAccrualLinearPayoffRegion" maxOccurs="unbounded">
+            <xsd:annotation>
+              <xsd:documentation>A region in which linear payoff applies i.e. the payoff bears a linear relationship to the fixing value (increases/decreases linearly with the fixing).</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="additionalPayment" type="SimplePayment" minOccurs="0" maxOccurs="unbounded">
+            <xsd:annotation>
+              <xsd:documentation>It supports the representation of premiums, fees, etc.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="cashSettlement" type="FxCashSettlementSimple" minOccurs="0">
+            <xsd:annotation>
+              <xsd:documentation>Cash settlement currency.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="FxAccrualLinearPayoffRegion">
+    <xsd:annotation>
+      <xsd:documentation>A fixing region in which the payoff varies linearly with the fixing value.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="FxAccrualPayoffRegion">
+        <xsd:sequence>
+          <xsd:sequence>
+            <xsd:element name="strike" type="FxForwardStrikePrice" minOccurs="0">
+              <xsd:annotation>
+                <xsd:documentation>The rate of exchange between the two currencies.</xsd:documentation>
+              </xsd:annotation>
+            </xsd:element>
+          </xsd:sequence>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="FxAccrualOption">
+    <xsd:annotation>
+      <xsd:documentation>An FX Accrual Option product The product defines a list of fixing (or observation) dates. There are m total fixings. At the expiry date of the product, the buyer of the option has the right to an FX settlement with n/m * Notional. Payout can be cash or physical.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="Option">
+        <xsd:sequence>
+          <xsd:group ref="PutCallCurrency.model">
+            <xsd:annotation>
+              <xsd:documentation>A model defining the currencies exchanged by the parties to an option.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:group>
+          <xsd:element name="notionalAmount" type="NonNegativeAmountSchedule">
+            <xsd:annotation>
+              <xsd:documentation>Notional amount Schedule. The notional value of the product. This number divided by the total number of fixings in the fixing schedule is the amount that is accrued at each fixing if the accrual factor is one.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="accrual" type="FxAccrual">
+            <xsd:annotation>
+              <xsd:documentation>Describes accrual features within the product.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:group ref="FxExpiryDateOrSchedule.model">
+            <xsd:annotation>
+              <xsd:documentation>Defines the expiry/observation date or schedule of the accrual product.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:group>
+          <xsd:sequence>
+            <xsd:element name="strike" type="FxOptionStrikePrice" minOccurs="0">
+              <xsd:annotation>
+                <xsd:documentation>Defines the option strike price.</xsd:documentation>
+              </xsd:annotation>
+            </xsd:element>
+          </xsd:sequence>
+          <xsd:element name="premium" type="FxOptionPremium" maxOccurs="unbounded">
+            <xsd:annotation>
+              <xsd:documentation>Premium amount or premium installment amount for an option.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="FxAccrualPayoffRegion" abstract="true">
+    <xsd:attribute name="id" type="xsd:ID" />
+  </xsd:complexType>
+  <xsd:complexType name="FxAccrualStrike">
+    <xsd:annotation>
+      <xsd:documentation>A shared type between accrual forwards and options where the FX accrual strike reference can point to.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="Schedule" />
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="FxAccrualTrigger">
+    <xsd:annotation>
+      <xsd:documentation>Describes a european trigger applied to an FX digtal option.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="FxTriggerBase">
+        <xsd:attribute name="id" type="xsd:ID">
+          <xsd:annotation>
+            <xsd:documentation>An anchor to be referenced from the accrual region bound.</xsd:documentation>
+          </xsd:annotation>
+        </xsd:attribute>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="FxAdjustedDateAndDateAdjustments">
+    <xsd:annotation>
+      <xsd:documentation>Defines the expiry/observation schedule of the target.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="dateAdjustments" type="BusinessDayAdjustments" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>Date adjustments applied to the adjusted dates including the business day convention and the business centers. The date adjustments are as specified in the definitions.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="adjustedDate" type="xsd:date" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>List of schedule dates. These dates have been subject to adjustments based on the dateAdjustments structure.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="FxCrossRateObservable">
+    <xsd:annotation>
+      <xsd:documentation>A type that is used for including the currency exchange rates information used to cross between the traded currencies for non-base currency FX contracts.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="quotedCurrencyPair" type="QuotedCurrencyPair" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="FxExpiryDate">
+    <xsd:annotation>
+      <xsd:documentation>Defines the expiry date of the accrual. The date is adjusted, date adjustments may be provided, and also the expiry time.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="FxAdjustedDateAndDateAdjustments">
+        <xsd:sequence>
+          <xsd:element name="expiryTime" type="BusinessCenterTime" minOccurs="0">
+            <xsd:annotation>
+              <xsd:documentation>Time of expiration of each expiry date.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="FxForwardStrikePrice">
+    <xsd:annotation>
+      <xsd:documentation>A type that describes the rate of exchange between the two currencies of the leg of a deal.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="FxAccrualStrike">
+        <xsd:sequence>
+          <xsd:element name="quoteBasis" type="QuoteBasisEnum" minOccurs="0">
+            <xsd:annotation>
+              <xsd:documentation>The Quoted Currency Pair that is used across the product.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="FxOptionStrikePrice">
+    <xsd:annotation>
+      <xsd:documentation>A type that describes the rate of exchange at which the option has been struck.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="FxAccrualStrike">
+        <xsd:sequence>
+          <xsd:element name="strikeQuoteBasis" type="StrikeQuoteBasisEnum" minOccurs="0">
+            <xsd:annotation>
+              <xsd:documentation>The method by which the strike rate is quoted.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="FxRangeAccrual">
+    <xsd:annotation>
+      <xsd:documentation>An FX Range Accrual product. A strip of Digital Options product The product defines a list of fixing (or observation) dates. There are m total fixings. On the relevant Settlement Date, the Option Seller shall pay to the Option Buyer an amount, in the Settlement Currency, calculated according to the following formula: Accrual Currency and Notional Amount x (the total number of Accrual Days / Total Number of Calendar Days in the Accrual Period). Payout can be cash.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="Product">
+        <xsd:sequence>
+          <xsd:element name="notionalAmount" type="NonNegativeAmountSchedule">
+            <xsd:annotation>
+              <xsd:documentation>Notional amount Schedule. The notional value of the product. This number divided by the total number of fixings in the fixing schedule is the amount that is accrued at each fixing if the accrual factor is one.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="accrual" type="FxAccrual">
+            <xsd:annotation>
+              <xsd:documentation>Describes accrual features within the product.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:group ref="FxExpiryDateOrSchedule.model">
+            <xsd:annotation>
+              <xsd:documentation>Defines the expiry/observation date or schedule of the accrual product.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:group>
+          <xsd:element name="premium" type="FxOptionPremium" maxOccurs="unbounded">
+            <xsd:annotation>
+              <xsd:documentation>Premium amount or premium installment amount for an option.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="FxRateObservable">
+    <xsd:sequence>
+      <xsd:element name="quotedCurrencyPair" type="QuotedCurrencyPair">
+        <xsd:annotation>
+          <xsd:documentation>FX rate to be observed. The Quoted Currency Pair that is used across the product.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="crossRate" type="FxCrossRateObservable" minOccurs="2" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>Contains the currency exchange rates information used to cross between the traded currencies for non-base currency FX contracts.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:ID" />
+  </xsd:complexType>
+<!-- Elements -->
+  <xsd:element name="fxAccrualDigitalOption" type="FxAccrualDigitalOption" substitutionGroup="product">
+    <xsd:annotation>
+      <xsd:documentation>A structured option product which consists of a single digital option or a strip of digital options. At each settlement the settled amounts are a fraction of the notional amount for that settlement period calculated as the number of fixings which fall within accrual regions divided by the total number of fixings in the settlement period.</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="fxAccrualForward" type="FxAccrualForward" substitutionGroup="product">
+    <xsd:annotation>
+      <xsd:documentation>A structured forward product consisting of a single forward or a strip of forwards. For each forward, a fixed proportion of Notional is accumulated for each occasion that spot fixes within pre-defined limits (the 'accrual region') - the proportion determined by the number of fixings, which may occur every business day or with some other defined frequency. The Notional does not accumulate during any period where fixings fall outside the accrual region, but resumes accruing when spot returns within the limits. At expiry, the accrued Notional is bought at the pre-agreed hedge rate (the 'strike' rate). The trade allows for a hedge rate that is better than the forward rate, however the notional amount hedged is uncertain, and can be zero in the worst case.</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="fxAccrualOption" type="FxAccrualOption" substitutionGroup="product">
+    <xsd:annotation>
+      <xsd:documentation>A financial contract between two parties (the buyer and the seller) that provides the buyer the right to buy a currency (or receive a payment) at expiry. The distinctive characteristic of this contract is that the Notional to be transacted at expiry is uncertain and depends on the amount of time that the underlying currency trades within a pre-set level, or levels (the 'accrual barrier', or 'barriers'). The total Notional is only known at the end of the accrual period, and this extra uncertainty can make an accrual option substantially cheaper than the comparable vanilla one.</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+  <xsd:element name="fxRangeAccrual" type="FxRangeAccrual" substitutionGroup="product">
+    <xsd:annotation>
+      <xsd:documentation>A structured product which consists of a single cash payment or a strip of cash payments. At each settlement the settled amounts are a fraction of the notional amount for that settlement period calculated as the number of fixings which fall within accrual regions divided by the total number of fixings in the settlement period.</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+<!-- Groups -->
+  <xsd:group name="FxExpiryDateOrSchedule.model">
+    <xsd:annotation>
+      <xsd:documentation>Defines the expiry/observation date or schedule of the accrual product.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:choice>
+      <xsd:element name="expiryDate" type="FxExpiryDate">
+        <xsd:annotation>
+          <xsd:documentation>Defines the expiry of a single period accrual forward FX transaction.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="expirySchedule" type="FxExpirySchedule">
+        <xsd:annotation>
+          <xsd:documentation>The parameters for defining a schedule of expiry periods for an accrual forward FX transaction.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:choice>
+  </xsd:group>
+</xsd:schema>
+

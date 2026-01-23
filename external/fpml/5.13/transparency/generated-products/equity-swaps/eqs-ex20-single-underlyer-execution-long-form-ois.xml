@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+	== Copyright (c) 2022-2025 All rights reserved.
+	== Financial Products Markup Language is subject to the FpML public license.
+	== A copy of this license is available at http://www.fpml.org/license/license.html
+--><publicExecutionReport xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xmlns="http://www.fpml.org/FpML-5/transparency"
+                       fpmlVersion="5-13"
+                       xsi:schemaLocation="http://www.fpml.org/FpML-5/transparency ../../fpml-main-5-13.xsd">
+   <isCorrection>false</isCorrection>
+   <correlationId correlationIdScheme="http://abc.com/correlation-id">456</correlationId>
+   <sequenceNumber>1</sequenceNumber>
+   <originatingEvent>Trade</originatingEvent>
+   <trade>
+      <tradeHeader>
+         <partyTradeIdentifier>
+            <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1021111111</issuer>
+            <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+         </partyTradeIdentifier>
+         <partyTradeIdentifier>
+            <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1021111111</issuer>
+            <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+         </partyTradeIdentifier>
+         <tradeInformation>
+            <executionDateTime>2021-08-18T09:12:34Z</executionDateTime>
+            <intentToClear>false</intentToClear>
+            <nonStandardTerms>true</nonStandardTerms>
+            <offMarketPrice>true</offMarketPrice>
+            <largeSizeTrade>false</largeSizeTrade>
+            <executionType>Electronic</executionType>
+            <executionVenueType>SEF</executionVenueType>
+         </tradeInformation>
+         <tradeDate id="TradeDate">2021-08-18</tradeDate>
+      </tradeHeader>
+      <returnSwap>
+         <primaryAssetClass>Equity</primaryAssetClass>
+         <productType>Equity:Swap:Equityswap:Single-name</productType>
+         <returnLeg>
+            <effectiveDate id="EffectiveDate">
+               <relativeDate>
+                  <periodMultiplier>3</periodMultiplier>
+                  <period>D</period>
+                  <dateRelativeTo href="TradeDate"/>
+               </relativeDate>
+            </effectiveDate>
+            <terminationDate id="TerminationDate">
+               <relativeDate>
+                  <periodMultiplier>0</periodMultiplier>
+                  <period>D</period>
+                  <dateRelativeTo href="FinalEquityPaymentDate"/>
+               </relativeDate>
+            </terminationDate>
+            <underlyer>
+               <singleUnderlyer>
+                  <equity>
+                     <instrumentId instrumentIdScheme="http://www.abc.com/instrumentId">SHPGY.O</instrumentId>
+                     <exchangeId exchangeIdScheme="http://www.abc.com/exchangeId">NASD</exchangeId>
+                  </equity>
+                  <openUnits>760400</openUnits>
+                  <dividendPayout>
+                     <dividendPayoutRatio>1</dividendPayoutRatio>
+                  </dividendPayout>
+               </singleUnderlyer>
+            </underlyer>
+            <rateOfReturn>
+               <initialPrice>
+                  <netPrice>
+                     <currency>USD</currency>
+                     <amount>37.44</amount>
+                     <priceExpression>AbsoluteTerms</priceExpression>
+                  </netPrice>
+               </initialPrice>
+               <notionalReset>true</notionalReset>
+               <valuationPriceInterim>
+                  <valuationRules>
+                     <valuationDates id="InterimValuationDate">
+                        <adjustableDates>
+                           <unadjustedDate>2021-09-20</unadjustedDate>
+                           <unadjustedDate>2021-10-18</unadjustedDate>
+                           <unadjustedDate>2021-11-18</unadjustedDate>
+                           <unadjustedDate>2021-12-20</unadjustedDate>
+                           <unadjustedDate>2022-01-18</unadjustedDate>
+                        </adjustableDates>
+                     </valuationDates>
+                     <valuationTimeType>Close</valuationTimeType>
+                  </valuationRules>
+               </valuationPriceInterim>
+               <valuationPriceFinal>
+                  <valuationRules>
+                     <valuationDate id="FinalValuationDate">
+                        <adjustableDate>
+                           <unadjustedDate>2022-02-18</unadjustedDate>
+                        </adjustableDate>
+                     </valuationDate>
+                  </valuationRules>
+               </valuationPriceFinal>
+               <paymentDates id="EquityPaymentDate">
+                  <paymentDatesInterim id="InterimEquityPaymentDate">
+                     <relativeDates>
+                        <periodMultiplier>3</periodMultiplier>
+                        <period>D</period>
+                        <dateRelativeTo href="InterimValuationDate"/>
+                     </relativeDates>
+                  </paymentDatesInterim>
+                  <paymentDateFinal id="FinalEquityPaymentDate">
+                     <relativeDate>
+                        <periodMultiplier>3</periodMultiplier>
+                        <period>D</period>
+                        <dateRelativeTo href="FinalValuationDate"/>
+                     </relativeDate>
+                  </paymentDateFinal>
+               </paymentDates>
+            </rateOfReturn>
+            <notional>
+               <notionalAmount id="EquityNotionalAmount">
+                  <currency>USD</currency>
+                  <amount>28469376</amount>
+               </notionalAmount>
+            </notional>
+            <amount>
+               <currency id="EquityPaymentCurrency">USD</currency>
+               <referenceAmount>ISDA Standard</referenceAmount>
+            </amount>
+            <return>
+               <returnType>Total</returnType>
+            </return>
+            <notionalAdjustments>Execution</notionalAdjustments>
+         </returnLeg>
+         <interestLeg>
+            <interestLegCalculationPeriodDates id="InterestLegPeriodDates">
+               <effectiveDate>
+                  <relativeDate>
+                     <periodMultiplier>3</periodMultiplier>
+                     <period>D</period>
+                     <dateRelativeTo href="TradeDate"/>
+                  </relativeDate>
+               </effectiveDate>
+               <terminationDate>
+                  <relativeDate>
+                     <periodMultiplier>0</periodMultiplier>
+                     <period>D</period>
+                     <dateRelativeTo href="FinalEquityPaymentDate"/>
+                  </relativeDate>
+               </terminationDate>
+               <interestLegPaymentDates>
+                  <relativeDates>
+                     <periodMultiplier>0</periodMultiplier>
+                     <period>D</period>
+                     <dateRelativeTo href="EquityPaymentDate"/>
+                  </relativeDates>
+               </interestLegPaymentDates>
+            </interestLegCalculationPeriodDates>
+            <notional>
+               <relativeNotionalAmount href="EquityNotionalAmount"/>
+            </notional>
+            <interestAmount>
+               <currencyReference href="EquityPaymentCurrency"/>
+               <referenceAmount>Standard ISDA</referenceAmount>
+            </interestAmount>
+            <interestCalculation>
+               <floatingRateCalculation>
+                  <floatingRateIndex>USD-SOFR-OIS Compound</floatingRateIndex>
+                  <!-- changed 2021 --></floatingRateCalculation>
+               <dayCountFraction>ACT/360</dayCountFraction>
+            </interestCalculation>
+         </interestLeg>
+         <earlyTermination>
+            <startingDate>
+               <dateRelativeTo href="TradeDate"/>
+            </startingDate>
+         </earlyTermination>
+         <earlyTermination>
+            <startingDate>
+               <dateRelativeTo href="TradeDate"/>
+            </startingDate>
+         </earlyTermination>
+      </returnSwap>
+   </trade>
+</publicExecutionReport>

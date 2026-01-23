@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is recordkeeping-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/recordkeeping-->
+<nonpublicExecutionReport xmlns="http://www.fpml.org/FpML-5/recordkeeping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/recordkeeping ../../../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../../../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="www.cibc.com/msg_id">6fc2c8a8-31dd-480e-9c1d-f82d02cb396a</messageId>
+    <sentBy messageAddressScheme="http://www.fpml.org/coding-scheme/external/iso17442">1CFTC1SAMPLEXPARTY001</sentBy>
+    <sendTo>DTCCGTR</sendTo>
+    <creationTimestamp>2020-10-05T15:20:38.7635176Z</creationTimestamp>
+    <implementationSpecification>
+      <version>CA4.0EQ3.0</version>
+    </implementationSpecification>
+  </header>
+  <isCorrection>false</isCorrection>
+  <onBehalfOf>
+    <partyReference href="PartyA" />
+  </onBehalfOf>
+  <asOfDate>2020-10-05</asOfDate>
+  <asOfTime>15:20:38</asOfTime>
+  <originatingEvent>Trade</originatingEvent>
+  <trade>
+    <tradeHeader>
+      <partyTradeIdentifier>
+        <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">1020304050</issuer>
+        <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">CFTC1001234567891012345678921102</tradeId>
+      </partyTradeIdentifier>
+      <partyTradeInformation>
+        <partyReference href="PartyA" />
+        <relatedParty>
+          <partyReference href="PartyA" />
+          <role>ReportingParty</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="PartyB" />
+          <role>Counterparty</role>
+        </relatedParty>
+        <category categoryScheme="http://www.dtcc.com/trading_capacity">Principal</category>
+        <category categoryScheme="http://www.dtcc.com/intragroup">false</category>
+        <category categoryScheme="http://www.dtcc.com/coding-scheme/local-party">CA.ON.OSC</category>
+        <category categoryScheme="http://www.dtcc.com/inter-affiliate">false</category>
+        <category categoryScheme="http://www.dtcc.com/coding-scheme/external/trade-details/gtr-settlement-type">Physical</category>
+        <executionDateTime>2020-09-17T16:25:19Z</executionDateTime>
+        <intentToAllocate>false</intentToAllocate>
+        <intentToClear>false</intentToClear>
+        <clearingStatus>false</clearingStatus>
+        <collateralizationType>Uncollateralized</collateralizationType>
+        <reportingRegime>
+          <supervisorRegistration>
+            <supervisoryBody>CA.ON.OSC</supervisoryBody>
+          </supervisorRegistration>
+          <reportingRole>ReportingParty</reportingRole>
+          <reportingPurpose>Snapshot</reportingPurpose>
+          <mandatorilyClearable>false</mandatorilyClearable>
+        </reportingRegime>
+        <nonStandardTerms>false</nonStandardTerms>
+        <executionType>Electronic</executionType>
+        <executionVenueType>OffFacility</executionVenueType>
+        <verificationMethod>Electronic</verificationMethod>
+        <confirmationMethod>NotConfirmed</confirmationMethod>
+      </partyTradeInformation>
+      <partyTradeInformation>
+        <partyReference href="PartyB" />
+        <relatedParty>
+          <partyReference href="PartyA" />
+          <role>ReportingParty</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="PartyB" />
+          <role>Counterparty</role>
+        </relatedParty>
+        <category categoryScheme="http://www.dtcc.com/trading_capacity">Principal</category>
+        <category categoryScheme="http://www.dtcc.com/intragroup">false</category>
+        <category categoryScheme="http://www.dtcc.com/coding-scheme/local-party">CA.ON.OSC</category>
+        <category categoryScheme="http://www.dtcc.com/inter-affiliate">false</category>
+        <category categoryScheme="http://www.dtcc.com/coding-scheme/external/trade-details/gtr-settlement-type">Physical</category>
+        <executionDateTime>2020-09-17T16:25:19Z</executionDateTime>
+        <intentToAllocate>false</intentToAllocate>
+        <intentToClear>false</intentToClear>
+        <clearingStatus>false</clearingStatus>
+        <collateralizationType>Uncollateralized</collateralizationType>
+        <reportingRegime>
+          <supervisorRegistration>
+            <supervisoryBody>CA.ON.OSC</supervisoryBody>
+          </supervisorRegistration>
+          <reportingRole>Counterparty</reportingRole>
+          <reportingPurpose>Snapshot</reportingPurpose>
+          <mandatorilyClearable>false</mandatorilyClearable>
+        </reportingRegime>
+        <nonStandardTerms>false</nonStandardTerms>
+        <executionType>Electronic</executionType>
+        <executionVenueType>OffFacility</executionVenueType>
+        <verificationMethod>Electronic</verificationMethod>
+        <confirmationMethod>NotConfirmed</confirmationMethod>
+      </partyTradeInformation>
+      <tradeDate>2020-09-17</tradeDate>
+    </tradeHeader>
+    <equityOption>
+      <primaryAssetClass>Equity</primaryAssetClass>
+      <productId productIdScheme="http://www.fpml.org/coding-scheme/product-taxonomy">Equity:Option:PriceReturnBasicPerformance:Basket</productId>
+      <buyerPartyReference href="PartyA" />
+      <sellerPartyReference href="PartyB" />
+      <optionType>Call</optionType>
+      <underlyer>
+        <basket>
+          <basketConstituent>
+            <payerPartyReference href="PartyB" />
+            <receiverPartyReference href="PartyA" />
+            <equity>
+              <instrumentId instrumentIdScheme="http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC">ENR1n.DE</instrumentId>
+            </equity>
+            <constituentWeight>
+              <basketPercentage>0.3333333333</basketPercentage>
+            </constituentWeight>
+            <underlyerPrice>
+              <determinationMethod>ClosingPrice</determinationMethod>
+            </underlyerPrice>
+          </basketConstituent>
+          <basketConstituent>
+            <payerPartyReference href="PartyB" />
+            <receiverPartyReference href="PartyA" />
+            <equity>
+              <instrumentId instrumentIdScheme="http://www.fpml.org/spec/2003/instrument-id-Reuters-RIC">SIEGn.DE</instrumentId>
+            </equity>
+            <constituentWeight>
+              <basketPercentage>0.6666666667</basketPercentage>
+            </constituentWeight>
+            <underlyerPrice>
+              <determinationMethod>ClosingPrice</determinationMethod>
+            </underlyerPrice>
+          </basketConstituent>
+        </basket>
+      </underlyer>
+      <notional>
+        <currency>EUR</currency>
+        <amount>10252800.00</amount>
+      </notional>
+      <equityExercise>
+        <equityAmericanExercise>
+          <commencementDate>
+            <adjustableDate>
+              <unadjustedDate>2020-09-17</unadjustedDate>
+            </adjustableDate>
+          </commencementDate>
+          <expirationDate>
+            <adjustableDate>
+              <unadjustedDate>2020-10-16</unadjustedDate>
+            </adjustableDate>
+          </expirationDate>
+        </equityAmericanExercise>
+        <equityValuation>
+          <valuationDates>
+            <adjustableDates>
+              <dateAdjustments>
+                <businessDayConvention>NotApplicable</businessDayConvention>
+                <businessCenters>
+                  <businessCenter>EUTA</businessCenter>
+                </businessCenters>
+              </dateAdjustments>
+            </adjustableDates>
+          </valuationDates>
+          <valuationTimeType>Close</valuationTimeType>
+          <valuationTime>
+            <hourMinuteTime>16:00:00</hourMinuteTime>
+            <businessCenter>EUTA</businessCenter>
+          </valuationTime>
+        </equityValuation>
+        <settlementCurrency>EUR</settlementCurrency>
+      </equityExercise>
+      <strike>
+        <strikePrice>128.00000000</strikePrice>
+        <currency>EUR</currency>
+      </strike>
+      <equityPremium>
+        <payerPartyReference href="PartyA" />
+        <paymentAmount>
+          <currency>EUR</currency>
+          <amount>48011.94000</amount>
+        </paymentAmount>
+        <paymentDate>
+          <unadjustedDate>2020-09-21</unadjustedDate>
+        </paymentDate>
+      </equityPremium>
+<!--<multipleExchangeIndexAnnexFallback>false</multipleExchangeIndexAnnexFallback>-->
+    </equityOption>
+    <documentation>
+      <masterAgreement>
+        <masterAgreementType>ISDA</masterAgreementType>
+        <masterAgreementVersion masterAgreementVersionScheme="http://www.fpml.org/coding-scheme/master-agreement-version">2002</masterAgreementVersion>
+      </masterAgreement>
+    </documentation>
+  </trade>
+  <tradingEvent>
+    <eventType>Trade</eventType>
+    <agreementDate>2020-09-28</agreementDate>
+  </tradingEvent>
+  <party id="PartyA">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">1CFTC1SAMPLEXPARTY001</partyId>
+  </party>
+  <party id="PartyB">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">1CFTC1SAMPLEXPARTY002</partyId>
+  </party>
+</nonpublicExecutionReport>
+

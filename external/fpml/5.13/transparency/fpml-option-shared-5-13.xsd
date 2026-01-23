@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+  == Copyright (c) 2022-2025 All rights reserved. 
+  == Financial Products Markup Language is subject to the FpML public license. 
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+-->
+<xsd:schema xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns="http://www.fpml.org/FpML-5/transparency" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.fpml.org/FpML-5/transparency" ecore:documentRoot="FpML" ecore:nsPrefix="trnsp" ecore:package="org.fpml.transparency" version="$Revision: 14919 $" xml:lang="en" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xsd:include schemaLocation="fpml-asset-5-13.xsd" />
+  <xsd:complexType name="ClassifiablePayment">
+    <xsd:annotation>
+      <xsd:documentation>A classified non negative payment.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="NonNegativePayment">
+        <xsd:sequence>
+          <xsd:element name="paymentType" type="PaymentType" minOccurs="0" maxOccurs="unbounded">
+            <xsd:annotation>
+              <xsd:documentation>Payment classification.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="CreditEvents">
+    <xsd:sequence>
+      <xsd:element name="restructuring" type="Restructuring" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>A credit event. A restructuring is an event that materially impacts the reference entity's obligations, such as an interest rate reduction, principal reduction, deferral of interest or principal, change in priority ranking, or change in currency or composition of payment. ISDA 2003 Term: Restructuring.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:ID" use="optional" />
+  </xsd:complexType>
+  <xsd:complexType name="Option" abstract="true">
+    <xsd:annotation>
+      <xsd:documentation>A type for defining the common features of options. Buyer/seller information is not normally used in Transparency view but is optional in case the information is needed for administrative purposes such as Reporting Party determination.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="Product">
+        <xsd:sequence>
+          <xsd:group ref="BuyerSeller.model" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="OptionBase" abstract="true">
+    <xsd:annotation>
+      <xsd:documentation>A type for defining the common features of options.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="Option">
+        <xsd:sequence>
+          <xsd:element name="optionType" type="OptionTypeEnum">
+            <xsd:annotation>
+              <xsd:documentation>The type of option transaction. From a usage standpoint, put/call is the default option type, while payer/receiver indicator is used for options index credit default swaps, consistently with the industry practice. Straddle is used for the case of straddle strategy, that combine a call and a put with the same strike.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="OptionBaseExtended" abstract="true">
+    <xsd:annotation>
+      <xsd:documentation>Base type for options starting with the 4-3 release, until we refactor the schema as part of the 5-0 release series.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="OptionBase">
+        <xsd:sequence>
+          <xsd:element name="premium" type="Premium" minOccurs="0">
+            <xsd:annotation>
+              <xsd:documentation>The option premium payable by the buyer to the seller.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element ref="exercise" />
+          <xsd:choice minOccurs="0">
+            <xsd:annotation>
+              <xsd:documentation>A choice between an explicit representation of the notional amount, or a reference to a notional amount defined elsewhere in this document.</xsd:documentation>
+            </xsd:annotation>
+            <xsd:element name="notionalReference" type="NotionalAmountReference" />
+            <xsd:element name="notionalAmount" type="Money" />
+          </xsd:choice>
+          <xsd:group ref="OptionDenomination.model" minOccurs="0" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="OptionNumericStrike">
+    <xsd:annotation>
+      <xsd:documentation>A type for defining the strike price for an option as a numeric value without currency.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:choice minOccurs="0">
+        <xsd:element name="strikePrice" type="xsd:decimal">
+          <xsd:annotation>
+            <xsd:documentation>The price or level at which the option has been struck.</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+        <xsd:element name="strikePercentage" type="Percentage">
+          <xsd:annotation>
+            <xsd:documentation>The price or level expressed as a percentage of the forward starting spot price. A value expressed in percentage units i.e. 5 means 5%.</xsd:documentation>
+          </xsd:annotation>
+        </xsd:element>
+      </xsd:choice>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="OptionStrike">
+    <xsd:annotation>
+      <xsd:documentation>A type for defining the strike price for an equity option. The strike price is either: (i) in respect of an index option transaction, the level of the relevant index specified or otherwise determined in the transaction; or (ii) in respect of a share option transaction, the price per share specified or otherwise determined in the transaction. This can be expressed either as a percentage of notional amount or as an absolute value.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="OptionNumericStrike">
+        <xsd:sequence>
+          <xsd:element name="currency" type="Currency" minOccurs="0">
+            <xsd:annotation>
+              <xsd:documentation>The currency in which an amount is denominated.</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="Premium">
+    <xsd:annotation>
+      <xsd:documentation>A type for defining a premium.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="SimplePayment">
+        <xsd:sequence>
+          <xsd:group ref="Premium.model" />
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="Restructuring">
+    <xsd:sequence>
+      <xsd:element name="applicable" type="xsd:boolean" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>Indicates whether the restructuring provision is applicable.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="OptionDenomination.model">
+    <xsd:annotation>
+      <xsd:documentation>A model group containing the option denomination components.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="optionEntitlement" type="PositiveDecimal" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>The number of units of underlyer per option comprised in the option transaction.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="entitlementCurrency" type="Currency" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>Currency of the relevant bonds to which one option relates. For Bond Options this element should be used to define the currency of the bonds instead of the currency element present in the Bond underlyer.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="numberOfOptions" type="PositiveDecimal" minOccurs="0">
+        <xsd:annotation>
+          <xsd:documentation>The number of options comprised in the option transaction.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:group name="OptionSettlement.model">
+    <xsd:annotation>
+      <xsd:documentation>A group which has Option Settlement elements.</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="settlementType" type="SettlementTypeEnum" minOccurs="0" />
+      <xsd:element name="settlementDate" type="AdjustableOrRelativeDate" minOccurs="0" />
+      <xsd:group ref="SettlementAmountOrCurrency.model" minOccurs="0" />
+    </xsd:sequence>
+  </xsd:group>
+</xsd:schema>
+

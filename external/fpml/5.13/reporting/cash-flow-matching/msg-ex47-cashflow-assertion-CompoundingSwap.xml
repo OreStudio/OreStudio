@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is reporting-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  
+  == 
+  -->
+<tradeCashflowsAsserted xmlns="http://www.fpml.org/FpML-5/reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/reporting ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.example.com/messageId">CEN/2004/01/05/15-38</messageId>
+    <sentBy>ABC</sentBy>
+    <sendTo>DEF</sendTo>
+    <creationTimestamp>2005-11-01T15:38:00Z</creationTimestamp>
+  </header>
+  <asOfDate>2005-11-01T15:38:00Z</asOfDate>
+  <tradeCashflowsId tradeCashflowsIdScheme="http://www.abc.com/tradeCashflowsId">tradeCashflowsABC001</tradeCashflowsId>
+  <tradeIdentifyingItems>
+    <partyTradeIdentifier>
+      <partyReference href="party1" />
+      <tradeId tradeIdScheme="http://www.abc.com/tradeId">LTAA1702767187</tradeId>
+    </partyTradeIdentifier>
+    <tradeDetails>
+      <tradeDate>1997-12-15</tradeDate>
+      <effectiveDate>
+        <unadjustedDate>1997-12-17</unadjustedDate>
+      </effectiveDate>
+      <terminationDate>
+        <unadjustedDate>2005-12-17</unadjustedDate>
+      </terminationDate>
+      <productType productTypeScheme="http://www.fpml.org/coding-scheme/product-type-simple">InterestRateSwap</productType>
+<!-- In this example, the fixed leg resets semi-annually. -->
+      <underlyer id="FIXED">
+        <fixedRate>
+          <initialValue>0.06158870</initialValue>
+        </fixedRate>
+      </underlyer>
+      <underlyer id="USD-LIBOR-BBA">
+        <floatingRate>
+          <floatingRateIndex>USD-LIBOR-BBA</floatingRateIndex>
+          <indexTenor>
+            <periodMultiplier>3</periodMultiplier>
+            <period>M</period>
+          </indexTenor>
+        </floatingRate>
+      </underlyer>
+      <notional>
+        <currency>USD</currency>
+        <amount>75000000.00</amount>
+      </notional>
+    </tradeDetails>
+  </tradeIdentifyingItems>
+  <adjustedPaymentDate>2005-06-17</adjustedPaymentDate>
+  <payment>
+    <identifier paymentIdScheme="http://www.abc.com/netPaymentId">9188548</identifier>
+    <payerPartyReference href="party1" />
+    <receiverPartyReference href="party2" />
+    <paymentAmount>
+      <currency>USD</currency>
+      <amount>1256210.37</amount>
+    </paymentAmount>
+    <calculationDetails>
+      <grossCashflow>
+        <cashflowId cashflowIdScheme="http://www.abc.com/cashflowId">20050617USD76095013</cashflowId>
+        <payerPartyReference href="party2" />
+        <receiverPartyReference href="party1" />
+        <cashflowAmount>
+          <currency>USD</currency>
+          <amount>1053365.88</amount>
+        </cashflowAmount>
+        <cashflowType>Coupon</cashflowType>
+      </grossCashflow>
+      <observationElements id="observation-USD-LIBOR-BBA_1">
+        <underlyerReference href="USD-LIBOR-BBA" />
+        <observationDate>2004-12-15</observationDate>
+        <observedValue>
+          <value>0.02501250</value>
+        </observedValue>
+      </observationElements>
+      <observationElements id="observation-USD-LIBOR-BBA_2">
+        <underlyerReference href="USD-LIBOR-BBA" />
+        <observationDate>2005-03-15</observationDate>
+        <observedValue>
+          <value>0.03030000</value>
+        </observedValue>
+      </observationElements>
+      <calculationElements>
+        <calculatedRate id="calculated-USD-LIBOR-BBA_1">
+          <observationReference href="observation-USD-LIBOR-BBA_1" />
+          <calculatedValue>0.02501250</calculatedValue>
+          <spread>0</spread>
+        </calculatedRate>
+        <calculatedRate id="calculated-USD-LIBOR-BBA_2">
+          <observationReference href="observation-USD-LIBOR-BBA_2" />
+          <calculatedValue>0.03030000</calculatedValue>
+          <spread>0</spread>
+        </calculatedRate>
+        <calculationPeriod>
+          <calculatedRateReference href="calculated-USD-LIBOR-BBA_1" />
+          <adjustedStartDate>2004-12-17</adjustedStartDate>
+          <adjustedEndDate>2005-03-17</adjustedEndDate>
+          <numberOfDays>90</numberOfDays>
+          <dayCountFraction>ACT/360</dayCountFraction>
+          <dayCountYearFraction>0.250</dayCountYearFraction>
+          <compoundingMethod>Straight</compoundingMethod>
+          <accruedAmount>468984.37</accruedAmount>
+        </calculationPeriod>
+        <calculationPeriod>
+          <calculatedRateReference href="calculated-USD-LIBOR-BBA_2" />
+          <adjustedStartDate>2005-03-17</adjustedStartDate>
+          <adjustedEndDate>2005-06-17</adjustedEndDate>
+          <numberOfDays>92</numberOfDays>
+          <dayCountFraction>ACT/360</dayCountFraction>
+          <dayCountYearFraction>0.2555</dayCountYearFraction>
+          <compoundingMethod>Straight</compoundingMethod>
+          <accruedAmount>584381.50</accruedAmount>
+        </calculationPeriod>
+      </calculationElements>
+    </calculationDetails>
+    <calculationDetails>
+      <grossCashflow>
+        <cashflowId cashflowIdScheme="http://www.abc.com/cashflowId">20051219USD76095013</cashflowId>
+        <payerPartyReference href="party1" />
+        <receiverPartyReference href="party2" />
+        <cashflowAmount>
+          <currency>USD</currency>
+          <amount>2309576.25</amount>
+        </cashflowAmount>
+        <cashflowType>Coupon</cashflowType>
+      </grossCashflow>
+      <observationElements>
+        <underlyerReference href="FIXED" />
+        <observationDate>2005-06-23</observationDate>
+        <observedValue>
+          <value>0.06158870</value>
+        </observedValue>
+      </observationElements>
+      <calculationElements>
+        <calculationPeriod>
+          <adjustedStartDate>2004-12-17</adjustedStartDate>
+          <adjustedEndDate>2005-06-17</adjustedEndDate>
+          <numberOfDays>180</numberOfDays>
+          <dayCountFraction>30/360</dayCountFraction>
+          <dayCountYearFraction>0.50</dayCountYearFraction>
+        </calculationPeriod>
+      </calculationElements>
+    </calculationDetails>
+  </payment>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300S28N49H5RT4J50</partyId>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300L7VWW3G1702646</partyId>
+  </party>
+</tradeCashflowsAsserted>
+

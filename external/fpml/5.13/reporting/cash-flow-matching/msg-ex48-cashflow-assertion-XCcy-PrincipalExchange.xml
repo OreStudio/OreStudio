@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is reporting-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  
+  == 
+  -->
+<tradeCashflowsAsserted xmlns="http://www.fpml.org/FpML-5/reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/reporting ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.example.com/messageId">CEN/2004/01/05/15-38</messageId>
+    <sentBy>ABC</sentBy>
+    <sendTo>DEF</sendTo>
+    <creationTimestamp>2005-06-01T15:38:00Z</creationTimestamp>
+  </header>
+  <asOfDate>2005-06-01T15:38:00Z</asOfDate>
+  <tradeCashflowsId tradeCashflowsIdScheme="http://www.abc.com/tradeCashflowsId">tradeCashflowsABC001</tradeCashflowsId>
+  <tradeIdentifyingItems>
+    <partyTradeIdentifier>
+      <partyReference href="party1" />
+      <tradeId tradeIdScheme="http://www.abc.com/tradeId">LTAA1103196020</tradeId>
+    </partyTradeIdentifier>
+    <tradeDetails>
+      <tradeDate>2005-06-03</tradeDate>
+      <effectiveDate>
+        <unadjustedDate>2005-06-07</unadjustedDate>
+      </effectiveDate>
+      <terminationDate>
+        <unadjustedDate>2025-06-07</unadjustedDate>
+      </terminationDate>
+      <productType productTypeScheme="http://www.fpml.org/coding-scheme/product-type-simple">CrossCurrencySwap</productType>
+      <underlyer id="EUR-EURIBOR-Telerate">
+        <floatingRate>
+          <floatingRateIndex>EUR-EURIBOR-Telerate</floatingRateIndex>
+          <indexTenor>
+            <periodMultiplier>6</periodMultiplier>
+            <period>M</period>
+          </indexTenor>
+        </floatingRate>
+      </underlyer>
+      <underlyer id="FIXED">
+        <floatingRate>
+          <floatingRateIndex>USD-LIBOR-BBA</floatingRateIndex>
+          <indexTenor>
+            <periodMultiplier>3</periodMultiplier>
+            <period>M</period>
+          </indexTenor>
+        </floatingRate>
+      </underlyer>
+      <notional>
+        <currency>USD</currency>
+        <amount>92100000.00</amount>
+      </notional>
+      <notional>
+        <currency>EUR</currency>
+        <amount>75000000.00</amount>
+      </notional>
+    </tradeDetails>
+  </tradeIdentifyingItems>
+  <adjustedPaymentDate>2005-06-07</adjustedPaymentDate>
+  <payment>
+    <identifier paymentIdScheme="http://www.abc.com/netPaymentId">PXINITIAL20050607CROSSEUR</identifier>
+    <payerPartyReference href="party2" />
+    <receiverPartyReference href="party1" />
+    <paymentAmount>
+      <currency>EUR</currency>
+      <amount>75000000.00</amount>
+    </paymentAmount>
+    <calculationDetails>
+      <grossCashflow>
+        <cashflowId cashflowIdScheme="http://www.abc.com/cashflowId">PXINITIAL20050607CROSSEUR-GROSS</cashflowId>
+        <payerPartyReference href="party2" />
+        <receiverPartyReference href="party1" />
+        <cashflowAmount>
+          <currency>EUR</currency>
+          <amount>75000000.00</amount>
+        </cashflowAmount>
+        <cashflowType cashflowTypeScheme="http://www.fpml.org/coding-scheme/cashflow-type">PrincipalExchange</cashflowType>
+      </grossCashflow>
+    </calculationDetails>
+  </payment>
+  <payment>
+    <identifier paymentIdScheme="http://www.abc.com/netPaymentId">PXINITIAL20050607PRIMARYUSD</identifier>
+    <payerPartyReference href="party1" />
+    <receiverPartyReference href="party2" />
+    <paymentAmount>
+      <currency>USD</currency>
+      <amount>92100000.00</amount>
+    </paymentAmount>
+    <calculationDetails>
+      <grossCashflow>
+        <cashflowId cashflowIdScheme="http://www.abc.com/cashflowId">PXINITIAL20050607PRIMARYUSD-GROSS</cashflowId>
+        <payerPartyReference href="party2" />
+        <receiverPartyReference href="party1" />
+        <cashflowAmount>
+          <currency>USD</currency>
+          <amount>92100000.00</amount>
+        </cashflowAmount>
+        <cashflowType cashflowTypeScheme="http://www.fpml.org/coding-scheme/cashflow-type">PrincipalExchange</cashflowType>
+      </grossCashflow>
+    </calculationDetails>
+  </payment>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300S28N49H5RT4J50</partyId>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300L7VWW3G1702646</partyId>
+  </party>
+</tradeCashflowsAsserted>
+

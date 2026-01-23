@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is recordkeeping-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/recordkeeping-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<nonpublicExecutionReport xmlns="http://www.fpml.org/FpML-5/recordkeeping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/recordkeeping ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+<!-- This represents a bespoke and complex electricity swap (base load, fixed-fload, financial settlement) reported in accordance to the CFTC Part 45 Primary Economic Terms specification. -->
+  <header>
+    <messageId messageIdScheme="http://www.bankx.com/msg_id">BANK1</messageId>
+    <sentBy>BANK2</sentBy>
+    <sendTo>SDR01</sendTo>
+    <creationTimestamp>2011-02-04T15:38:00Z</creationTimestamp>
+  </header>
+  <isCorrection>false</isCorrection>
+  <correlationId correlationIdScheme="http://sef.com/trade-id">BANK1</correlationId>
+  <sequenceNumber>1</sequenceNumber>
+  <originatingEvent>Trade</originatingEvent>
+  <trade>
+    <tradeHeader>
+      <partyTradeIdentifier>
+        <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">101ABCD123</issuer>
+        <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+      </partyTradeIdentifier>
+      <partyTradeIdentifier>
+        <partyReference href="Party1" />
+        <tradeId tradeIdScheme="http://www.fpml.org/trade_id">myTradeRef</tradeId>
+      </partyTradeIdentifier>
+      <partyTradeInformation>
+        <partyReference href="Party1" />
+        <executionDateTime>2011-02-04T15:38:00Z</executionDateTime>
+        <intentToClear>false</intentToClear>
+        <nonStandardTerms>true</nonStandardTerms>
+        <offMarketPrice>false</offMarketPrice>
+        <largeSizeTrade>false</largeSizeTrade>
+        <executionType>Electronic</executionType>
+        <executionVenueType>OffFacility</executionVenueType>
+        <confirmationMethod>NonElectronic</confirmationMethod>
+      </partyTradeInformation>
+      <tradeDate>2012-12-31</tradeDate>
+    </tradeHeader>
+    <genericProduct>
+      <primaryAssetClass>Commodity</primaryAssetClass>
+      <productId>Commodity:Energy:Elec:Swap:Cash</productId>
+      <buyerPartyReference href="Party1" />
+      <sellerPartyReference href="Party2" />
+      <effectiveDate>
+        <unadjustedDate>2013-01-01</unadjustedDate>
+        <dateAdjustments>
+          <businessDayConvention>NONE</businessDayConvention>
+        </dateAdjustments>
+      </effectiveDate>
+      <terminationDate>
+        <unadjustedDate>2013-12-31</unadjustedDate>
+        <dateAdjustments>
+          <businessDayConvention>NONE</businessDayConvention>
+        </dateAdjustments>
+      </terminationDate>
+      <underlyer>
+        <commodity>
+          <instrumentId instrumentIdScheme="http://www.fpml.org/coding-scheme/commodity-reference-price">NATURAL GAS-NYMEX</instrumentId>
+          <commodityBase>Electricity</commodityBase>
+          <commodityDetails>Mass Hub Point 4000</commodityDetails>
+          <unit>MWh</unit>
+          <currency>USD</currency>
+          <publication>
+            <rateSource>ISO-NE</rateSource>
+          </publication>
+          <specifiedPrice>Settlement</specifiedPrice>
+        </commodity>
+        <averagingMethod>Unweighted</averagingMethod>
+        <payerPartyReference href="Party1" />
+        <receiverPartyReference href="Party2" />
+      </underlyer>
+      <notional>
+        <units>MWh</units>
+        <amount>100</amount>
+      </notional>
+      <settlementPeriods>
+        <applicableDay>WD</applicableDay>
+<!-- Weekdays -->
+        <startTime>
+          <time>
+            <hourMinuteTime>01:00:00</hourMinuteTime>
+            <location>EPT</location>
+          </time>
+        </startTime>
+        <endTime>
+          <time>
+            <hourMinuteTime>00:00:00</hourMinuteTime>
+            <location>EPT</location>
+          </time>
+        </endTime>
+      </settlementPeriods>
+      <loadType>Base</loadType>
+      <quantity>100</quantity>
+      <quantityFrequency>PerSettlementPeriod</quantityFrequency>
+      <fixedPrice>
+        <price>1</price>
+        <priceCurrency>USD</priceCurrency>
+        <priceUnit>MWh</priceUnit>
+      </fixedPrice>
+      <settlementCurrency>USD</settlementCurrency>
+      <settlementType>Cash</settlementType>
+    </genericProduct>
+    <documentation>
+      <attachment>
+        <resourceId resourceIdScheme="http://abc.com/ext/confos">123</resourceId>
+        <resourceType>TermSheet</resourceType>
+        <language languageScheme="http://www.fpml.org/coding-scheme/external/ISO-639-2T">eng</language>
+        <mimeType>application/pdf</mimeType>
+        <base64Binary>VGhpcyBpcyBhIGRlbW9uc3RyYXRpb24gb2YgQmFzZTY0IGVuY29kaW5n</base64Binary>
+      </attachment>
+    </documentation>
+  </trade>
+  <party id="Party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">12345</partyId>
+  </party>
+  <party id="Party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">45678</partyId>
+  </party>
+</nonpublicExecutionReport>
+

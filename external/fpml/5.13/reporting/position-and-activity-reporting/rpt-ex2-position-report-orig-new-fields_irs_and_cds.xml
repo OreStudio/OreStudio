@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is reporting-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<!--View is reporting-->
+<!--Version is 5-0-->
+<!--NS is http://www.fpml.org/FpML-5/master-->
+<!--Omit some adjustments, details of procedures, and other information not required for a report-->
+<positionReport xmlns="http://www.fpml.org/FpML-5/reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/reporting ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.abc.com/mid">XXX00123</messageId>
+    <sentBy>ABCDUS33</sentBy>
+    <sendTo>HEDGUS33</sendTo>
+    <creationTimestamp>2004-08-02T15:38:00Z</creationTimestamp>
+  </header>
+  <asOfDate>2004-06-02</asOfDate>
+  <dataSetName>Sample positions</dataSetName>
+  <quotationCharacteristics>
+    <side>Mid</side>
+    <currency>USD</currency>
+    <timing>Close</timing>
+  </quotationCharacteristics>
+  <position>
+    <positionId positionIdScheme="http://www.abc.com/positionId">IRS-POS-01</positionId>
+    <reportingRoles>
+      <baseParty href="party2" />
+      <positionProvider href="party1" />
+    </reportingRoles>
+    <constituent>
+      <trade id="irs1-trade">
+        <tradeHeader>
+          <partyTradeIdentifier>
+            <partyReference href="party1" />
+            <tradeId tradeIdScheme="http://www.abc.com/swaps/trade-id">IRS-01</tradeId>
+          </partyTradeIdentifier>
+          <partyTradeIdentifier>
+            <partyReference href="party2" />
+            <tradeId tradeIdScheme="http://www.hedgeco.com/swaps/trade-id">swap-1</tradeId>
+          </partyTradeIdentifier>
+          <partyTradeInformation>
+            <partyReference href="party1" />
+            <reportingRole>Principal</reportingRole>
+            <unit>New York</unit>
+            <trader>Fred Watanabe</trader>
+          </partyTradeInformation>
+          <partyTradeInformation>
+            <partyReference href="party2" />
+            <reportingRole>VoluntaryParty</reportingRole>
+            <unit>San Fancisco Desk</unit>
+            <trader>Joe Bloggs</trader>
+          </partyTradeInformation>
+          <partyTradeInformation>
+            <partyReference href="party2" />
+            <reportingRole>VoluntaryParty</reportingRole>
+            <unit>San Fancisco Desk</unit>
+            <trader>Joe Bloggs</trader>
+          </partyTradeInformation>
+          <tradeDate>2004-12-12</tradeDate>
+        </tradeHeader>
+        <swap>
+          <primaryAssetClass assetClassScheme="http://www.fpml.org/coding-scheme/asset-class">InterestRate</primaryAssetClass>
+<!-- used to represent the "swap type" -->
+          <productType productTypeScheme="http://www.datastandardsworkinggroup.org/products-1-0">IRS-FixedFloat-Uneven</productType>
+<!-- ABC pays the floating rate every 6 months, based on 6M EURIBOR-Telerate
+                    on an ACT/360 basis -->
+          <swapStream id="irs1-floatingStream">
+            <payerPartyReference href="party1" />
+            <calculationPeriodDates id="irs1-floatingCalcPeriodDates">
+              <terminationDate>
+                <unadjustedDate>2009-12-14</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCenters id="irs1-primaryBusinessCenters">
+                    <businessCenter>EUTA</businessCenter>
+                  </businessCenters>
+                </dateAdjustments>
+              </terminationDate>
+              <calculationPeriodDatesAdjustments>
+                <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                <businessCenters>
+                  <businessCenter>EUTA</businessCenter>
+                </businessCenters>
+              </calculationPeriodDatesAdjustments>
+              <calculationPeriodFrequency>
+                <periodMultiplier>6</periodMultiplier>
+                <period>M</period>
+              </calculationPeriodFrequency>
+            </calculationPeriodDates>
+            <paymentDates id="PaymentDatesID2">
+              <paymentFrequency>
+                <periodMultiplier>6</periodMultiplier>
+                <period>M</period>
+              </paymentFrequency>
+              <paymentDatesAdjustments>
+                <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                <businessCenters>
+                  <businessCenter>EUTA</businessCenter>
+                </businessCenters>
+              </paymentDatesAdjustments>
+            </paymentDates>
+            <resetDates id="irs1-resetDates">
+              <resetFrequency>
+                <periodMultiplier>6</periodMultiplier>
+                <period>M</period>
+              </resetFrequency>
+              <resetDatesAdjustments>
+                <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                <businessCenters>
+                  <businessCenter>EUTA</businessCenter>
+                </businessCenters>
+              </resetDatesAdjustments>
+            </resetDates>
+            <calculationPeriodAmount>
+              <calculation>
+                <notionalSchedule>
+                  <notionalStepSchedule>
+                    <initialValue>50000000.00</initialValue>
+                    <step>
+                      <stepDate>2004-12-14</stepDate>
+                      <stepValue>10000000.00</stepValue>
+                    </step>
+                    <step>
+                      <stepDate>2005-12-14</stepDate>
+                      <stepValue>20000000.00</stepValue>
+                    </step>
+                    <step>
+                      <stepDate>2006-12-14</stepDate>
+                      <stepValue>30000000.00</stepValue>
+                    </step>
+                    <step>
+                      <stepDate>2007-12-14</stepDate>
+                      <stepValue>40000000.00</stepValue>
+                    </step>
+                    <step>
+                      <stepDate>2008-12-14</stepDate>
+                      <stepValue>50000000.00</stepValue>
+                    </step>
+                    <step>
+                      <stepDate>2009-12-14</stepDate>
+                      <stepValue>60000000.00</stepValue>
+                    </step>
+                    <currency>EUR</currency>
+                  </notionalStepSchedule>
+                </notionalSchedule>
+                <floatingRateCalculation>
+                  <floatingRateIndex>EUR-EURIBOR-Telerate</floatingRateIndex>
+                  <indexTenor>
+                    <periodMultiplier>6</periodMultiplier>
+                    <period>M</period>
+                  </indexTenor>
+                  <spreadSchedule>
+                    <initialValue>0.01</initialValue>
+                  </spreadSchedule>
+                </floatingRateCalculation>
+                <dayCountFraction>ACT/360</dayCountFraction>
+              </calculation>
+            </calculationPeriodAmount>
+            <settlementProvision>
+              <settlementCurrency>USD</settlementCurrency>
+              <nonDeliverableSettlement>
+                <referenceCurrency>EUR</referenceCurrency>
+                <fxFixingDate>
+                  <periodMultiplier>2</periodMultiplier>
+                  <period>D</period>
+                  <dayType>Business</dayType>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCenters>
+                    <businessCenter>USNY</businessCenter>
+                    <businessCenter>GBLO</businessCenter>
+                  </businessCenters>
+                  <dateRelativeToPaymentDates>
+                    <paymentDatesReference href="PaymentDatesID2" />
+<!--
+                                                                <paymentDatesReference href="PrincipalExchanges"/>
+                                                                -->
+                  </dateRelativeToPaymentDates>
+                </fxFixingDate>
+                <settlementRateOption settlementRateOptionScheme="http://www.fpml.org/coding-scheme/settlement-rate-option-1-0">CURRENCY-IMPLIED.RATE.(ADR)/CURA1</settlementRateOption>
+              </nonDeliverableSettlement>
+            </settlementProvision>
+          </swapStream>
+<!-- HedgeCo pays the 6% fixed rate every year on a 30E/360 basis -->
+          <swapStream id="irs1-fixedStream">
+            <payerPartyReference href="party2" />
+            <calculationPeriodDates id="irs1-fixedCalcPeriodDates">
+              <calculationPeriodDatesAdjustments>
+                <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                <businessCenters>
+                  <businessCenter>EUTA</businessCenter>
+                </businessCenters>
+              </calculationPeriodDatesAdjustments>
+              <calculationPeriodFrequency>
+                <periodMultiplier>1</periodMultiplier>
+                <period>Y</period>
+              </calculationPeriodFrequency>
+            </calculationPeriodDates>
+            <paymentDates id="PaymentDatesID">
+              <paymentFrequency>
+                <periodMultiplier>1</periodMultiplier>
+                <period>Y</period>
+              </paymentFrequency>
+              <paymentDatesAdjustments>
+                <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                <businessCenters>
+                  <businessCenter>EUTA</businessCenter>
+                </businessCenters>
+              </paymentDatesAdjustments>
+            </paymentDates>
+            <calculationPeriodAmount>
+              <calculation>
+                <notionalSchedule>
+                  <notionalStepSchedule id="irs-notional">
+                    <initialValue>50000000.00</initialValue>
+                    <currency>EUR</currency>
+                  </notionalStepSchedule>
+                </notionalSchedule>
+                <fixedRateSchedule>
+                  <initialValue>0.06</initialValue>
+                </fixedRateSchedule>
+                <dayCountFraction>30E/360</dayCountFraction>
+              </calculation>
+            </calculationPeriodAmount>
+            <settlementProvision>
+              <settlementCurrency>USD</settlementCurrency>
+              <nonDeliverableSettlement>
+                <referenceCurrency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</referenceCurrency>
+                <fxFixingDate>
+                  <periodMultiplier>2</periodMultiplier>
+                  <period>D</period>
+                  <dayType>Business</dayType>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCenters>
+                    <businessCenter>USNY</businessCenter>
+                    <businessCenter>GBLO</businessCenter>
+                  </businessCenters>
+                  <dateRelativeToPaymentDates>
+                    <paymentDatesReference href="PaymentDatesID" />
+<!--
+                                                                <paymentDatesReference href="PrincipalExchanges"/>
+                                                                        -->
+                  </dateRelativeToPaymentDates>
+                </fxFixingDate>
+                <settlementRateOption settlementRateOptionScheme="http://www.fpml.org/coding-scheme/settlement-rate-option-1-0">CURRENCY-IMPLIED.RATE.(ADR)/CURA1</settlementRateOption>
+              </nonDeliverableSettlement>
+            </settlementProvision>
+          </swapStream>
+          <additionalPayment>
+            <payerPartyReference href="party2" />
+            <paymentAmount>
+              <currency>USD</currency>
+              <amount>15000.00</amount>
+            </paymentAmount>
+            <paymentDate>
+              <unadjustedDate>2005-04-27</unadjustedDate>
+              <dateAdjustments>
+                <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                <businessCenters>
+                  <businessCenter>EUTA</businessCenter>
+                </businessCenters>
+              </dateAdjustments>
+            </paymentDate>
+          </additionalPayment>
+        </swap>
+        <collateral>
+          <independentAmount>
+            <payerPartyReference href="party2" />
+            <paymentDetail>
+<!--
+              <adjustedPaymentDate>2004-01-01</adjustedPaymentDate>
+              -->
+              <paymentDate>
+                <adjustableDate>
+                  <adjustedDate>2004-01-01</adjustedDate>
+                </adjustableDate>
+              </paymentDate>
+              <paymentRule xsi:type="PercentageRule">
+                <paymentPercent>0.10</paymentPercent>
+                <notionalAmountReference href="irs-notional" />
+              </paymentRule>
+              <paymentAmount>
+                <currency>USD</currency>
+                <amount>1000</amount>
+              </paymentAmount>
+            </paymentDetail>
+          </independentAmount>
+        </collateral>
+        <documentation>
+          <creditSupportAgreement>
+            <identifier creditSupportAgreementIdScheme="http://abcd.com/csa-id">HEDG123-a</identifier>
+          </creditSupportAgreement>
+        </documentation>
+      </trade>
+    </constituent>
+    <scheduledDate>
+      <adjustedDate>2004-12-14</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousReset</type>
+      <assetReference href="irs1-floatingStream" />
+      <associatedValue>
+        <objectReference href="irs1-floatingStream" />
+        <quote>
+          <value>0.062</value>
+          <measureType>TreatedRate</measureType>
+        </quote>
+      </associatedValue>
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-03-14</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">FirstPayment</type>
+      <assetReference href="irs1-floatingStream" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-03-14</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousPayment</type>
+      <assetReference href="irs1-floatingStream" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-06-14</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">NextPayment</type>
+      <assetReference href="irs1-floatingStream" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2004-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousReset</type>
+      <assetReference href="irs1-floatingStream" />
+      <associatedValue>
+        <objectReference href="irs1-floatingStream" />
+        <quote>
+          <value>0.0350</value>
+          <measureType>TreatedRate</measureType>
+        </quote>
+      </associatedValue>
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2004-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">FirstPayment</type>
+      <assetReference href="irs1-fixedStream" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2004-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">PreviousPayment</type>
+      <assetReference href="irs1-fixedStream" />
+    </scheduledDate>
+    <scheduledDate>
+      <adjustedDate>2005-01-01</adjustedDate>
+      <type scheduledDateTypeScheme="http://www.fpml.org/coding-scheme/scheduled-date-type-1-0">NextPayment</type>
+      <assetReference href="irs1-fixedStream" />
+    </scheduledDate>
+    <valuation>
+      <objectReference href="irs1-floatingStream" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>AccruedInterest</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>3000000.00</value>
+        <measureType>CurrentNotional</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="irs1-fixedStream" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>AccruedInterest</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>3000000.00</value>
+        <measureType>CurrentNotional</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="irs1-trade" />
+      <quote>
+        <value>10000.00</value>
+        <measureType>NPVLocalCurrency</measureType>
+        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+      </quote>
+      <quote>
+        <value>12300.00</value>
+        <measureType>NPV</measureType>
+      </quote>
+      <fxRate>
+        <quotedCurrencyPair>
+          <currency1>USD</currency1>
+          <currency2>EUR</currency2>
+          <quoteBasis>Currency1PerCurrency2</quoteBasis>
+        </quotedCurrencyPair>
+        <rate>1.23</rate>
+      </fxRate>
+    </valuation>
+  </position>
+<!-- CDS example -->
+  <position>
+    <positionId positionIdScheme="http://www.abc.com/positionId">CDS-POS-01</positionId>
+    <reportingRoles>
+      <baseParty href="party2" />
+      <positionProvider href="party1" />
+    </reportingRoles>
+    <constituent>
+      <trade id="cds-trade">
+        <tradeHeader>
+          <partyTradeIdentifier>
+            <tradeId tradeIdScheme="http://www.abc.com/swaps/trade-id">CDS01</tradeId>
+          </partyTradeIdentifier>
+          <partyTradeIdentifier>
+            <tradeId tradeIdScheme="http://www.hedgeco.com/swaps/trade-id">cds-01</tradeId>
+          </partyTradeIdentifier>
+          <tradeDate>2002-12-02</tradeDate>
+        </tradeHeader>
+        <creditDefaultSwap>
+          <productType productTypeScheme="http://www.datastandardsworkinggroup.org/products-1-0">CDS-U</productType>
+          <generalTerms>
+            <scheduledTerminationDate>
+<!--<adjustableDate> -->
+              <unadjustedDate>2007-09-06</unadjustedDate>
+              <dateAdjustments>
+                <businessDayConvention>NONE</businessDayConvention>
+              </dateAdjustments>
+<!-- </adjustableDate> -->
+            </scheduledTerminationDate>
+            <buyerPartyReference href="party1" />
+            <dateAdjustments>
+              <businessDayConvention>FOLLOWING</businessDayConvention>
+              <businessCenters>
+                <businessCenter>GBLO</businessCenter>
+                <businessCenter>USNY</businessCenter>
+              </businessCenters>
+            </dateAdjustments>
+            <referenceInformation>
+              <referenceEntity id="cds-referenceEntity">
+                <entityName>Agrium Inc.</entityName>
+                <entityId entityIdScheme="http://www.fpml.org/coding-scheme/external/entity-id-RED">008HA7</entityId>
+              </referenceEntity>
+              <referenceObligation>
+                <bond>
+                  <instrumentId instrumentIdScheme="http://www.fpml.org/coding-scheme/external/instrument-id-CUSIP">008916AB4</instrumentId>
+                  <couponRate>0.077</couponRate>
+                  <maturity>2017-02-01</maturity>
+                </bond>
+                <primaryObligorReference href="cds-referenceEntity" />
+              </referenceObligation>
+              <allGuarantees>false</allGuarantees>
+              <referencePrice>1.0</referencePrice>
+            </referenceInformation>
+          </generalTerms>
+          <feeLeg>
+            <initialPayment>
+              <payerPartyReference href="party1" />
+              <adjustablePaymentDate>2005-01-01</adjustablePaymentDate>
+              <paymentAmount>
+                <currency>EUR</currency>
+                <amount>10000</amount>
+              </paymentAmount>
+            </initialPayment>
+            <periodicPayment>
+              <paymentFrequency>
+                <periodMultiplier>3</periodMultiplier>
+                <period>M</period>
+              </paymentFrequency>
+              <firstPaymentDate>2003-03-06</firstPaymentDate>
+              <fixedAmountCalculation>
+                <calculationAmount>
+                  <currency>USD</currency>
+                  <amount>5000000.0</amount>
+                </calculationAmount>
+                <fixedRate>0.01</fixedRate>
+                <dayCountFraction>ACT/360</dayCountFraction>
+              </fixedAmountCalculation>
+            </periodicPayment>
+          </feeLeg>
+          <protectionTerms>
+            <calculationAmount id="cds-notional">
+              <currency>USD</currency>
+              <amount>5000000.0</amount>
+            </calculationAmount>
+            <creditEvents>
+              <bankruptcy>true</bankruptcy>
+              <failureToPay>
+                <paymentRequirement>
+                  <currency>USD</currency>
+                  <amount>1000000.0</amount>
+                </paymentRequirement>
+              </failureToPay>
+              <restructuring>
+                <restructuringType>ModR</restructuringType>
+                <multipleHolderObligation>true</multipleHolderObligation>
+                <multipleCreditEventNotices>true</multipleCreditEventNotices>
+              </restructuring>
+              <defaultRequirement>
+                <currency>USD</currency>
+                <amount>10000000.0</amount>
+              </defaultRequirement>
+            </creditEvents>
+            <obligations>
+              <category>BorrowedMoney</category>
+            </obligations>
+          </protectionTerms>
+          <physicalSettlementTerms>
+            <settlementCurrency>USD</settlementCurrency>
+          </physicalSettlementTerms>
+        </creditDefaultSwap>
+        <collateral>
+          <independentAmount>
+            <payerPartyReference href="party2" />
+            <paymentDetail>
+<!--<adjustedPaymentDate>2004-01-01</adjustedPaymentDate>-->
+              <paymentDate>
+                <adjustableDate>
+                  <adjustedDate>2004-01-01</adjustedDate>
+                </adjustableDate>
+              </paymentDate>
+              <paymentRule xsi:type="PercentageRule">
+                <paymentPercent>0.10</paymentPercent>
+                <notionalAmountReference href="cds-notional" />
+              </paymentRule>
+              <paymentAmount>
+                <currency>USD</currency>
+                <amount>1000</amount>
+              </paymentAmount>
+            </paymentDetail>
+          </independentAmount>
+        </collateral>
+      </trade>
+    </constituent>
+    <scheduledDate>
+      <adjustedDate>2005-03-14</adjustedDate>
+      <type>FirstPayment</type>
+      <assetReference href="cds-trade" />
+    </scheduledDate>
+    <valuation>
+      <objectReference href="cds-trade" />
+      <quote>
+        <value>12345.00</value>
+        <measureType>AccruedInterest</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>0.7</value>
+        <measureType>RecoveryRate</measureType>
+      </quote>
+      <quote>
+        <value>0.50</value>
+        <measureType>CreditSpread</measureType>
+      </quote>
+    </valuation>
+    <valuation>
+      <objectReference href="cds-trade" />
+      <quote>
+        <value>10000.00</value>
+        <measureType>NPVLocalCurrency</measureType>
+        <currency>EUR</currency>
+      </quote>
+      <quote>
+        <value>12300.00</value>
+        <measureType>NPV</measureType>
+      </quote>
+      <fxRate>
+        <quotedCurrencyPair>
+          <currency1>USD</currency1>
+          <currency2>EUR</currency2>
+          <quoteBasis>Currency1PerCurrency2</quoteBasis>
+        </quotedCurrencyPair>
+        <rate>1.23</rate>
+      </fxRate>
+    </valuation>
+  </position>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">ABCD123</partyId>
+    <partyName>ABCD Securities Inc.</partyName>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">J6W9XJWVE853A9CVRQ85</partyId>
+    <partyName>HedgeCo Capital L.L.C.</partyName>
+  </party>
+</positionReport>
+

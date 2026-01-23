@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is pretrade-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/pretrade-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<!-- a MIFID II RTS 24 order details report, on p. 490 of Annex 1 -->
+<orderStatusReport xmlns="http://www.fpml.org/FpML-5/pretrade" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/pretrade ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.bankx.com/msg_id">BANKX0001</messageId>
+    <sentBy>BANKX</sentBy>
+    <sendTo>SDR01</sendTo>
+    <creationTimestamp>2011-03-04T16:42:16Z</creationTimestamp>
+<!-- Date stamp -->
+  </header>
+  <isCorrection>false</isCorrection>
+<!-- Correction indicator -->
+  <correlationId correlationIdScheme="http://fpml.org/submitter_trade_id">TW19235</correlationId>
+  <sequenceNumber>1</sequenceNumber>
+<!-- MIFID 24.15:  sequence number -->
+  <onBehalfOf>
+    <partyReference href="party1" />
+<!-- explicit reference to which party is the primary reporting party -->
+  </onBehalfOf>
+  <orderStatus>
+    <requesterOrderId>123</requesterOrderId>
+<!-- MIFID: idntification code of the order submitted -->
+    <orderId>456</orderId>
+<!-- MIFID 24.20:  order idntification code -->
+    <receiverOrderId>789</receiverOrderId>
+<!-- MIFID:  order receiver idntification code -->
+    <strategyId>789</strategyId>
+<!-- MIFID 24.46:  strategy linked order identification -->
+    <submittedTime>2012-07-25T08:00:00Z</submittedTime>
+<!-- MIFID 24.9: date and time (submission of order)-->
+    <receivedTime>2012-07-25T08:00:00Z</receivedTime>
+<!-- MIFID 24.19: date and time (receipt of order)-->
+    <roles>
+      <orderingPartyReference href="party2" />
+<!-- MIFID 24.1:  identification of the entity which submitted the order -->
+      <quotingPartyReference href="party1" />
+      <quotingPartySide>Buyer</quotingPartySide>
+<!-- MIFID 24.32: buy-sell indicator -->
+      <tradingVenuePartyReference href="venue" />
+<!-- MIFID 24.16:  Segment MIC code -->
+      <clientPartyReference href="party2" />
+<!-- MIFID 24.3:  client identification code -->
+      <investmentDeciderReference href="trader" />
+<!-- MIFID 24.4:  investment decision within firm-->
+      <executionDeciderReference href="trader" />
+<!-- MIFID 24.5:  Execution within firm-->
+      <nonExecutingBrokerReference href="party1" />
+<!-- MIFID 24.6: Non-executing broker -->
+      <tradingCapacity>Deal</tradingCapacity>
+<!-- MIFID 24.7: trading capacity  -->
+      <liquidityProvision>false</liquidityProvision>
+<!-- MIFID 24.8: liquidity provision activity indicator -->
+      <tradingWaiver>false</tradingWaiver>
+<!-- MIFID: waiver indicator -->
+      <passiveOrder>false</passiveOrder>
+<!-- MIFID 24.43: passive only indicator -->
+      <passiveOrAggressive>Passive</passiveOrAggressive>
+<!-- MIFID 24.44: passive or aggressive indicator -->
+      <selfExecutionPrevented>true</selfExecutionPrevented>
+<!-- MIFID 24.45: self-execution prevention -->
+    </roles>
+    <directElectronicAccess>true</directElectronicAccess>
+<!-- MIFID 24.2: Direct Electronic Access (DEA) -->
+    <isAggregated>false</isAggregated>
+<!-- MIFID:  aggregated order -->
+    <additionalInfo>xxxx</additionalInfo>
+<!-- MIFID:  additional info -->
+    <orderBookId orderBookIdScheme="http://venue.com/orderbook">123</orderBookId>
+<!-- MIFID 24.17: Order book code -->
+    <instrumentId instrumentIdScheme="http://fpml.org/ISIN">123</instrumentId>
+<!-- MIFID 24.18: Financial instruments identification code -->
+    <order>Limit</order>
+<!-- MIFID 24.22:  order type -->
+    <orderClassification>Limit</orderClassification>
+<!-- MIFID 24.23:  order type classification -->
+    <validity>
+      <validityType>GoodTillCancel</validityType>
+<!-- MIFID 24.10:  validity period -->
+      <validityPeriod>2012-07-25T08:00:00Z</validityPeriod>
+<!-- MIFID 24.12:  validity period and time -->
+      <restriction>ValidForAuction</restriction>
+<!-- MIFID 24.11:  order restriction -->
+    </validity>
+    <tradingPhases>xxx</tradingPhases>
+<!-- MIFID 24.49:  trading phases -->
+    <priority>
+      <priorityChangeTimestamp>2012-07-25T08:00:00Z</priorityChangeTimestamp>
+<!-- MIFID 24.13:  priority timestamp -->
+      <prioritySize>1</prioritySize>
+<!-- MIFID 24.14:  priority size -->
+    </priority>
+    <productSummary>
+      <leg2Currency>EUR</leg2Currency>
+<!-- MIFID 24.30: Currency of Leg 2 -->
+      <quantityCurrency>USD</quantityCurrency>
+<!-- MIFID 24.35: quantity currency -->
+      <quantityUnit>Nominal</quantityUnit>
+<!-- MIFID 24.34: quantity notation -->
+    </productSummary>
+    <price>
+      <value>123</value>
+<!-- MIFID 24.24: limit price -->
+      <additionalValue>123</additionalValue>
+<!-- MIFID 24.25: aditional limit price -->
+      <stopValue>123</stopValue>
+<!-- MIFID 24.26: stop price -->
+      <peggedValue>123</peggedValue>
+<!-- MIFID 24.27: pegged limit price -->
+      <indicativeAuctionValue>123</indicativeAuctionValue>
+<!-- MIFID 24.50: indicative auction price -->
+      <indicativeAuctionVolume>123</indicativeAuctionVolume>
+<!-- MIFID 24.51: indicative auction volume -->
+      <priceUnits>BasisPoints</priceUnits>
+<!-- MIFID 24.31: price notation -->
+      <priceCurrency>USDC</priceCurrency>
+<!-- MIFID 24.29: price currency-->
+    </price>
+    <status>Accepted</status>
+<!-- MIFID 24.21:  new order, order modification, order cancellation, etc. -->
+    <statusCode>Active</statusCode>
+<!-- MIFID 24.33: order status (active, suspendend, inactive) -->
+    <shortSale>false</shortSale>
+<!-- MIFID: short selling indicator -->
+    <routingStrategy>XXX</routingStrategy>
+<!-- MIFID 24.47: routing strategy -->
+    <totalSize>5.0</totalSize>
+<!-- MIFID 24.36: initial quantity -->
+    <displayedSize>5.0</displayedSize>
+<!-- MIFID 24.38: displayed quantity -->
+    <minimumTotalFillSize>1.0</minimumTotalFillSize>
+<!-- MIFID 24.40: minimum acceptable quantity (MAQ)-->
+    <minimumSingleFillSize>1.0</minimumSingleFillSize>
+<!-- MIFID 24.41: minimum execution size (MES)-->
+    <minimumOnFirstFillOnly>true</minimumOnFirstFillOnly>
+<!-- MIFID 24.42: MES first execution only -->
+    <fills>1</fills>
+    <filledSize>2.0</filledSize>
+<!-- MIFID 24.39: traded quantity -->
+    <remainingSize>3</remainingSize>
+<!-- MIFID 24.37: remaining quantity -->
+    <fill>
+      <orderId>abc123</orderId>
+      <fillId>def456</fillId>
+<!-- MIFID 24.48: trading venue transaction ID code -->
+      <size>2.0</size>
+      <price>0.4231</price>
+<!-- MIFID: transaction price -->
+      <executionDateTime>2012-07-25T08:00:00Z</executionDateTime>
+    </fill>
+  </orderStatus>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">5493001RKR55V4X61F71</partyId>
+<!-- unique counterparty identifier of reporting party -->
+    <partyName>Bank X</partyName>
+    <classification industryClassificationScheme="http://www.fpml.org/coding-scheme/external/esma/corporate-sector">InvestmentFirm</classification>
+<!-- ESMA: corporate sector -->
+    <country>GB</country>
+<!-- ISO 3166 country code for UK -->
+    <region>EEA</region>
+<!-- ESMA: EEA/nonEEA -->
+    <organizationType>SwapDealer</organizationType>
+    <businessUnit id="desk1">
+      <name>NY Swaps Desk</name>
+    </businessUnit>
+    <person id="trader">
+      <personId>jjones</personId>
+    </person>
+  </party>
+  <party id="party2">
+<!-- MIFID:  party as a natural person -->
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-person-id">FR19321129JACQUCHIRA</partyId>
+    <organizationType>NaturalPerson</organizationType>
+    <person>
+      <firstName>Jacques</firstName>
+      <surname>Chirac</surname>
+      <dateOfBirth>1932-11-29</dateOfBirth>
+      <country>FR</country>
+    </person>
+  </party>
+  <party id="broker1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300OL8KL0WCQ34V31</partyId>
+<!-- unique counterparty identifier of arranging broker -->
+    <partyName>Up&amp;Atem</partyName>
+  </party>
+  <party id="clearing-svc">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300IB5Q45JGNPND58</partyId>
+<!-- unique counterparty identifier of clearing service -->
+    <partyName>ClearItAll</partyName>
+  </party>
+  <party id="venue">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300IB5Q45JGNPND11</partyId>
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/exchange-id-MIC">XLON</partyId>
+<!-- unique counterparty identifier of Platform/Execution Facility -->
+    <partyName>SEFCo LLC</partyName>
+  </party>
+</orderStatusReport>
+

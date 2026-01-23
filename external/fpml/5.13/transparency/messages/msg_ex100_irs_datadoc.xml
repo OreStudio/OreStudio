@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is transparency-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/transparency-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+
+  -->
+<dataDocument xmlns="http://www.fpml.org/FpML-5/transparency" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/transparency ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+<!-- This represents the real-time reporting requirements published in draft form by the CFTC in 17 CFR 43 -->
+<!-- The comments indicate the reportable field name as described in Table A1 of Appendix A, on 
+     pp. 76177-76181 of the Federal Register -->
+<!-- This is the same as rtrpt_ex01a, but the commented out fields have been removed -->
+<!-- The data values are taken from "Example 1" in Appendix A, on page 76156 of the Federal Register -->
+<!-- This example is a "dataDocument", which does not include the messaging framework -->
+<!-- it should be used within an externally supplied messaging framework -->
+  <originatingEvent>Trade</originatingEvent>
+  <trade>
+<!-- equivalent to to "price forming continuation data -->
+    <tradeHeader>
+      <partyTradeIdentifier>
+        <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1031234567</issuer>
+        <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">712345678901234567890123456789012</tradeId>
+      </partyTradeIdentifier>
+      <tradeInformation>
+        <executionDateTime>2011-02-04T15:38:00Z</executionDateTime>
+<!-- Execution timestamp -->
+        <intentToClear>true</intentToClear>
+<!-- NEW: cleared or uncleared = "C" in CFTC doc -->
+        <nonStandardTerms>false</nonStandardTerms>
+<!-- NEW: indication of other price-affecting term -->
+        <offMarketPrice>false</offMarketPrice>
+<!-- NEW -->
+        <largeSizeTrade>false</largeSizeTrade>
+<!-- NEW: block trades and large notional swaps -->
+        <executionType>Electronic</executionType>
+<!-- NEW -->
+        <executionVenueType>SEF</executionVenueType>
+<!-- NEW: execution venue = "SWM" in CFTC doc -->
+      </tradeInformation>
+      <tradeDate>2011-02-04</tradeDate>
+    </tradeHeader>
+    <swap>
+      <primaryAssetClass>InterestRate</primaryAssetClass>
+<!-- asset class -->
+      <productType productTypeScheme="http://www.fpml.org/coding-scheme/product-taxonomy">InterestRate:IRSwap:FixedFloat</productType>
+<!-- contract type  = "S-" in CFTC doc -->
+      <swapStream>
+        <calculationPeriodDates id="floatingCalcPeriodDates">
+          <effectiveDate id="start">
+            <unadjustedDate>2011-02-08</unadjustedDate>
+<!-- start date  -->
+          </effectiveDate>
+          <terminationDate>
+            <unadjustedDate>2016-02-08</unadjustedDate>
+<!-- end date  -->
+          </terminationDate>
+        </calculationPeriodDates>
+        <paymentDates>
+          <paymentFrequency>
+            <periodMultiplier>3</periodMultiplier>
+<!-- payment frequency 1 -->
+            <period>M</period>
+          </paymentFrequency>
+        </paymentDates>
+        <resetDates id="resetDates">
+          <resetFrequency>
+<!-- reset freqency 1 -->
+            <periodMultiplier>6</periodMultiplier>
+            <period>M</period>
+          </resetFrequency>
+        </resetDates>
+        <calculationPeriodAmount>
+          <calculation>
+            <notionalSchedule>
+              <notionalStepSchedule>
+                <initialValue>10000000.00</initialValue>
+<!-- notional amount 1 -->
+                <currency>USD</currency>
+<!-- notional currency 1 -->
+              </notionalStepSchedule>
+            </notionalSchedule>
+            <floatingRateCalculation>
+<!-- underlying asset 1 -->
+              <floatingRateIndex>USD-LIBOR-BBA</floatingRateIndex>
+              <indexTenor>
+                <periodMultiplier>3</periodMultiplier>
+                <period>M</period>
+              </indexTenor>
+            </floatingRateCalculation>
+            <dayCountFraction>ACT/360</dayCountFraction>
+<!-- should this be included?  Not requested by CFTC, but has substantial impact on prices -->
+          </calculation>
+        </calculationPeriodAmount>
+      </swapStream>
+      <swapStream>
+        <calculationPeriodDates id="fixedCalcPeriodDates">
+          <effectiveDate>
+            <unadjustedDate>2011-02-08</unadjustedDate>
+<!-- start date  -->
+          </effectiveDate>
+          <terminationDate>
+            <unadjustedDate>2016-02-08</unadjustedDate>
+<!-- end date  -->
+          </terminationDate>
+        </calculationPeriodDates>
+        <paymentDates>
+          <paymentFrequency>
+<!-- payment frequency 2 -->
+            <periodMultiplier>6</periodMultiplier>
+            <period>M</period>
+          </paymentFrequency>
+        </paymentDates>
+        <calculationPeriodAmount>
+          <calculation>
+            <notionalSchedule>
+              <notionalStepSchedule>
+                <initialValue>10000000.00</initialValue>
+<!-- notional amount 2 -->
+                <currency>USD</currency>
+<!-- notional currency 2 -->
+              </notionalStepSchedule>
+            </notionalSchedule>
+            <fixedRateSchedule>
+              <initialValue>0.0253</initialValue>
+<!-- Price notation -->
+            </fixedRateSchedule>
+            <dayCountFraction>30E/360</dayCountFraction>
+<!-- should this be included?  Not requested by CFTC, but has substantial impact on prices -->
+          </calculation>
+        </calculationPeriodAmount>
+      </swapStream>
+    </swap>
+  </trade>
+</dataDocument>
+

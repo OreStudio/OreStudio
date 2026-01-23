@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+        == Copyright (c) 2022-2025 All rights reserved. 
+        == Financial Products Markup Language is subject to the FpML public license. 
+        == A copy of this license is available at http://www.fpml.org/license/license.html
+-->
+<xsd:schema xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns="http://www.fpml.org/FpML-5/recordkeeping" xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" xmlns:fpml-annotation="http://www.fpml.org/annotation" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.fpml.org/FpML-5/recordkeeping" ecore:documentRoot="FpML" ecore:nsPrefix="" ecore:package="org.fpml.recordkeeping" version="$Revision: 13452 $" xml:lang="en" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xsd:annotation>
+    <xsd:documentation>Regulatory Reporting Product Info - for use in regulatory reporting to define the economic data fields about a transaction for regulatory reporting purposes. This can be used in place of a full FpML product representaiton.</xsd:documentation>
+  </xsd:annotation>
+  <xsd:include schemaLocation="fpml-generic-5-13.xsd" />
+  <xsd:complexType name="RegReportingPayment" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>Simple product representation providing key information about trade economics of any type of trade for regulatory reporting purposes.</xsd:documentation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="NonNegativePayment">
+        <xsd:sequence>
+          <xsd:element name="paymentType" type="PaymentType" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+            <xsd:annotation>
+              <xsd:documentation>A classification of the type of fee or additional payment, e.g. brokerage, upfront fee etc. FpML does not define domain values for this element.</xsd:documentation>
+              <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatoryReportingNonCDEOptionDetails" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>This defines data elements not defined in CDE that describe option characteristics.</xsd:documentation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="optionType" type="OptionTypeEnum" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>For options, what type of option it is (e.g. butterfly).</xsd:documentation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="firstExerciseDate" type="xsd:date" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="optionExpirationDate" type="xsd:date" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="underlyerMaturityDate" type="xsd:date" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="exerciseStyle" type="GenericExerciseStyle" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>For options, whether the option is a put or call option.</xsd:documentation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="feature" type="GenericProductFeature" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>Special features that the option may have, such as Asian averaging, Barriers, Digital payout, etc.</xsd:documentation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatoryReportingNonCDEProductCommodityDetails" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>Commodity product data fields not called out in CPMI-IOSCO CDE.</xsd:documentation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:group ref="GenericCommodityAttributes.model" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatoryReportingProduct" fpml-annotation:deprecated="true" fpml-annotation:deprecatdReason="Not used. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>Simple product representation providing key information about trade economics of any type of trade for regulatory reporting purposes.</xsd:documentation>
+      <xsd:documentation>DEPRECATED. Reason: Not used. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="Product">
+        <xsd:sequence>
+          <xsd:element name="parties" type="RegulatoryReportingProductParties" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+            <xsd:annotation>
+              <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="dates" type="RegulatoryReportingProductDates" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+            <xsd:annotation>
+              <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="sizes" type="RegulatoryReportingProductSizes" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+            <xsd:annotation>
+              <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="underlyers" type="RegulatoryReportingProductUnderlyers" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+            <xsd:annotation>
+              <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="priceTerms" type="RegulatoryReportingProductPriceTerms" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element.. (RPTWG decision 2024-05-30)">
+            <xsd:annotation>
+              <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="otherCalculationTerms" type="RegulatoryReportingProductCalculationTerms" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+            <xsd:annotation>
+              <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="optionDetails" type="RegulatoryReportingNonCDEOptionDetails" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+            <xsd:annotation>
+              <xsd:documentation>DEPRECATED. Reason: Deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="settlementDetails" type="RegulatoryReportingProductSettlementDetails" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+            <xsd:annotation>
+              <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="otherPayment" type="RegReportingPayment" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+            <xsd:annotation>
+              <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="creditDetails" type="RegulatoryReportingProductCreditDetails" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+            <xsd:annotation>
+              <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="fxDetails" type="RegulatoryReportingProductNonCDEFxDetails" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+            <xsd:annotation>
+              <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+          <xsd:element name="commodityDetails" type="RegulatoryReportingNonCDEProductCommodityDetails" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+            <xsd:annotation>
+              <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+            </xsd:annotation>
+          </xsd:element>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatoryReportingProductCalculationTerms" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>Calculation terms.</xsd:documentation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="dayCountFraction" type="DayCountFraction" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="paymentFrequency" type="Frequency" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="RegulatoryReportingNonCDECalculationTerms.model" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:group>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatoryReportingProductCreditDetails" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>Credit related fields.</xsd:documentation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="attachmentPoint" type="xsd:decimal" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>Lower bound percentage of the loss that the Tranche can endure, expressed as a decimal. An attachment point of 5% would be represented as 0.05. The difference between Attachment and Exhaustion points is call the width of the Tranche. A schema facet to constraint the value between 0 to 1 will be introduced in FpML 4.3.</xsd:documentation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="exhaustionPoint" type="xsd:decimal" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>Upper bound percentage of the loss that the Tranche can endure, expressed as a decimal. An exhaustion point of 5% would be represented as 0.05. The difference between Attachment and Exhaustion points is call the width of the Tranche. A schema facet to constraint the value between 0 to 1 will be introduced in FpML 4.3.</xsd:documentation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="RegulatoryReportingNonCDECreditDetails.model" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:group>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatoryReportingProductDates" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>Date related fields.</xsd:documentation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="effectiveDate" type="xsd:date" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="contractExpirationDate" type="xsd:date" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="finalContractualSettlementDate" type="xsd:date" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatoryReportingProductNonCDEFxDetails" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>FX-related data elements not called out in CPMI-IOSCO CDE.</xsd:documentation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="fxType" type="xsd:token" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="deliveryCurrency" type="Currency" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="deliveryCurrency2" type="Currency" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="forwardExchangeRate" type="xsd:decimal" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatoryReportingProductParties" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:group ref="RegulatoryBuyerAndSeller.model">
+        <xsd:annotation>
+          <xsd:documentation>Buyer is defined as follows: For options on underlying assets or underlyings swaps, the option holder. For products with bought and sold options (e.g. collars), the buyer of the underlying asset, if any. Otherwise, seek regulatory guidance. For swaps with a fixed payment stream, the payer of the fixed stream (even if the swap has an embedded option). For swaps with multiple floating payment stream, the payer of the most "base" floating index, e.g. libor (vs. a basis index like Prime) or crude oil (vs. heating oil). Where this is undefined, seek regulatory guidance.</xsd:documentation>
+        </xsd:annotation>
+      </xsd:group>
+      <xsd:group ref="RegulatoryNonCDEPartyInfo.model" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:group>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatoryReportingProductPriceTerms" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>All price term information is defined by CPMI-IOSCO CDE.</xsd:documentation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="fixedRate" type="xsd:decimal" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="fixedRateNotation" type="xsd:token" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="fixedRateSchedule" type="Schedule" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spread" type="xsd:decimal" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spreadCurrency" type="Currency" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="spreadNotation" type="xsd:token" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="strikePrice" type="xsd:decimal" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="strikePriceNotation" type="xsd:token" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="strikePriceSchedule" type="Schedule" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="exchangeRate" type="ExchangeRate" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatoryReportingProductSettlementDetails" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="settlementMethod" type="SettlementTypeEnum" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="settlementCurrency" type="Currency" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="settlementLocation" type="BusinessCenter" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatoryReportingProductSizes" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="notional" type="NonNegativeMoney" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="callAmount" type="NonNegativeMoney" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="putAmount" type="NonNegativeMoney" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="notionalSchedule" type="NonNegativeAmountSchedule" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:group ref="RegulatoryReportingNonCDESizeFields.model" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:group>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="RegulatoryReportingProductUnderlyers" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>At the moment all of the underlyer information is non-CDE, as CPMI-IOSCO CDE doesn not define underlier information. Instead, it relies on the UPI to convey this information.</xsd:documentation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="underlyer" type="TradeUnderlyer2" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:group name="RegulatoryNonCDEPartyInfo.model" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>Data fields related to parties participating in the trade economics that are not specifically called out in the CPMI-IOSCO Critical Data Elements.</xsd:documentation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="fixedPayerPartyReference" type="PartyReference" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="fixedReceiverPartyReference" type="PartyReference" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="floatingPayerPartyReference" type="PartyReference" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="floatingReceiverPartyReference" type="PartyReference" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="floating2PayerPartyReference" type="PartyReference" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="floating2ReceiverPartyReference" type="PartyReference" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:group name="RegulatoryReportingNonCDECalculationTerms.model" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>Product settlement calcuation terms not defined by CPMI-IOSCO CDE.</xsd:documentation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="calculationFrequency" type="Frequency" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="resetFrequency" type="Frequency" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:group name="RegulatoryReportingNonCDECreditDetails.model" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:sequence>
+      <xsd:element name="seniority" type="CreditSeniority" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Use instead the field within credit products: indexReferenceInformation/seniority">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Use instead the field within credit products: indexReferenceInformation/seniority (RPTWG decision 2017-09)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="indexFactor" type="xsd:decimal" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Use instead the field within credit products: indexReferenceInformation/indexFactor">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Use instead the field within credit products: indexReferenceInformation/indexFactor (RPTWG decision 2017-09)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="indexSeries" type="xsd:positiveInteger" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>A CDS index series identifier, e.g. 1, 2, 3 etc.</xsd:documentation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="indexAnnexVersion" type="xsd:positiveInteger" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>A CDS index series version identifier, e.g. 1, 2, 3 etc.</xsd:documentation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="fixedRecoveryFinalPrice" type="xsd:decimal" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:group name="RegulatoryReportingNonCDESizeFields.model" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>Fields related to product size that are not specifically called out in CPMI-IOSCO CDE.</xsd:documentation>
+      <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="quantity" type="NonNegativeDecimal" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="quantityFrequency" type="NonNegativeDecimal" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="quantitySchedule" type="CommodityPhysicalQuantitySchedule" minOccurs="0" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="totalNotionalQuantity" type="NonNegativeDecimal" minOccurs="0" maxOccurs="unbounded" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used, deprecated parent element. (RPTWG decision 2024-05-30)">
+        <xsd:annotation>
+          <xsd:documentation>DEPRECATED. Reason: Not used, deprecated parent element. (RPTWG decision 2024-05-30)</xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:element name="regulatoryProductInfo" type="RegulatoryReportingProduct" substitutionGroup="product" fpml-annotation:deprecated="true" fpml-annotation:deprecatedReason="Not used. (RPTWG decision 2024-05-30)">
+    <xsd:annotation>
+      <xsd:documentation>Product data fields required by regulators in satisfaction of non-public (recordkeeping) regulatory reporting regulations. These are identified where possible using CPMI-IOSCO Common Data Element lexicon and terminology, but include additional fields required by other regulations. This product is not intended to provide the full trade economics required for confirmation or valuation purposes. This product allows a simpler representation of OTC derivative products that have full standardized representations in FpML.</xsd:documentation>
+      <xsd:documentation>DEPRECATED. Reason: Not used. (RPTWG decision 2024-05-30)</xsd:documentation>
+    </xsd:annotation>
+  </xsd:element>
+</xsd:schema>
+

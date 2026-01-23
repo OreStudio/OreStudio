@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is recordkeeping-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/recordkeeping-->
+<nonpublicExecutionReport xmlns="http://www.fpml.org/FpML-5/recordkeeping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/recordkeeping ../../../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../../../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="www.cibc.com/msg_id">dc14950b-ba83-4b93-95ee-e132efe00bed</messageId>
+    <sentBy messageAddressScheme="http://www.fpml.org/coding-scheme/external/iso17442">1CFTC1SAMPLEXPARTY001</sentBy>
+    <sendTo>DTCCGTR</sendTo>
+    <creationTimestamp>2021-06-21T21:28:54.2885611Z</creationTimestamp>
+    <implementationSpecification>
+      <version>CA4.0CO1.8</version>
+    </implementationSpecification>
+  </header>
+  <isCorrection>false</isCorrection>
+  <onBehalfOf>
+    <partyReference href="PartyA" />
+  </onBehalfOf>
+  <asOfDate>2021-06-21</asOfDate>
+  <asOfTime>21:28:54</asOfTime>
+  <originatingEvent>Trade</originatingEvent>
+  <trade>
+    <tradeHeader>
+      <partyTradeIdentifier>
+        <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1020304050</issuer>
+        <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">CFTC1001234567891012345678910011</tradeId>
+      </partyTradeIdentifier>
+      <partyTradeInformation>
+        <partyReference href="PartyA" />
+        <relatedParty>
+          <partyReference href="PartyA" />
+          <role>ReportingParty</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="PartyB" />
+          <role>Counterparty</role>
+        </relatedParty>
+        <category categoryScheme="http://www.dtcc.com/trading_capacity">Principal</category>
+        <category categoryScheme="http://www.dtcc.com/intragroup">false</category>
+        <category categoryScheme="http://www.dtcc.com/inter-affiliate">false</category>
+        <category categoryScheme="http://www.dtcc.com/coding-scheme/external/trade-details/gtr-settlement-type">Cash</category>
+        <executionDateTime>2021-06-21T21:26:47Z</executionDateTime>
+        <intentToAllocate>false</intentToAllocate>
+        <allocationStatus>Unallocated</allocationStatus>
+        <intentToClear>false</intentToClear>
+        <clearingStatus>false</clearingStatus>
+        <collateralizationType>Partially</collateralizationType>
+        <reportingRegime>
+          <name>Dodd-Frank</name>
+          <supervisorRegistration>
+            <supervisoryBody>CFTC</supervisoryBody>
+          </supervisorRegistration>
+          <reportingRole>ReportingParty</reportingRole>
+          <reportingPurpose>Snapshot</reportingPurpose>
+          <mandatorilyClearable>false</mandatorilyClearable>
+        </reportingRegime>
+        <nonStandardTerms>false</nonStandardTerms>
+        <executionType>Electronic</executionType>
+        <executionVenueType>OffFacility</executionVenueType>
+        <verificationMethod>Electronic</verificationMethod>
+        <confirmationMethod>NotConfirmed</confirmationMethod>
+      </partyTradeInformation>
+      <tradeDate>2021-06-21</tradeDate>
+    </tradeHeader>
+    <commodityOption>
+      <primaryAssetClass>Commodity</primaryAssetClass>
+      <productId productIdScheme="http://www.fpml.org/coding-scheme/product-taxonomy">Commodity:Index:Option:Cash</productId>
+      <productId productIdScheme="http://www.dtcc.com/coding-scheme/external/commodity-base">IN</productId>
+      <productId productIdScheme="http://www.dtcc.com/coding-scheme/external/commodity-details">IE</productId>
+      <embeddedOptionType />
+      <buyerPartyReference href="PartyB" />
+      <sellerPartyReference href="PartyA" />
+      <optionType>Call</optionType>
+      <commodity>
+        <instrumentId instrumentIdScheme="http://www.fpml.org/coding-scheme/commodity-reference-price-1-0">ELECTRICITY PJM-EASTERN HUB-REAL TIME</instrumentId>
+        <commodityBase>Composite Commodity Indices</commodityBase>
+        <specifiedPrice>Settlement</specifiedPrice>
+        <deliveryDates>CalculationPeriod</deliveryDates>
+      </commodity>
+      <effectiveDate>
+        <adjustableDate>
+          <unadjustedDate>2021-06-21</unadjustedDate>
+          <dateAdjustments>
+            <businessDayConvention>NotApplicable</businessDayConvention>
+          </dateAdjustments>
+        </adjustableDate>
+      </effectiveDate>
+      <terminationDate>
+        <adjustableDate>
+          <unadjustedDate>2023-06-21</unadjustedDate>
+          <dateAdjustments>
+            <businessDayConvention>NotApplicable</businessDayConvention>
+          </dateAdjustments>
+        </adjustableDate>
+      </terminationDate>
+      <calculationPeriodsSchedule id="CalculationPeriods">
+        <balanceOfFirstPeriod>false</balanceOfFirstPeriod>
+      </calculationPeriodsSchedule>
+      <notionalQuantity>
+        <quantityUnit>IndexUnits</quantityUnit>
+        <quantityFrequency>Term</quantityFrequency>
+        <quantity>5347.19</quantity>
+      </notionalQuantity>
+      <totalNotionalQuantity>5347.19</totalNotionalQuantity>
+      <exercise>
+        <europeanExercise>
+          <expirationDate>
+            <adjustableDate>
+              <unadjustedDate>2023-06-21</unadjustedDate>
+              <dateAdjustments>
+                <businessDayConvention>NotApplicable</businessDayConvention>
+              </dateAdjustments>
+            </adjustableDate>
+          </expirationDate>
+        </europeanExercise>
+        <automaticExercise>true</automaticExercise>
+        <writtenConfirmation>false</writtenConfirmation>
+        <settlementCurrency>USD</settlementCurrency>
+        <paymentDates>
+          <adjustableDates>
+            <unadjustedDate>2023-06-23</unadjustedDate>
+          </adjustableDates>
+        </paymentDates>
+      </exercise>
+      <strikePricePerUnit>
+        <currency>USD</currency>
+        <amount>261.82</amount>
+      </strikePricePerUnit>
+      <premium>
+        <payerPartyReference href="PartyB" />
+        <receiverPartyReference href="PartyA" />
+        <paymentDate>
+          <adjustableDate>
+            <unadjustedDate>2021-06-23</unadjustedDate>
+            <dateAdjustments>
+              <businessDayConvention>NotApplicable</businessDayConvention>
+            </dateAdjustments>
+          </adjustableDate>
+        </paymentDate>
+        <paymentAmount>
+          <currency>USD</currency>
+          <amount>57960.00</amount>
+        </paymentAmount>
+      </premium>
+    </commodityOption>
+  </trade>
+  <tradingEvent>
+    <eventType>Trade</eventType>
+    <agreementDate>2021-06-21</agreementDate>
+  </tradingEvent>
+  <quote>
+    <measureType>ReportingTimestamp</measureType>
+    <time>2021-06-21T21:28:54Z</time>
+  </quote>
+  <party id="PartyA">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">1CFTC1SAMPLEXPARTY001</partyId>
+    <country>Non-USA</country>
+    <region>nonEEA</region>
+    <organizationType>SD</organizationType>
+    <contactInfo>
+      <address>
+        <country>CA</country>
+      </address>
+    </contactInfo>
+  </party>
+  <party id="PartyB">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">1CFTC1SAMPLEXPARTY002</partyId>
+    <country>USA</country>
+    <region>nonEEA</region>
+    <organizationType>NON-SD/MSP</organizationType>
+    <contactInfo>
+      <address>
+        <country>US</country>
+      </address>
+    </contactInfo>
+  </party>
+</nonpublicExecutionReport>
+

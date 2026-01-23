@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is recordkeeping-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/recordkeeping-->
+<nonpublicExecutionReport xmlns="http://www.fpml.org/FpML-5/recordkeeping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/recordkeeping ../../../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../../../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.lchclearnet.com/clearlink/coding-scheme/message-id">JF6472404</messageId>
+    <sentBy messageAddressScheme="http://www.fpml.org/coding-scheme/external/iso17442">F226TOH6YD6XJB17KS62</sentBy>
+    <sendTo>DTCCUS</sendTo>
+    <creationTimestamp>2021-08-11T03:00:00Z</creationTimestamp>
+  </header>
+  <isCorrection>false</isCorrection>
+  <correlationId correlationIdScheme="http://www.lchclearnet.com/clearlink/coding-scheme/correlation-id">GTR126472404</correlationId>
+  <sequenceNumber>1</sequenceNumber>
+  <onBehalfOf>
+    <partyReference href="ClearingDCO" />
+  </onBehalfOf>
+  <asOfDate>2021-09-10</asOfDate>
+  <asOfTime>16:54:14Z</asOfTime>
+  <originatingEvent originatingEventScheme="http://www.lchclearnet.com/clearlink/coding-scheme/originating-event">Trade</originatingEvent>
+  <trade>
+    <tradeHeader>
+      <partyTradeIdentifier>
+        <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1010000051</issuer>
+        <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">SW10000000LCH0007926673679527209</tradeId>
+        <allocationTradeId>
+          <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1010000051</issuer>
+          <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">SW10000000LCH0007926673679527209</tradeId>
+        </allocationTradeId>
+      </partyTradeIdentifier>
+      <partyTradeInformation>
+        <partyReference href="ClearingDCO" />
+        <relatedParty>
+          <partyReference href="ClearingDCO" />
+          <role>ReportingParty</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="ClearingDCO" />
+          <role>ClearingOrganization</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="lchClearingBroker" />
+          <role>ClearingBroker</role>
+        </relatedParty>
+        <category categoryScheme="http://www.dtcc.com/external/trade-details/coding-scheme/clearing-receipt-date-time">2021-08-11T03:00:00Z</category>
+        <category categoryScheme="http://www.dtcc.com/coding-scheme/external/trade-details/original-swap-sdr-id-type">LEI</category>
+        <category categoryScheme="http://www.dtcc.com/coding-scheme/external/trade-details/original-swap-sdr-id">549300H9ZM7RDBM87W85</category>
+        <category categoryScheme="http://www.dtcc.com/coding-scheme/external/trade-details/clearing-member-client-account-id">DUMMYCLNT381</category>
+        <category categoryScheme="http://www.dtcc.com/coding-scheme/external/trade-details/origin">Customer</category>
+        <executionDateTime>2021-08-11T03:00:00Z</executionDateTime>
+        <intentToAllocate>false</intentToAllocate>
+        <intentToClear>true</intentToClear>
+        <clearingStatus clearingStatusScheme="http://www.fpml.org/coding-scheme/clearing-status">true</clearingStatus>
+        <collateralizationType>Fully</collateralizationType>
+        <reportingRegime>
+          <name reportingRegimeNameScheme="http://www.fpml.org/coding-scheme/reporting-regime">DF</name>
+          <supervisorRegistration>
+            <supervisoryBody supervisoryBodyScheme="http://www.fpml.org/coding-scheme/supervisory-body">CFTC</supervisoryBody>
+          </supervisorRegistration>
+          <reportingRole>ReportingParty</reportingRole>
+          <reportingPurpose>Snapshot</reportingPurpose>
+          <entityClassification entityClassificationScheme="http://www.fpml.org/coding-scheme/entity-classification">NonFinancial</entityClassification>
+        </reportingRegime>
+        <endUserException>false</endUserException>
+        <nonStandardTerms>false</nonStandardTerms>
+        <largeSizeTrade>false</largeSizeTrade>
+        <executionVenueType>Off-Facility</executionVenueType>
+      </partyTradeInformation>
+      <partyTradeInformation>
+        <partyReference href="party2" />
+        <relatedParty>
+          <partyReference href="party2" />
+          <role>Counterparty</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="clearingBroker1" />
+          <role>ClearingBroker</role>
+        </relatedParty>
+        <reportingRegime>
+          <name reportingRegimeNameScheme="http://www.fpml.org/coding-scheme/reporting-regime">DF</name>
+          <supervisorRegistration>
+            <supervisoryBody supervisoryBodyScheme="http://www.fpml.org/coding-scheme/supervisory-body">CFTC</supervisoryBody>
+          </supervisorRegistration>
+          <entityClassification entityClassificationScheme="http://www.fpml.org/coding-scheme/entity-classification">Financial</entityClassification>
+        </reportingRegime>
+      </partyTradeInformation>
+      <tradeDate>2021-08-10</tradeDate>
+    </tradeHeader>
+    <swap>
+      <primaryAssetClass>InterestRate</primaryAssetClass>
+      <productId productIdScheme="http://www.fpml.org/coding-scheme/product-taxonomy">InterestRate:IRSwap:OIS</productId>
+      <swapStream id="fixedLeg1">
+        <payerPartyReference href="party2" />
+        <receiverPartyReference href="ClearingDCO" />
+        <calculationPeriodDates id="fixedCalcPeriodDates1">
+          <effectiveDate>
+            <unadjustedDate>2021-08-11</unadjustedDate>
+            <dateAdjustments>
+              <businessDayConvention>NONE</businessDayConvention>
+            </dateAdjustments>
+          </effectiveDate>
+          <terminationDate>
+            <unadjustedDate>2021-08-13</unadjustedDate>
+            <dateAdjustments>
+              <businessDayConvention>MODFOLLOWING</businessDayConvention>
+              <businessCenters>
+                <businessCenter>JPTO</businessCenter>
+              </businessCenters>
+            </dateAdjustments>
+          </terminationDate>
+          <calculationPeriodDatesAdjustments>
+            <businessDayConvention>MODFOLLOWING</businessDayConvention>
+            <businessCenters>
+              <businessCenter>JPTO</businessCenter>
+            </businessCenters>
+          </calculationPeriodDatesAdjustments>
+          <firstRegularPeriodStartDate>2021-08-13</firstRegularPeriodStartDate>
+          <stubPeriodType>ShortInitial</stubPeriodType>
+          <calculationPeriodFrequency>
+            <periodMultiplier>3</periodMultiplier>
+            <period>M</period>
+            <rollConvention>13</rollConvention>
+          </calculationPeriodFrequency>
+        </calculationPeriodDates>
+        <paymentDates id="paymentDates1">
+          <calculationPeriodDatesReference href="fixedCalcPeriodDates1" />
+          <paymentFrequency>
+            <periodMultiplier>3</periodMultiplier>
+            <period>M</period>
+          </paymentFrequency>
+          <payRelativeTo>CalculationPeriodEndDate</payRelativeTo>
+          <paymentDaysOffset>
+            <periodMultiplier>2</periodMultiplier>
+            <period>D</period>
+            <dayType>Business</dayType>
+          </paymentDaysOffset>
+          <paymentDatesAdjustments>
+            <businessDayConvention>MODFOLLOWING</businessDayConvention>
+            <businessCenters>
+              <businessCenter>JPTO</businessCenter>
+            </businessCenters>
+          </paymentDatesAdjustments>
+        </paymentDates>
+        <calculationPeriodAmount>
+          <calculation>
+            <notionalSchedule>
+              <notionalStepSchedule>
+                <initialValue>1</initialValue>
+                <currency>JPY</currency>
+              </notionalStepSchedule>
+            </notionalSchedule>
+            <fixedRateSchedule>
+              <initialValue>0.01</initialValue>
+            </fixedRateSchedule>
+            <dayCountFraction>ACT/360</dayCountFraction>
+          </calculation>
+        </calculationPeriodAmount>
+      </swapStream>
+      <swapStream id="floatingLeg2">
+        <payerPartyReference href="ClearingDCO" />
+        <receiverPartyReference href="party2" />
+        <calculationPeriodDates id="floatingCalcPeriodDates2">
+          <effectiveDate>
+            <unadjustedDate>2021-08-11</unadjustedDate>
+            <dateAdjustments>
+              <businessDayConvention>NONE</businessDayConvention>
+            </dateAdjustments>
+          </effectiveDate>
+          <terminationDate>
+            <unadjustedDate>2021-08-13</unadjustedDate>
+            <dateAdjustments>
+              <businessDayConvention>MODFOLLOWING</businessDayConvention>
+              <businessCenters>
+                <businessCenter>JPTO</businessCenter>
+              </businessCenters>
+            </dateAdjustments>
+          </terminationDate>
+          <calculationPeriodDatesAdjustments>
+            <businessDayConvention>MODFOLLOWING</businessDayConvention>
+            <businessCenters>
+              <businessCenter>JPTO</businessCenter>
+            </businessCenters>
+          </calculationPeriodDatesAdjustments>
+          <firstRegularPeriodStartDate>2021-08-13</firstRegularPeriodStartDate>
+          <stubPeriodType>ShortInitial</stubPeriodType>
+          <calculationPeriodFrequency>
+            <periodMultiplier>3</periodMultiplier>
+            <period>M</period>
+            <rollConvention>13</rollConvention>
+          </calculationPeriodFrequency>
+        </calculationPeriodDates>
+        <paymentDates id="paymentDates2">
+          <calculationPeriodDatesReference href="floatingCalcPeriodDates2" />
+          <paymentFrequency>
+            <periodMultiplier>3</periodMultiplier>
+            <period>M</period>
+          </paymentFrequency>
+          <payRelativeTo>CalculationPeriodEndDate</payRelativeTo>
+          <paymentDaysOffset>
+            <periodMultiplier>2</periodMultiplier>
+            <period>D</period>
+            <dayType>Business</dayType>
+          </paymentDaysOffset>
+          <paymentDatesAdjustments>
+            <businessDayConvention>MODFOLLOWING</businessDayConvention>
+            <businessCenters>
+              <businessCenter>JPTO</businessCenter>
+            </businessCenters>
+          </paymentDatesAdjustments>
+        </paymentDates>
+        <resetDates id="resetDates2">
+          <calculationPeriodDatesReference href="floatingCalcPeriodDates2" />
+          <resetRelativeTo>CalculationPeriodEndDate</resetRelativeTo>
+          <fixingDates>
+            <periodMultiplier>0</periodMultiplier>
+            <period>D</period>
+            <businessDayConvention>PRECEDING</businessDayConvention>
+            <businessCenters>
+              <businessCenter>JPTO</businessCenter>
+            </businessCenters>
+            <dateRelativeTo href="resetDates2" />
+          </fixingDates>
+          <resetFrequency>
+            <periodMultiplier>3</periodMultiplier>
+            <period>M</period>
+          </resetFrequency>
+          <resetDatesAdjustments>
+            <businessDayConvention>MODFOLLOWING</businessDayConvention>
+            <businessCenters>
+              <businessCenter>JPTO</businessCenter>
+            </businessCenters>
+          </resetDatesAdjustments>
+        </resetDates>
+        <calculationPeriodAmount>
+          <calculation>
+            <notionalSchedule>
+              <notionalStepSchedule>
+                <initialValue>1</initialValue>
+                <currency>JPY</currency>
+              </notionalStepSchedule>
+            </notionalSchedule>
+            <floatingRateCalculation>
+              <floatingRateIndex>JPY-TONA-OIS Compound</floatingRateIndex>
+            </floatingRateCalculation>
+            <dayCountFraction>ACT/365.FIXED</dayCountFraction>
+          </calculation>
+        </calculationPeriodAmount>
+      </swapStream>
+      <additionalPayment>
+        <payerPartyReference href="ClearingDCO" />
+        <receiverPartyReference href="party2" />
+        <paymentAmount>
+          <currency>JPY</currency>
+          <amount>337.3</amount>
+        </paymentAmount>
+        <paymentDate>
+          <unadjustedDate>2021-08-13</unadjustedDate>
+          <dateAdjustments>
+            <businessDayConvention>MODFOLLOWING</businessDayConvention>
+            <businessCenters>
+              <businessCenter>JPTO</businessCenter>
+            </businessCenters>
+          </dateAdjustments>
+        </paymentDate>
+      </additionalPayment>
+    </swap>
+    <documentation>
+      <masterAgreement>
+        <masterAgreementType>Rulebook of LCH Limited</masterAgreementType>
+      </masterAgreement>
+    </documentation>
+  </trade>
+  <tradingEvent>
+    <eventType>Trade</eventType>
+  </tradingEvent>
+  <quote>
+    <measureType>ReportingTimestamp</measureType>
+    <time>2021-09-10T16:54:14Z</time>
+  </quote>
+  <party id="ClearingDCO">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">F226TOH6YD6XJB17KS62</partyId>
+    <country>GBR</country>
+    <organizationType>non-SD/MSP</organizationType>
+  </party>
+  <party id="lchClearingBroker">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">F226TOH6YD6XJB17KS62</partyId>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">XGJWNIWHTPOW4QHTR381</partyId>
+    <country>HKG</country>
+    <organizationType>non-SD/MSP</organizationType>
+  </party>
+  <party id="clearingBroker1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">G3SDK4EG3HH735DJJ456</partyId>
+  </party>
+</nonpublicExecutionReport>
+

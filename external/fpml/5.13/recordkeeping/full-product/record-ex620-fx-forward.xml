@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  == Copyright (c) 2002-2017. All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  --><!-- This represents the non-public recordkeeping and reporting requirements published in draft form by the CFTC in 17 CFR 45 --><!-- The comments indicate the reportable field name as described in the tables on
+pp. 76606-76607 of the Federal Register --><!-- This example shows an initial report of a new trade --><!-- The data values are taken from "Example 1" in Appendix A, on page 76156 of the Federal Register --><regulatoryDisclosure xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      xmlns:record="http://www.fpml.org/FpML-5/recordkeeping"
+                      xmlns="http://www.fpml.org/FpML-5/recordkeeping"
+                      xmlns:field="http://www.fpml.org/field-definition"
+                      fpmlVersion="5-13"
+                      xsi:schemaLocation="http://www.fpml.org/FpML-5/recordkeeping ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+   <header>
+      <messageId messageIdScheme="http://www.bankx.com/msg_id">BANKX0001</messageId>
+      <sentBy>BANKX</sentBy>
+      <sendTo>SDR01</sendTo>
+      <creationTimestamp>2011-02-04T16:42:16Z</creationTimestamp>
+      <!-- Date stamp --></header>
+   <!-- Correction indicator --><!--Defs has 207--><onBehalfOf>
+      <partyReference href="party1"/>
+   </onBehalfOf>
+   <eventType>Trade</eventType>
+   <eventTimestamps>
+      <executionDateTime>2011-02-04T16:20:47Z</executionDateTime>
+   </eventTimestamps>
+   <reportingPartyReference href="party1"/>
+   <counterPartyReference href="party2"/>
+   <applicableRegulations>
+      <regulatorApplicability>
+         <supervisoryBody>CFTC</supervisoryBody>
+         <regulation>CFTC_PART43</regulation>
+         <regulation>CFTC_PART45</regulation>
+      </regulatorApplicability>
+      <regulatorApplicability>
+         <supervisoryBody>CA.ON.OSC</supervisoryBody>
+         <regulation>CFTC_PART43</regulation>
+         <regulation>CSA_2013</regulation>
+      </regulatorApplicability>
+      <regulatorApplicability>
+         <supervisoryBody>ESMA</supervisoryBody>
+         <regulation>EMIR</regulation>
+         <regulation>RTS_23</regulation>
+      </regulatorApplicability>
+   </applicableRegulations>
+   <regulationSpecificInformation>
+      <cftc_part45_2012>
+         <supervisoryBody>CFTC</supervisoryBody>
+         <reportingRole>ReportingParty</reportingRole>
+         <reportingPurpose>RealTimePublic</reportingPurpose>
+         <reportingPurpose>PrimaryEconomicTerms</reportingPurpose>
+         <mandatorilyClearable>false</mandatorilyClearable>
+      </cftc_part45_2012>
+   </regulationSpecificInformation>
+   <trade>
+      <tradeHeader>
+         <uniqueSwapIdentifier>
+            <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1031234567</issuer>
+            <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+         </uniqueSwapIdentifier>
+         <partyTradeIdentifier>
+            <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1031234567</issuer>
+            <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+            <linkedTrade>
+               <linkType>LinkedTrade</linkType>
+               <linkId linkIdScheme="http://www.abc.com/linkid">9999999</linkId>
+            </linkedTrade>
+         </partyTradeIdentifier>
+         <partyTradeInformation>
+            <partyReference href="party1"/>
+            <relatedParty>
+               <partyReference href="party1"/>
+               <role>TradeSource</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="party2"/>
+               <role>Counterparty</role>
+            </relatedParty>
+            <relatedParty><!-- SEC: (2.2) Platform ID  --><partyReference href="venue"/>
+               <role>ExecutionFacility</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="clearing-svc"/>
+               <role>ClearingOrganization</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="broker1"/>
+               <role>ArrangingBroker</role>
+               <!-- arranging broker --></relatedParty>
+            <relatedParty><!-- SEC: (2.2) Executing Agent  --><partyReference href="executing_agent"/>
+               <role>ExecutingBroker</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="party2"/>
+               <role>AllocationAgent</role>
+               <!-- firm defining the allocations --></relatedParty>
+            <relatedBusinessUnit>
+               <businessUnitReference href="desk1"/>
+               <role>RegisteredBranch</role>
+            </relatedBusinessUnit>
+            <relatedBusinessUnit>
+               <businessUnitReference href="desk1"/>
+               <role>TradingDesk</role>
+            </relatedBusinessUnit>
+            <relatedPerson>
+               <personReference href="trader"/>
+               <role>Trader</role>
+            </relatedPerson>
+            <relatedPerson>
+               <personReference href="trader"/>
+               <role>InvestmentDecisionMaker</role>
+            </relatedPerson>
+            <relatedPerson>
+               <personReference href="trader"/>
+               <role>TradingDecisionMaker</role>
+            </relatedPerson>
+            <executionDateTime>2011-02-04T16:20:47Z</executionDateTime>
+            <!-- Execution timestamp --><intentToAllocate>false</intentToAllocate>
+            <intentToClear>true</intentToClear>
+            <!-- NEW: cleared or uncleared = "C" in CFTC doc --><collateralizationType>Fully</collateralizationType>
+            <nonStandardTerms>false</nonStandardTerms>
+            <!-- NEW: indication of other price-affecting term --><offMarketPrice>false</offMarketPrice>
+            <!-- NEW --><largeSizeTrade>false</largeSizeTrade>
+            <!-- NEW: block trades and large notional swaps --><executionType>Electronic</executionType>
+            <!-- NEW --><executionVenueType>SEF</executionVenueType>
+            <!-- NEW: execution venue = "SWM" in CFTC doc; do we need a more specific refeence? --><confirmationMethod>Electronic</confirmationMethod>
+            <!-- NEW --><isSecuritiesFinancing>false</isSecuritiesFinancing>
+            <shortSale>false</shortSale>
+         </partyTradeInformation>
+         <tradeDate>2011-02-12</tradeDate>
+         <!-- Trade Header --></tradeHeader>
+      <fxSingleLeg>
+         <primaryAssetClass>ForeignExchange</primaryAssetClass>
+         <productType productTypeScheme="http://www.fpml.org/coding-scheme/product-taxonomy">ForeignExchange:Forward</productType>
+         <exchangedCurrency1>
+            <payerPartyReference href="party2"/>
+            <receiverPartyReference href="party1"/>
+            <paymentAmount>
+               <currency>EUR</currency>
+               <amount>10000000</amount>
+            </paymentAmount>
+         </exchangedCurrency1>
+         <exchangedCurrency2>
+            <payerPartyReference href="party1"/>
+            <receiverPartyReference href="party2"/>
+            <paymentAmount>
+               <currency>USD</currency>
+               <amount>9175000</amount>
+            </paymentAmount>
+         </exchangedCurrency2>
+         <valueDate>2001-12-21</valueDate>
+         <exchangeRate>
+            <quotedCurrencyPair>
+               <currency1>EUR</currency1>
+               <currency2>USD</currency2>
+               <quoteBasis>Currency2PerCurrency1</quoteBasis>
+            </quotedCurrencyPair>
+            <rate>0.9175</rate>
+            <spotRate>0.9130</spotRate>
+            <forwardPoints>0.0045</forwardPoints>
+         </exchangeRate>
+      </fxSingleLeg>
+   </trade>
+   <quote>
+      <value>1235</value>
+      <measureType>NPV</measureType>
+      <currency>USD</currency>
+   </quote>
+   <party id="party1">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">5493001RKR55V4X61F71</partyId>
+      <!-- unique counterparty identifier of reporting party --><partyName>Bank X</partyName>
+      <organizationType>SD</organizationType>
+      <businessUnit id="desk1">
+         <name>NY Swaps Desk</name>
+         <country>US</country>
+      </businessUnit>
+      <person id="trader">
+         <personId>jjones</personId>
+         <country>US</country>
+      </person>
+   </party>
+   <party id="party2">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300O5MFEP1XJ40B46</partyId>
+      <!-- unique counterparty identifier of other party --><partyName>Bank Y</partyName>
+      <classification industryClassificationScheme="http://www.fpml.org/coding-scheme/external/esma/corporate-sector">NonFinancial</classification>
+      <!-- ESMA: corporate sector --><country>US</country>
+      <!-- ISO 3166 country code for UK --><region>NonEEA</region>
+      <organizationType>SD</organizationType>
+   </party>
+   <party id="broker1">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300OL8KL0WCQ34V31</partyId>
+      <!-- unique counterparty identifier of arranging broker --><partyName>Up&amp;Atem</partyName>
+   </party>
+   <party id="clearing-svc">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300IB5Q45JGNPND58</partyId>
+      <!-- unique counterparty identifier of clearing service --><partyName>ClearItAll</partyName>
+   </party>
+   <party id="clearing-member">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">222222222Q45JGNPND58</partyId>
+      <!-- unique counterparty identifier of clearing member firm --><partyName>Bank C Services</partyName>
+   </party>
+   <party id="original_sdr">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300IB5Q45JGNPND58</partyId>
+      <partyName>WorldWide Trade Repository</partyName>
+   </party>
+   <party id="venue">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300IB5Q45JGNPND11</partyId>
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/exchange-id-MIC">XNAS</partyId>
+      <!-- unique counterparty identifier of Platform/Execution Facility --><partyName>SEFCo LLC</partyName>
+   </party>
+   <party id="executing_agent">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300IB5Q45JGNPND22</partyId>
+      <!-- unique counterparty identifier of clearing service --><partyName>XYZ Bank</partyName>
+   </party>
+</regulatoryDisclosure>

@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is recordkeeping-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/recordkeeping-->
+<nonpublicExecutionReport xmlns="http://www.fpml.org/FpML-5/recordkeeping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/recordkeeping ../../../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../../../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.credit-suisse.com/msg_id">DTD#Unapproved#1#1370814201#DF-CFTC#Risk#New#New#Credit#N#Unknown#Snapshot</messageId>
+    <sentBy messageAddressScheme="http://www.fpml.org/coding-scheme/external/iso17442">DUMMYLEI123456789001</sentBy>
+    <sendTo>DTCCUS</sendTo>
+    <creationTimestamp>2022-02-11T07:32:32Z</creationTimestamp>
+    <implementationSpecification>
+      <version implementationSpecificationVersionScheme="http://www.dtcc.com">CA3.0CD3.0</version>
+    </implementationSpecification>
+  </header>
+  <isCorrection>false</isCorrection>
+  <correlationId correlationIdScheme="http://www.credit-suisse.com/msg_id">Trade</correlationId>
+  <onBehalfOf>
+    <partyReference href="PARTY2" />
+  </onBehalfOf>
+  <asOfDate>2022-02-11</asOfDate>
+  <asOfTime>07:32:32</asOfTime>
+  <originatingEvent>Trade</originatingEvent>
+  <trade>
+    <tradeHeader>
+      <partyTradeIdentifier>
+        <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">1030443823</issuer>
+        <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">DTD1370814201</tradeId>
+      </partyTradeIdentifier>
+      <partyTradeIdentifier>
+        <partyReference href="PARTY2" />
+        <tradeId tradeIdScheme="CS-Id">1370814201-1-1</tradeId>
+      </partyTradeIdentifier>
+      <partyTradeInformation>
+        <partyReference href="PARTY2" />
+        <relatedParty>
+          <partyReference href="PARTY2" />
+          <role>ReportingParty</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="PARTY1" />
+          <role>Counterparty</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="PARTY2" />
+          <role>Beneficiary</role>
+        </relatedParty>
+        <category categoryScheme="http://www.dtcc.com/intragroup">false</category>
+        <category categoryScheme="http://www.dtcc.com/compressed_trade">false</category>
+        <executionDateTime>2022-02-11T07:32:14Z</executionDateTime>
+        <allocationStatus>Unallocated</allocationStatus>
+        <intentToClear>false</intentToClear>
+        <clearingStatus>false</clearingStatus>
+        <collateralizationType>Fully</collateralizationType>
+        <reportingRegime>
+          <name>DoddFrankAct</name>
+          <supervisorRegistration>
+            <supervisoryBody>CFTC</supervisoryBody>
+          </supervisorRegistration>
+          <reportingRole>ReportingParty</reportingRole>
+          <reportingPurpose>Snapshot</reportingPurpose>
+          <mandatorilyClearable>false</mandatorilyClearable>
+        </reportingRegime>
+        <nonStandardTerms>false</nonStandardTerms>
+        <largeSizeTrade>false</largeSizeTrade>
+        <executionVenueType>OffFacility</executionVenueType>
+        <verificationMethod>Unverified</verificationMethod>
+        <confirmationMethod>NotConfirmed</confirmationMethod>
+      </partyTradeInformation>
+      <tradeDate>2022-02-11</tradeDate>
+    </tradeHeader>
+    <creditDefaultSwap>
+      <primaryAssetClass>Credit</primaryAssetClass>
+      <productId productIdScheme="http://www.fpml.org/coding-scheme/product-taxonomy">Credit:Index:CDX:CDXHY</productId>
+      <generalTerms>
+        <effectiveDate>
+          <unadjustedDate>2022-02-11</unadjustedDate>
+        </effectiveDate>
+        <scheduledTerminationDate>
+          <unadjustedDate>2023-07-20</unadjustedDate>
+        </scheduledTerminationDate>
+        <buyerPartyReference href="PARTY1" />
+        <sellerPartyReference href="PARTY2" />
+        <indexReferenceInformation>
+          <indexName indexNameScheme="http://www.fpml.org/spec/2003/entity-name-RED">CDX.NA.HY.18</indexName>
+          <indexId indexIdScheme="http://www.fpml.org/spec/2003/instrument-id-RED-pair">2I65BRJC5</indexId>
+        </indexReferenceInformation>
+      </generalTerms>
+      <feeLeg>
+        <periodicPayment>
+          <paymentFrequency>
+            <periodMultiplier>3</periodMultiplier>
+            <period>M</period>
+          </paymentFrequency>
+          <firstPeriodStartDate>2022-02-11</firstPeriodStartDate>
+          <firstPaymentDate>2022-04-20</firstPaymentDate>
+          <fixedAmountCalculation>
+            <fixedRate>0.05</fixedRate>
+            <dayCountFraction>ACT/360</dayCountFraction>
+          </fixedAmountCalculation>
+        </periodicPayment>
+      </feeLeg>
+      <protectionTerms>
+        <calculationAmount id="calculationAmount">
+          <currency currencyScheme="http://www.fpml.org/ext/iso4217">USD</currency>
+          <amount>10000000</amount>
+        </calculationAmount>
+      </protectionTerms>
+    </creditDefaultSwap>
+    <calculationAgent>
+      <calculationAgentPartyReference href="PARTY2" />
+    </calculationAgent>
+    <collateral>
+      <independentAmount>
+        <payerPartyReference href="PARTY1" />
+        <receiverPartyReference href="PARTY2" />
+      </independentAmount>
+    </collateral>
+    <documentation>
+      <masterAgreement>
+        <masterAgreementType masterAgreementTypeScheme="http://dtcc.com/coding-scheme/master-agreement-type">ISDA</masterAgreementType>
+        <masterAgreementVersion>1992</masterAgreementVersion>
+        <masterAgreementDate>2001-01-01</masterAgreementDate>
+      </masterAgreement>
+      <contractualTermsSupplement>
+        <type contractualSupplementScheme="http://www.fpml.org/coding-scheme/contractual-supplement">CDX</type>
+        <publicationDate>2013-01-15</publicationDate>
+      </contractualTermsSupplement>
+    </documentation>
+  </trade>
+  <tradingEvent>
+    <eventType>Trade</eventType>
+    <agreementDate>2022-02-11</agreementDate>
+    <executionDateTime>2022-02-11T07:32:19Z</executionDateTime>
+  </tradingEvent>
+  <quote>
+    <measureType>ReportingTimestamp</measureType>
+    <time>2022-02-11T07:32:32Z</time>
+  </quote>
+  <quote>
+    <value>0.05</value>
+    <measureType>PriceNotation</measureType>
+    <quoteUnits>Percentage</quoteUnits>
+  </quote>
+  <party id="PARTY1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">DUMMYLEI123456789002</partyId>
+    <classification>FinancialEntity</classification>
+    <country>USA</country>
+    <organizationType>SD</organizationType>
+    <contactInfo>
+      <address>
+        <country>USA</country>
+      </address>
+    </contactInfo>
+    <businessUnit>
+      <country>USA</country>
+    </businessUnit>
+  </party>
+  <party id="PARTY2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">DUMMYLEI123456789001</partyId>
+    <classification>FinancialEntity</classification>
+    <country>NonUSA</country>
+    <organizationType>SD</organizationType>
+    <contactInfo>
+      <address>
+        <country>GBR</country>
+      </address>
+    </contactInfo>
+  </party>
+</nonpublicExecutionReport>
+

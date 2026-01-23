@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--View is legal--><!--Version is 5-13--><!--NS is http://www.fpml.org/FpML-5/legal--><!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  --><legalDocument xmlns="http://www.fpml.org/FpML-5/legal"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               fpmlVersion="5-13"
+               xsi:schemaLocation="http://www.fpml.org/FpML-5/legal ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+	<!--In this New York SCSA example, the parties specify a specific time by which a valuation dispute dispute must be resolved on the day following the notice.  It also doesn't make reference to the document repository and its associated identifier.-->
+	<documentHeader>
+		<!--The document header carries the minimal possible set of information: contractual parties identification, agreement date.-->
+		<partyRoles>
+			      <relatedParty>
+				        <partyReference href="PartyA"/>
+				        <role>ContractualParty</role>
+			      </relatedParty>
+			      <relatedParty>
+				        <partyReference href="PartyB"/>
+				        <role>ContractualParty</role>
+			      </relatedParty>
+		    </partyRoles>
+		    <agreementDate>2014-01-04</agreementDate>
+		    <!--Example of an SCSA with an effective date in the future with respect to the agreement date.-->
+		<effectiveDate>2014-02-01</effectiveDate>
+	  </documentHeader>
+	  <standardCsa2014NewYorkLaw>
+		    <documentType>
+			      <name>StandardCreditSupportAnnex</name>
+			      <publisher>ISDA</publisher>
+			      <style>NewYorkLaw</style>
+			      <version>2014</version>
+		    </documentType>
+		    <!--Paragraph 13b-->
+		<independentAmounts>
+			      <partyReference href="PartyA"/>
+			      <independentAmountDetermination>None</independentAmountDetermination>
+		    </independentAmounts>
+		    <independentAmounts>
+			      <partyReference href="PartyB"/>
+			      <independentAmountDetermination>None</independentAmountDetermination>
+		    </independentAmounts>
+		    <!--Paragraph 13d-->
+		<baseCurrency>USD</baseCurrency>
+		    <!--Paragraph 13f that references the existing CSA is not populated in this example.-->
+		<!--Paragraph 13g-->
+		<settlementDay>T+1</settlementDay>
+		    <!--Paragraph 13h-->
+		<demandsAndNotices>
+			      <partyReference href="PartyA"/>
+			      <contactInfo>
+				        <telephone>
+					          <number>212-901-6000</number>
+				        </telephone>
+				        <address>
+					          <streetAddress>
+						            <streetLine>360 Madison Ave</streetLine>
+					          </streetAddress>
+					          <city>New York</city>
+					          <country>USA</country>
+					          <postalCode>10017</postalCode>
+				        </address>
+			      </contactInfo>
+		    </demandsAndNotices>
+		    <demandsAndNotices>
+			      <partyReference href="PartyB"/>
+			      <contactInfo>
+				        <telephone>
+					          <number>20-3088-3550</number>
+				        </telephone>
+				        <address>
+					          <streetAddress>
+						            <streetLine>1 Bishops Square</streetLine>
+					          </streetAddress>
+					          <city>London</city>
+					          <country>United Kingdom</country>
+					          <postalCode>E1 6AD</postalCode>
+				        </address>
+			      </contactInfo>
+		    </demandsAndNotices>
+		    <!--Paragraph 13a-->
+		<independentAmountEligibleCreditSupport>
+			      <partyReference href="PartyA"/>
+			      <independentAmountEligibility>NoneUnlessSpecifiedInConfirmation</independentAmountEligibility>
+		    </independentAmountEligibleCreditSupport>
+		    <independentAmountEligibleCreditSupport>
+			      <partyReference href="PartyB"/>
+			      <independentAmountEligibility>NoneUnlessSpecifiedInConfirmation</independentAmountEligibility>
+		    </independentAmountEligibleCreditSupport>
+		    <!--Paragraph 13c-->
+		<!--The parties to not grant each other the ability rehypothecate the collateral held.-->
+		<useOfPostedCreditSupport>
+			      <partyReference href="PartyA"/>
+			      <useOfPostedCollateral>false</useOfPostedCollateral>
+		    </useOfPostedCreditSupport>
+		    <useOfPostedCreditSupport>
+			      <partyReference href="PartyB"/>
+			      <useOfPostedCollateral>false</useOfPostedCollateral>
+		    </useOfPostedCreditSupport>
+		    <!--Paragraph 13e-->
+		<valuationDateCity>
+			      <businessCenter>USNY</businessCenter>
+		    </valuationDateCity>
+		    <notificationTimeCity>USNY</notificationTimeCity>
+	  </standardCsa2014NewYorkLaw>
+	  <party id="PartyA">
+		    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">5493001RKR55V4X61F71</partyId>
+		    <partyName>Party A</partyName>
+	  </party>
+	  <party id="PartyB">
+		    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">5493001RKR55V4X61F72</partyId>
+		    <partyName>Party B</partyName>
+	  </party>
+</legalDocument>

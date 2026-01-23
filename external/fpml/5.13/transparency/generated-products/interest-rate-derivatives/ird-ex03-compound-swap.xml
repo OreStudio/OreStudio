@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  --><publicExecutionReport xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xmlns="http://www.fpml.org/FpML-5/transparency"
+                       fpmlVersion="5-13"
+                       xsi:schemaLocation="http://www.fpml.org/FpML-5/transparency ../../fpml-main-5-13.xsd">
+   <header>
+      <messageId messageIdScheme="http://abc.com/message-id">123</messageId>
+      <sentBy>abc</sentBy>
+      <sendTo>sdr</sendTo>
+      <creationTimestamp>2000-04-25T09:12:47Z</creationTimestamp>
+   </header>
+   <isCorrection>false</isCorrection>
+   <correlationId correlationIdScheme="http://abc.com/correlation-id">456</correlationId>
+   <sequenceNumber>1</sequenceNumber>
+   <originatingEvent>Trade</originatingEvent>
+   <trade>
+      <tradeHeader>
+         <partyTradeIdentifier>
+            <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1021111111</issuer>
+            <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+         </partyTradeIdentifier>
+         <partyTradeIdentifier>
+            <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1021111111</issuer>
+            <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+         </partyTradeIdentifier>
+         <tradeInformation>
+            <executionDateTime>2000-04-25T09:12:34Z</executionDateTime>
+            <intentToClear>false</intentToClear>
+            <nonStandardTerms>true</nonStandardTerms>
+            <offMarketPrice>true</offMarketPrice>
+            <largeSizeTrade>false</largeSizeTrade>
+            <executionType>Electronic</executionType>
+            <executionVenueType>SEF</executionVenueType>
+         </tradeInformation>
+         <tradeDate>2000-04-25</tradeDate>
+      </tradeHeader>
+      <swap>
+         <primaryAssetClass>InterestRate</primaryAssetClass>
+         <productType>InterestRate:IRSwap:FixedFloat</productType>
+         <!-- Morgan Stanley Dean Witter pays the floating rate every 6 months,
+            based on 3M USD-LIBOR-BBA, reset and compounded flat quarterly, on
+            an ACT/360 basis.  The compounded rate to be used for calculating each
+            floating payment amount will be rounded to nearest 4 decimal places. --><swapStream>
+            <calculationPeriodDates id="floatingCalcPeriodDates">
+               <effectiveDate>
+                  <unadjustedDate>2000-04-27</unadjustedDate>
+               </effectiveDate>
+               <terminationDate>
+                  <unadjustedDate>2002-04-27</unadjustedDate>
+               </terminationDate>
+            </calculationPeriodDates>
+            <paymentDates>
+               <paymentFrequency>
+                  <periodMultiplier>6</periodMultiplier>
+                  <period>M</period>
+               </paymentFrequency>
+            </paymentDates>
+            <resetDates id="resetDates">
+               <resetFrequency>
+                  <periodMultiplier>3</periodMultiplier>
+                  <period>M</period>
+               </resetFrequency>
+            </resetDates>
+            <calculationPeriodAmount>
+               <calculation>
+                  <notionalSchedule>
+                     <notionalStepSchedule>
+                        <initialValue>100000000.00</initialValue>
+                        <currency>USD</currency>
+                     </notionalStepSchedule>
+                  </notionalSchedule>
+                  <floatingRateCalculation>
+                     <floatingRateIndex>USD-LIBOR-BBA</floatingRateIndex>
+                     <indexTenor>
+                        <periodMultiplier>3</periodMultiplier>
+                        <period>M</period>
+                     </indexTenor>
+                  </floatingRateCalculation>
+                  <dayCountFraction>ACT/360</dayCountFraction>
+               </calculation>
+            </calculationPeriodAmount>
+         </swapStream>
+         <!-- partyA pays the 5.85% fixed rate semi-annually
+            on a 30/360 basis --><swapStream>
+            <calculationPeriodDates id="fixedCalcPeriodDates">
+               <effectiveDate>
+                  <unadjustedDate>2000-04-27</unadjustedDate>
+               </effectiveDate>
+               <terminationDate>
+                  <unadjustedDate>2002-04-27</unadjustedDate>
+               </terminationDate>
+            </calculationPeriodDates>
+            <paymentDates>
+               <paymentFrequency>
+                  <periodMultiplier>6</periodMultiplier>
+                  <period>M</period>
+               </paymentFrequency>
+            </paymentDates>
+            <calculationPeriodAmount>
+               <calculation>
+                  <notionalSchedule>
+                     <notionalStepSchedule>
+                        <initialValue>100000000.00</initialValue>
+                        <currency>USD</currency>
+                     </notionalStepSchedule>
+                  </notionalSchedule>
+                  <fixedRateSchedule>
+                     <initialValue>0.0585</initialValue>
+                  </fixedRateSchedule>
+                  <dayCountFraction>30/360</dayCountFraction>
+               </calculation>
+            </calculationPeriodAmount>
+         </swapStream>
+      </swap>
+   </trade>
+</publicExecutionReport>

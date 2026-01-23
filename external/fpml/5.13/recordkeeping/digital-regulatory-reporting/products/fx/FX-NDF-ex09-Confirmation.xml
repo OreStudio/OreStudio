@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is recordkeeping-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/recordkeeping-->
+<nonpublicExecutionReport xmlns="http://www.fpml.org/FpML-5/recordkeeping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/recordkeeping ../../../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../../../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.jpmorgan.com/athena-fxo/msg-id">XXXXXXXXXXX</messageId>
+    <sentBy messageAddressScheme="http://www.fpml.org/coding-scheme/external/iso17442">XXXXXXXXXXX</sentBy>
+    <sendTo>DTCCGTR</sendTo>
+    <creationTimestamp>2020-01-01T10:06:10Z</creationTimestamp>
+    <implementationSpecification>
+      <version>CORE1.0</version>
+    </implementationSpecification>
+  </header>
+  <isCorrection>false</isCorrection>
+  <correlationId correlationIdScheme="http://www.submittingparty.com">XXXXXXXXXXX</correlationId>
+  <onBehalfOf>
+    <partyReference href="Party1" />
+  </onBehalfOf>
+  <originatingEvent>trade</originatingEvent>
+  <trade>
+    <tradeHeader>
+      <partyTradeIdentifier>
+        <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/issuer-identifier">XXXXXXXXXXX</issuer>
+        <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">XXXXXXXXXXX</tradeId>
+      </partyTradeIdentifier>
+      <partyTradeIdentifier>
+        <partyReference href="Party1" />
+        <tradeId tradeIdScheme="http://www.dtcc.com/internal_Referenceid">XXXXXXXXXXX</tradeId>
+      </partyTradeIdentifier>
+      <partyTradeInformation>
+        <partyReference href="TradeSource1" />
+        <relatedParty>
+          <partyReference href="Party1" />
+          <role>Counterparty</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="Party2" />
+          <role>ReportingParty</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="TradeSource1" />
+          <role>TradeSource</role>
+        </relatedParty>
+        <executionDateTime>2020-01-01T08:59:51Z</executionDateTime>
+        <allocationStatus>Unallocated</allocationStatus>
+        <intentToClear>false</intentToClear>
+        <clearingStatus clearingStatusScheme="http://www.fpml.org/coding-scheme/clearing-status">false</clearingStatus>
+        <nonStandardTerms>false</nonStandardTerms>
+        <executionVenueType>Off-Facility</executionVenueType>
+        <verificationMethod>Electronic</verificationMethod>
+        <confirmationMethod>NotConfirmed</confirmationMethod>
+      </partyTradeInformation>
+      <partyTradeInformation>
+        <partyReference href="Party1" />
+        <relatedParty>
+          <partyReference href="BeneficiaryId1" />
+          <role>Beneficiary</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="ExecutionFacility" />
+          <role>ExecutionFacility</role>
+        </relatedParty>
+        <category categoryScheme="http://www.dtcc.com/trading_capacity">Principal</category>
+        <category categoryScheme="http://www.dtcc.com/intragroup">false</category>
+        <category categoryScheme="http://www.dtcc.com/compressed_trade">false</category>
+        <category categoryScheme="http://www.dtcc.com/coding-scheme/external/party-roles/emir-buyer-seller">S</category>
+        <category categoryScheme="http://www.dtcc.com/coding-scheme/external/party-roles/emir-nature-of-reporting-counterparty">F</category>
+        <category categoryScheme="http://www.dtcc.com/coding-scheme/external/report-details/emir-level">T</category>
+        <category categoryScheme="http://www.dtcc.com/coding-scheme/external/trade-details/esma-delivery-type">Cash</category>
+        <category categoryScheme="http://www.dtcc.com/coding-scheme/external/product-classification/fca-mandatory-clearable-product">FCA-X</category>
+        <clearingStatus clearingStatusScheme="http://www.fpml.org/coding-scheme/clearing-status">false</clearingStatus>
+        <collateralizationType>Uncollateralized</collateralizationType>
+        <reportingRegime>
+          <name>DoddFrank</name>
+          <supervisorRegistration>
+            <supervisoryBody>FCA</supervisoryBody>
+          </supervisorRegistration>
+          <reportingRole>ReportingParty</reportingRole>
+          <reportingPurpose>PET-CONFIRM</reportingPurpose>
+          <entityClassification>Financial</entityClassification>
+          <actionType actionTypeScheme="http://www.fpml.org/coding-scheme/action-type">N</actionType>
+        </reportingRegime>
+        <nonStandardTerms>false</nonStandardTerms>
+        <largeSizeTrade>false</largeSizeTrade>
+      </partyTradeInformation>
+      <partyTradeInformation>
+        <partyReference href="Party2" />
+        <relatedParty>
+          <partyReference href="BeneficiaryId2" />
+          <role>Beneficiary</role>
+        </relatedParty>
+        <category categoryScheme="http://www.dtcc.com/trading_capacity">Principal</category>
+        <category categoryScheme="http://www.dtcc.com/intragroup">false</category>
+        <category categoryScheme="http://www.dtcc.com/compressed_trade">false</category>
+        <reportingRegime>
+          <supervisorRegistration>
+            <supervisoryBody>FCA</supervisoryBody>
+          </supervisorRegistration>
+          <reportingRole>Counterparty</reportingRole>
+          <reportingPurpose>PET-CONFIRM</reportingPurpose>
+        </reportingRegime>
+        <nonStandardTerms>false</nonStandardTerms>
+      </partyTradeInformation>
+      <tradeDate>2020-01-01</tradeDate>
+    </tradeHeader>
+    <fxSingleLeg>
+      <primaryAssetClass>ForeignExchange</primaryAssetClass>
+      <productType productTypeScheme="http://www.dtcc.com/coding-scheme/external/product-classification/emir-contract-type">FW</productType>
+      <productType productTypeScheme="http://www.fpml.org/coding-scheme/external/product-classification/iso10962">JFTXFC</productType>
+      <productId productIdScheme="http://www.fpml.org/coding-scheme/product-taxonomy">ForeignExchange:NDF</productId>
+      <productId productIdScheme="http://www.dtcc.com/coding-scheme/external/product-id/ISIN">EZGX9Y3MNNR0</productId>
+      <exchangedCurrency1>
+        <payerPartyReference href="Party1" />
+        <receiverPartyReference href="Party2" />
+        <paymentAmount>
+          <currency>JPY</currency>
+          <amount>1</amount>
+        </paymentAmount>
+        <paymentDate>
+          <adjustedDate>2021-08-16</adjustedDate>
+        </paymentDate>
+        <paymentType />
+      </exchangedCurrency1>
+      <exchangedCurrency2>
+        <payerPartyReference href="Party2" />
+        <receiverPartyReference href="Party1" />
+        <paymentAmount>
+          <currency>USD</currency>
+          <amount>1</amount>
+        </paymentAmount>
+        <paymentDate>
+          <unadjustedDate>2021-08-16</unadjustedDate>
+        </paymentDate>
+        <paymentType />
+      </exchangedCurrency2>
+      <dealtCurrency>ExchangedCurrency1</dealtCurrency>
+      <valueDate>2021-08-16</valueDate>
+      <exchangeRate>
+        <quotedCurrencyPair>
+          <currency1>USD</currency1>
+          <currency2>JPY</currency2>
+          <quoteBasis>Currency2PerCurrency1</quoteBasis>
+        </quotedCurrencyPair>
+        <rate>1</rate>
+        <spotRate>1</spotRate>
+      </exchangeRate>
+      <nonDeliverableSettlement>
+        <settlementCurrency>JPY</settlementCurrency>
+      </nonDeliverableSettlement>
+    </fxSingleLeg>
+    <documentation>
+      <masterAgreement>
+        <masterAgreementType masterAgreementTypeScheme="http://www.fpml.org/coding-scheme/master-agreement-type">ISDA</masterAgreementType>
+        <masterAgreementVersion masterAgreementVersionScheme="http://www.fpml.org/coding-scheme/master-agreement-version">1992</masterAgreementVersion>
+        <masterAgreementDate>2015-07-15</masterAgreementDate>
+      </masterAgreement>
+    </documentation>
+  </trade>
+  <quote>
+    <value>1</value>
+    <measureType>PriceMultiplier</measureType>
+  </quote>
+  <quote>
+    <value>1</value>
+    <measureType>PriceNotation</measureType>
+    <quoteUnits>Units</quoteUnits>
+    <currency>JPY</currency>
+  </quote>
+  <quote>
+    <value>1</value>
+    <measureType>QuantityEMIR</measureType>
+  </quote>
+  <quote>
+    <value>0</value>
+    <measureType>AdditionalPriceNotation</measureType>
+    <quoteUnits>Price</quoteUnits>
+  </quote>
+  <quote>
+    <measureType>ReportingTimestamp</measureType>
+    <time>2020-01-01T10:06:10Z</time>
+  </quote>
+  <party id="Party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">XXXXXXXXXXX</partyId>
+    <classification></classification>
+    <classification industryClassificationScheme="http://www.fpml.org/coding-scheme/regulatory-corporate-sector">F-C</classification>
+    <country>GB</country>
+    <region>EEA</region>
+    <organizationType>SD</organizationType>
+    <contactInfo>
+      <address>
+        <country>GB</country>
+      </address>
+    </contactInfo>
+    <businessUnit id="Desk1">
+      <name>Desk</name>
+      <country>GBR</country>
+    </businessUnit>
+  </party>
+  <party id="Party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">XXXXXXXXXXX</partyId>
+    <partyName>XXXXXXXXXXX</partyName>
+    <classification></classification>
+    <country>IE</country>
+    <region>nonEEA</region>
+    <organizationType>SD</organizationType>
+    <contactInfo>
+      <telephone>
+        <type>Personal</type>
+      </telephone>
+      <address>
+        <country>IE</country>
+      </address>
+    </contactInfo>
+  </party>
+  <party id="ExecutionAgent">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">XXXXXXXXXXX</partyId>
+  </party>
+  <party id="ExecutionFacility">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">XXXXXXXXXXX</partyId>
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/mifir/extension-iso10383">XOFF</partyId>
+  </party>
+  <party id="TradeSource1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">XXXXXXXXXXX</partyId>
+  </party>
+  <party id="BeneficiaryId1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">XXXXXXXXXXX</partyId>
+  </party>
+  <party id="BeneficiaryId2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">XXXXXXXXXXX</partyId>
+  </party>
+</nonpublicExecutionReport>
+

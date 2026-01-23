@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is recordkeeping-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/recordkeeping-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<!-- This represents the non-public recordkeeping and reporting requirements published in draft form by the CFTC in 17 CFR 45 -->
+<!-- The comments indicate the reportable field name as described in the tables on
+pp. 76606-76607 of the Federal Register -->
+<!-- This example shows an initial report of a new trade -->
+<!-- The data values are taken from "Example 1" in Appendix A, on page 76156 of the Federal Register -->
+<nonpublicExecutionReport xmlns="http://www.fpml.org/FpML-5/recordkeeping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/recordkeeping ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.bankx.com/msg_id">X001</messageId>
+    <sentBy>BANKX</sentBy>
+    <sendTo>SDR01</sendTo>
+    <creationTimestamp>2011-02-04T16:42:16Z</creationTimestamp>
+<!-- Date stamp -->
+  </header>
+<!-- Correction indicator -->
+  <correlationId correlationIdScheme="http://bankx.com/trade-id">SEF123</correlationId>
+  <onBehalfOf>
+    <partyReference href="party1" />
+  </onBehalfOf>
+  <withdrawal>
+    <partyTradeIdentifier>
+      <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1031234567</issuer>
+      <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">712345678901234567890123456789012</tradeId>
+    </partyTradeIdentifier>
+    <partyTradeInformation>
+      <partyReference href="party1" />
+      <relatedParty>
+        <partyReference href="party1" />
+        <role>TradeSource</role>
+      </relatedParty>
+      <relatedParty>
+        <partyReference href="party2" />
+        <role>Counterparty</role>
+      </relatedParty>
+      <reportingRegime>
+        <supervisorRegistration>
+          <supervisoryBody>ESMA</supervisoryBody>
+        </supervisorRegistration>
+        <reportingRole>ReportingParty</reportingRole>
+        <actionType>E</actionType>
+      </reportingRegime>
+    </partyTradeInformation>
+    <partyTradeInformation>
+      <partyReference href="party2" />
+      <relatedParty>
+        <partyReference href="party1" />
+        <role>TradeSource</role>
+      </relatedParty>
+      <relatedParty>
+        <partyReference href="party2" />
+        <role>Counterparty</role>
+      </relatedParty>
+      <reportingRegime>
+        <supervisorRegistration>
+          <supervisoryBody>CFTC</supervisoryBody>
+        </supervisorRegistration>
+        <reportingRole>ReportingParty</reportingRole>
+      </reportingRegime>
+    </partyTradeInformation>
+    <requestedAction>ExpungeRecords</requestedAction>
+    <reason>RaisedInError</reason>
+  </withdrawal>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300K7EEOSKRJDRI19</partyId>
+<!-- unique counterparty identifier of reporting party -->
+    <partyName>Bank X</partyName>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300O5MFEP1XJ40B46</partyId>
+<!-- unique counterparty identifier of other party -->
+    <partyName>Bank Y</partyName>
+    <organizationType>SD</organizationType>
+  </party>
+</nonpublicExecutionReport>
+

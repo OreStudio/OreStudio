@@ -58,6 +58,26 @@ ENTITY_SUBJECT_AREA_MAP = {
     'supervisory-bodies': 'Regulatory',
 }
 
+# Mapping of entity names to file patterns for flat directory structure
+# The pattern is used to find XML files when they're not in subdirectories
+ENTITY_FILE_PATTERNS = {
+    'account-types': ['account-type-*.xml'],
+    'asset-classes': ['asset-class-*.xml'],
+    'asset-measures': ['asset-measure-*.xml'],
+    'benchmark-rates': ['benchmark-rate-*.xml'],
+    'business-centres': ['business-center-*.xml'],
+    'business-processes': ['business-process-*.xml'],
+    'cashflow-types': ['cashflow-type-*.xml'],
+    'entity-classifications': ['entity-type-*.xml', 'cftc-entity-classification-*.xml', 'cftc-organization-type-*.xml'],
+    'local-jurisdictions': ['local-jurisdiction-*.xml'],
+    'party-relationships': ['party-relationship-type-*.xml', 'hkma-rewrite-party-relationship-type-*.xml'],
+    'party-roles': ['party-role-*.xml'],
+    'person-roles': ['person-role-*.xml'],
+    'regulatory-corporate-sectors': ['regulatory-corporate-sector-*.xml', 'hkma-rewrite-regulatory-corporate-sector-*.xml'],
+    'reporting-regimes': ['reporting-regime-*.xml'],
+    'supervisory-bodies': ['supervisory-body-*.xml'],
+}
+
 
 def get_subject_area(entity_dir_name: str) -> str:
     """Get the subject area for an entity based on its directory name."""
@@ -389,18 +409,26 @@ def derive_entity_name(directory_name: str) -> tuple[str, str]:
     return singular, plural
 
 
-def process_directory(dir_path: Path) -> MergedEntity:
+def process_entity(input_dir: Path, entity_name: str) -> MergedEntity:
     """
-    Process a directory containing FPML XML files.
+    Process FPML XML files for a given entity from a flat directory.
 
+    Uses ENTITY_FILE_PATTERNS to find matching files.
     If multiple files exist, merge them tracking each row's source coding scheme.
     """
-    xml_files = sorted(dir_path.glob('*.xml'))
-    if not xml_files:
-        raise ValueError(f"No XML files found in {dir_path}")
+    patterns = ENTITY_FILE_PATTERNS.get(entity_name, [])
+    if not patterns:
+        raise ValueError(f"No file patterns defined for entity: {entity_name}")
 
-    entity_singular, entity_plural = derive_entity_name(dir_path.name)
-    subject_area = get_subject_area(dir_path.name)
+    xml_files = []
+    for pattern in patterns:
+        xml_files.extend(input_dir.glob(pattern))
+
+    if not xml_files:
+        raise ValueError(f"No XML files found for entity {entity_name}")
+
+    entity_singular, entity_plural = derive_entity_name(entity_name)
+    subject_area = get_subject_area(entity_name)
 
     merged = MergedEntity(
         entity_name=entity_singular,
@@ -411,7 +439,7 @@ def process_directory(dir_path: Path) -> MergedEntity:
 
     seen_codes: dict[tuple[str, str], CodeListRow] = {}
 
-    for xml_file in xml_files:
+    for xml_file in sorted(xml_files):
         print(f"  Parsing {xml_file.name}...")
         code_list = parse_xml_file(xml_file)
         merged.coding_schemes.append(code_list.coding_scheme)
@@ -504,15 +532,15 @@ def main():
         description='Parse FPML Genericode XML files and generate SQL/JSON outputs'
     )
     parser.add_argument('input_dir', type=Path,
-                        help='Directory containing FPML data subdirectories')
+                        help='Directory containing FPML codelist XML files (flat structure)')
     parser.add_argument('output_dir', type=Path,
                         help='Output directory for generated files')
     parser.add_argument('--coding-schemes-only', action='store_true',
                         help='Only generate coding schemes SQL')
     parser.add_argument('--entities', type=str, nargs='*',
-                        help='Specific entity directories to process (default: all)')
+                        help='Specific entities to process (default: all)')
     parser.add_argument('--exclude', type=str, nargs='*', default=[],
-                        help='Entity directories to exclude (e.g., currencies)')
+                        help='Entities to exclude (e.g., currencies)')
 
     args = parser.parse_args()
 
@@ -522,33 +550,24 @@ def main():
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Find all subdirectories with XML files
     exclude_set = set(args.exclude) if args.exclude else set()
-
-    if args.entities:
-        subdirs = [args.input_dir / e for e in args.entities if e not in exclude_set]
-    else:
-        subdirs = sorted([d for d in args.input_dir.iterdir()
-                         if d.is_dir() and list(d.glob('*.xml')) and d.name not in exclude_set])
-
     if exclude_set:
-        print(f"Excluding directories: {', '.join(exclude_set)}")
+        print(f"Excluding entities: {', '.join(exclude_set)}")
 
-    if not subdirs:
-        print("No directories with XML files found")
-        sys.exit(1)
+    # Determine which entities to process
+    if args.entities:
+        entity_names = [e for e in args.entities if e not in exclude_set]
+    else:
+        entity_names = [e for e in ENTITY_FILE_PATTERNS.keys() if e not in exclude_set]
 
-    print(f"Processing {len(subdirs)} entity directories...")
+    print(f"Processing {len(entity_names)} entities from {args.input_dir}...")
+
     entities: list[MergedEntity] = []
 
-    for subdir in subdirs:
-        if not subdir.exists():
-            print(f"Warning: Directory does not exist: {subdir}")
-            continue
-
-        print(f"\nProcessing: {subdir.name}")
+    for entity_name in entity_names:
+        print(f"\nProcessing: {entity_name}")
         try:
-            entity = process_directory(subdir)
+            entity = process_entity(args.input_dir, entity_name)
             entities.append(entity)
         except Exception as e:
             print(f"  Error: {e}")

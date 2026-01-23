@@ -91,7 +91,7 @@ select ores.upsert_dq_coding_schemes(
     'Parties',
     'Reference Data',
     'http://www.fpml.org/coding-scheme/cftc-entity-classification',
-    'Financial Entity Indicator.'
+    'Financial Entity Indicator as defined by the CFTC.'
 );
 
 select ores.upsert_dq_coding_schemes(
@@ -155,6 +155,16 @@ select ores.upsert_dq_coding_schemes(
 );
 
 select ores.upsert_dq_coding_schemes(
+    'FPML_PARTY_ROLE_TYPE',
+    'partyRoleTypeScheme',
+    'industry',
+    'Parties',
+    'Reference Data',
+    'http://www.fpml.org/coding-scheme/party-role-type',
+    'Contains a code representing a related party role type. A type refining the role a role played by a party in one or more transactions. This can be extended to provide custom types.'
+);
+
+select ores.upsert_dq_coding_schemes(
     'FPML_PERSON_ROLE',
     'personRoleScheme',
     'industry',
@@ -172,6 +182,16 @@ select ores.upsert_dq_coding_schemes(
     'Reference Data',
     'http://www.fpml.org/coding-scheme/hkma-rewrite-regulatory-corporate-sector',
     'Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2.'
+);
+
+select ores.upsert_dq_coding_schemes(
+    'FPML_REGULATORY_CORPORATE_SECTOR',
+    'regulatoryCorporateSectorScheme',
+    'industry',
+    'Regulatory',
+    'Reference Data',
+    'http://www.fpml.org/coding-scheme/regulatory-corporate-sector',
+    'Specifies Corporate sector as defined by or for regulators including ESMA, CFTC, etc.'
 );
 
 select ores.upsert_dq_coding_schemes(

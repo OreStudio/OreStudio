@@ -17,26 +17,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+
+/**
+ * FpML Regulatory Corporate Sector Dataset Population Script
+ *
+ * Creates the dataset entry for fpml.regulatory_corporate_sector.
+ * This must be run before populating the artefact table.
+ */
+
 set schema 'ores';
 
 -- =============================================================================
--- Financial Entity Indicator as defined by the CFTC. - Artefact Table
+-- FpML Regulatory Corporate Sector Dataset
 -- =============================================================================
 
-create table if not exists "ores"."dq_entity_classifications_artefact_tbl" (
-    "dataset_id" uuid not null,
-    "code" text not null,
-    "version" integer not null,
-    "source" text null,
-    "description" text null
-    ,"coding_scheme_code" text not null
+\echo '--- FpML Regulatory Corporate Sector Dataset ---'
+
+select ores.upsert_dq_datasets(
+    'fpml.regulatory_corporate_sector',
+    'FpML Standards',
+    'Regulatory',
+    'Reference Data',
+    'FPML_REGULATORY_CORPORATE_SECTOR',
+    'Primary',
+    'Actual',
+    'Raw',
+    'FpML Genericode Download',
+    'FpML Regulatory Corporate Sector',
+    'Specifies Corporate sector as defined by or for regulators including ESMA, CFTC, etc.',
+    'FPML',
+    'Reference data for FpML Regulatory Corporate Sector',
+    current_date,
+    'FpML Public License 2.0',
+    'regulatory_corporate_sectors',
+    'refdata_regulatory_corporate_sectors_tbl',
+    'dq_populate_regulatory_corporate_sectors'
 );
-
-create index if not exists dq_entity_classifications_artefact_dataset_idx
-on "ores"."dq_entity_classifications_artefact_tbl" (dataset_id);
-
-create index if not exists dq_entity_classifications_artefact_code_idx
-on "ores"."dq_entity_classifications_artefact_tbl" (code);
-
-create index if not exists dq_entity_classifications_artefact_coding_scheme_idx
-on "ores"."dq_entity_classifications_artefact_tbl" (coding_scheme_code);

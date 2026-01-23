@@ -119,7 +119,7 @@ begin
         1,
         'FPML_CFTC_ENTITY_CLASSIFICATION',
         'FpML',
-        'None of the listed in the scheme.'
+        'None of the other codes apply.'
     );
     v_count := v_count + 1;
     insert into ores.dq_entity_classifications_artefact_tbl (

@@ -19,22 +19,22 @@
  */
 
 /**
- * DQ Artefact FpML Account Type Population Script
+ * DQ Artefact FpML Party Role Type Population Script
  *
- * Populates the dq_account_types_artefact_tbl with reference data.
- * Dataset: fpml.account_type
+ * Populates the dq_party_roles_artefact_tbl with reference data.
+ * Dataset: fpml.party_role_type
  *
  * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_populate_account_types() to publish to production.
+ * Use dq_populate_party_roles() to publish to production.
  */
 
 set schema 'ores';
 
 -- =============================================================================
--- DQ Artefact FpML Account Type
+-- DQ Artefact FpML Party Role Type
 -- =============================================================================
 
-\echo '--- DQ Artefact FpML Account Type ---'
+\echo '--- DQ Artefact FpML Party Role Type ---'
 
 do $$
 declare
@@ -44,53 +44,42 @@ begin
     -- Get the dataset ID
     select id into v_dataset_id
     from ores.dq_datasets_tbl
-    where code = 'fpml.account_type'
+    where code = 'fpml.party_role_type'
     and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset fpml.account_type not found. Run dataset population first.';
+        raise exception 'Dataset fpml.party_role_type not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from ores.dq_account_types_artefact_tbl
+    delete from ores.dq_party_roles_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
-    insert into ores.dq_account_types_artefact_tbl (
+    insert into ores.dq_party_roles_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        'AggregateClient',
+        'AllPositions',
         1,
-        'FPML_ACCOUNT_TYPE',
+        'FPML_PARTY_ROLE_TYPE',
         'FpML',
-        'Aggregate client account, as defined under ESMA MiFIR.'
+        'All Positions.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_account_types_artefact_tbl (
+    insert into ores.dq_party_roles_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
-        'Client',
+        'SomePositions',
         1,
-        'FPML_ACCOUNT_TYPE',
+        'FPML_PARTY_ROLE_TYPE',
         'FpML',
-        'The account contains trading activity or positions that belong to a client of the firm that opened the account.'
-    );
-    v_count := v_count + 1;
-    insert into ores.dq_account_types_artefact_tbl (
-        dataset_id, code, version, coding_scheme_code, source, description
-    ) values (
-        v_dataset_id,
-        'House',
-        1,
-        'FPML_ACCOUNT_TYPE',
-        'FpML',
-        'The account contains proprietary trading activity or positions, belonging to the firm that is the owner of the account.'
+        'Some Positions.'
     );
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_account_types_artefact_tbl', v_count;
+    raise notice 'Populated % records into dq_party_roles_artefact_tbl', v_count;
 end;
 $$;
 
@@ -101,10 +90,10 @@ $$;
 \echo ''
 \echo '--- Summary ---'
 
-select 'dq_account_types_artefact' as entity, count(*) as count
-from ores.dq_account_types_artefact_tbl;
+select 'dq_party_roles_artefact' as entity, count(*) as count
+from ores.dq_party_roles_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from ores.dq_account_types_artefact_tbl
+from ores.dq_party_roles_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;

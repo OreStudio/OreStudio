@@ -44,7 +44,7 @@ select ores.upsert_dq_datasets(
     'Raw',
     'FpML Genericode Download',
     'FpML Cftc Entity Classification',
-    'Financial Entity Indicator.',
+    'Financial Entity Indicator as defined by the CFTC.',
     'FPML',
     'Reference data for FpML Cftc Entity Classification',
     current_date,

@@ -17,26 +17,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+
+/**
+ * FpML Party Role Type Dataset Population Script
+ *
+ * Creates the dataset entry for fpml.party_role_type.
+ * This must be run before populating the artefact table.
+ */
+
 set schema 'ores';
 
 -- =============================================================================
--- Financial Entity Indicator as defined by the CFTC. - Artefact Table
+-- FpML Party Role Type Dataset
 -- =============================================================================
 
-create table if not exists "ores"."dq_entity_classifications_artefact_tbl" (
-    "dataset_id" uuid not null,
-    "code" text not null,
-    "version" integer not null,
-    "source" text null,
-    "description" text null
-    ,"coding_scheme_code" text not null
+\echo '--- FpML Party Role Type Dataset ---'
+
+select ores.upsert_dq_datasets(
+    'fpml.party_role_type',
+    'FpML Standards',
+    'Parties',
+    'Reference Data',
+    'FPML_PARTY_ROLE_TYPE',
+    'Primary',
+    'Actual',
+    'Raw',
+    'FpML Genericode Download',
+    'FpML Party Role Type',
+    'Contains a code representing a related party role type. A type refining the role a role played by a party in one or more transactions. This can be extended to provide custom types.',
+    'FPML',
+    'Reference data for FpML Party Role Type',
+    current_date,
+    'FpML Public License 2.0',
+    'party_roles',
+    'refdata_party_roles_tbl',
+    'dq_populate_party_roles'
 );
-
-create index if not exists dq_entity_classifications_artefact_dataset_idx
-on "ores"."dq_entity_classifications_artefact_tbl" (dataset_id);
-
-create index if not exists dq_entity_classifications_artefact_code_idx
-on "ores"."dq_entity_classifications_artefact_tbl" (code);
-
-create index if not exists dq_entity_classifications_artefact_coding_scheme_idx
-on "ores"."dq_entity_classifications_artefact_tbl" (coding_scheme_code);

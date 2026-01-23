@@ -23,7 +23,9 @@ source "$VENV_PATH/bin/activate"
 cd "$SCRIPT_DIR"
 
 # Directories
-FPML_DATA_DIR="$SCRIPT_DIR/../ores.sql/populate/data"
+# FPML codelist data is stored in external/fpml/codelist (flat directory with all XML files)
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+FPML_DATA_DIR="$PROJECT_ROOT/external/fpml/codelist"
 OUTPUT_DIR="$SCRIPT_DIR/output"
 SCHEMA_DIR="$SCRIPT_DIR/../ores.sql/schema"
 POPULATE_DIR="$SCRIPT_DIR/../ores.sql/populate"

@@ -212,6 +212,13 @@ list_images_request::deserialize(std::span<const std::byte> data) {
             return std::unexpected(timestamp_result.error());
         }
         request.modified_since = string_to_timepoint(*timestamp_result);
+    } else if (*flag_result != 0) {
+        return std::unexpected(ores::utility::serialization::error_code::invalid_request);
+    }
+
+    // Check for unconsumed data
+    if (!data.empty()) {
+        return std::unexpected(ores::utility::serialization::error_code::invalid_request);
     }
 
     return request;

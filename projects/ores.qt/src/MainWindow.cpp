@@ -208,6 +208,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
         // Track window destruction
         connect(eventViewerWindow_, &QObject::destroyed, this, [this]() {
+            allDetachableWindows_.removeOne(eventViewerWindow_);
             eventViewerWindow_ = nullptr;
         });
 
@@ -243,6 +244,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
         // Track window destruction
         connect(telemetryViewerWindow_, &QObject::destroyed, this, [this]() {
+            allDetachableWindows_.removeOne(telemetryViewerWindow_);
             telemetryViewerWindow_ = nullptr;
         });
 
@@ -1239,6 +1241,8 @@ void MainWindow::onWindowMenuAboutToShow() {
     } else {
         for (int i = 0; i < allDetachableWindows_.size(); ++i) {
             auto* detachableWindow = allDetachableWindows_[i];
+            if (!detachableWindow)
+                continue;
             QString windowTitle = detachableWindow->windowTitle();
             if (windowTitle.isEmpty()) {
                 windowTitle = QString("Window %1").arg(i + 1);

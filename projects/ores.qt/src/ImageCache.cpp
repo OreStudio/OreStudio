@@ -21,9 +21,9 @@
 #include "ores.qt/ImageCache.hpp"
 
 #include <algorithm>
-#include <iomanip>
 #include <sstream>
 #include <rfl/json.hpp>
+#include "ores.platform/time/datetime.hpp"
 #include <QTimer>
 #include <QtConcurrent>
 #include <boost/lexical_cast.hpp>
@@ -349,12 +349,11 @@ void ImageCache::loadIncrementalChanges() {
         return;
     }
 
-    // Format last load time for logging
-    auto last_load_time_t = std::chrono::system_clock::to_time_t(*last_load_time_);
-    std::ostringstream time_str;
-    time_str << std::put_time(std::gmtime(&last_load_time_t), "%Y-%m-%d %H:%M:%S UTC");
+    // Format last load time for logging (thread-safe)
+    const auto time_str =
+        platform::time::datetime::format_time_point_utc(*last_load_time_) + " UTC";
     BOOST_LOG_SEV(lg(), info) << "Incremental reload: fetching images modified since "
-                              << time_str.str();
+                              << time_str;
 
     load_all_in_progress_ = true;
     QPointer<ImageCache> self = this;
@@ -466,10 +465,9 @@ void ImageCache::onImagesLoaded() {
 
         // Record successful load time for future incremental loads
         last_load_time_ = std::chrono::system_clock::now();
-        auto load_time_t = std::chrono::system_clock::to_time_t(*last_load_time_);
-        std::ostringstream time_str;
-        time_str << std::put_time(std::gmtime(&load_time_t), "%Y-%m-%d %H:%M:%S UTC");
-        BOOST_LOG_SEV(lg(), debug) << "Recorded last load time: " << time_str.str();
+        const auto time_str =
+            platform::time::datetime::format_time_point_utc(*last_load_time_) + " UTC";
+        BOOST_LOG_SEV(lg(), debug) << "Recorded last load time: " << time_str;
 
         BOOST_LOG_SEV(lg(), info) << "Cached " << result.images.size() << " images. "
                                   << "Total icons: " << image_icons_.size();

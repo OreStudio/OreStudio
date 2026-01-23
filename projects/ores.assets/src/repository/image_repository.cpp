@@ -19,10 +19,10 @@
  */
 #include "ores.assets/repository/image_repository.hpp"
 
-#include <iomanip>
 #include <sstream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
+#include "ores.platform/time/datetime.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.assets/repository/image_mapper.hpp"
@@ -173,18 +173,17 @@ std::vector<domain::image>
 image_repository::read_latest_since(context ctx,
     std::chrono::system_clock::time_point modified_since) {
 
-    // Format timestamp for SQL function call
-    auto time_t_val = std::chrono::system_clock::to_time_t(modified_since);
-    std::ostringstream timestamp_str;
-    timestamp_str << std::put_time(std::gmtime(&time_t_val), "%Y-%m-%d %H:%M:%S");
+    // Format timestamp for SQL function call (thread-safe)
+    const auto timestamp_str =
+        platform::time::datetime::format_time_point_utc(modified_since);
 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest images modified since: "
-                               << timestamp_str.str();
+                               << timestamp_str;
 
     // Call PostgreSQL function
     std::ostringstream sql;
     sql << "SELECT * FROM ores.assets_images_read_since_fn('"
-        << timestamp_str.str() << "'::timestamptz)";
+        << timestamp_str << "'::timestamptz)";
 
     auto rows = execute_raw_multi_column_query(ctx, sql.str(), lg(),
         "Reading latest images since timestamp");

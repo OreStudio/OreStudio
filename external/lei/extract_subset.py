@@ -96,7 +96,7 @@ def try_gleif_api(api_base: str, date_str: str) -> Tuple[Optional[str], Optional
                 rr_url = download_url
 
         return lei_url, rr_url
-    except Exception:
+    except (urllib.error.URLError, json.JSONDecodeError, KeyError, TypeError):
         return None, None
 
 
@@ -112,7 +112,7 @@ def try_direct_url(base_url: str, file_id: int, date: datetime, file_type: str) 
         with urllib.request.urlopen(req, timeout=10) as response:
             if response.status == 200:
                 return url
-    except Exception:
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError):
         pass
     return None
 
@@ -219,7 +219,7 @@ def download_and_extract(url: str, output_dir: Path) -> str:
     try:
         urllib.request.urlretrieve(url, zip_path, reporthook=progress.update)
         progress.finish()
-    except Exception as e:
+    except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError, OSError) as e:
         if zip_path.exists():
             zip_path.unlink()
         raise RuntimeError(f"Download failed: {e}")
@@ -754,8 +754,8 @@ def write_subset(
                 if len(row) >= 3:
                     start_lei = row[0]
                     end_lei = row[2]
-                    # Include relationship if either party is in our subset
-                    if start_lei in selected_leis or end_lei in selected_leis:
+                    # Include relationship only if both parties are in our subset
+                    if start_lei in selected_leis and end_lei in selected_leis:
                         writer.writerow(row)
                         written += 1
 

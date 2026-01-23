@@ -113,12 +113,12 @@
 -- FPML Reference Data (methodology, coding schemes, datasets, artefacts)
 \echo ''
 \echo '--- FPML Reference Data ---'
-\ir fpml.sql
+\ir fpml/fpml.sql
 
 -- Cryptocurrency Reference Data (datasets, images, currencies)
 \echo ''
 \echo '--- Cryptocurrency Reference Data ---'
-\ir crypto.sql
+\ir crypto/crypto.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''

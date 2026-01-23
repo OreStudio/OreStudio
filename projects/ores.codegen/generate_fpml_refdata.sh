@@ -28,7 +28,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 FPML_DATA_DIR="$PROJECT_ROOT/external/fpml/codelist"
 OUTPUT_DIR="$SCRIPT_DIR/output"
 SCHEMA_DIR="$SCRIPT_DIR/../ores.sql/schema"
-POPULATE_DIR="$SCRIPT_DIR/../ores.sql/populate"
+POPULATE_DIR="$SCRIPT_DIR/../ores.sql/populate/fpml"
 
 # Hard-coded list of FPML entities to generate
 FPML_ENTITIES=(

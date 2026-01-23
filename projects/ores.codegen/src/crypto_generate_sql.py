@@ -38,8 +38,8 @@ def get_crypto_data_dir() -> Path:
 
 
 def get_output_dir() -> Path:
-    """Get the path to projects/ores.sql/populate directory."""
-    return get_repo_root() / "projects" / "ores.sql" / "populate"
+    """Get the path to projects/ores.sql/populate/crypto directory."""
+    return get_repo_root() / "projects" / "ores.sql" / "populate" / "crypto"
 
 
 # Configuration

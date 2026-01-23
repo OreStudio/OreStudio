@@ -30,8 +30,8 @@ python extract_subset.py --download-only
 
 | File | Description | Size |
 |------|-------------|------|
-| `*-lei2-golden-copy-subset.csv` | Subset of LEI entities (~8.6K) | ~6.5 MB |
-| `*-rr-golden-copy-subset.csv` | Subset of relationships (~23K) | ~9.4 MB |
+| `*-lei2-golden-copy-subset.csv` | Subset of LEI entities (~15K) | ~11 MB |
+| `*-rr-golden-copy-subset.csv` | Subset of relationships (~4K) | ~1.7 MB |
 
 ## Usage
 
@@ -70,11 +70,11 @@ Download options:
   --rr-url URL          Explicit URL for relationship records file
 
 Subset configuration:
-  --per-country N       Target entities per country (default: 30)
-  --per-depth N         Target entities per relationship depth (default: 15)
-  --per-sector N        Target entities per sector (default: 20)
-  --per-category N      Target entities per category (default: 30)
-  --per-fund-type N     Target entities per fund type (default: 15)
+  --per-country N       Target entities per country (default: 60)
+  --per-depth N         Target entities per relationship depth (default: 30)
+  --per-sector N        Target entities per sector (default: 40)
+  --per-category N      Target entities per category (default: 60)
+  --per-fund-type N     Target entities per fund type (default: 30)
 ```
 
 ## Subset Diversity
@@ -155,11 +155,11 @@ Configuration holder for subset extraction parameters.
 ```python
 @dataclass
 class Config:
-    per_country: int = 30
-    per_depth: int = 15
-    per_sector: int = 20
-    per_category: int = 30
-    per_fund_type: int = 15
+    per_country: int = 60
+    per_depth: int = 30
+    per_sector: int = 40
+    per_category: int = 60
+    per_fund_type: int = 30
     per_legal_form: int = 10
 ```
 
@@ -289,7 +289,7 @@ main()
 
 - Relationship map: ~50K parents, ~122K children (small dicts)
 - Entity info: ~3M EntityInfo objects during analysis
-- Selected LEIs: ~8-10K string set
+- Selected LEIs: ~15K string set
 - Files processed via streaming (no full file load)
 
 ### Adding New Sectors

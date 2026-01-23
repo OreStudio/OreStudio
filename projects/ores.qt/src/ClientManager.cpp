@@ -132,9 +132,76 @@ LoginResult ClientManager::connectAndLogin(
             }, Qt::QueuedConnection);
         });
 
-        // Set up reconnected callback - emits signal on Qt thread
+        // Set up reconnected callback - re-authenticate and emit signal on Qt thread
         new_client->set_reconnected_callback([this]() {
-            BOOST_LOG_SEV(lg(), info) << "Client reconnected successfully";
+            BOOST_LOG_SEV(lg(), info) << "Client reconnected, re-authenticating...";
+
+            if (user_disconnecting_.load(std::memory_order_acquire)) {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Suppressing re-authentication - user disconnect in progress";
+                return;
+            }
+
+            // Re-authenticate using stored credentials
+            if (stored_username_.empty()) {
+                BOOST_LOG_SEV(lg(), warn) << "No stored credentials for re-authentication";
+                QMetaObject::invokeMethod(this, [this]() {
+                    emit connectionError(tr("Reconnected but no credentials available for re-authentication"));
+                }, Qt::QueuedConnection);
+                return;
+            }
+
+            // Perform login request
+            iam::messaging::login_request request{
+                .username = stored_username_,
+                .password = stored_password_
+            };
+
+            auto payload = request.serialize();
+            comms::messaging::frame request_frame(
+                comms::messaging::message_type::login_request,
+                0,
+                std::move(payload)
+            );
+
+            auto response_result = client_->send_request_sync(std::move(request_frame));
+
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Re-authentication failed: network error";
+                QMetaObject::invokeMethod(this, [this]() {
+                    emit connectionError(tr("Re-authentication failed after reconnection"));
+                }, Qt::QueuedConnection);
+                return;
+            }
+
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Re-authentication failed: decompression error";
+                QMetaObject::invokeMethod(this, [this]() {
+                    emit connectionError(tr("Re-authentication failed after reconnection"));
+                }, Qt::QueuedConnection);
+                return;
+            }
+
+            auto response = iam::messaging::login_response::deserialize(*payload_result);
+            if (!response || !response->success) {
+                BOOST_LOG_SEV(lg(), error) << "Re-authentication failed: server rejected login";
+                QMetaObject::invokeMethod(this, [this]() {
+                    emit connectionError(tr("Re-authentication failed - please log in again"));
+                }, Qt::QueuedConnection);
+                return;
+            }
+
+            // Update session info
+            session_.set_session_info(comms::net::client_session_info{
+                .account_id = response->account_id,
+                .username = response->username,
+                .email = response->email
+            });
+
+            BOOST_LOG_SEV(lg(), info) << "Re-authentication successful for user '"
+                                      << response->username << "'";
+
             QMetaObject::invokeMethod(this, [this]() {
                 if (user_disconnecting_.load(std::memory_order_acquire)) {
                     BOOST_LOG_SEV(lg(), debug)
@@ -218,6 +285,10 @@ LoginResult ClientManager::connectAndLogin(
         connected_host_ = host;
         connected_port_ = port;
         const bool password_reset_required = response->password_reset_required;
+
+        // Store credentials for re-authentication after reconnection
+        stored_username_ = username;
+        stored_password_ = password;
 
         // Attach client to session and set session info
         auto attach_result = session_.attach_client(client_);
@@ -542,6 +613,10 @@ void ClientManager::disconnect() {
 
         // Detach session (clears session state and event adapter)
         session_.detach_client();
+
+        // Clear stored credentials
+        stored_username_.clear();
+        stored_password_.clear();
 
         // The server closes the connection after logout, but we call disconnect
         // to ensure proper cleanup on the client side

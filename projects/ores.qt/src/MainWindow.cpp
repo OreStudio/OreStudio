@@ -317,6 +317,11 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(imageCache_, &ImageCache::imageListLoaded,
             imageCache_, &ImageCache::loadAllAvailableImages);
 
+    // Show error message when image loading fails (e.g., CRC errors)
+    connect(imageCache_, &ImageCache::loadError, this, [this](const QString& message) {
+        QMessageBox::warning(this, tr("Image Loading Error"), message);
+    });
+
     // Connect Currencies action to controller
     // Controller is created immediately but will check connection status
     createControllers();

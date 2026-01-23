@@ -186,9 +186,23 @@ boost::asio::awaitable<void> server_session::process_messages() {
     try {
         while (active_) {
             // Read next message frame
-            auto frame_result = co_await conn_->read_frame(false);
-            if (!frame_result) {
-                auto err = frame_result.error();
+            auto read_result = co_await conn_->read_frame(false);
+            if (!read_result.frame) {
+                auto err = read_result.frame.error();
+
+                // For CRC errors, close the session - the stream may be corrupted.
+                // CRC errors indicate data corruption which may have affected the
+                // payload_size header field. If so, the stream is now out of sync
+                // and subsequent reads will fail with invalid data.
+                if (err == ores::utility::serialization::error_code::crc_validation_failed) {
+                    BOOST_LOG_SEV(lg(), warn) << "CRC validation failed"
+                                             << (read_result.failed_correlation_id
+                                                 ? " for correlation_id=" + std::to_string(*read_result.failed_correlation_id)
+                                                 : "")
+                                             << ", closing session (stream may be corrupted)";
+                    co_return;
+                }
+
                 if (err == ores::utility::serialization::error_code::network_error) {
                     BOOST_LOG_SEV(lg(), info) << "Client disconnected";
                 } else {
@@ -198,7 +212,7 @@ boost::asio::awaitable<void> server_session::process_messages() {
                 co_return;
             }
 
-            const auto& request_frame = *frame_result;
+            const auto& request_frame = *read_result.frame;
             BOOST_LOG_SEV(lg(), debug) << "Received message type "
                                       << request_frame.header().type;
 
@@ -290,7 +304,7 @@ boost::asio::awaitable<void> server_session::process_messages() {
             }
 
             // Send response back to client
-            co_await conn_->write_frame(response_frame);
+            co_await write_frame_serialized(response_frame);
             BOOST_LOG_SEV(lg(), debug) << "Sent response for message type "
                                       << request_frame.header().type;
 
@@ -382,7 +396,7 @@ boost::asio::awaitable<void> server_session::send_pending_notifications() {
                 std::move(payload)
             };
 
-            co_await conn_->write_frame(frame);
+            co_await write_frame_serialized(frame);
 
             BOOST_LOG_SEV(lg(), info)
                 << "Sent notification for event type '" << notification.event_type
@@ -430,7 +444,7 @@ boost::asio::awaitable<void> server_session::send_pending_database_status() {
                 std::move(payload)
             };
 
-            co_await conn_->write_frame(frame);
+            co_await write_frame_serialized(frame);
 
             BOOST_LOG_SEV(lg(), info)
                 << "Sent database status notification (available="
@@ -476,6 +490,26 @@ void server_session::unregister_from_subscription_manager() {
         << "' from subscription manager";
 
     subscription_mgr_->unregister_session(remote_addr);
+}
+
+boost::asio::awaitable<void> server_session::write_frame_serialized(
+    const messaging::frame& frame) {
+    // Wait for any in-progress write to complete (simple spinlock with yield)
+    auto executor = co_await boost::asio::this_coro::executor;
+    while (write_in_progress_.exchange(true, std::memory_order_acquire)) {
+        // Another write is in progress, yield and retry
+        boost::asio::steady_timer timer(executor);
+        timer.expires_after(std::chrono::microseconds(100));
+        co_await timer.async_wait(boost::asio::use_awaitable);
+    }
+
+    try {
+        co_await conn_->write_frame(frame);
+        write_in_progress_.store(false, std::memory_order_release);
+    } catch (...) {
+        write_in_progress_.store(false, std::memory_order_release);
+        throw;
+    }
 }
 
 }

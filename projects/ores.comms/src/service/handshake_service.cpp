@@ -65,9 +65,9 @@ boost::asio::awaitable<messaging::compression_type> handshake_service::perform_c
 
     // Read handshake response
     BOOST_LOG_SEV(lg(), debug) << "About to read handshake response frame.";
-    auto response_frame_result = co_await conn.read_frame();
-    if (!response_frame_result) {
-        const auto ec = response_frame_result.error();
+    auto response_read_result = co_await conn.read_frame();
+    if (!response_read_result.frame) {
+        const auto ec = response_read_result.frame.error();
         BOOST_LOG_SEV(lg(), error) << "Failed to read handshake response. "
                                    << " Error code: " << ec;
 
@@ -83,7 +83,7 @@ boost::asio::awaitable<messaging::compression_type> handshake_service::perform_c
             messaging::to_string(ec)));
     }
 
-    const auto& response_frame = *response_frame_result;
+    const auto& response_frame = *response_read_result.frame;
 
     // Verify message type
     if (response_frame.header().type != message_type::handshake_response) {
@@ -156,14 +156,14 @@ handshake_service::perform_server_handshake(
         // with mismatched protocol versions. This enables us to send a proper
         // handshake_response with version details instead of rejecting the frame.
         BOOST_LOG_SEV(lg(), debug) << "About to read handshake request frame from client";
-        auto frame_result = co_await conn.read_frame(true);  // skip_version_check=true
-        if (!frame_result) {
+        auto read_result = co_await conn.read_frame(true);  // skip_version_check=true
+        if (!read_result.frame) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read handshake request: error code "
-                                      << static_cast<int>(frame_result.error());
+                                      << static_cast<int>(read_result.frame.error());
             co_return std::nullopt;
         }
 
-        const auto& request_frame = *frame_result;
+        const auto& request_frame = *read_result.frame;
 
         // Verify it's a handshake request
         if (request_frame.header().type != message_type::handshake_request) {
@@ -221,14 +221,14 @@ handshake_service::perform_server_handshake(
 
         // Read handshake acknowledgment
         BOOST_LOG_SEV(lg(), debug) << "About to read handshake acknowledgment frame from client";
-        auto ack_frame_result = co_await conn.read_frame(false);
-        if (!ack_frame_result) {
+        auto ack_read_result = co_await conn.read_frame(false);
+        if (!ack_read_result.frame) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read handshake ack, error code: "
-                                      << static_cast<int>(ack_frame_result.error());
+                                      << static_cast<int>(ack_read_result.frame.error());
             co_return std::nullopt;
         }
 
-        const auto& ack_frame = *ack_frame_result;
+        const auto& ack_frame = *ack_read_result.frame;
         if (ack_frame.header().type != message_type::handshake_ack) {
             BOOST_LOG_SEV(lg(), error) << "Expected handshake ack, got message type "
                                       << static_cast<int>(ack_frame.header().type);

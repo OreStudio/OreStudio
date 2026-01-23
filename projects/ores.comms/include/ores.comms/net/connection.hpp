@@ -22,6 +22,7 @@
 
 #include <atomic>
 #include <cstdint>
+#include <optional>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/awaitable.hpp>
@@ -29,6 +30,25 @@
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::comms::net {
+
+/**
+ * @brief Result of a read_frame operation.
+ *
+ * When CRC validation fails, we still have the header information including
+ * correlation_id. This allows the caller to fail the specific pending request
+ * rather than letting it timeout.
+ */
+struct read_frame_result {
+    std::expected<messaging::frame, ores::utility::serialization::error_code> frame;
+
+    /**
+     * @brief Correlation ID from the header when CRC validation fails.
+     *
+     * Set only when the header was successfully parsed but CRC validation failed.
+     * Use this to fail the pending request with an error response.
+     */
+    std::optional<std::uint32_t> failed_correlation_id;
+};
 
 /**
  * @brief SSL connection wrapper for frame-based communication.
@@ -79,8 +99,10 @@ public:
      * This is useful during handshake to allow the server to send a proper
      * version mismatch response instead of rejecting the frame immediately.
      * @param cancel_slot Optional cancellation slot for graceful shutdown
+     * @return read_frame_result containing the frame or error. On CRC failures,
+     *         failed_correlation_id is set so the caller can fail the pending request.
      */
-    boost::asio::awaitable<std::expected<messaging::frame, ores::utility::serialization::error_code>>
+    boost::asio::awaitable<read_frame_result>
     read_frame(bool skip_version_check = false,
         boost::asio::cancellation_slot cancel_slot = {});
 

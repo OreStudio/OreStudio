@@ -42,7 +42,7 @@ boost::asio::awaitable<void> connection::ssl_handshake_client(
         boost::asio::bind_cancellation_slot(cancel_slot, boost::asio::use_awaitable));
 }
 
-boost::asio::awaitable<std::expected<messaging::frame, ores::utility::serialization::error_code>>
+boost::asio::awaitable<read_frame_result>
 connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot cancel_slot) {
     try {
         BOOST_LOG_SEV(lg(), debug) << "Waiting to read the next frame"
@@ -66,7 +66,7 @@ connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot c
         if (!header_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize header, error: "
                                      << static_cast<int>(header_result.error());
-            co_return std::unexpected(header_result.error());
+            co_return read_frame_result{std::unexpected(header_result.error()), std::nullopt};
         }
 
         const auto& header = *header_result;
@@ -88,9 +88,18 @@ connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot c
         auto frame_result = messaging::frame::deserialize(header,
             std::span<const std::byte>(buffer));
         if (!frame_result) {
+            const auto ec = frame_result.error();
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize frame, error: "
-                                     << static_cast<int>(frame_result.error());
-            co_return std::unexpected(frame_result.error());
+                                     << static_cast<int>(ec)
+                                     << " type=" << header.type
+                                     << " correlation_id=" << header.correlation_id
+                                     << " payload_size=" << header.payload_size;
+
+            // On CRC failure, return the correlation_id so caller can fail the pending request
+            if (ec == ores::utility::serialization::error_code::crc_validation_failed) {
+                co_return read_frame_result{std::unexpected(ec), header.correlation_id};
+            }
+            co_return read_frame_result{std::unexpected(ec), std::nullopt};
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Successfully deserialized frame, type: "
@@ -100,16 +109,20 @@ connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot c
         // Track bytes received
         bytes_received_.fetch_add(buffer.size(), std::memory_order_relaxed);
 
-        co_return frame_result;
+        co_return read_frame_result{std::move(frame_result), std::nullopt};
 
     } catch (const boost::system::system_error& e) {
         BOOST_LOG_SEV(lg(), error) << "Network error in read_frame: "
                                  << e.what();
-        co_return std::unexpected(ores::utility::serialization::error_code::network_error);
+        co_return read_frame_result{
+            std::unexpected(ores::utility::serialization::error_code::network_error),
+            std::nullopt};
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Unexpected error in read_frame: "
                                  << e.what();
-        co_return std::unexpected(ores::utility::serialization::error_code::invalid_message_type);
+        co_return read_frame_result{
+            std::unexpected(ores::utility::serialization::error_code::invalid_message_type),
+            std::nullopt};
     }
 }
 

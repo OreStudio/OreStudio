@@ -34,6 +34,7 @@ select ores.upsert_dq_datasets(
     {{#dataset.publication_date}}'{{dataset.publication_date}}'::date{{/dataset.publication_date}}{{^dataset.publication_date}}current_date{{/dataset.publication_date}},
     'FpML Public License 2.0',
     '{{entity.entity_plural}}',
-    'refdata_{{entity.entity_plural}}_tbl',
-    'dq_populate_{{entity.entity_plural}}'
+    {{#shared_table_config}}'{{shared_table_config.production_table}}',
+    '{{shared_table_config.populate_function}}'{{/shared_table_config}}{{^shared_table_config}}'refdata_{{entity.entity_plural}}_tbl',
+    'dq_populate_{{entity.entity_plural}}'{{/shared_table_config}}
 );

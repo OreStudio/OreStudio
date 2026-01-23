@@ -81,6 +81,91 @@ ENTITY_FILE_PATTERNS = {
     'supervisory-bodies': ['supervisory-body-*.xml'],
 }
 
+# Enrichment data for non-ISO currencies
+# These currencies are from FPML but need additional metadata to populate
+# the shared dq_currencies_artefact_tbl (which has a richer schema than
+# standard FPML reference data tables).
+#
+# Fields: symbol, fraction_symbol, fractions_per_unit, rounding_type,
+#         rounding_precision, format, currency_type, flag_key
+NON_ISO_CURRENCY_ENRICHMENT = {
+    # Offshore Chinese Yuan variants
+    'CNH': {
+        'name': 'Offshore Chinese Yuan (Hong Kong)',
+        'symbol': '¥', 'fraction_symbol': '分', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '¥#,##0.00', 'currency_type': 'fiat.offshore', 'flag_key': 'hk'
+    },
+    'CNT': {
+        'name': 'Offshore Chinese Yuan (Taiwan)',
+        'symbol': '¥', 'fraction_symbol': '分', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '¥#,##0.00', 'currency_type': 'fiat.offshore', 'flag_key': 'tw'
+    },
+    # British Crown Dependencies (pegged to GBP)
+    'GGP': {
+        'name': 'Guernsey Pound',
+        'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '£#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'gg'
+    },
+    'IMP': {
+        'name': 'Isle of Man Pound',
+        'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '£#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'im'
+    },
+    'JEP': {
+        'name': 'Jersey Pound',
+        'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '£#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'je'
+    },
+    # Pacific Island currencies (pegged to AUD)
+    'KID': {
+        'name': 'Kiribati Dollar',
+        'symbol': '$', 'fraction_symbol': '¢', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '$#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'ki'
+    },
+    'TVD': {
+        'name': 'Tuvalu Dollar',
+        'symbol': '$', 'fraction_symbol': '¢', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '$#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'tv'
+    },
+    # Historical European currencies
+    'MCF': {
+        'name': 'Monegasque Franc',
+        'symbol': '₣', 'fraction_symbol': 'c', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '₣#,##0.00', 'currency_type': 'fiat.historical', 'flag_key': 'mc'
+    },
+    'SML': {
+        'name': 'Sammarinese Lira',
+        'symbol': '₤', 'fraction_symbol': 'c', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '₤#,##0.00', 'currency_type': 'fiat.historical', 'flag_key': 'sm'
+    },
+    'VAL': {
+        'name': 'Vatican Lira',
+        'symbol': '₤', 'fraction_symbol': 'c', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '₤#,##0.00', 'currency_type': 'fiat.historical', 'flag_key': 'va'
+    },
+}
+
+# Entities that use shared tables instead of their own entity-specific tables
+# These entities have their artefact data stored in existing tables with richer schemas
+ENTITIES_WITH_SHARED_TABLES = {
+    'non-iso-currencies': {
+        'artefact_table': 'dq_currencies_artefact_tbl',
+        'production_table': 'refdata_currencies_tbl',
+        'populate_function': 'dq_populate_currencies',
+        'skip_schema_generation': True,
+    }
+}
+
 
 def get_subject_area(entity_dir_name: str) -> str:
     """Get the subject area for an entity based on its directory name."""
@@ -199,8 +284,13 @@ class MergedEntity:
         For entities with multiple coding schemes (e.g., entity_classifications),
         this produces multiple datasets. Each dataset contains only the rows
         belonging to that coding scheme.
+
+        For non-ISO currencies, enrichment data is added to populate the
+        shared dq_currencies_artefact_tbl (which has a richer schema).
         """
         datasets = []
+        is_non_iso_currency = self.entity_plural == 'non_iso_currencies'
+
         for cs in self.coding_schemes:
             coding_scheme_code = cs.to_code()
             # Filter rows for this coding scheme
@@ -218,12 +308,28 @@ class MergedEntity:
 
             items = []
             for row in scheme_rows:
-                items.append({
+                item = {
                     "code": row.code,
                     "coding_scheme_code": row.coding_scheme_code,
                     "source": row.source,
                     "description": row.description
-                })
+                }
+                # Add enrichment data for non-ISO currencies
+                if is_non_iso_currency and row.code in NON_ISO_CURRENCY_ENRICHMENT:
+                    enrichment = NON_ISO_CURRENCY_ENRICHMENT[row.code]
+                    item.update({
+                        "name": enrichment['name'],
+                        "numeric_code": "",  # Non-ISO currencies don't have ISO numeric codes
+                        "symbol": enrichment['symbol'],
+                        "fraction_symbol": enrichment['fraction_symbol'],
+                        "fractions_per_unit": enrichment['fractions_per_unit'],
+                        "rounding_type": enrichment['rounding_type'],
+                        "rounding_precision": enrichment['rounding_precision'],
+                        "format": enrichment['format'],
+                        "currency_type": enrichment['currency_type'],
+                        "flag_key": enrichment['flag_key'],
+                    })
+                items.append(item)
 
             entity_data = {
                 "entity_singular": self.entity_name,
@@ -238,7 +344,7 @@ class MergedEntity:
                     "placeholder_key": "xx"
                 }
 
-            datasets.append({
+            dataset_entry = {
                 "dataset": {
                     "code": dataset_code,
                     "name": display_name,
@@ -250,7 +356,18 @@ class MergedEntity:
                 },
                 "entity": entity_data,
                 "items": items,
-            })
+            }
+
+            # Mark non-ISO currencies as using shared tables
+            if is_non_iso_currency:
+                dataset_entry["uses_shared_currency_table"] = True
+                dataset_entry["shared_table_config"] = {
+                    "artefact_table": "dq_currencies_artefact_tbl",
+                    "production_table": "refdata_currencies_tbl",
+                    "populate_function": "dq_populate_currencies",
+                }
+
+            datasets.append(dataset_entry)
 
         return datasets
 
@@ -745,7 +862,14 @@ def main():
         artefact_files = []
 
         for entity in entities:
-            generate_entity_model(entity, models_dir)
+            # Skip schema generation for entities using shared tables (e.g., non-ISO currencies)
+            # They use existing tables like dq_currencies_artefact_tbl
+            entity_key = entity.entity_plural.replace('_', '-')
+            if entity_key not in ENTITIES_WITH_SHARED_TABLES:
+                generate_entity_model(entity, models_dir)
+            else:
+                print(f"  Skipping schema generation for {entity.entity_plural} (uses shared table)")
+
             generate_populate_data(entity, data_dir)
 
             # Collect dataset and artefact filenames

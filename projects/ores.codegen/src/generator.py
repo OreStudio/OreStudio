@@ -234,6 +234,22 @@ def get_populate_template_mappings():
     ]
 
 
+def get_non_iso_currency_template_mappings():
+    """
+    Define the mapping for non-ISO currency populate templates.
+
+    Non-ISO currencies use the shared dq_currencies_artefact_tbl instead of
+    having their own entity-specific artefact table.
+
+    Returns:
+        list: List of tuples (template_name, output_prefix, output_suffix) for populate generation
+    """
+    return [
+        ("sql_non_iso_currency_populate.mustache", "dq_", "_artefact_populate.sql"),
+        ("sql_dataset_refdata.mustache", "fpml_", "_dataset_populate.sql"),
+    ]
+
+
 def load_model(model_path):
     """
     Load a model from the specified path.
@@ -367,7 +383,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         templates_to_process = [t[0] for t in get_schema_template_mappings()]
     elif is_data_model:
         # Entity data models use populate templates
-        templates_to_process = [t[0] for t in get_populate_template_mappings()]
+        # Non-ISO currencies use a special template that populates dq_currencies_artefact_tbl
+        if model.get('uses_shared_currency_table'):
+            templates_to_process = [t[0] for t in get_non_iso_currency_template_mappings()]
+        else:
+            templates_to_process = [t[0] for t in get_populate_template_mappings()]
     elif model_filename in template_map:
         templates_to_process = template_map[model_filename]
     else:
@@ -534,6 +554,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # Add image linking configuration if defined in entity model
             if 'image_linking' in data['entity']:
                 data['image_linking'] = data['entity']['image_linking']
+
+            # Add shared table configuration for entities that use existing tables
+            # (e.g., non-ISO currencies use dq_currencies_artefact_tbl)
+            if 'shared_table_config' in model:
+                data['shared_table_config'] = model['shared_table_config']
         # Legacy format: model has 'entity' and 'items' keys (per-entity)
         elif 'entity' in model and 'items' in model:
             data['entity'] = model['entity']
@@ -633,8 +658,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         elif is_data_model and 'entity' in data:
             # For entity data models, derive filename from dataset or entity definition
             # Find the prefix and suffix for this template
+            # Check both standard and non-ISO currency mappings
             populate_mappings = get_populate_template_mappings()
-            mapping = next(((t, p, s) for t, p, s in populate_mappings if t == template_name), None)
+            non_iso_mappings = get_non_iso_currency_template_mappings()
+            all_mappings = populate_mappings + non_iso_mappings
+            mapping = next(((t, p, s) for t, p, s in all_mappings if t == template_name), None)
             if mapping:
                 file_prefix, suffix = mapping[1], mapping[2]
             else:

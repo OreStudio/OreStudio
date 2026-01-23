@@ -45,5 +45,20 @@ Data Sourcing and Generation Steps:
 
 FpML Genericode files follow the OASIS CodeList standard. Each file contains
 Code, Source, and Description columns. The CanonicalVersionUri identifies the
-specific version of the coding scheme.'
+specific version of the coding scheme.
+
+NON-ISO CURRENCY ENRICHMENT
+---------------------------
+The non-ISO currency data (non-iso-currency-1-1.xml) provides only currency codes
+and descriptions. Since these currencies need to populate dq_currencies_artefact_tbl
+(which has a richer schema with symbol, fractions, format, etc.), the code generator
+enriches them with hardcoded metadata in fpml_parser.py:
+
+- Symbol and fraction symbol (e.g., ¥/分 for Yuan, £/p for Pound)
+- Fractions per unit (100), rounding type (standard), precision (2)
+- Currency type (fiat.offshore, fiat.emerging, fiat.historical)
+- Flag key for linking to country flag images
+
+This enrichment is necessary because FPML only publishes currency codes,
+not the full currency metadata needed for financial applications.'
 );

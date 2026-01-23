@@ -310,31 +310,60 @@ TEST_CASE("get_images_response_deserialize_truncated_data", tags) {
 
 // list_images_request tests
 
-TEST_CASE("list_images_request_serialize_empty", tags) {
+TEST_CASE("list_images_request_serialize_no_filter", tags) {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing list_images_request serialization";
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_request serialization without filter";
 
     list_images_request request;
     auto serialized = request.serialize();
 
-    REQUIRE(serialized.empty());
+    // Should have 1 byte (flag = 0, no modified_since)
+    REQUIRE(serialized.size() == 1);
+    REQUIRE(serialized[0] == std::byte{0x00});
 }
 
-TEST_CASE("list_images_request_deserialize_empty", tags) {
+TEST_CASE("list_images_request_serialize_with_filter", tags) {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing list_images_request deserialization";
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_request serialization with filter";
+
+    list_images_request request;
+    request.modified_since = std::chrono::system_clock::now();
+    auto serialized = request.serialize();
+
+    // Should have flag byte (1) + timestamp string
+    REQUIRE(serialized.size() > 1);
+    REQUIRE(serialized[0] == std::byte{0x01});
+}
+
+TEST_CASE("list_images_request_deserialize_empty_fails", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_request deserialization with empty data";
 
     std::span<const std::byte> empty_data;
     auto result = list_images_request::deserialize(empty_data);
 
-    REQUIRE(result.has_value());
+    REQUIRE_FALSE(result.has_value());
+    REQUIRE(result.error() == error_code::payload_incomplete);
 }
 
-TEST_CASE("list_images_request_deserialize_non_empty_fails", tags) {
+TEST_CASE("list_images_request_deserialize_invalid_flag_fails", tags) {
     auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, info) << "Testing list_images_request deserialization with non-empty data";
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_request deserialization with invalid flag";
 
-    std::vector<std::byte> data{std::byte{0x01}};
+    // Flag value 2 is invalid (only 0 and 1 are valid)
+    std::vector<std::byte> data{std::byte{0x02}};
+    auto result = list_images_request::deserialize(data);
+
+    REQUIRE_FALSE(result.has_value());
+    REQUIRE(result.error() == error_code::invalid_request);
+}
+
+TEST_CASE("list_images_request_deserialize_trailing_data_fails", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, info) << "Testing list_images_request deserialization with trailing data";
+
+    // Valid flag (0) followed by extra data
+    std::vector<std::byte> data{std::byte{0x00}, std::byte{0xFF}};
     auto result = list_images_request::deserialize(data);
 
     REQUIRE_FALSE(result.has_value());

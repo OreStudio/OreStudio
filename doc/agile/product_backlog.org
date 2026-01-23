@@ -67,6 +67,11 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Add modified since for all entities                                :code:
+
+We added support for this only for images. We need to update all types such as
+currencies etc with support for point in time gets.
+
 *** Add widget to manage assets                                        :code:
 
 We can't upload flags etc.

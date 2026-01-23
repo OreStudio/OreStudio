@@ -183,15 +183,45 @@ std::ostream& operator<<(std::ostream& s, const get_images_response& v) {
 // list_images_request
 
 std::vector<std::byte> list_images_request::serialize() const {
-    return {};
+    std::vector<std::byte> buffer;
+
+    // Write 1 byte flag: 0 = no filter, 1 = has modified_since
+    if (modified_since) {
+        writer::write_uint8(buffer, 1);
+        writer::write_string(buffer, timepoint_to_string(*modified_since));
+    } else {
+        writer::write_uint8(buffer, 0);
+    }
+
+    return buffer;
 }
 
 std::expected<list_images_request, ores::utility::serialization::error_code>
 list_images_request::deserialize(std::span<const std::byte> data) {
+    list_images_request request;
+
+    // Read flag byte
+    auto flag_result = reader::read_uint8(data);
+    if (!flag_result) {
+        return std::unexpected(flag_result.error());
+    }
+
+    if (*flag_result == 1) {
+        auto timestamp_result = reader::read_string(data);
+        if (!timestamp_result) {
+            return std::unexpected(timestamp_result.error());
+        }
+        request.modified_since = string_to_timepoint(*timestamp_result);
+    } else if (*flag_result != 0) {
+        return std::unexpected(ores::utility::serialization::error_code::invalid_request);
+    }
+
+    // Check for unconsumed data
     if (!data.empty()) {
         return std::unexpected(ores::utility::serialization::error_code::invalid_request);
     }
-    return list_images_request{};
+
+    return request;
 }
 
 std::ostream& operator<<(std::ostream& s, const list_images_request& v) {
@@ -218,6 +248,7 @@ std::vector<std::byte> list_images_response::serialize() const {
         writer::write_string(buffer, img.image_id);
         writer::write_string(buffer, img.key);
         writer::write_string(buffer, img.description);
+        writer::write_string(buffer, timepoint_to_string(img.recorded_at));
     }
 
     return buffer;
@@ -248,6 +279,10 @@ list_images_response::deserialize(std::span<const std::byte> data) {
         auto description_result = reader::read_string(data);
         if (!description_result) return std::unexpected(description_result.error());
         img.description = *description_result;
+
+        auto recorded_at_result = reader::read_string(data);
+        if (!recorded_at_result) return std::unexpected(recorded_at_result.error());
+        img.recorded_at = string_to_timepoint(*recorded_at_result);
 
         response.images.push_back(std::move(img));
     }

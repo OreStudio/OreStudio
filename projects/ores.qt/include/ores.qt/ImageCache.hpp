@@ -228,6 +228,7 @@ private slots:
     void onCurrencyImageSet();
     void onCountryImageSet();
     void onAllAvailableImagesLoaded();
+    void onIncrementalChangesLoaded();
 
 private:
     /**
@@ -259,6 +260,13 @@ private:
      * @brief Load images by their IDs.
      */
     void loadImagesByIds(const std::vector<std::string>& image_ids);
+
+    /**
+     * @brief Load only images that have changed since last load.
+     *
+     * Uses the modified_since parameter to fetch only changed images.
+     */
+    void loadIncrementalChanges();
 
     struct ImageIdsResult {
         bool success;
@@ -323,6 +331,7 @@ private:
 
     QFutureWatcher<ImageIdsResult>* currency_ids_watcher_;
     QFutureWatcher<ImageIdsResult>* country_ids_watcher_;
+    QFutureWatcher<ImageIdsResult>* incremental_changes_watcher_;
     QFutureWatcher<ImagesResult>* images_watcher_;
     QFutureWatcher<ImageListResult>* image_list_watcher_;
     QFutureWatcher<SingleImageResult>* single_image_watcher_;
@@ -335,6 +344,9 @@ private:
 
     // Track image IDs currently being loaded to prevent duplicate requests
     std::unordered_set<std::string> pending_image_requests_;
+
+    // Timestamp of last successful load (for incremental loading)
+    std::optional<std::chrono::system_clock::time_point> last_load_time_;
 };
 
 }

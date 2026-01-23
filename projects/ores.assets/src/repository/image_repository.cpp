@@ -19,9 +19,11 @@
  */
 #include "ores.assets/repository/image_repository.hpp"
 
+#include <charconv>
 #include <sstream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
+#include "ores.platform/time/datetime.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.assets/repository/image_mapper.hpp"
@@ -122,7 +124,14 @@ image_repository::read_latest_by_ids(context ctx,
 
         image_entity entity;
         entity.image_id = row[0].value_or("");
-        entity.version = row[1] ? std::stoi(*row[1]) : 0;
+
+        // Use std::from_chars for safe, non-throwing integer parsing
+        int version = 0;
+        if (row[1]) {
+            std::from_chars(row[1]->data(), row[1]->data() + row[1]->size(), version);
+        }
+        entity.version = version;
+
         entity.key = row[2].value_or("");
         entity.description = row[3].value_or("");
         entity.svg_data = row[4].value_or("");
@@ -166,6 +175,30 @@ image_repository::read_latest(context ctx, std::uint32_t offset,
     return execute_read_query<image_entity, domain::image>(ctx, query,
         [](const auto& entities) { return image_mapper::map(entities); },
         lg(), "Reading latest images with pagination.");
+}
+
+std::vector<domain::image>
+image_repository::read_latest_since(context ctx,
+    std::chrono::system_clock::time_point modified_since) {
+
+    // Format timestamp for sqlgen query (thread-safe)
+    const auto timestamp_str =
+        platform::time::datetime::format_time_point_utc(modified_since);
+
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest images modified since: "
+                               << timestamp_str;
+
+    // Use sqlgen query with timestamp comparison
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto since_ts = make_timestamp(timestamp_str, lg());
+
+    const auto query = sqlgen::read<std::vector<image_entity>> |
+        where("valid_to"_c == max.value() && "valid_from"_c >= since_ts.value()) |
+        order_by("valid_from"_c.desc());
+
+    return execute_read_query<image_entity, domain::image>(ctx, query,
+        [](const auto& entities) { return image_mapper::map(entities); },
+        lg(), "Reading latest images since timestamp");
 }
 
 std::uint32_t image_repository::get_total_image_count(context ctx) {

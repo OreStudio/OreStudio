@@ -93,10 +93,17 @@ handle_list_images_request(std::span<const std::byte> payload) {
         co_return std::unexpected(request_result.error());
     }
 
+    const auto& request = *request_result;
     list_images_response response;
     try {
-        // Read all images from repository
-        auto images = image_repo_.read_latest(ctx_);
+        // Read images from repository - filtered if modified_since is set
+        std::vector<domain::image> images;
+        if (request.modified_since) {
+            BOOST_LOG_SEV(lg(), debug) << "Filtering images modified since timestamp";
+            images = image_repo_.read_latest_since(ctx_, *request.modified_since);
+        } else {
+            images = image_repo_.read_latest(ctx_);
+        }
 
         // Convert to image_info (without SVG data)
         response.images.reserve(images.size());
@@ -104,7 +111,8 @@ handle_list_images_request(std::span<const std::byte> payload) {
             response.images.push_back({
                 .image_id = boost::uuids::to_string(img.image_id),
                 .key = img.key,
-                .description = img.description
+                .description = img.description,
+                .recorded_at = img.recorded_at
             });
         }
 

@@ -21,9 +21,9 @@
 #include "ores.qt/ImageCache.hpp"
 
 #include <algorithm>
-#include <iomanip>
 #include <sstream>
 #include <rfl/json.hpp>
+#include "ores.platform/time/datetime.hpp"
 #include <QTimer>
 #include <QtConcurrent>
 #include <boost/lexical_cast.hpp>
@@ -46,6 +46,7 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
       clientManager_(clientManager),
       currency_ids_watcher_(new QFutureWatcher<ImageIdsResult>(this)),
       country_ids_watcher_(new QFutureWatcher<ImageIdsResult>(this)),
+      incremental_changes_watcher_(new QFutureWatcher<ImageIdsResult>(this)),
       images_watcher_(new QFutureWatcher<ImagesResult>(this)),
       image_list_watcher_(new QFutureWatcher<ImageListResult>(this)),
       single_image_watcher_(new QFutureWatcher<SingleImageResult>(this)),
@@ -57,6 +58,8 @@ ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
         this, &ImageCache::onCurrencyImageIdsLoaded);
     connect(country_ids_watcher_, &QFutureWatcher<ImageIdsResult>::finished,
         this, &ImageCache::onCountryImageIdsLoaded);
+    connect(incremental_changes_watcher_, &QFutureWatcher<ImageIdsResult>::finished,
+        this, &ImageCache::onIncrementalChangesLoaded);
     connect(images_watcher_, &QFutureWatcher<ImagesResult>::finished,
         this, &ImageCache::onImagesLoaded);
     connect(image_list_watcher_, &QFutureWatcher<ImageListResult>::finished,
@@ -87,10 +90,11 @@ void ImageCache::loadAll() {
 }
 
 void ImageCache::reload() {
-    BOOST_LOG_SEV(lg(), info) << "reload() called - clearing caches and reloading."
+    BOOST_LOG_SEV(lg(), info) << "reload() called."
                               << " load_all_in_progress=" << load_all_in_progress_
                               << " is_loading_images=" << is_loading_images_
-                              << " is_loading_all_available=" << is_loading_all_available_;
+                              << " is_loading_all_available=" << is_loading_all_available_
+                              << " has_last_load_time=" << last_load_time_.has_value();
 
     // Wait for any in-progress loads to settle
     if (load_all_in_progress_ || is_loading_images_ || is_loading_all_available_) {
@@ -100,7 +104,15 @@ void ImageCache::reload() {
         return;
     }
 
-    // Clear all caches
+    // If we have a last load time, do incremental reload
+    if (last_load_time_) {
+        BOOST_LOG_SEV(lg(), info) << "Performing incremental reload since last load time.";
+        loadIncrementalChanges();
+        return;
+    }
+
+    // First time load - clear caches and do full load
+    BOOST_LOG_SEV(lg(), info) << "No last load time, performing full reload.";
     const auto svg_count = image_svg_cache_.size();
     const auto icon_count = image_icons_.size();
     image_svg_cache_.clear();
@@ -325,6 +337,103 @@ void ImageCache::loadImagesByIds(const std::vector<std::string>& image_ids) {
     images_watcher_->setFuture(future);
 }
 
+void ImageCache::loadIncrementalChanges() {
+    BOOST_LOG_SEV(lg(), debug) << "loadIncrementalChanges() called.";
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load incremental changes: not connected.";
+        return;
+    }
+
+    if (!last_load_time_) {
+        BOOST_LOG_SEV(lg(), warn) << "No last load time, falling back to full reload.";
+        last_load_time_ = std::nullopt;  // Force full reload
+        reload();
+        return;
+    }
+
+    // Format last load time for logging (thread-safe)
+    const auto time_str =
+        platform::time::datetime::format_time_point_utc(*last_load_time_) + " UTC";
+    BOOST_LOG_SEV(lg(), info) << "Incremental reload: fetching images modified since "
+                              << time_str;
+
+    load_all_in_progress_ = true;
+    QPointer<ImageCache> self = this;
+    auto modified_since = *last_load_time_;
+
+    QFuture<ImageIdsResult> future =
+        QtConcurrent::run([self, modified_since]() -> ImageIdsResult {
+            BOOST_LOG_SEV(lg(), debug) << "Fetching images modified since last load.";
+            if (!self) {
+                BOOST_LOG_SEV(lg(), error) << "ImageCache destroyed during async fetch.";
+                return {.success = false, .image_ids = {}};
+            }
+
+            // Build request with modified_since filter
+            assets::messaging::list_images_request request;
+            request.modified_since = modified_since;
+            auto payload = request.serialize();
+
+            frame request_frame(message_type::list_images_request, 0, std::move(payload));
+
+            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send list images request: "
+                                           << response_result.error();
+                return {.success = false, .image_ids = {}};
+            }
+
+            auto payload_result = response_result->decompressed_payload();
+            if (!payload_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
+                                           << payload_result.error();
+                return {.success = false, .image_ids = {}};
+            }
+
+            auto response = assets::messaging::list_images_response::deserialize(*payload_result);
+            if (!response) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize list images response.";
+                return {.success = false, .image_ids = {}};
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Received " << response->images.size()
+                                       << " images modified since last load.";
+
+            std::vector<std::string> image_ids;
+            for (const auto& img : response->images) {
+                image_ids.push_back(img.image_id);
+            }
+
+            return {.success = true, .image_ids = std::move(image_ids)};
+        });
+
+    incremental_changes_watcher_->setFuture(future);
+}
+
+void ImageCache::onIncrementalChangesLoaded() {
+    BOOST_LOG_SEV(lg(), debug) << "onIncrementalChangesLoaded() callback triggered.";
+
+    auto result = incremental_changes_watcher_->result();
+
+    if (!result.success) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch incremental image changes.";
+        load_all_in_progress_ = false;
+        return;
+    }
+
+    if (result.image_ids.empty()) {
+        BOOST_LOG_SEV(lg(), info) << "No images changed since last load.";
+        load_all_in_progress_ = false;
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Loading " << result.image_ids.size()
+                              << " changed images.";
+    loadImagesByIds(result.image_ids);
+}
+
 void ImageCache::onImagesLoaded() {
     BOOST_LOG_SEV(lg(), debug) << "onImagesLoaded() callback triggered.";
     is_loading_images_ = false;
@@ -348,11 +457,22 @@ void ImageCache::onImagesLoaded() {
             }
         }
 
+        // Record successful load time for future incremental loads
+        last_load_time_ = std::chrono::system_clock::now();
+        const auto time_str =
+            platform::time::datetime::format_time_point_utc(*last_load_time_) + " UTC";
+        BOOST_LOG_SEV(lg(), debug) << "Recorded last load time: " << time_str;
+
         BOOST_LOG_SEV(lg(), info) << "Cached " << result.images.size() << " images. "
                                   << "Total icons: " << image_icons_.size();
 
-        emit imagesLoaded();
-        emit allLoaded();
+        // Only emit if we actually loaded something
+        if (!result.images.empty()) {
+            emit imagesLoaded();
+            emit allLoaded();
+        } else {
+            BOOST_LOG_SEV(lg(), debug) << "No images loaded, skipping UI refresh signals.";
+        }
 
         // Notify user if some batches failed (e.g., due to CRC errors)
         if (result.failed_batches > 0) {

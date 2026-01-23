@@ -21,8 +21,10 @@
 #define ORES_ASSETS_MESSAGING_ASSETS_PROTOCOL_HPP
 
 #include <span>
+#include <chrono>
 #include <iosfwd>
 #include <vector>
+#include <optional>
 #include <expected>
 #include "ores.comms/messaging/message_types.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
@@ -64,11 +66,20 @@ struct get_images_response final {
 std::ostream& operator<<(std::ostream& s, const get_images_response& v);
 
 /**
- * @brief Request to list all available images.
+ * @brief Request to list available images.
  *
  * Returns metadata for all images without the SVG data (to reduce payload size).
+ * Optionally filters to only return images modified since a given timestamp.
  */
 struct list_images_request final {
+    /**
+     * @brief Optional timestamp to filter images.
+     *
+     * When set, only images with recorded_at >= modified_since are returned.
+     * When not set, all images are returned (default behavior).
+     */
+    std::optional<std::chrono::system_clock::time_point> modified_since;
+
     std::vector<std::byte> serialize() const;
     static std::expected<list_images_request, ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
@@ -83,6 +94,12 @@ struct image_info final {
     std::string image_id;
     std::string key;
     std::string description;
+    /**
+     * @brief Timestamp when this image was last modified.
+     *
+     * Used by clients to track incremental changes.
+     */
+    std::chrono::system_clock::time_point recorded_at;
 };
 
 std::ostream& operator<<(std::ostream& s, const image_info& v);

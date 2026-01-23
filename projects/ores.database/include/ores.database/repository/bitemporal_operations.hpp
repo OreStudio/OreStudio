@@ -241,6 +241,30 @@ std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_qu
 void execute_raw_command(context ctx, const std::string& sql,
     logging::logger_t& lg, const std::string& operation_desc);
 
+/**
+ * @brief Executes a parameterized SQL query that returns multiple columns per row.
+ *
+ * This helper uses PQexecParams for safe parameterized queries, preventing SQL
+ * injection. Parameters are passed separately from the SQL and bound safely by
+ * the database driver.
+ *
+ * @param ctx The repository context
+ * @param sql The SQL query with $1, $2, etc. placeholders for parameters
+ * @param params Vector of parameter values (strings)
+ * @param lg The logger to use
+ * @param operation_desc Description of the operation for logging
+ * @return A vector of rows, where each row is a vector of optional<string>
+ *
+ * @example
+ * auto rows = execute_parameterized_query(ctx_,
+ *     "SELECT * FROM ores.my_function($1::timestamptz)",
+ *     {"2025-01-15 10:30:00"},
+ *     lg(), "Reading records since timestamp");
+ */
+std::vector<std::vector<std::optional<std::string>>> execute_parameterized_query(
+    context ctx, const std::string& sql, const std::vector<std::string>& params,
+    logging::logger_t& lg, const std::string& operation_desc);
+
 }
 
 #endif

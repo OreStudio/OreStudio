@@ -180,12 +180,11 @@ image_repository::read_latest_since(context ctx,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest images modified since: "
                                << timestamp_str;
 
-    // Call PostgreSQL function
-    std::ostringstream sql;
-    sql << "SELECT * FROM ores.assets_images_read_since_fn('"
-        << timestamp_str << "'::timestamptz)";
+    // Call PostgreSQL function with parameterized query
+    const std::string sql =
+        "SELECT * FROM ores.assets_images_read_since_fn($1::timestamptz)";
 
-    auto rows = execute_raw_multi_column_query(ctx, sql.str(), lg(),
+    auto rows = execute_parameterized_query(ctx, sql, {timestamp_str}, lg(),
         "Reading latest images since timestamp");
 
     // Convert raw results to domain objects

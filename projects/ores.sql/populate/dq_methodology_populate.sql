@@ -75,34 +75,6 @@ select ores.upsert_dq_methodologies(
 );
 
 select ores.upsert_dq_methodologies(
-    'GitHub Cryptocurrency Icons Download',
-    'SVG images downloaded from spothq/cryptocurrency-icons GitHub repository',
-    'https://github.com/spothq/cryptocurrency-icons',
-    'Data Sourcing and Generation Steps:
-
-1. SOURCE DATA DOWNLOAD
-   Repository: https://github.com/spothq/cryptocurrency-icons
-   Commit: 1a63530be6e374711a8554f31b17e4cb92c25fa5
-   Download: Clone the repository at the specified commit
-   Files: svg/color/*.svg (colored cryptocurrency icons)
-
-2. SAVE TO REPOSITORY
-   Target directory: projects/ores.sql/populate/data/cryptocurrency-icons/
-   Copy all SVG files from svg/color/ to the target directory
-   Commit: git add projects/ores.sql/populate/data/cryptocurrency-icons/
-           git commit -m "[data] Add cryptocurrency icons from spothq/cryptocurrency-icons"
-
-3. GENERATE SQL POPULATE SCRIPT
-   Script: projects/ores.sql/populate/generate_dq_images_sql.py
-   Command: python3 projects/ores.sql/populate/generate_dq_images_sql.py --config crypto
-   Output: projects/ores.sql/populate/dq_crypto_images_artefact_populate.sql
-
-4. COMMIT GENERATED SQL
-   git add projects/ores.sql/populate/dq_crypto_images_artefact_populate.sql
-   git commit -m "[sql] Regenerate cryptocurrency icons populate script"'
-);
-
-select ores.upsert_dq_methodologies(
     'Wikipedia ISO 4217 Extraction',
     'Data extracted from Wikipedia page listing ISO 4217 currency codes',
     'https://en.wikipedia.org/wiki/ISO_4217',
@@ -125,39 +97,6 @@ select ores.upsert_dq_methodologies(
 Fiat currencies are classified as ''fiat.major'' (EUR, USD, GBP, JPY, AUD, CAD, CHF,
 DKK, NOK, NZD, SEK) or ''fiat.emerging'' (all others). Commodity currencies (XAU, XAG, etc.)
 use type ''commodity''. SDR uses type ''supranational''.'
-);
-
-select ores.upsert_dq_methodologies(
-    'GitHub Cryptocurrencies JSON Download',
-    'Cryptocurrency symbol-to-name mappings from crypti/cryptocurrencies GitHub repository',
-    'https://github.com/crypti/cryptocurrencies',
-    'Data Sourcing and Generation Steps:
-
-1. SOURCE DATA DOWNLOAD
-   Repository: https://github.com/crypti/cryptocurrencies
-   File: cryptocurrencies.json
-   Download: curl -o cryptocurrencies.json https://raw.githubusercontent.com/crypti/cryptocurrencies/master/cryptocurrencies.json
-
-2. SAVE TO REPOSITORY
-   Target directory: projects/ores.sql/populate/data/cryptocurrencies/
-   Target file: cryptocurrencies.json
-   Commit: git add projects/ores.sql/populate/data/cryptocurrencies/cryptocurrencies.json
-           git commit -m "[data] Add cryptocurrencies JSON from crypti/cryptocurrencies"
-
-3. GENERATE SQL POPULATE SCRIPT
-   Script: projects/ores.sql/populate/generate_dq_cryptocurrencies_sql.py
-   Command: python3 projects/ores.sql/populate/generate_dq_cryptocurrencies_sql.py
-   Optional arguments:
-     --source-file PATH    Path to cryptocurrencies.json
-     --output-file PATH    Output SQL file path
-   Output: projects/ores.sql/populate/dq_cryptocurrencies_artefact_populate.sql
-
-4. COMMIT GENERATED SQL
-   git add projects/ores.sql/populate/dq_cryptocurrencies_artefact_populate.sql
-   git commit -m "[sql] Regenerate cryptocurrencies populate script"
-
-The script classifies cryptocurrencies as ''crypto.major'' (top 20 by market cap)
-or ''crypto.minor'' (all others). Only crypto.major currencies are populated to production.'
 );
 
 select ores.upsert_dq_methodologies(

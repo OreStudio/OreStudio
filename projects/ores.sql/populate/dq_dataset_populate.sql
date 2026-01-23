@@ -67,27 +67,6 @@ select ores.upsert_dq_datasets(
 );
 
 select ores.upsert_dq_datasets(
-    'assets.crypto_icons',
-    'Visual Assets',
-    'Cryptocurrencies',
-    'Reference Data',
-    'NONE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'GitHub Cryptocurrency Icons Download',
-    'Cryptocurrency Icon Images',
-    'SVG icon images for major cryptocurrencies.',
-    'GITHUB',
-    'Visual assets for cryptocurrencies',
-    '2025-01-15'::date,
-    'CC0 1.0 Universal',
-    'images',
-    'assets_images_tbl',
-    'dq_populate_images'
-);
-
-select ores.upsert_dq_datasets(
     'iso.currencies',
     'ISO Standards',
     'Currencies',
@@ -103,48 +82,6 @@ select ores.upsert_dq_datasets(
     'Reference data for currency codes',
     current_date,
     'CC BY-SA 3.0',
-    'currencies',
-    'refdata_currencies_tbl',
-    'dq_populate_currencies'
-);
-
-select ores.upsert_dq_datasets(
-    'crypto.coins',
-    'Cryptocurrency',
-    'Cryptocurrencies',
-    'Reference Data',
-    'NONE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'GitHub Cryptocurrencies JSON Download',
-    'Cryptocurrencies Top 12243 Coins',
-    'Cryptocurrency symbols, names, and metadata for top 12243 coins by market presence.',
-    'GITHUB',
-    'Reference data for cryptocurrency codes',
-    current_date,
-    'MIT',
-    'currencies',
-    'refdata_currencies_tbl',
-    'dq_populate_currencies'
-);
-
-select ores.upsert_dq_datasets(
-    'crypto.top100',
-    'Cryptocurrency',
-    'Cryptocurrencies',
-    'Reference Data',
-    'NONE',
-    'Primary',
-    'Actual',
-    'Raw',
-    'GitHub Cryptocurrencies JSON Download',
-    'Cryptocurrencies Top 100 Coins',
-    'Top 100 cryptocurrencies by market capitalization.',
-    'GITHUB',
-    'Reference data for top 100 cryptocurrency codes',
-    current_date,
-    'MIT',
     'currencies',
     'refdata_currencies_tbl',
     'dq_populate_currencies'

@@ -178,17 +178,6 @@ select ores.upsert_dq_coding_schemes(
     'ISO 4217 currency codes. Three-letter alphabetic codes (e.g., USD, EUR, GBP) and three-digit numeric codes for currencies. The universal standard for currency identification in financial transactions.'
 );
 
--- Currency identification schemes (industry - FPML extensions)
-select ores.upsert_dq_coding_schemes(
-    'FPML_NON_ISO_CURRENCY',
-    'FpML Non-ISO Currency',
-    'industry',
-    'Currencies',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/non-iso-currency',
-    'FpML non-ISO currency codes. Expands the ISO 4217 currency list to include offshore currencies (CNH, CNT) and historical currencies (MCF, SML, VAL) not covered by the standard. Defined by FpML for derivatives trading.'
-);
-
 -- General schemes (internal - placeholder)
 select ores.upsert_dq_coding_schemes(
     'NONE',

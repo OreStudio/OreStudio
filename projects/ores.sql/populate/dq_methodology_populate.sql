@@ -161,39 +161,6 @@ or ''crypto.minor'' (all others). Only crypto.major currencies are populated to 
 );
 
 select ores.upsert_dq_methodologies(
-    'FpML Genericode Download',
-    'Data downloaded from FpML coding scheme repository in Genericode XML format',
-    'http://www.fpml.org/coding-scheme/',
-    'Data Sourcing and Generation Steps:
-
-1. SOURCE DATA DOWNLOAD
-   Repository: http://www.fpml.org/coding-scheme/
-   Format: Genericode XML (OASIS standard for code lists)
-   Download: curl -o <scheme-name>.xml http://www.fpml.org/coding-scheme/<scheme-name>.xml
-   Example: curl -o non-iso-currency-1-1.xml http://www.fpml.org/coding-scheme/non-iso-currency-1-1.xml
-
-2. SAVE TO REPOSITORY
-   Target directory: external/fpml/codelist/
-   Example: external/fpml/codelist/non-iso-currency-1-1.xml
-   Commit: git add external/fpml/codelist/<scheme-name>.xml
-           git commit -m "[data] Add FpML <scheme-name> genericode file"
-
-3. GENERATE SQL FILES
-   Script: projects/ores.codegen/generate_fpml_refdata.sh
-   Command: ./generate_fpml_refdata.sh --entities "<entity-type>"
-   Output: Schema and populate SQL files in projects/ores.sql/
-
-4. COMMIT GENERATED SQL
-   git add projects/ores.sql/schema/refdata_<entity>*.sql
-   git add projects/ores.sql/populate/dq_<entity>*.sql fpml_<entity>*.sql
-   git commit -m "[sql] Regenerate <entity> files from FpML codegen"
-
-FpML Genericode files follow the OASIS CodeList standard. Each file contains
-Code, Source, and Description columns. The CanonicalVersionUri identifies the specific
-version of the coding scheme.'
-);
-
-select ores.upsert_dq_methodologies(
     'iptoasn.com IP to Country Download',
     'IPv4 to country mapping data downloaded from iptoasn.com, a community-maintained database by Frank Denis',
     'https://iptoasn.com/',

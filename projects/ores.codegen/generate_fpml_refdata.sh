@@ -106,12 +106,20 @@ else
     echo ""
 fi
 
-# Step 2: Generate coding schemes SQL
-echo "Step 2: Copying coding schemes SQL..."
+# Step 2: Copy generated SQL files
+echo "Step 2: Copying generated SQL files..."
 echo "----------------------------------------------"
+if [ -f "$OUTPUT_DIR/fpml_methodology_populate.sql" ]; then
+    cp "$OUTPUT_DIR/fpml_methodology_populate.sql" "$POPULATE_DIR/"
+    echo "  -> $POPULATE_DIR/fpml_methodology_populate.sql"
+fi
 if [ -f "$OUTPUT_DIR/fpml_coding_schemes_populate.sql" ]; then
     cp "$OUTPUT_DIR/fpml_coding_schemes_populate.sql" "$POPULATE_DIR/"
     echo "  -> $POPULATE_DIR/fpml_coding_schemes_populate.sql"
+fi
+if [ -f "$OUTPUT_DIR/fpml.sql" ]; then
+    cp "$OUTPUT_DIR/fpml.sql" "$POPULATE_DIR/"
+    echo "  -> $POPULATE_DIR/fpml.sql"
 fi
 echo ""
 
@@ -147,15 +155,24 @@ echo "Schema files:   $SCHEMA_DIR/"
 echo "Populate files: $POPULATE_DIR/"
 echo ""
 echo "Generated files:"
+echo "  - fpml.sql (master include file)"
+echo "  - fpml_methodology_populate.sql"
 echo "  - fpml_coding_schemes_populate.sql"
 
-# List generated schema files
+# List generated schema and populate files
 for model_file in "$OUTPUT_DIR/models/"*_entity.json; do
     if [ -f "$model_file" ]; then
         entity_name=$(basename "$model_file" _entity.json)
         echo "  - refdata_${entity_name}_create.sql"
         echo "  - refdata_${entity_name}_notify_trigger.sql"
         echo "  - dq_${entity_name}_artefact_create.sql"
-        echo "  - refdata_${entity_name}_populate.sql"
+        echo "  - dq_${entity_name}_population_functions.sql"
+    fi
+done
+for data_file in "$OUTPUT_DIR/data/"*_data.json; do
+    if [ -f "$data_file" ]; then
+        entity_name=$(basename "$data_file" _data.json)
+        echo "  - fpml_${entity_name}_dataset_populate.sql"
+        echo "  - dq_${entity_name}_artefact_populate.sql"
     fi
 done

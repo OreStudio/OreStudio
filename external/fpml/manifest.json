@@ -1,0 +1,7 @@
+{
+    "name": "FpML Genericode Download",
+    "description": "Data downloaded from FpML coding scheme repository in Genericode XML format",
+    "source_url": "http://www.fpml.org/coding-scheme/",
+    "downloaded_at": "2026-01-23",
+    "methodology_file": "methodology.txt"
+}

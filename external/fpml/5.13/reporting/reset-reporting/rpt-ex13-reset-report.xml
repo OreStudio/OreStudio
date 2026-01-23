@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is reporting-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<!--
+Example of a reset report
+-->
+<resetReport xmlns="http://www.fpml.org/FpML-5/reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/reporting ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.abc.com/report_id">XXX00123</messageId>
+    <sentBy>XYZ</sentBy>
+    <sendTo>ABC</sendTo>
+    <creationTimestamp>2009-10-01T18:00:00Z</creationTimestamp>
+  </header>
+  <asOfDate>2009-10-01</asOfDate>
+  <reportContents>
+    <partyReference href="party1" />
+    <accountReference href="account1" />
+  </reportContents>
+  <index>
+    <floatingRateIndex>USD-LIBOR-BBA</floatingRateIndex>
+    <indexTenor>
+      <periodMultiplier>3</periodMultiplier>
+      <period>M</period>
+    </indexTenor>
+  </index>
+  <indexSource>Telerate 3750</indexSource>
+  <rateObservation>
+    <resetDate>2009-10-01</resetDate>
+    <adjustedFixingDate>2009-10-01</adjustedFixingDate>
+    <observedRate>0.0511</observedRate>
+  </rateObservation>
+  <affectedPositions>
+    <position>
+      <positionId positionIdScheme="http://www.abc.com/position_id">ABC123</positionId>
+    </position>
+    <position>
+      <positionId positionIdScheme="http://www.abc.com/position_id">ABC456</positionId>
+    </position>
+    <position>
+      <positionId positionIdScheme="http://www.abc.com/position_id">ABC789</positionId>
+    </position>
+  </affectedPositions>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">QGPGHQ1ENZOOLJRFTH41</partyId>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">BFM8T61CT2L1QCEMIK50</partyId>
+  </party>
+  <account id="account1">
+    <accountId accountIdScheme="http://abc.com/account_id">123</accountId>
+    <servicingParty href="party1" />
+  </account>
+</resetReport>
+

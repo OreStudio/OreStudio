@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is reporting-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<!--
+  == This examples shows how to represent Credit Event Notice as notification message
+  -->
+<creditEventNotification xmlns="http://www.fpml.org/FpML-5/reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/reporting ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.example.com/messageId">CEN/2004/01/05/15-38</messageId>
+    <sentBy>GSI</sentBy>
+    <sendTo>ABC</sendTo>
+    <creationTimestamp>2004-01-05T15:38:00Z</creationTimestamp>
+  </header>
+  <isCorrection>false</isCorrection>
+  <correlationId correlationIdScheme="http://www.example.com/correlationId">COR/2004/01/05/12</correlationId>
+  <sequenceNumber>1</sequenceNumber>
+  <creditEventNotice>
+    <affectedTransactions>
+      <tradeReference>
+        <partyTradeIdentifier>
+          <partyReference href="party1" />
+          <tradeId tradeIdScheme="http://www.gs.com/fpmltid">1234ABCD</tradeId>
+        </partyTradeIdentifier>
+      </tradeReference>
+    </affectedTransactions>
+    <referenceEntity id="referenceEntity">
+      <entityName>Solutia Inc.</entityName>
+      <entityId entityIdScheme="http://www.fpml.org/coding-scheme/external/entity-id-RED">8G836J</entityId>
+    </referenceEntity>
+    <bankruptcy />
+    <publiclyAvailableInformation>
+      <resourceId resourceIdScheme="http://www.bankA.com/cen/resource">GS-CEN_Resource-001</resourceId>
+      <language languageScheme="http://www.fpml.org/coding-scheme/external/ISO-639-2T">eng</language>
+      <sizeInBytes>505</sizeInBytes>
+      <length>
+        <lengthUnit>Pages</lengthUnit>
+        <lengthValue>1</lengthValue>
+      </length>
+      <mimeType mimeTypeScheme="http://www.fpml.org/coding-scheme/external/RFC2046">text/html</mimeType>
+      <name>AP-Solutia.html</name>
+      <comments>Also available in PDF format.</comments>
+      <url>http://www.nytimes.com/aponline/business/AP-Solutia.html</url>
+    </publiclyAvailableInformation>
+    <notifyingPartyReference href="party1" />
+    <notifiedPartyReference href="party2" />
+    <creditEventNoticeDate>2004-01-05</creditEventNoticeDate>
+    <creditEventDate>2003-12-17</creditEventDate>
+  </creditEventNotice>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">GSI</partyId>
+    <partyName>Goldman Sachs International</partyName>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">ABC</partyId>
+    <partyName>BANK ABC Co.</partyName>
+  </party>
+</creditEventNotification>
+

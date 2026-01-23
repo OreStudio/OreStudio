@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+	== Copyright (c) 2022-2025 All rights reserved.
+	== Financial Products Markup Language is subject to the FpML public license.
+	== A copy of this license is available at http://www.fpml.org/license/license.html
+--><publicDisclosure xmlns:rec="http://www.fpml.org/FpML-5/transparency"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:record="http://www.fpml.org/FpML-5/transparency"
+                  xmlns:trans="http://www.fpml.org/FpML-5/transparency"
+                  xmlns:field="http://www.fpml.org/field-definition"
+                  xmlns="http://www.fpml.org/FpML-5/transparency"
+                  fpmlVersion="5-13"
+                  xsi:schemaLocation="http://www.fpml.org/FpML-5/transparency ../../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../../xmldsig-core-schema.xsd">
+   <header>
+      <messageId messageIdScheme="http://abc.com/message-id">123</messageId>
+      <sentBy>abc</sentBy>
+      <sendTo>sdr</sendTo>
+      <creationTimestamp>2009-01-28T09:12:47Z</creationTimestamp>
+   </header>
+   <!--Defs has 207--><eventType>Inception:NewTrade</eventType>
+   <eventTimestamp>2009-01-28T09:12:34Z</eventTimestamp>
+   <applicableRegulations>
+      <regulatorApplicability>
+         <supervisoryBody>CFTC</supervisoryBody>
+         <regulation>CFTC_PART43</regulation>
+      </regulatorApplicability>
+      <regulatorApplicability>
+         <supervisoryBody>CA.ON.OSC</supervisoryBody>
+         <regulation>Rule91-507</regulation>
+      </regulatorApplicability>
+   </applicableRegulations>
+   <!--found trade--><trade>
+      <tradeHeader>
+         <uniqueSwapIdentifier>
+            <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1021111111</issuer>
+            <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+         </uniqueSwapIdentifier>
+         <partyTradeIdentifier>
+            <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1021111111</issuer>
+            <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+         </partyTradeIdentifier>
+         <partyTradeIdentifier>
+            <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1021111111</issuer>
+            <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+         </partyTradeIdentifier>
+         <tradeInformation>
+            <executionDateTime>2009-01-28T09:12:34Z</executionDateTime>
+            <intentToClear>false</intentToClear>
+            <nonStandardTerms>true</nonStandardTerms>
+            <offMarketPrice>true</offMarketPrice>
+            <largeSizeTrade>false</largeSizeTrade>
+            <executionType>Electronic</executionType>
+            <executionVenueType>SEF</executionVenueType>
+         </tradeInformation>
+         <tradeDate>2009-01-28</tradeDate>
+         <!-- Trade Header --></tradeHeader>
+      <!--Using default rules, no xpaths defined for this product--><publicReportingProductInfo>
+         <primaryAssetClass>Commodity</primaryAssetClass>
+         <productType>Commodity:Energy:Elec:Swap:Physical</productType>
+         <dates>
+            <effectiveDate>2009-08-01</effectiveDate>
+            <contractExpirationDate>2009-08-31</contractExpirationDate>
+         </dates>
+         <sizes/>
+         <underlyers/>
+      </publicReportingProductInfo>
+   </trade>
+</publicDisclosure>

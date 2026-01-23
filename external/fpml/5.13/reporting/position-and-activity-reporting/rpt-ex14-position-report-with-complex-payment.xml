@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is reporting-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<!--View is reporting-->
+<!--Version is 5-0-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--Omit some adjustments, details of procedures, and other information not required for a report-->
+<positionReport xmlns="http://www.fpml.org/FpML-5/reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/reporting ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.abc.com/mid">XXX00123</messageId>
+    <sentBy>ABCDUS33</sentBy>
+    <sendTo>HEDGUS33</sendTo>
+    <creationTimestamp>2004-08-02T15:38:00Z</creationTimestamp>
+  </header>
+  <asOfDate>2004-06-02</asOfDate>
+  <dataSetName>Copper</dataSetName>
+  <position>
+    <positionId positionIdScheme="cma_trade_id">47641</positionId>
+    <status>New</status>
+    <originatingEvent>Trade</originatingEvent>
+    <reportingRoles>
+      <baseAccount href="acct1" />
+    </reportingRoles>
+<!-- VM, NPVAdj, NPVAdjPrev, NPV, NPVPrev -->
+    <valuation>
+      <quote>
+        <value>12345.67</value>
+<!-- settlement npv -->
+        <measureType>NPV</measureType>
+        <currency>USD</currency>
+      </quote>
+      <quote>
+        <value>11111.00</value>
+<!-- prior settlement npv -->
+        <measureType assetMeasureScheme="cme_measure_code">PriorNPV</measureType>
+      </quote>
+      <quote>
+        <value>12345.67</value>
+<!-- settlement npv adjusted-->
+        <measureType assetMeasureScheme="cme_measure_code">NPVAdjusted</measureType>
+        <currency>USD</currency>
+      </quote>
+      <quote>
+        <value>11111.00</value>
+<!-- prior settlement npv adjusted-->
+        <measureType assetMeasureScheme="cme_measure_code">PriorNPVAdjusted</measureType>
+      </quote>
+      <quote>
+        <value>11111.00</value>
+        <measureType assetMeasureScheme="cme_measure_code">VariationMargin</measureType>
+      </quote>
+    </valuation>
+<!-- floating coupon, fixed coupon, price alignment interest -->
+    <payment>
+      <identifier>123</identifier>
+      <payerPartyReference href="party1" />
+      <receiverPartyReference href="party2" />
+      <paymentAmount>
+        <currency>USD</currency>
+        <amount>199800.00</amount>
+      </paymentAmount>
+      <calculationDetails>
+        <grossCashflow>
+          <cashflowAmount>
+            <currency>USD</currency>
+            <amount>99999.99</amount>
+          </cashflowAmount>
+          <cashflowType cashflowTypeScheme="cme_cashflow_type">FixedCoupon</cashflowType>
+        </grossCashflow>
+        <observationElements>
+          <observedValue>
+            <value>2.75825</value>
+          </observedValue>
+        </observationElements>
+        <calculationElements>
+          <calculationPeriod>
+            <adjustedStartDate>2009-12-15</adjustedStartDate>
+            <adjustedEndDate>2010-06-15</adjustedEndDate>
+            <dayCountYearFraction>.5</dayCountYearFraction>
+<!--
+                  <notional>
+                      <currency>USD</currency>
+                      <amount>10000000</amount>
+                  </notional>
+                  -->
+          </calculationPeriod>
+        </calculationElements>
+      </calculationDetails>
+<!-- Floating Coupon Payment -->
+      <calculationDetails>
+        <grossCashflow>
+          <cashflowAmount>
+            <currency>USD</currency>
+            <amount>88888.99</amount>
+          </cashflowAmount>
+          <cashflowType cashflowTypeScheme="cme_cashflow_type">FloatingCoupon</cashflowType>
+        </grossCashflow>
+        <observationElements>
+          <observedValue>
+            <value>3.012875</value>
+          </observedValue>
+        </observationElements>
+        <calculationElements>
+          <calculationPeriod>
+            <adjustedStartDate>2010-03-15</adjustedStartDate>
+            <adjustedEndDate>2010-06-15</adjustedEndDate>
+            <dayCountYearFraction>.25</dayCountYearFraction>
+<!--
+                  <notional>
+                      <currency>USD</currency>
+                      <amount>10000000</amount>
+                  </notional>
+                  -->
+          </calculationPeriod>
+        </calculationElements>
+      </calculationDetails>
+<!-- Price Alignment Interest Payment -->
+      <calculationDetails>
+        <grossCashflow>
+          <cashflowAmount>
+            <currency>USD</currency>
+            <amount>777.99</amount>
+          </cashflowAmount>
+          <cashflowType cashflowTypeScheme="cme_cashflow_type">PAI</cashflowType>
+        </grossCashflow>
+        <observationElements>
+          <observedValue>
+            <value>1.573845</value>
+          </observedValue>
+        </observationElements>
+        <calculationElements>
+          <calculationPeriod>
+            <adjustedStartDate>2010-06-14</adjustedStartDate>
+            <adjustedEndDate>2010-06-15</adjustedEndDate>
+            <dayCountYearFraction>.00277778</dayCountYearFraction>
+<!--
+                  <notional>
+                        <amount>10000000</amount>
+                        <currency>USD</currency>
+                   </notional>
+                  -->
+          </calculationPeriod>
+        </calculationElements>
+      </calculationDetails>
+      <calculationDetails>
+        <grossCashflow>
+          <cashflowAmount>
+            <currency>USD</currency>
+            <amount>99999.99</amount>
+          </cashflowAmount>
+          <cashflowType cashflowTypeScheme="cme_cashflow_type">Upfront</cashflowType>
+        </grossCashflow>
+      </calculationDetails>
+    </payment>
+  </position>
+  <party id="party1">
+    <partyName>CMA Group Inc.</partyName>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">MORG123</partyId>
+    <partyName>Morgan Cabot N.A.</partyName>
+  </party>
+  <account id="acct1">
+    <accountId accountIdScheme="account1">123</accountId>
+  </account>
+</positionReport>
+

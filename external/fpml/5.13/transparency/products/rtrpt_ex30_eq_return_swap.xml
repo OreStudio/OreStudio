@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is transparency-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/transparency-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+
+  -->
+<publicExecutionReport xmlns="http://www.fpml.org/FpML-5/transparency" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/transparency ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+<!-- This represents the real-time reporting requirements published in draft form by the CFTC in 17 CFR 43 -->
+<!-- The comments indicate the reportable field name as described in Table A1 of Appendix A, on 
+     pp. 76177-76181 of the Federal Register -->
+<!-- This example shows an IR swap -->
+<!-- The data values are taken from "Example 1" in Appendix A, on page 76156 of the Federal Register -->
+<!-- 
+* unmapped fields:
+* Cancellation indicator -> currently in FpML this would be a separate message - should this be kept this way?
+* Price forming continuation data - normally in FpML each event would be a different payload type
+-->
+  <header>
+    <messageId messageIdScheme="http://www.sef.com/msg_id">SEF123</messageId>
+    <sentBy>SEFCORP</sentBy>
+    <sendTo>SDR01</sendTo>
+    <creationTimestamp>2011-02-04T15:38:00Z</creationTimestamp>
+<!-- Date stamp -->
+  </header>
+  <isCorrection>false</isCorrection>
+<!-- Correction indicator -->
+  <correlationId correlationIdScheme="http://fpml.org/universal_swap_id">123</correlationId>
+  <sequenceNumber>1</sequenceNumber>
+  <originatingEvent>Trade</originatingEvent>
+  <trade>
+<!-- equivalent to to "price forming continuation data -->
+    <tradeHeader>
+      <partyTradeIdentifier>
+        <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1031234567</issuer>
+        <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">712345678901234567890123456789012</tradeId>
+      </partyTradeIdentifier>
+      <tradeInformation>
+        <executionDateTime>2011-02-04T15:38:00Z</executionDateTime>
+<!-- Execution timestamp -->
+        <intentToClear>true</intentToClear>
+<!-- NEW: cleared or uncleared = "C" in CFTC doc -->
+        <nonStandardTerms>false</nonStandardTerms>
+<!-- NEW: indication of other price-affecting term -->
+        <offMarketPrice>false</offMarketPrice>
+<!-- NEW -->
+        <largeSizeTrade>false</largeSizeTrade>
+<!-- NEW: block trades and large notional swaps -->
+        <executionType>Electronic</executionType>
+<!-- NEW -->
+        <executionVenueType>SEF</executionVenueType>
+<!-- NEW: execution venue = "SWM" in CFTC doc -->
+      </tradeInformation>
+      <tradeDate id="TradeDate">2011-02-04</tradeDate>
+    </tradeHeader>
+    <returnSwap>
+      <primaryAssetClass>Equity</primaryAssetClass>
+<!-- asset class -->
+<!--<productType>EquityTotalReturnSwap</productType>-->
+<!-- contract type  = "S-" in CFTC doc -->
+      <productType productTypeScheme="http://www.fpml.org/coding-scheme/product-taxonomy">Equity:Swap:PriceReturnBasicPerformance:SingleName</productType>
+      <returnLeg>
+        <effectiveDate id="EffectiveDate">
+          <relativeDate>
+            <periodMultiplier>3</periodMultiplier>
+            <period>D</period>
+            <dateRelativeTo href="TradeDate" />
+          </relativeDate>
+        </effectiveDate>
+        <terminationDate id="TerminationDate">
+          <relativeDate>
+            <periodMultiplier>0</periodMultiplier>
+            <period>D</period>
+            <dateRelativeTo href="FinalEquityPaymentDate" />
+          </relativeDate>
+        </terminationDate>
+        <underlyer>
+          <singleUnderlyer>
+            <equity>
+              <instrumentId instrumentIdScheme="http://www.abc.com/instrumentId">SHPGY.O</instrumentId>
+              <exchangeId exchangeIdScheme="http://www.abc.com/exchangeId">NASDAQ</exchangeId>
+            </equity>
+            <openUnits>760400</openUnits>
+            <dividendPayout>
+              <dividendPayoutRatio>1</dividendPayoutRatio>
+            </dividendPayout>
+          </singleUnderlyer>
+        </underlyer>
+        <settlementType>Cash</settlementType>
+        <rateOfReturn>
+          <initialPrice>
+            <netPrice>
+              <currency>USD</currency>
+              <amount>37.44</amount>
+              <priceExpression>AbsoluteTerms</priceExpression>
+            </netPrice>
+          </initialPrice>
+          <notionalReset>true</notionalReset>
+          <valuationPriceInterim>
+            <determinationMethod>ValuationTime</determinationMethod>
+            <valuationRules>
+              <valuationDates id="InterimValuationDate">
+                <adjustableDates>
+                  <unadjustedDate>2001-10-12</unadjustedDate>
+                  <unadjustedDate>2001-11-13</unadjustedDate>
+                  <unadjustedDate>2001-12-12</unadjustedDate>
+                  <unadjustedDate>2002-01-14</unadjustedDate>
+                  <unadjustedDate>2002-02-12</unadjustedDate>
+                  <unadjustedDate>2002-03-12</unadjustedDate>
+                  <unadjustedDate>2002-04-12</unadjustedDate>
+                  <unadjustedDate>2002-05-13</unadjustedDate>
+                  <unadjustedDate>2002-06-12</unadjustedDate>
+                  <unadjustedDate>2002-07-12</unadjustedDate>
+                  <unadjustedDate>2002-08-12</unadjustedDate>
+                </adjustableDates>
+              </valuationDates>
+              <valuationTimeType>Close</valuationTimeType>
+            </valuationRules>
+          </valuationPriceInterim>
+          <valuationPriceFinal>
+            <determinationMethod>HedgeExecution</determinationMethod>
+            <valuationRules>
+              <valuationDate id="FinalValuationDate">
+                <adjustableDate>
+                  <unadjustedDate>2002-09-24</unadjustedDate>
+                </adjustableDate>
+              </valuationDate>
+            </valuationRules>
+          </valuationPriceFinal>
+          <paymentDates id="EquityPaymentDate">
+            <paymentDatesInterim id="InterimEquityPaymentDate">
+              <relativeDates>
+                <periodMultiplier>3</periodMultiplier>
+                <period>D</period>
+                <dateRelativeTo href="InterimValuationDate" />
+              </relativeDates>
+            </paymentDatesInterim>
+            <paymentDateFinal id="FinalEquityPaymentDate">
+              <relativeDate>
+                <periodMultiplier>3</periodMultiplier>
+                <period>D</period>
+              </relativeDate>
+            </paymentDateFinal>
+          </paymentDates>
+        </rateOfReturn>
+        <notional>
+          <notionalAmount id="EquityNotionalAmount">
+            <currency>USD</currency>
+            <amount>28469376</amount>
+          </notionalAmount>
+        </notional>
+        <amount>
+          <currency id="EquityPaymentCurrency">USD</currency>
+          <referenceAmount>ISDA Standard</referenceAmount>
+          <cashSettlement>true</cashSettlement>
+        </amount>
+        <return>
+          <returnType>Total</returnType>
+        </return>
+        <notionalAdjustments>Execution</notionalAdjustments>
+      </returnLeg>
+      <interestLeg>
+        <interestLegCalculationPeriodDates id="InterestLegPeriodDates">
+          <effectiveDate>
+            <relativeDate>
+              <periodMultiplier>3</periodMultiplier>
+              <period>D</period>
+              <dateRelativeTo href="TradeDate" />
+            </relativeDate>
+          </effectiveDate>
+          <terminationDate>
+            <relativeDate>
+              <periodMultiplier>0</periodMultiplier>
+              <period>D</period>
+              <dateRelativeTo href="FinalEquityPaymentDate" />
+            </relativeDate>
+          </terminationDate>
+          <interestLegResetDates>
+            <calculationPeriodDatesReference href="InterestLegPeriodDates" />
+            <resetRelativeTo>CalculationPeriodStartDate</resetRelativeTo>
+          </interestLegResetDates>
+          <interestLegPaymentDates>
+            <relativeDates>
+              <periodMultiplier>0</periodMultiplier>
+              <period>D</period>
+              <dateRelativeTo href="EquityPaymentDate" />
+            </relativeDates>
+          </interestLegPaymentDates>
+        </interestLegCalculationPeriodDates>
+        <notional>
+          <relativeNotionalAmount href="EquityNotionalAmount" />
+        </notional>
+        <interestAmount>
+<!--FpML 5-0: Renamed from <paymentCurrency href="EquityPaymentCurrency"/>-->
+          <currencyReference href="EquityPaymentCurrency" />
+          <referenceAmount>Standard ISDA</referenceAmount>
+        </interestAmount>
+        <interestCalculation>
+          <floatingRateCalculation>
+            <floatingRateIndex>USD-LIBOR-BBA</floatingRateIndex>
+            <indexTenor>
+              <periodMultiplier>1</periodMultiplier>
+              <period>M</period>
+            </indexTenor>
+            <spreadSchedule>
+              <initialValue>0.0020</initialValue>
+            </spreadSchedule>
+          </floatingRateCalculation>
+          <dayCountFraction>ACT/360</dayCountFraction>
+        </interestCalculation>
+      </interestLeg>
+    </returnSwap>
+  </trade>
+</publicExecutionReport>
+

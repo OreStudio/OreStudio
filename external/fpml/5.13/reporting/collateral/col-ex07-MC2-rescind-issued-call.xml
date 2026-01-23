@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is reporting-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+-->
+<!--
+        Margin Call Process: Rescind Issued Margin Call (MC2)
+-->
+<requestMarginRetracted xmlns="http://www.fpml.org/FpML-5/reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/reporting ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.abcbank.com/message-Id">123abc0000035</messageId>
+    <sentBy messageAddressScheme="http://www.abcbank.com/party-Id">ABCBICXXX</sentBy>
+    <creationTimestamp>2010-05-19T09:30:00Z</creationTimestamp>
+  </header>
+  <correlationId correlationIdScheme="http://www.abcbank.com/correlation-id">111222333456</correlationId>
+<!-- "Margin Call Reference" is handled by correlationId -->
+  <sequenceNumber>2</sequenceNumber>
+  <marginCallIssuerPartyReference href="party2" />
+<!-- margin call issuer -->
+  <marginCallReceiverPartyReference href="party1" />
+<!-- margin call Receiver -->
+<!-- none of the details are necessary in a rescind message. The correlationId alone is sufficient to reference the original margin call -->
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300VBWWV6BYQOWM67</partyId>
+    <partyName>ABC Bank</partyName>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">254900BIAQJIUV6DLE92</partyId>
+    <partyName>XYZ Bank</partyName>
+  </party>
+  <collateralRetractionReason>
+    <reasonCode>PartyReferenceMismatch</reasonCode>
+    <description>The margin call was issued to the incorrect entity.</description>
+  </collateralRetractionReason>
+</requestMarginRetracted>
+

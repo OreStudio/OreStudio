@@ -1,0 +1,797 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  == Copyright (c) 2002-2017. All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  --><!-- This represents the non-public recordkeeping and reporting requirements published in draft form by the CFTC in 17 CFR 45 --><!-- The comments indicate the reportable field name as described in the tables on
+pp. 76606-76607 of the Federal Register --><!-- This example shows an initial report of a new trade --><!-- The data values are taken from "Example 1" in Appendix A, on page 76156 of the Federal Register --><regulatoryDisclosure xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      xmlns:record="http://www.fpml.org/FpML-5/recordkeeping"
+                      xmlns="http://www.fpml.org/FpML-5/recordkeeping"
+                      xmlns:field="http://www.fpml.org/field-definition"
+                      fpmlVersion="5-13"
+                      xsi:schemaLocation="http://www.fpml.org/FpML-5/recordkeeping ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+   <header>
+      <messageId messageIdScheme="http://www.bankx.com/msg_id">BANKX0001</messageId>
+      <sentBy>BANKX</sentBy>
+      <sendTo>SDR01</sendTo>
+      <creationTimestamp>2011-02-04T16:42:16Z</creationTimestamp>
+      <implementationSpecification>
+         <version implementationSpecificationVersionScheme="http://www.dtcc.com">CA3.0IR1.0</version>
+      </implementationSpecification>
+      <!-- Date stamp --></header>
+   <!-- Correction indicator --><!--Defs has 207--><onBehalfOf>
+      <partyReference href="party1"/>
+   </onBehalfOf>
+   <eventId>123</eventId>
+   <eventType>Amendment</eventType>
+   <eventTimestamps>
+      <executionDateTime>2011-02-07T16:42:16Z</executionDateTime>
+      <effectiveDate>2011-02-09</effectiveDate>
+   </eventTimestamps>
+   <reportingPartyReference href="party1"/>
+   <counterPartyReference href="party2"/>
+   <changeInNotional>
+      <currency>USD</currency>
+      <amount>123</amount>
+   </changeInNotional>
+   <payment>
+      <payerPartyReference href="party1"/>
+      <receiverPartyReference href="party2"/>
+      <paymentDate>
+         <adjustableDate>
+            <unadjustedDate>2012-05-05</unadjustedDate>
+         </adjustableDate>
+      </paymentDate>
+      <paymentAmount>
+         <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+         <amount>500000</amount>
+      </paymentAmount>
+   </payment>
+   <applicableRegulations>
+      <regulatorApplicability>
+         <supervisoryBody>CFTC</supervisoryBody>
+         <regulation>CFTC_PART43</regulation>
+         <regulation>CFTC_PART45</regulation>
+      </regulatorApplicability>
+      <regulatorApplicability>
+         <supervisoryBody>CA.ON.OSC</supervisoryBody>
+         <regulation>CFTC_PART43</regulation>
+         <regulation>CSA_2013</regulation>
+      </regulatorApplicability>
+      <regulatorApplicability>
+         <supervisoryBody>ESMA</supervisoryBody>
+         <regulation>EMIR</regulation>
+         <regulation>RTS_23</regulation>
+      </regulatorApplicability>
+   </applicableRegulations>
+   <regulationSpecificInformation>
+      <cftc_part45_2012>
+         <supervisoryBody>CFTC</supervisoryBody>
+         <reportingRole>ReportingParty</reportingRole>
+         <reportingPurpose>RealTimePublic</reportingPurpose>
+         <reportingPurpose>PrimaryEconomicTerms</reportingPurpose>
+         <mandatorilyClearable>false</mandatorilyClearable>
+      </cftc_part45_2012>
+      <esma_emirRts_2015>
+         <supervisoryBody>ESMA</supervisoryBody>
+         <reportingRole>ReportingParty</reportingRole>
+         <reportingPurpose>PrimaryEconomicTerms</reportingPurpose>
+         <tradePartyRelationshipType>Intragroup</tradePartyRelationshipType>
+         <mandatorilyClearable>false</mandatorilyClearable>
+         <exceedsClearingThreshold>true</exceedsClearingThreshold>
+      </esma_emirRts_2015>
+   </regulationSpecificInformation>
+   <trade>
+      <tradeHeader>
+         <uniqueSwapIdentifier>
+            <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1031234567</issuer>
+            <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+         </uniqueSwapIdentifier>
+         <partyTradeIdentifier>
+            <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1031234567</issuer>
+            <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+            <linkedTrade>
+               <linkType>LinkedTrade</linkType>
+               <linkId linkIdScheme="http://www.dtcc.com/coding-scheme/external/report-details/emir-report-tracking-number">ReportTrackingNumber</linkId>
+            </linkedTrade>
+            <linkedTrade>
+               <linkType>LinkedTrade</linkType>
+               <linkId linkIdScheme="http://www.dtcc.com/coding-scheme/external/report-details/emir-complex-trade-component-id">103123456733333878901234567890123456789012 </linkId>
+            </linkedTrade>
+            <linkedTrade>
+               <linkType>blockTradeId</linkType>
+               <linkId linkIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">103123456788888878901234567890123456789012</linkId>
+            </linkedTrade>
+            <linkedTrade>
+               <linkType>originatingTradeId</linkType>
+               <linkId linkIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">103123456788888878901234567890123456789012</linkId>
+            </linkedTrade>
+         </partyTradeIdentifier>
+         <partyTradeIdentifier>
+            <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">1031234567</issuer>
+            <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+         </partyTradeIdentifier>
+         <partyTradeIdentifier>
+            <partyReference href="conf-svc"/>
+            <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">123456</tradeId>
+         </partyTradeIdentifier>
+         <partyTradeIdentifier>
+            <partyReference href="party1"/>
+            <tradeId tradeIdScheme="http://www.dtcc.com/internal-reference-id">654</tradeId>
+         </partyTradeIdentifier>
+         <partyTradeIdentifier>
+            <partyReference href="party2"/>
+            <tradeId tradeIdScheme="http://www.dtcc.com/internal-reference-id">888</tradeId>
+         </partyTradeIdentifier>
+         <partyTradeInformation>
+            <partyReference href="party1"/>
+            <relatedParty>
+               <partyReference href="party1"/>
+               <role>TradeSource</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="party2"/>
+               <role>Counterparty</role>
+            </relatedParty>
+            <relatedParty><!-- SEC: (2.2) Platform ID  --><partyReference href="venue"/>
+               <role>ExecutionFacility</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="party1"/>
+               <role>OrderSubmitter</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="clearing-svc"/>
+               <role>ClearingOrganization</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="clearing-member"/>
+               <role>ClearingFirm</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="conf-svc"/>
+               <role>ConfirmationService</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="ai1"/>
+               <role>AuthorizedInstitution</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="broker1"/>
+               <role>ArrangingBroker</role>
+               <!-- arranging broker --></relatedParty>
+            <relatedParty><!-- SEC: (2.2) Executing Agent  --><partyReference href="executing_agent"/>
+               <role>ExecutingBroker</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="party1"/>
+               <role>AllocationAgent</role>
+               <!-- firm defining the allocations --></relatedParty>
+            <relatedParty>
+               <partyReference href="beneficiary"/>
+               <role>Beneficiary</role>
+            </relatedParty>
+            <relatedParty><!-- theICE - first reported SDR --><partyReference href="original_sdr"/>
+               <role>PriorTradeRepository</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="tpv1"/>
+               <role>ThirdPartyViewer</role>
+            </relatedParty>
+            <relatedBusinessUnit>
+               <businessUnitReference href="desk1"/>
+               <role>RegisteredBranch</role>
+            </relatedBusinessUnit>
+            <relatedBusinessUnit>
+               <businessUnitReference href="desk1"/>
+               <role>TradingDesk</role>
+            </relatedBusinessUnit>
+            <relatedPerson>
+               <personReference href="trader"/>
+               <role>Trader</role>
+            </relatedPerson>
+            <relatedPerson>
+               <personReference href="trader"/>
+               <role>InvestmentDecisionMaker</role>
+            </relatedPerson>
+            <relatedPerson>
+               <personReference href="trader"/>
+               <role>TradingDecisionMaker</role>
+            </relatedPerson>
+            <relatedPerson>
+               <personReference href="broker"/>
+               <role>SalesBroker</role>
+            </relatedPerson>
+            <isAccountingHedge>true</isAccountingHedge>
+            <executionDateTime>2011-02-04T16:20:47Z</executionDateTime>
+            <!-- Execution timestamp --><timestamps>
+               <orderSubmitted>2011-02-04T16:20:02Z</orderSubmitted>
+               <publiclyReported>2011-02-04T16:20:08Z</publiclyReported>
+               <publicReportUpdated>2011-02-04T16:22:12Z</publicReportUpdated>
+               <nonpubliclyReported>2011-02-04T16:25:08Z</nonpubliclyReported>
+               <nonpublicReportUpdated>2011-02-04T16:37:12Z</nonpublicReportUpdated>
+               <submittedForConfirmation>2011-02-04T16:22:12Z</submittedForConfirmation>
+               <updatedForConfirmation>2011-02-04T17:02:12Z</updatedForConfirmation>
+               <confirmed>2011-02-04T17:05:47Z</confirmed>
+               <submittedForClearing>2011-02-04T17:05:52Z</submittedForClearing>
+               <updatedForClearing>2011-02-04T17:32:12Z</updatedForClearing>
+               <cleared>2011-02-04T17:48:12Z</cleared>
+               <allocationsSubmitted>2011-02-04T17:48:12Z</allocationsSubmitted>
+               <allocationsCompleted>2011-02-04T17:48:24</allocationsCompleted>
+            </timestamps>
+            <intentToAllocate>false</intentToAllocate>
+            <allocationStatus>Pending</allocationStatus>
+            <intentToClear>true</intentToClear>
+            <clearingStatus>Pending</clearingStatus>
+            <!-- NEW: cleared or uncleared = "C" in CFTC doc --><collateralizationType>Fully</collateralizationType>
+            <collateralPortfolio portfolioNameScheme="http://www.bankx.com/collateral-portfolio-id">COLL123</collateralPortfolio>
+            <!--
+        <reportingRegime>
+          <name>MiFIR</name>
+          <supervisorRegistration>
+            <supervisoryBody>ESMA</supervisoryBody>
+          </supervisorRegistration>
+          <reportingRole>ReportingParty</reportingRole>
+--><!-- ESMA:  trading capacity ?? --><!--
+          <reportingPurpose>PrimaryEconomicTerms</reportingPurpose>
+          <mandatorilyClearable>false</mandatorilyClearable>
+          <exceedsClearingThreshold>true</exceedsClearingThreshold>
+--><!-- ESMA:  clearing threshold --><!--
+          <partyEntityClassification>
+            <partyReference href="party1"/>
+            <entityClassification entityClassificationScheme="http://www.fpml.org/coding-scheme/entity-classification-esma">Financial</entityClassification>
+          </partyEntityClassification>
+--><!-- ESMA:  clearing threshold --><!--
+	  <tradePartyRelationshipType>Intragroup</tradePartyRelationshipType>
+--><!-- intragroup indicator --><!--
+	  <transmissionOfOrder>true</transmissionOfOrder>
+        </reportingRegime>
+--><endUserException>true</endUserException>
+            <!-- SEC (2.7): if the SBS will not be cleared, whether counterparties have invoked applicable clearing exception --><endUserExceptionReason>Inter-Affiliate</endUserExceptionReason>
+            <!-- SEC Additional Requiremetns --><nonStandardTerms>false</nonStandardTerms>
+            <!-- NEW: indication of other price-affecting term --><offMarketPrice>false</offMarketPrice>
+            <!-- NEW --><pricingContext>NettingOrCompression</pricingContext>
+            <largeSizeTrade>false</largeSizeTrade>
+            <!-- NEW: block trades and large notional swaps --><executionType>Electronic</executionType>
+            <!-- NEW --><executionVenueType>SEF</executionVenueType>
+            <!-- NEW: execution venue = "SWM" in CFTC doc; do we need a more specific refeence? --><verificationMethod>Electronic</verificationMethod>
+            <!-- NEW --><confirmationMethod>Electronic</confirmationMethod>
+            <!-- NEW --><compressedTrade>true</compressedTrade>
+            <isSecuritiesFinancing>false</isSecuritiesFinancing>
+            <shortSale>false</shortSale>
+         </partyTradeInformation>
+         <partyTradeInformation>
+            <partyReference href="party2"/>
+            <relatedParty>
+               <partyReference href="beneficiary2"/>
+               <role>Beneficiary</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="ai2"/>
+               <role>AuthorizedInstitution</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="executing_agent2"/>
+               <role>ExecutingBroker</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="broker3"/>
+               <role>ArrangingBroker</role>
+               <!-- arranging broker --></relatedParty>
+            <relatedParty>
+               <partyReference href="clearing-member2"/>
+               <role>ClearingFirm</role>
+            </relatedParty>
+            <relatedParty>
+               <partyReference href="party2"/>
+               <role>AllocationAgent</role>
+               <!-- firm defining the allocations --></relatedParty>
+            <relatedParty>
+               <partyReference href="tpv2"/>
+               <role>ThirdPartyViewer</role>
+            </relatedParty>
+            <relatedBusinessUnit>
+               <businessUnitReference href="desk2"/>
+               <role>RegisteredBranch</role>
+            </relatedBusinessUnit>
+            <relatedPerson>
+               <personReference href="trader2"/>
+               <role>Trader</role>
+            </relatedPerson>
+            <relatedPerson>
+               <personReference href="trader2"/>
+               <role>InvestmentDecisionMaker</role>
+            </relatedPerson>
+            <relatedPerson>
+               <personReference href="trader2"/>
+               <role>TradingDecisionMaker</role>
+            </relatedPerson>
+            <relatedPerson>
+               <personReference href="broker2"/>
+               <role>SalesBroker</role>
+            </relatedPerson>
+            <isAccountingHedge>false</isAccountingHedge>
+            <executionDateTime>2011-02-04T16:21:01Z</executionDateTime>
+            <!-- Execution timestamp --><timestamps>
+               <orderSubmitted>2011-02-04T16:20:00Z</orderSubmitted>
+               <publiclyReported>2011-02-04T16:20:00Z</publiclyReported>
+               <publicReportUpdated>2011-02-04T16:22:10Z</publicReportUpdated>
+               <nonpubliclyReported>2011-02-04T16:25:00Z</nonpubliclyReported>
+               <nonpublicReportUpdated>2011-02-04T16:37:10Z</nonpublicReportUpdated>
+               <submittedForConfirmation>2011-02-04T16:22:10Z</submittedForConfirmation>
+               <updatedForConfirmation>2011-02-04T17:02:10Z</updatedForConfirmation>
+               <confirmed>2011-02-04T17:05:40Z</confirmed>
+               <submittedForClearing>2011-02-04T17:05:50Z</submittedForClearing>
+               <updatedForClearing>2011-02-04T17:32:10Z</updatedForClearing>
+               <cleared>2011-02-04T17:48:10Z</cleared>
+               <allocationsSubmitted>2011-02-04T17:48:10Z</allocationsSubmitted>
+               <allocationsCompleted>2011-02-04T17:48:20Z</allocationsCompleted>
+            </timestamps>
+            <intentToAllocate>true</intentToAllocate>
+            <allocationStatus>Pending</allocationStatus>
+            <intentToClear>true</intentToClear>
+            <clearingStatus>Pending</clearingStatus>
+            <!-- NEW: cleared or uncleared = "C" in CFTC doc --><collateralizationType>OneWay</collateralizationType>
+            <collateralPortfolio portfolioNameScheme="http://www.bankx.com/collateral-portfolio-id">888</collateralPortfolio>
+         </partyTradeInformation>
+         <tradeSummary>
+            <reportingLevel>T</reportingLevel>
+         </tradeSummary>
+         <originatingPackage>
+            <packageIdentifier>
+               <issuer>SEF123</issuer>
+               <tradeId tradeIdScheme="http://sefco.com/package_id">123</tradeId>
+            </packageIdentifier>
+            <orderIdentifier>
+               <orderId orderIdScheme="http://sefco.com/order_id">123</orderId>
+            </orderIdentifier>
+            <packageType>Butterfly</packageType>
+            <size>2</size>
+            <sequenceNumber>1</sequenceNumber>
+         </originatingPackage>
+         <tradeDate>2011-02-12</tradeDate>
+         <!-- Trade Header --></tradeHeader>
+      <swap><!-- Party A pays the floating rate every 3 months, based on 3M USD-LIBOR-BBA,
+            on an ACT/360 basis --><primaryAssetClass>InterestRate</primaryAssetClass>
+         <secondaryAssetClass>FX</secondaryAssetClass>
+         <productType productTypeScheme="http://www.fpml.org/coding-scheme/product-taxonomy">InterestRate:IRSwap:FixedFloat</productType>
+         <!-- contract type  = "S-" in CFTC doc --><!-- <productSubType>FixedFloatSwap</productSubType> --><!-- NEW: contract sub-type   --><productType productTypeScheme="http://www.dtcc.com/coding-scheme/external/product-classification/emir-contract-type">SW</productType>
+         <productType productTypeScheme="http://www.fpml.org/coding-scheme/external/product-classification/iso10962">SCUCCA</productType>
+         <productId productIdScheme="http://www.dtcc.com/coding-scheme/external/product-id/ISIN">US18683KAC53</productId>
+         <productId productIdScheme="http://www.dtcc.com/coding-scheme/external/underlying-id/maturity-date">2040-10-01</productId>
+         <productId>SWI-ST-USD-IRS</productId>
+         <embeddedOptionType>OptionalEarlyTerminationProvision</embeddedOptionType>
+         <!-- swap instrument (NEW: coding scheme TBD, this example from CFTC rules) --><!-- asset class --><!-- <subAssetClass>N/A</subAssetClass> --><!-- NEW: sub-asset class not applicable for IR --><swapStream>
+            <payerPartyReference href="party1"/>
+            <receiverPartyReference href="party2"/>
+            <calculationPeriodDates id="floatingCalcPeriodDates">
+               <effectiveDate>
+                  <unadjustedDate>2011-02-08</unadjustedDate>
+                  <dateAdjustments>
+                     <businessDayConvention>NONE</businessDayConvention>
+                  </dateAdjustments>
+               </effectiveDate>
+               <terminationDate>
+                  <unadjustedDate>2016-02-08</unadjustedDate>
+                  <dateAdjustments>
+                     <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                     <businessCenters id="primaryBusinessCenters">
+                        <businessCenter>USNY</businessCenter>
+                     </businessCenters>
+                  </dateAdjustments>
+               </terminationDate>
+               <calculationPeriodDatesAdjustments>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCentersReference href="primaryBusinessCenters"/>
+               </calculationPeriodDatesAdjustments>
+               <calculationPeriodFrequency>
+                  <periodMultiplier>3</periodMultiplier>
+                  <period>M</period>
+                  <rollConvention>8</rollConvention>
+               </calculationPeriodFrequency>
+            </calculationPeriodDates>
+            <paymentDates>
+               <calculationPeriodDatesReference href="floatingCalcPeriodDates"/>
+               <paymentFrequency>
+                  <periodMultiplier>3</periodMultiplier>
+                  <period>M</period>
+               </paymentFrequency>
+               <payRelativeTo>CalculationPeriodEndDate</payRelativeTo>
+               <paymentDatesAdjustments>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCentersReference href="primaryBusinessCenters"/>
+               </paymentDatesAdjustments>
+            </paymentDates>
+            <resetDates id="resetDates">
+               <calculationPeriodDatesReference href="floatingCalcPeriodDates"/>
+               <resetRelativeTo>CalculationPeriodStartDate</resetRelativeTo>
+               <fixingDates>
+                  <periodMultiplier>-2</periodMultiplier>
+                  <period>D</period>
+                  <dayType>Business</dayType>
+                  <businessDayConvention>NONE</businessDayConvention>
+                  <businessCenters>
+                     <businessCenter>GBLO</businessCenter>
+                  </businessCenters>
+                  <dateRelativeTo href="resetDates"/>
+               </fixingDates>
+               <resetFrequency>
+                  <periodMultiplier>3</periodMultiplier>
+                  <period>M</period>
+               </resetFrequency>
+               <resetDatesAdjustments>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCentersReference href="primaryBusinessCenters"/>
+               </resetDatesAdjustments>
+            </resetDates>
+            <calculationPeriodAmount>
+               <calculation>
+                  <notionalSchedule>
+                     <notionalStepSchedule>
+                        <initialValue>10000000.00</initialValue>
+                        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+                     </notionalStepSchedule>
+                  </notionalSchedule>
+                  <floatingRateCalculation>
+                     <floatingRateIndex>USD-LIBOR-BBA</floatingRateIndex>
+                     <indexTenor>
+                        <periodMultiplier>3</periodMultiplier>
+                        <period>M</period>
+                     </indexTenor>
+                     <spreadSchedule>
+                        <initialValue>0.0015</initialValue>
+                     </spreadSchedule>
+                  </floatingRateCalculation>
+                  <dayCountFraction>ACT/360</dayCountFraction>
+               </calculation>
+            </calculationPeriodAmount>
+            <principalExchanges>
+               <initialExchange>true</initialExchange>
+               <finalExchange>true</finalExchange>
+            </principalExchanges>
+         </swapStream>
+         <!-- Barclays pays the 6% fixed rate every year on a 30E/360 basis --><swapStream>
+            <payerPartyReference href="party2"/>
+            <receiverPartyReference href="party1"/>
+            <calculationPeriodDates id="fixedCalcPeriodDates">
+               <effectiveDate>
+                  <unadjustedDate>2011-02-08</unadjustedDate>
+                  <dateAdjustments>
+                     <businessDayConvention>NONE</businessDayConvention>
+                  </dateAdjustments>
+               </effectiveDate>
+               <terminationDate>
+                  <unadjustedDate>2016-02-08</unadjustedDate>
+                  <dateAdjustments>
+                     <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                     <businessCentersReference href="primaryBusinessCenters"/>
+                  </dateAdjustments>
+               </terminationDate>
+               <calculationPeriodDatesAdjustments>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCentersReference href="primaryBusinessCenters"/>
+               </calculationPeriodDatesAdjustments>
+               <calculationPeriodFrequency>
+                  <periodMultiplier>6</periodMultiplier>
+                  <period>M</period>
+                  <rollConvention>8</rollConvention>
+               </calculationPeriodFrequency>
+            </calculationPeriodDates>
+            <paymentDates>
+               <calculationPeriodDatesReference href="fixedCalcPeriodDates"/>
+               <paymentFrequency>
+                  <periodMultiplier>6</periodMultiplier>
+                  <period>M</period>
+               </paymentFrequency>
+               <payRelativeTo>CalculationPeriodEndDate</payRelativeTo>
+               <paymentDatesAdjustments>
+                  <businessDayConvention>MODFOLLOWING</businessDayConvention>
+                  <businessCentersReference href="primaryBusinessCenters"/>
+               </paymentDatesAdjustments>
+            </paymentDates>
+            <calculationPeriodAmount>
+               <calculation>
+                  <notionalSchedule>
+                     <notionalStepSchedule>
+                        <initialValue>10000000.00</initialValue>
+                        <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+                     </notionalStepSchedule>
+                  </notionalSchedule>
+                  <fixedRateSchedule>
+                     <initialValue>0.0253</initialValue>
+                  </fixedRateSchedule>
+                  <dayCountFraction>30E/360</dayCountFraction>
+               </calculation>
+            </calculationPeriodAmount>
+            <principalExchanges>
+               <initialExchange>true</initialExchange>
+               <finalExchange>true</finalExchange>
+            </principalExchanges>
+         </swapStream>
+         <earlyTerminationProvision>
+            <mandatoryEarlyTerminationDateTenor>
+               <periodMultiplier>10</periodMultiplier>
+               <period>Y</period>
+            </mandatoryEarlyTerminationDateTenor>
+            <mandatoryEarlyTermination>
+               <mandatoryEarlyTerminationDate>
+                  <unadjustedDate>2021-02-12</unadjustedDate>
+               </mandatoryEarlyTerminationDate>
+            </mandatoryEarlyTermination>
+            <optionalEarlyTermination>
+               <bermudaExercise id="BermudaExercise0">
+                  <bermudaExerciseDates>
+                     <adjustableDates>
+                        <unadjustedDate>2000-12-28</unadjustedDate>
+                        <unadjustedDate>2001-04-28</unadjustedDate>
+                        <unadjustedDate>2001-08-28</unadjustedDate>
+                        <dateAdjustments>
+                           <businessDayConvention>FOLLOWING</businessDayConvention>
+                           <businessCenters>
+                              <businessCenter>EUTA</businessCenter>
+                              <businessCenter>GBLO</businessCenter>
+                           </businessCenters>
+                        </dateAdjustments>
+                     </adjustableDates>
+                  </bermudaExerciseDates>
+                  <relevantUnderlyingDate>
+                     <relativeDates>
+                        <periodMultiplier>0</periodMultiplier>
+                        <period>D</period>
+                        <businessDayConvention>NONE</businessDayConvention>
+                        <dateRelativeTo href="cashSettlementPayment0"/>
+                     </relativeDates>
+                  </relevantUnderlyingDate>
+                  <earliestExerciseTime>
+                     <hourMinuteTime>09:00:00</hourMinuteTime>
+                     <businessCenter>BEBR</businessCenter>
+                  </earliestExerciseTime>
+                  <expirationTime>
+                     <hourMinuteTime>11:00:00</hourMinuteTime>
+                     <businessCenter>BEBR</businessCenter>
+                  </expirationTime>
+               </bermudaExercise>
+               <exerciseNotice>
+                  <partyReference href="party2"/>
+                  <businessCenter>GBLO</businessCenter>
+               </exerciseNotice>
+               <followUpConfirmation>true</followUpConfirmation>
+               <calculationAgent>
+                  <calculationAgentParty>NonExercisingParty</calculationAgentParty>
+               </calculationAgent>
+               <cashSettlement>
+                  <cashSettlementValuationTime>
+                     <hourMinuteTime>11:00:00</hourMinuteTime>
+                     <businessCenter>EUTA</businessCenter>
+                  </cashSettlementValuationTime>
+                  <cashSettlementValuationDate>
+                     <periodMultiplier>-2</periodMultiplier>
+                     <period>D</period>
+                     <dayType>Business</dayType>
+                     <businessDayConvention>NONE</businessDayConvention>
+                     <businessCenters>
+                        <businessCenter>GBLO</businessCenter>
+                        <businessCenter>EUTA</businessCenter>
+                     </businessCenters>
+                     <dateRelativeTo href="cashSettlementPayment0"/>
+                  </cashSettlementValuationDate>
+                  <cashSettlementPaymentDate id="cashSettlementPayment0">
+                     <adjustableDates>
+                        <unadjustedDate>2003-08-30</unadjustedDate>
+                        <unadjustedDate>2004-08-30</unadjustedDate>
+                        <dateAdjustments>
+                           <businessDayConvention>FOLLOWING</businessDayConvention>
+                           <businessCenters>
+                              <businessCenter>GBLO</businessCenter>
+                              <businessCenter>EUTA</businessCenter>
+                           </businessCenters>
+                        </dateAdjustments>
+                     </adjustableDates>
+                  </cashSettlementPaymentDate>
+                  <cashPriceMethod>
+                     <cashSettlementCurrency>EUR</cashSettlementCurrency>
+                     <quotationRateType>Mid</quotationRateType>
+                  </cashPriceMethod>
+               </cashSettlement>
+               <optionalEarlyTerminationAdjustedDates>
+                  <earlyTerminationEvent>
+                     <adjustedExerciseDate>2003-08-25</adjustedExerciseDate>
+                     <adjustedEarlyTerminationDate>2003-09-01</adjustedEarlyTerminationDate>
+                     <adjustedCashSettlementValuationDate>2003-08-28</adjustedCashSettlementValuationDate>
+                     <adjustedCashSettlementPaymentDate>2003-09-01</adjustedCashSettlementPaymentDate>
+                  </earlyTerminationEvent>
+                  <earlyTerminationEvent>
+                     <adjustedExerciseDate>2004-08-23</adjustedExerciseDate>
+                     <adjustedEarlyTerminationDate>2004-08-30</adjustedEarlyTerminationDate>
+                     <adjustedCashSettlementValuationDate>2004-08-26</adjustedCashSettlementValuationDate>
+                     <adjustedCashSettlementPaymentDate>2004-08-30</adjustedCashSettlementPaymentDate>
+                  </earlyTerminationEvent>
+               </optionalEarlyTerminationAdjustedDates>
+            </optionalEarlyTermination>
+         </earlyTerminationProvision>
+         <additionalPayment>
+            <payerPartyReference href="party1"/>
+            <receiverPartyReference href="party2"/>
+            <paymentAmount>
+               <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+               <amount>500000</amount>
+            </paymentAmount>
+            <paymentDate>
+               <unadjustedDate>2012-05-05</unadjustedDate>
+            </paymentDate>
+         </additionalPayment>
+      </swap>
+      <collateral>
+         <independentAmount>
+            <payerPartyReference href="party2"/>
+            <receiverPartyReference href="party1"/>
+            <paymentDetail>
+               <paymentAmount>
+                  <currency>USD</currency>
+                  <amount>12345</amount>
+               </paymentAmount>
+            </paymentDetail>
+         </independentAmount>
+         <independentAmount>
+            <payerPartyReference href="party1"/>
+            <receiverPartyReference href="party2"/>
+            <paymentDetail>
+               <paymentAmount>
+                  <currency>EUR</currency>
+                  <amount>100000</amount>
+               </paymentAmount>
+            </paymentDetail>
+         </independentAmount>
+      </collateral>
+      <documentation>
+         <masterAgreement>
+            <masterAgreementType>ISDA</masterAgreementType>
+            <masterAgreementVersion>1992</masterAgreementVersion>
+            <masterAgreementDate>1997-11-05</masterAgreementDate>
+         </masterAgreement>
+         <masterConfirmation>
+            <masterConfirmationType>ISDA2003CreditNorthAmerican</masterConfirmationType>
+            <masterConfirmationDate>2002-01-07</masterConfirmationDate>
+         </masterConfirmation>
+         <contractualMatrix>
+            <matrixType>CreditDerivativesPhysicalSettlementMatrix</matrixType>
+            <matrixTerm>StandardNorthAmericanCorporate</matrixTerm>
+         </contractualMatrix>
+         <creditSupportAgreement>
+            <type>ISDA2014StandardCreditSupportAgreement</type>
+            <date>2015-01-04</date>
+         </creditSupportAgreement>
+         <otherAgreement>
+            <type>Custom Legal Agreement</type>
+            <!-- ICE : other agreement type --><date>2015-01-04</date>
+            <!-- ICE : other agreement date --></otherAgreement>
+         <attachment>
+            <resourceId resourceIdScheme="http://abc.com/ext/confos">123</resourceId>
+            <resourceType>TermSheet</resourceType>
+            <language languageScheme="http://www.fpml.org/coding-scheme/external/ISO-639-2T">eng</language>
+            <mimeType>application/pdf</mimeType>
+            <base64Binary>VGhpcyBpcyBhIGRlbW9uc3RyYXRpb24gb2YgQmFzZTY0IGVuY29kaW5n</base64Binary>
+            <!-- base 64 encoded copy of doc --></attachment>
+      </documentation>
+      <governingLaw>UKEN</governingLaw>
+   </trade>
+   <party id="party1">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">5493001RKR55V4X61F71</partyId>
+      <!-- unique counterparty identifier of reporting party --><partyName>Bank X</partyName>
+      <classification industryClassificationScheme="http://www.fpml.org/coding-scheme/external/esma/corporate-sector">A</classification>
+      <classification industryClassificationScheme="http://www.fpml.org/coding-scheme/regulatory-corporate-sector">A</classification>
+      <classification industryClassificationScheme="http://www.dtcc.org/coding-scheme/external/hkma-industrial-classification">Corporate</classification>
+      <country>UK</country>
+      <organizationType>SD</organizationType>
+      <contactInfo>
+         <email>swapsdesk@bankx.com</email>
+      </contactInfo>
+      <businessUnit id="desk1">
+         <name>NY Swaps Desk</name>
+         <country>US</country>
+      </businessUnit>
+      <person id="trader">
+         <personId>jjones</personId>
+         <country>US</country>
+      </person>
+      <person id="broker">
+         <personId>fsmith</personId>
+         <country>US</country>
+      </person>
+   </party>
+   <party id="party2">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300O5MFEP1XJ40B46</partyId>
+      <!-- unique counterparty identifier of other party --><partyName>Bank Y</partyName>
+      <classification industryClassificationScheme="http://www.fpml.org/coding-scheme/external/esma/corporate-sector">NonFinancial</classification>
+      <classification industryClassificationScheme="http://www.fpml.org/coding-scheme/regulatory-corporate-sector">A</classification>
+      <classification industryClassificationScheme="http://www.dtcc.org/coding-scheme/external/hkma-industrial-classification">Corporate</classification>
+      <!-- ESMA: corporate sector --><country>US</country>
+      <!-- ISO 3166 country code for UK --><region>NonEEA</region>
+      <organizationType>SD</organizationType>
+      <businessUnit id="desk2">
+         <name>desk 2</name>
+         <country>UK</country>
+      </businessUnit>
+      <person id="trader2">
+         <personId>mmanson</personId>
+         <country>UK</country>
+      </person>
+      <person id="broker2">
+         <personId>rrobertson</personId>
+         <country>US</country>
+      </person>
+   </party>
+   <party id="beneficiary">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">11111111MFEP1XJ40B46</partyId>
+      <!-- unique counterparty identifier of other party --><partyName>Fund ABC</partyName>
+      <classification industryClassificationScheme="http://www.fpml.org/coding-scheme/external/esma/corporate-sector">NonFinancial</classification>
+      <!-- ESMA: corporate sector --><country>US</country>
+      <!-- ISO 3166 country code for UK --><region>NonEEA</region>
+      <organizationType>SD</organizationType>
+   </party>
+   <party id="beneficiary2">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">22222221MFEP1XJ40B46</partyId>
+      <!-- unique counterparty identifier of other party --><partyName>Fund XYZ</partyName>
+      <classification industryClassificationScheme="http://www.fpml.org/coding-scheme/external/esma/corporate-sector">NonFinancial</classification>
+      <!-- ESMA: corporate sector --><country>US</country>
+      <!-- ISO 3166 country code for UK --><region>NonEEA</region>
+      <organizationType>SD</organizationType>
+   </party>
+   <party id="broker1">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300OL8KL0WCQ34V31</partyId>
+      <!-- unique counterparty identifier of arranging broker --><partyName>Up&amp;Atem</partyName>
+   </party>
+   <party id="broker3">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">123450OL8KL0WCQ34V31</partyId>
+      <!-- unique counterparty identifier of arranging broker --><partyName>YYZ Brokers</partyName>
+   </party>
+   <party id="clearing-svc">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300IB5Q45JGNPND58</partyId>
+      <!-- unique counterparty identifier of clearing service --><partyName>ClearItAll</partyName>
+   </party>
+   <party id="clearing-member">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">222222222Q45JGNPND58</partyId>
+      <!-- unique counterparty identifier of clearing member firm --><partyName>Bank C Services</partyName>
+   </party>
+   <party id="clearing-member2">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">333333322Q45JGNPND58</partyId>
+      <!-- unique counterparty identifier of clearing member firm --><partyName>Bank D Services</partyName>
+   </party>
+   <party id="conf-svc">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">888800IB5Q45JGNPND58</partyId>
+      <!-- unique counterparty identifier of clearing service --><partyName>Confirm LLC</partyName>
+   </party>
+   <party id="original_sdr">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300IB5Q45JGNPND58</partyId>
+      <partyName>WorldWide Trade Repository</partyName>
+   </party>
+   <party id="venue">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300IB5Q45JGNPND11</partyId>
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/exchange-id-MIC">XNAS</partyId>
+      <!-- unique counterparty identifier of Platform/Execution Facility --><partyName>SEFCo LLC</partyName>
+   </party>
+   <party id="executing_agent">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300IB5Q45JGNPND22</partyId>
+      <!-- unique counterparty identifier of clearing service --><partyName>XYZ Bank</partyName>
+   </party>
+   <party id="executing_agent2">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">666600IB5Q45JGNPND22</partyId>
+      <!-- unique counterparty identifier of clearing service --><partyName>XYZ Bank</partyName>
+   </party>
+   <party id="ai1">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300IB5Q45JGNPND33</partyId>
+      <!-- unique counterparty identifier of authorized inst 1 --><partyName>AI 1</partyName>
+   </party>
+   <party id="ai2">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300IB5Q45JGNPND44</partyId>
+      <!-- unique counterparty identifier of authorized inst 2 --><partyName>AI 2</partyName>
+   </party>
+   <party id="tpv1">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">779300IB5Q45JGNPND44</partyId>
+      <!-- unique counterparty identifier of third party viewer inst 1 --><partyName>TPV 1</partyName>
+   </party>
+   <party id="tpv2">
+      <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">789300IB5Q45JGNPND44</partyId>
+      <!-- unique counterparty identifier of third party viewer inst 2 --><partyName>TPV 2</partyName>
+   </party>
+</regulatoryDisclosure>

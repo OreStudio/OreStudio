@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is transparency-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/transparency-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<!-- Reporting Redesign - (public reporting) use case 9 - Requesting the reporting status of a trade pricing information earlier reported for public dissemination -->
+<!-- message 1: requesting reporting status -->
+<requestRegulatoryReportingStatus xmlns="http://www.fpml.org/FpML-5/transparency" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/transparency ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.bankx.com/msg_id">BANKX0901</messageId>
+    <sentBy>BANKX</sentBy>
+    <sendTo>SDR01</sendTo>
+    <creationTimestamp>2019-09-01T10:00:00Z</creationTimestamp>
+  </header>
+  <tradeIdentifier>
+    <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1031234567</issuer>
+    <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+  </tradeIdentifier>
+  <relatedParty>
+    <partyReference href="party1" />
+    <role partyRoleScheme="http://www.fpml.org/coding-scheme/party-role">ReportingParty</role>
+  </relatedParty>
+  <relatedParty>
+    <partyReference href="party2" />
+    <role partyRoleScheme="http://www.fpml.org/coding-scheme/party-role">Counterparty</role>
+  </relatedParty>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300W9NTBG8G01WM84</partyId>
+    <partyName>Bank X</partyName>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300O5MFEP1XJ40B46</partyId>
+    <partyName>Apex Corp</partyName>
+  </party>
+</requestRegulatoryReportingStatus>
+

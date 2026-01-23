@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is transparency-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/transparency-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<!-- Reporting Redesign - (public reporting) use case 6 - Trade pricing information that has already been reported for public dissemination is updated due to a post-trade event (e.g. amendment)  -->
+<!-- message 3: amended floating rate index USD-LIBOR-BBA (in message 1) to EUR-LIBOR-BBA -->
+<publicDisclosure xmlns="http://www.fpml.org/FpML-5/transparency" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/transparency ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.bankx.com/msg_id">BANKX0602</messageId>
+    <sentBy>BANKX</sentBy>
+    <sendTo>SDR01</sendTo>
+    <creationTimestamp>2019-05-01T15:00:00Z</creationTimestamp>
+  </header>
+  <isCorrection>false</isCorrection>
+  <onBehalfOf>
+    <partyReference href="party1" />
+  </onBehalfOf>
+  <eventType eventTaxonomyScheme="http://www.fpml.org/coding-scheme/event-taxonomy">Amendment</eventType>
+  <eventTimestamp>2019-05-01T14:55:47Z</eventTimestamp>
+  <applicableRegulations>
+    <regulatorApplicability>
+      <supervisoryBody>CFTC</supervisoryBody>
+      <regulation>CFTC_PART43</regulation>
+    </regulatorApplicability>
+    <regulatorApplicability>
+      <supervisoryBody>CA.ON.OSC</supervisoryBody>
+      <regulation>Rule91-507</regulation>
+    </regulatorApplicability>
+  </applicableRegulations>
+  <regulationSpecificInformation>
+    <cftc_part43_2012>
+      <cancellation>false</cancellation>
+      <cleared>false</cleared>
+      <executionVenueType>SEF</executionVenueType>
+      <collateralizationType>OneWay</collateralizationType>
+      <offMarketPrice>false</offMarketPrice>
+      <largeSizeTrade>false</largeSizeTrade>
+    </cftc_part43_2012>
+  </regulationSpecificInformation>
+  <trade>
+    <tradeHeader>
+      <partyTradeIdentifier>
+        <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1031234567</issuer>
+        <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">712345678901234567890123456789012</tradeId>
+      </partyTradeIdentifier>
+      <tradeInformation>
+        <executionDateTime>2019-04-23T14:00:00Z</executionDateTime>
+<!-- Execution timestamp -->
+        <intentToClear>false</intentToClear>
+<!-- NEW: cleared or uncleared = "C" in CFTC doc -->
+        <collateralizationType>Partially</collateralizationType>
+        <endUserException>true</endUserException>
+        <nonStandardTerms>false</nonStandardTerms>
+<!-- NEW: indication of other price-affecting term -->
+        <offMarketPrice>false</offMarketPrice>
+<!-- NEW -->
+        <largeSizeTrade>false</largeSizeTrade>
+<!-- NEW: block trades and large notional swaps -->
+        <executionType>Electronic</executionType>
+<!-- NEW -->
+        <executionVenueType>SEF</executionVenueType>
+<!-- NEW: execution venue = "SWM" in CFTC doc -->
+      </tradeInformation>
+      <tradeDate>2019-04-23</tradeDate>
+    </tradeHeader>
+    <publicReportingProductInfo>
+      <primaryAssetClass>InterestRate</primaryAssetClass>
+<!-- asset class -->
+      <productType productTypeScheme="http://www.fpml.org/coding-scheme/product-taxonomy">InterestRate:IRSwap:FixedFloat</productType>
+      <sizes>
+        <notional>
+          <currency>USD</currency>
+          <amount>10000000.00</amount>
+        </notional>
+      </sizes>
+      <underlyers>
+        <underlyer>
+          <floatingRate>
+            <floatingRateIndex>EUR-LIBOR-BBA</floatingRateIndex>
+            <indexTenor>
+              <periodMultiplier>3</periodMultiplier>
+              <period>M</period>
+            </indexTenor>
+          </floatingRate>
+        </underlyer>
+      </underlyers>
+      <priceTerms>
+        <fixedRate>0.0253</fixedRate>
+      </priceTerms>
+      <otherCalculationTerms>
+        <dayCountFraction>ACT/360</dayCountFraction>
+        <dayCountFraction>30E/360</dayCountFraction>
+        <paymentFrequency>
+          <periodMultiplier>3</periodMultiplier>
+<!-- payment frequency 1 -->
+          <period>M</period>
+        </paymentFrequency>
+        <paymentFrequency>
+<!-- payment frequency 2 -->
+          <periodMultiplier>6</periodMultiplier>
+          <period>M</period>
+        </paymentFrequency>
+      </otherCalculationTerms>
+    </publicReportingProductInfo>
+  </trade>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300W9NTBG8G01WM84</partyId>
+<!-- for on-behalf of, possibly used by SDR to track the trade through its lifecycle -->
+  </party>
+</publicDisclosure>
+

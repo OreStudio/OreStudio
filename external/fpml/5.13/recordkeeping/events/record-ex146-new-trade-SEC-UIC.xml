@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is recordkeeping-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/recordkeeping-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<!-- This represents the non-public SEC recordkeeping and reporting requirements in the SBSR paper -->
+<!-- They also include CFTC requirements  17 CFR 45 -->
+<!-- The comments indicate the reportable field name as described in the tables on
+pp. 76606-76607 of the Federal Register -->
+<!-- This example shows an initial report of a new trade -->
+<nonpublicExecutionReport xmlns="http://www.fpml.org/FpML-5/recordkeeping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/recordkeeping ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.banky.com/msg_id">BANKY0001</messageId>
+    <sentBy>BANKY</sentBy>
+    <sendTo>SDR01</sendTo>
+    <creationTimestamp>2011-03-04T16:42:16Z</creationTimestamp>
+<!-- Date stamp -->
+  </header>
+  <isCorrection>false</isCorrection>
+<!-- Correction indicator -->
+  <correlationId correlationIdScheme="http://fpml.org/submitter_trade_id">TW19235</correlationId>
+  <sequenceNumber>1</sequenceNumber>
+  <onBehalfOf>
+    <partyReference href="party1" />
+<!-- explicit reference to which party is the primary reporting party -->
+  </onBehalfOf>
+  <originatingEvent>PortfolioCompression</originatingEvent>
+<!-- ESMA: compression indicator -->
+  <trade>
+    <tradeHeader>
+      <partyTradeIdentifier>
+<!-- USI -->
+        <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">1031234567</issuer>
+        <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">12345678901234567890123456789012</tradeId>
+      </partyTradeIdentifier>
+      <partyTradeInformation>
+        <partyReference href="party1" />
+<!-- SEC: (2.2) branch, desk, broker, and trader roles -->
+        <relatedBusinessUnit>
+          <businessUnitReference href="branch1" />
+          <role>RegisteredBranch</role>
+<!-- ** new unit role required -->
+        </relatedBusinessUnit>
+        <relatedBusinessUnit>
+          <businessUnitReference href="desk1" />
+          <role>TradingDesk</role>
+<!-- ** suggest change from existing unit role of "Trader" -->
+        </relatedBusinessUnit>
+        <relatedPerson>
+          <personReference href="broker" />
+          <role>Broker</role>
+<!-- existing person role -->
+        </relatedPerson>
+        <relatedPerson>
+          <personReference href="trader" />
+          <role>Trader</role>
+<!-- existing person role -->
+        </relatedPerson>
+        <isAccountingHedge>true</isAccountingHedge>
+<!-- ESMA:  directly linked to commercial activity or treasury financing -->
+        <executionDateTime>2011-02-04T16:20:55</executionDateTime>
+<!-- SEC: (1.2) The date and time, to the second, of execution, in UTC -->
+<!-- Execution timestamp -->
+        <intentToAllocate>false</intentToAllocate>
+        <intentToClear>false</intentToClear>
+<!-- NEW: cleared or uncleared = "C" in CFTC doc -->
+        <collateralizationType>Fully</collateralizationType>
+        <collateralPortfolio portfolioNameScheme="http://www.bankx.com/collateral-portfolio-id">COLL123</collateralPortfolio>
+        <reportingRegime>
+          <name>DoddFrankAct</name>
+          <supervisorRegistration>
+            <supervisoryBody>SEC</supervisoryBody>
+          </supervisorRegistration>
+          <reportingPurpose>UniquePartyIdentificationCode</reportingPurpose>
+<!-- SEC dealer classificiation - Preferred alternative  -->
+          <entityClassification entityClassificationScheme="http://www.fpml.org/coding-scheme/sec-entity-classification">SBSD</entityClassification>
+<!--  SEC: (1.5) If both sides of SBS including an SBSD, an indication to that effect -->
+          <tradePartyRelationshipType>Inter-Dealer</tradePartyRelationshipType>
+<!--  SEC: (1.5) If both sides of SBS including an SBSD, an indication to that effect (as a single field) -->
+        </reportingRegime>
+      </partyTradeInformation>
+      <tradeDate>2011-02-12</tradeDate>
+    </tradeHeader>
+  </trade>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300O5MFEP1XJ40B46</partyId>
+<!-- SEC: (2.1) unique counterparty identifier of each counterparty -->
+    <partyName>Bank Y</partyName>
+    <classification>NonFinancial</classification>
+<!-- ESMA: corporate sector -->
+    <country>US</country>
+<!-- ISO 3166 country code for UK -->
+    <region>NonEEA</region>
+<!-- ESMA: EEA/nonEEA -->
+    <organizationType>non-SD/MSP</organizationType>
+    <businessUnit id="branch1">
+      <name>Main Chicago Office</name>
+      <contactInfo>
+        <address>
+          <streetAddress>
+            <streetLine>456 S LasSalle St.</streetLine>
+          </streetAddress>
+          <city>Chicago</city>
+          <state>IL</state>
+          <country>US</country>
+          <postalCode>60604</postalCode>
+        </address>
+      </contactInfo>
+    </businessUnit>
+    <businessUnit id="desk1">
+      <name>Derivatives Desk</name>
+    </businessUnit>
+    <person id="broker">
+      <personId>person123</personId>
+<!-- person identification scheme is to be determined outside of FpML -->
+    </person>
+    <person id="trader">
+      <personId>person456</personId>
+    </person>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">5493001RKR55V4X61F71</partyId>
+<!-- SEC: (2.1) unique counterparty identifier of each counterparty -->
+    <partyName>Bank X</partyName>
+    <classification>InvestmentFirm</classification>
+  </party>
+</nonpublicExecutionReport>
+

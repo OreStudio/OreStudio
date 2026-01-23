@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is reporting-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--
+        == Copyright (c) 2022-2025 All rights reserved.
+        == Financial Products Markup Language is subject to the FpML public license.
+        == A copy of this license is available at http://www.fpml.org/license/license.html
+-->
+<!--
+        Substitution Process: Request Substitution (CS1)
+-->
+<requestSubstitution xmlns="http://www.fpml.org/FpML-5/reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/reporting ../../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.xyzbank.com/message-Id">666777900</messageId>
+    <sentBy>XYZBICXXX</sentBy>
+    <sendTo>ABCBICXXX</sendTo>
+    <creationTimestamp>2010-08-18T12:00:00Z</creationTimestamp>
+  </header>
+  <isCorrection>false</isCorrection>
+  <correlationId correlationIdScheme="http://www.abcbank.com/correlation-id">789000</correlationId>
+  <sequenceNumber>1</sequenceNumber>
+  <substitutionIssuerPartyReference href="party1" />
+<!-- substitution issuer -->
+<!-- invalid: the substitution receiver should not be the same as the issuer -->
+  <substitutionReceiverPartyReference href="party1" />
+<!-- substitution receiver -->
+  <creditSupportAgreement>
+    <type creditSupportAgreementTypeScheme="http://www.fpml.org/coding-scheme/credit-support-agreement-type">ISDA1994CreditSupportAnnexNewYorkLaw</type>
+    <date>2009-07-14</date>
+    <identifier creditSupportAgreementIdScheme="http://www.abcbank.com/csa-Id">999ABC777</identifier>
+  </creditSupportAgreement>
+  <variationMargin>
+    <return>
+<!-- substitution issuer is requesting return of collateral -->
+<!-- validate whether typically one asset per message? (TBD) 
+                        compare to ISDA reqs -->
+      <deliveringPartyReference href="party1" />
+      <receivingPartyReference href="party2" />
+<!--  -->
+      <security>
+        <assetReference href="xyz" />
+        <valueDate>2010-08-18</valueDate>
+<!-- validate multiple valueDate vs single exchange date (TBD) -->
+        <nominalAmount>10000000</nominalAmount>
+        <dirtyPrice>100</dirtyPrice>
+        <marketValue>10000000</marketValue>
+        <haircut>0.90</haircut>
+        <collateralValue>9000000</collateralValue>
+      </security>
+    </return>
+    <deliver>
+<!-- substitution issuer proposes to deliver cash or specific securities of equivalent value to the returned collateral -->
+      <deliveringPartyReference href="party2" />
+      <receivingPartyReference href="party1" />
+      <cash>
+        <assetReference href="cash01" />
+        <nominalAmount>2700000</nominalAmount>
+        <valueDate>2010-08-18</valueDate>
+        <marketValue>2700000</marketValue>
+<!-- optional -->
+        <haircut>1</haircut>
+<!-- optional -->
+        <collateralValue>2700000</collateralValue>
+<!-- optional -->
+      </cash>
+      <security>
+        <assetReference href="eq01" />
+        <valueDate>2010-08-18</valueDate>
+        <numberOfUnits>7000000</numberOfUnits>
+        <unitPrice>100</unitPrice>
+<!-- optional -->
+        <marketValue>7000000</marketValue>
+<!-- optional -->
+        <haircut>0.90</haircut>
+<!-- optional -->
+        <collateralValue>6300000</collateralValue>
+<!-- optional -->
+      </security>
+    </deliver>
+    <substitutionAmount>9000000</substitutionAmount>
+  </variationMargin>
+  <segregatedIndependentAmount>
+<!-- validate relationship between margin type and movement (deliver/return) (TBD) -->
+    <return>
+<!-- substitution issuer is requesting return of collateral -->
+      <deliveringPartyReference href="party1" />
+      <receivingPartyReference href="party2" />
+<!--  -->
+      <security>
+        <assetReference href="xyz" />
+        <valueDate>2010-08-18</valueDate>
+        <nominalAmount>5000000</nominalAmount>
+        <dirtyPrice>100</dirtyPrice>
+        <marketValue>5000000</marketValue>
+        <haircut>0.90</haircut>
+        <collateralValue>4500000</collateralValue>
+      </security>
+    </return>
+    <deliver>
+<!-- the margin call receiver proposes to deliver cash or specitic security -->
+      <deliveringPartyReference href="party2" />
+      <receivingPartyReference href="party1" />
+      <cash>
+        <assetReference href="cash01" />
+        <nominalAmount>5750000</nominalAmount>
+<!-- 4,500,000 expressed in USD -->
+        <valueDate>2010-08-18</valueDate>
+      </cash>
+    </deliver>
+    <substitutionAmount>4500000</substitutionAmount>
+  </segregatedIndependentAmount>
+  <assets>
+    <bond id="xyz">
+      <instrumentId instrumentIdScheme="ISIN">GB0002634946</instrumentId>
+      <description>BAE Systems</description>
+      <currency>EUR</currency>
+      <maturity>2030-10-14</maturity>
+    </bond>
+    <equity id="eq01">
+      <instrumentId instrumentIdScheme="ISIN">IBM.N</instrumentId>
+      <description>ABN AMRO HOLDING NV</description>
+      <currency>USD</currency>
+      <exchangeId>AEX</exchangeId>
+      <relatedExchangeId>LIFFE</relatedExchangeId>
+    </equity>
+    <cash id="cash01">
+      <currency>USD</currency>
+    </cash>
+  </assets>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300VBWWV6BYQOWM67</partyId>
+    <partyName>ABC Bank</partyName>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">254900BIAQJIUV6DLE92</partyId>
+    <partyName>XYZ Bank</partyName>
+  </party>
+</requestSubstitution>
+

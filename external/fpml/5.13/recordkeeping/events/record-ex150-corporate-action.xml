@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is recordkeeping-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/recordkeeping-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<!-- This represents the non-public recordkeeping and reporting requirements published in draft form by the CFTC in 17 CFR 45 -->
+<!-- The comments indicate the reportable field name as described in the tables on
+pp. 76606-76607 of the Federal Register -->
+<!-- This example shows an increase to a trade executed several months after the original trade -->
+<!-- The data values are taken from "Example 1" in Appendix A, on page 76156 of the Federal Register -->
+<nonpublicExecutionReport xmlns="http://www.fpml.org/FpML-5/recordkeeping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/recordkeeping ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.bankx.com/msg_id">SEF124</messageId>
+    <sentBy>BANKX</sentBy>
+    <sendTo>SDR01</sendTo>
+    <creationTimestamp>2012-04-01T10:13:07Z</creationTimestamp>
+<!-- Date stamp -->
+  </header>
+  <isCorrection>false</isCorrection>
+<!-- Correction indicator -->
+  <correlationId correlationIdScheme="http://fpml.org/submitter_trade_id">TW19235</correlationId>
+  <sequenceNumber>4</sequenceNumber>
+  <onBehalfOf>
+    <partyReference href="party1" />
+<!-- explicit reference to which party is the primary reporting party -->
+  </onBehalfOf>
+  <change>
+    <trade>
+      <tradeHeader>
+        <partyTradeIdentifier>
+          <partyReference href="party1" />
+          <tradeId tradeIdScheme="http://www.partyA.com/tradeId/OTC">1234</tradeId>
+        </partyTradeIdentifier>
+        <partyTradeInformation>
+          <partyReference href="party1" />
+<!-- more information would normally be supplied -->
+        </partyTradeInformation>
+        <tradeDate id="TradeDate">2011-07-13</tradeDate>
+      </tradeHeader>
+      <brokerEquityOption>
+        <primaryAssetClass>Equity</primaryAssetClass>
+        <productType>calendarSpread</productType>
+        <buyerPartyReference href="party2" />
+        <sellerPartyReference href="party1" />
+        <optionType>Call</optionType>
+        <underlyer>
+          <singleUnderlyer>
+            <equity>
+              <instrumentId instrumentIdScheme="http://www.fpml.org/schemes/4.1/instrumentId">STM-FP</instrumentId>
+              <description>STMicroelectronics N.V. ordinary shares</description>
+              <exchangeId exchangeIdScheme="http://www.fpml.org/schemes/4.1/exchangeId">XNSE</exchangeId>
+            </equity>
+          </singleUnderlyer>
+        </underlyer>
+        <equityExercise>
+          <equityAmericanExercise>
+            <commencementDate>
+              <adjustableDate>
+                <unadjustedDate>2011-07-13</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>NONE</businessDayConvention>
+                </dateAdjustments>
+              </adjustableDate>
+            </commencementDate>
+            <expirationDate>
+              <adjustableDate>
+                <unadjustedDate>2012-09-27</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>NONE</businessDayConvention>
+                </dateAdjustments>
+              </adjustableDate>
+            </expirationDate>
+            <latestExerciseTime>
+              <hourMinuteTime>17:15:00</hourMinuteTime>
+              <businessCenter>GBLO</businessCenter>
+            </latestExerciseTime>
+            <latestExerciseTimeType>SpecificTime</latestExerciseTimeType>
+            <equityExpirationTimeType>Close</equityExpirationTimeType>
+          </equityAmericanExercise>
+          <automaticExercise>true</automaticExercise>
+          <equityValuation>
+            <valuationTimeType>Close</valuationTimeType>
+          </equityValuation>
+          <settlementCurrency>EUR</settlementCurrency>
+          <settlementPriceSource>OfficialClose</settlementPriceSource>
+          <settlementType>Physical</settlementType>
+        </equityExercise>
+        <strategyFeature>
+          <calendarSpread>
+            <expirationDateTwo>
+              <adjustableDate>
+                <unadjustedDate>2003-09-27</unadjustedDate>
+                <dateAdjustments>
+                  <businessDayConvention>NONE</businessDayConvention>
+                </dateAdjustments>
+              </adjustableDate>
+            </expirationDateTwo>
+          </calendarSpread>
+        </strategyFeature>
+        <strike>
+          <strikePrice>32.00</strikePrice>
+        </strike>
+        <spotPrice>30.00</spotPrice>
+        <numberOfOptions>150000</numberOfOptions>
+        <equityPremium>
+          <payerPartyReference href="party2" />
+          <receiverPartyReference href="party1" />
+          <paymentAmount>
+            <currency>EUR</currency>
+            <amount>405000</amount>
+          </paymentAmount>
+          <paymentDate>
+            <unadjustedDate>2001-07-17</unadjustedDate>
+            <dateAdjustments>
+              <businessDayConvention>NONE</businessDayConvention>
+            </dateAdjustments>
+          </paymentDate>
+          <pricePerOption>
+            <currency>EUR</currency>
+            <amount>2.70</amount>
+          </pricePerOption>
+        </equityPremium>
+        <deltaCrossed>false</deltaCrossed>
+        <brokerageFee>
+          <currency>EUR</currency>
+          <amount>5000</amount>
+        </brokerageFee>
+        <brokerNotes>Broker Notes regarding trade</brokerNotes>
+      </brokerEquityOption>
+      <calculationAgent>
+        <calculationAgentPartyReference href="party1" />
+      </calculationAgent>
+      <documentation>
+        <masterAgreement>
+          <masterAgreementType>ISDA</masterAgreementType>
+          <masterAgreementVersion>2002</masterAgreementVersion>
+        </masterAgreement>
+        <contractualDefinitions>ISDA2002Equity</contractualDefinitions>
+      </documentation>
+      <governingLaw>GBEN</governingLaw>
+    </trade>
+    <effectiveDate>2012-04-05Z</effectiveDate>
+    <corporateAction>
+      <type>Stock split</type>
+    </corporateAction>
+    <payment>
+      <payerPartyReference href="party1" />
+      <receiverPartyReference href="party2" />
+      <paymentAmount>
+        <currency>USD</currency>
+        <amount>12345.00</amount>
+      </paymentAmount>
+      <paymentDate>
+        <adjustedDate>2011-04-05Z</adjustedDate>
+      </paymentDate>
+    </payment>
+  </change>
+  <quote>
+    <value>1235</value>
+    <measureType>NPV</measureType>
+    <currency>USD</currency>
+  </quote>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">5493001RKR55V4X61F71</partyId>
+<!-- unique counterparty identifier of reporting party -->
+    <partyName>Bank X</partyName>
+    <organizationType>SD</organizationType>
+    <businessUnit id="desk1">
+      <name>NY Swaps Desk</name>
+    </businessUnit>
+    <person id="trader">
+      <personId>jjones</personId>
+    </person>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300O5MFEP1XJ40B46</partyId>
+<!-- unique counterparty identifier of other party -->
+    <partyName>Bank Y</partyName>
+    <organizationType>SD</organizationType>
+  </party>
+  <party id="broker1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300OL8KL0WCQ34V31</partyId>
+<!-- unique counterparty identifier of arranging broker -->
+    <partyName>Up&amp;Atem</partyName>
+  </party>
+  <party id="clearing-svc">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300IB5Q45JGNPND58</partyId>
+<!-- unique counterparty identifier of clearing service -->
+    <partyName>ClearItAll</partyName>
+  </party>
+</nonpublicExecutionReport>
+

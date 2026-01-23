@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is reporting-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<valuationReport xmlns="http://www.fpml.org/FpML-5/reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/reporting ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.bankx.com/message-id">XXX123</messageId>
+    <sentBy>BBBBBB</sentBy>
+    <sendTo>SDR01</sendTo>
+    <creationTimestamp>2012-06-14T12:47:50Z</creationTimestamp>
+  </header>
+  <onBehalfOf>
+    <partyReference href="party1" />
+  </onBehalfOf>
+  <reportIdentification>
+    <reportId reportIdScheme="http://www.bbbbb.org/reports">VALXXX123</reportId>
+    <sectionNumber>1</sectionNumber>
+    <submissionsComplete>false</submissionsComplete>
+  </reportIdentification>
+  <reportContents>
+    <assetClass>Equity</assetClass>
+  </reportContents>
+  <asOfDate>2003-04-01</asOfDate>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">Party A</partyId>
+  </party>
+  <market>
+    <benchmarkQuotes>
+      <instrumentSet>
+        <equity id="stock1">
+          <instrumentId instrumentIdScheme="http://www.fpml.org/spec/2002/instrument-id-Bloomberg-1-0">STM-FP</instrumentId>
+          <description>STMicroelectronics N.V. ordinary shares</description>
+          <exchangeId exchangeIdScheme="http://www.fpml.org/coding-scheme/external/iso10383">NSE</exchangeId>
+        </equity>
+      </instrumentSet>
+      <assetQuote>
+        <objectReference href="stock1" />
+        <quote>
+          <value>47.50</value>
+          <measureType>SettlementPrice</measureType>
+          <quoteUnits>Price</quoteUnits>
+        </quote>
+      </assetQuote>
+    </benchmarkQuotes>
+  </market>
+</valuationReport>
+

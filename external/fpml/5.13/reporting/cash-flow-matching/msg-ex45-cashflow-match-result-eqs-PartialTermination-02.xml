@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is reporting-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  
+  == 
+  -->
+<tradeCashflowsMatchResult xmlns="http://www.fpml.org/FpML-5/reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/reporting ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.example.com/messageId">CEN/2004/01/05/15-38</messageId>
+    <inReplyTo messageIdScheme="http://www.example.com/messageId">CEN/2004/01/05/15-39</inReplyTo>
+    <sentBy>TYUMATCHING</sentBy>
+    <sendTo>ABC</sendTo>
+    <creationTimestamp>2005-11-28T15:00:00Z</creationTimestamp>
+  </header>
+  <correlationId correlationIdScheme="http://www.example.com/correlationId">CORR/2005/08/01/15-39</correlationId>
+  <status>Matched</status>
+  <assertedCashflow>
+    <asOfDate>2005-11-28T15:00:00Z</asOfDate>
+    <tradeCashflowsId tradeCashflowsIdScheme="http://www.abc.com/tradeCashflowsId">tradeCashflowsABC001</tradeCashflowsId>
+  </assertedCashflow>
+  <proposedMatch>
+    <tradeCashflowsId tradeCashflowsIdScheme="http://www.def.com/tradeCashflowsId">tradeCashflowsDEF001</tradeCashflowsId>
+    <tradeIdentifyingItems>
+      <partyTradeIdentifier>
+        <partyReference href="party2" />
+        <tradeId tradeIdScheme="http://www.abc.com/tradeId">GM50XV000000000</tradeId>
+      </partyTradeIdentifier>
+      <tradeDetails>
+        <tradeDate>2005-07-12</tradeDate>
+        <effectiveDate>
+          <unadjustedDate>2005-07-15</unadjustedDate>
+        </effectiveDate>
+        <terminationDate>
+          <unadjustedDate>2006-07-17</unadjustedDate>
+        </terminationDate>
+        <productType productTypeScheme="http://www.fpml.org/coding-scheme/product-type-simple-1-0">TotalReturnSwap</productType>
+        <underlyer id="ASN.N-PROP">
+          <equity>
+            <instrumentId instrumentIdScheme="http://www.fpml.org/coding-scheme/external/instrument-id-Reuters-RIC">ASN.N</instrumentId>
+          </equity>
+        </underlyer>
+        <underlyer id="USD-LIBOR-BBA-PROP">
+          <floatingRate>
+            <floatingRateIndex>USD-LIBOR-BBA</floatingRateIndex>
+            <indexTenor>
+              <periodMultiplier>6</periodMultiplier>
+              <period>M</period>
+            </indexTenor>
+          </floatingRate>
+        </underlyer>
+<!-- The notional stated here is the notional RESULTING FROM the partial termination. -->
+        <notional>
+          <currency>USD</currency>
+          <amount>264786.1956</amount>
+        </notional>
+      </tradeDetails>
+    </tradeIdentifyingItems>
+<!-- The adjusted payment date is different than the one asserted -->
+    <adjustedPaymentDate>2006-01-01</adjustedPaymentDate>
+    <payment>
+      <identifier paymentIdScheme="http://www.abc.com/netPaymentId">PS0IQOM4B-B3RJ-008U20051201USD</identifier>
+      <payerPartyReference href="party2" />
+      <receiverPartyReference href="party1" />
+      <paymentAmount>
+        <currency>USD</currency>
+        <amount>4700.01</amount>
+      </paymentAmount>
+<!-- As part of this transactions, 6,948 shares were sold at a price of USD 42.6481, generating a cashflow that needs to be broken down across each of the purchased transactions in order to provide an appropriate explanation of the equity and funding PnL.
+                                - 171 shares had been purchased on July 20th at a price of USD 40.9492;
+                                - 5,859 shares had been purchased on August 4th at a price of USD 42.6552;
+                                - 918 shares had been purchased on October 24 at a price of USD 38.1097.
+                                The approach consisted in having 7 calculation details sections: one for each equity and funding component, and one for the dividend component.  The 2 calculation details sections below presenting the equity PnL and the funding cost related to the portion of 171 shares -->
+      <calculationDetails>
+        <grossCashflow>
+          <cashflowId cashflowIdScheme="http://www.def.com/cashflowId">YU1234-B3RJ-008U20051201USD-1</cashflowId>
+          <payerPartyReference href="party2" />
+          <receiverPartyReference href="party1" />
+          <cashflowAmount>
+            <currency>USD</currency>
+            <amount>290.51</amount>
+          </cashflowAmount>
+          <cashflowType>PriceReturn</cashflowType>
+        </grossCashflow>
+        <observationElements id="observation_ASN.N_1-PROP">
+          <underlyerReference href="ASN.N-PROP" />
+          <observationDate>2005-07-20</observationDate>
+          <observedValue>
+            <value>40.9492</value>
+            <measureType>TransactedNetPrice</measureType>
+            <quoteUnits>Price</quoteUnits>
+            <currency>USD</currency>
+          </observedValue>
+        </observationElements>
+        <observationElements id="observation_ASN.N_2-PROP">
+          <underlyerReference href="ASN.N-PROP" />
+          <observationDate>2005-11-28</observationDate>
+          <observedValue>
+            <value>42.6481</value>
+            <measureType>TransactedNetPrice</measureType>
+            <quoteUnits>Price</quoteUnits>
+            <currency>USD</currency>
+          </observedValue>
+        </observationElements>
+        <calculationElements>
+          <numberOfUnits>
+            <underlyerReference href="ASN.N-PROP" />
+            <quantity>171</quantity>
+          </numberOfUnits>
+        </calculationElements>
+      </calculationDetails>
+      <calculationDetails>
+        <grossCashflow>
+          <cashflowId cashflowIdScheme="http://www.abc.com/cashflowId">PS0IQOM4B-B3RJ-008U20051201USD-2</cashflowId>
+          <payerPartyReference href="party1" />
+          <receiverPartyReference href="party2" />
+          <cashflowAmount>
+            <currency>USD</currency>
+            <amount>77.20</amount>
+          </cashflowAmount>
+          <cashflowType>InterestReturn</cashflowType>
+        </grossCashflow>
+        <observationElements id="observation_USD-LIBOR-BBA-1-PROP">
+          <underlyerReference href="USD-LIBOR-BBA-PROP" />
+          <observationDate>2005-07-20</observationDate>
+          <observedValue>
+            <value>0.0365</value>
+          </observedValue>
+        </observationElements>
+        <calculationElements>
+          <notional>
+            <currency>USD</currency>
+            <amount>7002.31</amount>
+          </notional>
+          <calculatedRate>
+            <observationReference href="observation_USD-LIBOR-BBA-1-PROP" />
+            <calculatedValue>0.0315</calculatedValue>
+            <spread>0.0050</spread>
+          </calculatedRate>
+          <calculationPeriod>
+            <adjustedStartDate>2005-07-25</adjustedStartDate>
+            <adjustedEndDate>2005-11-28</adjustedEndDate>
+            <numberOfDays>126</numberOfDays>
+            <dayCountFraction>ACT/360</dayCountFraction>
+          </calculationPeriod>
+        </calculationElements>
+      </calculationDetails>
+<!-- The 2 calculation details sections below presenting the equity PnL and the funding cost related to the portion of 5,859 shares -->
+      <calculationDetails>
+        <grossCashflow>
+          <cashflowId cashflowIdScheme="http://www.abc.com/cashflowId">PS0IQOM4B-B3RJ-008U20051201USD-3</cashflowId>
+          <payerPartyReference href="party1" />
+          <receiverPartyReference href="party2" />
+          <cashflowAmount>
+            <currency>USD</currency>
+            <amount>41.60</amount>
+          </cashflowAmount>
+          <cashflowType>PriceReturn</cashflowType>
+        </grossCashflow>
+        <observationElements id="observation_ASN.N_3-PROP">
+          <underlyerReference href="ASN.N-PROP" />
+          <observationDate>2005-08-04</observationDate>
+          <observedValue>
+            <value>42.6552</value>
+            <measureType>TransactedNetPrice</measureType>
+            <quoteUnits>Price</quoteUnits>
+            <currency>USD</currency>
+          </observedValue>
+        </observationElements>
+        <observationElements id="observation_ASN.N_4-PROP">
+          <underlyerReference href="ASN.N-PROP" />
+          <observationDate>2005-11-28</observationDate>
+          <observedValue>
+            <value>42.6481</value>
+            <measureType>TransactedNetPrice</measureType>
+            <quoteUnits>Price</quoteUnits>
+            <currency>USD</currency>
+          </observedValue>
+        </observationElements>
+        <calculationElements>
+          <numberOfUnits>
+            <underlyerReference href="ASN.N-PROP" />
+            <quantity>5859</quantity>
+          </numberOfUnits>
+        </calculationElements>
+      </calculationDetails>
+      <calculationDetails>
+        <grossCashflow>
+          <cashflowId cashflowIdScheme="http://www.abc.com/cashflowId">PS0IQOM4B-B3RJ-008U20051201USD-4</cashflowId>
+          <payerPartyReference href="party1" />
+          <receiverPartyReference href="party2" />
+          <cashflowAmount>
+            <currency>USD</currency>
+            <amount>2524.51</amount>
+          </cashflowAmount>
+          <cashflowType>InterestReturn</cashflowType>
+        </grossCashflow>
+        <observationElements id="observation_USD-LIBOR-BBA-2-PROP">
+          <underlyerReference href="USD-LIBOR-BBA-PROP" />
+          <observationDate>2005-08-04</observationDate>
+          <observedValue>
+            <value>0.0374688</value>
+          </observedValue>
+        </observationElements>
+        <calculationElements>
+          <notional>
+            <currency>USD</currency>
+            <amount>249916.8</amount>
+          </notional>
+          <calculatedRate>
+            <observationReference href="observation_USD-LIBOR-BBA-2-PROP" />
+            <calculatedValue>0.0324688</calculatedValue>
+            <spread>0.0050</spread>
+          </calculatedRate>
+          <calculationPeriod>
+            <adjustedStartDate>2005-08-08</adjustedStartDate>
+            <adjustedEndDate>2005-11-28</adjustedEndDate>
+            <numberOfDays>112</numberOfDays>
+            <dayCountFraction>ACT/360</dayCountFraction>
+          </calculationPeriod>
+        </calculationElements>
+      </calculationDetails>
+<!-- The 2 calculation details sections below presenting the equity PnL and the funding cost related to the portion of 918 shares -->
+      <calculationDetails>
+        <grossCashflow>
+          <cashflowId cashflowIdScheme="http://www.abc.com/cashflowId">PS0IQOM4B-B3RJ-008U20051201USD-5</cashflowId>
+          <payerPartyReference href="party2" />
+          <receiverPartyReference href="party1" />
+          <cashflowAmount>
+            <currency>USD</currency>
+            <amount>4166.25</amount>
+          </cashflowAmount>
+          <cashflowType>PriceReturn</cashflowType>
+        </grossCashflow>
+        <observationElements id="observation_ASN.N_5-PROP">
+          <underlyerReference href="ASN.N-PROP" />
+          <observationDate>2005-10-24</observationDate>
+          <observedValue>
+            <value>38.1097</value>
+            <measureType>TransactedNetPrice</measureType>
+            <quoteUnits>Price</quoteUnits>
+            <currency>USD</currency>
+          </observedValue>
+        </observationElements>
+        <observationElements id="observation_ASN.N_6-PROP">
+          <underlyerReference href="ASN.N-PROP" />
+          <observationDate>2005-11-28</observationDate>
+          <observedValue>
+            <value>42.6481</value>
+            <measureType>TransactedNetPrice</measureType>
+            <quoteUnits>Price</quoteUnits>
+            <currency>USD</currency>
+          </observedValue>
+        </observationElements>
+        <calculationElements>
+          <numberOfUnits>
+            <underlyerReference href="ASN.N-PROP" />
+            <quantity>918</quantity>
+          </numberOfUnits>
+        </calculationElements>
+      </calculationDetails>
+      <calculationDetails>
+        <grossCashflow>
+          <cashflowId cashflowIdScheme="http://www.abc.com/cashflowId">PS0IQOM4B-B3RJ-008U20051201USD-6</cashflowId>
+          <payerPartyReference href="party1" />
+          <receiverPartyReference href="party2" />
+          <cashflowAmount>
+            <currency>USD</currency>
+            <amount>118.85</amount>
+          </cashflowAmount>
+          <cashflowType>InterestReturn</cashflowType>
+        </grossCashflow>
+        <observationElements id="observation_USD-LIBOR-BBA-3-PROP">
+          <underlyerReference href="USD-LIBOR-BBA-PROP" />
+          <observationDate>2005-10-24</observationDate>
+          <observedValue>
+            <value>0.0420625</value>
+          </observedValue>
+        </observationElements>
+        <calculationElements>
+          <notional>
+            <currency>USD</currency>
+            <amount>34984.7</amount>
+          </notional>
+          <calculatedRate>
+            <observationReference href="observation_USD-LIBOR-BBA-3-PROP" />
+            <calculatedValue>0.0370625</calculatedValue>
+            <spread>0.0050</spread>
+          </calculatedRate>
+          <calculationPeriod>
+            <adjustedStartDate>2005-10-26</adjustedStartDate>
+            <adjustedEndDate>2005-11-28</adjustedEndDate>
+            <numberOfDays>33</numberOfDays>
+            <dayCountFraction>ACT/360</dayCountFraction>
+            <dayCountYearFraction>0.09167</dayCountYearFraction>
+          </calculationPeriod>
+        </calculationElements>
+      </calculationDetails>
+      <calculationDetails>
+        <grossCashflow>
+          <cashflowId cashflowIdScheme="http://www.abc.com/cashflowId">PS0IQOM4B-B3RJ-008U20051201USD-7</cashflowId>
+          <payerPartyReference href="party2" />
+          <receiverPartyReference href="party1" />
+          <cashflowAmount>
+            <currency>USD</currency>
+            <amount>3005.01</amount>
+          </cashflowAmount>
+          <cashflowType>DividendReturn</cashflowType>
+        </grossCashflow>
+        <calculationElements>
+          <numberOfUnits>
+            <underlyerReference href="ASN.N-PROP" />
+            <quantity>6948</quantity>
+          </numberOfUnits>
+        </calculationElements>
+      </calculationDetails>
+    </payment>
+    <matchId matchIdScheme="http://www.tyu.com/matchId">34558473</matchId>
+    <difference>
+      <differenceType>Value</differenceType>
+      <differenceSeverity>Error</differenceSeverity>
+      <element>amount</element>
+      <basePath>/FpML/adjustedPaymentDate</basePath>
+      <baseValue>2005-12-01</baseValue>
+      <otherPath>/FpML/proposedMatch/adjustedPaymentDate</otherPath>
+      <otherValue>2006-01-01</otherValue>
+      <message>Value [20222.22] in ABCBank001 is [2006-01-01] in DEFBank001.</message>
+    </difference>
+  </proposedMatch>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300S28N49H5RT4J50</partyId>
+  </party>
+  <party id="party2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">party2Bank001</partyId>
+  </party>
+</tradeCashflowsMatchResult>
+

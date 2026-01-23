@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is reporting-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--View is reporting-->
+<!--Version is 5-3-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<!-- CFTC part 45 valuation requirements from 17 CFR Part 45 on pp 76607 of the Federal Register:
+Independent amount.             )
+Independent amount currency.    )   These fields can all be modeled in the collateral block of the trade
+Independent amount payer.       )
+Independent amount receiver.    )
+Initial margin.                 )
+Variation margin.               This will require a new MeasureType, "VariationMargin" ... need a clearer def for OTC
+Mark-to-market.                 MeasureType = NPV
+Non-cash collateral.            - For this, we need a clearer definition of what's truly needed
+Non-cash collateral valuation.  - collateral isn't usually linked to a single trade... do we need the collateral messages?
+-->
+<valuationReport xmlns="http://www.fpml.org/FpML-5/reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/reporting ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.bbbbbb.org/message-id">XXX123</messageId>
+    <sentBy>BBBBBB</sentBy>
+    <sendTo>SDR01</sendTo>
+    <creationTimestamp>2012-06-14T12:47:50Z</creationTimestamp>
+  </header>
+  <onBehalfOf>
+    <partyReference href="party1" />
+  </onBehalfOf>
+  <reportIdentification>
+    <reportId reportIdScheme="http://www.bbbbb.org/reports">VALXXX123</reportId>
+    <sectionNumber>1</sectionNumber>
+    <numberOfSections>3</numberOfSections>
+    <submissionsComplete>false</submissionsComplete>
+  </reportIdentification>
+  <reportContents>
+    <assetClass>InterestRate</assetClass>
+  </reportContents>
+  <asOfDate>2003-04-01</asOfDate>
+  <party id="party1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">Party A</partyId>
+  </party>
+<!-- multiple portfolio-->
+  <portfolioValuationItem>
+<!--Portfolio of trades -->
+    <portfolio id="port1">
+      <tradeId id="tid-1" tradeIdScheme="http://bbbbbb.com/tids">1234</tradeId>
+      <tradeId id="tid-2" tradeIdScheme="http://bbbbbb.com/tids">2345</tradeId>
+      <tradeId id="tid-3" tradeIdScheme="http://bbbbbb.com/tids">3456</tradeId>
+      <tradeId id="tid-4" tradeIdScheme="http://bbbbbb.com/tids">4576</tradeId>
+      <tradeId id="tid-5" tradeIdScheme="http://bbbbbb.com/tids">5678</tradeId>
+    </portfolio>
+    <tradeValuationItem>
+<!--Valuation Set (report)-->
+      <valuationSet id="val1">
+        <valuationScenario id="valscen1">
+          <name>EOD Valuation</name>
+          <valuationDate>2003-04-01Z</valuationDate>
+        </valuationScenario>
+        <baseParty href="party1" />
+        <quotationCharacteristics>
+          <side>Mid</side>
+          <currency>USD</currency>
+        </quotationCharacteristics>
+<!--results for trade #1-->
+        <assetValuation>
+          <objectReference href="tid-1" />
+<!--quote value and NPV-->
+          <quote>
+            <value>123000</value>
+            <measureType>NPV</measureType>
+          </quote>
+        </assetValuation>
+<!--results for trade #2-->
+        <assetValuation>
+          <objectReference href="tid-2" />
+<!--quote value and NPV-->
+          <quote>
+            <value>456000</value>
+            <measureType>NPV</measureType>
+          </quote>
+        </assetValuation>
+<!--results for trade #3-->
+        <assetValuation>
+          <objectReference href="tid-3" />
+<!--quote value and NPV-->
+          <quote>
+            <value>789000</value>
+            <measureType>NPV</measureType>
+          </quote>
+        </assetValuation>
+<!--results for trade #4-->
+        <assetValuation>
+          <objectReference href="tid-4" />
+<!--quote value and NPV-->
+          <quote>
+            <value>-123000</value>
+            <measureType>NPV</measureType>
+          </quote>
+        </assetValuation>
+<!--results for trade #5-->
+        <assetValuation>
+          <objectReference href="tid-5" />
+<!--quote value and NPV-->
+          <quote>
+            <value>-456000</value>
+            <measureType>NPV</measureType>
+          </quote>
+        </assetValuation>
+      </valuationSet>
+    </tradeValuationItem>
+  </portfolioValuationItem>
+</valuationReport>
+

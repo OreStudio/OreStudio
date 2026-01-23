@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/css" href="FpML.CodeList.genericode.css"?>
+<gcl:CodeList xmlns:gcl="http://docs.oasis-open.org/codelist/ns/genericode/1.0/" xmlns:doc="http://www.fpml.org/coding-scheme/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://docs.oasis-open.org/codelist/ns/genericode/1.0/ genericode.xsd">
+   <Annotation>
+      <Description>
+         <doc:definition>An indicator that the identifier has been rendered anonymous, as required
+            in ASIC counterparty reporting (Federal Register of Legislation - ASIC Derivative
+            Transaction Rules (Reporting) 2024 Table S1.1(1) Item 7, Counterparty
+            2).</doc:definition>
+         <doc:publicationDate>2025-04-25</doc:publicationDate>
+      </Description>
+   </Annotation>
+   <Identification>
+      <ShortName>anonymityIdentifierScheme</ShortName>
+      <Version>1-0</Version>
+      <CanonicalUri>http://www.fpml.org/coding-scheme/asic-anonymity-identifier</CanonicalUri>
+      <CanonicalVersionUri>http://www.fpml.org/coding-scheme/asic-anonymity-identifier-1-0</CanonicalVersionUri>
+      <LocationUri>http://www.fpml.org/coding-scheme/asic-anonymity-identifier-1-0.xml</LocationUri>
+   </Identification>
+   <ColumnSet>
+      <Column Id="Code" Use="required">
+         <ShortName>Code</ShortName>
+         <Data Type="token">
+            <Parameter ShortName="maxLength">63</Parameter>
+         </Data>
+      </Column>
+      <Column Id="Source" Use="optional">
+         <ShortName>Source</ShortName>
+         <Data Type="string"/>
+      </Column>
+      <Column Id="Description" Use="optional">
+         <ShortName>Description</ShortName>
+         <Data Type="string"/>
+      </Column>
+      <Key Id="PrimaryKey">
+         <ShortName>key</ShortName>
+         <ColumnRef Ref="Code"/>
+      </Key>
+   </ColumnSet>
+   <SimpleCodeList>
+      <Row>
+         <Value>
+            <SimpleValue>ANON</SimpleValue>
+         </Value>
+         <Value>
+            <SimpleValue>ASIC</SimpleValue>
+         </Value>
+         <Value>
+            <SimpleValue>Anonymity identifier.</SimpleValue>
+         </Value>
+      </Row>
+   </SimpleCodeList>
+</gcl:CodeList>

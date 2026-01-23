@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is confirmation-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/confirmation-->
+<!--View is confirmation-->
+<!--Version is 5-11-->
+<!--NS is http://www.fpml.org/FpML-5/confirmation-->
+<executionNotification xmlns="http://www.fpml.org/FpML-5/confirmation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/confirmation ../../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.abc.com/coding-scheme/message-id">1234455</messageId>
+    <sentBy messageAddressScheme="http://www.abc.com/coding-scheme/message-address-id">ABC</sentBy>
+    <sendTo>ABCDEF</sendTo>
+    <creationTimestamp>2019-02-09T14:05:42.267Z</creationTimestamp>
+  </header>
+  <isCorrection>false</isCorrection>
+  <trade>
+    <tradeHeader>
+      <partyTradeIdentifier>
+        <partyReference href="Party1" />
+        <versionedTradeId>
+          <tradeId tradeIdScheme="http://www.abc.com/coding-scheme/trade-id">942800839</tradeId>
+          <version>1</version>
+        </versionedTradeId>
+      </partyTradeIdentifier>
+      <partyTradeInformation>
+        <partyReference href="Party1" />
+        <relatedParty>
+          <partyReference href="Party1" />
+          <role partyRoleScheme="http://www.fpml.org/coding-scheme/party-role">ReportingParty</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="Party2" />
+          <role partyRoleScheme="http://www.fpml.org/coding-scheme/party-role">Counterparty</role>
+        </relatedParty>
+        <relatedPerson>
+          <personReference href="Person1" />
+          <role>Trader</role>
+        </relatedPerson>
+      </partyTradeInformation>
+      <tradeDate>2019-02-07</tradeDate>
+    </tradeHeader>
+    <securityLending>
+      <primaryAssetClass>SecuritiesFinancing</primaryAssetClass>
+      <productType>SecurityLending</productType>
+      <lenderPartyReference href="Party1" />
+      <borrowerPartyReference href="Party2" />
+      <principal>
+        <security>
+          <instrumentId instrumentIdScheme="http://www.fpml.org/coding-scheme/external/instrument-id-ISIN">GB0882634976</instrumentId>
+          <instrumentType instrumentTypeScheme="http://www.fpml.org/coding-scheme/external/iso10962">DBFTFM</instrumentType>
+          <instrumentType instrumentTypeScheme="http://www.fpml.org/coding-scheme/external/esma-security-type">NFID</instrumentType>
+          <description>2.75% ABC.COM</description>
+          <issuerPartyReference href="BondIssuer" />
+          <creditQuality>INVG</creditQuality>
+          <maturity>2050-01-01</maturity>
+        </security>
+        <nominalAmount>
+          <currency>USD</currency>
+          <amount>5826000</amount>
+        </nominalAmount>
+        <quantity>5826000</quantity>
+        <dirtyPrice>0.85</dirtyPrice>
+        <valuationAmount>
+          <currency>USD</currency>
+          <amount>4952100</amount>
+        </valuationAmount>
+      </principal>
+      <initiation>
+        <settlementDate>2019-02-07</settlementDate>
+      </initiation>
+      <termination>
+        <settlementDate>2019-05-07</settlementDate>
+      </termination>
+      <duration>Term</duration>
+      <callingParty>Either</callingParty>
+      <callDate>
+        <adjustableDate>
+          <unadjustedDate>2019-02-05</unadjustedDate>
+          <dateAdjustments>
+            <businessDayConvention>NONE</businessDayConvention>
+          </dateAdjustments>
+        </adjustableDate>
+      </callDate>
+      <rebate>
+        <fixedRateSchedule>
+          <initialValue>0.012</initialValue>
+        </fixedRateSchedule>
+      </rebate>
+      <dayCountFraction>ACT/360</dayCountFraction>
+      <rebatePaymentFrequency>
+        <periodMultiplier>1</periodMultiplier>
+        <period>T</period>
+      </rebatePaymentFrequency>
+      <collateralProvisions>
+        <triParty>
+          <triPartyAgent href="Triparty" />
+          <deliveryByValue>true</deliveryByValue>
+        </triParty>
+        <marginRatio>1.05</marginRatio>
+        <collateralArrangement>SecurityFinancial</collateralArrangement>
+        <exclusiveArrangements>false</exclusiveArrangements>
+      </collateralProvisions>
+    </securityLending>
+    <documentation>
+      <masterAgreement>
+        <masterAgreementType>GMSLA</masterAgreementType>
+        <masterAgreementVersion>2010</masterAgreementVersion>
+      </masterAgreement>
+      <creditSupportAgreement>
+        <type>ISDA2014StandardCreditSupportAgreement</type>
+        <date>2019-02-07</date>
+      </creditSupportAgreement>
+    </documentation>
+  </trade>
+  <collateralization>
+    <postingPartyReference href="Party2" />
+    <beneficiaryPartyReference href="Party1" />
+    <collateralizedExposureGrouping>SingleTrade</collateralizedExposureGrouping>
+    <collateralizationType>Fully</collateralizationType>
+    <postedCollateral>
+      <valueDate>2019-02-07</valueDate>
+      <cash>
+        <currency>USD</currency>
+        <amount>6545511.00</amount>
+      </cash>
+      <totalValuationAmount>
+        <currency>USD</currency>
+        <amount>6545511.00</amount>
+      </totalValuationAmount>
+    </postedCollateral>
+  </collateralization>
+  <party id="Party1">
+    <partyId partyIdScheme="www.abc.com">12345</partyId>
+    <person id="Person1">
+      <personId personIdScheme="www.abc.com">12345678</personId>
+    </person>
+  </party>
+  <party id="Party2">
+    <partyId partyIdScheme="www.abc.com">123456</partyId>
+  </party>
+  <party id="Triparty">
+    <partyId partyIdScheme="www.abc.com">4567</partyId>
+  </party>
+  <party id="BondIssuer">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">LEI-BONDISSUER</partyId>
+  </party>
+</executionNotification>
+

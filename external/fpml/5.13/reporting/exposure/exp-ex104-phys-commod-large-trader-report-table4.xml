@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is reporting-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<!--
+Example of a exposure report for large trader reporting to CFTC
+Preliminary example based on 17 CFR Parts 15 and 20, Table 4 in Appendix B, p. 43872 of the Federal Register vol. 76 No. 141
+-->
+<exposureReport xmlns="http://www.fpml.org/FpML-5/reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/reporting ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.clearorg1.com/report_id">XXX00123</messageId>
+    <sentBy>CRE_ID_1</sentBy>
+    <sendTo>CFTC</sendTo>
+    <creationTimestamp>2010-09-27T20:08:12Z</creationTimestamp>
+  </header>
+  <onBehalfOf>
+    <partyReference href="dealer1" />
+  </onBehalfOf>
+  <asOfDate>2010-09-27</asOfDate>
+<!-- all quotes are for the given reporting day, unless indicated in the quote -->
+  <asOfTime>20:08:10-05:00</asOfTime>
+  <reportContents>
+    <partyReference href="dealer1" />
+<!-- since all records come from this org we don't repeat it below -->
+  </reportContents>
+  <quotationCharacteristics>
+    <currency>USD</currency>
+  </quotationCharacteristics>
+<!-- Data record #1 -->
+  <exposure>
+    <relatedParty>
+      <partyReference href="clearorg1" />
+      <role>ClearingOrganization</role>
+    </relatedParty>
+    <relatedParty>
+      <partyReference href="sef1" />
+      <role>ExecutionFacility</role>
+    </relatedParty>
+    <cleared>true</cleared>
+    <category categoryScheme="http://www.fpml.org/coding-scheme/org-type-category">Principal</category>
+    <productId productIdScheme="http://www.fpml.org/coding-scheme-external/product-id-clearorg1">CP_05</productId>
+    <underlyingAsset>
+      <commodity>
+        <instrumentId instrumentIdScheme="http://www.fpml.org/spec/2008/commodity-reference-price">Platts Oilgram Price Report for New York No. 2 (Barge)</instrumentId>
+        <commodityBase commodityBaseScheme="http://www.fpml.org/coding-scheme/commodity-code">NYMEX HO</commodityBase>
+      </commodity>
+    </underlyingAsset>
+    <futuresEquivalentMonth>2012-01</futuresEquivalentMonth>
+    <quote>
+      <value>200</value>
+      <measureType>LongSwapPosition</measureType>
+    </quote>
+    <quote>
+      <value>25200000</value>
+      <measureType>LongNotionalPosition</measureType>
+      <currency>USD</currency>
+    </quote>
+  </exposure>
+<!-- Data record #2 -->
+  <exposure>
+    <relatedParty>
+      <partyReference href="cp1" />
+      <role>Counterparty</role>
+    </relatedParty>
+    <relatedParty>
+      <partyReference href="clearorg1" />
+      <role>ClearingOrganization</role>
+    </relatedParty>
+    <relatedParty>
+      <partyReference href="sef1" />
+      <role>ExecutionFacility</role>
+    </relatedParty>
+    <cleared>true</cleared>
+    <category categoryScheme="http://www.fpml.org/coding-scheme/org-type-category">Counterparty</category>
+    <productId productIdScheme="http://www.fpml.org/coding-scheme-external/product-id-clearorg1">CP_05</productId>
+    <underlyingAsset>
+      <commodity>
+        <instrumentId instrumentIdScheme="http://www.fpml.org/spec/2008/commodity-reference-price">Platts Oilgram Price Report for New York No. 2 (Barge)</instrumentId>
+        <commodityBase commodityBaseScheme="http://www.fpml.org/coding-scheme/commodity-code">NYMEX HO</commodityBase>
+      </commodity>
+    </underlyingAsset>
+    <futuresEquivalentMonth>2012-01</futuresEquivalentMonth>
+    <quote>
+      <value>50</value>
+      <measureType>ShortSwapPosition</measureType>
+    </quote>
+    <quote>
+      <value>6300000</value>
+      <measureType>ShortNotionalPosition</measureType>
+      <currency>USD</currency>
+    </quote>
+  </exposure>
+<!-- Data record #3 -->
+  <exposure>
+    <relatedParty>
+      <partyReference href="cp2" />
+      <role>Counterparty</role>
+    </relatedParty>
+    <relatedParty>
+      <partyReference href="clearorg1" />
+      <role>ClearingOrganization</role>
+    </relatedParty>
+    <relatedParty>
+      <partyReference href="sef1" />
+      <role>ExecutionFacility</role>
+    </relatedParty>
+    <cleared>true</cleared>
+    <category categoryScheme="http://www.fpml.org/coding-scheme/org-type-category">Counterparty</category>
+    <productId productIdScheme="http://www.fpml.org/coding-scheme-external/product-id-clearorg1">CP_05</productId>
+    <underlyingAsset>
+      <commodity>
+        <instrumentId instrumentIdScheme="http://www.fpml.org/spec/2008/commodity-reference-price">Platts Oilgram Price Report for New York No. 2 (Barge)</instrumentId>
+        <commodityBase commodityBaseScheme="http://www.fpml.org/coding-scheme/commodity-code">NYMEX HO</commodityBase>
+      </commodity>
+    </underlyingAsset>
+    <futuresEquivalentMonth>2012-01</futuresEquivalentMonth>
+    <quote>
+      <value>150</value>
+      <measureType>ShortSwapPosition</measureType>
+    </quote>
+    <quote>
+      <value>18900000</value>
+      <measureType>ShortNotionalPosition</measureType>
+      <currency>USD</currency>
+    </quote>
+  </exposure>
+<!-- Data record #12 -->
+  <exposure>
+    <relatedParty>
+      <partyReference href="clearorg1" />
+      <role>ClearingOrganization</role>
+    </relatedParty>
+    <relatedParty>
+      <partyReference href="sef1" />
+      <role>ExecutionFacility</role>
+    </relatedParty>
+    <cleared>true</cleared>
+    <category categoryScheme="http://www.fpml.org/coding-scheme/org-type-category">Principal</category>
+    <productId productIdScheme="http://www.fpml.org/coding-scheme-external/product-id-clearorg1">CP_07</productId>
+    <underlyingAsset>
+      <commodity>
+        <instrumentId instrumentIdScheme="http://www.fpml.org/spec/2008/commodity-reference-price">NYMEX Henry Hub</instrumentId>
+        <commodityBase commodityBaseScheme="http://www.fpml.org/coding-scheme/commodity-code">NYMEX NG</commodityBase>
+      </commodity>
+    </underlyingAsset>
+    <futuresEquivalentMonth>2012-03</futuresEquivalentMonth>
+    <optionType>Call</optionType>
+    <expirationDate>2012-02-27</expirationDate>
+    <quote>
+      <value>4.00</value>
+      <measureType>StrikePrice</measureType>
+      <quoteUnits>MMBTU</quoteUnits>
+    </quote>
+    <quote>
+      <value>100</value>
+      <measureType>NonDeltaAdjustedLongSwaptionPosition</measureType>
+    </quote>
+    <quote>
+      <value>80</value>
+      <measureType>DeltaAdjustedLongSwaptionPosition</measureType>
+    </quote>
+    <quote>
+      <value>3400000</value>
+      <measureType>LongNotionalPosition</measureType>
+      <currency>USD</currency>
+    </quote>
+  </exposure>
+<!-- Data record #14 -->
+  <exposure>
+<!-- no clearing service -->
+<!-- no execution facility -->
+    <cleared>false</cleared>
+<!-- there's no specific indicator that there is no SEF - should we add executionVenueType? -->
+    <category categoryScheme="http://www.fpml.org/coding-scheme/org-type-category">Principal</category>
+    <underlyingAsset>
+      <commodity>
+        <instrumentId instrumentIdScheme="http://www.fpml.org/spec/2008/commodity-reference-price">NYMEX Henry Hub</instrumentId>
+        <commodityBase commodityBaseScheme="http://www.fpml.org/coding-scheme/commodity-code">NYMEX NG</commodityBase>
+      </commodity>
+    </underlyingAsset>
+    <futuresEquivalentMonth>2012-01</futuresEquivalentMonth>
+    <optionType>Call</optionType>
+    <expirationDate>2011-12-27</expirationDate>
+    <quote>
+      <value>4.25</value>
+      <measureType>StrikePrice</measureType>
+      <quoteUnits>MMBTU</quoteUnits>
+    </quote>
+    <quote>
+      <value>100</value>
+      <measureType>NonDeltaAdjustedLongSwaptionPosition</measureType>
+    </quote>
+    <quote>
+      <value>95</value>
+      <measureType>DeltaAdjustedLongSwaptionPosition</measureType>
+    </quote>
+    <quote>
+      <value>4037500</value>
+      <measureType>LongNotionalPosition</measureType>
+      <currency>USD</currency>
+    </quote>
+  </exposure>
+  <party id="dealer1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">CRE_ID_1</partyId>
+    <partyName>Commision reporting entity one</partyName>
+  </party>
+  <party id="cp1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">CP_O1</partyId>
+    <partyName>Energy Firm 1</partyName>
+  </party>
+  <party id="cp2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">CP_O2</partyId>
+    <partyName>Energy Firm 2</partyName>
+  </party>
+  <party id="cp3">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">CP_O3</partyId>
+    <partyName>Energy Firm 3</partyName>
+  </party>
+  <party id="cp4">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">CP_O4</partyId>
+    <partyName>ABC Firm</partyName>
+  </party>
+  <party id="cp5">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">CP_O5</partyId>
+    <partyName>XYZ Firm</partyName>
+  </party>
+  <party id="cp6">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">CP_O6</partyId>
+    <partyName>WVU Firm</partyName>
+  </party>
+  <party id="cp7">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">CP_O7</partyId>
+    <partyName>MNO Firm</partyName>
+  </party>
+  <party id="clearorg1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">CCO_ID_1</partyId>
+    <partyName>Clearing org one</partyName>
+  </party>
+  <party id="sef1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">EX1</partyId>
+    <partyName>Execution Facility One</partyName>
+  </party>
+  <party id="sef2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">EX2</partyId>
+    <partyName>Execution Facility Two</partyName>
+  </party>
+  <party id="sef3">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/dummy-party-id">EX3</partyId>
+    <partyName>Execution Facility Three</partyName>
+  </party>
+</exposureReport>
+

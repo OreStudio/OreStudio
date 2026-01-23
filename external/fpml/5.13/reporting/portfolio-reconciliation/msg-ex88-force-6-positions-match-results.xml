@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is reporting-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/reporting-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<positionsMatchResults xmlns="http://www.fpml.org/FpML-5/reporting" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/reporting ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+    <messageId messageIdScheme="http://www.recserv.com/mid">MSG0004</messageId>
+    <inReplyTo messageIdScheme="http://www.hedgeco.com/mid">HDG0001</inReplyTo>
+    <sentBy>RECSERV</sentBy>
+    <sendTo>HEDGUS33</sendTo>
+    <creationTimestamp>2006-06-14T20:38:02Z</creationTimestamp>
+  </header>
+  <correlationId correlationIdScheme="http://www.recserv.com/cid">CID12345</correlationId>
+  <portfolio>
+    <portfolioName>fundPortfolio33</portfolioName>
+    <asOfDate>2006-06-14</asOfDate>
+    <definingParty href="fund" />
+  </portfolio>
+  <positionMatchResult>
+    <status>Matched</status>
+    <assertedPosition>
+      <positionId positionIdScheme="http://www.hedgeco.com/positionId">POS01</positionId>
+      <version>1</version>
+    </assertedPosition>
+    <proposedMatch>
+      <positionId positionIdScheme="http://www.abc.com/positionId">Position-01</positionId>
+      <version>1</version>
+      <constituent>
+        <trade>
+          <tradeHeader>
+            <partyTradeIdentifier>
+              <partyReference href="dealer" />
+              <tradeId tradeIdScheme="http://www.abc.com/trade-id">ABC-0001</tradeId>
+            </partyTradeIdentifier>
+            <tradeDate>2001-10-23</tradeDate>
+          </tradeHeader>
+          <fxSingleLeg>
+            <exchangedCurrency1>
+              <payerPartyReference href="fund" />
+              <receiverPartyReference href="dealer" />
+              <paymentAmount>
+                <currency>GBP</currency>
+                <amount>10000000</amount>
+              </paymentAmount>
+            </exchangedCurrency1>
+            <exchangedCurrency2>
+              <payerPartyReference href="dealer" />
+              <receiverPartyReference href="fund" />
+              <paymentAmount>
+                <currency>USD</currency>
+                <amount>14700000</amount>
+              </paymentAmount>
+            </exchangedCurrency2>
+            <valueDate>2001-10-25</valueDate>
+            <exchangeRate>
+              <quotedCurrencyPair>
+                <currency1>GBP</currency1>
+                <currency2>USD</currency2>
+                <quoteBasis>Currency2PerCurrency1</quoteBasis>
+              </quotedCurrencyPair>
+              <rate>1.47</rate>
+            </exchangeRate>
+          </fxSingleLeg>
+        </trade>
+      </constituent>
+      <valuation>
+        <quote>
+          <value>12300.00</value>
+          <measureType>NPV</measureType>
+          <currency>USD</currency>
+        </quote>
+      </valuation>
+      <matchId matchIdScheme="http://www.recserv.com/matchId">Pos-m-01</matchId>
+    </proposedMatch>
+  </positionMatchResult>
+  <positionMatchResult>
+<!--This is the position that has been force matched -->
+    <status>Matched</status>
+    <assertedPosition>
+      <positionId positionIdScheme="http://www.hedgeco.com/positionId">POS02</positionId>
+      <version>1</version>
+    </assertedPosition>
+    <proposedMatch>
+      <positionId positionIdScheme="http://www.abc.com/positionId">Position-02</positionId>
+      <version>1</version>
+      <constituent>
+        <trade>
+          <tradeHeader>
+            <partyTradeIdentifier>
+              <partyReference href="dealer" />
+              <tradeId tradeIdScheme="http://www.abc.com/ird">2222</tradeId>
+            </partyTradeIdentifier>
+            <tradeDate>1991-05-14</tradeDate>
+          </tradeHeader>
+          <fra>
+            <buyerPartyReference href="fund" />
+            <sellerPartyReference href="dealer" />
+            <adjustedEffectiveDate id="resetDate">1991-07-17</adjustedEffectiveDate>
+            <adjustedTerminationDate>1992-01-17</adjustedTerminationDate>
+            <paymentDate>
+              <unadjustedDate>1991-07-17</unadjustedDate>
+              <dateAdjustments>
+                <businessDayConvention>FOLLOWING</businessDayConvention>
+                <businessCenters>
+                  <businessCenter>CHZU</businessCenter>
+                </businessCenters>
+              </dateAdjustments>
+            </paymentDate>
+            <fixingDateOffset>
+              <periodMultiplier>-2</periodMultiplier>
+              <period>D</period>
+              <dayType>Business</dayType>
+              <businessDayConvention>NONE</businessDayConvention>
+              <businessCenters>
+                <businessCenter>GBLO</businessCenter>
+              </businessCenters>
+              <dateRelativeTo href="resetDate" />
+            </fixingDateOffset>
+            <dayCountFraction>ACT/360</dayCountFraction>
+            <calculationPeriodNumberOfDays>184</calculationPeriodNumberOfDays>
+            <notional>
+              <currency>CHF</currency>
+              <amount>25000000.00</amount>
+            </notional>
+            <fixedRate>0.04</fixedRate>
+            <floatingRateIndex>CHF-LIBOR-BBA</floatingRateIndex>
+            <indexTenor>
+              <periodMultiplier>6</periodMultiplier>
+              <period>M</period>
+            </indexTenor>
+            <fraDiscounting>ISDA</fraDiscounting>
+          </fra>
+        </trade>
+      </constituent>
+      <valuation>
+        <quote>
+          <value>-1111.00</value>
+          <measureType>NPV</measureType>
+          <currency>USD</currency>
+        </quote>
+      </valuation>
+      <matchId matchIdScheme="http://www.recserv.com/matchId">Pos-m-02</matchId>
+    </proposedMatch>
+  </positionMatchResult>
+  <matchCompleted>true</matchCompleted>
+  <party id="dealer">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">QGPGHQ1ENZOOLJRFTH41</partyId>
+    <partyName>ABCD Securities Inc.</partyName>
+  </party>
+  <party id="fund">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">J6W9XJWVE853A9CVRQ85</partyId>
+    <partyName>HedgeCo Capital L.L.C.</partyName>
+  </party>
+</positionsMatchResults>
+

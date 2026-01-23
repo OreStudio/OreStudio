@@ -1,0 +1,731 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--View is recordkeeping-->
+<!--Version is 5-13-->
+<!--NS is http://www.fpml.org/FpML-5/recordkeeping-->
+<!--
+  == Copyright (c) 2022-2025 All rights reserved.
+  == Financial Products Markup Language is subject to the FpML public license.
+  == A copy of this license is available at http://www.fpml.org/license/license.html
+  -->
+<!--nonpublicExecutionReport is to be used for PET, Confirm, Snapshot, Document and Post trade events-->
+<nonpublicExecutionReport xmlns="http://www.fpml.org/FpML-5/recordkeeping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fpmlVersion="5-13" xsi:schemaLocation="http://www.fpml.org/FpML-5/recordkeeping ../fpml-main-5-13.xsd http://www.w3.org/2000/09/xmldsig# ../xmldsig-core-schema.xsd">
+  <header>
+<!-- optional, many users use this field in order to correlate their messages internally-->
+    <messageId messageIdScheme="http://www.banka.com/msg_id">123</messageId>
+<!-- required-->
+<!-- Changing sentBy to generic sentBy to 00001-->
+    <sentBy messageAddressScheme="http://www.dtcc.com/coding-scheme/party-id">00001</sentBy>
+<!-- required, will be a constant 'DTCCGTR' on inbound submissions-->
+    <sendTo>DTCCGTR</sendTo>
+<!-- required, this signifies when the message was created on the source system-->
+    <creationTimestamp>2011-02-04T15:38:00Z</creationTimestamp>
+<!--   optional, used to reference what specification version this message has been constructed off of-->
+    <implementationSpecification>
+<!--  see asset specific addedums for the correct coding for implemantation specification-->
+      <version implementationSpecificationVersionScheme="http://www.dtcc.com">CA3.0IR1.0</version>
+    </implementationSpecification>
+  </header>
+<!-- required, denotes whether the action is 'New' or 'Modify'-->
+  <isCorrection>false</isCorrection>
+<!-- conditional. this element is used  for the event id, this has asset class specific variations-->
+<!-- EMIR: Removed correlationId -->
+<!-- conditional, if submitted by a third party, this is required-->
+<!-- EMIR: Removed correlationId -->
+<!-- conditional, if submitted by a third party, this is required-->
+<!-- ********************SUBMITION TYPE - DUAL/BOTH AND SUBMITTED BY BANKA ************************ -->
+<!-- ********************SCENARIO: INDEPENDENT FOR BANKA AND FULL FOR BANKB *********************** -->
+  <onBehalfOf>
+    <partyReference href="BankA" />
+  </onBehalfOf>
+  <onBehalfOf>
+    <partyReference href="BankB" />
+  </onBehalfOf>
+<!-- required, this is the transaction type, this has asset class variations-->
+  <asOfDate>2012-06-12</asOfDate>
+  <asOfTime>05:00:00</asOfTime>
+  <portfolioReference>
+    <portfolioName>PORTFOLIO_001</portfolioName>
+  </portfolioReference>
+<!-- required, this is the transaction type, this has asset class variations-->
+  <originatingEvent>Trade</originatingEvent>
+<!-- required-->
+  <trade>
+<!-- required-->
+    <tradeHeader>
+      <partyTradeIdentifier>
+<!-- required to denote the USI                        -->
+<!-- EMIR: CHANGE IT TO GTRCREATE -->
+        <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">USI Prefix</issuer>
+        <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">USI Value</tradeId>
+<!--  optional. use the below structure for a prior usi-->
+        <originatingTradeId>
+          <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/cftc/issuer-identifier">priorUSI Prefix</issuer>
+          <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">priorUsI value</tradeId>
+        </originatingTradeId>
+      </partyTradeIdentifier>
+      <partyTradeIdentifier>
+<!-- required to denote the UTI   -->
+        <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/issuer-identifier">UTI Prefix</issuer>
+        <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">UTI Value</tradeId>
+        <originatingTradeId>
+          <issuer issuerIdScheme="http://www.fpml.org/coding-scheme/external/issuer-identifier">priorUtI Prefix</issuer>
+          <tradeId tradeIdScheme="http://www.fpml.org/coding-scheme/external/unique-transaction-identifier">priorUtI value</tradeId>
+        </originatingTradeId>
+      </partyTradeIdentifier>
+<!--     additional id blocks may be provided to support id's for the below. 
+                   Each related party will have a separate partyTradeIdentifier block. Not all id's will apply to each asset class. 
+                   ClearingBrokerId1- ccp leg
+                   ClearingBrokerId1- client leg
+                   ClearingBrokerId2- ccp leg
+                   ClearingBrokerId2- client leg
+                   AdditionalRepositoryId1
+                   AdditionalRepositoryId2
+                   AdditionalRepositoryId3
+                   Party1TransactionId
+                   Party2TransactionId
+                   DCO ID
+                -->
+      <partyTradeIdentifier>
+        <partyReference href="ClearingBroker123" />
+<!--     clearing broker id ccp leg-->
+        <tradeId tradeIdScheme="http://www.dtcc.com/internal_Referenceid/ccp-leg">6543534</tradeId>
+<!--     clearing broker client leg-->
+        <tradeId tradeIdScheme="http://www.dtcc.com/internal_Referenceid/client-leg">6543534</tradeId>
+      </partyTradeIdentifier>
+<!--        ClearingBrokerId2-->
+      <partyTradeIdentifier>
+        <partyReference href="ClearingBrokerABC" />
+<!--     clearing broker id ccp leg-->
+        <tradeId tradeIdScheme="http://www.dtcc.com/internal_Referenceid/ccp-leg">6543534</tradeId>
+<!--     clearing broker client leg-->
+        <tradeId tradeIdScheme="http://www.dtcc.com/internal_Referenceid/client-leg">6543534</tradeId>
+      </partyTradeIdentifier>
+<!--    Party1TransactionId-->
+      <partyTradeIdentifier>
+        <partyReference href="BankA" />
+        <tradeId tradeIdScheme="http://www.dtcc.com/internal_Referenceid">6343434</tradeId>
+      </partyTradeIdentifier>
+<!--    Party2TransactionId-->
+      <partyTradeIdentifier>
+        <partyReference href="BankB" />
+        <tradeId tradeIdScheme="http://www.dtcc.com/internal_Referenceid">6343434</tradeId>
+      </partyTradeIdentifier>
+<!--     DCO id -->
+      <partyTradeIdentifier>
+        <partyReference href="DCO123" />
+        <tradeId tradeIdScheme="http://www.dtcc.com/internal_Referenceid">6434324324</tradeId>
+      </partyTradeIdentifier>
+      <partyTradeInformation>
+<!--        BankA-->
+        <partyReference href="BankA" />
+        <relatedParty>
+          <partyReference href="AssetMgmtCo" />
+          <role>ExecutionAgent</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="SettlementAgent123" />
+          <role>SettlementAgent</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="ClearingBroker123" />
+          <role>ClearingFirm</role>
+        </relatedParty>
+<!-- EMIR: Change - Added new element -->
+        <relatedParty>
+          <partyReference href="BeneficiaryId1" />
+          <role>Beneficiary</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="BankA" />
+          <role>ReportingParty</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="BankB" />
+          <role>Counterparty</role>
+        </relatedParty>
+<!-- EMIR: Change Ends here -->
+<!-- EMIR: Change - Added new element -->
+        <isAccountingHedge>true</isAccountingHedge>
+        <category>Principal</category>
+<!-- EMIR: Change Ends here -->
+        <executionDateTime>2011-02-04T15:38:00Z</executionDateTime>
+<!-- EMIR: Change - Added new element -->
+        <timestamps>
+          <confirmed>2011-02-04T15:38:00Z</confirmed>
+<!-- EMIR: Removed timestamp -->
+        </timestamps>
+<!-- EMIR: Change - Ends here -->
+<!--     GTR does not parse or use this field-->
+        <intentToAllocate>false</intentToAllocate>
+<!--      optional-->
+        <allocationStatus>PreAllocation</allocationStatus>
+<!--  required-->
+        <intentToClear>true</intentToClear>
+<!-- EMIR: Change - Added new element -->
+        <clearingStatus clearingStatusScheme="http://www.fpml.org/coding-scheme/clearing-status">Accepted</clearingStatus>
+<!-- EMIR: Change - Now Support 'true', 'false' for non US reporting -->
+        <collateralizationType>OneWay</collateralizationType>
+<!--        required-->
+        <reportingRegime>
+<!-- optional -->
+<!-- EMIR: Removed name element -->
+<!-- The regulator this trade is applicable to-->
+<!-- EMIR: Change - Change Supervisor body -->
+          <supervisorRegistration>
+            <supervisoryBody>ESMA</supervisoryBody>
+          </supervisorRegistration>
+<!-- EMIR: Change -->
+          <reportingRole>ReportingParty</reportingRole>
+<!-- required-->
+          <reportingPurpose>Snapshot</reportingPurpose>
+<!-- optional-->
+          <mandatorilyClearable>false</mandatorilyClearable>
+<!-- EMIR: Change - Added new element -->
+          <exceedsClearingThreshold>true</exceedsClearingThreshold>
+<!-- EMIR: Change - Added new element -->
+          <entityClassification entityClassificationScheme="http://www.fpml.org/coding-scheme/esma-entity-classification">Financial</entityClassification>
+<!-- EMIR: L2 Validation Change - valid values for actionType are:
+•       "N" = New (a derivative contract or post-trade event reported for the first time)
+•       "M" = Modify (a modification of details of a previously reported derivative contract)
+•       "E" = Error (a cancellation of a wrongly submitted report)
+•       "C" = Cancel (a termination of an existing contract)
+•       "Z" = Compression (a compression of the reported contract)
+•       "V" = Valuation update (an update of a contract valuation)
+•       "O" = Other (any other amendment to the report).
+            -->
+          <actionType actionTypeScheme="http://www.fpml.org/coding-scheme/action-type">N</actionType>
+        </reportingRegime>
+<!-- EMIR : Change for Multi-Jurisdiction EMIR + CFTC-->
+        <reportingRegime>
+          <supervisorRegistration>
+            <supervisoryBody>CFTC</supervisoryBody>
+          </supervisorRegistration>
+          <reportingRole>ReportingParty</reportingRole>
+          <reportingPurpose>Snapshot</reportingPurpose>
+<!-- EMIR: Change - Added new element -->
+          <mandatorilyClearable>false</mandatorilyClearable>
+          <entityClassification entityClassificationScheme="http://www.fpml.org/coding-scheme/esma-entity-classification">NonFinancial</entityClassification>
+        </reportingRegime>
+<!-- EMIR : Change for Multi-Jurisdiction Ends Here-->
+<!-- optional -->
+        <endUserException>true</endUserException>
+<!-- required-->
+        <nonStandardTerms>false</nonStandardTerms>
+<!-- optional -->
+        <offMarketPrice>false</offMarketPrice>
+<!-- EMIR: Change - Added new element -->
+        <largeSizeTrade>true</largeSizeTrade>
+<!-- required-->
+        <executionVenueType>SEF</executionVenueType>
+<!--required-->
+        <verificationMethod>Electronic</verificationMethod>
+<!--   optional-->
+<!-- EMIR: Change - Change the value from Electronic to 'NotConfirmed' -->
+        <confirmationMethod>Electronic</confirmationMethod>
+      </partyTradeInformation>
+      <partyTradeInformation>
+<!--   BankB-->
+        <partyReference href="BankB" />
+        <relatedParty>
+          <partyReference href="ExecutionAgent123" />
+          <role>ExecutionAgent</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="SettlementAgent123" />
+          <role>SettlementAgent</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="ExecutionFacility123" />
+          <role>ExecutionFacility</role>
+        </relatedParty>
+        <relatedParty>
+          <partyReference href="ClearingBrokerABC" />
+          <role>ClearingFirm</role>
+        </relatedParty>
+<!-- EMIR: Change - Added new element -->
+        <relatedParty>
+          <partyReference href="BeneficaryId2" />
+          <role>Beneficiary</role>
+        </relatedParty>
+<!-- EMIR: Change Ends here -->
+<!-- EMIR: Change - Added new element -->
+        <isAccountingHedge>true</isAccountingHedge>
+        <category>Principal</category>
+<!-- EMIR: Change - Ends here -->
+<!-- EMIR: Change - Added new element -->
+<!-- timestamps and collateralPortfolio-->
+        <timestamps>
+          <publiclyReported>2011-02-04T15:38:00Z</publiclyReported>
+<!-- EMIR: Removed timestamp -->
+        </timestamps>
+        <collateralPortfolio portfolioNameScheme="http://www.bankx.com/collateral-portfolio-id">25081310080720</collateralPortfolio>
+<!-- EMIR: Change - Ends here -->
+        <reportingRegime>
+<!-- EMIR: Removed name element -->
+<!-- The regulator this trade is applicable to-->
+<!-- EMIR: Change - Change Supervisor body -->
+          <supervisorRegistration>
+            <supervisoryBody>ESMA</supervisoryBody>
+          </supervisorRegistration>
+<!-- optional -->
+<!-- EMIR: Change -->
+          <reportingRole>ReportingParty</reportingRole>
+<!-- required-->
+          <reportingPurpose>Snapshot</reportingPurpose>
+<!-- optional-->
+          <mandatorilyClearable>false</mandatorilyClearable>
+<!-- EMIR: Change - Added new element -->
+          <exceedsClearingThreshold>true</exceedsClearingThreshold>
+<!-- EMIR: Change - Added new element -->
+          <entityClassification entityClassificationScheme="http://www.fpml.org/coding-scheme/esma-entity-classification">Financial</entityClassification>
+<!-- EMIR: L2 Validation Change - valid values for actionType are:
+•       "N" = New (a derivative contract or post-trade event reported for the first time)
+•       "M" = Modify (a modification of details of a previously reported derivative contract)
+•       "E" = Error (a cancellation of a wrongly submitted report)
+•       "C" = Cancel (a termination of an existing contract)
+•       "Z" = Compression (a compression of the reported contract)
+•       "V" = Valuation update (an update of a contract valuation)
+•       "O" = Other (any other amendment to the report).
+            -->
+          <actionType actionTypeScheme="http://www.fpml.org/coding-scheme/action-type">N</actionType>
+        </reportingRegime>
+<!-- EMIR : Change for Multi-Jurisdiction EMIR + CFTC-->
+        <reportingRegime>
+          <supervisorRegistration>
+            <supervisoryBody>CFTC</supervisoryBody>
+          </supervisorRegistration>
+          <reportingRole>ReportingParty</reportingRole>
+          <reportingPurpose>Snapshot</reportingPurpose>
+          <mandatorilyClearable>false</mandatorilyClearable>
+<!-- EMIR: Change - Added new element -->
+          <entityClassification entityClassificationScheme="http://www.fpml.org/coding-scheme/esma-entity-classification">NonFinancial</entityClassification>
+        </reportingRegime>
+<!-- EMIR : Change for Multi-Jurisdiction Ends Here-->
+      </partyTradeInformation>
+<!--         Product info here -->
+      <tradeDate>2012-01-01</tradeDate>
+    </tradeHeader>
+    <swap>
+      <primaryAssetClass>InterestRate</primaryAssetClass>
+      <productId>InterestRate:CrossCurrency:FixedFloat</productId>
+      <swapStream id="fixedSwapStream">
+<!-- Required -->
+        <payerPartyReference href="BankA" />
+<!-- Required -->
+        <receiverPartyReference href="BankB" />
+        <calculationPeriodDates id="fixedCalculationPeriodDates">
+          <effectiveDate>
+<!-- Required -->
+            <unadjustedDate>2008-07-24</unadjustedDate>
+            <dateAdjustments>
+              <businessDayConvention>FOLLOWING</businessDayConvention>
+              <businessCenters>
+                <businessCenter>USNY</businessCenter>
+              </businessCenters>
+            </dateAdjustments>
+          </effectiveDate>
+          <terminationDate>
+<!-- Required -->
+            <unadjustedDate>2009-01-24</unadjustedDate>
+            <dateAdjustments>
+              <businessDayConvention>FOLLOWING</businessDayConvention>
+              <businessCenters>
+                <businessCenter>USNY</businessCenter>
+              </businessCenters>
+            </dateAdjustments>
+          </terminationDate>
+          <calculationPeriodDatesAdjustments>
+            <businessDayConvention>FOLLOWING</businessDayConvention>
+            <businessCenters>
+              <businessCenter>USNY</businessCenter>
+            </businessCenters>
+          </calculationPeriodDatesAdjustments>
+          <calculationPeriodFrequency>
+<!-- Conditional - Required when different from Payment Frequency -->
+            <periodMultiplier>6</periodMultiplier>
+<!-- Conditional - Required when different from Payment Frequency -->
+            <period>M</period>
+            <rollConvention>1</rollConvention>
+          </calculationPeriodFrequency>
+        </calculationPeriodDates>
+        <paymentDates id="fixedPaymentDates">
+          <calculationPeriodDatesReference href="fixedCalculationPeriodDates" />
+          <paymentFrequency>
+<!-- Required -->
+            <periodMultiplier>6</periodMultiplier>
+<!-- Required -->
+            <period>M</period>
+          </paymentFrequency>
+          <payRelativeTo>CalculationPeriodEndDate</payRelativeTo>
+          <paymentDatesAdjustments>
+            <businessDayConvention>FOLLOWING</businessDayConvention>
+            <businessCenters>
+              <businessCenter>GBLO</businessCenter>
+            </businessCenters>
+          </paymentDatesAdjustments>
+        </paymentDates>
+        <calculationPeriodAmount>
+          <calculation>
+            <notionalSchedule id="fixedRateNotional">
+              <notionalStepSchedule>
+<!-- Required -->
+                <initialValue>1000000</initialValue>
+<!-- Required -->
+                <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">HKD</currency>
+              </notionalStepSchedule>
+            </notionalSchedule>
+            <fixedRateSchedule>
+<!-- Required -->
+              <initialValue>0.02</initialValue>
+            </fixedRateSchedule>
+<!-- Required -->
+            <dayCountFraction dayCountFractionScheme="http://www.fpml.org/coding-scheme/day-count-fraction">ACT/365.FIXED</dayCountFraction>
+          </calculation>
+        </calculationPeriodAmount>
+        <principalExchanges>
+<!-- Required -->
+          <initialExchange>true</initialExchange>
+<!-- Required -->
+          <finalExchange>true</finalExchange>
+<!-- Required -->
+          <intermediateExchange>false</intermediateExchange>
+        </principalExchanges>
+      </swapStream>
+      <swapStream id="floatingSwapStream">
+<!-- Required -->
+        <payerPartyReference href="BankB" />
+        <receiverPartyReference href="BankA" />
+        <calculationPeriodDates id="floatingCalculationPeriodDates">
+          <effectiveDate>
+<!-- Required -->
+            <unadjustedDate>2008-07-24</unadjustedDate>
+            <dateAdjustments>
+              <businessDayConvention>FOLLOWING</businessDayConvention>
+              <businessCenters>
+                <businessCenter>USNY</businessCenter>
+              </businessCenters>
+            </dateAdjustments>
+          </effectiveDate>
+          <terminationDate>
+<!-- Required -->
+            <unadjustedDate>2009-01-24</unadjustedDate>
+            <dateAdjustments>
+              <businessDayConvention>FOLLOWING</businessDayConvention>
+              <businessCenters>
+                <businessCenter>USNY</businessCenter>
+              </businessCenters>
+            </dateAdjustments>
+          </terminationDate>
+          <calculationPeriodDatesAdjustments>
+            <businessDayConvention>FOLLOWING</businessDayConvention>
+            <businessCenters>
+              <businessCenter>USNY</businessCenter>
+            </businessCenters>
+          </calculationPeriodDatesAdjustments>
+          <calculationPeriodFrequency>
+<!-- Conditional - Required when different from Payment Frequency -->
+            <periodMultiplier>6</periodMultiplier>
+<!-- Conditional - Required when different from Payment Frequency -->
+            <period>M</period>
+            <rollConvention>1</rollConvention>
+          </calculationPeriodFrequency>
+        </calculationPeriodDates>
+        <paymentDates id="floatingPaymentDates">
+          <paymentFrequency>
+<!-- Required -->
+            <periodMultiplier>6</periodMultiplier>
+<!-- Required -->
+            <period>M</period>
+          </paymentFrequency>
+          <payRelativeTo>CalculationPeriodEndDate</payRelativeTo>
+          <paymentDatesAdjustments>
+            <businessDayConvention>FOLLOWING</businessDayConvention>
+            <businessCenters>
+              <businessCenter>GBLO</businessCenter>
+            </businessCenters>
+          </paymentDatesAdjustments>
+        </paymentDates>
+        <resetDates id="floatingResetDates">
+          <resetRelativeTo>CalculationPeriodStartDate</resetRelativeTo>
+          <fixingDates>
+<!-- Required -->
+            <periodMultiplier>0</periodMultiplier>
+<!-- Required -->
+            <period>D</period>
+            <dayType>Business</dayType>
+<!-- Required -->
+            <businessDayConvention>MODFOLLOWING</businessDayConvention>
+            <businessCenters>
+<!-- Required -->
+              <businessCenter>USNY</businessCenter>
+<!-- Required -->
+              <businessCenter>GBLO</businessCenter>
+            </businessCenters>
+          </fixingDates>
+          <resetFrequency>
+            <periodMultiplier>1</periodMultiplier>
+            <period>M</period>
+          </resetFrequency>
+        </resetDates>
+        <calculationPeriodAmount>
+          <calculation>
+            <notionalSchedule id="floatingRateNotional2">
+              <notionalStepSchedule>
+<!-- Required -->
+                <initialValue>10000000</initialValue>
+<!-- Required -->
+                <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+              </notionalStepSchedule>
+            </notionalSchedule>
+            <floatingRateCalculation>
+<!-- Required -->
+              <floatingRateIndex floatingRateIndexScheme="http://www.swapswire.com/spec/2001/floating-rate-index-1-0">DKK-CIBOR2-DKNA13</floatingRateIndex>
+              <indexTenor>
+<!-- Required -->
+                <periodMultiplier>1</periodMultiplier>
+<!-- Required -->
+                <period>M</period>
+              </indexTenor>
+            </floatingRateCalculation>
+<!-- Required -->
+            <dayCountFraction dayCountFractionScheme="http://www.fpml.org/coding-scheme/day-count-fraction">ACT/360</dayCountFraction>
+          </calculation>
+        </calculationPeriodAmount>
+        <principalExchanges>
+<!-- Required -->
+          <initialExchange>true</initialExchange>
+<!-- Required -->
+          <finalExchange>true</finalExchange>
+<!-- Required -->
+          <intermediateExchange>false</intermediateExchange>
+        </principalExchanges>
+      </swapStream>
+      <additionalPayment>
+        <payerPartyReference href="BankA" />
+        <receiverPartyReference href="BankB" />
+        <paymentAmount>
+          <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+          <amount>500000</amount>
+        </paymentAmount>
+        <paymentDate>
+          <unadjustedDate>2012-05-05</unadjustedDate>
+        </paymentDate>
+      </additionalPayment>
+    </swap>
+    <documentation>
+      <masterAgreement>
+        <masterAgreementType>ISDA</masterAgreementType>
+        <masterAgreementVersion masterAgreementVersionScheme="http://www.fpml.org/coding-scheme/master-agreement-version">1992</masterAgreementVersion>
+      </masterAgreement>
+      <attachment>
+        <resourceId resourceIdScheme="http://abc.com/ext/confos">123</resourceId>
+        <resourceType>TermSheet</resourceType>
+        <language languageScheme="http://www.fpml.org/coding-scheme/external/ISO-639-2T">eng</language>
+        <mimeType>application/pdf</mimeType>
+        <base64Binary>VGhpcyBpcyBhIGRlbW9uc3RyYXRpb24gb2YgQmFzZTY0IGVuY29kaW5n</base64Binary>
+<!-- base 64 encoded copy of doc -->
+      </attachment>
+    </documentation>
+  </trade>
+  <quote>
+    <value>0.35</value>
+    <measureType>PriceNotation</measureType>
+    <quoteUnits>Percentage</quoteUnits>
+  </quote>
+  <quote>
+    <value>75</value>
+    <measureType>AdditionalPriceNotation</measureType>
+    <quoteUnits>BasisPoints</quoteUnits>
+  </quote>
+  <quote>
+    <value>123</value>
+    <measureType>MarkToMarket</measureType>
+    <currency>USD</currency>
+    <pricingModel>Model</pricingModel>
+    <time>2011-11-11T05:00:00</time>
+    <valuationDate>2012-04-10</valuationDate>
+  </quote>
+  <quote>
+    <value>456</value>
+    <measureType>CCPValuation</measureType>
+    <currency>USD</currency>
+    <time>2011-11-11T05:00:00</time>
+    <valuationDate>2012-04-10</valuationDate>
+  </quote>
+<!--    Expected parties are:
+        
+        Submitter
+        ExecutionAgent1
+        ExecutionAgent2
+        SettlementAgent1
+        SettlementAgent2
+        Broker1
+        Broker2
+        ClearingBroker1
+        ClearingBroker2
+        Clearing DCO
+        AdditionalRepository1
+        AdditionalRepository2
+        AdditionalRepository3
+        Transferee (these hrefs will be anchored by a transferee element)
+        Transferor (these hrefs will be anchored by a transferor element)
+        RemainingParty (these hrefs will be anchored by a remainingparty element)
+        
+        If defined in the party  element, these parties must be referenced in the applicable relatedParty element
+        
+        
+        
+        
+        Schemes definitions for partyIdScheme
+        
+        http://www.dtcc.com/coding-scheme/party-id  - store in db as DTCC
+        http://www.fpml.org/ext/iso9362 - store in db as  BIC
+        http://www.fpml.org/coding-scheme/external/iso17442 - store in db as LEI
+        http://www.fpml.org/coding-scheme/external/party-id/EFET - store in db as EFETNet 
+        http://www.fpml.org/coding-scheme/external/party-id/AVID - store in db as  AVOX 
+        
+    -->
+<!--Party 1-->
+  <party id="BankA">
+<!-- DTCC will validate whether BankA/BankB is a valid UCI -->
+<!-- EMIR: Change - Change it to LEI -->
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">DEALER006</partyId>
+<!-- EMIR: Change - Added new element -->
+    <classification industryClassificationScheme="http://www.fpml.org/coding-scheme/regulatory-corporate-sector">AssuranceUndertaking</classification>
+<!-- EMIR: Change - Rates XPath sheet having true/false as value -->
+    <region>EEA</region>
+    <jurisdiction>GBSC</jurisdiction>
+    <organizationType>SD</organizationType>
+    <contactInfo>
+      <telephone>
+        <type>Personal</type>
+        <number>0018663266737</number>
+      </telephone>
+      <email>xyz@hsbc.com</email>
+      <address>
+        <city>NY</city>
+        <country>USA</country>
+        <postalCode>560034</postalCode>
+      </address>
+    </contactInfo>
+<!-- EMIR: Change - Ends here -->
+<!--Desk  1-->
+    <businessUnit id="NYTrading">
+      <name>Desk</name>
+      <businessUnitId>5555</businessUnitId>
+      <country>USA</country>
+    </businessUnit>
+<!--   Sales 1-->
+    <businessUnit id="HungarianSales">
+      <name>Sales</name>
+      <businessUnitId>5555</businessUnitId>
+      <country>HUN</country>
+    </businessUnit>
+<!-- Branch-->
+    <businessUnit>
+      <name>Branch</name>
+      <country>USA</country>
+    </businessUnit>
+<!--  Trader 1-->
+    <person id="JJones">
+      <personId>56565656</personId>
+      <country>HUN</country>
+    </person>
+  </party>
+<!--Party 2-->
+  <party id="BankB">
+<!-- EMIR: Change - Change it to LEI -->
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">DEALER007</partyId>
+<!-- EMIR: Change - Added new element -->
+    <classification industryClassificationScheme="http://www.fpml.org/coding-scheme/regulatory-corporate-sector">AssuranceUndertaking</classification>
+<!-- EMIR: Change - Rates XPath sheet having true/false as value -->
+    <region>EEA</region>
+    <jurisdiction>GBSC</jurisdiction>
+    <organizationType>MSP</organizationType>
+    <contactInfo>
+      <telephone>
+        <type>Personal</type>
+        <number>0018663266737</number>
+      </telephone>
+      <email>xyz@hsbc.com</email>
+      <address>
+        <city>NY</city>
+        <country>USA</country>
+        <postalCode>560034</postalCode>
+      </address>
+    </contactInfo>
+<!-- EMIR: Change - Ends here -->
+<!--Desk  2-->
+    <businessUnit id="GSNY">
+      <name>Desk</name>
+      <businessUnitId>5555</businessUnitId>
+      <country>USA</country>
+    </businessUnit>
+<!--   Sales 2-->
+    <businessUnit id="GSGB">
+      <name>Sales</name>
+      <businessUnitId>565365465</businessUnitId>
+      <country>HUN</country>
+    </businessUnit>
+<!-- Branch-->
+    <businessUnit>
+      <name>Branch</name>
+      <country>HUN</country>
+    </businessUnit>
+<!--  Trader 2-->
+    <person id="ASmith">
+      <personId>6546546546</personId>
+      <country>USA</country>
+    </person>
+  </party>
+<!--ClearingDCO-->
+  <party id="DCO123">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">92783840</partyId>
+  </party>
+<!--ExecutionVenue1-->
+  <party id="ExecutionFacility123">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">9240</partyId>
+  </party>
+<!--Submitter-->
+  <party id="TradeSource1">
+    <partyId partyIdScheme="http://www.fpml.org/ext/iso9362">6565656</partyId>
+  </party>
+<!--    SettlementAgent1-->
+  <party id="SettlementAgent123">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">96546546</partyId>
+  </party>
+<!--    Execution Agent1-->
+  <party id="AssetMgmtCo">
+    <partyId partyIdScheme="http://www.dtcc.com/coding-scheme/party-id">9265654</partyId>
+  </party>
+<!--    Execution Agent2-->
+  <party id="ExecutionAgent123">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/party-id/EFET">96546546</partyId>
+  </party>
+<!--    SettlementAgent2-->
+  <party id="SettlementAgentABC">
+    <partyId partyIdScheme="http://www.dtcc.com/coding-scheme/party-id">96546546</partyId>
+  </party>
+<!--   Clearing broker1-->
+  <party id="ClearingBroker123">
+    <partyId partyIdScheme="http://www.dtcc.com/coding-scheme/party-id">934434</partyId>
+  </party>
+<!-- ClearingBroker2-->
+  <party id="ClearingBrokerABC">
+    <partyId partyIdScheme="http://www.dtcc.com/coding-scheme/party-id">932132146</partyId>
+  </party>
+<!--  ExecutionVenue2-->
+  <party id="ExecutionFacilityABC">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/party-id/AVID">3232146</partyId>
+  </party>
+<!-- EMIR: Change - Added new element -->
+  <party id="BeneficiaryId1">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">BENEF1</partyId>
+  </party>
+<!-- EMIR: Change - Added new element -->
+  <party id="BeneficaryId2">
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">BENEF2</partyId>
+  </party>
+<!-- EMIR: Change - Ends here -->
+</nonpublicExecutionReport>
+

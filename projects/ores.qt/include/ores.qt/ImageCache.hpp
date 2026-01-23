@@ -268,6 +268,7 @@ private:
     struct ImagesResult {
         bool success;
         std::vector<assets::domain::image> images;
+        int failed_batches{0};  ///< Number of batches that failed (e.g., due to CRC errors)
     };
 
     /**

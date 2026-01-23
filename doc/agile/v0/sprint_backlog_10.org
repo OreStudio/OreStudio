@@ -17,34 +17,33 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-22 Thu 21:34], for Thursday, January 22, 2026.
-|       | <75>                                             |        |      |      |       |
-| Tags  | Headline                                         | Time   |      |      |     % |
-|-------+--------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                     | *8:43* |      |      | 100.0 |
-|-------+--------------------------------------------------+--------+------+------+-------|
-|       | Stories                                          | 8:43   |      |      | 100.0 |
-|       | Active                                           |        | 8:43 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint               |        |      | 3:12 |  36.7 |
-| code  | Add code generation support for domain types SQL |        |      | 1:11 |  13.6 |
-| code  | Party related schemes                            |        |      | 4:20 |  49.7 |
+#+CAPTION: Clock summary at [2026-01-23 Fri 00:21], for Friday, January 23, 2026.
+|      | <75>                                      |        |      |      |       |
+| Tags | Headline                                  | Time   |      |      |     % |
+|------+-------------------------------------------+--------+------+------+-------|
+|      | *Total time*                              | *0:20* |      |      | 100.0 |
+|------+-------------------------------------------+--------+------+------+-------|
+|      | Stories                                   | 0:20   |      |      | 100.0 |
+|      | Active                                    |        | 0:20 |      | 100.0 |
+| code | Image cache not reloading on new datasets |        |      | 0:20 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-22 Thu 21:34]
+#+CAPTION: Clock summary at [2026-01-23 Fri 00:21]
 |       | <75>                                             |         |       |      |       |
 | Tags  | Headline                                         | Time    |       |      |     % |
 |-------+--------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                     | *19:22* |       |      | 100.0 |
+|       | *Total time*                                     | *22:05* |       |      | 100.0 |
 |-------+--------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                          | 19:22   |       |      | 100.0 |
-|       | Active                                           |         | 19:22 |      | 100.0 |
-| agile | Sprint and product backlog refinement            |         |       | 1:04 |   5.5 |
-| infra | OCR scan notebooks for this sprint               |         |       | 5:00 |  25.8 |
-| code  | Create a simple code generator                   |         |       | 7:38 |  39.4 |
-| code  | Add code generation support for domain types SQL |         |       | 1:20 |   6.9 |
-| code  | Party related schemes                            |         |       | 4:20 |  22.4 |
+|       | Stories                                          | 22:05   |       |      | 100.0 |
+|       | Active                                           |         | 22:05 |      | 100.0 |
+| agile | Sprint and product backlog refinement            |         |       | 1:04 |   4.8 |
+| infra | OCR scan notebooks for this sprint               |         |       | 5:00 |  22.6 |
+| code  | Create a simple code generator                   |         |       | 7:38 |  34.6 |
+| code  | Party related schemes                            |         |       | 5:20 |  24.2 |
+| code  | Image cache not reloading on new datasets        |         |       | 1:43 |   7.8 |
+| code  | Add code generation support for domain types SQL |         |       | 1:20 |   6.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -219,53 +218,7 @@ sprint will have a story similar to this until we scan and process them all.
 We keep running out of claude code tokens. One way out of it is to generate the
 basic infrastructure via code generation and then use claude to fix any issues.
 
-*** STARTED Add code generation support for domain types SQL           :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-22 Thu 17:19]--[2026-01-22 Thu 18:30] =>  1:11
-    CLOCK: [2026-01-21 Wed 23:47]--[2026-01-21 Wed 23:56] =>  0:09
-    :END:
-
-Now that we got the basic codegen infrastructure working, we need to start code
-generating the SQL for domain types.
-
-*** STARTED Party related schemes                                      :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-22 Thu 19:30]--[2026-01-22 Thu 21:34] =>  2:04
-    CLOCK: [2026-01-22 Thu 16:09]--[2026-01-22 Thu 17:18] =>  1:09
-    CLOCK: [2026-01-22 Thu 12:23]--[2026-01-22 Thu 13:30] =>  1:07
-    :END:
-
-We need to implement these before we can implement party:
-
-- entity type
-- party role
-- local jurisdiction
-- business center
-- person-role
-- account-types
-- entity-classifications
-- local-jurisdictions
-- party-relationships
-- party-roles
-- person-roles
-- regulatory-corporate-sectors
-- reporting-regimes
-- supervisory-bodies
-
-*** Listener error in comms service                                    :code:
-
-Investigate this:
-
-#+begin_src logview
-2026-01-22 20:40:20.194383 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
-2026-01-22 20:40:20.194413 [INFO] [ores.comms.net.server_session] Sent notification for event type 'ores.refdata.currency_changed' with 1 entity IDs to 127.0.0.1:49354
-2026-01-22 20:40:21.698972 [ERROR] [ores.eventing.service.postgres_listener_service] Connection error while consuming input.
-2026-01-22 20:40:21.699059 [INFO] [ores.eventing.service.postgres_listener_service] Listener thread stopped.
-#+end_src
-
-
-
-*** Add party identifier scheme entity                                 :code:
+*** COMPLETED Add party identifier scheme entity                       :code:
 
 The following is the analysis for adding support to party schemes.
 
@@ -331,7 +284,8 @@ List of schemes to seed in SQL:
   reporting, and regulatory submissions in U.S. capital markets.
 
 - party scheme: AII / MPID
-- Name: Alternative Trading System (ATS) Identification Indicator / Market Participant ID
+- Name: Alternative Trading System (ATS) Identification Indicator / Market
+  Participant ID
 - Description: Commonly referred to as MPID – Market Participant Identifier; AII
   stands for ATS Identification Indicator, a term used in FINRA contexts. A
   four-character alphanumeric code assigned by FINRA (Financial Industry
@@ -340,6 +294,121 @@ List of schemes to seed in SQL:
   executing firm in trade reports (e.g., in OATS, TRACE, or consolidated tape
   reporting). MPIDs are required for all SEC-registered trading venues and
   participants in U.S. equity and options markets.
+
+*** COMPLETED Party related schemes                                    :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-22 Thu 21:57]--[2026-01-22 Thu 22:36] =>  0:39
+    CLOCK: [2026-01-22 Thu 21:35]--[2026-01-22 Thu 21:56] =>  0:21
+    CLOCK: [2026-01-22 Thu 19:30]--[2026-01-22 Thu 21:34] =>  2:04
+    CLOCK: [2026-01-22 Thu 16:09]--[2026-01-22 Thu 17:18] =>  1:09
+    CLOCK: [2026-01-22 Thu 12:23]--[2026-01-22 Thu 13:30] =>  1:07
+    :END:
+
+We need to implement these before we can implement party:
+
+- entity type
+- party role
+- local jurisdiction
+- business center
+- person role
+- account types
+- entity classifications
+- local jurisdictions
+- party relationships
+- party roles
+- person roles
+- regulatory corporate sectors
+- reporting regimes
+- supervisory bodies
+
+#+begin_quote
+This pull request introduces a robust and automated system for managing FPML
+reference data within the platform. It significantly upgrades the codegen
+capabilities to parse FPML XML, generate comprehensive SQL database structures,
+and create scripts for populating both staging and production tables. The
+changes also streamline the data publication process by embedding key
+operational metadata directly into dataset definitions, moving towards a more
+configurable and less hard-coded approach for data management.
+
+Highlights:
+
+- FPML Reference Data Workflow: Implemented a complete Data Quality (DQ)
+  artefact workflow for 15 FPML reference data entity types, encompassing 18
+  distinct datasets.
+- SQL Schema Generation: Added automated SQL schema generation for FPML
+  entities, including bi-temporal tables, notification triggers, and dedicated
+  artefact staging tables.
+- Image Linking: Introduced functionality to link business centres to country
+  flags, enhancing visual representation within the data.
+- Architecture Refinement: Refactored SQL generation to produce individual files
+  per entity/coding-scheme instead of concatenated scripts, improving modularity
+  and maintainability.
+- Dataset Metadata Enhancement: Extended dataset records to directly store
+  target_table and populate_function details, enabling more dynamic and flexible
+  data publication.
+#+end_quote
+
+*** COMPLETED Image cache not reloading on new datasets                :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-22 Thu 22:37]--[2026-01-23 Fri 00:20] =>  1:43
+    :END:
+
+When we publish images, the image cache does not reload.
+
+*** STARTED Add code generation support for domain types SQL           :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-22 Thu 17:19]--[2026-01-22 Thu 18:30] =>  1:11
+    CLOCK: [2026-01-21 Wed 23:47]--[2026-01-21 Wed 23:56] =>  0:09
+    :END:
+
+Now that we got the basic codegen infrastructure working, we need to start code
+generating the SQL for domain types.
+
+*** Incremental image cache loading with modified_since                :code:
+
+The ImageCache currently clears all cached images and re-fetches everything on
+reload. This is inefficient when only a few images have changed. We should track
+the last load time and only fetch images that have been modified since then.
+
+The image domain already has a =recorded_at= timestamp field that tracks when
+each image was last modified.
+
+*Required changes:*
+
+1. *Protocol* (=assets_protocol.hpp=):
+   - Add =std::optional<std::chrono::system_clock::time_point> modified_since=
+     parameter to =list_images_request=.
+   - Add =recorded_at= field to =image_info= struct in the response.
+
+2. *Server handler*:
+   - Update the list_images handler to filter images where
+     =recorded_at >= modified_since= when the parameter is provided.
+   - Return all images when =modified_since= is not set (current behaviour).
+
+3. *Client ImageCache* (=ImageCache.hpp/cpp=):
+   - Add =last_load_time_= member to track when images were last loaded.
+   - On =reload()=, don't clear caches; instead send =modified_since= with last
+     load time.
+   - Only fetch and update images that were returned (changed since last load).
+   - Update =last_load_time_= after successful load.
+
+*Acceptance criteria:*
+
+- When publishing an image dataset, only changed images are fetched.
+- UI refresh is minimized (no flashing for unchanged images).
+- Full reload still possible (e.g., on first load or explicit cache clear).
+- Protocol is backward compatible (server handles missing =modified_since=).
+
+*** Listener error in comms service                                    :code:
+
+Investigate this:
+
+#+begin_src logview
+2026-01-22 20:40:20.194383 [DEBUG] [ores.comms.net.connection] Successfully wrote frame
+2026-01-22 20:40:20.194413 [INFO] [ores.comms.net.server_session] Sent notification for event type 'ores.refdata.currency_changed' with 1 entity IDs to 127.0.0.1:49354
+2026-01-22 20:40:21.698972 [ERROR] [ores.eventing.service.postgres_listener_service] Connection error while consuming input.
+2026-01-22 20:40:21.699059 [INFO] [ores.eventing.service.postgres_listener_service] Listener thread stopped.
+#+end_src
 
 *** Implement party related entities at database level                 :code:
 

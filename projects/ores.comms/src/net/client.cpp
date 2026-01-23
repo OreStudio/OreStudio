@@ -483,8 +483,9 @@ boost::asio::awaitable<void> client::run_reconnect_loop() {
             co_await perform_connection();
 
             // Check state again after connection completes - disconnect() may have
-            // been called while we were connecting
-            if (state_.load(std::memory_order_acquire) != connection_state::reconnecting) {
+            // been called while we were connecting. After successful perform_connection(),
+            // state will be 'connected'. If it's not, something cancelled the connection.
+            if (state_.load(std::memory_order_acquire) != connection_state::connected) {
                 BOOST_LOG_SEV(lg(), info) << "Reconnect cancelled after connection established, "
                                           << "closing new connection";
                 {
@@ -924,10 +925,10 @@ client::send_request(messaging::frame request_frame) {
             sent_recorder->record_sent(frame_to_send);
         }
 
-        auto response_result = co_await conn_->read_frame();
-        if (!response_result) {
+        auto read_result = co_await conn_->read_frame();
+        if (!read_result.frame) {
             BOOST_LOG_SEV(lg(), error) << "Failed to read response frame, error "
-                                       << response_result.error();
+                                       << static_cast<int>(read_result.frame.error());
             state_.store(connection_state::disconnected, std::memory_order_release);
             {
                 std::lock_guard guard{state_mutex_};
@@ -936,7 +937,7 @@ client::send_request(messaging::frame request_frame) {
                 }
             }
             BOOST_LOG_SEV(lg(), warn) << "Connection lost";
-            co_return std::unexpected(response_result.error());
+            co_return std::unexpected(read_result.frame.error());
         }
 
         // Record the received frame if recording is active (direct path)
@@ -946,12 +947,12 @@ client::send_request(messaging::frame request_frame) {
             recv_recorder = recorder_;
         }
         if (recv_recorder && recv_recorder->is_recording()) {
-            recv_recorder->record_received(*response_result);
+            recv_recorder->record_received(*read_result.frame);
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Received response "
-                                   << response_result->header().type;
-        co_return *response_result;
+                                   << read_result.frame->header().type;
+        co_return *read_result.frame;
 
     } catch (const boost::system::system_error& e) {
         BOOST_LOG_SEV(lg(), error) << "Network error: " << e.what();
@@ -1002,18 +1003,39 @@ boost::asio::awaitable<void> client::write_frame(const messaging::frame& f) {
     // Serialize writes using async spinlock - SSL streams don't support concurrent writes.
     // We use a simple atomic flag and yield to allow other coroutines to proceed.
     auto executor = co_await boost::asio::this_coro::executor;
+
+    BOOST_LOG_SEV(lg(), trace) << "write_frame: acquiring write lock for "
+                               << f.header().type;
+
     while (write_in_progress_.exchange(true, std::memory_order_acquire)) {
         // Another write is in progress - yield and retry
         co_await boost::asio::post(executor, boost::asio::use_awaitable);
     }
 
+    BOOST_LOG_SEV(lg(), trace) << "write_frame: acquired write lock";
+
     try {
         co_await conn_->write_frame(f);
+    } catch (const boost::system::system_error& e) {
+        write_in_progress_.store(false, std::memory_order_release);
+        BOOST_LOG_SEV(lg(), error) << "write_frame system_error: " << e.what()
+                                   << " (code=" << e.code()
+                                   << ", state=" << static_cast<int>(state_.load(std::memory_order_acquire)) << ")";
+        throw;
+    } catch (const std::exception& e) {
+        write_in_progress_.store(false, std::memory_order_release);
+        BOOST_LOG_SEV(lg(), error) << "write_frame exception: " << e.what()
+                                   << " (state=" << static_cast<int>(state_.load(std::memory_order_acquire)) << ")";
+        throw;
     } catch (...) {
         write_in_progress_.store(false, std::memory_order_release);
+        BOOST_LOG_SEV(lg(), error) << "write_frame unknown exception"
+                                   << " (state=" << static_cast<int>(state_.load(std::memory_order_acquire)) << ")";
         throw;
     }
     write_in_progress_.store(false, std::memory_order_release);
+
+    BOOST_LOG_SEV(lg(), trace) << "write_frame: completed successfully";
 
     // Record the sent frame if recording is active
     std::shared_ptr<recording::session_recorder> recorder;
@@ -1044,7 +1066,23 @@ boost::asio::awaitable<void> client::run_message_loop() {
     BOOST_LOG_SEV(lg(), debug) << "Starting message loop";
 
     try {
-        while (is_connected() && !shutdown_requested_.load(std::memory_order_acquire)) {
+        std::uint64_t loop_iteration = 0;
+        while (true) {
+            ++loop_iteration;
+
+            // Check loop conditions with detailed logging
+            const bool connected = is_connected();
+            const bool shutdown = shutdown_requested_.load(std::memory_order_acquire);
+            const auto current_state = state_.load(std::memory_order_acquire);
+
+            if (!connected || shutdown) {
+                BOOST_LOG_SEV(lg(), info) << "Message loop exiting: iteration=" << loop_iteration
+                                          << " connected=" << connected
+                                          << " shutdown_requested=" << shutdown
+                                          << " state=" << static_cast<int>(current_state);
+                break;
+            }
+
             // Safely get connection pointer under lock
             connection* conn_ptr = nullptr;
             {
@@ -1055,20 +1093,48 @@ boost::asio::awaitable<void> client::run_message_loop() {
             }
 
             if (!conn_ptr) {
-                BOOST_LOG_SEV(lg(), debug) << "Connection gone, exiting message loop";
+                BOOST_LOG_SEV(lg(), warn) << "Connection gone at iteration " << loop_iteration
+                                          << ", exiting message loop";
                 break;
             }
+
+            BOOST_LOG_SEV(lg(), trace) << "Message loop iteration " << loop_iteration
+                                       << ": waiting for frame";
 
             // Read the next frame
-            auto frame_result = co_await conn_ptr->read_frame();
+            auto read_result = co_await conn_ptr->read_frame();
 
-            if (!frame_result) {
-                BOOST_LOG_SEV(lg(), warn) << "Message loop read error: "
-                                          << frame_result.error();
+            if (!read_result.frame) {
+                const auto ec = read_result.frame.error();
+                BOOST_LOG_SEV(lg(), warn) << "Message loop read error at iteration "
+                                          << loop_iteration << ": "
+                                          << static_cast<int>(ec)
+                                          << " state=" << static_cast<int>(state_.load(std::memory_order_acquire));
+
+                // For CRC errors, fail the specific pending request and reconnect.
+                // CRC errors indicate data corruption which may have affected the
+                // payload_size header field. If so, the stream is now out of sync
+                // and subsequent reads will fail with invalid data. The safest
+                // approach is to reconnect.
+                if (ec == ores::utility::serialization::error_code::crc_validation_failed) {
+                    if (read_result.failed_correlation_id) {
+                        const auto corr_id = *read_result.failed_correlation_id;
+                        BOOST_LOG_SEV(lg(), warn) << "CRC validation failed for correlation_id="
+                                                  << corr_id << ", failing request and reconnecting";
+                        if (pending_requests_) {
+                            pending_requests_->fail(corr_id, ec);
+                        }
+                    } else {
+                        BOOST_LOG_SEV(lg(), warn) << "CRC validation failed (no correlation_id), reconnecting";
+                    }
+                    break;  // Stream may be corrupted, reconnect
+                }
+
+                // For other errors (network errors, etc.), we need to reconnect
                 break;
             }
 
-            const auto& frame = *frame_result;
+            const auto& frame = *read_result.frame;
 
             // Record the received frame if recording is active
             std::shared_ptr<recording::session_recorder> recorder;
@@ -1141,18 +1207,35 @@ boost::asio::awaitable<void> client::run_message_loop() {
             }
         }
     } catch (const boost::system::system_error& e) {
+        const auto state_at_exception = state_.load(std::memory_order_acquire);
         if (e.code() == boost::asio::error::operation_aborted) {
-            BOOST_LOG_SEV(lg(), debug) << "Message loop cancelled";
+            BOOST_LOG_SEV(lg(), debug) << "Message loop cancelled"
+                                       << " (state=" << static_cast<int>(state_at_exception)
+                                       << ", code=" << e.code() << ")";
         } else {
-            BOOST_LOG_SEV(lg(), error) << "Message loop error: " << e.what();
+            BOOST_LOG_SEV(lg(), error) << "Message loop system_error: " << e.what()
+                                       << " (code=" << e.code()
+                                       << ", state=" << static_cast<int>(state_at_exception) << ")";
         }
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Message loop exception: " << e.what();
+        const auto state_at_exception = state_.load(std::memory_order_acquire);
+        BOOST_LOG_SEV(lg(), error) << "Message loop exception: " << e.what()
+                                   << " (state=" << static_cast<int>(state_at_exception) << ")";
     }
+
+    const auto final_state = state_.load(std::memory_order_acquire);
+    const auto shutdown_flag = shutdown_requested_.load(std::memory_order_acquire);
+    BOOST_LOG_SEV(lg(), info) << "Message loop ended: state=" << static_cast<int>(final_state)
+                              << " shutdown_requested=" << shutdown_flag
+                              << " pending_requests=" << (pending_requests_ ? pending_requests_->size() : 0);
 
     // Fail all pending requests so waiting coroutines don't hang
     if (pending_requests_) {
+        const auto pending_count = pending_requests_->size();
         pending_requests_->fail_all(ores::utility::serialization::error_code::network_error);
+        if (pending_count > 0) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed " << pending_count << " pending requests";
+        }
     }
 
     message_loop_running_ = false;

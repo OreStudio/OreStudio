@@ -28,7 +28,8 @@
  * - iso.countries depends on assets.country_flags for flag display
  * - iso.currencies depends on assets.country_flags for flag display
  * - fpml.currencies depends on assets.country_flags for flag display
- * - crypto.reference depends on assets.crypto_icons for icon display
+ * - crypto.coins depends on assets.crypto_icons for icon display
+ * - crypto.top100 depends on assets.crypto_icons for icon display
  */
 
 set schema 'ores';
@@ -60,9 +61,15 @@ select ores.upsert_dq_dataset_dependency(
     'visual_assets'
 );
 
--- Cryptocurrency reference uses icon images from Visual Assets
+-- Cryptocurrency datasets use icon images from Visual Assets
 select ores.upsert_dq_dataset_dependency(
-    'crypto.reference',
+    'crypto.coins',
+    'assets.crypto_icons',
+    'visual_assets'
+);
+
+select ores.upsert_dq_dataset_dependency(
+    'crypto.top100',
     'assets.crypto_icons',
     'visual_assets'
 );

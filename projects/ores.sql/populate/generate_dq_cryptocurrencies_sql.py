@@ -21,7 +21,7 @@ import sys
 
 # Default configuration
 DEFAULT_CONFIG = {
-    'dataset_name': 'Cryptocurrency Reference Data',
+    'dataset_name': 'Cryptocurrencies Top 12243 Coins',
     'subject_area_name': 'Cryptocurrencies',
     'domain_name': 'Reference Data',
     'icons_dataset_name': 'Cryptocurrency Icon Images',
@@ -41,31 +41,116 @@ CRYPTO_DEFAULTS = {
     'format': '#,##0.00000000',
 }
 
-# Top 20 cryptocurrencies by market cap (January 2026)
-# Source: https://staxpayments.com/blog/most-popular-cryptocurrencies/
-# These are classified as 'crypto.major', all others as 'crypto.minor'
-MAJOR_CRYPTOS = {
-    'BTC',   # Bitcoin
-    'ETH',   # Ethereum
-    'USDT',  # Tether
-    'XRP',   # Ripple
-    'BNB',   # Binance Coin
-    'SOL',   # Solana
-    'USDC',  # USD Coin
-    'DOGE',  # Dogecoin
-    'ADA',   # Cardano
-    'TRX',   # TRON
-    'LINK',  # Chainlink
-    'XLM',   # Stellar
-    'HBAR',  # Hedera
-    'SUI',   # Sui
-    'HYPE',  # Hyperliquid
-    'BCH',   # Bitcoin Cash
-    'XMR',   # Monero
-    'ZEC',   # Zcash
-    'PAXG',  # PAX Gold
-    'AVAX',  # Avalanche
-}
+# Top 100 cryptocurrencies by market cap (January 2026)
+# Source: CoinMarketCap, CoinGecko
+# First 20 are classified as 'crypto.major', rest as 'crypto.minor'
+TOP_100_CRYPTOS = [
+    # Top 20 (major)
+    'BTC',   # 1. Bitcoin
+    'ETH',   # 2. Ethereum
+    'USDT',  # 3. Tether
+    'XRP',   # 4. Ripple
+    'BNB',   # 5. Binance Coin
+    'SOL',   # 6. Solana
+    'USDC',  # 7. USD Coin
+    'DOGE',  # 8. Dogecoin
+    'ADA',   # 9. Cardano
+    'TRX',   # 10. TRON
+    'LINK',  # 11. Chainlink
+    'XLM',   # 12. Stellar
+    'HBAR',  # 13. Hedera
+    'SUI',   # 14. Sui
+    'HYPE',  # 15. Hyperliquid
+    'BCH',   # 16. Bitcoin Cash
+    'XMR',   # 17. Monero
+    'ZEC',   # 18. Zcash
+    'PAXG',  # 19. PAX Gold
+    'AVAX',  # 20. Avalanche
+    # 21-50
+    'TON',   # 21. Toncoin
+    'SHIB',  # 22. Shiba Inu
+    'DOT',   # 23. Polkadot
+    'LTC',   # 24. Litecoin
+    'UNI',   # 25. Uniswap
+    'LEO',   # 26. UNUS SED LEO
+    'DAI',   # 27. Dai
+    'NEAR',  # 28. NEAR Protocol
+    'APT',   # 29. Aptos
+    'ICP',   # 30. Internet Computer
+    'RNDR',  # 31. Render
+    'POL',   # 32. Polygon (formerly MATIC)
+    'ETC',   # 33. Ethereum Classic
+    'TAO',   # 34. Bittensor
+    'AAVE',  # 35. Aave
+    'VET',   # 36. VeChain
+    'FET',   # 37. Fetch.ai
+    'MNT',   # 38. Mantle
+    'FIL',   # 39. Filecoin
+    'ARB',   # 40. Arbitrum
+    'ATOM',  # 41. Cosmos
+    'OP',    # 42. Optimism
+    'KAS',   # 43. Kaspa
+    'INJ',   # 44. Injective
+    'IMX',   # 45. Immutable
+    'STX',   # 46. Stacks
+    'THETA', # 47. Theta Network
+    'RUNE',  # 48. THORChain
+    'GRT',   # 49. The Graph
+    'SEI',   # 50. Sei
+    # 51-100
+    'FTM',   # 51. Fantom
+    'SAND',  # 52. The Sandbox
+    'MANA',  # 53. Decentraland
+    'ALGO',  # 54. Algorand
+    'AXS',   # 55. Axie Infinity
+    'FLOW',  # 56. Flow
+    'CFX',   # 57. Conflux
+    'GALA',  # 58. Gala
+    'NEO',   # 59. NEO
+    'KAVA',  # 60. Kava
+    'XTZ',   # 61. Tezos
+    'EGLD',  # 62. MultiversX
+    'ROSE',  # 63. Oasis Network
+    'LUNC',  # 64. Terra Classic
+    'MIOTA', # 65. IOTA
+    'CRO',   # 66. Cronos
+    'QNT',   # 67. Quant
+    'FLOKI', # 68. Floki
+    'SNX',   # 69. Synthetix
+    'CAKE',  # 70. PancakeSwap
+    'ORDI',  # 71. ORDI
+    'CHZ',   # 72. Chiliz
+    'PEPE',  # 73. Pepe
+    'WIF',   # 74. dogwifhat
+    'BONK',  # 75. Bonk
+    'ENS',   # 76. Ethereum Name Service
+    'TUSD',  # 77. TrueUSD
+    'OSMO',  # 78. Osmosis
+    'XEC',   # 79. eCash
+    'MINA',  # 80. Mina Protocol
+    'DASH',  # 81. Dash
+    'APE',   # 82. ApeCoin
+    'BLUR',  # 83. Blur
+    'CRV',   # 84. Curve DAO Token
+    'LDO',   # 85. Lido DAO
+    'MKR',   # 86. Maker
+    'COMP',  # 87. Compound
+    'ZIL',   # 88. Zilliqa
+    'ENJ',   # 89. Enjin Coin
+    'BAT',   # 90. Basic Attention Token
+    'NEXO',  # 91. Nexo
+    '1INCH', # 92. 1inch
+    'WOO',   # 93. WOO Network
+    'GMT',   # 94. STEPN
+    'DYDX',  # 95. dYdX
+    'AR',    # 96. Arweave
+    'ASTR',  # 97. Astar
+    'CELO',  # 98. Celo
+    'AGIX',  # 99. SingularityNET
+    'OCEAN', # 100. Ocean Protocol
+]
+
+MAJOR_CRYPTOS = set(TOP_100_CRYPTOS[:20])
 
 # Special symbols for well-known cryptocurrencies
 SPECIAL_SYMBOLS = {
@@ -201,12 +286,13 @@ def get_footer(dataset_name: str, count: int) -> str:
 
     raise notice 'Successfully populated % cryptocurrencies for dataset: {dataset_name}', v_count;
 
-    -- Report cryptocurrencies with icons
-    raise notice 'Cryptocurrencies with matching icons:';
-    perform iso_code
-    from ores.dq_currencies_artefact_tbl
-    where dataset_id = v_dataset_id
-      and image_id is not null;
+    -- Report count of cryptocurrencies with icons
+    raise notice 'Cryptocurrencies with matching icons: %', (
+        select count(*)
+        from ores.dq_currencies_artefact_tbl
+        where dataset_id = v_dataset_id
+          and image_id is not null
+    );
 end $$;
 
 -- =============================================================================
@@ -284,6 +370,7 @@ Examples:
   %(prog)s
   %(prog)s --source-file path/to/cryptocurrencies.json
   %(prog)s --output-file path/to/output.sql
+  %(prog)s --top-only --dataset-name 'Cryptocurrencies Top 100 Coins'
         """
     )
 
@@ -302,6 +389,9 @@ Examples:
     parser.add_argument('--domain',
                         default=DEFAULT_CONFIG['domain_name'],
                         help='Domain name')
+    parser.add_argument('--top-only', '-t',
+                        action='store_true',
+                        help='Generate only top 100 cryptocurrencies from TOP_100_CRYPTOS list')
 
     args = parser.parse_args()
 
@@ -319,8 +409,17 @@ Examples:
         print(f"Error: Expected JSON object with symbol -> name mappings.", file=sys.stderr)
         sys.exit(1)
 
-    # Sort by symbol for consistent output
-    sorted_items = sorted(data.items(), key=lambda x: x[0])
+    # Filter to top 100 if requested
+    if args.top_only:
+        top_100_set = set(TOP_100_CRYPTOS)
+        filtered_data = {k: v for k, v in data.items() if k in top_100_set}
+        # Sort by rank in TOP_100_CRYPTOS list
+        rank_map = {symbol: i for i, symbol in enumerate(TOP_100_CRYPTOS)}
+        sorted_items = sorted(filtered_data.items(), key=lambda x: rank_map.get(x[0], 999))
+        print(f"  Filtered to top {len(sorted_items)} cryptocurrencies.")
+    else:
+        # Sort by symbol for consistent output
+        sorted_items = sorted(data.items(), key=lambda x: x[0])
 
     print(f"Configuration:")
     print(f"  Dataset:      {args.dataset_name}")

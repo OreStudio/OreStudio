@@ -62,6 +62,17 @@ private:
     }
 
 public:
+signals:
+    /**
+     * @brief Emitted when datasets are successfully published.
+     *
+     * Connect to this signal to trigger cache refreshes or UI updates.
+     *
+     * @param datasetCodes List of dataset codes that were published
+     */
+    void datasetsPublished(const QStringList& datasetCodes);
+
+public:
     // Page IDs
     enum PageId {
         Page_Selection,

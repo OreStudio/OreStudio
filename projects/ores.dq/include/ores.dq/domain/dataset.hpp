@@ -50,7 +50,7 @@ struct dataset final {
      * @brief Unique code for stable referencing.
      *
      * Uses dot notation for namespacing (e.g., "iso.currencies",
-     * "fpml.currencies", "crypto.reference").
+     * "fpml.currencies", "crypto.coins").
      */
     std::string code;
 

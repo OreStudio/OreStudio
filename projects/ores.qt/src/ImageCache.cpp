@@ -87,7 +87,10 @@ void ImageCache::loadAll() {
 }
 
 void ImageCache::reload() {
-    BOOST_LOG_SEV(lg(), info) << "reload() called - clearing caches and reloading.";
+    BOOST_LOG_SEV(lg(), info) << "reload() called - clearing caches and reloading."
+                              << " load_all_in_progress=" << load_all_in_progress_
+                              << " is_loading_images=" << is_loading_images_
+                              << " is_loading_all_available=" << is_loading_all_available_;
 
     // Wait for any in-progress loads to settle
     if (load_all_in_progress_ || is_loading_images_ || is_loading_all_available_) {
@@ -98,13 +101,16 @@ void ImageCache::reload() {
     }
 
     // Clear all caches
+    const auto svg_count = image_svg_cache_.size();
+    const auto icon_count = image_icons_.size();
     image_svg_cache_.clear();
     image_icons_.clear();
     pending_image_ids_.clear();
     pending_image_requests_.clear();
     available_images_.clear();
 
-    BOOST_LOG_SEV(lg(), debug) << "Caches cleared, starting loadAll().";
+    BOOST_LOG_SEV(lg(), debug) << "Caches cleared (was: svg=" << svg_count
+                               << " icons=" << icon_count << "), starting loadAll().";
 
     // Reload everything
     loadAll();
@@ -302,10 +308,9 @@ void ImageCache::loadImagesByIds(const std::vector<std::string>& image_ids) {
                                << " images (already cached: " << image_svg_cache_.size() << ").";
 
     if (ids_to_fetch.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "All images already cached.";
+        BOOST_LOG_SEV(lg(), debug) << "All images already cached, no changes.";
         load_all_in_progress_ = false;
-        emit imagesLoaded();
-        emit allLoaded();
+        // Don't emit allLoaded - nothing changed, no need to refresh UI
         return;
     }
 
@@ -328,7 +333,8 @@ void ImageCache::onImagesLoaded() {
 
     auto result = images_watcher_->result();
     BOOST_LOG_SEV(lg(), debug) << "Images result: success=" << result.success
-                               << ", images count=" << result.images.size();
+                               << ", images count=" << result.images.size()
+                               << ", failed_batches=" << result.failed_batches;
 
     if (result.success) {
         // Cache SVG data and render icons
@@ -347,6 +353,13 @@ void ImageCache::onImagesLoaded() {
 
         emit imagesLoaded();
         emit allLoaded();
+
+        // Notify user if some batches failed (e.g., due to CRC errors)
+        if (result.failed_batches > 0) {
+            BOOST_LOG_SEV(lg(), warn) << result.failed_batches << " image batches failed to load";
+            emit loadError(tr("Some images could not be loaded due to a transmission error. "
+                             "Try refreshing to reload missing images."));
+        }
     } else {
         BOOST_LOG_SEV(lg(), error) << "Failed to load images.";
         emit loadError(tr("Failed to load images"));
@@ -477,10 +490,11 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
 
     if (!clientManager) {
         BOOST_LOG_SEV(lg(), error) << "clientManager is null in fetchImagesInBatches.";
-        return {false, {}};
+        return {.success = false, .images = {}, .failed_batches = 0};
     }
 
     std::vector<assets::domain::image> all_images;
+    int failed_batches = 0;
 
     constexpr std::size_t batch_size = assets::messaging::MAX_IMAGES_PER_REQUEST;
     int batch_num = 0;
@@ -505,6 +519,7 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send images request (batch "
                                        << batch_num << "): " << response_result.error();
+            ++failed_batches;
             continue;
         }
 
@@ -512,6 +527,7 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
         if (!payload_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to decompress images response (batch "
                                        << batch_num << "): " << payload_result.error();
+            ++failed_batches;
             continue;
         }
 
@@ -520,6 +536,7 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
         if (!response) {
             BOOST_LOG_SEV(lg(), error) << "Failed to deserialize images response (batch "
                                        << batch_num << ").";
+            ++failed_batches;
             continue;
         }
 
@@ -532,8 +549,9 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
     }
 
     BOOST_LOG_SEV(lg(), debug) << "fetchImagesInBatches complete. Total: "
-                               << all_images.size() << " images.";
-    return {true, std::move(all_images)};
+                               << all_images.size() << " images, failed_batches: "
+                               << failed_batches;
+    return {.success = true, .images = std::move(all_images), .failed_batches = failed_batches};
 }
 
 void ImageCache::loadImageList() {

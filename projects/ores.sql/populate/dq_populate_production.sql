@@ -116,16 +116,16 @@ begin
         raise exception 'Dataset not found: FpML Non-ISO Currency Codes';
     end if;
 
-    -- Cryptocurrencies dataset
+    -- Cryptocurrencies dataset (all coins)
     select id into v_cryptocurrencies_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'Cryptocurrency Reference Data'
+    where name = 'Cryptocurrencies Top 12243 Coins'
       and subject_area_name = 'Cryptocurrencies'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_cryptocurrencies_dataset_id is null then
-        raise exception 'Dataset not found: Cryptocurrency Reference Data';
+        raise exception 'Dataset not found: Cryptocurrencies Top 12243 Coins';
     end if;
 
     -- IP to Country dataset

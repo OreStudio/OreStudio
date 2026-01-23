@@ -317,6 +317,11 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(imageCache_, &ImageCache::imageListLoaded,
             imageCache_, &ImageCache::loadAllAvailableImages);
 
+    // Show error message when image loading fails (e.g., CRC errors)
+    connect(imageCache_, &ImageCache::loadError, this, [this](const QString& message) {
+        QMessageBox::warning(this, tr("Image Loading Error"), message);
+    });
+
     // Connect Currencies action to controller
     // Controller is created immediately but will check connection status
     createControllers();
@@ -469,6 +474,22 @@ MainWindow::MainWindow(QWidget* parent) :
                 this, [this]() {
                     if (methodologyController_)
                         methodologyController_->showListWindow();
+                });
+
+        // Reload image cache when image-related datasets are published
+        connect(librarianWindow, &DataLibrarianWindow::datasetsPublished,
+                this, [this](const QStringList& datasetCodes) {
+                    // Only reload if an image-related dataset was published
+                    for (const QString& code : datasetCodes) {
+                        if (code.startsWith("assets.")) {
+                            BOOST_LOG_SEV(lg(), info) << "Image dataset published ("
+                                << code.toStdString() << "), reloading image cache";
+                            imageCache_->reload();
+                            return;
+                        }
+                    }
+                    BOOST_LOG_SEV(lg(), debug) << "Published datasets don't include "
+                        "image assets, skipping image cache reload";
                 });
 
         // Track window destruction

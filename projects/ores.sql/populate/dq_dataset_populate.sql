@@ -130,7 +130,7 @@ select ores.upsert_dq_datasets(
 );
 
 select ores.upsert_dq_datasets(
-    'crypto.reference',
+    'crypto.coins',
     'Cryptocurrency',
     'Cryptocurrencies',
     'Reference Data',
@@ -139,10 +139,31 @@ select ores.upsert_dq_datasets(
     'Actual',
     'Raw',
     'GitHub Cryptocurrencies JSON Download',
-    'Cryptocurrency Reference Data',
-    'Cryptocurrency symbols, names, and metadata.',
+    'Cryptocurrencies Top 12243 Coins',
+    'Cryptocurrency symbols, names, and metadata for top 12243 coins by market presence.',
     'GITHUB',
     'Reference data for cryptocurrency codes',
+    current_date,
+    'MIT',
+    'currencies',
+    'refdata_currencies_tbl',
+    'dq_populate_currencies'
+);
+
+select ores.upsert_dq_datasets(
+    'crypto.top100',
+    'Cryptocurrency',
+    'Cryptocurrencies',
+    'Reference Data',
+    'NONE',
+    'Primary',
+    'Actual',
+    'Raw',
+    'GitHub Cryptocurrencies JSON Download',
+    'Cryptocurrencies Top 100 Coins',
+    'Top 100 cryptocurrencies by market capitalization.',
+    'GITHUB',
+    'Reference data for top 100 cryptocurrency codes',
     current_date,
     'MIT',
     'currencies',

@@ -167,6 +167,13 @@ private:
     boost::asio::awaitable<void> send_pending_database_status();
 
     /**
+     * @brief Write a frame with serialization to prevent concurrent SSL writes.
+     *
+     * Waits for any in-progress write to complete before sending.
+     */
+    boost::asio::awaitable<void> write_frame_serialized(const messaging::frame& frame);
+
+    /**
      * @brief Register this session with the subscription manager.
      */
     void register_with_subscription_manager();
@@ -187,6 +194,9 @@ private:
 
     // Strand for serializing write operations
     boost::asio::strand<boost::asio::any_io_executor> write_strand_;
+
+    // Atomic flag to serialize write operations (prevents concurrent SSL writes)
+    std::atomic<bool> write_in_progress_{false};
 
     // Timer used as async signal for notification availability
     boost::asio::steady_timer notification_signal_;

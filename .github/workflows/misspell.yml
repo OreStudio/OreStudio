@@ -22,22 +22,39 @@ on:  # yamllint disable-line rule:truthy
   push:
     branches:
       - '**'
+
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6.0.1
+
       - name: Install and run misspell-fixer
         run: |
-          # 1. Download and install the latest version of misspell-fixer
-          curl -L https://github.com/vlajos/misspell-fixer/releases/latest/download/misspell-fixer-linux-amd64.tar.gz | tar -xz
+          # 1. Get the latest release tag from the GitHub API
+          echo "Fetching latest release tag..."
+          TAG=$(curl -s https://api.github.com/repos/vlajos/misspell-fixer/releases/latest | jq -r ".tag_name")
+          echo "Latest tag is: $TAG"
+
+          # 2. Construct the download URL and download the binary to a file
+          echo "Downloading misspell-fixer..."
+          curl -L -o misspell-fixer.tar.gz "https://github.com/vlajos/misspell-fixer/releases/download/${TAG}/misspell-fixer-linux-amd64.tar.gz"
+
+          # 3. Extract and install the binary
+          echo "Extracting and installing..."
+          tar -xzf misspell-fixer.tar.gz
           sudo mv misspell-fixer /usr/local/bin/
 
-          # 2. Run the tool with your desired options.
-          #    The shell now correctly parses the separate arguments.
+          # 4. Clean up the downloaded archive
+          rm misspell-fixer.tar.gz
+
+          # 5. Run the tool with your desired options
+          echo "Running misspell-fixer..."
           misspell-fixer -rsvn --exclude external --exclude build --exclude assets --exclude vcpkg .
-      - uses: peter-evans/create-pull-request@v8
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: misspell-fixes-${{ github.ref_name }}

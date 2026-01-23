@@ -450,6 +450,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     model_dir = Path(model_path).parent
     _resolve_file_references(data[model_key], model_dir, data)
 
+    # For manifest.json, copy methodologies to top level for template access
+    if model_key == 'manifest' and isinstance(data[model_key], dict):
+        if 'methodologies' in data[model_key]:
+            data['methodologies'] = data[model_key]['methodologies']
+
     # Special processing for country_currency model to generate SVG flags
     if model_key in ['country_currency', 'country_currency_flags']:
         # Process each country currency to generate SVG flag data

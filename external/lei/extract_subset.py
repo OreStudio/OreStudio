@@ -404,15 +404,16 @@ def find_data_files(directory: Path) -> Tuple[str, str]:
     lei_pattern = str(directory / "*-gleif-goldencopy-lei2-golden-copy.csv")
     rr_pattern = str(directory / "*-gleif-goldencopy-rr-golden-copy.csv")
 
-    lei_files = glob_module.glob(lei_pattern)
-    rr_files = glob_module.glob(rr_pattern)
+    lei_files = sorted(glob_module.glob(lei_pattern))
+    rr_files = sorted(glob_module.glob(rr_pattern))
 
     if not lei_files:
         raise FileNotFoundError(f"No LEI file found matching: {lei_pattern}")
     if not rr_files:
         raise FileNotFoundError(f"No RR file found matching: {rr_pattern}")
 
-    return lei_files[0], rr_files[0]
+    # Return latest files (filenames start with YYYYMMDD, so sorted order gives chronological)
+    return lei_files[-1], rr_files[-1]
 
 
 def get_subset_filename(original: str) -> str:

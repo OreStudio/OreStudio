@@ -350,11 +350,11 @@ FUND_TYPE_KEYWORDS = {
 class Config:
     lei_file: str = ""
     rr_file: str = ""
-    per_country: int = 30
-    per_depth: int = 15
-    per_sector: int = 20
-    per_category: int = 30
-    per_fund_type: int = 15
+    per_country: int = 60
+    per_depth: int = 30
+    per_sector: int = 40
+    per_category: int = 60
+    per_fund_type: int = 30
     per_legal_form: int = 10
 
 
@@ -830,32 +830,32 @@ Examples:
     subset_group.add_argument(
         "--per-country", "-c",
         type=int,
-        default=30,
-        help="Target entities per country (default: 30)"
+        default=60,
+        help="Target entities per country (default: 60)"
     )
     subset_group.add_argument(
         "--per-depth", "-d",
         type=int,
-        default=15,
-        help="Target entities per relationship depth bucket (default: 15)"
+        default=30,
+        help="Target entities per relationship depth bucket (default: 30)"
     )
     subset_group.add_argument(
         "--per-sector", "-s",
         type=int,
-        default=20,
-        help="Target entities per sector (default: 20)"
+        default=40,
+        help="Target entities per sector (default: 40)"
     )
     subset_group.add_argument(
         "--per-category", "-t",
         type=int,
-        default=30,
-        help="Target entities per category (default: 30)"
+        default=60,
+        help="Target entities per category (default: 60)"
     )
     subset_group.add_argument(
         "--per-fund-type", "-f",
         type=int,
-        default=15,
-        help="Target entities per fund type (default: 15)"
+        default=30,
+        help="Target entities per fund type (default: 30)"
     )
 
     args = parser.parse_args()

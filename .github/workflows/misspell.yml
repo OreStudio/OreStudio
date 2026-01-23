@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -37,9 +37,9 @@ jobs:
 
       - name: Install and run misspell-fixer
         run: |
-          # Install the latest version of misspell-fixer using the standard Go toolchain.
-          # The main package is in the 'cmd/misspell-fixer' subdirectory.
-          go install github.com/vlajos/misspell-fixer/cmd/misspell-fixer@latest
+          # Install a specific, known-good version of misspell-fixer.
+          # This is more reliable than using @latest in CI/CD.
+          go install github.com/vlajos/misspell-fixer/cmd/misspell-fixer@v0.6.0
 
           # Run the tool with your desired options.
           misspell-fixer -rsvn --exclude external --exclude build --exclude assets --exclude vcpkg .

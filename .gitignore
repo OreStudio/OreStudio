@@ -61,4 +61,3 @@ __pycache__
 
 # LEI source files (large, download via extract_subset.py --download)
 external/lei/*-golden-copy.csv
-!external/lei/*-subset.csv

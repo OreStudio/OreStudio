@@ -32,7 +32,9 @@ DATASET STRUCTURE
 -----------------
 Output files (in projects/ores.sql/populate/crypto/):
   - crypto.sql (master include)
+  - crypto_methodology_populate.sql (methodology definitions)
   - crypto_dataset_populate.sql (dataset definitions)
+  - crypto_dataset_tag_populate.sql (dataset tags)
   - crypto_images_artefact_populate.sql (icon images)
   - crypto_currencies_large_artefact_populate.sql (all ~12K coins)
   - crypto_currencies_small_artefact_populate.sql (top 100 coins)

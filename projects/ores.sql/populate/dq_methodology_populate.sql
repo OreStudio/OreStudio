@@ -48,33 +48,6 @@ the key in the dq_images_artefact_tbl (e.g., ''gb'' -> gb.svg flag).'
 );
 
 select ores.upsert_dq_methodologies(
-    'GitHub Flag Icons Download',
-    'SVG images downloaded from lipis/flag-icons GitHub repository',
-    'https://github.com/lipis/flag-icons',
-    'Data Sourcing and Generation Steps:
-
-1. SOURCE DATA DOWNLOAD
-   Repository: https://github.com/lipis/flag-icons
-   Download: Clone or download the repository
-   Files: flags/4x3/*.svg (country flags in 4:3 aspect ratio)
-
-2. SAVE TO REPOSITORY
-   Target directory: projects/ores.sql/populate/data/flags/
-   Copy all SVG files from flags/4x3/ to the target directory
-   Commit: git add projects/ores.sql/populate/data/flags/
-           git commit -m "[data] Add flag icons from lipis/flag-icons"
-
-3. GENERATE SQL POPULATE SCRIPT
-   Script: projects/ores.sql/populate/generate_dq_images_sql.py
-   Command: python3 projects/ores.sql/populate/generate_dq_images_sql.py --config flags
-   Output: projects/ores.sql/populate/dq_flags_images_artefact_populate.sql
-
-4. COMMIT GENERATED SQL
-   git add projects/ores.sql/populate/dq_flags_images_artefact_populate.sql
-   git commit -m "[sql] Regenerate flag images populate script"'
-);
-
-select ores.upsert_dq_methodologies(
     'Wikipedia ISO 4217 Extraction',
     'Data extracted from Wikipedia page listing ISO 4217 currency codes',
     'https://en.wikipedia.org/wiki/ISO_4217',

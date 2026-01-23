@@ -1,0 +1,49 @@
+Data Sourcing and Generation Steps:
+
+1. SOURCE DATA DOWNLOAD
+   Repository: https://github.com/lipis/flag-icons
+   Download: Clone or download the repository
+   Files: flags/4x3/*.svg (country flags in 4:3 aspect ratio)
+
+2. SAVE TO REPOSITORY
+   Target directory: external/flags/flag-icons/
+   Copy all SVG files from flags/4x3/ to the target directory
+   Commit: git add external/flags/flag-icons/
+           git commit -m "[data] Add flag icons from lipis/flag-icons"
+
+3. GENERATE SQL POPULATE SCRIPT
+   Script: projects/ores.codegen/src/images_generate_sql.py
+   Command: python3 images_generate_sql.py --config flags
+   Output: projects/ores.sql/populate/flags/flags_images_artefact_populate.sql
+
+4. COMMIT GENERATED SQL
+   git add projects/ores.sql/populate/flags/
+   git commit -m "[sql] Regenerate flag images populate script"
+
+FLAGS STRUCTURE
+---------------
+Output files (in projects/ores.sql/populate/flags/):
+  - flags.sql (master include)
+  - flags_methodology_populate.sql (methodology definitions)
+  - flags_dataset_populate.sql (dataset definitions)
+  - flags_dataset_tag_populate.sql (dataset tags)
+  - flags_images_artefact_populate.sql (SVG image data)
+
+FLAG KEYING
+-----------
+Flags are keyed by lowercase ISO 3166-1 alpha-2 code (e.g., 'gb', 'us', 'fr').
+When populating countries, the script joins to the images dataset
+to link each country to its flag. The key matches the SVG filename
+without extension (e.g., 'gb.svg' -> key 'gb').
+
+SPECIAL FLAGS
+-------------
+Some flags are for non-country entities:
+  - eu.svg: European Union
+  - un.svg: United Nations
+  - arab.svg: Arab League
+  - asean.svg: ASEAN
+  - cefta.svg: CEFTA
+  - eac.svg: East African Community
+  - pc.svg: Pacific Community
+  - xx.svg: Unknown/placeholder

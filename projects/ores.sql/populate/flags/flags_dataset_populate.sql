@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,45 +18,41 @@
  *
  */
 
+/**
+ * Flag Icons Dataset Population Script
+ *
+ * Creates the dataset entries for flag icon reference data.
+ * Auto-generated from external/flags/manifest.json
+ * This must be run before populating the artefact tables.
+ */
+
 set schema 'ores';
 
 -- =============================================================================
--- Seed Data
--- =============================================================================
-select ores.upsert_dq_tag(
-    'ISO 4217 Currency Codes',
-    'Currencies',
-    'Reference Data',
-    'currency',
-    'Currency reference data'
-);
-
-select ores.upsert_dq_tag(
-    'ISO 3166 Country Codes',
-    'Countries',
-    'Reference Data',
-    'country',
-    'Country reference data'
-);
-
-select ores.upsert_dq_tag(
-    'IPv4 to Country Mapping',
-    'IP Address to Country maps',
-    'Reference Data',
-    'geolocation',
-    'IP address geolocation reference data'
-);
-
--- =============================================================================
--- Summary
+-- Flag Icons Datasets
 -- =============================================================================
 
-\echo ''
-\echo '--- Summary ---'
+\echo '--- Flag Icons Datasets ---'
 
-select 'dq_datasets' as entity, count(*) as count
-from ores.dq_datasets_tbl
-where valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'dq_tags_artefact', count(*)
-from ores.dq_tags_artefact_tbl;
+-- Country Flag Images
+select ores.upsert_dq_datasets(
+    'Country Flag Images',
+    'Visual Assets',
+    'Country Flags',
+    'Reference Data',
+    'ISO_3166_1_ALPHA_2',
+    'Primary',
+    'Actual',
+    'Raw',
+    'GitHub Flag Icons Download',
+    'Country Flag Images',
+    'SVG flag images for each ISO 3166-1 country.',
+    'lipis/flag-icons',
+    'Visual assets for countries',
+    '2024-12-29'::date,
+    'MIT License',
+    'images',
+    'refdata_images_tbl',
+    'dq_populate_images'
+);
+

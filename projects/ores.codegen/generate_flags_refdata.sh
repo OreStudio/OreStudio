@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Script to generate all cryptocurrency reference data SQL files
+# Script to generate all flag reference data SQL files
 #
 # This script:
 # 1. Generates methodology and dataset SQL from manifest.json
-# 2. Generates icon images SQL from SVG files
+# 2. Generates flag images SQL from SVG files
 
 set -e
 
@@ -53,21 +53,21 @@ while [[ $# -gt 0 ]]; do
 done
 
 echo "=============================================="
-echo "Cryptocurrency Reference Data Code Generator"
+echo "Flag Icons Reference Data Code Generator"
 echo "=============================================="
 echo ""
 
 # Step 1: Generate methodology and dataset SQL
 echo "Step 1: Generating methodology and dataset SQL..."
 echo "----------------------------------------------"
-python "$SCRIPT_DIR/src/crypto_generate_metadata_sql.py"
+python "$SCRIPT_DIR/src/flags_generate_metadata_sql.py"
 echo ""
 
 # Step 2: Generate images SQL (optional)
 if [ "$SKIP_IMAGES" = false ]; then
     echo "Step 2: Generating images SQL..."
     echo "----------------------------------------------"
-    python "$SCRIPT_DIR/src/images_generate_sql.py" --config crypto
+    python "$SCRIPT_DIR/src/images_generate_sql.py" --config flags
     echo ""
 else
     echo "Step 2: Skipping images SQL (--skip-images)"
@@ -79,13 +79,10 @@ echo "Generation complete!"
 echo "=============================================="
 echo ""
 echo "Generated files:"
-echo "  - crypto_methodology_populate.sql"
-echo "  - crypto_dataset_populate.sql"
-echo "  - crypto.sql (master include)"
+echo "  - flags_methodology_populate.sql"
+echo "  - flags_dataset_populate.sql"
+echo "  - flags_dataset_tag_populate.sql"
+echo "  - flags.sql (master include)"
 if [ "$SKIP_IMAGES" = false ]; then
-    echo "  - crypto_images_artefact_populate.sql"
+    echo "  - flags_images_artefact_populate.sql"
 fi
-echo ""
-echo "Currency artefact files are manually maintained:"
-echo "  - crypto_currencies_small_artefact_populate.sql"
-echo "  - crypto_currencies_large_artefact_populate.sql"

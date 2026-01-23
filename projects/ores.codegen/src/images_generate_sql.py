@@ -27,10 +27,10 @@ import sys
 CONFIGS = {
     'flags': {
         'dataset_name': 'Country Flag Images',
-        'subject_area_name': 'Countries',
+        'subject_area_name': 'Country Flags',
         'domain_name': 'Reference Data',
-        'source_dir': 'projects/ores.sql/populate/data/flags',
-        'output_file': 'projects/ores.sql/populate/dq_flags_images_artefact_populate.sql',
+        'source_dir': 'external/flags/flag-icons',
+        'output_file': 'projects/ores.sql/populate/flags/flags_images_artefact_populate.sql',
         'description_template': 'Flag of {key}',
     },
     'crypto': {

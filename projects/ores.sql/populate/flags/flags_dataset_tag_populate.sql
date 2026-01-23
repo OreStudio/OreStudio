@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,45 +18,27 @@
  *
  */
 
+/**
+ * Flag Icons Dataset Tags
+ *
+ * Tags for flag icon datasets.
+ * Auto-generated from external/flags/manifest.json
+ * Must be run after flags_dataset_populate.sql.
+ */
+
 set schema 'ores';
 
 -- =============================================================================
--- Seed Data
--- =============================================================================
-select ores.upsert_dq_tag(
-    'ISO 4217 Currency Codes',
-    'Currencies',
-    'Reference Data',
-    'currency',
-    'Currency reference data'
-);
-
-select ores.upsert_dq_tag(
-    'ISO 3166 Country Codes',
-    'Countries',
-    'Reference Data',
-    'country',
-    'Country reference data'
-);
-
-select ores.upsert_dq_tag(
-    'IPv4 to Country Mapping',
-    'IP Address to Country maps',
-    'Reference Data',
-    'geolocation',
-    'IP address geolocation reference data'
-);
-
--- =============================================================================
--- Summary
+-- Flag Icons Dataset Tags
 -- =============================================================================
 
-\echo ''
-\echo '--- Summary ---'
+\echo '--- Flag Icons Dataset Tags ---'
 
-select 'dq_datasets' as entity, count(*) as count
-from ores.dq_datasets_tbl
-where valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'dq_tags_artefact', count(*)
-from ores.dq_tags_artefact_tbl;
+select ores.upsert_dq_tag(
+    'Country Flag Images',
+    'Country Flags',
+    'Reference Data',
+    'flag',
+    'Country and region flag images'
+);
+

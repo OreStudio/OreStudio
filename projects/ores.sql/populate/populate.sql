@@ -104,10 +104,14 @@
 \ir dq_dataset_dependency_populate.sql
 
 -- Data Quality Artefacts
-\ir dq_flags_images_artefact_populate.sql
 \ir dq_countries_artefact_populate.sql
 \ir dq_currencies_artefact_populate.sql
 \ir solvaris_batch_execute.sql
+
+-- Flag Icons Reference Data (images)
+\echo ''
+\echo '--- Flag Icons Reference Data ---'
+\ir flags/flags.sql
 
 -- IP to Country Reference Data (iptoasn.com)
 \echo ''

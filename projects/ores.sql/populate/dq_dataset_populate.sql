@@ -46,27 +46,6 @@ select ores.upsert_dq_datasets(
 );
 
 select ores.upsert_dq_datasets(
-    'assets.country_flags',
-    'Visual Assets',
-    'Country Flags',
-    'Reference Data',
-    'ISO_3166_1_ALPHA_2',
-    'Primary',
-    'Actual',
-    'Raw',
-    'GitHub Flag Icons Download',
-    'Country Flag Images',
-    'SVG flag images for each ISO 3166-1 country.',
-    'GITHUB',
-    'Visual assets for countries',
-    '2025-12-20'::date,
-    'MIT',
-    'images',
-    'assets_images_tbl',
-    'dq_populate_images'
-);
-
-select ores.upsert_dq_datasets(
     'iso.currencies',
     'ISO Standards',
     'Currencies',

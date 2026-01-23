@@ -35,7 +35,9 @@
             "license": "MIT License",
             "artefact_type": "cryptocurrency_icons",
             "target_table": "refdata_images_tbl",
-            "populate_function": "dq_populate_images"
+            "populate_function": "dq_populate_images",
+            "tag_code": "cryptocurrency",
+            "tag_description": "Cryptocurrency icon images"
         },
         {
             "name": "Cryptocurrencies Large",
@@ -52,7 +54,9 @@
             "license": "Public Domain",
             "artefact_type": "cryptocurrencies_large",
             "target_table": "refdata_currencies_tbl",
-            "populate_function": "dq_populate_currencies"
+            "populate_function": "dq_populate_currencies",
+            "tag_code": "cryptocurrency",
+            "tag_description": "Cryptocurrency reference data (~12K coins)"
         },
         {
             "name": "Cryptocurrencies Small",
@@ -69,7 +73,9 @@
             "license": "Public Domain",
             "artefact_type": "cryptocurrencies_small",
             "target_table": "refdata_currencies_tbl",
-            "populate_function": "dq_populate_currencies"
+            "populate_function": "dq_populate_currencies",
+            "tag_code": "cryptocurrency",
+            "tag_description": "Top 100 cryptocurrencies by market cap"
         }
     ]
 }

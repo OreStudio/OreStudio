@@ -21,7 +21,9 @@
 /**
  * Cryptocurrency Dataset Tags
  *
- * Tags for cryptocurrency datasets. Must be run after crypto_dataset_populate.sql.
+ * Tags for cryptocurrency datasets.
+ * Auto-generated from external/crypto/manifest.json
+ * Must be run after crypto_dataset_populate.sql.
  */
 
 set schema 'ores';
@@ -55,3 +57,4 @@ select ores.upsert_dq_tag(
     'cryptocurrency',
     'Top 100 cryptocurrencies by market cap'
 );
+

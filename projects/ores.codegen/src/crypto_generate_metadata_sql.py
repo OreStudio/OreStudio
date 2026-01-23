@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-Generates SQL populate scripts for cryptocurrency metadata (methodology and datasets).
+Generates SQL populate scripts for cryptocurrency metadata (methodology, datasets, tags).
 
 Reads the manifest.json and methodology.txt from external/crypto/ and generates:
   - crypto_methodology_populate.sql
   - crypto_dataset_populate.sql
+  - crypto_dataset_tag_populate.sql
   - crypto.sql (master include file)
 
 Usage:
@@ -178,6 +179,57 @@ select ores.upsert_dq_datasets(
     print(f"  Generated {len(datasets)} dataset entries")
 
 
+def generate_dataset_tag_sql(manifest: dict, output_file: Path):
+    """Generate the dataset tag populate SQL file."""
+    print(f"Generating {output_file.name}...")
+
+    datasets = manifest.get('datasets', [])
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(get_header())
+        f.write("""
+/**
+ * Cryptocurrency Dataset Tags
+ *
+ * Tags for cryptocurrency datasets.
+ * Auto-generated from external/crypto/manifest.json
+ * Must be run after crypto_dataset_populate.sql.
+ */
+
+set schema 'ores';
+
+-- =============================================================================
+-- Cryptocurrency Dataset Tags
+-- =============================================================================
+
+\\echo '--- Cryptocurrency Dataset Tags ---'
+
+""")
+
+        for dataset in datasets:
+            if 'tag_code' not in dataset:
+                continue
+
+            name = escape_sql_string(dataset['name'])
+            subject_area = escape_sql_string(dataset['subject_area'])
+            domain = escape_sql_string(dataset['domain'])
+            tag_code = dataset['tag_code']
+            tag_description = escape_sql_string(dataset['tag_description'])
+
+            f.write(f"""select ores.upsert_dq_tag(
+    '{name}',
+    '{subject_area}',
+    '{domain}',
+    '{tag_code}',
+    '{tag_description}'
+);
+
+""")
+
+    tag_count = sum(1 for d in datasets if 'tag_code' in d)
+    print(f"  Generated {tag_count} dataset tag entries")
+
+
 def generate_master_sql(output_file: Path):
     """Generate the crypto.sql master include file."""
     print(f"Generating {output_file.name}...")
@@ -204,6 +256,13 @@ def generate_master_sql(output_file: Path):
 
 \\echo '--- Cryptocurrency Datasets ---'
 \\ir crypto_dataset_populate.sql
+
+-- =============================================================================
+-- Cryptocurrency Dataset Tags
+-- =============================================================================
+
+\\echo '--- Cryptocurrency Dataset Tags ---'
+\\ir crypto_dataset_tag_populate.sql
 
 -- =============================================================================
 -- Cryptocurrency Images
@@ -281,6 +340,7 @@ def main():
     generate_methodology_sql(manifest, methodology_text,
                               output_dir / 'crypto_methodology_populate.sql')
     generate_dataset_sql(manifest, output_dir / 'crypto_dataset_populate.sql')
+    generate_dataset_tag_sql(manifest, output_dir / 'crypto_dataset_tag_populate.sql')
     generate_master_sql(output_dir / 'crypto.sql')
 
     print()

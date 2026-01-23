@@ -57,3 +57,4 @@ projects/ores.utility/include/ores.utility/version/version.hpp
 
 # python codegen
 projects/ores.codegen/output/
+__pycache__

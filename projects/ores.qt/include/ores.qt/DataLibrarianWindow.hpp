@@ -84,8 +84,10 @@ signals:
      * @brief Emitted when datasets are successfully published.
      *
      * Connect to this signal to trigger cache refreshes (e.g., ImageCache).
+     *
+     * @param datasetCodes List of dataset codes that were published.
      */
-    void datasetsPublished();
+    void datasetsPublished(const QStringList& datasetCodes);
 
     // Signals to open related windows
     void openOriginDimensionsRequested();

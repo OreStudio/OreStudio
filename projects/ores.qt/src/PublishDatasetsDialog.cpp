@@ -445,7 +445,12 @@ void ProgressPage::performPublish() {
     emit completeChanged();
 
     // Notify that datasets were published (for cache refresh)
-    emit wizard_->datasetsPublished();
+    // Collect the codes of published datasets
+    QStringList publishedCodes;
+    for (const auto& ds : resolvedDatasets) {
+        publishedCodes.append(QString::fromStdString(ds.code));
+    }
+    emit wizard_->datasetsPublished(publishedCodes);
 
     // Auto-advance to results
     wizard_->next();

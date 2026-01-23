@@ -308,10 +308,9 @@ void ImageCache::loadImagesByIds(const std::vector<std::string>& image_ids) {
                                << " images (already cached: " << image_svg_cache_.size() << ").";
 
     if (ids_to_fetch.empty()) {
-        BOOST_LOG_SEV(lg(), debug) << "All images already cached.";
+        BOOST_LOG_SEV(lg(), debug) << "All images already cached, no changes.";
         load_all_in_progress_ = false;
-        emit imagesLoaded();
-        emit allLoaded();
+        // Don't emit allLoaded - nothing changed, no need to refresh UI
         return;
     }
 

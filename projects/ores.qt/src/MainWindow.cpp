@@ -476,9 +476,21 @@ MainWindow::MainWindow(QWidget* parent) :
                         methodologyController_->showListWindow();
                 });
 
-        // Reload image cache when datasets are published
+        // Reload image cache when image-related datasets are published
         connect(librarianWindow, &DataLibrarianWindow::datasetsPublished,
-                imageCache_, &ImageCache::reload);
+                this, [this](const QStringList& datasetCodes) {
+                    // Only reload if an image-related dataset was published
+                    for (const QString& code : datasetCodes) {
+                        if (code.startsWith("assets.")) {
+                            BOOST_LOG_SEV(lg(), info) << "Image dataset published ("
+                                << code.toStdString() << "), reloading image cache";
+                            imageCache_->reload();
+                            return;
+                        }
+                    }
+                    BOOST_LOG_SEV(lg(), debug) << "Published datasets don't include "
+                        "image assets, skipping image cache reload";
+                });
 
         // Track window destruction
         dataLibrarianWindow_ = subWindow;

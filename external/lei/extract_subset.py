@@ -45,6 +45,21 @@ GLEIF_API_ENDPOINTS = [
 # Base URL pattern for direct downloads
 GLEIF_DOWNLOAD_BASE = "https://leidata-preview.gleif.org/storage/golden-copy-files"
 
+# LEI file column indices
+LEI_COL_ID = 0
+LEI_COL_NAME = 1
+LEI_COL_COUNTRY = 43
+LEI_COL_CATEGORY = 191
+LEI_COL_SUBCATEGORY = 192
+LEI_COL_LEGAL_FORM_CODE = 193
+LEI_COL_OTHER_LEGAL_FORM = 194
+LEI_COL_STATUS = 199
+
+# Relationship file column indices
+RR_COL_START_NODE = 0
+RR_COL_END_NODE = 2
+RR_COL_RELATIONSHIP_TYPE = 4
+
 
 class DownloadProgressReporter:
     """Progress reporter for file downloads."""
@@ -447,10 +462,10 @@ def build_relationship_map(rr_file: str) -> Tuple[Dict[str, List[str]], Dict[str
             if len(row) < 5:
                 continue
 
-            rel_type = row[4]
+            rel_type = row[RR_COL_RELATIONSHIP_TYPE]
             if rel_type == 'IS_DIRECTLY_CONSOLIDATED_BY':
-                child_lei = row[0]
-                parent_lei = row[2]
+                child_lei = row[RR_COL_START_NODE]
+                parent_lei = row[RR_COL_END_NODE]
                 parent_to_children[parent_lei].append(child_lei)
                 child_to_parent[child_lei] = parent_lei
 
@@ -510,14 +525,14 @@ def analyze_entities(
             if len(row) < 200:
                 continue
 
-            lei = row[0]
-            name = row[1]
-            country = row[43] if row[43] else "UNKNOWN"
-            category = row[191] if row[191] else "GENERAL"
-            subcategory = row[192] if row[192] else ""
-            legal_form_code = row[193] if row[193] else ""
-            other_legal_form = row[194] if row[194] else ""
-            status = row[199] if len(row) > 199 else ""
+            lei = row[LEI_COL_ID]
+            name = row[LEI_COL_NAME]
+            country = row[LEI_COL_COUNTRY] if row[LEI_COL_COUNTRY] else "UNKNOWN"
+            category = row[LEI_COL_CATEGORY] if row[LEI_COL_CATEGORY] else "GENERAL"
+            subcategory = row[LEI_COL_SUBCATEGORY] if row[LEI_COL_SUBCATEGORY] else ""
+            legal_form_code = row[LEI_COL_LEGAL_FORM_CODE] if row[LEI_COL_LEGAL_FORM_CODE] else ""
+            other_legal_form = row[LEI_COL_OTHER_LEGAL_FORM] if row[LEI_COL_OTHER_LEGAL_FORM] else ""
+            status = row[LEI_COL_STATUS] if len(row) > LEI_COL_STATUS else ""
 
             # Skip inactive entities
             if status == 'INACTIVE':
@@ -728,7 +743,7 @@ def write_subset(
 
             for row in reader:
                 progress.update()
-                if row[0] in selected_leis:
+                if row[LEI_COL_ID] in selected_leis:
                     writer.writerow(row)
                     written += 1
 
@@ -753,8 +768,8 @@ def write_subset(
             for row in reader:
                 progress.update()
                 if len(row) >= 3:
-                    start_lei = row[0]
-                    end_lei = row[2]
+                    start_lei = row[RR_COL_START_NODE]
+                    end_lei = row[RR_COL_END_NODE]
                     # Include relationship only if both parties are in our subset
                     if start_lei in selected_leis and end_lei in selected_leis:
                         writer.writerow(row)

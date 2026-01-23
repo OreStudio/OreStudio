@@ -28,29 +28,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
 
       - name: Install and run misspell-fixer
         run: |
-          # 1. Get the latest release tag from the GitHub API
-          echo "Fetching latest release tag..."
-          TAG=$(curl -s https://api.github.com/repos/vlajos/misspell-fixer/releases/latest | jq -r ".tag_name")
-          echo "Latest tag is: $TAG"
+          # Install the latest version of misspell-fixer using the standard Go toolchain
+          go install github.com/vlajos/misspell-fixer@latest
 
-          # 2. Construct the download URL and download the binary to a file
-          echo "Downloading misspell-fixer..."
-          curl -L -o misspell-fixer.tar.gz "https://github.com/vlajos/misspell-fixer/releases/download/${TAG}/misspell-fixer-linux-amd64.tar.gz"
-
-          # 3. Extract and install the binary
-          echo "Extracting and installing..."
-          tar -xzf misspell-fixer.tar.gz
-          sudo mv misspell-fixer /usr/local/bin/
-
-          # 4. Clean up the downloaded archive
-          rm misspell-fixer.tar.gz
-
-          # 5. Run the tool with your desired options
-          echo "Running misspell-fixer..."
+          # Run the tool with your desired options.
           misspell-fixer -rsvn --exclude external --exclude build --exclude assets --exclude vcpkg .
 
       - name: Create Pull Request

@@ -176,21 +176,21 @@ begin
     raise notice 'Populating cryptocurrency icons for dataset: {CONFIG['icons_dataset_name']}';
 
     -- Insert cryptocurrency icons
-    insert into ores.dq_images_artefact_tbl (dataset_id, key, image)
-    values
 """)
 
-        for i, svg_file in enumerate(svg_files):
+        for svg_file in svg_files:
             key = svg_file.stem.lower()
             safe_key = escape_sql_string(key)
-            is_last = (i == len(svg_files) - 1)
-            comma = '' if is_last else ','
 
-            # Read SVG content
+            # Read SVG content - use dollar quoting to avoid escaping issues
             svg_content = svg_file.read_text(encoding='utf-8')
-            safe_svg = escape_sql_string(svg_content)
 
-            f.write(f"        (v_dataset_id, '{safe_key}', '{safe_svg}'){comma}\n")
+            f.write(f"""    insert into ores.dq_images_artefact_tbl (
+        dataset_id, image_id, version, key, description, svg_data
+    ) values (
+        v_dataset_id, gen_random_uuid(), 0, '{safe_key}', 'Icon for {safe_key}', $svg${svg_content}$svg$
+    );
+""")
 
         f.write(f"""    ;
 

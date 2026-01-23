@@ -37,8 +37,8 @@ CONFIGS = {
         'dataset_name': 'Cryptocurrency Icon Images',
         'subject_area_name': 'Cryptocurrencies',
         'domain_name': 'Reference Data',
-        'source_dir': 'projects/ores.sql/populate/data/cryptocurrency-icons',
-        'output_file': 'projects/ores.sql/populate/dq_crypto_images_artefact_populate.sql',
+        'source_dir': 'external/crypto/cryptocurrency-icons',
+        'output_file': 'projects/ores.sql/populate/crypto/crypto_images_artefact_populate.sql',
         'description_template': 'Icon for {key}',
     },
 }

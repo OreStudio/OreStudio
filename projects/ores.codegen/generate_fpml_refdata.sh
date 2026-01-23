@@ -173,6 +173,6 @@ for data_file in "$OUTPUT_DIR/data/"*_data.json; do
     if [ -f "$data_file" ]; then
         entity_name=$(basename "$data_file" _data.json)
         echo "  - fpml_${entity_name}_dataset_populate.sql"
-        echo "  - dq_${entity_name}_artefact_populate.sql"
+        echo "  - fpml_${entity_name}_artefact_populate.sql"
     fi
 done

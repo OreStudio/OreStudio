@@ -229,7 +229,7 @@ def get_populate_template_mappings():
         list: List of tuples (template_name, output_prefix, output_suffix) for populate generation
     """
     return [
-        ("sql_populate_refdata.mustache", "dq_", "_artefact_populate.sql"),
+        ("sql_populate_refdata.mustache", "fpml_", "_artefact_populate.sql"),
         ("sql_dataset_refdata.mustache", "fpml_", "_dataset_populate.sql"),
     ]
 

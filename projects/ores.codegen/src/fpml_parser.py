@@ -878,11 +878,8 @@ def main():
                 dataset_code = ds['dataset']['code']
                 filename_base = dataset_code.replace('fpml.', '').replace('.', '_')
                 dataset_files.append(f"fpml_{filename_base}_dataset_populate.sql")
-                # Non-ISO currencies use fpml_ prefix since they populate shared table
-                if ds.get('uses_shared_currency_table'):
-                    artefact_files.append(f"fpml_{filename_base}_artefact_populate.sql")
-                else:
-                    artefact_files.append(f"dq_{filename_base}_artefact_populate.sql")
+                # All FPML artefacts use fpml_ prefix
+                artefact_files.append(f"fpml_{filename_base}_artefact_populate.sql")
 
         # Generate fpml.sql master include file
         generate_fpml_sql(args.output_dir, dataset_files, artefact_files)

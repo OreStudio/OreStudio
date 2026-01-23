@@ -579,6 +579,217 @@ secure hashing and proper authentication flows.
 - Use mappers to convert between protocol types and domain types
 - Group related message types in the same protocol file
 
+* Incremental loading with modified_since
+
+For list requests that support incremental/as-of loading, add a =modified_since=
+parameter to filter results to only items changed after a given timestamp. This
+enables efficient cache updates without fetching all data.
+
+** Protocol changes for modified_since
+
+*** Request struct
+
+Add an optional =modified_since= field to list requests:
+
+#+begin_src cpp
+struct list_items_request final {
+    /**
+     * @brief Optional timestamp to filter items.
+     *
+     * When set, only items with recorded_at >= modified_since are returned.
+     * When not set, all items are returned (default behavior).
+     */
+    std::optional<std::chrono::system_clock::time_point> modified_since;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<list_items_request, error_code>
+    deserialize(std::span<const std::byte> data);
+};
+#+end_src
+
+*** Response struct (info type)
+
+Add =recorded_at= to the info struct returned in list responses:
+
+#+begin_src cpp
+struct item_info final {
+    std::string item_id;
+    std::string name;
+    // ... other metadata fields ...
+
+    /**
+     * @brief Timestamp when this item was last modified.
+     *
+     * Used by clients to track incremental changes.
+     */
+    std::chrono::system_clock::time_point recorded_at;
+};
+#+end_src
+
+*** Serialization format
+
+Serialize =modified_since= with a flag byte:
+
+#+begin_src cpp
+std::vector<std::byte> list_items_request::serialize() const {
+    std::vector<std::byte> buffer;
+
+    // Write 1 byte flag: 0 = no filter, 1 = has modified_since
+    if (modified_since) {
+        writer::write_uint8(buffer, 1);
+        writer::write_string(buffer, timepoint_to_string(*modified_since));
+    } else {
+        writer::write_uint8(buffer, 0);
+    }
+
+    return buffer;
+}
+
+std::expected<list_items_request, error_code>
+list_items_request::deserialize(std::span<const std::byte> data) {
+    list_items_request request;
+
+    auto flag_result = reader::read_uint8(data);
+    if (!flag_result) return std::unexpected(flag_result.error());
+
+    if (*flag_result == 1) {
+        auto timestamp_result = reader::read_string(data);
+        if (!timestamp_result) return std::unexpected(timestamp_result.error());
+        request.modified_since = string_to_timepoint(*timestamp_result);
+    }
+
+    return request;
+}
+#+end_src
+
+** Repository method
+
+Add a =read_latest_since= method to the repository that calls a PostgreSQL
+function:
+
+#+begin_src cpp
+// In repository header
+std::vector<domain::item> read_latest_since(context ctx,
+    std::chrono::system_clock::time_point modified_since);
+
+// In repository implementation
+std::vector<domain::item>
+item_repository::read_latest_since(context ctx,
+    std::chrono::system_clock::time_point modified_since) {
+
+    auto time_t_val = std::chrono::system_clock::to_time_t(modified_since);
+    std::ostringstream timestamp_str;
+    timestamp_str << std::put_time(std::gmtime(&time_t_val), "%Y-%m-%d %H:%M:%S");
+
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest items modified since: "
+                               << timestamp_str.str();
+
+    std::ostringstream sql;
+    sql << "SELECT * FROM ores.{table}_read_since_fn('"
+        << timestamp_str.str() << "'::timestamptz)";
+
+    auto rows = execute_raw_multi_column_query(ctx, sql.str(), lg(),
+        "Reading latest items since timestamp");
+
+    // Convert rows to domain objects...
+}
+#+end_src
+
+** PostgreSQL function
+
+Add a function to the table's schema file that filters by =valid_from=:
+
+#+begin_src sql
+-- Returns latest items modified since a given timestamp.
+-- Used for incremental cache loading.
+create or replace function ores.{table}_read_since_fn(
+    p_modified_since timestamptz
+)
+returns table (
+    item_id uuid,
+    -- ... other columns matching the table schema ...
+    valid_from timestamptz,
+    valid_to timestamptz
+) as $$
+begin
+    return query
+    select
+        t.item_id,
+        -- ... other columns ...
+        t.valid_from,
+        t.valid_to
+    from ores.{table}_tbl t
+    where t.valid_to = ores.utility_infinity_timestamp_fn()
+    and t.valid_from >= p_modified_since
+    order by t.valid_from desc;
+end;
+$$ language plpgsql stable;
+#+end_src
+
+** Message handler
+
+Update the handler to use the filter when provided:
+
+#+begin_src cpp
+handler_result message_handler::handle_list_items_request(
+    std::span<const std::byte> payload) {
+
+    auto request_result = list_items_request::deserialize(payload);
+    if (!request_result) {
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    list_items_response response;
+
+    std::vector<domain::item> items;
+    if (request.modified_since) {
+        BOOST_LOG_SEV(lg(), debug) << "Filtering items modified since timestamp";
+        items = item_repo_.read_latest_since(ctx_, *request.modified_since);
+    } else {
+        items = item_repo_.read_latest(ctx_);
+    }
+
+    // Convert to response...
+    co_return response.serialize();
+}
+#+end_src
+
+** Client-side usage
+
+Track =last_load_time= and use it for incremental reloads:
+
+#+begin_src cpp
+// Member variable
+std::optional<std::chrono::system_clock::time_point> last_load_time_;
+
+// On successful load
+last_load_time_ = std::chrono::system_clock::now();
+
+// On reload
+if (last_load_time_) {
+    list_items_request request;
+    request.modified_since = *last_load_time_;
+    // Send request and merge results into cache
+} else {
+    // Full reload
+}
+#+end_src
+
+** Implementation checklist
+
+When adding =modified_since= support to an entity:
+
+- [ ] Add =modified_since= optional field to list request struct
+- [ ] Add =recorded_at= field to info struct in response
+- [ ] Update request serialization with flag byte pattern
+- [ ] Update response serialization to include =recorded_at=
+- [ ] Add =read_latest_since()= method to repository
+- [ ] Create PostgreSQL =*_read_since_fn()= function
+- [ ] Update message handler to use filter when provided
+- [ ] Update client cache to track =last_load_time_=
+- [ ] Add logging showing last load time and number of items loaded
+
 * Traits systems in ORE Studio
 
 ORE Studio uses two complementary traits systems for different purposes:

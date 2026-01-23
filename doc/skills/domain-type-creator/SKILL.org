@@ -231,14 +231,15 @@ void currency_service::update_currency(const domain::currency& c);  // Don't do 
 
 *** Service method naming convention
 
-| Operation         | Method Name Pattern        | Notes                          |
-|-------------------+----------------------------+--------------------------------|
-| Create or update  | =save_<entity>=            | Upsert via repository write()  |
-| Delete            | =remove_<entity>=          | Soft delete via repository     |
-| Find by key       | =find_<entity>=            | Returns std::optional          |
-| List all          | =list_<entities>=          | Returns vector                 |
-| List with filter  | =list_<entities>_by_<key>= | Filtered list                  |
-| Get history       | =get_<entity>_history=     | All versions of an entity      |
+| Operation         | Method Name Pattern          | Notes                            |
+|-------------------+------------------------------+----------------------------------|
+| Create or update  | =save_<entity>=              | Upsert via repository write()    |
+| Delete            | =remove_<entity>=            | Soft delete via repository       |
+| Find by key       | =find_<entity>=              | Returns std::optional            |
+| List all          | =list_<entities>=            | Returns vector                   |
+| List with filter  | =list_<entities>_by_<key>=   | Filtered list                    |
+| List since time   | =list_<entities>_since=      | Incremental loading support      |
+| Get history       | =get_<entity>_history=       | All versions of an entity        |
 
 *** Reference implementation
 

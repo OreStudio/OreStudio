@@ -24,6 +24,7 @@ The repository should provide:
 - Read methods:
   - =std::vector<domain::TYPE_NAME> read_latest()=
   - =std::vector<domain::TYPE_NAME> read_latest(const KEY_TYPE& key)=
+  - =std::vector<domain::TYPE_NAME> read_latest_since(std::chrono::system_clock::time_point modified_since)=
   - =std::vector<domain::TYPE_NAME> read_all()=
   - =std::vector<domain::TYPE_NAME> read_all(const KEY_TYPE& key)=
   - =std::vector<domain::TYPE_NAME> read_at_timepoint(const std::string& timestamp)=
@@ -37,3 +38,93 @@ Implementation details:
 - Include logging using =BOOST_LOG_SEV=
 - Follow the pattern in
   =projects/ores.accounts/src/repository/account_repository.cpp=
+
+** Implementing read_latest_since for incremental loading
+
+The =read_latest_since= method supports incremental cache loading by returning
+only items modified after a given timestamp. This method requires a PostgreSQL
+function.
+
+*** PostgreSQL function
+
+Add to the table's schema file (=projects/ores.sql/schema/TABLE_NAME_create.sql=):
+
+#+begin_src sql
+-- Returns latest items modified since a given timestamp.
+-- Used for incremental cache loading.
+create or replace function ores.TABLE_NAME_read_since_fn(
+    p_modified_since timestamptz
+)
+returns table (
+    -- List all columns matching the table schema
+    column1 type1,
+    column2 type2,
+    -- ...
+    valid_from timestamptz,
+    valid_to timestamptz
+) as $$
+begin
+    return query
+    select
+        t.column1,
+        t.column2,
+        -- ...
+        t.valid_from,
+        t.valid_to
+    from ores.TABLE_NAME_tbl t
+    where t.valid_to = ores.utility_infinity_timestamp_fn()
+    and t.valid_from >= p_modified_since
+    order by t.valid_from desc;
+end;
+$$ language plpgsql stable;
+#+end_src
+
+*** Repository implementation
+
+#+begin_src cpp
+std::vector<domain::TYPE_NAME>
+TYPE_NAME_repository::read_latest_since(context ctx,
+    std::chrono::system_clock::time_point modified_since) {
+
+    // Format timestamp for SQL function call
+    auto time_t_val = std::chrono::system_clock::to_time_t(modified_since);
+    std::ostringstream timestamp_str;
+    timestamp_str << std::put_time(std::gmtime(&time_t_val), "%Y-%m-%d %H:%M:%S");
+
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest items modified since: "
+                               << timestamp_str.str();
+
+    // Call PostgreSQL function
+    std::ostringstream sql;
+    sql << "SELECT * FROM ores.TABLE_NAME_read_since_fn('"
+        << timestamp_str.str() << "'::timestamptz)";
+
+    auto rows = execute_raw_multi_column_query(ctx, sql.str(), lg(),
+        "Reading latest items since timestamp");
+
+    // Convert raw results to domain objects using entity and mapper
+    std::vector<domain::TYPE_NAME> results;
+    results.reserve(rows.size());
+
+    for (const auto& row : rows) {
+        TYPE_NAME_entity entity;
+        // Map row columns to entity fields...
+        results.push_back(TYPE_NAME_mapper::map(entity));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Found " << results.size()
+                               << " items modified since timestamp";
+    return results;
+}
+#+end_src
+
+*** Required header include
+
+Add =<iomanip>= for =std::put_time=:
+
+#+begin_src cpp
+#include <iomanip>
+#+end_src
+
+See =projects/ores.assets/src/repository/image_repository.cpp= for a reference
+implementation.

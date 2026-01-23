@@ -260,6 +260,13 @@ private:
      */
     void loadImagesByIds(const std::vector<std::string>& image_ids);
 
+    /**
+     * @brief Load only images that have changed since last load.
+     *
+     * Uses the modified_since parameter to fetch only changed images.
+     */
+    void loadIncrementalChanges();
+
     struct ImageIdsResult {
         bool success;
         std::vector<std::string> image_ids;
@@ -335,6 +342,9 @@ private:
 
     // Track image IDs currently being loaded to prevent duplicate requests
     std::unordered_set<std::string> pending_image_requests_;
+
+    // Timestamp of last successful load (for incremental loading)
+    std::optional<std::chrono::system_clock::time_point> last_load_time_;
 };
 
 }

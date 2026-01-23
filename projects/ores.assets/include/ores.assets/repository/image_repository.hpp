@@ -20,6 +20,7 @@
 #ifndef ORES_ASSETS_REPOSITORY_IMAGE_REPOSITORY_HPP
 #define ORES_ASSETS_REPOSITORY_IMAGE_REPOSITORY_HPP
 
+#include <chrono>
 #include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
@@ -82,6 +83,15 @@ public:
     std::vector<domain::image> read_latest(context ctx,
                                            std::uint32_t offset,
                                            std::uint32_t limit);
+
+    /**
+     * @brief Reads latest images modified since a given timestamp.
+     * @param ctx Repository context with database connection
+     * @param modified_since Only return images with recorded_at >= this time
+     * @return Vector of images modified since the given timestamp
+     */
+    std::vector<domain::image> read_latest_since(context ctx,
+        std::chrono::system_clock::time_point modified_since);
 
     /**
      * @brief Gets the total count of active images.

@@ -30,6 +30,7 @@ jobs:
       - uses: sobolevn/misspell-fixer-action@master
       - uses: peter-evans/create-pull-request@v8
         with:
+          options: '-rsvn --exclude external --exclude build --exclude assets --exclude vcpkg .'
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: misspell-fixes-${{ github.ref_name }}
           delete-branch: true

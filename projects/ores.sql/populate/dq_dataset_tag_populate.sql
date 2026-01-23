@@ -63,15 +63,6 @@ select ores.upsert_dq_tag(
     'Country reference data'
 );
 
-
-select ores.upsert_dq_tag(
-    'FpML Non-ISO Currency Codes',
-    'Currencies',
-    'Reference Data',
-    'currency',
-    'Non-ISO currency reference data'
-);
-
 select ores.upsert_dq_tag(
     'Cryptocurrencies Top 12243 Coins',
     'Cryptocurrencies',

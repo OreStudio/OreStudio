@@ -31,7 +31,6 @@ SCHEMA_DIR="$SCRIPT_DIR/../ores.sql/schema"
 POPULATE_DIR="$SCRIPT_DIR/../ores.sql/populate"
 
 # Hard-coded list of FPML entities to generate
-# NOTE: currencies are NOT included - they have special handling elsewhere
 FPML_ENTITIES=(
     "account-types"
     "asset-classes"
@@ -42,6 +41,7 @@ FPML_ENTITIES=(
     "cashflow-types"
     "entity-classifications"
     "local-jurisdictions"
+    "non-iso-currencies"
     "party-relationships"
     "party-roles"
     "person-roles"

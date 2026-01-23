@@ -56,6 +56,8 @@ ENTITY_SUBJECT_AREA_MAP = {
     'regulatory-corporate-sectors': 'Regulatory',
     'reporting-regimes': 'Regulatory',
     'supervisory-bodies': 'Regulatory',
+    # Currencies - currency codes
+    'non-iso-currencies': 'Currencies',
 }
 
 # Mapping of entity names to file patterns for flat directory structure
@@ -70,6 +72,7 @@ ENTITY_FILE_PATTERNS = {
     'cashflow-types': ['cashflow-type-*.xml'],
     'entity-classifications': ['entity-type-*.xml', 'cftc-entity-classification-*.xml', 'cftc-organization-type-*.xml'],
     'local-jurisdictions': ['local-jurisdiction-*.xml'],
+    'non-iso-currencies': ['non-iso-currency-*.xml'],
     'party-relationships': ['party-relationship-type-*.xml', 'hkma-rewrite-party-relationship-type-*.xml'],
     'party-roles': ['party-role-*.xml'],
     'person-roles': ['person-role-*.xml'],

@@ -109,27 +109,6 @@ select ores.upsert_dq_datasets(
 );
 
 select ores.upsert_dq_datasets(
-    'fpml.currencies',
-    'FpML Standards',
-    'Currencies',
-    'Reference Data',
-    'FPML_NON_ISO_CURRENCY',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Non-ISO Currency Codes',
-    'Non-standard currency codes for derivatives (offshore CNH/CNT, historical MCF/SML/VAL).',
-    'FPML',
-    'Reference data for non-ISO currency codes used in derivatives trading',
-    '2023-11-03'::date,
-    'FpML Public License 2.0',
-    'currencies',
-    'refdata_currencies_tbl',
-    'dq_populate_currencies'
-);
-
-select ores.upsert_dq_datasets(
     'crypto.coins',
     'Cryptocurrency',
     'Cryptocurrencies',

@@ -42,7 +42,6 @@ declare
     v_crypto_icons_dataset_id uuid;
     v_countries_dataset_id uuid;
     v_currencies_dataset_id uuid;
-    v_fpml_currencies_dataset_id uuid;
     v_cryptocurrencies_dataset_id uuid;
     v_ip2country_dataset_id uuid;
     v_result record;
@@ -102,18 +101,6 @@ begin
 
     if v_currencies_dataset_id is null then
         raise exception 'Dataset not found: ISO 4217 Currency Codes';
-    end if;
-
-    -- FpML non-ISO currencies dataset
-    select id into v_fpml_currencies_dataset_id
-    from ores.dq_datasets_tbl
-    where name = 'FpML Non-ISO Currency Codes'
-      and subject_area_name = 'Currencies'
-      and domain_name = 'Reference Data'
-      and valid_to = ores.utility_infinity_timestamp_fn();
-
-    if v_fpml_currencies_dataset_id is null then
-        raise exception 'Dataset not found: FpML Non-ISO Currency Codes';
     end if;
 
     -- Cryptocurrencies dataset (all coins)
@@ -181,14 +168,6 @@ begin
     raise notice '';
     raise notice '--- Populating Fiat Currencies (ISO 4217) ---';
     for v_result in select * from ores.dq_populate_currencies(v_currencies_dataset_id, 'upsert') loop
-        raise notice '  %: %', v_result.action, v_result.record_count;
-        if v_result.action = 'inserted' then v_total_inserted := v_total_inserted + v_result.record_count; end if;
-        if v_result.action = 'updated' then v_total_updated := v_total_updated + v_result.record_count; end if;
-    end loop;
-
-    raise notice '';
-    raise notice '--- Populating Non-ISO Currencies (FpML) ---';
-    for v_result in select * from ores.dq_populate_currencies(v_fpml_currencies_dataset_id, 'upsert') loop
         raise notice '  %: %', v_result.action, v_result.record_count;
         if v_result.action = 'inserted' then v_total_inserted := v_total_inserted + v_result.record_count; end if;
         if v_result.action = 'updated' then v_total_updated := v_total_updated + v_result.record_count; end if;

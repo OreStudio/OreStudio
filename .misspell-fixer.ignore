@@ -1,4 +1,4 @@
-external/
-build/
-assets/
-vcpkg/
+^external
+^build
+^assets
+^vcpkg

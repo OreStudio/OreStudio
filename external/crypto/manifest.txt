@@ -1,0 +1,45 @@
+Cryptocurrency Reference Data Manifest
+
+Source: CoinMarketCap, Cryptocurrency Icons Project
+Website: https://coinmarketcap.com/, https://github.com/spothq/cryptocurrency-icons
+
+Data Files
+----------
+1. Cryptocurrencies JSON
+   - Location: cryptocurrencies/cryptocurrencies.json
+   - Content: Symbol to name mapping for ~12,243 cryptocurrencies
+   - Format: JSON object { "BTC": "Bitcoin", "ETH": "Ethereum", ... }
+   - Size: ~300 KB
+
+2. Cryptocurrency Icons
+   - Location: cryptocurrency-icons/
+   - Content: 483 SVG icons for cryptocurrency symbols
+   - Format: SVG files named by lowercase symbol (e.g., btc.svg, eth.svg)
+   - Source: cryptocurrency-icons project (MIT License)
+
+Generated SQL Files
+-------------------
+Output directory: projects/ores.sql/populate/
+
+3. crypto_dataset_populate.sql
+   - Creates dataset entries for cryptocurrency reference data
+
+4. crypto_images_artefact_populate.sql
+   - Populates dq_images_artefact_tbl with cryptocurrency icons
+   - 483 SVG icons
+
+5. crypto_currencies_large_artefact_populate.sql
+   - Populates dq_currencies_artefact_tbl with all ~12,243 cryptocurrencies
+   - Links to icons where available
+
+6. crypto_currencies_small_artefact_populate.sql
+   - Populates dq_currencies_artefact_tbl with top 100 cryptocurrencies
+   - By market capitalization
+
+7. crypto.sql
+   - Master include file for all cryptocurrency SQL scripts
+
+Version
+-------
+Data date: 2026-01-20
+Icons version: Latest from cryptocurrency-icons project

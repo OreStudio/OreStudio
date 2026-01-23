@@ -1,0 +1,66 @@
+Data Sourcing and Generation Steps:
+
+1. SOURCE DATA DOWNLOAD (Cryptocurrencies)
+   Source: CoinMarketCap or similar aggregator
+   Format: JSON mapping symbol -> name
+   Manual: Export cryptocurrency list to external/crypto/cryptocurrencies/cryptocurrencies.json
+
+2. SOURCE DATA DOWNLOAD (Icons)
+   Source: https://github.com/spothq/cryptocurrency-icons
+   License: MIT
+   Manual: Download SVG icons to external/crypto/cryptocurrency-icons/
+
+3. GENERATE SQL FILES
+   Script: projects/ores.codegen/src/crypto_generate_sql.py
+   Command: python3 crypto_generate_sql.py
+   Options:
+     --skip-images    Skip regenerating images SQL (large file)
+
+   Output files (in projects/ores.sql/populate/):
+     - crypto_dataset_populate.sql
+     - crypto_images_artefact_populate.sql
+     - crypto_currencies_large_artefact_populate.sql
+     - crypto_currencies_small_artefact_populate.sql
+     - crypto.sql (master include)
+
+4. COMMIT GENERATED SQL
+   git add projects/ores.sql/populate/crypto*.sql
+   git commit -m "[sql] Regenerate cryptocurrency reference data"
+
+DATASET METHODOLOGY
+-------------------
+The generator creates two size variants:
+
+Large Dataset (~12K coins):
+  - All cryptocurrencies from the source JSON
+  - Sorted alphabetically by symbol
+  - Classified as crypto.major (top 20) or crypto.minor (rest)
+
+Small Dataset (Top 100):
+  - Top 100 cryptocurrencies by market capitalization
+  - Sorted by market cap rank
+  - Same classification: crypto.major (top 20) or crypto.minor (21-100)
+
+CURRENCY CLASSIFICATION
+-----------------------
+crypto.major: Top 20 cryptocurrencies by market cap
+  BTC, ETH, USDT, XRP, BNB, SOL, USDC, DOGE, ADA, TRX,
+  LINK, XLM, HBAR, SUI, HYPE, BCH, XMR, ZEC, PAXG, AVAX
+
+crypto.minor: All other cryptocurrencies
+
+ICON LINKING
+------------
+Icons are keyed by lowercase symbol (e.g., 'btc', 'eth').
+When populating currencies, the script joins to the icons dataset
+to link each cryptocurrency to its icon. Cryptocurrencies without
+matching icons use a placeholder image (flag 'xx').
+
+SPECIAL SYMBOLS
+---------------
+Some cryptocurrencies have special Unicode symbols:
+  BTC: ₿ (Bitcoin)
+  ETH: Ξ (Ethereum)
+  LTC: Ł (Litecoin)
+  DOGE: Ð (Dogecoin)
+  XRP: ✕ (Ripple)

@@ -122,6 +122,29 @@ The subsets are sampled across multiple diversity dimensions:
 - Fund type (ETF, BOND, EQUITY, etc.)
 - Relationship depth (0 to 5+ children)
 
+### Cryptocurrency Reference Data Generation
+
+Generate SQL scripts for cryptocurrency reference data:
+
+```bash
+# Generate all crypto SQL files
+python3 src/crypto_generate_sql.py
+
+# Skip regenerating images (if unchanged)
+python3 src/crypto_generate_sql.py --skip-images
+```
+
+**Input files** (in `external/crypto/`):
+- `cryptocurrencies/cryptocurrencies.json` - Symbol to name mapping (~12K coins)
+- `cryptocurrency-icons/*.svg` - Icon images (483 icons)
+
+**Output files** (in `projects/ores.sql/populate/`):
+- `crypto_dataset_populate.sql` - Dataset definitions
+- `crypto_images_artefact_populate.sql` - Icon images
+- `crypto_currencies_large_artefact_populate.sql` - All ~12K coins
+- `crypto_currencies_small_artefact_populate.sql` - Top 100 coins
+- `crypto.sql` - Master include file
+
 ## Features
 
 - **Overall Models**: Support for `model.json` files that orchestrate the generation of multiple artefacts.
@@ -135,6 +158,7 @@ The subsets are sampled across multiple diversity dimensions:
 - `src/generator.py` - Main code generator (JSON models + Mustache templates → SQL)
 - `src/fpml_parser.py` - FPML Genericode XML parser (XML → JSON models)
 - `src/lei_extract_subset.py` - LEI dataset subset extractor
+- `src/crypto_generate_sql.py` - Cryptocurrency SQL generator
 - `scripts/generate_lei_subsets.sh` - Shell script to generate LEI subsets
 - `library/data/` - Static data files (licenses, modelines, etc.)
 - `library/templates/` - Mustache templates

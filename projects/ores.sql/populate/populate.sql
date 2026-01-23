@@ -105,11 +105,8 @@
 
 -- Data Quality Artefacts
 \ir dq_flags_images_artefact_populate.sql
-\ir dq_crypto_images_artefact_populate.sql
 \ir dq_countries_artefact_populate.sql
 \ir dq_currencies_artefact_populate.sql
-\ir dq_cryptocurrencies_artefact_populate.sql
-\ir dq_cryptocurrencies_top100_artefact_populate.sql
 \ir dq_ip2country_artefact_populate.sql
 \ir solvaris_batch_execute.sql
 
@@ -117,6 +114,11 @@
 \echo ''
 \echo '--- FPML Reference Data ---'
 \ir fpml.sql
+
+-- Cryptocurrency Reference Data (datasets, images, currencies)
+\echo ''
+\echo '--- Cryptocurrency Reference Data ---'
+\ir crypto.sql
 
 -- RBAC (Role-Based Access Control)
 \echo ''

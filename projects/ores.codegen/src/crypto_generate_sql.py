@@ -1,0 +1,591 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Generate SQL populate scripts for cryptocurrency reference data.
+
+Reads cryptocurrency data from external/crypto/cryptocurrencies/cryptocurrencies.json
+and generates SQL scripts to populate the DQ artefact tables.
+
+Output files are written to projects/ores.sql/populate/ with crypto_ prefix:
+  - crypto_images_artefact_populate.sql
+  - crypto_currencies_large_artefact_populate.sql  (all ~12K coins)
+  - crypto_currencies_small_artefact_populate.sql  (top 100 coins)
+  - crypto_dataset_populate.sql
+  - crypto.sql (master include file)
+
+Usage:
+    python3 crypto_generate_sql.py
+    python3 crypto_generate_sql.py --skip-images
+"""
+
+import argparse
+import json
+import os
+import sys
+from pathlib import Path
+from datetime import datetime
+
+
+def get_repo_root() -> Path:
+    """Get the repository root directory."""
+    script_dir = Path(__file__).parent
+    return script_dir.parent.parent.parent  # src -> ores.codegen -> projects -> repo_root
+
+
+def get_crypto_data_dir() -> Path:
+    """Get the path to external/crypto directory."""
+    return get_repo_root() / "external" / "crypto"
+
+
+def get_output_dir() -> Path:
+    """Get the path to projects/ores.sql/populate directory."""
+    return get_repo_root() / "projects" / "ores.sql" / "populate"
+
+
+# Configuration
+CONFIG = {
+    'dataset_name_large': 'Cryptocurrencies Large',
+    'dataset_name_small': 'Cryptocurrencies Small',
+    'subject_area_name': 'Cryptocurrencies',
+    'domain_name': 'Reference Data',
+    'icons_dataset_name': 'Cryptocurrency Icon Images',
+}
+
+# Default values for cryptocurrency fields
+CRYPTO_DEFAULTS = {
+    'numeric_code': '',
+    'fraction_symbol': '',
+    'fractions_per_unit': 100000000,  # 8 decimal places (satoshi-like)
+    'rounding_type': 'standard',
+    'rounding_precision': 8,
+    'format': '#,##0.00000000',
+}
+
+# Top 100 cryptocurrencies by market cap (January 2026)
+# Used for the "small" dataset
+TOP_100_CRYPTOS = [
+    # Top 20 (major)
+    'BTC', 'ETH', 'USDT', 'XRP', 'BNB', 'SOL', 'USDC', 'DOGE', 'ADA', 'TRX',
+    'LINK', 'XLM', 'HBAR', 'SUI', 'HYPE', 'BCH', 'XMR', 'ZEC', 'PAXG', 'AVAX',
+    # 21-50
+    'TON', 'SHIB', 'DOT', 'LTC', 'UNI', 'LEO', 'DAI', 'NEAR', 'APT', 'ICP',
+    'RNDR', 'POL', 'ETC', 'TAO', 'AAVE', 'VET', 'FET', 'MNT', 'FIL', 'ARB',
+    'ATOM', 'OP', 'KAS', 'INJ', 'IMX', 'STX', 'THETA', 'RUNE', 'GRT', 'SEI',
+    # 51-100
+    'FTM', 'SAND', 'MANA', 'ALGO', 'AXS', 'FLOW', 'CFX', 'GALA', 'NEO', 'KAVA',
+    'XTZ', 'EGLD', 'ROSE', 'LUNC', 'MIOTA', 'CRO', 'QNT', 'FLOKI', 'SNX', 'CAKE',
+    'ORDI', 'CHZ', 'PEPE', 'WIF', 'BONK', 'ENS', 'TUSD', 'OSMO', 'XEC', 'MINA',
+    'DASH', 'APE', 'BLUR', 'CRV', 'LDO', 'MKR', 'COMP', 'ZIL', 'ENJ', 'BAT',
+    'NEXO', '1INCH', 'WOO', 'GMT', 'DYDX', 'AR', 'ASTR', 'CELO', 'AGIX', 'OCEAN',
+]
+
+MAJOR_CRYPTOS = set(TOP_100_CRYPTOS[:20])
+
+# Special symbols for well-known cryptocurrencies
+SPECIAL_SYMBOLS = {
+    'BTC': '₿',
+    'ETH': 'Ξ',
+    'LTC': 'Ł',
+    'DOGE': 'Ð',
+    'XRP': '✕',
+}
+
+
+def get_header() -> str:
+    """Get the standard SQL file header."""
+    return """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+"""
+
+
+def escape_sql_string(s: str) -> str:
+    """Escape single quotes for SQL."""
+    return s.replace("'", "''")
+
+
+def get_symbol(iso_code: str) -> str:
+    """Get display symbol for a cryptocurrency."""
+    return SPECIAL_SYMBOLS.get(iso_code, iso_code)
+
+
+def get_currency_type(iso_code: str) -> str:
+    """Get currency type classification for a cryptocurrency."""
+    return 'crypto.major' if iso_code in MAJOR_CRYPTOS else 'crypto.minor'
+
+
+def generate_images_sql(icons_dir: Path, output_file: Path):
+    """Generate SQL for cryptocurrency icon images."""
+    print(f"Generating {output_file.name}...")
+
+    # Find all SVG icons
+    svg_files = sorted(icons_dir.glob("*.svg"))
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(get_header())
+        f.write(f"""
+/**
+ * Cryptocurrency Icon Images Population Script
+ *
+ * Populates the dq_images_artefact_tbl with cryptocurrency icon images.
+ * Icons are keyed by lowercase symbol (e.g., 'btc', 'eth').
+ *
+ * Generated by crypto_generate_sql.py
+ * Source: external/crypto/cryptocurrency-icons/
+ */
+
+set schema 'ores';
+
+DO $$
+declare
+    v_dataset_id uuid;
+    v_count integer := 0;
+begin
+    -- Get the cryptocurrency icons dataset ID
+    select id into v_dataset_id
+    from ores.dq_datasets_tbl
+    where name = '{CONFIG['icons_dataset_name']}'
+      and subject_area_name = '{CONFIG['subject_area_name']}'
+      and domain_name = '{CONFIG['domain_name']}'
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_dataset_id is null then
+        raise exception 'Dataset not found: {CONFIG['icons_dataset_name']}';
+    end if;
+
+    -- Clear existing images for this dataset (idempotency)
+    delete from ores.dq_images_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    raise notice 'Populating cryptocurrency icons for dataset: {CONFIG['icons_dataset_name']}';
+
+    -- Insert cryptocurrency icons
+    insert into ores.dq_images_artefact_tbl (dataset_id, key, image)
+    values
+""")
+
+        for i, svg_file in enumerate(svg_files):
+            key = svg_file.stem.lower()
+            safe_key = escape_sql_string(key)
+            is_last = (i == len(svg_files) - 1)
+            comma = '' if is_last else ','
+
+            # Read SVG content
+            svg_content = svg_file.read_text(encoding='utf-8')
+            safe_svg = escape_sql_string(svg_content)
+
+            f.write(f"        (v_dataset_id, '{safe_key}', '{safe_svg}'){comma}\n")
+
+        f.write(f"""    ;
+
+    get diagnostics v_count = row_count;
+    raise notice 'Successfully populated % cryptocurrency icons', v_count;
+end $$;
+
+\\echo ''
+\\echo '--- Cryptocurrency Icons Summary ---'
+
+select 'Total Cryptocurrency Icons' as metric, count(*) as count
+from ores.dq_images_artefact_tbl i
+join ores.dq_datasets_tbl d on i.dataset_id = d.id
+where d.name = '{CONFIG['icons_dataset_name']}';
+""")
+
+    print(f"  Generated {len(svg_files)} icon entries")
+
+
+def generate_currencies_sql(cryptos: list, output_file: Path, dataset_name: str, description: str):
+    """Generate SQL for cryptocurrency currencies."""
+    print(f"Generating {output_file.name}...")
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(get_header())
+        f.write(f"""
+/**
+ * {description}
+ *
+ * Populates the dq_currencies_artefact_tbl with cryptocurrency data.
+ * Links cryptocurrencies to their icons from the cryptocurrency-icons dataset.
+ *
+ * Generated by crypto_generate_sql.py
+ * Source: external/crypto/cryptocurrencies/cryptocurrencies.json
+ */
+
+set schema 'ores';
+
+DO $$
+declare
+    v_dataset_id uuid;
+    v_icons_dataset_id uuid;
+    v_placeholder_image_id uuid;
+    v_count integer := 0;
+begin
+    -- Get the cryptocurrencies dataset ID
+    select id into v_dataset_id
+    from ores.dq_datasets_tbl
+    where name = '{dataset_name}'
+      and subject_area_name = '{CONFIG['subject_area_name']}'
+      and domain_name = '{CONFIG['domain_name']}'
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_dataset_id is null then
+        raise exception 'Dataset not found: {dataset_name}';
+    end if;
+
+    -- Get the cryptocurrency icons dataset ID (for linking images)
+    select id into v_icons_dataset_id
+    from ores.dq_datasets_tbl
+    where name = '{CONFIG['icons_dataset_name']}'
+      and subject_area_name = '{CONFIG['subject_area_name']}'
+      and domain_name = '{CONFIG['domain_name']}'
+      and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if v_icons_dataset_id is null then
+        raise exception 'Dataset not found: {CONFIG['icons_dataset_name']}';
+    end if;
+
+    -- Get a placeholder image (use 'xx' flag from the flags dataset)
+    select image_id into v_placeholder_image_id
+    from ores.dq_images_artefact_tbl
+    where key = 'xx'
+    limit 1;
+
+    if v_placeholder_image_id is null then
+        raise warning 'Placeholder image (xx) not found - cryptocurrencies without icons will have NULL image_id';
+    end if;
+
+    -- Clear existing cryptocurrencies for this dataset (idempotency)
+    delete from ores.dq_currencies_artefact_tbl
+    where dataset_id = v_dataset_id;
+
+    raise notice 'Populating cryptocurrencies for dataset: {dataset_name}';
+
+    -- Insert cryptocurrencies with icon links
+    insert into ores.dq_currencies_artefact_tbl (
+        dataset_id, iso_code, version, name, numeric_code, symbol, fraction_symbol,
+        fractions_per_unit, rounding_type, rounding_precision, format, currency_type, image_id
+    )
+    select
+        v_dataset_id,
+        c.iso_code,
+        0,
+        c.name,
+        c.numeric_code,
+        c.symbol,
+        c.fraction_symbol,
+        c.fractions_per_unit,
+        c.rounding_type,
+        c.rounding_precision,
+        c.format,
+        c.currency_type,
+        coalesce(i.image_id, v_placeholder_image_id)
+    from (values
+""")
+
+        for i, (iso_code, name) in enumerate(cryptos):
+            safe_name = escape_sql_string(name)
+            symbol = escape_sql_string(get_symbol(iso_code))
+            safe_iso_code = escape_sql_string(iso_code)
+            currency_type = get_currency_type(iso_code)
+            is_last = (i == len(cryptos) - 1)
+            comma = '' if is_last else ','
+
+            defaults = CRYPTO_DEFAULTS
+            f.write(f"        ('{safe_iso_code}', '{safe_name}', '{defaults['numeric_code']}', '{symbol}', '{defaults['fraction_symbol']}', {defaults['fractions_per_unit']}, '{defaults['rounding_type']}', {defaults['rounding_precision']}, '{defaults['format']}', '{currency_type}'){comma}\n")
+
+        f.write(f"""    ) as c(iso_code, name, numeric_code, symbol, fraction_symbol, fractions_per_unit, rounding_type, rounding_precision, format, currency_type)
+    left join ores.dq_images_artefact_tbl i
+        on i.dataset_id = v_icons_dataset_id
+        and i.key = lower(c.iso_code);
+
+    get diagnostics v_count = row_count;
+    raise notice 'Successfully populated % cryptocurrencies for dataset: {dataset_name}', v_count;
+
+    -- Report count of cryptocurrencies with icons
+    raise notice 'Cryptocurrencies with matching icons: %', (
+        select count(*)
+        from ores.dq_currencies_artefact_tbl
+        where dataset_id = v_dataset_id
+          and image_id is not null
+    );
+end $$;
+
+\\echo ''
+\\echo '--- Cryptocurrency Summary ({dataset_name}) ---'
+
+select 'Total Cryptocurrencies' as metric, count(*) as count
+from ores.dq_currencies_artefact_tbl c
+join ores.dq_datasets_tbl d on c.dataset_id = d.id
+where d.name = '{dataset_name}'
+union all
+select 'Major (crypto.major)', count(*)
+from ores.dq_currencies_artefact_tbl c
+join ores.dq_datasets_tbl d on c.dataset_id = d.id
+where d.name = '{dataset_name}'
+  and c.currency_type = 'crypto.major'
+union all
+select 'Minor (crypto.minor)', count(*)
+from ores.dq_currencies_artefact_tbl c
+join ores.dq_datasets_tbl d on c.dataset_id = d.id
+where d.name = '{dataset_name}'
+  and c.currency_type = 'crypto.minor'
+union all
+select 'With Icons', count(*)
+from ores.dq_currencies_artefact_tbl c
+join ores.dq_datasets_tbl d on c.dataset_id = d.id
+where d.name = '{dataset_name}'
+  and c.image_id is not null;
+""")
+
+    major_count = sum(1 for iso_code, _ in cryptos if iso_code in MAJOR_CRYPTOS)
+    print(f"  Generated {len(cryptos)} currencies ({major_count} major, {len(cryptos) - major_count} minor)")
+
+
+def generate_dataset_sql(output_file: Path):
+    """Generate SQL for cryptocurrency datasets."""
+    print(f"Generating {output_file.name}...")
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(get_header())
+        f.write(f"""
+/**
+ * Cryptocurrency Dataset Population Script
+ *
+ * Creates the dataset entries for cryptocurrency reference data.
+ * This must be run before populating the artefact tables.
+ *
+ * Generated by crypto_generate_sql.py
+ */
+
+set schema 'ores';
+
+-- =============================================================================
+-- Cryptocurrency Datasets
+-- =============================================================================
+
+\\echo '--- Cryptocurrency Datasets ---'
+
+-- Icons dataset
+select ores.upsert_dq_datasets(
+    '{CONFIG['icons_dataset_name']}',
+    'Other',
+    '{CONFIG['subject_area_name']}',
+    '{CONFIG['domain_name']}',
+    'CRYPTO_ICONS',
+    'Primary',
+    'Actual',
+    'Raw',
+    'Cryptocurrency Icons Download',
+    'Cryptocurrency Icon Images',
+    'SVG icons for cryptocurrency symbols from the cryptocurrency-icons project.',
+    'Cryptocurrency Icons',
+    'Icon images for cryptocurrency symbols',
+    '2024-01-15'::date,
+    'MIT License',
+    'cryptocurrency_icons',
+    'refdata_images_tbl',
+    'dq_populate_images'
+);
+
+-- Large cryptocurrency dataset (all ~12K coins)
+select ores.upsert_dq_datasets(
+    '{CONFIG['dataset_name_large']}',
+    'Other',
+    '{CONFIG['subject_area_name']}',
+    '{CONFIG['domain_name']}',
+    'CRYPTO_LARGE',
+    'Primary',
+    'Actual',
+    'Raw',
+    'CoinMarketCap Export',
+    'Cryptocurrencies Large',
+    'Complete list of ~12,243 cryptocurrencies with symbol and name.',
+    'CoinMarketCap',
+    'Full cryptocurrency reference data (~12K coins)',
+    '2026-01-20'::date,
+    'Public Domain',
+    'cryptocurrencies_large',
+    'refdata_currencies_tbl',
+    'dq_populate_currencies'
+);
+
+-- Small cryptocurrency dataset (top 100 by market cap)
+select ores.upsert_dq_datasets(
+    '{CONFIG['dataset_name_small']}',
+    'Other',
+    '{CONFIG['subject_area_name']}',
+    '{CONFIG['domain_name']}',
+    'CRYPTO_SMALL',
+    'Primary',
+    'Actual',
+    'Raw',
+    'CoinMarketCap Top 100',
+    'Cryptocurrencies Small',
+    'Top 100 cryptocurrencies by market capitalization.',
+    'CoinMarketCap',
+    'Top 100 cryptocurrency reference data by market cap',
+    '2026-01-20'::date,
+    'Public Domain',
+    'cryptocurrencies_small',
+    'refdata_currencies_tbl',
+    'dq_populate_currencies'
+);
+""")
+
+
+def generate_master_sql(output_file: Path):
+    """Generate the crypto.sql master include file."""
+    print(f"Generating {output_file.name}...")
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(get_header())
+        f.write("""
+/**
+ * Cryptocurrency Reference Data Master Include File
+ *
+ * Auto-generated by crypto_generate_sql.py
+ * Includes all cryptocurrency SQL files in the correct dependency order.
+ */
+
+-- =============================================================================
+-- Cryptocurrency Datasets (must come first)
+-- =============================================================================
+
+\\echo '--- Cryptocurrency Datasets ---'
+\\ir crypto_dataset_populate.sql
+
+-- =============================================================================
+-- Cryptocurrency Images (must come before currencies)
+-- =============================================================================
+
+\\echo '--- Cryptocurrency Images ---'
+\\ir crypto_images_artefact_populate.sql
+
+-- =============================================================================
+-- Cryptocurrency Currencies
+-- =============================================================================
+
+\\echo '--- Cryptocurrency Currencies ---'
+\\ir crypto_currencies_large_artefact_populate.sql
+\\ir crypto_currencies_small_artefact_populate.sql
+""")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Generate SQL populate scripts for cryptocurrency reference data.',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  %(prog)s                  # Generate all SQL files
+  %(prog)s --skip-images    # Skip regenerating image SQL (large file)
+        """
+    )
+
+    parser.add_argument('--skip-images',
+                        action='store_true',
+                        help='Skip generating images SQL file (it is large)')
+
+    args = parser.parse_args()
+
+    # Setup paths
+    crypto_dir = get_crypto_data_dir()
+    output_dir = get_output_dir()
+
+    source_file = crypto_dir / "cryptocurrencies" / "cryptocurrencies.json"
+    icons_dir = crypto_dir / "cryptocurrency-icons"
+
+    # Validate paths
+    if not source_file.exists():
+        print(f"Error: Source file not found: {source_file}", file=sys.stderr)
+        sys.exit(1)
+
+    if not icons_dir.exists():
+        print(f"Error: Icons directory not found: {icons_dir}", file=sys.stderr)
+        sys.exit(1)
+
+    print("=" * 70)
+    print("Cryptocurrency SQL Generator")
+    print("=" * 70)
+    print(f"\nSource: {source_file}")
+    print(f"Icons:  {icons_dir}")
+    print(f"Output: {output_dir}")
+    print()
+
+    # Load cryptocurrency data
+    print("Loading cryptocurrency data...")
+    with open(source_file, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    all_cryptos = sorted(data.items(), key=lambda x: x[0])
+    small_cryptos = [(k, v) for k, v in all_cryptos if k in TOP_100_CRYPTOS]
+    # Sort small by rank
+    rank_map = {symbol: i for i, symbol in enumerate(TOP_100_CRYPTOS)}
+    small_cryptos = sorted(small_cryptos, key=lambda x: rank_map.get(x[0], 999))
+
+    print(f"  Large dataset: {len(all_cryptos)} cryptocurrencies")
+    print(f"  Small dataset: {len(small_cryptos)} cryptocurrencies (top 100)")
+    print()
+
+    # Generate SQL files
+    print("Generating SQL files...")
+
+    # 1. Dataset SQL
+    generate_dataset_sql(output_dir / "crypto_dataset_populate.sql")
+
+    # 2. Images SQL (optional - can be slow due to size)
+    if not args.skip_images:
+        generate_images_sql(icons_dir, output_dir / "crypto_images_artefact_populate.sql")
+    else:
+        print("Skipping crypto_images_artefact_populate.sql (--skip-images)")
+
+    # 3. Large currencies SQL (all ~12K)
+    generate_currencies_sql(
+        all_cryptos,
+        output_dir / "crypto_currencies_large_artefact_populate.sql",
+        CONFIG['dataset_name_large'],
+        "Cryptocurrency Currencies Population Script (Large - All ~12K Coins)"
+    )
+
+    # 4. Small currencies SQL (top 100)
+    generate_currencies_sql(
+        small_cryptos,
+        output_dir / "crypto_currencies_small_artefact_populate.sql",
+        CONFIG['dataset_name_small'],
+        "Cryptocurrency Currencies Population Script (Small - Top 100 Coins)"
+    )
+
+    # 5. Master include SQL
+    generate_master_sql(output_dir / "crypto.sql")
+
+    print()
+    print("=" * 70)
+    print("Done!")
+    print("=" * 70)
+    print("\nGenerated files:")
+    print("  - crypto_dataset_populate.sql")
+    if not args.skip_images:
+        print("  - crypto_images_artefact_populate.sql")
+    print("  - crypto_currencies_large_artefact_populate.sql")
+    print("  - crypto_currencies_small_artefact_populate.sql")
+    print("  - crypto.sql (master include)")
+
+
+if __name__ == '__main__':
+    main()

@@ -26,10 +26,16 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6.0.1
-      - uses: sobolevn/misspell-fixer-action@master
-        with:
-          options: '-rsvn --exclude external --exclude build --exclude assets --exclude vcpkg .'
+      - name: Checkout repository
+      - name: Install and run misspell-fixer
+        run: |
+          # 1. Download and install the latest version of misspell-fixer
+          curl -L https://github.com/vlajos/misspell-fixer/releases/latest/download/misspell-fixer-linux-amd64.tar.gz | tar -xz
+          sudo mv misspell-fixer /usr/local/bin/
+
+          # 2. Run the tool with your desired options.
+          #    The shell now correctly parses the separate arguments.
+          misspell-fixer -rsvn --exclude external --exclude build --exclude assets --exclude vcpkg .
       - uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -22,30 +22,15 @@ on:  # yamllint disable-line rule:truthy
   push:
     branches:
       - '**'
-
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/checkout@v6.0.1
+      - uses: sobolevn/misspell-fixer-action@master
         with:
-          go-version: 'stable'
 
-      - name: Install and run misspell-fixer
-        run: |
-          # Install a specific, known-good version of misspell-fixer.
-          # This is more reliable than using @latest in CI/CD.
-          go install github.com/vlajos/misspell-fixer/cmd/misspell-fixer@v0.6.0
-
-          # Run the tool with your desired options.
-          misspell-fixer -rsvn --exclude external --exclude build --exclude assets --exclude vcpkg .
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v8
+      - uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: misspell-fixes-${{ github.ref_name }}

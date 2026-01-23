@@ -19,6 +19,7 @@
  */
 #include "ores.assets/repository/image_repository.hpp"
 
+#include <charconv>
 #include <sstream>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -123,7 +124,14 @@ image_repository::read_latest_by_ids(context ctx,
 
         image_entity entity;
         entity.image_id = row[0].value_or("");
-        entity.version = row[1] ? std::stoi(*row[1]) : 0;
+
+        // Use std::from_chars for safe, non-throwing integer parsing
+        int version = 0;
+        if (row[1]) {
+            std::from_chars(row[1]->data(), row[1]->data() + row[1]->size(), version);
+        }
+        entity.version = version;
+
         entity.key = row[2].value_or("");
         entity.description = row[3].value_or("");
         entity.svg_data = row[4].value_or("");

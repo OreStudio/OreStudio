@@ -78,6 +78,50 @@ This script:
 
 Plus the shared coding schemes file: `fpml_coding_schemes_populate.sql`
 
+### LEI Data Subset Extraction
+
+Extract diverse subsets from the GLEIF LEI dataset for testing and development:
+
+```bash
+# Generate both small and large subsets
+./scripts/generate_lei_subsets.sh
+
+# Generate specific size only
+./scripts/generate_lei_subsets.sh --small
+./scripts/generate_lei_subsets.sh --large
+
+# Download latest GLEIF data first
+./scripts/generate_lei_subsets.sh --download
+```
+
+Or use the Python script directly:
+
+```bash
+# Small subset (~10K entities)
+python3 src/lei_extract_subset.py --size small
+
+# Large subset (~50K entities)
+python3 src/lei_extract_subset.py --size large
+
+# Download latest data
+python3 src/lei_extract_subset.py --download --size small
+```
+
+**Input files** (in `external/lei/`):
+- `*-gleif-goldencopy-lei2-golden-copy.csv` - LEI entity data (~4.3 GB)
+- `*-gleif-goldencopy-rr-golden-copy.csv` - Relationship records (~221 MB)
+
+**Output files** (in `external/lei/`):
+- `*-subset-small.csv` - Small subset (~7 MB)
+- `*-subset-large.csv` - Large subset (~35 MB)
+
+The subsets are sampled across multiple diversity dimensions:
+- Geographic (all ~235 countries)
+- Entity category (GENERAL, FUND, SOLE_PROPRIETOR, etc.)
+- Sector (BANK, INSURANCE, TECHNOLOGY, etc.)
+- Fund type (ETF, BOND, EQUITY, etc.)
+- Relationship depth (0 to 5+ children)
+
 ## Features
 
 - **Overall Models**: Support for `model.json` files that orchestrate the generation of multiple artefacts.
@@ -90,6 +134,8 @@ Plus the shared coding schemes file: `fpml_coding_schemes_populate.sql`
 
 - `src/generator.py` - Main code generator (JSON models + Mustache templates → SQL)
 - `src/fpml_parser.py` - FPML Genericode XML parser (XML → JSON models)
+- `src/lei_extract_subset.py` - LEI dataset subset extractor
+- `scripts/generate_lei_subsets.sh` - Shell script to generate LEI subsets
 - `library/data/` - Static data files (licenses, modelines, etc.)
 - `library/templates/` - Mustache templates
 - `models/` - JSON model files

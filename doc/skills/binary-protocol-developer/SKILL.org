@@ -664,8 +664,9 @@ list_items_request::deserialize(std::span<const std::byte> data) {
 
 ** Repository method
 
-Add a =read_latest_since= method to the repository that calls a PostgreSQL
-function:
+Add a =read_latest_since= method to the repository using sqlgen's native WHERE
+clause with timestamp comparison. This approach stays within sqlgen's type-safe
+ORM and generates parameterized queries automatically.
 
 #+begin_src cpp
 // In repository header
@@ -677,54 +678,35 @@ std::vector<domain::item>
 item_repository::read_latest_since(context ctx,
     std::chrono::system_clock::time_point modified_since) {
 
-    auto time_t_val = std::chrono::system_clock::to_time_t(modified_since);
-    std::ostringstream timestamp_str;
-    timestamp_str << std::put_time(std::gmtime(&time_t_val), "%Y-%m-%d %H:%M:%S");
+    // Format timestamp for sqlgen query (thread-safe)
+    const auto timestamp_str =
+        platform::time::datetime::format_time_point_utc(modified_since);
 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest items modified since: "
-                               << timestamp_str.str();
+                               << timestamp_str;
 
-    std::ostringstream sql;
-    sql << "SELECT * FROM ores.{table}_read_since_fn('"
-        << timestamp_str.str() << "'::timestamptz)";
+    // Use sqlgen query with timestamp comparison
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto since_ts = make_timestamp(timestamp_str, lg());
 
-    auto rows = execute_raw_multi_column_query(ctx, sql.str(), lg(),
-        "Reading latest items since timestamp");
+    const auto query = sqlgen::read<std::vector<item_entity>> |
+        where("valid_to"_c == max.value() && "valid_from"_c >= since_ts.value()) |
+        order_by("valid_from"_c.desc());
 
-    // Convert rows to domain objects...
+    return execute_read_query<item_entity, domain::item>(ctx, query,
+        [](const auto& entities) { return item_mapper::map(entities); },
+        lg(), "Reading latest items since timestamp");
 }
 #+end_src
 
-** PostgreSQL function
+Required include for thread-safe timestamp formatting:
 
-Add a function to the table's schema file that filters by =valid_from=:
-
-#+begin_src sql
--- Returns latest items modified since a given timestamp.
--- Used for incremental cache loading.
-create or replace function ores.{table}_read_since_fn(
-    p_modified_since timestamptz
-)
-returns table (
-    item_id uuid,
-    -- ... other columns matching the table schema ...
-    valid_from timestamptz,
-    valid_to timestamptz
-) as $$
-begin
-    return query
-    select
-        t.item_id,
-        -- ... other columns ...
-        t.valid_from,
-        t.valid_to
-    from ores.{table}_tbl t
-    where t.valid_to = ores.utility_infinity_timestamp_fn()
-    and t.valid_from >= p_modified_since
-    order by t.valid_from desc;
-end;
-$$ language plpgsql stable;
+#+begin_src cpp
+#include "ores.platform/time/datetime.hpp"
 #+end_src
+
+See =projects/ores.assets/src/repository/image_repository.cpp= for a reference
+implementation.
 
 ** Message handler
 

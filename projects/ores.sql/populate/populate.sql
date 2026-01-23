@@ -106,7 +106,7 @@
 -- Data Quality Artefacts
 \ir dq_countries_artefact_populate.sql
 \ir dq_currencies_artefact_populate.sql
-\ir solvaris_batch_execute.sql
+\ir solvaris/solvaris.sql
 
 -- Flag Icons Reference Data (images)
 \echo ''

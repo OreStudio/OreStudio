@@ -685,7 +685,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Apply prefix if provided, replacing 'sql_' with prefix + '_'
         # Skip prefix handling for schema models (they use entity-based naming)
         if prefix and not is_schema_model:
-            if output_filename.startswith('sql_'):
+            # Special case: master include file should be just {prefix}.sql
+            if template_name == 'sql_batch_execute.mustache':
+                output_filename = f"{prefix}.sql"
+            elif output_filename.startswith('sql_'):
                 output_filename = f"{prefix}_{output_filename[4:]}"
             elif not output_filename.startswith(f"{prefix}_"):
                 output_filename = f"{prefix}_{output_filename}"

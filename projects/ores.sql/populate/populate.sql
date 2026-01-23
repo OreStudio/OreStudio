@@ -107,8 +107,12 @@
 \ir dq_flags_images_artefact_populate.sql
 \ir dq_countries_artefact_populate.sql
 \ir dq_currencies_artefact_populate.sql
-\ir dq_ip2country_artefact_populate.sql
 \ir solvaris_batch_execute.sql
+
+-- IP to Country Reference Data (iptoasn.com)
+\echo ''
+\echo '--- IP to Country Reference Data ---'
+\ir ip2country/ip2country.sql
 
 -- FPML Reference Data (methodology, coding schemes, datasets, artefacts)
 \echo ''

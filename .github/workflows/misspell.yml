@@ -27,6 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
+        uses: actions/checkout@v6.0.1
       - name: Install and run misspell-fixer
         run: |
           # 1. Download and install the latest version of misspell-fixer

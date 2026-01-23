@@ -28,8 +28,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6.0.1
       - uses: sobolevn/misspell-fixer-action@master
-        with:
-
       - uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

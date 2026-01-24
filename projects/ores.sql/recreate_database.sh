@@ -136,6 +136,26 @@ fi
 # Change to script directory so relative paths in SQL files work
 cd "${SCRIPT_DIR}"
 
+# Drop any existing ORES instance databases (dev recreate = clean slate)
+# This is needed because teardown_instances.sql may be empty
+echo "--- Dropping existing ORES instance databases ---"
+INSTANCE_DBS=$(PGPASSWORD="${POSTGRES_PASSWORD}" psql -h localhost -U postgres -t -A -c "
+    SELECT datname FROM pg_database
+    WHERE (datname LIKE 'ores_%' OR datname LIKE 'oresdb_%')
+      AND datname NOT IN ('ores_admin', 'ores_template')
+    ORDER BY datname;
+" 2>/dev/null || true)
+
+if [[ -n "${INSTANCE_DBS}" ]]; then
+    for db in ${INSTANCE_DBS}; do
+        echo "Dropping instance database: ${db}"
+        PGPASSWORD="${POSTGRES_PASSWORD}" psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS \"${db}\";" 2>/dev/null || true
+    done
+else
+    echo "No instance databases found."
+fi
+echo ""
+
 # Run the recreate_database.sql script
 # Note: psql's :'var' syntax handles quoting for string literals
 # Note: db_name should NOT have quotes (it's an identifier in SQL)

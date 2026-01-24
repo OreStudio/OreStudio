@@ -273,6 +273,226 @@ package "refdata" #FFF3E0 {
     Optional flag image reference.
     coding_scheme_code tracks data provenance.
     end note
+
+    entity refdata_asset_classes_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    entity refdata_asset_measures_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    entity refdata_account_types_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    entity refdata_benchmark_rates_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    entity refdata_business_centres_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    note bottom of refdata_business_centres_tbl
+    FPML business centre codes.
+    4-character location identifiers.
+    end note
+
+    entity refdata_business_processes_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    entity refdata_cashflow_types_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    entity refdata_entity_classifications_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    entity refdata_local_jurisdictions_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    entity refdata_party_relationships_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    entity refdata_party_roles_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    entity refdata_person_roles_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    entity refdata_regulatory_corporate_sectors_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    entity refdata_reporting_regimes_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    entity refdata_supervisory_bodies_tbl <<temporal>> #C6F0D8 {
+        * code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        * valid_to : timestamptz <<PK>>
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text <<FK>>
+        * modified_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+    }
+
+    note as RefdataNote
+    All refdata tables follow FPML coding scheme pattern.
+    Linked to dq_coding_schemes_tbl for provenance tracking.
+    end note
 }
 
 '
@@ -620,6 +840,219 @@ package "dq" #E1F5FE {
     Snapshot of image-tag relationships.
     Non-temporal - immutable once ingested.
     end note
+
+    entity dq_dataset_dependencies_tbl <<temporal>> #C6F0D8 {
+        * dataset_code : text <<PK>>
+        * dependency_code : text <<PK>>
+        * valid_from : timestamptz <<PK>>
+        --
+        * role : text
+        * recorded_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_to : timestamptz
+    }
+
+    note right of dq_dataset_dependencies_tbl
+    Declares dependencies between datasets.
+    dependency_code is not a FK to allow
+    referencing external datasets.
+    end note
+
+    entity dq_publications_tbl #F7E5FF {
+        * id : uuid <<PK>>
+        --
+        * dataset_id : uuid <<FK>>
+        * dataset_code : text
+        * mode : text
+        * target_table : text
+        * records_inserted : bigint
+        * records_updated : bigint
+        * records_skipped : bigint
+        * records_deleted : bigint
+        * published_by : text
+        * published_at : timestamptz
+    }
+
+    note right of dq_publications_tbl
+    Audit table for dataset publication history.
+    Tracks when data is pushed to production.
+    Modes: upsert, insert_only, replace_all.
+    end note
+
+    entity dq_asset_classes_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text
+    }
+
+    entity dq_asset_measures_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text
+    }
+
+    entity dq_account_types_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text
+    }
+
+    entity dq_benchmark_rates_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text
+    }
+
+    entity dq_business_centres_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text
+    }
+
+    entity dq_business_processes_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text
+    }
+
+    entity dq_cashflow_types_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text
+    }
+
+    entity dq_coding_schemes_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        uri : text
+        * name : text
+        description : text
+        * authority_type_code : text
+    }
+
+    entity dq_entity_classifications_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text
+    }
+
+    entity dq_ip2country_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * range_start : bigint
+        * range_end : bigint
+        --
+        * country_code : text
+    }
+
+    entity dq_local_jurisdictions_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text
+    }
+
+    entity dq_party_relationships_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text
+    }
+
+    entity dq_party_roles_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text
+    }
+
+    entity dq_person_roles_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text
+    }
+
+    entity dq_regulatory_corporate_sectors_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text
+    }
+
+    entity dq_reporting_regimes_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+    }
+
+    entity dq_supervisory_bodies_artefact_tbl #F7E5FF {
+        * dataset_id : uuid <<FK>>
+        * code : text
+        --
+        * version : integer
+        source : text
+        description : text
+        * coding_scheme_code : text
+    }
+
+    note as ArtefactNote
+    Artefact tables are non-temporal snapshots.
+    Each represents data staged for a specific dataset.
+    Immutable once ingested.
+    end note
 }
 
 '
@@ -690,6 +1123,21 @@ refdata_countries_tbl }o--o| assets_images_tbl : "displayed as"
 ' refdata to dq coding scheme relationships
 dq_coding_schemes_tbl ||--o{ refdata_currencies_tbl : "identifies"
 dq_coding_schemes_tbl ||--o{ refdata_countries_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_asset_classes_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_asset_measures_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_account_types_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_benchmark_rates_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_business_centres_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_business_processes_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_cashflow_types_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_entity_classifications_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_local_jurisdictions_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_party_relationships_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_party_roles_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_person_roles_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_regulatory_corporate_sectors_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_reporting_regimes_tbl : "identifies"
+dq_coding_schemes_tbl ||--o{ refdata_supervisory_bodies_tbl : "identifies"
 
 ' dq hierarchy relationships
 dq_catalogs_tbl ||--o{ dq_datasets_tbl : "groups"
@@ -712,6 +1160,25 @@ dq_datasets_tbl ||--o{ dq_countries_artefact_tbl : "contains"
 dq_datasets_tbl ||--o{ dq_images_artefact_tbl : "contains"
 dq_datasets_tbl ||--o{ dq_tags_artefact_tbl : "contains"
 dq_datasets_tbl ||--o{ dq_image_tags_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_asset_classes_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_asset_measures_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_account_types_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_benchmark_rates_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_business_centres_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_business_processes_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_cashflow_types_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_coding_schemes_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_entity_classifications_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_ip2country_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_local_jurisdictions_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_party_relationships_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_party_roles_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_person_roles_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_regulatory_corporate_sectors_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_reporting_regimes_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_supervisory_bodies_artefact_tbl : "contains"
+dq_datasets_tbl ||--o{ dq_publications_tbl : "published as"
+dq_datasets_tbl ||--o{ dq_dataset_dependencies_tbl : "depends on"
 
 ' Change tracking relationships (logical - not enforced FKs in all cases)
 dq_change_reasons_tbl ||--o{ iam_accounts_tbl : "reason for"
@@ -732,6 +1199,22 @@ dq_change_reasons_tbl ||--o{ dq_origin_dimensions_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ dq_treatment_dimensions_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ dq_methodologies_tbl : "reason for"
 dq_change_reasons_tbl ||--o{ dq_datasets_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ dq_dataset_dependencies_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_asset_classes_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_asset_measures_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_account_types_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_benchmark_rates_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_business_centres_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_business_processes_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_cashflow_types_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_entity_classifications_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_local_jurisdictions_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_party_relationships_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_party_roles_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_person_roles_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_regulatory_corporate_sectors_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_reporting_regimes_tbl : "reason for"
+dq_change_reasons_tbl ||--o{ refdata_supervisory_bodies_tbl : "reason for"
 
 ' telemetry relationships
 iam_accounts_tbl ||--o{ telemetry_logs_tbl : "generates"

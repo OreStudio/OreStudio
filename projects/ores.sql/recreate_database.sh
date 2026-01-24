@@ -28,63 +28,76 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
     cat <<EOF
-Usage: $(basename "$0") -p POSTGRES_PASSWORD -o ORES_PASSWORD [-d DB_NAME] [-y] [-n]
+Usage: $(basename "$0") [OPTIONS]
 
 Recreates the ORE Studio database from scratch.
 Population scripts are automatically run as part of database recreation.
 
 Required arguments:
-    -p POSTGRES_PASSWORD    Password for the postgres superuser
-    -o ORES_PASSWORD        Password for the ores database user
+    -p, --postgres-password PASSWORD    Password for the postgres superuser
+    -o, --ores-password PASSWORD        Password for the ores database user
 
 Optional arguments:
-    -d DB_NAME              Database name (default: ${DEFAULT_DB_NAME})
-    -y                      Assume yes to all prompts (skip confirmation)
-    -n                      Skip input validation in seed functions (faster)
-    -h                      Show this help message
+    -d, --database NAME                 Database name (default: ${DEFAULT_DB_NAME})
+    -y, --yes                           Assume yes to all prompts (skip confirmation)
+    --no-sql-validation                 Skip input validation in seed functions (faster)
+    -h, --help                          Show this help message
 
 Example:
     $(basename "$0") -p myPostgresPass -o myOresPass
+    $(basename "$0") --postgres-password myPostgresPass --ores-password myOresPass
     $(basename "$0") -p myPostgresPass -o myOresPass -d my_custom_db
-    $(basename "$0") -p myPostgresPass -o myOresPass -y -n
+    $(basename "$0") -p myPostgresPass -o myOresPass -y --no-sql-validation
 
 EOF
     exit 1
 }
 
-# Parse arguments
+# Parse arguments using getopt for long option support
+OPTS=$(getopt -o p:o:d:yh --long postgres-password:,ores-password:,database:,yes,no-sql-validation,help -n "$(basename "$0")" -- "$@")
+if [[ $? -ne 0 ]]; then
+    usage
+fi
+
+eval set -- "$OPTS"
+
 POSTGRES_PASSWORD=""
 ORES_PASSWORD=""
 DB_NAME="${DEFAULT_DB_NAME}"
 ASSUME_YES=""
 SKIP_VALIDATION="off"
 
-while getopts "p:o:d:ynh" opt; do
-    case ${opt} in
-        p)
-            POSTGRES_PASSWORD="${OPTARG}"
+while true; do
+    case "$1" in
+        -p|--postgres-password)
+            POSTGRES_PASSWORD="$2"
+            shift 2
             ;;
-        o)
-            ORES_PASSWORD="${OPTARG}"
+        -o|--ores-password)
+            ORES_PASSWORD="$2"
+            shift 2
             ;;
-        d)
-            DB_NAME="${OPTARG}"
+        -d|--database)
+            DB_NAME="$2"
+            shift 2
             ;;
-        y)
+        -y|--yes)
             ASSUME_YES="1"
+            shift
             ;;
-        n)
+        --no-sql-validation)
             SKIP_VALIDATION="on"
+            shift
             ;;
-        h)
+        -h|--help)
             usage
             ;;
-        \?)
-            echo "Error: Invalid option -${OPTARG}" >&2
-            usage
+        --)
+            shift
+            break
             ;;
-        :)
-            echo "Error: Option -${OPTARG} requires an argument" >&2
+        *)
+            echo "Error: Invalid option $1" >&2
             usage
             ;;
     esac

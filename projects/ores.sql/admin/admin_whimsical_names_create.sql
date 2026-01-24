@@ -26,7 +26,7 @@
 --
 
 -- Word lists for whimsical name generation (nature-themed, Heroku-style)
-create or replace function whimsical_adjectives()
+create or replace function admin_whimsical_adjectives_fn()
 returns text[] as $$
     select array[
         'autumn', 'hidden', 'bitter', 'misty', 'silent', 'empty', 'dry', 'dark',
@@ -41,7 +41,7 @@ returns text[] as $$
     ];
 $$ language sql immutable;
 
-create or replace function whimsical_nouns()
+create or replace function admin_whimsical_nouns_fn()
 returns text[] as $$
     select array[
         'waterfall', 'river', 'breeze', 'moon', 'rain', 'wind', 'sea', 'morning',
@@ -58,7 +58,7 @@ $$ language sql immutable;
 
 -- Generates a random whimsical name without any prefix or suffix.
 -- Returns names like: "silent_meadow", "autumn_frost"
-create or replace function generate_whimsical_name()
+create or replace function admin_generate_whimsical_name_fn()
 returns text as $$
 declare
     adjectives text[];
@@ -66,8 +66,8 @@ declare
     adj text;
     noun text;
 begin
-    adjectives := whimsical_adjectives();
-    nouns := whimsical_nouns();
+    adjectives := admin_whimsical_adjectives_fn();
+    nouns := admin_whimsical_nouns_fn();
 
     adj := adjectives[1 + floor(random() * array_length(adjectives, 1))::int];
     noun := nouns[1 + floor(random() * array_length(nouns, 1))::int];
@@ -80,13 +80,13 @@ $$ language plpgsql volatile;
 -- Parameters:
 --   with_suffix: If true, appends a random 4-digit number (e.g., "silent_meadow_4217")
 -- Returns names like: "silent_meadow" or "silent_meadow_4217"
-create or replace function generate_whimsical_name(with_suffix boolean)
+create or replace function admin_generate_whimsical_name_fn(with_suffix boolean)
 returns text as $$
 declare
     base_name text;
     suffix int;
 begin
-    base_name := generate_whimsical_name();
+    base_name := admin_generate_whimsical_name_fn();
 
     if with_suffix then
         suffix := 1000 + floor(random() * 9000)::int;  -- 1000-9999
@@ -101,10 +101,10 @@ $$ language plpgsql volatile;
 -- Parameters:
 --   with_suffix: If true, appends a random 4-digit number
 -- Returns names like: "ores_silent_meadow" or "ores_silent_meadow_4217"
-create or replace function generate_database_name(with_suffix boolean default false)
+create or replace function admin_generate_database_name_fn(with_suffix boolean default false)
 returns text as $$
 begin
-    return 'ores_' || generate_whimsical_name(with_suffix);
+    return 'ores_' || admin_generate_whimsical_name_fn(with_suffix);
 end;
 $$ language plpgsql volatile;
 
@@ -114,7 +114,7 @@ $$ language plpgsql volatile;
 --   existing_names: Array of already-used database names
 --   max_attempts: Maximum number of generation attempts before adding suffix (default 10)
 -- Returns a unique name, adding numeric suffix if needed after max_attempts
-create or replace function generate_unique_database_name(
+create or replace function admin_generate_unique_database_name_fn(
     existing_names text[] default array[]::text[],
     max_attempts int default 10
 )
@@ -126,7 +126,7 @@ begin
     -- first try without suffix
     loop
         attempt := attempt + 1;
-        candidate := generate_database_name(false);
+        candidate := admin_generate_database_name_fn(false);
 
         if not (candidate = any(existing_names)) then
             return candidate;
@@ -137,7 +137,7 @@ begin
 
     -- fall back to suffix if all attempts collided
     loop
-        candidate := generate_database_name(true);
+        candidate := admin_generate_database_name_fn(true);
 
         if not (candidate = any(existing_names)) then
             return candidate;
@@ -148,7 +148,7 @@ $$ language plpgsql volatile;
 
 -- Convenience function to check all existing databases on the server.
 -- Returns a unique database name that doesn't conflict with any existing database.
-create or replace function generate_unique_database_name_from_server()
+create or replace function admin_generate_unique_database_name_from_server_fn()
 returns text as $$
 declare
     existing_dbs text[];
@@ -157,6 +157,6 @@ begin
     from pg_database
     where datname like 'ores_%';
 
-    return generate_unique_database_name(coalesce(existing_dbs, array[]::text[]));
+    return admin_generate_unique_database_name_fn(coalesce(existing_dbs, array[]::text[]));
 end;
 $$ language plpgsql volatile;

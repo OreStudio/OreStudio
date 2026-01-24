@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set search_path to ores;
 
-drop function if exists ores.generate_unique_database_name_from_server();
-drop function if exists ores.generate_unique_database_name(text[], int);
-drop function if exists ores.generate_database_name(boolean);
-drop function if exists ores.generate_whimsical_name(boolean);
-drop function if exists ores.generate_whimsical_name();
-drop function if exists ores.whimsical_nouns();
-drop function if exists ores.whimsical_adjectives();
+drop function if exists admin_generate_unique_database_name_from_server_fn();
+drop function if exists admin_generate_unique_database_name_fn(text[], int);
+drop function if exists admin_generate_database_name_fn(boolean);
+drop function if exists admin_generate_whimsical_name_fn(boolean);
+drop function if exists admin_generate_whimsical_name_fn();
+drop function if exists admin_whimsical_nouns_fn();
+drop function if exists admin_whimsical_adjectives_fn();

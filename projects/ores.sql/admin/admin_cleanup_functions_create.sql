@@ -32,18 +32,18 @@
  *
  *   \c ores_admin
  *   SELECT format('DROP DATABASE IF EXISTS %I;', database_name)
- *   FROM test_databases \gexec
+ *   FROM admin_test_databases_view \gexec
  *
  * To clean up ALL ORES databases (ores_*, oresdb_*):
  *
  *   \c ores_admin
  *   SELECT format('DROP DATABASE IF EXISTS %I;', database_name)
- *   FROM ores_databases \gexec
+ *   FROM admin_ores_databases_view \gexec
  *
  * To preview what will be deleted:
  *
- *   SELECT * FROM test_databases;
- *   SELECT * FROM ores_databases;
+ *   SELECT * FROM admin_test_databases_view;
+ *   SELECT * FROM admin_ores_databases_view;
  */
 
 --------------------------------------------------------------------------------
@@ -53,17 +53,17 @@
 -- View that identifies all test databases on the server.
 -- Test databases are created with patterns like 'ores_test_<pid>_<random>'
 -- or 'oresdb_test_<pid>_<random>' and may be left behind if tests crash.
-CREATE OR REPLACE VIEW test_databases AS
-SELECT d.datname::TEXT AS database_name
-FROM pg_database d
-WHERE d.datname LIKE 'ores_test_%'
-   OR d.datname LIKE 'oresdb_test_%'
-ORDER BY d.datname;
+create or replace view admin_test_databases_view as
+select d.datname::text as database_name
+from pg_database d
+where d.datname like 'ores_test_%'
+   or d.datname like 'oresdb_test_%'
+order by d.datname;
 
 -- View that identifies all ORES databases on the server.
 -- This includes instance databases (ores_*, oresdb_*) and test databases.
 -- Excludes infrastructure databases (ores, ores_admin, ores_template).
-create or replace view ores_databases as
+create or replace view admin_ores_databases_view as
 select d.datname::text as database_name
 from pg_database d
 where (d.datname like 'ores_%' or d.datname like 'oresdb_%')
@@ -71,7 +71,7 @@ where (d.datname like 'ores_%' or d.datname like 'oresdb_%')
 order by d.datname;
 
 -- View that identifies ORES instance databases (excludes test, template, admin).
-create or replace view ores_instance_databases as
+create or replace view admin_ores_instance_databases_view as
 select d.datname::text as database_name
 from pg_database d
 where d.datname like 'ores_%'
@@ -85,26 +85,26 @@ order by d.datname;
 --------------------------------------------------------------------------------
 
 -- Lists all test databases on the server.
-create or replace function list_test_databases()
+create or replace function admin_list_test_databases_fn()
 returns table(database_name text) as $$
 begin
-    return query select td.database_name from test_databases td;
+    return query select td.database_name from admin_test_databases_view td;
 end;
 $$ language plpgsql volatile;
 
 -- Lists all ORES databases on the server.
-create or replace function list_ores_databases()
+create or replace function admin_list_ores_databases_fn()
 returns table(database_name text) as $$
 begin
-    return query select od.database_name from ores_databases od;
+    return query select od.database_name from admin_ores_databases_view od;
 end;
 $$ language plpgsql volatile;
 
 -- Lists all ORES instance databases (excludes test and template).
-create or replace function list_ores_instance_databases()
+create or replace function admin_list_ores_instance_databases_fn()
 returns table(database_name text) as $$
 begin
-    return query select oid.database_name from ores_instance_databases oid;
+    return query select oid.database_name from admin_ores_instance_databases_view oid;
 end;
 $$ language plpgsql volatile;
 
@@ -113,17 +113,17 @@ $$ language plpgsql volatile;
 --------------------------------------------------------------------------------
 
 -- Generates SQL commands to drop all test databases.
-create or replace function generate_cleanup_test_databases_sql()
+create or replace function admin_generate_cleanup_test_databases_sql_fn()
 returns text as $$
 declare
     sql_commands text;
     db_count int;
 begin
     select count(*),
-           string_agg(format('Drop database if exists %i;', database_name),
+           string_agg(format('drop database if exists %i;', database_name),
                       e'\n' order by database_name)
     into db_count, sql_commands
-    from test_databases;
+    from admin_test_databases_view;
 
     if db_count = 0 then
         return '-- No test databases found to clean up.';
@@ -135,7 +135,7 @@ end;
 $$ language plpgsql volatile;
 
 -- Generates SQL commands to drop all ORES databases.
-create or replace function generate_cleanup_ores_databases_sql()
+create or replace function admin_generate_cleanup_ores_databases_sql_fn()
 returns text as $$
 declare
     sql_commands text;
@@ -145,19 +145,19 @@ begin
            string_agg(format('drop database if exists %i;', database_name),
                       e'\n' order by database_name)
     into db_count, sql_commands
-    from ores_databases;
+    from admin_ores_databases_view;
 
     if db_count = 0 then
-        return '-- no ores databases found to clean up.';
+        return '-- No ORES databases found to clean up.';
     end if;
 
-    return format(e'-- found %s ores database(s) to clean up:\n', db_count) ||
+    return format(e'-- Found %s ORES database(s) to clean up:\n', db_count) ||
            sql_commands || e'\n';
 end;
 $$ language plpgsql volatile;
 
--- generates sql commands to drop all ores instance databases.
-create or replace function generate_cleanup_ores_instance_databases_sql()
+-- Generates SQL commands to drop all ORES instance databases.
+create or replace function admin_generate_cleanup_ores_instance_databases_sql_fn()
 returns text as $$
 declare
     sql_commands text;
@@ -167,13 +167,13 @@ begin
            string_agg(format('drop database if exists %i;', database_name),
                       e'\n' order by database_name)
     into db_count, sql_commands
-    from ores_instance_databases;
+    from admin_ores_instance_databases_view;
 
     if db_count = 0 then
-        return '-- No ores instance databases found to clean up.';
+        return '-- No ORES instance databases found to clean up.';
     end if;
 
-    return format(e'-- Found %s ores instance database(s) to clean up:\n', db_count) ||
+    return format(e'-- Found %s ORES instance database(s) to clean up:\n', db_count) ||
            sql_commands || e'\n';
 end;
 $$ language plpgsql volatile;

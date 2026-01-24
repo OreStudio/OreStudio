@@ -44,10 +44,10 @@
 -- DROP DATABASE IF EXISTS ores_admin;
 
 -- Create admin database
-CREATE DATABASE ores_admin;
+create database ores_admin;
 
 -- Grant permissions to ores user
-GRANT ALL PRIVILEGES ON DATABASE ores_admin TO ores;
+grant all privileges on database ores_admin to ores;
 
 -- Connect to admin database to create utilities
 \c ores_admin
@@ -63,13 +63,13 @@ GRANT ALL PRIVILEGES ON DATABASE ores_admin TO ores;
 
 -- Grant schema object permissions to ores user
 -- (Database-level grants don't include schema object access)
-GRANT USAGE ON SCHEMA public TO ores;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO ores;
-GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO ores;
+grant usage on schema public to ores;
+grant select on all tables in schema public to ores;
+grant execute on all functions in schema public to ores;
 
 -- Set default privileges for future objects
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO ores;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO ores;
+alter default privileges in schema public grant select on tables to ores;
+alter default privileges in schema public grant execute on functions to ores;
 
 \echo ''
 \echo '=========================================='

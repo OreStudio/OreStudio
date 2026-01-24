@@ -17,7 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
-DROP FUNCTION IF EXISTS ores.list_ores_databases();
-DROP FUNCTION IF EXISTS ores.create_database_command(TEXT);
-DROP FUNCTION IF EXISTS ores.generate_create_database_sql(TEXT);
+drop function if exists ores.list_ores_databases();
+drop function if exists ores.create_database_command(text);
+drop function if exists ores.generate_create_database_sql(text);

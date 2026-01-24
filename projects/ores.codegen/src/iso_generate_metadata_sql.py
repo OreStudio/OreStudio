@@ -167,7 +167,7 @@ where dataset_id = (
             subject_area = escape_sql_string(cs['subject_area'])
             domain = escape_sql_string(cs['domain'])
             uri = cs.get('uri')
-            uri_sql = f"'{uri}'" if uri else 'null'
+            uri_sql = f"'{uri.replace(\"'\", \"''\")}'" if uri else 'null'
             description = escape_sql_string(cs['description'])
 
             f.write(f"""insert into ores.dq_coding_schemes_artefact_tbl (

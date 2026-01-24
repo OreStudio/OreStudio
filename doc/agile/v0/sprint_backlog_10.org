@@ -17,37 +17,39 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-24 Sat 01:31], for Saturday, January 24, 2026.
-|      | <75>                          |        |      |      |       |
-| Tags | Headline                      | Time   |      |      |     % |
-|------+-------------------------------+--------+------+------+-------|
-|      | *Total time*                  | *1:04* |      |      | 100.0 |
-|------+-------------------------------+--------+------+------+-------|
-|      | Stories                       | 1:04   |      |      | 100.0 |
-|      | Active                        |        | 1:04 |      | 100.0 |
-| code | Tidy-up external data storage |        |      | 1:04 | 100.0 |
+#+CAPTION: Clock summary at [2026-01-24 Sat 03:11], for Saturday, January 24, 2026.
+|      | <75>                                    |        |      |      |       |
+| Tags | Headline                                | Time   |      |      |     % |
+|------+-----------------------------------------+--------+------+------+-------|
+|      | *Total time*                            | *2:43* |      |      | 100.0 |
+|------+-----------------------------------------+--------+------+------+-------|
+|      | Stories                                 | 2:43   |      |      | 100.0 |
+|      | Active                                  |        | 2:43 |      | 100.0 |
+| code | Tidy-up external data storage           |        |      | 1:04 |  39.3 |
+| code | Coding schemes are in production tables |        |      | 1:39 |  60.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-24 Sat 01:32]
+#+CAPTION: Clock summary at [2026-01-24 Sat 03:11]
 |       | <75>                                                |         |       |      |       |
 | Tags  | Headline                                            | Time    |       |      |     % |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *30:41* |       |      | 100.0 |
+|       | *Total time*                                        | *32:20* |       |      | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 30:41   |       |      | 100.0 |
-|       | Active                                              |         | 30:41 |      | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       | 1:04 |   3.5 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  20.6 |
-| code  | Create a simple code generator                      |         |       | 7:38 |  24.9 |
-| code  | Party related schemes                               |         |       | 5:20 |  17.4 |
-| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   5.6 |
-| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   1.4 |
-| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.7 |
-| code  | Fix issues with misspell action                     |         |       | 2:47 |   9.1 |
-| code  | Tidy-up external data storage                       |         |       | 3:33 |  11.6 |
-| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   4.3 |
+|       | Stories                                             | 32:20   |       |      | 100.0 |
+|       | Active                                              |         | 32:20 |      | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       | 1:04 |   3.3 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  19.6 |
+| code  | Create a simple code generator                      |         |       | 7:38 |  23.6 |
+| code  | Party related schemes                               |         |       | 5:20 |  16.5 |
+| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   5.3 |
+| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   1.3 |
+| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.6 |
+| code  | Fix issues with misspell action                     |         |       | 2:47 |   8.6 |
+| code  | Tidy-up external data storage                       |         |       | 3:33 |  11.0 |
+| code  | Coding schemes are in production tables             |         |       | 1:39 |   5.1 |
+| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   4.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -467,6 +469,49 @@ Highlights:
   resolve existing dataset dependency issues, ensuring correct data loading.
 #+end_quote
 
+*** COMPLETED Coding schemes are in production tables                  :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-24 Sat 02:32]--[2026-01-24 Sat 03:11] =>  0:39
+    CLOCK: [2026-01-24 Sat 01:31]--[2026-01-24 Sat 02:31] =>  1:00
+    :END:
+
+We need to add datasets for coding schemes. At present they are going directly
+into production tables.
+
+#+begin_quote
+This pull request significantly refactors the management of ISO and FpML coding
+schemes by integrating them into a robust Data Quality (DQ) artefact pipeline.
+This change standardizes the process for handling external reference data,
+ensuring greater consistency and control over data publication. It introduces
+new database structures and functions to support a more governed lifecycle for
+these critical datasets, allowing for previewing changes and flexible update
+strategies, while maintaining direct insertion for specific internal party
+schemes.
+
+Highlights:
+
+- Standardized Coding Scheme Management: ISO and FpML coding schemes are now
+  processed through a dedicated Data Quality (DQ) artefact pipeline, moving away
+  from direct database insertions. This ensures a more consistent and governed
+  approach to managing external reference data.
+- Enhanced Data Governance: The new pipeline supports preview, upsert,
+  insert-only, and replace-all modes for publishing coding schemes, offering
+  greater control and consistency over data updates and lifecycle management.
+- New Schema Components: A new staging table, dq_coding_schemes_artefact_tbl,
+  has been introduced for temporary storage of coding schemes. Additionally, new
+  functions dq_preview_coding_scheme_population() and
+  dq_populate_coding_schemes() are provided to manage the publication process to
+  production.
+- Automated Generation and Dependencies: Code generators for ISO and FpML have
+  been updated to produce artefact inserts for the new pipeline. Dependencies
+  for ISO countries and currencies now correctly link to the new
+  iso.coding_schemes dataset, ensuring proper ordering during data loading.
+- Exclusion of Party Schemes: Certain party-related coding schemes (e.g., LEI,
+  BIC, MIC) will continue to be handled via direct inserts, acknowledging their
+  distinct, manually-defined nature and keeping them separate from the new
+  pipeline.
+#+end_quote
+
 *** STARTED Add code generation support for domain types SQL           :code:
     :LOGBOOK:
     CLOCK: [2026-01-22 Thu 17:19]--[2026-01-22 Thu 18:30] =>  1:11
@@ -480,11 +525,6 @@ generating the SQL for domain types.
 
 At present we have all files in one directory. As we add more tables it's
 becoming quite hard to follow.
-
-*** Coding schemes are in production tables                            :code:
-
-We need to add datasets for coding schemes. At present they are going directly
-into production tables.
 
 *** Listener error in comms service                                    :code:
 
@@ -1573,8 +1613,8 @@ dialogs should have a purge action.
 *** Add UI for bootstrapping from Qt                                   :code:
 
 At present we need to go to the shell to bootstrap. It would be easier if we
-just had a button in Qt for this.
-
+just had a button in Qt for this. Actually we probably need a little wizard
+which takes you through choosing an initial population etc.
 
 *** Add coloured icons                                                 :code:
 

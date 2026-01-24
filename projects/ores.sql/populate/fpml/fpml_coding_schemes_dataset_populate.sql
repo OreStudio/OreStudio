@@ -29,6 +29,7 @@ select ores.upsert_dq_datasets(
     'FpML coding scheme definitions for account types, asset classes, business centers, and other reference data.',
     'FPML',
     'Coding scheme metadata for FpML standards',
+    current_date,
     'FpML License',
     'coding_schemes',
     'dq_coding_schemes_tbl',

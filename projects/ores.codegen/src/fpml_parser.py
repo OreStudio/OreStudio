@@ -785,6 +785,7 @@ def generate_coding_schemes_dataset_sql(manifest: dict, output_path: Path):
         lines.append(f"    '{description}',")
         lines.append(f"    '{source_system}',")
         lines.append(f"    '{business_context}',")
+        lines.append("    current_date,")  # p_as_of_date
         lines.append(f"    '{license_info}',")
         lines.append(f"    '{artefact_type}',")
         lines.append(f"    '{target_table}',")

@@ -52,7 +52,6 @@ elif [ -f /usr/share/plantuml/plantuml.jar ]; then
     echo ""
     echo "Rendering PNG..."
     java -Djava.awt.headless=true \
-         -DPLANTUML_SECURITY_PROFILE=UNSECURE \
          -DPLANTUML_LIMIT_SIZE=131072 \
          -jar /usr/share/plantuml/plantuml.jar \
          "${SQL_DIR}/modeling/ores_schema.puml"

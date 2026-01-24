@@ -34,6 +34,14 @@ set schema 'ores';
 \echo '--- ISO Standards Dataset Tags ---'
 
 select ores.upsert_dq_tag(
+    'ISO Coding Schemes',
+    'General',
+    'Reference Data',
+    'coding_scheme',
+    'ISO coding scheme definitions'
+);
+
+select ores.upsert_dq_tag(
     'ISO 3166 Country Codes',
     'Countries',
     'Reference Data',

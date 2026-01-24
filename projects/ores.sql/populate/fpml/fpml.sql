@@ -21,14 +21,28 @@
 \ir fpml_methodology_populate.sql
 
 -- =============================================================================
--- FPML Coding Schemes
+-- FPML Coding Schemes Dataset (must come first - other datasets reference these schemes)
 -- =============================================================================
 
-\echo '--- FPML Coding Schemes ---'
-\ir fpml_coding_schemes_populate.sql
+\echo '--- FPML Coding Schemes Dataset ---'
+\ir fpml_coding_schemes_dataset_populate.sql
 
 -- =============================================================================
--- FPML Datasets
+-- FPML Coding Schemes Artefacts
+-- =============================================================================
+
+\echo '--- FPML Coding Schemes Artefacts ---'
+\ir fpml_coding_schemes_artefact_populate.sql
+
+-- Publish coding schemes to production (required before other datasets can reference them)
+\echo '--- Publishing FPML Coding Schemes ---'
+select * from ores.dq_populate_coding_schemes(
+    (select id from ores.dq_datasets_tbl where code = 'fpml.coding_schemes' and valid_to = ores.utility_infinity_timestamp_fn()),
+    'upsert'
+);
+
+-- =============================================================================
+-- FPML Datasets (depend on coding schemes being published)
 -- =============================================================================
 
 \echo '--- FPML Datasets ---'

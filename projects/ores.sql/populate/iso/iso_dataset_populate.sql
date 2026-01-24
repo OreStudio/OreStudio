@@ -23,6 +23,8 @@
  *
  * Auto-generated from external/iso/manifest.json
  * This script is idempotent.
+ *
+ * Note: Coding schemes dataset is in iso_coding_schemes_dataset_populate.sql
  */
 
 set schema 'ores';

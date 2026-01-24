@@ -197,6 +197,7 @@ class CodingScheme:
         code = self.to_code()
         name = self.short_name.replace("'", "''")
         definition = self.definition.replace("'", "''") if self.definition else ''
+        uri = self.canonical_uri.replace("'", "''")
 
         return f"""select ores.upsert_dq_coding_schemes(
     '{code}',
@@ -204,8 +205,29 @@ class CodingScheme:
     'industry',
     '{subject_area}',
     'Reference Data',
-    '{self.canonical_uri}',
+    '{uri}',
     '{definition}'
+);"""
+
+    def to_artefact_insert(self, subject_area: str = 'General', use_variable: bool = True) -> str:
+        """Generate SQL artefact insert statement for this coding scheme.
+
+        Args:
+            subject_area: The subject area for this coding scheme.
+            use_variable: If True, use :v_dataset_id variable (requires \\gset setup).
+        """
+        code = self.to_code()
+        name = self.short_name.replace("'", "''")
+        definition = self.definition.replace("'", "''") if self.definition else ''
+        uri = self.canonical_uri.replace("'", "''")
+
+        return f"""insert into ores.dq_coding_schemes_artefact_tbl (
+    dataset_id, code, version, name, authority_type,
+    subject_area_name, domain_name, uri, description
+) values (
+    :'v_dataset_id',
+    '{code}', 0, '{name}', 'industry',
+    '{subject_area}', 'Reference Data', '{uri}', '{definition}'
 );"""
 
 
@@ -704,6 +726,77 @@ def generate_methodology_sql(manifest: dict, methodology_text: str, output_path:
     print(f"Generated: {output_path}")
 
 
+def generate_coding_schemes_dataset_sql(manifest: dict, output_path: Path):
+    """Generate SQL file with coding schemes dataset upsert from manifest."""
+    datasets = manifest.get('datasets', [])
+    coding_scheme_datasets = [d for d in datasets if d.get('artefact_type') == 'coding_schemes']
+
+    if not coding_scheme_datasets:
+        print("Warning: No coding_schemes dataset in manifest, skipping")
+        return
+
+    lines = [
+        "/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-",
+        " *",
+        " * FPML Coding Schemes Dataset Population Script",
+        " *",
+        " * Auto-generated from external/fpml/manifest.json",
+        " * This must be run before other datasets that reference these coding schemes.",
+        " */",
+        "",
+        "set schema 'ores';",
+        "",
+        "-- =============================================================================",
+        "-- FPML Coding Schemes Dataset",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FPML Coding Schemes Dataset ---'",
+        ""
+    ]
+
+    for dataset in coding_scheme_datasets:
+        name = dataset['name'].replace("'", "''")
+        code = dataset['code']
+        catalog = dataset['catalog'].replace("'", "''")
+        subject_area = dataset['subject_area'].replace("'", "''")
+        domain = dataset['domain'].replace("'", "''")
+        coding_scheme = dataset['coding_scheme']
+        methodology = dataset['methodology'].replace("'", "''")
+        description = dataset['description'].replace("'", "''")
+        source_system = dataset['source_system'].replace("'", "''")
+        business_context = dataset['business_context'].replace("'", "''")
+        license_info = dataset['license'].replace("'", "''")
+        artefact_type = dataset['artefact_type']
+        target_table = dataset['target_table']
+        populate_function = dataset['populate_function']
+
+        lines.append(f"-- {name}")
+        lines.append("select ores.upsert_dq_datasets(")
+        lines.append(f"    '{code}',")
+        lines.append(f"    '{catalog}',")
+        lines.append(f"    '{subject_area}',")
+        lines.append(f"    '{domain}',")
+        lines.append(f"    '{coding_scheme}',")
+        lines.append("    'Primary',")
+        lines.append("    'Actual',")
+        lines.append("    'Raw',")
+        lines.append(f"    '{methodology}',")
+        lines.append(f"    '{name}',")
+        lines.append(f"    '{description}',")
+        lines.append(f"    '{source_system}',")
+        lines.append(f"    '{business_context}',")
+        lines.append("    current_date,")  # p_as_of_date
+        lines.append(f"    '{license_info}',")
+        lines.append(f"    '{artefact_type}',")
+        lines.append(f"    '{target_table}',")
+        lines.append(f"    '{populate_function}'")
+        lines.append(");")
+        lines.append("")
+
+    output_path.write_text('\n'.join(lines))
+    print(f"Generated: {output_path}")
+
+
 def generate_dataset_dependency_sql(manifest: dict, output_path: Path):
     """Generate SQL file with dataset dependency upserts from manifest."""
     dependencies = manifest.get('dependencies', [])
@@ -769,14 +862,28 @@ def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files
         "\\ir fpml_methodology_populate.sql",
         "",
         "-- =============================================================================",
-        "-- FPML Coding Schemes",
+        "-- FPML Coding Schemes Dataset (must come first - other datasets reference these schemes)",
         "-- =============================================================================",
         "",
-        "\\echo '--- FPML Coding Schemes ---'",
-        "\\ir fpml_coding_schemes_populate.sql",
+        "\\echo '--- FPML Coding Schemes Dataset ---'",
+        "\\ir fpml_coding_schemes_dataset_populate.sql",
         "",
         "-- =============================================================================",
-        "-- FPML Datasets",
+        "-- FPML Coding Schemes Artefacts",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FPML Coding Schemes Artefacts ---'",
+        "\\ir fpml_coding_schemes_artefact_populate.sql",
+        "",
+        "-- Publish coding schemes to production (required before other datasets can reference them)",
+        "\\echo '--- Publishing FPML Coding Schemes ---'",
+        "select * from ores.dq_populate_coding_schemes(",
+        "    (select id from ores.dq_datasets_tbl where code = 'fpml.coding_schemes' and valid_to = ores.utility_infinity_timestamp_fn()),",
+        "    'upsert'",
+        ");",
+        "",
+        "-- =============================================================================",
+        "-- FPML Datasets (depend on coding schemes being published)",
         "-- =============================================================================",
         "",
         "\\echo '--- FPML Datasets ---'",
@@ -812,23 +919,37 @@ def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files
 
 
 def generate_coding_schemes_sql(entities: list[MergedEntity], output_path: Path):
-    """Generate SQL file with coding scheme upserts."""
+    """Generate SQL file with coding scheme artefact inserts."""
+    dataset_code = 'fpml.coding_schemes'
     lines = [
         "/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-",
         " *",
-        " * FPML Coding Schemes Population Script",
+        " * FPML Coding Schemes Artefact Population Script",
         " *",
         " * Auto-generated from FPML Genericode XML files.",
-        " * This script is idempotent.",
+        " * Populates the dq_coding_schemes_artefact_tbl staging table.",
+        " *",
+        " * To publish to production:",
+        f" *   SELECT * FROM ores.dq_populate_coding_schemes(",
+        f" *       (SELECT id FROM ores.dq_datasets_tbl WHERE code = '{dataset_code}' AND valid_to = ores.utility_infinity_timestamp_fn()),",
+        " *       'upsert'",
+        " *   );",
         " */",
         "",
         "set schema 'ores';",
         "",
         "-- =============================================================================",
-        "-- FPML Coding Schemes",
+        "-- FPML Coding Schemes Artefacts",
         "-- =============================================================================",
         "",
-        "\\echo '--- FPML Coding Schemes ---'",
+        "\\echo '--- FPML Coding Schemes Artefacts ---'",
+        "",
+        "-- Store dataset_id in psql variable for reuse",
+        f"select id as v_dataset_id from ores.dq_datasets_tbl where code = '{dataset_code}' and valid_to = ores.utility_infinity_timestamp_fn() \\gset",
+        "",
+        "-- Clear existing artefacts for this dataset before inserting",
+        "delete from ores.dq_coding_schemes_artefact_tbl",
+        "where dataset_id = :'v_dataset_id';",
         ""
     ]
 
@@ -838,7 +959,7 @@ def generate_coding_schemes_sql(entities: list[MergedEntity], output_path: Path)
             code = cs.to_code()
             if code not in seen_schemes:
                 seen_schemes.add(code)
-                lines.append(cs.to_sql_insert(entity.subject_area))
+                lines.append(cs.to_artefact_insert(entity.subject_area))
                 lines.append("")
 
     output_path.write_text('\n'.join(lines))
@@ -958,10 +1079,16 @@ def main():
         args.output_dir / "fpml_dataset_dependency_populate.sql"
     )
 
-    # Always generate coding schemes SQL
+    # Generate coding schemes dataset SQL (must come before artefacts)
+    generate_coding_schemes_dataset_sql(
+        manifest,
+        args.output_dir / "fpml_coding_schemes_dataset_populate.sql"
+    )
+
+    # Always generate coding schemes artefact SQL
     generate_coding_schemes_sql(
         entities,
-        args.output_dir / "fpml_coding_schemes_populate.sql"
+        args.output_dir / "fpml_coding_schemes_artefact_populate.sql"
     )
 
     if not args.coding_schemes_only:

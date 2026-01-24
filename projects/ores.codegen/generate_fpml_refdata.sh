@@ -121,6 +121,14 @@ if [ -f "$OUTPUT_DIR/fpml_coding_schemes_populate.sql" ]; then
     cp "$OUTPUT_DIR/fpml_coding_schemes_populate.sql" "$POPULATE_DIR/"
     echo "  -> $POPULATE_DIR/fpml_coding_schemes_populate.sql"
 fi
+if [ -f "$OUTPUT_DIR/fpml_coding_schemes_artefact_populate.sql" ]; then
+    cp "$OUTPUT_DIR/fpml_coding_schemes_artefact_populate.sql" "$POPULATE_DIR/"
+    echo "  -> $POPULATE_DIR/fpml_coding_schemes_artefact_populate.sql"
+fi
+if [ -f "$OUTPUT_DIR/fpml_coding_schemes_dataset_populate.sql" ]; then
+    cp "$OUTPUT_DIR/fpml_coding_schemes_dataset_populate.sql" "$POPULATE_DIR/"
+    echo "  -> $POPULATE_DIR/fpml_coding_schemes_dataset_populate.sql"
+fi
 if [ -f "$OUTPUT_DIR/fpml.sql" ]; then
     cp "$OUTPUT_DIR/fpml.sql" "$POPULATE_DIR/"
     echo "  -> $POPULATE_DIR/fpml.sql"

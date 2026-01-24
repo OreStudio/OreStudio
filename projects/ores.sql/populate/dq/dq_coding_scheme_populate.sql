@@ -147,8 +147,6 @@ select ores.upsert_dq_coding_schemes(
 );
 
 -- General schemes (internal - placeholder)
--- NOTE: ISO coding schemes (ISO_3166_1_ALPHA_2, ISO_3166_1_ALPHA_3, ISO_4217)
--- are now generated from external/iso/manifest.json in iso/iso_coding_schemes_populate.sql
 select ores.upsert_dq_coding_schemes(
     'NONE',
     'No Coding Scheme',

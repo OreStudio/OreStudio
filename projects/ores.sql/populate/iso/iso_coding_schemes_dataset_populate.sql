@@ -19,41 +19,39 @@
  */
 
 /**
- * ISO Standards Dataset Dependencies
+ * ISO Coding Schemes Dataset Population Script
  *
  * Auto-generated from external/iso/manifest.json
- * This script is idempotent.
+ * This must be run before other datasets that reference these coding schemes.
  */
 
 set schema 'ores';
 
 -- =============================================================================
--- ISO Standards Dataset Dependencies
+-- ISO Coding Schemes Dataset
 -- =============================================================================
 
-\echo '--- ISO Standards Dataset Dependencies ---'
+\echo '--- ISO Coding Schemes Dataset ---'
 
-select ores.upsert_dq_dataset_dependency(
-    'iso.countries',
+-- ISO Coding Schemes
+select ores.upsert_dq_datasets(
     'iso.coding_schemes',
-    'coding_scheme'
-);
-
-select ores.upsert_dq_dataset_dependency(
-    'iso.countries',
-    'assets.country_flags',
-    'visual_assets'
-);
-
-select ores.upsert_dq_dataset_dependency(
-    'iso.currencies',
-    'iso.coding_schemes',
-    'coding_scheme'
-);
-
-select ores.upsert_dq_dataset_dependency(
-    'iso.currencies',
-    'assets.country_flags',
-    'visual_assets'
+    'ISO Standards',
+    'General',
+    'Reference Data',
+    'NONE',
+    'Primary',
+    'Actual',
+    'Raw',
+    'Wikipedia ISO 3166 Extraction',
+    'ISO Coding Schemes',
+    'ISO coding scheme definitions for countries (ISO 3166) and currencies (ISO 4217).',
+    'WIKIPEDIA',
+    'Coding scheme metadata for ISO standards',
+    current_date,
+    'CC BY-SA 3.0',
+    'coding_schemes',
+    'dq_coding_schemes_tbl',
+    'dq_populate_coding_schemes'
 );
 

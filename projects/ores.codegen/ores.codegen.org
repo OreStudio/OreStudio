@@ -1,0 +1,368 @@
+#+title: OreStudio Code Generator (ores.codegen)
+#+author: ORE Studio Team
+#+startup: overview
+
+* Overview
+
+The OreStudio Code Generator is a Python-based tool that uses JSON models and
+Mustache templates to generate code. It's designed to be a simple code generator
+that takes structured data and applies templates to produce output files.
+
+The project generates SQL files for the ORE Studio data quality system with
+proper licensing and modeline support.
+
+* Setup
+
+Install dependencies:
+
+#+begin_src bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+#+end_src
+
+Dependencies:
+- =pystache>=0.6.0= - Mustache templating for Python
+
+* Usage
+
+** Direct Usage
+
+Run the code generator using the provided script:
+
+#+begin_src bash
+./run_generator.sh <model_path> [output_dir]
+#+end_src
+
+Examples:
+
+#+begin_src bash
+# Using default output directory (output/)
+./run_generator.sh models/slovaris/catalogs.json
+
+# Using custom output directory
+./run_generator.sh models/slovaris/catalogs.json custom_output/
+#+end_src
+
+Or run directly with Python:
+
+#+begin_src bash
+python src/generator.py <model_path> [output_dir]
+#+end_src
+
+** Batch Execution (Overall Models)
+
+You can define an overall =model.json= that references multiple files. The
+generator will automatically process all dependent models first.
+
+#+begin_src bash
+./run_generator.sh models/slovaris/model.json
+#+end_src
+
+** Slovaris Generation
+
+A dedicated script is provided to generate all Slovaris artefacts and place them
+in the correct location in the =ores.sql= project:
+
+#+begin_src bash
+./generate_slovaris.sh
+#+end_src
+
+** FPML Reference Data Generation
+
+Generate SQL schema and populate scripts from FPML Genericode XML files:
+
+#+begin_src bash
+# Generate all FPML reference data (parses XML + generates SQL)
+./generate_fpml_refdata.sh
+
+# Generate only specific entities
+./generate_fpml_refdata.sh --entities 'party-roles person-roles'
+
+# Skip parsing, just regenerate SQL from existing models
+./generate_fpml_refdata.sh --skip-parse
+
+# Show help
+./generate_fpml_refdata.sh --help
+#+end_src
+
+This script:
+1. Parses FPML XML files from =projects/ores.sql/populate/data/=
+2. Generates JSON entity models to =output/models/=
+3. Generates SQL schema files to =projects/ores.sql/schema/=
+4. Generates SQL populate files to =projects/ores.sql/populate/=
+
+Output files per entity (e.g., =party_roles=):
+
+| File                                    | Location                       |
+|-----------------------------------------+--------------------------------|
+| =refdata_party_roles_create.sql=        | =projects/ores.sql/schema/=    |
+| =refdata_party_roles_notify_trigger.sql=| =projects/ores.sql/schema/=    |
+| =dq_party_roles_artefact_create.sql=    | =projects/ores.sql/schema/=    |
+| =refdata_party_roles_populate.sql=      | =projects/ores.sql/populate/=  |
+
+Plus the shared coding schemes file: =fpml_coding_schemes_artefact_populate.sql=
+
+** LEI Data Subset Extraction
+
+Extract diverse subsets from the GLEIF LEI dataset for testing and development:
+
+#+begin_src bash
+# Generate both small and large subsets
+./scripts/generate_lei_subsets.sh
+
+# Generate specific size only
+./scripts/generate_lei_subsets.sh --small
+./scripts/generate_lei_subsets.sh --large
+
+# Download latest GLEIF data first
+./scripts/generate_lei_subsets.sh --download
+#+end_src
+
+Or use the Python script directly:
+
+#+begin_src bash
+# Small subset (~10K entities)
+python3 src/lei_extract_subset.py --size small
+
+# Large subset (~50K entities)
+python3 src/lei_extract_subset.py --size large
+
+# Download latest data
+python3 src/lei_extract_subset.py --download --size small
+#+end_src
+
+Input files (in =external/lei/=):
+- =*-gleif-goldencopy-lei2-golden-copy.csv= - LEI entity data (~4.3 GB)
+- =*-gleif-goldencopy-rr-golden-copy.csv= - Relationship records (~221 MB)
+
+Output files (in =external/lei/=):
+- =*-subset-small.csv= - Small subset (~7 MB)
+- =*-subset-large.csv= - Large subset (~35 MB)
+
+The subsets are sampled across multiple diversity dimensions:
+- Geographic (all ~235 countries)
+- Entity category (GENERAL, FUND, SOLE_PROPRIETOR, etc.)
+- Sector (BANK, INSURANCE, TECHNOLOGY, etc.)
+- Fund type (ETF, BOND, EQUITY, etc.)
+- Relationship depth (0 to 5+ children)
+
+** Image Artefact Generation (Flags and Crypto Icons)
+
+Generate SQL populate scripts for image artefacts (flags, crypto icons, etc.):
+
+#+begin_src bash
+# Generate flag images
+python3 src/images_generate_sql.py --config flags
+
+# Generate cryptocurrency icons
+python3 src/images_generate_sql.py --config crypto
+
+# Custom configuration
+python3 src/images_generate_sql.py \
+    --dataset-name "My Icons" \
+    --subject-area "Icons" \
+    --domain "Reference Data" \
+    --source-dir "./icons" \
+    --output-file "icons.sql"
+#+end_src
+
+Predefined configurations:
+
+| Config   | Source                                    | Output                                            |
+|----------+-------------------------------------------+---------------------------------------------------|
+| =flags=  | =populate/data/flags/=                    | =dq_flags_images_artefact_populate.sql=           |
+| =crypto= | =external/crypto/cryptocurrency-icons/=   | =populate/crypto/crypto_images_artefact_populate.sql= |
+
+** Cryptocurrency Reference Data
+
+Cryptocurrency reference data files are located in =projects/ores.sql/populate/crypto/=:
+
+| File                                        | Description                            |
+|---------------------------------------------+----------------------------------------|
+| =crypto_dataset_populate.sql=               | Dataset definitions (icons, large, small) |
+| =crypto_images_artefact_populate.sql=       | Icon images (generated by =images_generate_sql.py=) |
+| =crypto_currencies_large_artefact_populate.sql= | All ~12K coins                     |
+| =crypto_currencies_small_artefact_populate.sql= | Top 100 coins by market cap        |
+| =crypto.sql=                                | Master include file                    |
+
+Source data (in =external/crypto/=):
+- =cryptocurrencies/cryptocurrencies.json= - Symbol to name mapping (~12K coins)
+- =cryptocurrency-icons/*.svg= - Icon images (483 icons)
+
+See =external/crypto/methodology.txt= for data sourcing details.
+
+* Directory Structure
+
+#+begin_example
+projects/ores.codegen/
+├── library/
+│   ├── data/                 # Static data files (licenses, modelines, etc.)
+│   │   ├── licence-GPL-v3.txt
+│   │   └── modeline.json
+│   └── templates/            # Mustache template files
+│       └── sql_catalog_populate.mustache
+├── models/                   # JSON model files that provide data for generation
+│   └── slovaris/
+│       ├── catalogs.json
+│       ├── country_currency.json
+│       └── datasets.json
+├── output/                   # Where generated files are placed
+├── scripts/                  # Shell scripts for common operations
+├── src/                      # Python source code
+│   ├── __init__.py
+│   ├── generator.py          # Main code generator
+│   ├── fpml_parser.py        # FPML XML parser
+│   ├── images_generate_sql.py # Image artefact generator
+│   ├── lei_extract_subset.py # LEI subset extractor
+│   └── iso_generate_metadata_sql.py # ISO standards generator
+├── venv/                     # Python virtual environment
+├── ores.codegen.org          # This documentation
+├── requirements.txt          # Python dependencies
+└── run_generator.sh          # Execution script
+#+end_example
+
+* Architecture
+
+** Core Components
+
+| Component                      | Description                                       |
+|--------------------------------+---------------------------------------------------|
+| =src/generator.py=             | Main code generator (JSON models + Mustache templates → SQL) |
+| =src/fpml_parser.py=           | FPML Genericode XML parser (XML → JSON models)    |
+| =src/iso_generate_metadata_sql.py= | ISO standards SQL generator                   |
+| =src/images_generate_sql.py=   | Image artefact SQL generator (flags, crypto icons) |
+| =src/lei_extract_subset.py=    | LEI dataset subset extractor                      |
+| =library/data/=                | Static data files (licenses, modelines, etc.)     |
+| =library/templates/=           | Mustache templates                                |
+| =models/=                      | JSON model files                                  |
+| =output/=                      | Default directory for generated files             |
+
+** Main Generator Functions
+
+The main =src/generator.py= file contains several key functions:
+
+- =load_data(data_dir)= - Loads JSON and text files from the data directory
+- =format_comment_block(text, lang)= - Formats text as language-specific comment blocks
+- =generate_license_with_header(license_text, modeline_info, lang)= - Creates license headers with modelines and copyright
+- =render_template(template_path, data)= - Renders Mustache templates with provided data
+- =get_template_mappings()= - Defines mapping between model filenames and templates
+- =generate_from_model()= - Main function that orchestrates the generation process
+
+** Template System
+
+- Uses Mustache templating engine via =pystache= library
+- Templates are stored in =library/templates/= directory
+- Templates generate SQL code with proper license headers and modelines
+
+** Data Files
+
+- =library/data/licence-GPL-v3.txt= - Contains the GPL v3 license text
+- =library/data/modeline.json= - Contains editor modeline configurations for different languages
+
+* Model-Template Mapping
+
+The generator maps model files to templates based on their filenames.
+
+** Standard Mappings
+
+| Model File             | Template(s)                                                              |
+|------------------------+--------------------------------------------------------------------------|
+| =model.json=           | =sql_batch_execute.mustache=                                             |
+| =catalogs.json=        | =sql_catalog_populate.mustache=                                          |
+| =country_currency.json=| =sql_flag_populate.mustache=, =sql_currency_populate.mustache=, =sql_country_populate.mustache= |
+| =datasets.json=        | =sql_dataset_populate.mustache=, =sql_dataset_dependency_populate.mustache= |
+| =methodologies.json=   | =sql_methodology_populate.mustache=                                      |
+| =tags.json=            | =sql_tag_populate.mustache=                                              |
+
+** Entity Schema Mappings (=*_entity.json= files)
+
+| Template                            | Output File                            |
+|-------------------------------------+----------------------------------------|
+| =sql_schema_table_create.mustache=  | ={component}_{entity}_create.sql=      |
+| =sql_schema_notify_trigger.mustache=| ={component}_{entity}_notify_trigger.sql= |
+| =sql_schema_artefact_create.mustache= | =dq_{entity}_artefact_create.sql=    |
+
+** Entity Populate Mappings (=*_data.json= files)
+
+| Template                      | Output File                          |
+|-------------------------------+--------------------------------------|
+| =sql_populate_refdata.mustache= | ={component}_{entity}_populate.sql= |
+
+* Modeline Configurations
+
+From =library/data/modeline.json=:
+
+| Language   | Modeline                                                        |
+|------------+-----------------------------------------------------------------|
+| SQL        | =sql-product: postgres; tab-width: 4; indent-tabs-mode: nil=    |
+| C++        | =mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4= |
+
+* Features
+
+** License Generation
+
+Automatically generates license headers with:
+- Editor modelines
+- Copyright information with current year
+- Proper comment formatting for different languages
+
+** Multi-language Comment Support
+
+Supports different comment formats:
+- SQL: =/* ... */= with = * = prefix for lines
+- C++: =/* ... */= with = * = prefix for lines
+- Python: =""" ... """= with =# = prefix for lines
+- JavaScript: =/** ... */= with = * = prefix for lines
+
+** Flexible Output
+
+- Default output directory: =output/=
+- Custom output directory support via command line parameter
+- Automatic creation of output directory if it doesn't exist
+
+** Overall Models
+
+Support for =model.json= files that orchestrate the generation of multiple artefacts.
+
+** Dynamic Prefixing
+
+Use the =model_name= property in an overall model to prefix all output files (e.g., =solvaris_=).
+
+** Automatic Sibling Loading
+
+Sibling JSON models in the same directory are automatically loaded and available
+for cross-referencing in templates.
+
+** Enhanced Data Context
+
+Identifies specific datasets by subject area (e.g., =currencies_dataset=,
+=countries_dataset=) for easy template access.
+
+* Example Model Structure
+
+From =models/slovaris/catalogs.json=:
+
+#+begin_src json
+[
+    {
+        "name": "Slovaris",
+        "description": "Imaginary world to test all system functions.",
+        "owner": "Testing Team"
+    }
+]
+#+end_src
+
+The =sql_catalog_populate.mustache= template generates SQL code that:
+1. Includes the enhanced license header
+2. Sets the schema to 'ores'
+3. Generates SQL calls to =ores.upsert_dq_catalogs()= function
+4. Includes summary queries
+
+* Extending
+
+To add a new model-template pair:
+
+1. Add your JSON model to the =models/= directory
+2. Add your Mustache template to =library/templates/=
+3. Update the mapping in =src/generator.py= in the =get_template_mappings()= function

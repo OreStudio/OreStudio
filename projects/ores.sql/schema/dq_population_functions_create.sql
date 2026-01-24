@@ -133,6 +133,25 @@ begin
     group by d.id, d.name, d.subject_area_name, d.domain_name,
              d.source_system_id, d.as_of_date, d.license_info
 
+    union all
+
+    -- Coding Schemes datasets
+    select
+        d.id,
+        d.name,
+        d.subject_area_name,
+        d.domain_name,
+        'coding_schemes'::text as artefact_type,
+        count(cs.code)::bigint as record_count,
+        d.source_system_id,
+        d.as_of_date,
+        d.license_info
+    from ores.dq_datasets_tbl d
+    join ores.dq_coding_schemes_artefact_tbl cs on cs.dataset_id = d.id
+    where d.valid_to = ores.utility_infinity_timestamp_fn()
+    group by d.id, d.name, d.subject_area_name, d.domain_name,
+             d.source_system_id, d.as_of_date, d.license_info
+
     order by artefact_type, dataset_name;
 end;
 $$ language plpgsql;

@@ -4,7 +4,7 @@
 #
 # This script:
 # 1. Parses FPML XML files to generate JSON models
-# 2. Generates SQL schema files to projects/ores.sql/schema/
+# 2. Generates SQL schema files to projects/ores.sql/create/
 # 3. Generates SQL populate files to projects/ores.sql/populate/
 
 set -e

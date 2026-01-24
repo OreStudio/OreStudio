@@ -89,16 +89,16 @@ Generate SQL schema and populate scripts from FPML Genericode XML files:
 This script:
 1. Parses FPML XML files from =projects/ores.sql/populate/data/=
 2. Generates JSON entity models to =output/models/=
-3. Generates SQL schema files to =projects/ores.sql/schema/=
+3. Generates SQL schema files to =projects/ores.sql/create/=
 4. Generates SQL populate files to =projects/ores.sql/populate/=
 
 Output files per entity (e.g., =party_roles=):
 
 | File                                    | Location                       |
 |-----------------------------------------+--------------------------------|
-| =refdata_party_roles_create.sql=        | =projects/ores.sql/schema/=    |
-| =refdata_party_roles_notify_trigger.sql=| =projects/ores.sql/schema/=    |
-| =dq_party_roles_artefact_create.sql=    | =projects/ores.sql/schema/=    |
+| =refdata_party_roles_create.sql=        | =projects/ores.sql/create/=    |
+| =refdata_party_roles_notify_trigger.sql=| =projects/ores.sql/create/=    |
+| =dq_party_roles_artefact_create.sql=    | =projects/ores.sql/create/=    |
 | =refdata_party_roles_populate.sql=      | =projects/ores.sql/populate/=  |
 
 Plus the shared coding schemes file: =fpml_coding_schemes_artefact_populate.sql=

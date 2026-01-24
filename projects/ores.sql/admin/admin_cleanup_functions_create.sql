@@ -120,7 +120,7 @@ declare
     db_count int;
 begin
     select count(*),
-           string_agg(format('drop database if exists %i;', database_name),
+           string_agg(format('drop database if exists %I;', database_name),
                       e'\n' order by database_name)
     into db_count, sql_commands
     from admin_test_databases_view;
@@ -142,7 +142,7 @@ declare
     db_count int;
 begin
     select count(*),
-           string_agg(format('drop database if exists %i;', database_name),
+           string_agg(format('drop database if exists %I;', database_name),
                       e'\n' order by database_name)
     into db_count, sql_commands
     from admin_ores_databases_view;
@@ -164,7 +164,7 @@ declare
     db_count int;
 begin
     select count(*),
-           string_agg(format('drop database if exists %i;', database_name),
+           string_agg(format('drop database if exists %I;', database_name),
                       e'\n' order by database_name)
     into db_count, sql_commands
     from admin_ores_instance_databases_view;

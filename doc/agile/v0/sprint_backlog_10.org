@@ -16,37 +16,38 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
-#+CAPTION: Clock summary at [2026-01-24 Sat 01:19], for Saturday, January 24, 2026.
+#+TBLNAME: today_summary
+#+CAPTION: Clock summary at [2026-01-24 Sat 01:31], for Saturday, January 24, 2026.
 |      | <75>                          |        |      |      |       |
 | Tags | Headline                      | Time   |      |      |     % |
 |------+-------------------------------+--------+------+------+-------|
-|      | *Total time*                  | *0:52* |      |      | 100.0 |
+|      | *Total time*                  | *1:04* |      |      | 100.0 |
 |------+-------------------------------+--------+------+------+-------|
-|      | Stories                       | 0:52   |      |      | 100.0 |
-|      | Active                        |        | 0:52 |      | 100.0 |
-| code | Tidy-up external data storage |        |      | 0:52 | 100.0 |
+|      | Stories                       | 1:04   |      |      | 100.0 |
+|      | Active                        |        | 1:04 |      | 100.0 |
+| code | Tidy-up external data storage |        |      | 1:04 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-24 Sat 01:19]
+#+CAPTION: Clock summary at [2026-01-24 Sat 01:32]
 |       | <75>                                                |         |       |      |       |
 | Tags  | Headline                                            | Time    |       |      |     % |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *30:29* |       |      | 100.0 |
+|       | *Total time*                                        | *30:41* |       |      | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 30:29   |       |      | 100.0 |
-|       | Active                                              |         | 30:29 |      | 100.0 |
+|       | Stories                                             | 30:41   |       |      | 100.0 |
+|       | Active                                              |         | 30:41 |      | 100.0 |
 | agile | Sprint and product backlog refinement               |         |       | 1:04 |   3.5 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  20.8 |
-| code  | Create a simple code generator                      |         |       | 7:38 |  25.0 |
-| code  | Party related schemes                               |         |       | 5:20 |  17.5 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  20.6 |
+| code  | Create a simple code generator                      |         |       | 7:38 |  24.9 |
+| code  | Party related schemes                               |         |       | 5:20 |  17.4 |
 | code  | Image cache not reloading on new datasets           |         |       | 1:43 |   5.6 |
 | code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   1.4 |
 | code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.7 |
 | code  | Fix issues with misspell action                     |         |       | 2:47 |   9.1 |
-| code  | Tidy-up external data storage                       |         |       | 3:21 |  11.0 |
-| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   4.4 |
+| code  | Tidy-up external data storage                       |         |       | 3:33 |  11.6 |
+| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   4.3 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -426,6 +427,7 @@ fixed it manually.
 
 *** COMPLETED Tidy-up external data storage                            :code:
     :LOGBOOK:
+    CLOCK: [2026-01-24 Sat 01:19]--[2026-01-24 Sat 01:31] =>  0:12
     CLOCK: [2026-01-24 Sat 00:26]--[2026-01-24 Sat 01:18] =>  0:52
     CLOCK: [2026-01-23 Fri 20:12]--[2026-01-23 Fri 22:00] =>  1:48
     CLOCK: [2026-01-23 Fri 19:25]--[2026-01-23 Fri 20:06] =>  0:41

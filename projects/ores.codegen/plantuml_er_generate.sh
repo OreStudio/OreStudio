@@ -31,6 +31,7 @@ python "${SCRIPT_DIR}/src/plantuml_er_parse_sql.py" \
     --create-dir "${SQL_DIR}/create" \
     --drop-dir "${SQL_DIR}/drop" \
     --output "${SCRIPT_DIR}/models/plantuml_er_model.json" \
+    --ignore-file "${SQL_DIR}/validation_ignore.txt" \
     --warn \
     "$@"
 

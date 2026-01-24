@@ -193,7 +193,7 @@ class ParseResult:
 class SQLParser:
     """Parses SQL CREATE statements and validates conventions."""
 
-    def __init__(self, warn: bool = True):
+    def __init__(self, warn: bool = True, ignore_file: Optional[Path] = None):
         self.warn = warn
         self.warnings = []
         self.tables = {}
@@ -203,6 +203,40 @@ class SQLParser:
         self.unique_columns = {}  # table_name -> set of column names
         self.table_descriptions = {}  # table_name -> description text
         self.relationships = []  # List of Relationship objects
+        self.ignore_rules = []  # List of (code_pattern, name_pattern) tuples
+        if ignore_file:
+            self._load_ignore_file(ignore_file)
+
+    def _load_ignore_file(self, ignore_file: Path) -> None:
+        """Load validation ignore rules from file.
+
+        Format: WARNING_CODE entity_pattern
+        - Lines starting with # are comments
+        - Empty lines are skipped
+        - Patterns support * wildcard (e.g., dq_*_artefact_tbl)
+        """
+        if not ignore_file.exists():
+            return
+
+        with open(ignore_file, 'r') as f:
+            for line in f:
+                line = line.strip()
+                # Skip comments and empty lines
+                if not line or line.startswith('#'):
+                    continue
+
+                parts = line.split(None, 1)  # Split on whitespace, max 2 parts
+                if len(parts) == 2:
+                    code_pattern, name_pattern = parts
+                    self.ignore_rules.append((code_pattern, name_pattern))
+
+    def _is_warning_ignored(self, code: str, entity_name: str) -> bool:
+        """Check if a warning should be ignored based on ignore rules."""
+        import fnmatch
+        for code_pattern, name_pattern in self.ignore_rules:
+            if fnmatch.fnmatch(code, code_pattern) and fnmatch.fnmatch(entity_name, name_pattern):
+                return True
+        return False
 
     def parse_create_dir(self, create_dir: Path) -> None:
         """Parse all SQL files in the create directory."""
@@ -413,7 +447,8 @@ class SQLParser:
 
         # Unknown prefix - add warning
         self._add_warning(file_path, line_num, 'NAMING_010',
-                          f"Unknown component prefix in table '{name}'")
+                          f"Unknown component prefix in table '{name}'",
+                          entity_name=name)
         return 'unknown'
 
     def _validate_table_naming(self, name: str, file_path: str, line_num: int) -> None:
@@ -421,13 +456,15 @@ class SQLParser:
         # Check _tbl suffix
         if not name.endswith('_tbl'):
             self._add_warning(file_path, line_num, 'NAMING_001',
-                              f"Table '{name}' missing '_tbl' suffix")
+                              f"Table '{name}' missing '_tbl' suffix",
+                              entity_name=name)
 
         # Check for component prefix
         has_prefix = any(name.startswith(p) for p in COMPONENT_PREFIXES)
         if not has_prefix:
             self._add_warning(file_path, line_num, 'NAMING_002',
-                              f"Table '{name}' missing component prefix")
+                              f"Table '{name}' missing component prefix",
+                              entity_name=name)
 
         # Check plural entity name (simple heuristic)
         entity_part = name
@@ -567,31 +604,37 @@ class SQLParser:
         # Check required temporal columns
         if 'valid_from' not in col_names:
             self._add_warning(file_path, line_num, 'TEMPORAL_001',
-                              f"Temporal table '{name}' missing 'valid_from' column")
+                              f"Temporal table '{name}' missing 'valid_from' column",
+                              entity_name=name)
 
         if 'valid_to' not in col_names:
             self._add_warning(file_path, line_num, 'TEMPORAL_002',
-                              f"Temporal table '{name}' missing 'valid_to' column")
+                              f"Temporal table '{name}' missing 'valid_to' column",
+                              entity_name=name)
 
         # Check EXCLUDE constraint
         if 'exclude using gist' not in body.lower():
             self._add_warning(file_path, line_num, 'TEMPORAL_003',
-                              f"Temporal table '{name}' missing EXCLUDE USING gist constraint")
+                              f"Temporal table '{name}' missing EXCLUDE USING gist constraint",
+                              entity_name=name)
 
         # Check version column
         if 'version' not in col_names:
             self._add_warning(file_path, line_num, 'TEMPORAL_004',
-                              f"Temporal table '{name}' missing 'version' column")
+                              f"Temporal table '{name}' missing 'version' column",
+                              entity_name=name)
 
         # Check audit columns (skip for junction tables and permissions)
         if 'junction' not in name and 'permission' not in name:
             if 'modified_by' not in col_names:
                 self._add_warning(file_path, line_num, 'TEMPORAL_005',
-                                  f"Temporal table '{name}' missing 'modified_by' column")
+                                  f"Temporal table '{name}' missing 'modified_by' column",
+                                  entity_name=name)
 
             if 'change_reason_code' not in col_names:
                 self._add_warning(file_path, line_num, 'TEMPORAL_006',
-                                  f"Temporal table '{name}' missing 'change_reason_code' column")
+                                  f"Temporal table '{name}' missing 'change_reason_code' column",
+                                  entity_name=name)
 
     def _extract_functions(self, content: str, lines: list, file_path: str) -> None:
         """Extract function definitions from SQL content."""
@@ -650,20 +693,29 @@ class SQLParser:
         for table_name, table in self.tables.items():
             if table_name not in self.drop_tables:
                 self._add_warning(table.source_file, 0, 'DROP_001',
-                                  f"Table '{table_name}' created but not found in drop scripts")
+                                  f"Table '{table_name}' created but not found in drop scripts",
+                                  entity_name=table_name)
 
         # Check functions
         for func_name, func in self.functions.items():
             if func_name not in self.drop_functions:
                 self._add_warning(func.source_file, func.line, 'DROP_002',
-                                  f"Function '{func_name}' created but not found in drop scripts")
+                                  f"Function '{func_name}' created but not found in drop scripts",
+                                  entity_name=func_name)
 
-    def _add_warning(self, file_path: str, line: int, code: str, message: str) -> None:
-        """Add a warning if warnings are enabled."""
-        if self.warn:
-            warning = Warning(file=file_path, line=line, code=code, message=message)
-            self.warnings.append(warning)
-            print(str(warning), file=sys.stderr)
+    def _add_warning(self, file_path: str, line: int, code: str, message: str,
+                     entity_name: str = '') -> None:
+        """Add a warning if warnings are enabled and not ignored."""
+        if not self.warn:
+            return
+
+        # Check if this warning should be ignored
+        if entity_name and self._is_warning_ignored(code, entity_name):
+            return
+
+        warning = Warning(file=file_path, line=line, code=code, message=message)
+        self.warnings.append(warning)
+        print(str(warning), file=sys.stderr)
 
     def detect_relationships(self) -> None:
         """Detect relationships between tables based on FK columns.
@@ -959,6 +1011,8 @@ def main():
                         help='Directory containing DROP SQL files')
     parser.add_argument('--output', '-o',
                         help='Output JSON model file (omit for --validate-only)')
+    parser.add_argument('--ignore-file',
+                        help='File containing validation warnings to ignore')
     parser.add_argument('--warn', action='store_true', default=True,
                         help='Print warnings to stderr (default: true)')
     parser.add_argument('--no-warn', action='store_true',
@@ -971,6 +1025,7 @@ def main():
     args = parser.parse_args()
 
     warn = args.warn and not args.no_warn
+    ignore_file = Path(args.ignore_file) if args.ignore_file else None
 
     create_dir = Path(args.create_dir)
     drop_dir = Path(args.drop_dir)
@@ -984,7 +1039,7 @@ def main():
         sys.exit(1)
 
     # Parse SQL files
-    sql_parser = SQLParser(warn=warn)
+    sql_parser = SQLParser(warn=warn, ignore_file=ignore_file)
     sql_parser.parse_create_dir(create_dir)
     sql_parser.parse_drop_dir(drop_dir)
 

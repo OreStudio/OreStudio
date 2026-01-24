@@ -197,6 +197,7 @@ class CodingScheme:
         code = self.to_code()
         name = self.short_name.replace("'", "''")
         definition = self.definition.replace("'", "''") if self.definition else ''
+        uri = self.canonical_uri.replace("'", "''")
 
         return f"""select ores.upsert_dq_coding_schemes(
     '{code}',
@@ -204,7 +205,7 @@ class CodingScheme:
     'industry',
     '{subject_area}',
     'Reference Data',
-    '{self.canonical_uri}',
+    '{uri}',
     '{definition}'
 );"""
 
@@ -213,6 +214,7 @@ class CodingScheme:
         code = self.to_code()
         name = self.short_name.replace("'", "''")
         definition = self.definition.replace("'", "''") if self.definition else ''
+        uri = self.canonical_uri.replace("'", "''")
 
         return f"""insert into ores.dq_coding_schemes_artefact_tbl (
     dataset_id, code, version, name, authority_type,
@@ -220,7 +222,7 @@ class CodingScheme:
 ) values (
     (select id from ores.dq_datasets_tbl where code = '{dataset_code}' and valid_to = ores.utility_infinity_timestamp_fn()),
     '{code}', 0, '{name}', 'industry',
-    '{subject_area}', 'Reference Data', '{self.canonical_uri}', '{definition}'
+    '{subject_area}', 'Reference Data', '{uri}', '{definition}'
 );"""
 
 

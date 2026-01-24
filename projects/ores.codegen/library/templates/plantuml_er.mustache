@@ -46,12 +46,12 @@ package "{{name}}" {{color}} {
 {{#tables}}
     entity {{name}} {{stereotype}} {{color}} {
 {{#primary_key.columns}}
-        * {{name}} : {{type}} <<PK>>
+        * {{name}} : {{type}} {{#is_fk}}<<PK, FK>>{{/is_fk}}{{^is_fk}}<<PK>>{{/is_fk}}
 {{/primary_key.columns}}
         --
 {{#columns}}
 {{^is_pk}}
-        {{^nullable}}* {{/nullable}}{{#nullable}}  {{/nullable}}{{name}} : {{type}}{{#is_fk}} <<FK>>{{/is_fk}}
+        {{^nullable}}* {{/nullable}}{{#nullable}}  {{/nullable}}{{name}} : {{type}}{{#is_unique}} <<unique>>{{/is_unique}}{{#is_fk}}{{^is_unique}} <<FK>>{{/is_unique}}{{/is_fk}}
 {{/is_pk}}
 {{/columns}}
     }

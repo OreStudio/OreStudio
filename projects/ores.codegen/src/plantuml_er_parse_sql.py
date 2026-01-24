@@ -35,16 +35,30 @@ from typing import Optional
 
 
 # Known component prefixes and their descriptions
+# Order determines package display order in diagram
 COMPONENT_PREFIXES = {
-    'iam_': {'name': 'iam', 'description': 'Identity & Access Management', 'color': '#E8F4FD'},
-    'refdata_': {'name': 'refdata', 'description': 'Reference Data', 'color': '#FFF3E0'},
-    'assets_': {'name': 'assets', 'description': 'Digital Assets', 'color': '#F3E5F5'},
-    'variability_': {'name': 'variability', 'description': 'Feature Flags', 'color': '#E8F5E9'},
-    'dq_': {'name': 'dq', 'description': 'Data Quality', 'color': '#E1F5FE'},
-    'telemetry_': {'name': 'telemetry', 'description': 'Telemetry & Logging', 'color': '#FCE4EC'},
-    'geo_': {'name': 'geo', 'description': 'Geolocation', 'color': '#FFF9C4'},
-    'utility_': {'name': 'utility', 'description': 'Utility Functions', 'color': '#ECEFF1'},
-    'admin_': {'name': 'admin', 'description': 'Administration', 'color': '#E0E0E0'},
+    'iam_': {'name': 'iam', 'description': 'Identity & Access Management', 'color': '#E8F4FD', 'order': 1},
+    'assets_': {'name': 'assets', 'description': 'Digital Assets', 'color': '#F3E5F5', 'order': 2},
+    'refdata_': {'name': 'refdata', 'description': 'Reference Data', 'color': '#FFF3E0', 'order': 3},
+    'dq_': {'name': 'dq', 'description': 'Data Quality', 'color': '#E1F5FE', 'order': 4},
+    'variability_': {'name': 'variability', 'description': 'Feature Flags', 'color': '#E8F5E9', 'order': 5},
+    'telemetry_': {'name': 'telemetry', 'description': 'Telemetry & Logging', 'color': '#FCE4EC', 'order': 6},
+    'geo_': {'name': 'geo', 'description': 'Geolocation', 'color': '#FFF9C4', 'order': 7},
+    'utility_': {'name': 'utility', 'description': 'Utility Functions', 'color': '#ECEFF1', 'order': 8},
+    'admin_': {'name': 'admin', 'description': 'Administration', 'color': '#E0E0E0', 'order': 9},
+}
+
+# Columns that are known FK references by name
+FK_COLUMNS = {
+    'change_reason_code',  # References change reason codes
+    'coding_scheme_code',  # References coding schemes
+    'account_id',          # References iam_accounts_tbl
+    'role_id',             # References iam_roles_tbl
+    'permission_id',       # References iam_permissions_tbl
+    'image_id',            # References assets_images_tbl
+    'tag_id',              # References assets_tags_tbl
+    'dataset_id',          # References dq_datasets_tbl
+    'country_code',        # References refdata_countries_tbl (in some contexts)
 }
 
 # Table classification colors and stereotypes
@@ -76,6 +90,7 @@ class Column:
     nullable: bool = True
     is_pk: bool = False
     is_fk: bool = False
+    is_unique: bool = False
     default: Optional[str] = None
     references: Optional[dict] = None
 
@@ -138,6 +153,7 @@ class SQLParser:
         self.functions = {}
         self.drop_tables = set()
         self.drop_functions = set()
+        self.unique_columns = {}  # table_name -> set of column names
 
     def parse_create_dir(self, create_dir: Path) -> None:
         """Parse all SQL files in the create directory."""
@@ -157,6 +173,9 @@ class SQLParser:
 
         # Extract tables
         self._extract_tables(content, lines, relative_path)
+
+        # Extract unique indexes
+        self._extract_unique_indexes(content, relative_path)
 
         # Extract functions
         self._extract_functions(content, lines, relative_path)
@@ -193,6 +212,23 @@ class SQLParser:
             table = self._parse_table(table_name, table_body, file_path, line_num)
             if table:
                 self.tables[table_name] = table
+
+    def _extract_unique_indexes(self, content: str, file_path: str) -> None:
+        """Extract unique index definitions to identify unique columns."""
+        # Pattern: create unique index ... on "ores"."table_name" (column_name)
+        unique_idx_pattern = re.compile(
+            r'create\s+unique\s+index\s+if\s+not\s+exists\s+\w+\s+'
+            r'on\s+"?ores"?\."?(\w+)"?\s*\((\w+)\)',
+            re.IGNORECASE
+        )
+
+        for match in unique_idx_pattern.finditer(content):
+            table_name = match.group(1)
+            column_name = match.group(2)
+
+            if table_name not in self.unique_columns:
+                self.unique_columns[table_name] = set()
+            self.unique_columns[table_name].add(column_name)
 
     def _parse_table(self, name: str, body: str, file_path: str, line_num: int) -> Optional[Table]:
         """Parse a table definition."""
@@ -346,11 +382,20 @@ class SQLParser:
         if '_artefact_' in table_name or table_name.endswith('_artefact_tbl'):
             return 'artefact'
 
-        # Junction tables (simple heuristic: mostly FK columns)
-        if has_temporal and len(columns) <= 6:
+        # Junction tables: have temporal + multiple _id columns + no 'id' column
+        # These are many-to-many relationship tables
+        if has_temporal:
             fk_like = sum(1 for c in columns if c.name.endswith('_id'))
-            if fk_like >= 2:
-                return 'junction'
+            has_single_id = 'id' in col_names
+            # Junction: multiple FK columns, no single 'id', relatively few other columns
+            if fk_like >= 2 and not has_single_id:
+                # Count non-FK, non-temporal columns
+                other_cols = sum(1 for c in columns
+                                 if not c.name.endswith('_id')
+                                 and c.name not in ('valid_from', 'valid_to', 'version'))
+                # Typical junction: assigned_by, assigned_at, change_reason_code, change_commentary
+                if other_cols <= 5:
+                    return 'junction'
 
         # Temporal tables
         if has_temporal:
@@ -433,6 +478,39 @@ class SQLParser:
                 line=line_num
             )
 
+    def apply_column_markings(self) -> None:
+        """Apply unique and FK markings to columns after all tables are parsed."""
+        for table_name, table in self.tables.items():
+            # Get unique columns for this table
+            unique_cols = self.unique_columns.get(table_name, set())
+
+            # Determine which column names could be the entity's own ID
+            # e.g., for assets_images_tbl -> image_id, images_id
+            entity_own_ids = set()
+            entity_singular = table.entity.rstrip('s')
+            entity_own_ids.add(entity_singular + '_id')  # e.g., image_id
+            entity_own_ids.add(table.entity + '_id')      # e.g., images_id
+            entity_own_ids.add('id')                      # generic id
+
+            for col in table.columns:
+                # Mark unique columns
+                if col.name in unique_cols:
+                    col.is_unique = True
+
+                # Mark FK columns based on naming conventions
+                # Skip the entity's own ID columns
+                if col.name in entity_own_ids:
+                    continue
+
+                if col.name in FK_COLUMNS:
+                    # Special case: country_code is only FK in specific tables
+                    if col.name == 'country_code' and 'session' in table_name:
+                        continue  # Not a FK in sessions
+                    col.is_fk = True
+                # Also mark *_id columns as FK
+                elif col.name.endswith('_id'):
+                    col.is_fk = True
+
     def validate_drop_completeness(self) -> None:
         """Check that all created objects have corresponding drop statements."""
         # Check tables
@@ -456,6 +534,9 @@ class SQLParser:
 
     def get_model(self) -> dict:
         """Generate the JSON model."""
+        # Apply column markings (unique, FK) before generating model
+        self.apply_column_markings()
+
         # Group tables by component
         packages = {}
         for table in self.tables.values():
@@ -464,14 +545,18 @@ class SQLParser:
                 comp_info = next(
                     (info for prefix, info in COMPONENT_PREFIXES.items()
                      if info['name'] == comp),
-                    {'name': comp, 'description': comp.title(), 'color': '#FFFFFF'}
+                    {'name': comp, 'description': comp.title(), 'color': '#FFFFFF', 'order': 99}
                 )
                 packages[comp] = {
                     'name': comp,
                     'description': comp_info['description'],
                     'color': comp_info['color'],
+                    'order': comp_info.get('order', 99),
                     'tables': []
                 }
+
+            # Order columns for display (handles is_pk for temporal columns)
+            ordered_columns = self._order_columns_for_display(table.columns, table.classification)
 
             # Convert table to dict
             table_dict = {
@@ -481,16 +566,16 @@ class SQLParser:
                 'classification': table.classification,
                 'stereotype': table.stereotype,
                 'color': table.color,
-                'primary_key': table.primary_key,
-                'columns': [asdict(c) for c in table.columns],
+                'primary_key': self._build_pk_for_model(table.primary_key, table.columns, table.classification),
+                'columns': [asdict(c) for c in ordered_columns],
                 'indexes': [asdict(i) for i in table.indexes],
                 'source_file': table.source_file,
                 'description': table.description
             }
             packages[comp]['tables'].append(table_dict)
 
-        # Sort packages and tables
-        sorted_packages = sorted(packages.values(), key=lambda p: p['name'])
+        # Sort packages by order (not alphabetically), then tables alphabetically
+        sorted_packages = sorted(packages.values(), key=lambda p: p['order'])
         for pkg in sorted_packages:
             pkg['tables'] = sorted(pkg['tables'], key=lambda t: t['name'])
 
@@ -498,6 +583,74 @@ class SQLParser:
             'generated_at': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
             'packages': sorted_packages,
             'warnings': [asdict(w) for w in self.warnings]
+        }
+
+    def _order_columns_for_display(self, columns: list, classification: str) -> list:
+        """Order columns for diagram display and set is_pk for display purposes.
+
+        Order: non-PK columns first, then temporal at end.
+        PK columns (except temporal for junction) are shown in PK section, not here.
+        """
+        temporal_cols = {'valid_from', 'valid_to'}
+
+        # Create copies to avoid modifying originals
+        result = []
+        for col in columns:
+            col_copy = Column(
+                name=col.name,
+                type=col.type,
+                nullable=col.nullable,
+                is_pk=col.is_pk,
+                is_fk=col.is_fk,
+                is_unique=col.is_unique,
+                default=col.default,
+                references=col.references
+            )
+
+            # For display: mark temporal columns as non-PK so they appear in columns section
+            # Exception: for junction tables, valid_from stays as PK (shown in PK section)
+            if col.name in temporal_cols:
+                if classification == 'junction' and col.name == 'valid_from':
+                    # valid_from stays as PK for junction tables (shown in PK section)
+                    pass
+                else:
+                    # valid_to always shown in columns, valid_from for non-junction too
+                    col_copy.is_pk = False
+
+            result.append(col_copy)
+
+        # Order: non-PK first, then temporal (valid_from, valid_to)
+        non_pk_non_temporal = [c for c in result if not c.is_pk and c.name not in temporal_cols]
+        temporal = [c for c in result if c.name in temporal_cols and not c.is_pk]
+
+        return non_pk_non_temporal + temporal
+
+    def _build_pk_for_model(self, primary_key: dict, columns: list, classification: str) -> dict:
+        """Build primary key for model.
+
+        For junction tables: include valid_from in PK display.
+        For other tables: exclude temporal columns from PK display.
+        """
+        pk_columns = primary_key.get('columns', [])
+
+        if classification == 'junction':
+            # For junction: show all PK columns except valid_to
+            display_pk_cols = [c.copy() for c in pk_columns if c['name'] != 'valid_to']
+        else:
+            # For other tables: exclude both valid_from and valid_to
+            temporal_cols = {'valid_from', 'valid_to'}
+            display_pk_cols = [c.copy() for c in pk_columns if c['name'] not in temporal_cols]
+
+        # Check if any columns need <<PK, FK>> marker
+        for col in columns:
+            if col.is_pk and col.is_fk:
+                for pk_col in display_pk_cols:
+                    if pk_col['name'] == col.name:
+                        pk_col['is_fk'] = True
+
+        return {
+            'columns': display_pk_cols,
+            'composite': len(pk_columns) > 1
         }
 
 

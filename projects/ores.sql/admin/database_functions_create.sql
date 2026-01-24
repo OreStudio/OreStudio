@@ -58,8 +58,8 @@ end;
 $$ language plpgsql volatile;
 
 -- Convenience function that outputs the command directly.
--- Usage: SELECT create_database_command();
---        SELECT create_database_command('my_custom_name');
+-- Usage: select create_database_command();
+--        select create_database_command('my_custom_name');
 create or replace function create_database_command(db_name text default null)
 returns void as $$
 begin

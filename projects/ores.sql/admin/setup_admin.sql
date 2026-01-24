@@ -57,9 +57,9 @@ grant all privileges on database ores_admin to ores;
 \echo ''
 
 -- Load admin functions
-\ir whimsical_names.sql
-\ir database_functions.sql
-\ir cleanup_functions.sql
+\ir whimsical_names_create.sql
+\ir database_functions_create.sql
+\ir cleanup_functions_create.sql
 
 -- Grant schema object permissions to ores user
 -- (Database-level grants don't include schema object access)

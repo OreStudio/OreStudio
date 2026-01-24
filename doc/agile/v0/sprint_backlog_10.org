@@ -17,39 +17,41 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-24 Sat 03:11], for Saturday, January 24, 2026.
+#+CAPTION: Clock summary at [2026-01-24 Sat 09:04], for Saturday, January 24, 2026.
 |      | <75>                                    |        |      |      |       |
 | Tags | Headline                                | Time   |      |      |     % |
 |------+-----------------------------------------+--------+------+------+-------|
-|      | *Total time*                            | *2:43* |      |      | 100.0 |
+|      | *Total time*                            | *4:25* |      |      | 100.0 |
 |------+-----------------------------------------+--------+------+------+-------|
-|      | Stories                                 | 2:43   |      |      | 100.0 |
-|      | Active                                  |        | 2:43 |      | 100.0 |
-| code | Tidy-up external data storage           |        |      | 1:04 |  39.3 |
-| code | Coding schemes are in production tables |        |      | 1:39 |  60.7 |
+|      | Stories                                 | 4:25   |      |      | 100.0 |
+|      | Active                                  |        | 4:25 |      | 100.0 |
+| code | Tidy-up external data storage           |        |      | 1:04 |  24.2 |
+| code | Coding schemes are in production tables |        |      | 1:39 |  37.4 |
+| code | Refactor schema directories             |        |      | 1:42 |  38.5 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-24 Sat 03:11]
+#+CAPTION: Clock summary at [2026-01-24 Sat 09:04]
 |       | <75>                                                |         |       |      |       |
 | Tags  | Headline                                            | Time    |       |      |     % |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *32:20* |       |      | 100.0 |
+|       | *Total time*                                        | *34:02* |       |      | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 32:20   |       |      | 100.0 |
-|       | Active                                              |         | 32:20 |      | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       | 1:04 |   3.3 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  19.6 |
-| code  | Create a simple code generator                      |         |       | 7:38 |  23.6 |
-| code  | Party related schemes                               |         |       | 5:20 |  16.5 |
-| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   5.3 |
-| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   1.3 |
-| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.6 |
-| code  | Fix issues with misspell action                     |         |       | 2:47 |   8.6 |
-| code  | Tidy-up external data storage                       |         |       | 3:33 |  11.0 |
-| code  | Coding schemes are in production tables             |         |       | 1:39 |   5.1 |
-| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   4.1 |
+|       | Stories                                             | 34:02   |       |      | 100.0 |
+|       | Active                                              |         | 34:02 |      | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       | 1:04 |   3.1 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  18.6 |
+| code  | Create a simple code generator                      |         |       | 7:38 |  22.4 |
+| code  | Party related schemes                               |         |       | 5:20 |  15.7 |
+| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   5.0 |
+| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   1.2 |
+| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.5 |
+| code  | Fix issues with misspell action                     |         |       | 2:47 |   8.2 |
+| code  | Tidy-up external data storage                       |         |       | 3:33 |  10.4 |
+| code  | Coding schemes are in production tables             |         |       | 1:39 |   4.8 |
+| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   3.9 |
+| code  | Refactor schema directories                         |         |       | 1:42 |   5.0 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -521,10 +523,91 @@ Highlights:
 Now that we got the basic codegen infrastructure working, we need to start code
 generating the SQL for domain types.
 
-*** Refactor schema directories                                        :code:
+*** STARTED Refactor schema directories                                :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-24 Sat 08:43]--[2026-01-24 Sat 09:04] =>  0:21
+    CLOCK: [2026-01-24 Sat 07:21]--[2026-01-24 Sat 08:42] =>  1:21
+    :END:
 
 At present we have all files in one directory. As we add more tables it's
 becoming quite hard to follow.
+
+**** Refactor drop/ and populate/ directory structure
+
+#+begin_quote
+This pull request introduces a significant refactoring of the SQL script
+organization within the drop/ and populate/ directories. The changes aim to
+enhance modularity and maintainability by grouping related SQL files into
+component-specific subdirectories and establishing consistent naming conventions
+for master scripts. This restructuring simplifies navigation and management of
+database schema and data population scripts.
+
+Highlights:
+
+- Directory Structure Reorganization: The drop/ directory has been reorganized
+  from a flat structure into component-based subdirectories, including assets,
+  dq, geo, iam, refdata, seed, telemetry, utility, and variability.
+- File Relocation and Git History Preservation: 56 SQL files have been moved
+  into their respective new component subdirectories, with their git history
+  preserved to maintain traceability.
+- Consistent Naming Conventions: New component master files have been created
+  with consistent naming patterns: drop_COMPONENT.sql and
+  populate_COMPONENT.sql.
+- Master Drop File Updates: The drop_all.sql file has been removed and replaced
+  by drop/drop.sql, and drop_database.sql has also been relocated into the drop/
+  directory.
+- Population Function Refactoring: The monolithic seed_upsert_functions_drop.sql
+  has been split into individual per-component population function files (e.g.,
+  dq_population_functions_drop.sql, iam_population_functions_drop.sql),
+  improving modularity.
+- Populate Master File Alignment: All populate/ master files have been updated
+  to align with the new consistent naming convention (populate_COMPONENT.sql).
+#+end_quote
+
+**** Refactor coding schemes and clean up ores.sql directory structure
+
+#+begin_quote
+This pull request significantly improves the maintainability and organization of
+the ores.sql project by standardizing directory structures and enforcing
+consistent naming conventions for administrative database objects. It also
+integrates FPML coding schemes into a more robust data quality pipeline,
+streamlining data management and generation processes. These changes enhance
+clarity, reduce technical debt, and ensure future scalability and ease of
+development.
+
+Highlights:
+
+- Coding Schemes Refactor: FPML coding schemes have been refactored to integrate
+  with the DQ artefact pipeline, ensuring proper dataset management, fixing
+  ordering and URI escaping, and consolidating codegen documentation.
+- Directory Structure Reorganization: The projects/ores.sql directory has been
+  cleaned up and reorganized. This includes removing deprecated/obsolete files,
+  renaming the schema/ folder to create/, and introducing a utility/ folder for
+  developer tools.
+- Admin Database Object Naming Conventions: Admin database objects (files,
+  functions, and views) now adhere to a consistent naming convention, using an
+  admin_ prefix and _fn or _view suffixes where appropriate.
+- C++ Code Updates: The C++ database_name_service has been updated to reflect
+  the new admin_ prefixed SQL function names, ensuring compatibility with the
+  refactored database utilities.
+#+end_quote
+
+*** Add "words" to icons                                               :code:
+
+To make the toolbar more readable, it would be nice if we could add some words
+to icons such as the icons for export and import:
+
+- CSV
+- ORE
+- FPML
+
+Then we could use 2 well-defined icons for import and export across the
+code-base.
+
+*** Add FPML export and import                                         :code:
+
+Where we can, we should start to add export and import functionality for FPML.
+This validates our modeling and catches aspects we may be missing.
 
 *** Listener error in comms service                                    :code:
 

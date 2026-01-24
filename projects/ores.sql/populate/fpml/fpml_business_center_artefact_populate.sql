@@ -2415,11 +2415,11 @@ begin
     -- Get the flags dataset ID
     select id into v_flags_dataset_id
     from ores.dq_datasets_tbl
-    where code = 'assets.country_flags'
+    where code = 'FLAG_ICONS'
     and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_flags_dataset_id is null then
-        raise exception 'Flags dataset assets.country_flags not found. Check dataset dependencies.';
+        raise exception 'Flags dataset FLAG_ICONS not found. Check dataset dependencies.';
     end if;
 
     -- Get the placeholder image

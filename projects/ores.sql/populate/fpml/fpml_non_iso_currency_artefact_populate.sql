@@ -59,11 +59,11 @@ begin
     -- Get the flags dataset ID (for linking images)
     select id into v_flags_dataset_id
     from ores.dq_datasets_tbl
-    where code = 'assets.country_flags'
+    where code = 'FLAG_ICONS'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_flags_dataset_id is null then
-        raise exception 'Dataset not found: assets.country_flags';
+        raise exception 'Dataset not found: FLAG_ICONS';
     end if;
 
     -- Get the placeholder image (xx.svg = "no flag available")

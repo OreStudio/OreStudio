@@ -377,21 +377,35 @@ class SQLParser:
                 self.tables[table_name] = table
 
     def _extract_unique_indexes(self, content: str, file_path: str) -> None:
-        """Extract unique index definitions to identify unique columns."""
-        # Pattern: create unique index ... on "ores"."table_name" (column_name)
+        """Extract unique index definitions to identify unique columns.
+
+        Handles both single-column and composite unique indexes.
+        For composite indexes, all columns in the index are marked as unique.
+        """
+        # Pattern: create unique index ... on "ores"."table_name" (col1, col2, ...)
+        # Captures table name and the entire column list (which may have multiple columns)
         unique_idx_pattern = re.compile(
             r'create\s+unique\s+index\s+if\s+not\s+exists\s+\w+\s+'
-            r'on\s+"?ores"?\."?(\w+)"?\s*\((\w+)\)',
+            r'on\s+"?ores"?\."?(\w+)"?\s*\(([^)]+)\)',
             re.IGNORECASE
         )
 
         for match in unique_idx_pattern.finditer(content):
             table_name = match.group(1)
-            column_name = match.group(2)
+            columns_str = match.group(2)
+
+            # Parse column list - handles "col1, col2" or "col1" or "col1, col2, col3"
+            # Also handles quoted column names and expressions with WHERE clauses
+            # Strip any WHERE clause first
+            columns_part = columns_str.split(' where ')[0].split(' WHERE ')[0]
+            column_names = [col.strip().strip('"') for col in columns_part.split(',')]
 
             if table_name not in self.unique_columns:
                 self.unique_columns[table_name] = set()
-            self.unique_columns[table_name].add(column_name)
+            for col_name in column_names:
+                # Skip empty strings and expressions (those containing parentheses)
+                if col_name and '(' not in col_name:
+                    self.unique_columns[table_name].add(col_name)
 
     def _parse_table(self, name: str, body: str, file_path: str, line_num: int) -> Optional[Table]:
         """Parse a table definition."""

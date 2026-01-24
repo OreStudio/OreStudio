@@ -51,7 +51,7 @@ package "{{name}}" {{color}} {
         --
 {{#columns}}
 {{^is_pk}}
-        {{^nullable}}* {{/nullable}}{{#nullable}}  {{/nullable}}{{name}} : {{type}}{{#is_unique}} <<unique>>{{/is_unique}}{{#is_fk}}{{^is_unique}} <<FK>>{{/is_unique}}{{/is_fk}}
+        {{^nullable}}* {{/nullable}}{{#nullable}}  {{/nullable}}{{name}} : {{type}}{{#is_unique}}{{#is_fk}} <<unique, FK>>{{/is_fk}}{{^is_fk}} <<unique>>{{/is_fk}}{{/is_unique}}{{^is_unique}}{{#is_fk}} <<FK>>{{/is_fk}}{{/is_unique}}
 {{/is_pk}}
 {{/columns}}
     }

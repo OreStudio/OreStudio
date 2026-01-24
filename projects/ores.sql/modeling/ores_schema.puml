@@ -16,7 +16,7 @@
 ' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 '
 ' GENERATED FILE - DO NOT EDIT
-' Generated: 2026-01-24T15:24:11.241362Z
+' Generated: 2026-01-24T15:52:14.103733Z
 ' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
 '
 @startuml
@@ -62,7 +62,7 @@ package "iam" #E8F4FD {
     entity iam_accounts_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * username : text <<unique>>
         * password_hash : text
         * password_salt : text
@@ -129,7 +129,7 @@ package "iam" #E8F4FD {
     entity iam_roles_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * name : text <<unique>>
         * description : text
         * modified_by : text
@@ -189,7 +189,7 @@ package "assets" #F3E5F5 {
     entity assets_images_tbl <<temporal>> #C6F0D8 {
         * image_id : uuid <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * key : text <<unique>>
         * description : text
         * svg_data : text
@@ -208,7 +208,7 @@ package "assets" #F3E5F5 {
     entity assets_tags_tbl <<temporal>> #C6F0D8 {
         * tag_id : uuid <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * name : text <<unique>>
         * description : text
         * modified_by : text
@@ -232,7 +232,7 @@ package "refdata" #FFF3E0 {
     entity refdata_account_types_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -250,7 +250,7 @@ package "refdata" #FFF3E0 {
     entity refdata_asset_classes_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -268,7 +268,7 @@ package "refdata" #FFF3E0 {
     entity refdata_asset_measures_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -286,7 +286,7 @@ package "refdata" #FFF3E0 {
     entity refdata_benchmark_rates_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -304,7 +304,7 @@ package "refdata" #FFF3E0 {
     entity refdata_business_centres_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -323,7 +323,7 @@ package "refdata" #FFF3E0 {
     entity refdata_business_processes_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -341,7 +341,7 @@ package "refdata" #FFF3E0 {
     entity refdata_cashflow_types_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -359,7 +359,7 @@ package "refdata" #FFF3E0 {
     entity refdata_countries_tbl <<temporal>> #C6F0D8 {
         * alpha2_code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * alpha3_code : text
         * numeric_code : text
         * name : text
@@ -383,7 +383,7 @@ package "refdata" #FFF3E0 {
     entity refdata_currencies_tbl <<temporal>> #C6F0D8 {
         * iso_code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * name : text
         * numeric_code : text
         * symbol : text
@@ -411,7 +411,7 @@ package "refdata" #FFF3E0 {
     entity refdata_entity_classifications_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -429,7 +429,7 @@ package "refdata" #FFF3E0 {
     entity refdata_local_jurisdictions_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -447,7 +447,7 @@ package "refdata" #FFF3E0 {
     entity refdata_party_relationships_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -465,7 +465,7 @@ package "refdata" #FFF3E0 {
     entity refdata_party_roles_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -483,7 +483,7 @@ package "refdata" #FFF3E0 {
     entity refdata_person_roles_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -501,7 +501,7 @@ package "refdata" #FFF3E0 {
     entity refdata_regulatory_corporate_sectors_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -519,7 +519,7 @@ package "refdata" #FFF3E0 {
     entity refdata_reporting_regimes_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -537,7 +537,7 @@ package "refdata" #FFF3E0 {
     entity refdata_supervisory_bodies_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
           source : text
           description : text
         * coding_scheme_code : text <<FK>>
@@ -652,7 +652,7 @@ package "dq" #E1F5FE {
     entity dq_catalogs_tbl <<temporal>> #C6F0D8 {
         * name : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * description : text
           owner : text
         * modified_by : text
@@ -674,7 +674,7 @@ package "dq" #E1F5FE {
     entity dq_change_reason_categories_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * description : text
         * modified_by : text
         * change_commentary : text
@@ -685,7 +685,7 @@ package "dq" #E1F5FE {
     entity dq_change_reasons_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * description : text
         * category_code : text <<FK>>
         * applies_to_amend : boolean
@@ -701,7 +701,7 @@ package "dq" #E1F5FE {
     entity dq_coding_scheme_authority_types_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * name : text
         * description : text
         * modified_by : text
@@ -737,7 +737,7 @@ package "dq" #E1F5FE {
     entity dq_coding_schemes_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * name : text
         * authority_type : text <<FK>>
         * subject_area_name : text
@@ -796,7 +796,7 @@ package "dq" #E1F5FE {
     entity dq_data_domains_tbl <<temporal>> #C6F0D8 {
         * name : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * description : text
         * modified_by : text
         * change_reason_code : text <<FK>>
@@ -838,17 +838,17 @@ package "dq" #E1F5FE {
     entity dq_datasets_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * code : text <<unique>>
           catalog_name : text
-        * subject_area_name : text
-        * domain_name : text
+        * subject_area_name : text <<unique>>
+        * domain_name : text <<unique>>
           coding_scheme_code : text <<FK>>
         * origin_code : text <<FK>>
         * nature_code : text <<FK>>
         * treatment_code : text <<FK>>
           methodology_id : uuid <<FK>>
-        * name : text
+        * name : text <<unique>>
         * description : text
         * source_system_id : text <<FK>>
         * business_context : text
@@ -932,7 +932,7 @@ package "dq" #E1F5FE {
     entity dq_methodologies_tbl <<temporal>> #C6F0D8 {
         * id : uuid <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * name : text <<unique>>
         * description : text
           logic_reference : text
@@ -952,7 +952,7 @@ package "dq" #E1F5FE {
     entity dq_nature_dimensions_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * name : text
         * description : text
         * modified_by : text
@@ -970,7 +970,7 @@ package "dq" #E1F5FE {
     entity dq_origin_dimensions_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * name : text
         * description : text
         * modified_by : text
@@ -1074,7 +1074,7 @@ package "dq" #E1F5FE {
         * name : text <<PK>>
         * domain_name : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * description : text
         * modified_by : text
         * change_reason_code : text <<FK>>
@@ -1113,7 +1113,7 @@ package "dq" #E1F5FE {
     entity dq_treatment_dimensions_tbl <<temporal>> #C6F0D8 {
         * code : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * name : text
         * description : text
         * modified_by : text
@@ -1137,7 +1137,7 @@ package "variability" #E8F5E9 {
     entity variability_feature_flags_tbl <<temporal>> #C6F0D8 {
         * name : text <<PK>>
         --
-        * version : integer
+        * version : integer <<unique>>
         * enabled : integer
           description : text
         * modified_by : text
@@ -1317,6 +1317,6 @@ iam_accounts_tbl ||--o{ telemetry_logs_tbl : "generates"
 dq_change_reasons_tbl ||--o{ variability_feature_flags_tbl : "reason for"
 
 ' Local Variables:
-' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.puml"
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.puml"
 ' End:
 @enduml

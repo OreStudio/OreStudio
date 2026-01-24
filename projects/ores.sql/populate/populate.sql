@@ -47,41 +47,10 @@
 \echo '=== Starting System Population ==='
 \echo ''
 
--- Change Control (must be populated before entities that use reasons)
-\echo '--- Change Control ---'
-\ir dq_change_reasons_populate.sql
-
--- Data Quality Data Domains
+-- Data Quality Framework (change control, dimensions, domains, subject areas, coding schemes)
 \echo ''
-\echo '--- Data Quality Data Domains ---'
-\ir dq_data_domain_populate.sql
-
--- Data Quality Dimensions
-\echo ''
-\echo '--- Data Quality Dimensions ---'
-\ir dq_origin_dimension_populate.sql
-\ir dq_nature_dimension_populate.sql
-\ir dq_treatment_dimension_populate.sql
-
--- Data Quality Subject Areas
-\echo ''
-\echo '--- Data Quality Subject Areas ---'
-\ir dq_subject_area_populate.sql
-
--- Data Quality Coding Scheme Authority Types
-\echo ''
-\echo '--- Data Quality Coding Scheme Authority Types ---'
-\ir dq_coding_scheme_authority_type_populate.sql
-
--- Data Quality Coding Schemes
-\echo ''
-\echo '--- Data Quality Coding Schemes ---'
-\ir dq_coding_scheme_populate.sql
-
--- General Methodologies (domain-specific methodologies are in their directories)
-\echo ''
-\echo '--- General Methodologies ---'
-\ir dq_methodology_populate.sql
+\echo '--- Data Quality Framework ---'
+\ir dq/dq.sql
 
 -- Flag Icons Reference Data (Visual Assets catalog, datasets, and images - must come before ISO)
 \echo ''

@@ -46,11 +46,11 @@ begin
 
     return format(
         e'-- create database from template\n'
-        'create database %i with template = ores_template;\n'
-        'grant all privileges on database %i to ores;\n'
+        'create database %I with template = ores_template;\n'
+        'grant all privileges on database %I to ores;\n'
         '\n'
         '-- Connect to new database and initialize\n'
-        '\\c %i\n'
+        '\\c %I\n'
         '\\ir ./instance/init_instance.sql\n',
         final_name, final_name, final_name
     );

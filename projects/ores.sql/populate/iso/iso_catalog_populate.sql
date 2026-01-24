@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,7 +21,7 @@
 /**
  * ISO Standards Catalog Population Script
  *
- * Seeds the database with the ISO Standards catalog for core country/currency data.
+ * Auto-generated from external/iso/manifest.json
  * This script is idempotent.
  */
 
@@ -38,14 +38,3 @@ select ores.upsert_dq_catalogs(
     'International Organization for Standardization (ISO) reference data including ISO 3166 country codes and ISO 4217 currency codes.',
     'Reference Data Team'
 );
-
--- =============================================================================
--- Summary
--- =============================================================================
-
-\echo ''
-\echo '--- Summary ---'
-
-select 'Data Quality Catalogs' as entity, count(*) as count
-from ores.dq_catalogs_tbl where valid_to = ores.utility_infinity_timestamp_fn()
-order by entity;

@@ -1,0 +1,101 @@
+{
+    "name": "ISO Standards Reference Data",
+    "description": "International Organization for Standardization (ISO) reference data including country codes and currency codes",
+    "source_url": "https://www.iso.org/",
+    "catalog": {
+        "name": "ISO Standards",
+        "description": "International Organization for Standardization (ISO) reference data including ISO 3166 country codes and ISO 4217 currency codes.",
+        "owner": "Reference Data Team"
+    },
+    "coding_schemes": [
+        {
+            "code": "ISO_3166_1_ALPHA_2",
+            "name": "ISO 3166-1 Alpha-2 Country Code",
+            "authority_type": "official",
+            "subject_area": "Countries",
+            "domain": "Reference Data",
+            "uri": "http://www.fpml.org/coding-scheme/external/iso3166-1-alpha-2",
+            "description": "ISO 3166-1 alpha-2 country codes. Two-letter codes (e.g., US, GB, DE) for countries and dependent territories. The most commonly used country code format in financial messaging."
+        },
+        {
+            "code": "ISO_3166_1_ALPHA_3",
+            "name": "ISO 3166-1 Alpha-3 Country Code",
+            "authority_type": "official",
+            "subject_area": "Countries",
+            "domain": "Reference Data",
+            "uri": "http://www.fpml.org/coding-scheme/external/iso3166-1-alpha-3",
+            "description": "ISO 3166-1 alpha-3 country codes. Three-letter codes (e.g., USA, GBR, DEU) for countries and dependent territories. More descriptive than alpha-2 codes."
+        },
+        {
+            "code": "ISO_4217",
+            "name": "ISO 4217 Currency Code",
+            "authority_type": "official",
+            "subject_area": "Currencies",
+            "domain": "Reference Data",
+            "uri": "http://www.fpml.org/coding-scheme/external/iso4217",
+            "description": "ISO 4217 currency codes. Three-letter alphabetic codes (e.g., USD, EUR, GBP) and three-digit numeric codes for currencies. The universal standard for currency identification in financial transactions."
+        }
+    ],
+    "methodologies": [
+        {
+            "name": "Wikipedia ISO 3166 Extraction",
+            "description": "Data extracted from Wikipedia page listing ISO 3166 country codes",
+            "url": "https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes"
+        },
+        {
+            "name": "Wikipedia ISO 4217 Extraction",
+            "description": "Data extracted from Wikipedia page listing ISO 4217 currency codes",
+            "url": "https://en.wikipedia.org/wiki/ISO_4217"
+        }
+    ],
+    "datasets": [
+        {
+            "name": "ISO 3166 Country Codes",
+            "code": "iso.countries",
+            "catalog": "ISO Standards",
+            "subject_area": "Countries",
+            "domain": "Reference Data",
+            "coding_scheme": "ISO_3166_1_ALPHA_2",
+            "methodology": "Wikipedia ISO 3166 Extraction",
+            "description": "ISO 3166-1 alpha-2 country codes and official names.",
+            "source_system": "WIKIPEDIA",
+            "business_context": "Reference data for country codes",
+            "license": "CC BY-SA 3.0",
+            "artefact_type": "countries",
+            "target_table": "refdata_countries_tbl",
+            "populate_function": "dq_populate_countries",
+            "tag_code": "country",
+            "tag_description": "Country reference data"
+        },
+        {
+            "name": "ISO 4217 Currency Codes",
+            "code": "iso.currencies",
+            "catalog": "ISO Standards",
+            "subject_area": "Currencies",
+            "domain": "Reference Data",
+            "coding_scheme": "ISO_4217",
+            "methodology": "Wikipedia ISO 4217 Extraction",
+            "description": "ISO 4217 alphabetic and numeric currency codes.",
+            "source_system": "WIKIPEDIA",
+            "business_context": "Reference data for currency codes",
+            "license": "CC BY-SA 3.0",
+            "artefact_type": "currencies",
+            "target_table": "refdata_currencies_tbl",
+            "populate_function": "dq_populate_currencies",
+            "tag_code": "currency",
+            "tag_description": "Currency reference data"
+        }
+    ],
+    "dependencies": [
+        {
+            "dataset_code": "iso.countries",
+            "dependency_code": "assets.country_flags",
+            "role": "visual_assets"
+        },
+        {
+            "dataset_code": "iso.currencies",
+            "dependency_code": "assets.country_flags",
+            "role": "visual_assets"
+        }
+    ]
+}

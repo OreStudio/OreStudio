@@ -146,39 +146,9 @@ select ores.upsert_dq_coding_schemes(
     'Proprietary/internal system identifiers (e.g., client ID in your OMS, CRM, or clearing system).'
 );
 
--- Country identification schemes (official - ISO standards)
-select ores.upsert_dq_coding_schemes(
-    'ISO_3166_1_ALPHA_2',
-    'ISO 3166-1 Alpha-2 Country Code',
-    'official',
-    'Countries',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/external/iso3166-1-alpha-2',
-    'ISO 3166-1 alpha-2 country codes. Two-letter codes (e.g., US, GB, DE) for countries and dependent territories. The most commonly used country code format in financial messaging.'
-);
-
-select ores.upsert_dq_coding_schemes(
-    'ISO_3166_1_ALPHA_3',
-    'ISO 3166-1 Alpha-3 Country Code',
-    'official',
-    'Countries',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/external/iso3166-1-alpha-3',
-    'ISO 3166-1 alpha-3 country codes. Three-letter codes (e.g., USA, GBR, DEU) for countries and dependent territories. More descriptive than alpha-2 codes.'
-);
-
--- Currency identification schemes (official - ISO standards)
-select ores.upsert_dq_coding_schemes(
-    'ISO_4217',
-    'ISO 4217 Currency Code',
-    'official',
-    'Currencies',
-    'Reference Data',
-    'http://www.fpml.org/coding-scheme/external/iso4217',
-    'ISO 4217 currency codes. Three-letter alphabetic codes (e.g., USD, EUR, GBP) and three-digit numeric codes for currencies. The universal standard for currency identification in financial transactions.'
-);
-
 -- General schemes (internal - placeholder)
+-- NOTE: ISO coding schemes (ISO_3166_1_ALPHA_2, ISO_3166_1_ALPHA_3, ISO_4217)
+-- are now generated from external/iso/manifest.json in iso/iso_coding_schemes_populate.sql
 select ores.upsert_dq_coding_schemes(
     'NONE',
     'No Coding Scheme',

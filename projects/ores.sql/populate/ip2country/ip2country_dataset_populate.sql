@@ -38,7 +38,7 @@ set schema 'ores';
 select ores.upsert_dq_datasets(
     'IP to Country IPv4 Ranges',
     'IP Geolocation',
-    'IP Geolocation',
+    'IP Address to Country maps',
     'Reference Data',
     'ISO_3166_1_ALPHA_2',
     'Primary',

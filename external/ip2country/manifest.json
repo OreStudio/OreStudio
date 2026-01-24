@@ -22,7 +22,7 @@
             "name": "IP to Country IPv4 Ranges",
             "code": "IP2COUNTRY_V4",
             "catalog": "IP Geolocation",
-            "subject_area": "IP Geolocation",
+            "subject_area": "IP Address to Country maps",
             "domain": "Reference Data",
             "coding_scheme": "ISO_3166_1_ALPHA_2",
             "methodology": "iptoasn.com IP to Country Database",

@@ -36,7 +36,7 @@ set schema 'ores';
 
 select ores.upsert_dq_tag(
     'IP to Country IPv4 Ranges',
-    'IP Geolocation',
+    'IP Address to Country maps',
     'Reference Data',
     'geolocation',
     'IP address geolocation data'

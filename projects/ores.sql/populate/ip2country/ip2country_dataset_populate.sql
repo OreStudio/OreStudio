@@ -19,22 +19,40 @@
  */
 
 /**
- * Visual Assets Catalog Population Script
+ * IP Geolocation Dataset Population Script
  *
- * Auto-generated from external/flags/manifest.json
- * This script is idempotent.
+ * Creates the dataset entries for IP geolocation reference data.
+ * Auto-generated from external/ip2country/manifest.json
+ * This must be run before populating the artefact tables.
  */
 
 set schema 'ores';
 
 -- =============================================================================
--- Visual Assets Catalog
+-- IP Geolocation Datasets
 -- =============================================================================
 
-\echo '--- Visual Assets Catalog ---'
+\echo '--- IP Geolocation Datasets ---'
 
-select ores.upsert_dq_catalogs(
-    'Visual Assets',
-    'Visual media assets including country flag images, cryptocurrency icons, and other imagery used to enrich reference data displays.',
-    'Reference Data Team'
+-- IP to Country IPv4 Ranges
+select ores.upsert_dq_datasets(
+    'IP to Country IPv4 Ranges',
+    'IP Geolocation',
+    'IP Geolocation',
+    'Reference Data',
+    'ISO_3166_1_ALPHA_2',
+    'Primary',
+    'Actual',
+    'Raw',
+    'iptoasn.com IP to Country Database',
+    'IP to Country IPv4 Ranges',
+    'IPv4 address ranges mapped to ISO 3166-1 alpha-2 country codes.',
+    'iptoasn.com',
+    'Geographic IP lookup for network analysis',
+    '2025-01-21'::date,
+    'PDDL v1.0',
+    'ip_ranges',
+    'refdata_ip2country_tbl',
+    'dq_populate_ip2country'
 );
+

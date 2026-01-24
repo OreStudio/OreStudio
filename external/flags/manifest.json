@@ -3,6 +3,11 @@
     "description": "SVG flag images for countries and regions from the lipis/flag-icons repository",
     "downloaded_at": "2024-12-29",
     "methodology_file": "methodology.txt",
+    "catalog": {
+        "name": "Visual Assets",
+        "description": "Visual media assets including country flag images, cryptocurrency icons, and other imagery used to enrich reference data displays.",
+        "owner": "Reference Data Team"
+    },
     "sources": [
         {
             "name": "GitHub Flag Icons Download",

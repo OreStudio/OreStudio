@@ -599,6 +599,55 @@ def load_methodology_text(methodology_path: Path) -> str:
     return methodology_path.read_text().strip()
 
 
+def generate_catalog_sql(manifest: dict, output_path: Path):
+    """Generate SQL file with catalog upsert from manifest."""
+    if not manifest:
+        print("Warning: No manifest found, skipping catalog generation")
+        return
+
+    catalog = manifest.get('catalog')
+    if not catalog:
+        print("Warning: No catalog in manifest, skipping catalog generation")
+        return
+
+    name = catalog.get('name', 'FpML Standards')
+    description = catalog.get('description', '')
+    owner = catalog.get('owner', 'Reference Data Team')
+
+    # Escape single quotes for SQL
+    name_escaped = name.replace("'", "''")
+    description_escaped = description.replace("'", "''")
+    owner_escaped = owner.replace("'", "''")
+
+    lines = [
+        "/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-",
+        " *",
+        " * FPML Catalog Population Script",
+        " *",
+        " * Auto-generated from external/fpml/manifest.json",
+        " * This script is idempotent.",
+        " */",
+        "",
+        "set schema 'ores';",
+        "",
+        "-- =============================================================================",
+        "-- FpML Standards Catalog",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FpML Standards Catalog ---'",
+        "",
+        f"select ores.upsert_dq_catalogs(",
+        f"    '{name_escaped}',",
+        f"    '{description_escaped}',",
+        f"    '{owner_escaped}'",
+        ");",
+        ""
+    ]
+
+    output_path.write_text('\n'.join(lines))
+    print(f"Generated: {output_path}")
+
+
 def generate_methodology_sql(manifest: dict, methodology_text: str, output_path: Path):
     """Generate SQL file with methodology upsert from manifest."""
     if not manifest:
@@ -667,7 +716,14 @@ def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files
         " */",
         "",
         "-- =============================================================================",
-        "-- FPML Methodology (must come first)",
+        "-- FpML Standards Catalog (must come first)",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FpML Standards Catalog ---'",
+        "\\ir fpml_catalog_populate.sql",
+        "",
+        "-- =============================================================================",
+        "-- FPML Methodology",
         "-- =============================================================================",
         "",
         "\\echo '--- FPML Methodology ---'",
@@ -836,6 +892,12 @@ def main():
     # Load manifest and methodology text
     manifest = load_manifest(external_dir / "manifest.json")
     methodology_text = load_methodology_text(external_dir / "methodology.txt")
+
+    # Generate catalog SQL
+    generate_catalog_sql(
+        manifest,
+        args.output_dir / "fpml_catalog_populate.sql"
+    )
 
     # Generate methodology SQL
     generate_methodology_sql(

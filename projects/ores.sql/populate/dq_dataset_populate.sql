@@ -66,27 +66,6 @@ select ores.upsert_dq_datasets(
     'dq_populate_currencies'
 );
 
-select ores.upsert_dq_datasets(
-    'geo.ip2country',
-    'IP Geolocation',
-    'IP Address to Country maps',
-    'Reference Data',
-    'ISO_3166_1_ALPHA_2',
-    'Primary',
-    'Actual',
-    'Raw',
-    'iptoasn.com IP to Country Download',
-    'IPv4 to Country Mapping',
-    'IPv4 address ranges mapped to ISO 3166-1 alpha-2 country codes. Contains ~512k IP ranges covering the full IPv4 address space.',
-    'IPTOASN',
-    'Geographic IP lookup for IPv4 addresses',
-    '2025-12-30'::date,
-    'PDDL v1.0',
-    'ip2country',
-    'geo_ip2country_tbl',
-    'dq_populate_ip2country'
-);
-
 -- =============================================================================
 -- Summary
 -- =============================================================================

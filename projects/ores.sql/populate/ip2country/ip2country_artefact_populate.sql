@@ -44,13 +44,13 @@ begin
     -- Get dataset ID
     select id into v_dataset_id
     from ores.dq_datasets_tbl
-    where name = 'IPv4 to Country Mapping'
-      and subject_area_name = 'IP Address to Country maps'
+    where name = 'IP to Country IPv4 Ranges'
+      and subject_area_name = 'IP Geolocation'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset not found: IPv4 to Country Mapping';
+        raise exception 'Dataset not found: IP to Country IPv4 Ranges';
     end if;
 
     raise notice 'Dataset ID: %', v_dataset_id;

@@ -19,22 +19,26 @@
  */
 
 /**
- * Visual Assets Catalog Population Script
+ * IP Geolocation Dataset Tags
  *
- * Auto-generated from external/flags/manifest.json
- * This script is idempotent.
+ * Tags for IP geolocation datasets.
+ * Auto-generated from external/ip2country/manifest.json
+ * Must be run after ip2country_dataset_populate.sql.
  */
 
 set schema 'ores';
 
 -- =============================================================================
--- Visual Assets Catalog
+-- IP Geolocation Dataset Tags
 -- =============================================================================
 
-\echo '--- Visual Assets Catalog ---'
+\echo '--- IP Geolocation Dataset Tags ---'
 
-select ores.upsert_dq_catalogs(
-    'Visual Assets',
-    'Visual media assets including country flag images, cryptocurrency icons, and other imagery used to enrich reference data displays.',
-    'Reference Data Team'
+select ores.upsert_dq_tag(
+    'IP to Country IPv4 Ranges',
+    'IP Geolocation',
+    'Reference Data',
+    'geolocation',
+    'IP address geolocation data'
 );
+

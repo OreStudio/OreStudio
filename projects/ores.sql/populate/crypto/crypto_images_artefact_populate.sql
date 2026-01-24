@@ -24,12 +24,12 @@
 -- Domain: Reference Data
 --
 -- This file was auto-generated from the SVG files in external/crypto/cryptocurrency-icons
--- by generate_dq_images_sql.py
+-- by images_generate_sql.py
 --
 -- To regenerate, run:
---   python3 generate_dq_images_sql.py --config <config_name>
+--   python3 images_generate_sql.py --config <config_name>
 -- or with explicit parameters:
---   python3 generate_dq_images_sql.py --dataset-name "..." --subject-area "..." --domain "..." ...
+--   python3 images_generate_sql.py --dataset-name "..." --subject-area "..." --domain "..." ...
 
 set schema 'ores';
 

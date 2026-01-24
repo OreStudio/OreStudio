@@ -61,6 +61,48 @@ def escape_sql_string(s: str) -> str:
     return s.replace("'", "''")
 
 
+def generate_catalog_sql(manifest: dict, output_file: Path):
+    """Generate the catalog populate SQL file."""
+    print(f"Generating {output_file.name}...")
+
+    catalog = manifest.get('catalog')
+    if not catalog:
+        print("  No catalog defined in manifest, skipping")
+        return
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(get_header())
+        f.write("""
+/**
+ * Cryptocurrency Catalog Population Script
+ *
+ * Auto-generated from external/crypto/manifest.json
+ * This script is idempotent.
+ */
+
+set schema 'ores';
+
+-- =============================================================================
+-- Cryptocurrency Catalog
+-- =============================================================================
+
+\\echo '--- Cryptocurrency Catalog ---'
+
+""")
+        name = escape_sql_string(catalog['name'])
+        description = escape_sql_string(catalog['description'])
+        owner = escape_sql_string(catalog['owner'])
+
+        f.write(f"""select ores.upsert_dq_catalogs(
+    '{name}',
+    '{description}',
+    '{owner}'
+);
+""")
+
+    print(f"  Generated catalog: {catalog['name']}")
+
+
 def generate_methodology_sql(manifest: dict, methodology_text: str, output_file: Path):
     """Generate the methodology populate SQL file."""
     print(f"Generating {output_file.name}...")
@@ -244,7 +286,14 @@ def generate_master_sql(output_file: Path):
  */
 
 -- =============================================================================
--- Cryptocurrency Methodology (must come first)
+-- Cryptocurrency Catalog (must come first)
+-- =============================================================================
+
+\\echo '--- Cryptocurrency Catalog ---'
+\\ir crypto_catalog_populate.sql
+
+-- =============================================================================
+-- Cryptocurrency Methodology
 -- =============================================================================
 
 \\echo '--- Cryptocurrency Methodology ---'
@@ -337,6 +386,7 @@ def main():
         methodology_text = f.read().strip()
 
     # Generate files
+    generate_catalog_sql(manifest, output_dir / 'crypto_catalog_populate.sql')
     generate_methodology_sql(manifest, methodology_text,
                               output_dir / 'crypto_methodology_populate.sql')
     generate_dataset_sql(manifest, output_dir / 'crypto_dataset_populate.sql')

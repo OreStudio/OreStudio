@@ -39,14 +39,6 @@ select ores.upsert_dq_tag(
     'Country reference data'
 );
 
-select ores.upsert_dq_tag(
-    'IPv4 to Country Mapping',
-    'IP Address to Country maps',
-    'Reference Data',
-    'geolocation',
-    'IP address geolocation reference data'
-);
-
 -- =============================================================================
 -- Summary
 -- =============================================================================

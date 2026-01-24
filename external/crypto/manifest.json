@@ -3,6 +3,11 @@
     "description": "Cryptocurrency symbols, names, and icon images from community-maintained repositories",
     "downloaded_at": "2026-01-20",
     "methodology_file": "methodology.txt",
+    "catalog": {
+        "name": "Cryptocurrency",
+        "description": "Digital asset reference data including cryptocurrency symbols and names from community-maintained repositories.",
+        "owner": "Digital Assets Team"
+    },
     "sources": [
         {
             "name": "GitHub Cryptocurrency Icons Download",

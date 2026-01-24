@@ -109,6 +109,10 @@ fi
 # Step 2: Copy generated SQL files
 echo "Step 2: Copying generated SQL files..."
 echo "----------------------------------------------"
+if [ -f "$OUTPUT_DIR/fpml_catalog_populate.sql" ]; then
+    cp "$OUTPUT_DIR/fpml_catalog_populate.sql" "$POPULATE_DIR/"
+    echo "  -> $POPULATE_DIR/fpml_catalog_populate.sql"
+fi
 if [ -f "$OUTPUT_DIR/fpml_methodology_populate.sql" ]; then
     cp "$OUTPUT_DIR/fpml_methodology_populate.sql" "$POPULATE_DIR/"
     echo "  -> $POPULATE_DIR/fpml_methodology_populate.sql"

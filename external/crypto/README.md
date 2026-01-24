@@ -7,10 +7,7 @@ mappings and SVG icons.
 
 ```bash
 # Generate all crypto SQL files
-python3 projects/ores.codegen/src/crypto_generate_sql.py
-
-# Skip regenerating images (if unchanged)
-python3 projects/ores.codegen/src/crypto_generate_sql.py --skip-images
+python3 projects/ores.codegen/src/crypto_generate_metadata_sql.py
 ```
 
 ## Data Files
@@ -22,15 +19,19 @@ python3 projects/ores.codegen/src/crypto_generate_sql.py --skip-images
 | `cryptocurrencies/` | JSON mapping of symbol to name | ~12,243 |
 | `cryptocurrency-icons/` | SVG icons keyed by symbol | 483 |
 
-### Generated SQL (in projects/ores.sql/populate/)
+### Generated SQL (in projects/ores.sql/populate/crypto/)
 
 | File | Description |
 |------|-------------|
-| `crypto_dataset_populate.sql` | Dataset definitions |
-| `crypto_images_artefact_populate.sql` | Icon images (~483) |
-| `crypto_currencies_large_artefact_populate.sql` | All ~12K coins |
-| `crypto_currencies_small_artefact_populate.sql` | Top 100 coins |
 | `crypto.sql` | Master include file |
+| `crypto_catalog_populate.sql` | Cryptocurrency catalog |
+| `crypto_methodology_populate.sql` | Data sourcing methodology |
+| `crypto_dataset_populate.sql` | Dataset definitions |
+| `crypto_dataset_tag_populate.sql` | Dataset tags |
+| `crypto_dataset_dependency_populate.sql` | Dataset dependencies |
+| `crypto_images_artefact_populate.sql` | Icon images (~483) |
+| `crypto_currencies_small_artefact_populate.sql` | Top 100 coins |
+| `crypto_currencies_large_artefact_populate.sql` | All ~12K coins |
 
 ## Dataset Sizes
 
@@ -57,6 +58,6 @@ Cryptocurrencies are classified as:
 
 ## Related Files
 
-- Generator script: `projects/ores.codegen/src/crypto_generate_sql.py`
-- Manifest: `external/crypto/manifest.txt`
+- Generator script: `projects/ores.codegen/src/crypto_generate_metadata_sql.py`
+- Manifest: `external/crypto/manifest.json`
 - Methodology: `external/crypto/methodology.txt`

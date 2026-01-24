@@ -50,47 +50,47 @@
 -- Data Quality Framework (change control, dimensions, domains, subject areas, coding schemes)
 \echo ''
 \echo '--- Data Quality Framework ---'
-\ir dq/dq.sql
+\ir dq/populate_dq.sql
 
 -- Flag Icons Reference Data (Visual Assets catalog, datasets, and images - must come before ISO)
 \echo ''
 \echo '--- Flag Icons Reference Data ---'
-\ir flags/flags.sql
+\ir flags/populate_flags.sql
 
 -- ISO Standards Reference Data (catalog, datasets, countries, currencies)
 \echo ''
 \echo '--- ISO Standards Reference Data ---'
-\ir iso/iso.sql
+\ir iso/populate_iso.sql
 
 -- Solvaris Reference Data
 \echo ''
 \echo '--- Solvaris Reference Data ---'
-\ir solvaris/solvaris.sql
+\ir solvaris/populate_solvaris.sql
 
 -- IP to Country Reference Data (iptoasn.com)
 \echo ''
 \echo '--- IP to Country Reference Data ---'
-\ir ip2country/ip2country.sql
+\ir ip2country/populate_ip2country.sql
 
 -- FPML Reference Data (methodology, coding schemes, datasets, artefacts)
 \echo ''
 \echo '--- FPML Reference Data ---'
-\ir fpml/fpml.sql
+\ir fpml/populate_fpml.sql
 
 -- Cryptocurrency Reference Data (datasets, images, currencies)
 \echo ''
 \echo '--- Cryptocurrency Reference Data ---'
-\ir crypto/crypto.sql
+\ir crypto/populate_crypto.sql
 
 -- IAM (Identity and Access Management)
 \echo ''
 \echo '--- IAM ---'
-\ir iam/iam.sql
+\ir iam/populate_iam.sql
 
 -- Variability (Feature Flags)
 \echo ''
 \echo '--- Variability ---'
-\ir variability/variability.sql
+\ir variability/populate_variability.sql
 
 \echo ''
 \echo '=== System Population Complete ==='

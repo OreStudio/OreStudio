@@ -27,7 +27,7 @@ echo "=== ER Diagram Generation ==="
 
 # Step 1: Parse SQL and generate model (includes validation)
 echo "Parsing SQL schema..."
-python "${SCRIPT_DIR}/src/plantuml_er_parse_sql.py" \
+python3 "${SCRIPT_DIR}/src/plantuml_er_parse_sql.py" \
     --create-dir "${SQL_DIR}/create" \
     --drop-dir "${SQL_DIR}/drop" \
     --output "${SCRIPT_DIR}/models/plantuml_er_model.json" \
@@ -38,7 +38,7 @@ python "${SCRIPT_DIR}/src/plantuml_er_parse_sql.py" \
 # Step 2: Generate PlantUML from model
 echo ""
 echo "Generating PlantUML..."
-python "${SCRIPT_DIR}/src/plantuml_er_generate.py" \
+python3 "${SCRIPT_DIR}/src/plantuml_er_generate.py" \
     --model "${SCRIPT_DIR}/models/plantuml_er_model.json" \
     --template "${SCRIPT_DIR}/library/templates/plantuml_er.mustache" \
     --output "${SQL_DIR}/modeling/ores_schema.puml"

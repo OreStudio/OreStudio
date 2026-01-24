@@ -116,11 +116,12 @@ begin
         raise exception 'Invalid mode: %. Use upsert, insert_only, or replace_all', p_mode;
     end if;
 
-    -- Handle replace_all mode
+    -- Handle replace_all mode (only affects records from this dataset)
     if p_mode = 'replace_all' then
         update ores.dq_coding_schemes_tbl
         set valid_to = current_timestamp
-        where valid_to = ores.utility_infinity_timestamp_fn();
+        where change_commentary = 'Imported from DQ dataset: ' || v_dataset_name
+          and valid_to = ores.utility_infinity_timestamp_fn();
 
         get diagnostics v_deleted = row_count;
     end if;

@@ -76,7 +76,7 @@ select * from ores.dq_populate_coding_schemes(
 \ir fpml_dataset_dependency_populate.sql
 
 -- =============================================================================
--- FPML Artefacts (coding schemes already loaded above)
+-- FPML Artefacts
 -- =============================================================================
 
 \echo '--- FPML Artefacts ---'

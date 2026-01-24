@@ -38,6 +38,9 @@ on "ores"."dq_tags_artefact_tbl" (name);
 
 -- Unique constraint to prevent duplicate tag names per dataset
 alter table "ores"."dq_tags_artefact_tbl"
+drop constraint if exists dq_tags_artefact_dataset_name_uq;
+
+alter table "ores"."dq_tags_artefact_tbl"
 add constraint dq_tags_artefact_dataset_name_uq unique (dataset_id, name);
 
 -- Function to insert tags into the artifact table

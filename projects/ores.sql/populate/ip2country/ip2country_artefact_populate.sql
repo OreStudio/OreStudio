@@ -45,7 +45,7 @@ begin
     select id into v_dataset_id
     from ores.dq_datasets_tbl
     where name = 'IP to Country IPv4 Ranges'
-      and subject_area_name = 'IP Geolocation'
+      and subject_area_name = 'IP Address to Country maps'
       and domain_name = 'Reference Data'
       and valid_to = ores.utility_infinity_timestamp_fn();
 

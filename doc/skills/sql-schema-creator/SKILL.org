@@ -21,6 +21,9 @@ When you need to add new SQL tables, triggers, or reference data to the ORE
 Studio database. This skill complements the [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]] skill by
 handling the database schema aspects of domain types.
 
+For architecture overview, schema diagrams, and PostgreSQL extensions setup,
+see the [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]] documentation.
+
 * How to use this skill
 
 1. Gather requirements about the table (name, columns, relationships).

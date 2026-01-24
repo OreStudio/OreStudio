@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="20"
+   height="20"
+   viewBox="0 0 20 20"
+   fill="none"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="ic_fluent_arrow_download_fpml_20_filled.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="42.35"
+     inkscape:cx="10"
+     inkscape:cy="10"
+     inkscape:window-width="1920"
+     inkscape:window-height="1056"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <!-- Shortened download arrow (filled version) - horizontal bar is now half the length -->
+  <path
+     d="m 12.5,17.263905 c 0.2761,0 0.5,0.164744 0.5,0.367898 0,0.180637 -0.1769,0.330887 -0.4101,0.362011 L 12.5,17.9997 h -5 C 7.22386,17.9997 7,17.835029 7,17.631803 7,17.451238 7.17688,17.300989 7.41012,17.269864 L 7.5,17.263905 Z M 10.0001,6.2286324 c 0.2455,0 0.4496,0.1302432 0.4919,0.3018747 l 0.008,0.066133 -0.004,8.6778939 1.6454,-1.212884 c 0.1734,-0.127807 0.4428,-0.142155 0.6378,-0.04297 l 0.0693,0.04253 c 0.1737,0.127586 0.1933,0.32581 0.0585,0.46929 l -0.0578,0.05099 -2.4918,1.839487 c -0.0724,0.05342 -0.1617,0.08705 -0.2553,0.100803 l -0.10602,0.0071 c -0.16097,0 -0.30416,-0.056 -0.39557,-0.142966 L 7.14386,14.581931 c -0.1954,-0.143627 -0.19563,-0.376579 -5e-4,-0.520354 0.17344,-0.127734 0.44285,-0.142082 0.63781,-0.0429 L 7.85046,14.061209 9.496,15.268649 9.5,6.596427 c 8e-5,-0.2031825 0.224,-0.3677946 0.5001,-0.3677946 z"
+     fill="#212121"
+     id="path1"
+     style="stroke-width:0.857785" />
+  <!-- Text label positioned at the top of the icon -->
+  <text
+     x="10.070838"
+     y="5.5832348"
+     font-family="Arial, sans-serif"
+     font-size="7"
+     fill="#212121"
+     font-weight="bold"
+     text-anchor="middle"
+     id="text1"
+     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:7px;font-family:FreeMono;-inkscape-font-specification:'FreeMono, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle;fill:#212121">FPML</text>
+</svg>

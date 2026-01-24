@@ -18,25 +18,25 @@
  *
  */
 
+/**
+ * ISO Standards Catalog Population Script
+ *
+ * Seeds the database with the ISO Standards catalog for core country/currency data.
+ * This script is idempotent.
+ */
+
 set schema 'ores';
 
 -- =============================================================================
--- Seed Data
+-- ISO Standards Catalog
 -- =============================================================================
-select ores.upsert_dq_tag(
-    'ISO 4217 Currency Codes',
-    'Currencies',
-    'Reference Data',
-    'currency',
-    'Currency reference data'
-);
 
-select ores.upsert_dq_tag(
-    'ISO 3166 Country Codes',
-    'Countries',
-    'Reference Data',
-    'country',
-    'Country reference data'
+\echo '--- ISO Standards Catalog ---'
+
+select ores.upsert_dq_catalogs(
+    'ISO Standards',
+    'International Organization for Standardization (ISO) reference data including ISO 3166 country codes and ISO 4217 currency codes.',
+    'Reference Data Team'
 );
 
 -- =============================================================================
@@ -46,9 +46,6 @@ select ores.upsert_dq_tag(
 \echo ''
 \echo '--- Summary ---'
 
-select 'dq_datasets' as entity, count(*) as count
-from ores.dq_datasets_tbl
-where valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'dq_tags_artefact', count(*)
-from ores.dq_tags_artefact_tbl;
+select 'Data Quality Catalogs' as entity, count(*) as count
+from ores.dq_catalogs_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+order by entity;

@@ -704,6 +704,45 @@ def generate_methodology_sql(manifest: dict, methodology_text: str, output_path:
     print(f"Generated: {output_path}")
 
 
+def generate_dataset_dependency_sql(manifest: dict, output_path: Path):
+    """Generate SQL file with dataset dependency upserts from manifest."""
+    dependencies = manifest.get('dependencies', [])
+
+    lines = [
+        "/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-",
+        " *",
+        " * FPML Dataset Dependencies Population Script",
+        " *",
+        " * Auto-generated from external/fpml/manifest.json",
+        " * Must be run after fpml dataset populate scripts.",
+        " */",
+        "",
+        "set schema 'ores';",
+        "",
+        "-- =============================================================================",
+        "-- FPML Dataset Dependencies",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FPML Dataset Dependencies ---'",
+        ""
+    ]
+
+    for dep in dependencies:
+        dataset_code = dep['dataset_code']
+        dependency_code = dep['dependency_code']
+        role = dep['role']
+
+        lines.append(f"select ores.upsert_dq_dataset_dependency(")
+        lines.append(f"    '{dataset_code}',")
+        lines.append(f"    '{dependency_code}',")
+        lines.append(f"    '{role}'")
+        lines.append(");")
+        lines.append("")
+
+    output_path.write_text('\n'.join(lines))
+    print(f"Generated: {output_path}")
+
+
 def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files: list[str]):
     """Generate fpml.sql master include file with all FPML files in correct order."""
     lines = [
@@ -747,6 +786,13 @@ def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files
         lines.append(f"\\ir {f}")
 
     lines.extend([
+        "",
+        "-- =============================================================================",
+        "-- FPML Dataset Dependencies",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FPML Dataset Dependencies ---'",
+        "\\ir fpml_dataset_dependency_populate.sql",
         "",
         "-- =============================================================================",
         "-- FPML Artefacts",
@@ -904,6 +950,12 @@ def main():
         manifest,
         methodology_text,
         args.output_dir / "fpml_methodology_populate.sql"
+    )
+
+    # Generate dataset dependency SQL
+    generate_dataset_dependency_sql(
+        manifest,
+        args.output_dir / "fpml_dataset_dependency_populate.sql"
     )
 
     # Always generate coding schemes SQL

@@ -272,6 +272,55 @@ set schema 'ores';
     print(f"  Generated {tag_count} dataset tag entries")
 
 
+def generate_dataset_dependency_sql(manifest: dict, output_file: Path):
+    """Generate the dataset dependency populate SQL file."""
+    print(f"Generating {output_file.name}...")
+
+    datasets = manifest.get('datasets', [])
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(get_header())
+        f.write("""
+/**
+ * Flag Icons Dataset Dependencies
+ *
+ * Dependencies between flag icon datasets.
+ * Auto-generated from external/flags/manifest.json
+ * Must be run after flags_dataset_populate.sql.
+ */
+
+set schema 'ores';
+
+-- =============================================================================
+-- Flag Icons Dataset Dependencies
+-- =============================================================================
+
+\\echo '--- Flag Icons Dataset Dependencies ---'
+
+""")
+
+        dep_count = 0
+        for dataset in datasets:
+            if 'dependencies' not in dataset:
+                continue
+
+            dataset_code = dataset['code']
+            for dep in dataset['dependencies']:
+                dep_code = dep['code']
+                role = dep['role']
+
+                f.write(f"""select ores.upsert_dq_dataset_dependency(
+    '{dataset_code}',
+    '{dep_code}',
+    '{role}'
+);
+
+""")
+                dep_count += 1
+
+    print(f"  Generated {dep_count} dataset dependency entries")
+
+
 def generate_master_sql(output_file: Path):
     """Generate the flags.sql master include file."""
     print(f"Generating {output_file.name}...")
@@ -312,6 +361,13 @@ def generate_master_sql(output_file: Path):
 
 \\echo '--- Flag Icons Dataset Tags ---'
 \\ir flags_dataset_tag_populate.sql
+
+-- =============================================================================
+-- Flag Icons Dataset Dependencies
+-- =============================================================================
+
+\\echo '--- Flag Icons Dataset Dependencies ---'
+\\ir flags_dataset_dependency_populate.sql
 
 -- =============================================================================
 -- Flag Icon Images
@@ -383,6 +439,7 @@ def main():
                               output_dir / 'flags_methodology_populate.sql')
     generate_dataset_sql(manifest, output_dir / 'flags_dataset_populate.sql')
     generate_dataset_tag_sql(manifest, output_dir / 'flags_dataset_tag_populate.sql')
+    generate_dataset_dependency_sql(manifest, output_dir / 'flags_dataset_dependency_populate.sql')
     generate_master_sql(output_dir / 'flags.sql')
 
     print()

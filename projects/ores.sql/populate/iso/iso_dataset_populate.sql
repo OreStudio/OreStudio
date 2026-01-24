@@ -18,11 +18,20 @@
  *
  */
 
+/**
+ * ISO Standards Dataset Population Script
+ *
+ * Seeds the database with ISO Standards datasets for countries and currencies.
+ * This script is idempotent.
+ */
+
 set schema 'ores';
 
 -- =============================================================================
--- Seed Data
+-- ISO Standards Datasets
 -- =============================================================================
+
+\echo '--- ISO Standards Datasets ---'
 
 select ores.upsert_dq_datasets(
     'iso.countries',

@@ -19,33 +19,34 @@
  */
 
 /**
- * Data Quality Catalog Population Script
+ * ISO Standards Dataset Tag Population Script
  *
- * Seeds the database with catalog values for grouping related datasets.
+ * Seeds the database with tags for ISO Standards datasets.
  * This script is idempotent.
- *
- * NOTE: Most catalogs are now defined in their respective domain directories:
- * - crypto/crypto_catalog_populate.sql: Cryptocurrency catalog
- * - flags/flags_catalog_populate.sql: Visual Assets catalog
- * - fpml/fpml_catalog_populate.sql: FpML Standards catalog
- * - ip2country/ip2country_catalog_populate.sql: IP Geolocation catalog
- * - solvaris/solvaris_catalog_populate.sql: Slovaris catalog
- *
- * This file only contains the ISO Standards catalog for core country/currency data.
  */
 
 set schema 'ores';
 
 -- =============================================================================
--- Data Quality Catalogs
+-- ISO Standards Dataset Tags
 -- =============================================================================
 
-\echo '--- Data Quality Catalogs ---'
+\echo '--- ISO Standards Dataset Tags ---'
 
-select ores.upsert_dq_catalogs(
-    'ISO Standards',
-    'International Organization for Standardization (ISO) reference data including ISO 3166 country codes and ISO 4217 currency codes.',
-    'Reference Data Team'
+select ores.upsert_dq_tag(
+    'ISO 4217 Currency Codes',
+    'Currencies',
+    'Reference Data',
+    'currency',
+    'Currency reference data'
+);
+
+select ores.upsert_dq_tag(
+    'ISO 3166 Country Codes',
+    'Countries',
+    'Reference Data',
+    'country',
+    'Country reference data'
 );
 
 -- =============================================================================
@@ -55,6 +56,9 @@ select ores.upsert_dq_catalogs(
 \echo ''
 \echo '--- Summary ---'
 
-select 'Data Quality Catalogs' as entity, count(*) as count
-from ores.dq_catalogs_tbl where valid_to = ores.utility_infinity_timestamp_fn()
-order by entity;
+select 'dq_datasets' as entity, count(*) as count
+from ores.dq_datasets_tbl
+where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'dq_tags_artefact', count(*)
+from ores.dq_tags_artefact_tbl;

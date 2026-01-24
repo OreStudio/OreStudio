@@ -272,6 +272,55 @@ set schema 'ores';
     print(f"  Generated {tag_count} dataset tag entries")
 
 
+def generate_dataset_dependency_sql(manifest: dict, output_file: Path):
+    """Generate the dataset dependency populate SQL file."""
+    print(f"Generating {output_file.name}...")
+
+    datasets = manifest.get('datasets', [])
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(get_header())
+        f.write("""
+/**
+ * Cryptocurrency Dataset Dependencies
+ *
+ * Dependencies between cryptocurrency datasets.
+ * Auto-generated from external/crypto/manifest.json
+ * Must be run after crypto_dataset_populate.sql.
+ */
+
+set schema 'ores';
+
+-- =============================================================================
+-- Cryptocurrency Dataset Dependencies
+-- =============================================================================
+
+\\echo '--- Cryptocurrency Dataset Dependencies ---'
+
+""")
+
+        dep_count = 0
+        for dataset in datasets:
+            if 'dependencies' not in dataset:
+                continue
+
+            dataset_code = dataset['code']
+            for dep in dataset['dependencies']:
+                dep_code = dep['code']
+                role = dep['role']
+
+                f.write(f"""select ores.upsert_dq_dataset_dependency(
+    '{dataset_code}',
+    '{dep_code}',
+    '{role}'
+);
+
+""")
+                dep_count += 1
+
+    print(f"  Generated {dep_count} dataset dependency entries")
+
+
 def generate_master_sql(output_file: Path):
     """Generate the crypto.sql master include file."""
     print(f"Generating {output_file.name}...")
@@ -312,6 +361,13 @@ def generate_master_sql(output_file: Path):
 
 \\echo '--- Cryptocurrency Dataset Tags ---'
 \\ir crypto_dataset_tag_populate.sql
+
+-- =============================================================================
+-- Cryptocurrency Dataset Dependencies
+-- =============================================================================
+
+\\echo '--- Cryptocurrency Dataset Dependencies ---'
+\\ir crypto_dataset_dependency_populate.sql
 
 -- =============================================================================
 -- Cryptocurrency Images
@@ -391,6 +447,7 @@ def main():
                               output_dir / 'crypto_methodology_populate.sql')
     generate_dataset_sql(manifest, output_dir / 'crypto_dataset_populate.sql')
     generate_dataset_tag_sql(manifest, output_dir / 'crypto_dataset_tag_populate.sql')
+    generate_dataset_dependency_sql(manifest, output_dir / 'crypto_dataset_dependency_populate.sql')
     generate_master_sql(output_dir / 'crypto.sql')
 
     print()

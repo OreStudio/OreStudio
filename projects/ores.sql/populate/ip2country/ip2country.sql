@@ -35,6 +35,13 @@
 \ir ip2country_dataset_tag_populate.sql
 
 -- =============================================================================
+-- IP Geolocation Dataset Dependencies
+-- =============================================================================
+
+\echo '--- IP Geolocation Dataset Dependencies ---'
+\ir ip2country_dataset_dependency_populate.sql
+
+-- =============================================================================
 -- IP to Country Artefacts
 -- =============================================================================
 

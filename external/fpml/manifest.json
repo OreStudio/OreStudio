@@ -8,5 +8,17 @@
         "name": "FpML Standards",
         "description": "Financial products Markup Language (FpML) coding schemes and reference data for OTC derivatives trading. Includes non-ISO currencies, business centers, and other FpML-defined code lists.",
         "owner": "Reference Data Team"
-    }
+    },
+    "dependencies": [
+        {
+            "dataset_code": "fpml.non_iso_currency",
+            "dependency_code": "assets.country_flags",
+            "role": "visual_assets"
+        },
+        {
+            "dataset_code": "fpml.business_center",
+            "dependency_code": "assets.country_flags",
+            "role": "visual_assets"
+        }
+    ]
 }

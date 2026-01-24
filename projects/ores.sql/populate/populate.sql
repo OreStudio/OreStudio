@@ -51,11 +51,6 @@
 \echo '--- Change Control ---'
 \ir dq_change_reasons_populate.sql
 
--- Data Quality Catalogs
-\echo ''
-\echo '--- Data Quality Catalogs ---'
-\ir dq_catalog_populate.sql
-
 -- Data Quality Data Domains
 \echo ''
 \echo '--- Data Quality Data Domains ---'
@@ -83,34 +78,24 @@
 \echo '--- Data Quality Coding Schemes ---'
 \ir dq_coding_scheme_populate.sql
 
--- Data Quality Methodologies
+-- General Methodologies (domain-specific methodologies are in their directories)
 \echo ''
-\echo '--- Data Quality Methodologies ---'
+\echo '--- General Methodologies ---'
 \ir dq_methodology_populate.sql
 
--- Data Quality Datasets
-\echo ''
-\echo '--- Data Quality Datasets ---'
-\ir dq_dataset_populate.sql
-
--- Data Quality Dataset Tags
-\echo ''
-\echo '--- Data Quality Dataset Tags ---'
-\ir dq_dataset_tag_populate.sql
-
--- Data Quality Dataset Dependencies
-\echo ''
-\echo '--- Data Quality Dataset Dependencies ---'
-\ir dq_dataset_dependency_populate.sql
-
--- Flag Icons Reference Data (datasets and images - must come before country artefacts)
+-- Flag Icons Reference Data (Visual Assets catalog, datasets, and images - must come before ISO)
 \echo ''
 \echo '--- Flag Icons Reference Data ---'
 \ir flags/flags.sql
 
--- Data Quality Artefacts
-\ir dq_countries_artefact_populate.sql
-\ir dq_currencies_artefact_populate.sql
+-- ISO Standards Reference Data (catalog, datasets, countries, currencies)
+\echo ''
+\echo '--- ISO Standards Reference Data ---'
+\ir iso/iso.sql
+
+-- Solvaris Reference Data
+\echo ''
+\echo '--- Solvaris Reference Data ---'
 \ir solvaris/solvaris.sql
 
 -- IP to Country Reference Data (iptoasn.com)

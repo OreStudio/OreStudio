@@ -19,26 +19,23 @@
  */
 
 /**
- * Data Quality Dataset Dependency Population Script
+ * ISO Standards Dataset Dependency Population Script
  *
- * Seeds the database with dataset dependencies using stable dataset codes.
- * These declare which datasets depend on others for visual assets or reference data.
- *
+ * Seeds the database with dataset dependencies for ISO Standards datasets.
  * Dependencies:
  * - iso.countries depends on assets.country_flags for flag display
  * - iso.currencies depends on assets.country_flags for flag display
- * - fpml.currencies depends on assets.country_flags for flag display
- * - crypto.coins depends on assets.crypto_icons for icon display
- * - crypto.top100 depends on assets.crypto_icons for icon display
+ *
+ * This script is idempotent.
  */
 
 set schema 'ores';
 
 -- =============================================================================
--- Seed Data
+-- ISO Standards Dataset Dependencies
 -- =============================================================================
 
-\echo '--- Dataset Dependencies ---'
+\echo '--- ISO Standards Dataset Dependencies ---'
 
 -- ISO countries uses flag images from Visual Assets
 select ores.upsert_dq_dataset_dependency(
@@ -50,33 +47,6 @@ select ores.upsert_dq_dataset_dependency(
 -- ISO currencies uses flag images from Visual Assets
 select ores.upsert_dq_dataset_dependency(
     'iso.currencies',
-    'assets.country_flags',
-    'visual_assets'
-);
-
--- FpML non-ISO currencies uses flag images from Visual Assets
-select ores.upsert_dq_dataset_dependency(
-    'fpml.currencies',
-    'assets.country_flags',
-    'visual_assets'
-);
-
--- Cryptocurrency datasets use icon images from Visual Assets
-select ores.upsert_dq_dataset_dependency(
-    'crypto.coins',
-    'assets.crypto_icons',
-    'visual_assets'
-);
-
-select ores.upsert_dq_dataset_dependency(
-    'crypto.top100',
-    'assets.crypto_icons',
-    'visual_assets'
-);
-
--- FpML business centres uses flag images from Visual Assets
-select ores.upsert_dq_dataset_dependency(
-    'fpml.business_center',
     'assets.country_flags',
     'visual_assets'
 );

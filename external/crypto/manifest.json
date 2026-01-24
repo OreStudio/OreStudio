@@ -61,7 +61,10 @@
             "target_table": "refdata_currencies_tbl",
             "populate_function": "dq_populate_currencies",
             "tag_code": "cryptocurrency",
-            "tag_description": "Cryptocurrency reference data (~12K coins)"
+            "tag_description": "Cryptocurrency reference data (~12K coins)",
+            "dependencies": [
+                {"code": "assets.crypto_icons", "role": "visual_assets"}
+            ]
         },
         {
             "name": "Cryptocurrencies Small",
@@ -80,7 +83,10 @@
             "target_table": "refdata_currencies_tbl",
             "populate_function": "dq_populate_currencies",
             "tag_code": "cryptocurrency",
-            "tag_description": "Top 100 cryptocurrencies by market cap"
+            "tag_description": "Top 100 cryptocurrencies by market cap",
+            "dependencies": [
+                {"code": "assets.crypto_icons", "role": "visual_assets"}
+            ]
         }
     ]
 }

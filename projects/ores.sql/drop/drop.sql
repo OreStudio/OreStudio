@@ -39,6 +39,9 @@
 -- Reference Data
 \ir ./refdata/drop_refdata.sql
 
+-- Change Control (after refdata due to FK dependencies)
+\ir ./change_control/drop_change_control.sql
+
 -- Seed
 \ir ./seed/drop_seed.sql
 

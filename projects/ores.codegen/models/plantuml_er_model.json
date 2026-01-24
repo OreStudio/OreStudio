@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-24T14:46:32.164331Z",
+  "generated_at": "2026-01-24T15:24:11.241362Z",
   "packages": [
     {
       "name": "iam",
@@ -3665,7 +3665,7 @@
               "type": "text",
               "nullable": false,
               "is_pk": false,
-              "is_fk": false,
+              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -3914,7 +3914,7 @@
               "type": "text",
               "nullable": false,
               "is_pk": false,
-              "is_fk": false,
+              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -4006,7 +4006,7 @@
               "type": "text",
               "nullable": false,
               "is_pk": false,
-              "is_fk": false,
+              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -4610,7 +4610,7 @@
               "type": "text",
               "nullable": false,
               "is_pk": false,
-              "is_fk": false,
+              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -4620,7 +4620,7 @@
               "type": "text",
               "nullable": false,
               "is_pk": false,
-              "is_fk": false,
+              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -4630,7 +4630,7 @@
               "type": "text",
               "nullable": false,
               "is_pk": false,
-              "is_fk": false,
+              "is_fk": true,
               "is_unique": false,
               "default": null,
               "references": null
@@ -6532,5 +6532,1370 @@
       ]
     }
   ],
-  "warnings": []
+  "relationships": [
+    {
+      "from_table": "assets_images_tbl",
+      "to_table": "assets_image_tags_tbl",
+      "cardinality": "||--o{",
+      "label": "tagged with"
+    },
+    {
+      "from_table": "assets_tags_tbl",
+      "to_table": "assets_image_tags_tbl",
+      "cardinality": "||--o{",
+      "label": "applied to"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "assets_images_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "assets_tags_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_change_reason_categories_tbl",
+      "to_table": "dq_change_reasons_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_account_types_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_asset_classes_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_asset_measures_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_benchmark_rates_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_business_centres_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_business_processes_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_cashflow_types_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "dq_catalogs_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "dq_coding_scheme_authority_types_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_scheme_authority_types_tbl",
+      "to_table": "dq_coding_schemes_tbl",
+      "cardinality": "||--o{",
+      "label": "classifies"
+    },
+    {
+      "from_table": "dq_subject_areas_tbl",
+      "to_table": "dq_coding_schemes_tbl",
+      "cardinality": "||--o{",
+      "label": "defines"
+    },
+    {
+      "from_table": "dq_data_domains_tbl",
+      "to_table": "dq_coding_schemes_tbl",
+      "cardinality": "||--o{",
+      "label": "groups"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "dq_coding_schemes_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_coding_schemes_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_coding_scheme_authority_types_tbl",
+      "to_table": "dq_coding_schemes_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "classifies"
+    },
+    {
+      "from_table": "dq_subject_areas_tbl",
+      "to_table": "dq_coding_schemes_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "defines"
+    },
+    {
+      "from_table": "dq_data_domains_tbl",
+      "to_table": "dq_coding_schemes_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "groups"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_countries_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "assets_images_tbl",
+      "to_table": "dq_countries_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "has"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_currencies_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "assets_images_tbl",
+      "to_table": "dq_currencies_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "has"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "dq_data_domains_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_catalogs_tbl",
+      "to_table": "dq_datasets_tbl",
+      "cardinality": "||--o{",
+      "label": "groups"
+    },
+    {
+      "from_table": "dq_subject_areas_tbl",
+      "to_table": "dq_datasets_tbl",
+      "cardinality": "||--o{",
+      "label": "classifies"
+    },
+    {
+      "from_table": "dq_data_domains_tbl",
+      "to_table": "dq_datasets_tbl",
+      "cardinality": "||--o{",
+      "label": "groups"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "dq_datasets_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_origin_dimensions_tbl",
+      "to_table": "dq_datasets_tbl",
+      "cardinality": "||--o{",
+      "label": "describes origin"
+    },
+    {
+      "from_table": "dq_nature_dimensions_tbl",
+      "to_table": "dq_datasets_tbl",
+      "cardinality": "||--o{",
+      "label": "describes nature"
+    },
+    {
+      "from_table": "dq_treatment_dimensions_tbl",
+      "to_table": "dq_datasets_tbl",
+      "cardinality": "||--o{",
+      "label": "describes treatment"
+    },
+    {
+      "from_table": "dq_methodologies_tbl",
+      "to_table": "dq_datasets_tbl",
+      "cardinality": "||--o{",
+      "label": "applied to"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_datasets_tbl",
+      "cardinality": "||--o{",
+      "label": "derives from"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "dq_datasets_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "dq_dataset_dependencies_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_entity_classifications_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_image_tags_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "assets_images_tbl",
+      "to_table": "dq_image_tags_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "tagged with"
+    },
+    {
+      "from_table": "assets_tags_tbl",
+      "to_table": "dq_image_tags_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "applied to"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_images_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "assets_images_tbl",
+      "to_table": "dq_images_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "has"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_ip2country_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "refdata_countries_tbl",
+      "to_table": "dq_ip2country_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "has"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_local_jurisdictions_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "dq_methodologies_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "dq_nature_dimensions_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "dq_origin_dimensions_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_party_relationships_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_party_roles_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_person_roles_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_publications_tbl",
+      "cardinality": "||--o{",
+      "label": "published as"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_regulatory_corporate_sectors_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_reporting_regimes_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_data_domains_tbl",
+      "to_table": "dq_subject_areas_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "dq_subject_areas_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_supervisory_bodies_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "dq_datasets_tbl",
+      "to_table": "dq_tags_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "contains"
+    },
+    {
+      "from_table": "assets_tags_tbl",
+      "to_table": "dq_tags_artefact_tbl",
+      "cardinality": "||--o{",
+      "label": "has"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "dq_treatment_dimensions_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "refdata_countries_tbl",
+      "to_table": "geo_ip2country_tbl",
+      "cardinality": "||--o{",
+      "label": "has"
+    },
+    {
+      "from_table": "iam_accounts_tbl",
+      "to_table": "iam_account_roles_tbl",
+      "cardinality": "||--o{",
+      "label": "assigned"
+    },
+    {
+      "from_table": "iam_roles_tbl",
+      "to_table": "iam_account_roles_tbl",
+      "cardinality": "||--o{",
+      "label": "granted to"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "iam_account_roles_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "iam_accounts_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "iam_accounts_tbl",
+      "to_table": "iam_login_info_tbl",
+      "cardinality": "||--o|",
+      "label": "has"
+    },
+    {
+      "from_table": "iam_roles_tbl",
+      "to_table": "iam_role_permissions_tbl",
+      "cardinality": "||--o{",
+      "label": "has"
+    },
+    {
+      "from_table": "iam_permissions_tbl",
+      "to_table": "iam_role_permissions_tbl",
+      "cardinality": "||--o{",
+      "label": "included in"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "iam_roles_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "iam_accounts_tbl",
+      "to_table": "iam_sessions_tbl",
+      "cardinality": "||--o{",
+      "label": "creates"
+    },
+    {
+      "from_table": "refdata_countries_tbl",
+      "to_table": "iam_sessions_tbl",
+      "cardinality": "||--o{",
+      "label": "has"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_account_types_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_account_types_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_asset_classes_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_asset_classes_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_asset_measures_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_asset_measures_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_benchmark_rates_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_benchmark_rates_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_business_centres_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "assets_images_tbl",
+      "to_table": "refdata_business_centres_tbl",
+      "cardinality": "||--o{",
+      "label": "has"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_business_centres_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_business_processes_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_business_processes_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_cashflow_types_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_cashflow_types_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_countries_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "assets_images_tbl",
+      "to_table": "refdata_countries_tbl",
+      "cardinality": "||--o{",
+      "label": "has"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_countries_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_currencies_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "assets_images_tbl",
+      "to_table": "refdata_currencies_tbl",
+      "cardinality": "||--o{",
+      "label": "has"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_currencies_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_entity_classifications_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_entity_classifications_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_local_jurisdictions_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_local_jurisdictions_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_party_relationships_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_party_relationships_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_party_roles_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_party_roles_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_person_roles_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_person_roles_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_regulatory_corporate_sectors_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_regulatory_corporate_sectors_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_reporting_regimes_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_reporting_regimes_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "dq_coding_schemes_tbl",
+      "to_table": "refdata_supervisory_bodies_tbl",
+      "cardinality": "||--o{",
+      "label": "identifies"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "refdata_supervisory_bodies_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    },
+    {
+      "from_table": "iam_sessions_tbl",
+      "to_table": "telemetry_logs_tbl",
+      "cardinality": "||--o{",
+      "label": "generates"
+    },
+    {
+      "from_table": "iam_accounts_tbl",
+      "to_table": "telemetry_logs_tbl",
+      "cardinality": "||--o{",
+      "label": "generates"
+    },
+    {
+      "from_table": "dq_change_reasons_tbl",
+      "to_table": "variability_feature_flags_tbl",
+      "cardinality": "||--o{",
+      "label": "reason for"
+    }
+  ],
+  "warnings": [
+    {
+      "file": "create/change_control/dq_change_reason_categories_create.sql",
+      "line": 22,
+      "code": "TEMPORAL_006",
+      "message": "Temporal table 'dq_change_reason_categories_tbl' missing 'change_reason_code' column"
+    },
+    {
+      "file": "create/change_control/dq_change_reasons_create.sql",
+      "line": 22,
+      "code": "TEMPORAL_006",
+      "message": "Temporal table 'dq_change_reasons_tbl' missing 'change_reason_code' column"
+    },
+    {
+      "file": "create/dq/dq_dataset_dependency_create.sql",
+      "line": 40,
+      "code": "TEMPORAL_004",
+      "message": "Temporal table 'dq_dataset_dependencies_tbl' missing 'version' column"
+    },
+    {
+      "file": "create/dq/dq_dataset_dependency_create.sql",
+      "line": 40,
+      "code": "TEMPORAL_005",
+      "message": "Temporal table 'dq_dataset_dependencies_tbl' missing 'modified_by' column"
+    },
+    {
+      "file": "create/iam/iam_permissions_create.sql",
+      "line": 28,
+      "code": "TEMPORAL_004",
+      "message": "Temporal table 'iam_permissions_tbl' missing 'version' column"
+    },
+    {
+      "file": "create/dq/dq_account_types_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_account_types_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_asset_classes_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_asset_classes_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_asset_measures_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_asset_measures_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_benchmark_rates_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_benchmark_rates_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_business_centres_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_business_centres_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_business_processes_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_business_processes_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_cashflow_types_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_cashflow_types_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_coding_schemes_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_coding_schemes_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_currencies_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_currencies_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_entity_classifications_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_entity_classifications_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_image_tags_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_image_tags_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_images_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_images_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_local_jurisdictions_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_local_jurisdictions_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_party_relationships_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_party_relationships_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_party_roles_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_party_roles_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_person_roles_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_person_roles_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_regulatory_corporate_sectors_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_regulatory_corporate_sectors_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_reporting_regimes_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_reporting_regimes_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_supervisory_bodies_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_supervisory_bodies_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_tags_artefact_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'dq_tags_artefact_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_account_types_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_account_types_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_asset_classes_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_asset_classes_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_asset_measures_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_asset_measures_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_benchmark_rates_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_benchmark_rates_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_business_centres_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_business_centres_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_business_processes_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_business_processes_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_cashflow_types_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_cashflow_types_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_entity_classifications_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_entity_classifications_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_local_jurisdictions_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_local_jurisdictions_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_party_relationships_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_party_relationships_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_party_roles_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_party_roles_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_person_roles_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_person_roles_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_regulatory_corporate_sectors_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_regulatory_corporate_sectors_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_reporting_regimes_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_reporting_regimes_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_supervisory_bodies_create.sql",
+      "line": 0,
+      "code": "DROP_001",
+      "message": "Table 'refdata_supervisory_bodies_tbl' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_account_types_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_account_type_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_account_types_population_functions_create.sql",
+      "line": 85,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_account_types' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_asset_classes_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_asset_class_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_asset_classes_population_functions_create.sql",
+      "line": 85,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_asset_classes' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_asset_measures_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_asset_measure_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_asset_measures_population_functions_create.sql",
+      "line": 85,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_asset_measures' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_benchmark_rates_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_benchmark_rate_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_benchmark_rates_population_functions_create.sql",
+      "line": 85,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_benchmark_rates' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_business_centres_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_business_centre_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_business_centres_population_functions_create.sql",
+      "line": 87,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_business_centres' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_business_processes_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_business_process_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_business_processes_population_functions_create.sql",
+      "line": 85,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_business_processes' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_cashflow_types_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_cashflow_type_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_cashflow_types_population_functions_create.sql",
+      "line": 85,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_cashflow_types' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_coding_schemes_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_coding_scheme_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_coding_schemes_population_functions_create.sql",
+      "line": 86,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_coding_schemes' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_entity_classifications_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_entity_classification_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_entity_classifications_population_functions_create.sql",
+      "line": 85,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_entity_classifications' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_image_tags_artefact_create.sql",
+      "line": 38,
+      "code": "DROP_002",
+      "message": "Function 'dq_image_tags_artefact_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_images_artefact_create.sql",
+      "line": 41,
+      "code": "DROP_002",
+      "message": "Function 'dq_images_artefact_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_local_jurisdictions_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_local_jurisdiction_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_local_jurisdictions_population_functions_create.sql",
+      "line": 85,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_local_jurisdictions' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_party_relationships_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_party_relationship_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_party_relationships_population_functions_create.sql",
+      "line": 85,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_party_relationships' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_party_roles_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_party_role_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_party_roles_population_functions_create.sql",
+      "line": 85,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_party_roles' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_person_roles_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_person_role_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_person_roles_population_functions_create.sql",
+      "line": 85,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_person_roles' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_population_functions_create.sql",
+      "line": 48,
+      "code": "DROP_002",
+      "message": "Function 'dq_list_populatable_datasets' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_population_functions_create.sql",
+      "line": 167,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_image_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_population_functions_create.sql",
+      "line": 210,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_images' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_population_functions_create.sql",
+      "line": 316,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_country_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_population_functions_create.sql",
+      "line": 359,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_countries' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_population_functions_create.sql",
+      "line": 486,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_currency_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_population_functions_create.sql",
+      "line": 537,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_currencies' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_population_functions_create.sql",
+      "line": 674,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_ip2country_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_population_functions_create.sql",
+      "line": 710,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_ip2country' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_regulatory_corporate_sectors_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_regulatory_corporate_sector_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_regulatory_corporate_sectors_population_functions_create.sql",
+      "line": 85,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_regulatory_corporate_sectors' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_reporting_regimes_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_reporting_regime_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_reporting_regimes_population_functions_create.sql",
+      "line": 85,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_reporting_regimes' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_supervisory_bodies_population_functions_create.sql",
+      "line": 43,
+      "code": "DROP_002",
+      "message": "Function 'dq_preview_supervisory_body_population' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_supervisory_bodies_population_functions_create.sql",
+      "line": 85,
+      "code": "DROP_002",
+      "message": "Function 'dq_populate_supervisory_bodies' created but not found in drop scripts"
+    },
+    {
+      "file": "create/dq/dq_tags_artefact_create.sql",
+      "line": 47,
+      "code": "DROP_002",
+      "message": "Function 'dq_tags_artefact_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_account_types_create.sql",
+      "line": 55,
+      "code": "DROP_002",
+      "message": "Function 'refdata_account_types_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_account_types_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_account_types_notify_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_asset_classes_create.sql",
+      "line": 55,
+      "code": "DROP_002",
+      "message": "Function 'refdata_asset_classes_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_asset_classes_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_asset_classes_notify_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_asset_measures_create.sql",
+      "line": 55,
+      "code": "DROP_002",
+      "message": "Function 'refdata_asset_measures_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_asset_measures_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_asset_measures_notify_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_benchmark_rates_create.sql",
+      "line": 55,
+      "code": "DROP_002",
+      "message": "Function 'refdata_benchmark_rates_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_benchmark_rates_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_benchmark_rates_notify_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_business_centres_create.sql",
+      "line": 56,
+      "code": "DROP_002",
+      "message": "Function 'refdata_business_centres_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_business_centres_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_business_centres_notify_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_business_processes_create.sql",
+      "line": 55,
+      "code": "DROP_002",
+      "message": "Function 'refdata_business_processes_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_business_processes_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_business_processes_notify_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_cashflow_types_create.sql",
+      "line": 55,
+      "code": "DROP_002",
+      "message": "Function 'refdata_cashflow_types_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_cashflow_types_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_cashflow_types_notify_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_entity_classifications_create.sql",
+      "line": 55,
+      "code": "DROP_002",
+      "message": "Function 'refdata_entity_classifications_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_entity_classifications_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_entity_classifications_notify_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_local_jurisdictions_create.sql",
+      "line": 55,
+      "code": "DROP_002",
+      "message": "Function 'refdata_local_jurisdictions_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_local_jurisdictions_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_local_jurisdictions_notify_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_party_relationships_create.sql",
+      "line": 55,
+      "code": "DROP_002",
+      "message": "Function 'refdata_party_relationships_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_party_relationships_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_party_relationships_notify_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_party_roles_create.sql",
+      "line": 55,
+      "code": "DROP_002",
+      "message": "Function 'refdata_party_roles_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_party_roles_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_party_roles_notify_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_person_roles_create.sql",
+      "line": 55,
+      "code": "DROP_002",
+      "message": "Function 'refdata_person_roles_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_person_roles_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_person_roles_notify_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_regulatory_corporate_sectors_create.sql",
+      "line": 55,
+      "code": "DROP_002",
+      "message": "Function 'refdata_regulatory_corporate_sectors_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_regulatory_corporate_sectors_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_regulatory_corporate_sectors_notify_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_reporting_regimes_create.sql",
+      "line": 55,
+      "code": "DROP_002",
+      "message": "Function 'refdata_reporting_regimes_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_reporting_regimes_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_reporting_regimes_notify_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_supervisory_bodies_create.sql",
+      "line": 55,
+      "code": "DROP_002",
+      "message": "Function 'refdata_supervisory_bodies_insert_fn' created but not found in drop scripts"
+    },
+    {
+      "file": "create/refdata/refdata_supervisory_bodies_notify_trigger_create.sql",
+      "line": 21,
+      "code": "DROP_002",
+      "message": "Function 'refdata_supervisory_bodies_notify_fn' created but not found in drop scripts"
+    }
+  ]
 }

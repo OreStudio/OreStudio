@@ -52,13 +52,51 @@ COMPONENT_PREFIXES = {
 FK_COLUMNS = {
     'change_reason_code',  # References change reason codes
     'coding_scheme_code',  # References coding schemes
+    'category_code',       # References change reason categories
     'account_id',          # References iam_accounts_tbl
     'role_id',             # References iam_roles_tbl
     'permission_id',       # References iam_permissions_tbl
     'image_id',            # References assets_images_tbl
     'tag_id',              # References assets_tags_tbl
     'dataset_id',          # References dq_datasets_tbl
-    'country_code',        # References refdata_countries_tbl (in some contexts)
+    'methodology_id',      # References dq_methodologies_tbl
+    'authority_type',      # References dq_coding_scheme_authority_types_tbl
+    'nature_code',         # References dq_nature_dimensions_tbl
+    'origin_code',         # References dq_origin_dimensions_tbl
+    'treatment_code',      # References dq_treatment_dimensions_tbl
+    'country_code',        # References refdata_countries_tbl
+    'currency_code',       # References refdata_currencies_tbl
+}
+
+# FK column to target table mapping for relationship inference
+FK_TARGET_TABLES = {
+    # IAM
+    'account_id': 'iam_accounts_tbl',
+    'role_id': 'iam_roles_tbl',
+    'permission_id': 'iam_permissions_tbl',
+    'session_id': 'iam_sessions_tbl',
+    # Assets
+    'image_id': 'assets_images_tbl',
+    'tag_id': 'assets_tags_tbl',
+    # Data Quality - Core
+    'dataset_id': 'dq_datasets_tbl',
+    'coding_scheme_code': 'dq_coding_schemes_tbl',
+    'change_reason_code': 'dq_change_reasons_tbl',
+    'category_code': 'dq_change_reason_categories_tbl',
+    'catalog_name': 'dq_catalogs_tbl',
+    'domain_name': 'dq_data_domains_tbl',
+    'subject_area_name': 'dq_subject_areas_tbl',
+    'methodology_id': 'dq_methodologies_tbl',
+    'authority_type': 'dq_coding_scheme_authority_types_tbl',
+    # Data Quality - Dimensions
+    'nature_code': 'dq_nature_dimensions_tbl',
+    'origin_code': 'dq_origin_dimensions_tbl',
+    'treatment_code': 'dq_treatment_dimensions_tbl',
+    # Dataset derivation (self-reference)
+    'upstream_derivation_id': 'dq_datasets_tbl',
+    # Reference data
+    'country_code': 'refdata_countries_tbl',
+    'currency_code': 'refdata_currencies_tbl',
 }
 
 # Table classification colors and stereotypes
@@ -68,6 +106,15 @@ TABLE_STYLES = {
     'junction': {'stereotype': '<<junction>>', 'color': '#ECECEC'},
     'current_state': {'stereotype': '', 'color': '#F7E5FF'},
 }
+
+
+@dataclass
+class Relationship:
+    """Relationship between two tables."""
+    from_table: str
+    to_table: str
+    cardinality: str  # e.g., "||--o{" for one-to-many
+    label: str
 
 
 @dataclass
@@ -155,6 +202,7 @@ class SQLParser:
         self.drop_functions = set()
         self.unique_columns = {}  # table_name -> set of column names
         self.table_descriptions = {}  # table_name -> description text
+        self.relationships = []  # List of Relationship objects
 
     def parse_create_dir(self, create_dir: Path) -> None:
         """Parse all SQL files in the create directory."""
@@ -617,10 +665,155 @@ class SQLParser:
             self.warnings.append(warning)
             print(str(warning), file=sys.stderr)
 
+    def detect_relationships(self) -> None:
+        """Detect relationships between tables based on FK columns.
+
+        Infers relationships from column naming conventions:
+        - Columns in FK_TARGET_TABLES map to specific tables
+        - Junction tables have relationships to both parent tables
+        - Artefact tables have dataset_id -> dq_datasets_tbl relationships
+        """
+        for table_name, table in self.tables.items():
+            for col in table.columns:
+                # Check if column maps to a known target table
+                target_table = FK_TARGET_TABLES.get(col.name)
+
+                if target_table and target_table in self.tables:
+                    # Skip self-references (except for specific FK columns like derivation)
+                    if target_table == table_name and col.name != 'upstream_derivation_id':
+                        continue
+
+                    # Determine cardinality and label based on context
+                    cardinality = '||--o{'  # Default: one-to-many
+
+                    if table.classification == 'junction':
+                        label = self._infer_relationship_label(target_table, table_name, col.name)
+                    elif col.name == 'account_id' and 'login_info' in table_name:
+                        # Special case: one-to-one for login_info
+                        cardinality = '||--o|'
+                        label = 'has'
+                    elif 'artefact' in table_name and col.name == 'dataset_id':
+                        # Artefact tables: dataset contains artefacts
+                        label = 'contains'
+                    else:
+                        label = self._infer_relationship_label(target_table, table_name, col.name)
+
+                    # Create relationship (from parent to child)
+                    rel = Relationship(
+                        from_table=target_table,
+                        to_table=table_name,
+                        cardinality=cardinality,
+                        label=label
+                    )
+
+                    # Avoid duplicates
+                    if not any(r.from_table == rel.from_table and r.to_table == rel.to_table
+                               for r in self.relationships):
+                        self.relationships.append(rel)
+
+    def _infer_relationship_label(self, from_table: str, to_table: str, col_name: str = '') -> str:
+        """Infer a meaningful label for the relationship."""
+        # Change reason relationships - audit trail
+        if col_name == 'change_reason_code':
+            return 'reason for'
+
+        # Category relationships
+        if col_name == 'category_code' and 'change_reason_categor' in from_table:
+            return 'contains'
+
+        # Session-related
+        if 'session' in to_table and 'account' in from_table:
+            return 'creates'
+
+        # Account roles (junction)
+        if 'account_role' in to_table:
+            if 'account' in from_table:
+                return 'assigned'
+            elif 'role' in from_table:
+                return 'granted to'
+
+        # Role permissions (junction)
+        if 'role_permission' in to_table:
+            if 'permission' in from_table:
+                return 'included in'
+            elif 'role' in from_table:
+                return 'has'
+
+        # Image tags (junction)
+        if 'image_tag' in to_table:
+            if 'image' in from_table:
+                return 'tagged with'
+            elif 'tag' in from_table:
+                return 'applied to'
+
+        # Telemetry logs
+        if 'telemetry_log' in to_table:
+            return 'generates'
+
+        # Coding scheme relationships
+        if 'coding_scheme' in from_table and 'authority' not in from_table:
+            if 'dataset' in to_table:
+                return 'identifies'
+            else:
+                return 'identifies'
+
+        # Authority type classifies coding schemes
+        if 'authority_type' in from_table:
+            return 'classifies'
+
+        # Catalog contains datasets
+        if 'catalog' in from_table and 'dataset' in to_table:
+            return 'groups'
+
+        # Domain contains subject areas, groups datasets
+        if 'data_domain' in from_table:
+            if 'subject_area' in to_table:
+                return 'contains'
+            elif 'dataset' in to_table or 'coding_scheme' in to_table:
+                return 'groups'
+
+        # Subject area relationships
+        if 'subject_area' in from_table:
+            if 'coding_scheme' in to_table:
+                return 'defines'
+            elif 'dataset' in to_table:
+                return 'classifies'
+
+        # Methodology applied to datasets
+        if 'methodolog' in from_table:
+            return 'applied to'
+
+        # Dimension relationships (tables named with plural: dimensions)
+        if 'dimension' in from_table:
+            if 'nature' in from_table:
+                return 'describes nature'
+            elif 'origin' in from_table:
+                return 'describes origin'
+            elif 'treatment' in from_table:
+                return 'describes treatment'
+
+        # Dataset dependencies
+        if 'dataset' in from_table and 'dependenc' in to_table:
+            return 'depends on'
+
+        # Dataset publications
+        if 'dataset' in from_table and 'publication' in to_table:
+            return 'published as'
+
+        # Dataset self-reference (derivation)
+        if col_name == 'upstream_derivation_id':
+            return 'derives from'
+
+        # Default
+        return 'has'
+
     def get_model(self) -> dict:
         """Generate the JSON model."""
         # Apply column markings (unique, FK) before generating model
         self.apply_column_markings()
+
+        # Detect relationships between tables
+        self.detect_relationships()
 
         # Group tables by component
         packages = {}
@@ -667,6 +860,7 @@ class SQLParser:
         return {
             'generated_at': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
             'packages': sorted_packages,
+            'relationships': [asdict(r) for r in self.relationships],
             'warnings': [asdict(w) for w in self.warnings]
         }
 

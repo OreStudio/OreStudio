@@ -67,7 +67,14 @@ package "{{name}}" {{color}} {
 
 {{/packages}}
 
+'
+' ==================== Relationships ====================
+'
+{{#relationships}}
+{{from_table}} {{cardinality}} {{to_table}} : "{{label}}"
+{{/relationships}}
+
 ' Local Variables:
-' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores_schema.puml"
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=131072 -jar /usr/share/plantuml/plantuml.jar ores_schema.puml"
 ' End:
 @enduml

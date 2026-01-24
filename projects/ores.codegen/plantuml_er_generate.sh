@@ -46,13 +46,13 @@ python "${SCRIPT_DIR}/src/plantuml_er_generate.py" \
 if command -v plantuml &> /dev/null; then
     echo ""
     echo "Rendering PNG..."
-    plantuml "${SQL_DIR}/modeling/ores_schema.puml"
+    PLANTUML_LIMIT_SIZE=131072 plantuml "${SQL_DIR}/modeling/ores_schema.puml"
 elif [ -f /usr/share/plantuml/plantuml.jar ]; then
     echo ""
     echo "Rendering PNG..."
     java -Djava.awt.headless=true \
          -DPLANTUML_SECURITY_PROFILE=UNSECURE \
-         -DPLANTUML_LIMIT_SIZE=65535 \
+         -DPLANTUML_LIMIT_SIZE=131072 \
          -jar /usr/share/plantuml/plantuml.jar \
          "${SQL_DIR}/modeling/ores_schema.puml"
 else

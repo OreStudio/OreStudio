@@ -24,7 +24,7 @@
             "catalog": "Visual Assets",
             "subject_area": "Country Flags",
             "domain": "Reference Data",
-            "coding_scheme": "ISO_3166_1_ALPHA_2",
+            "coding_scheme": "NONE",
             "methodology": "GitHub Flag Icons Download",
             "description": "SVG flag images for each ISO 3166-1 country.",
             "source_system": "lipis/flag-icons",

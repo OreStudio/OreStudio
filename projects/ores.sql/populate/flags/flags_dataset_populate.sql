@@ -40,7 +40,7 @@ select ores.upsert_dq_datasets(
     'Visual Assets',
     'Country Flags',
     'Reference Data',
-    'ISO_3166_1_ALPHA_2',
+    'NONE',
     'Primary',
     'Actual',
     'Raw',

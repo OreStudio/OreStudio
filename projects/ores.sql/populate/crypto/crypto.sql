@@ -7,7 +7,14 @@
  */
 
 -- =============================================================================
--- Cryptocurrency Methodology (must come first)
+-- Cryptocurrency Catalog (must come first)
+-- =============================================================================
+
+\echo '--- Cryptocurrency Catalog ---'
+\ir crypto_catalog_populate.sql
+
+-- =============================================================================
+-- Cryptocurrency Methodology
 -- =============================================================================
 
 \echo '--- Cryptocurrency Methodology ---'

@@ -24,11 +24,14 @@
  * Seeds the database with catalog values for grouping related datasets.
  * This script is idempotent.
  *
- * Catalogs:
- * - Visual Assets: Flag images, cryptocurrency icons, and other visual media
- * - ISO Standards: International standards for currencies, countries
- * - Cryptocurrency: Digital asset reference data
- * - FpML Standards: FpML coding schemes for OTC derivatives
+ * NOTE: Most catalogs are now defined in their respective domain directories:
+ * - crypto/crypto_catalog_populate.sql: Cryptocurrency catalog
+ * - flags/flags_catalog_populate.sql: Visual Assets catalog
+ * - fpml/fpml_catalog_populate.sql: FpML Standards catalog
+ * - ip2country/ip2country_catalog_populate.sql: IP Geolocation catalog
+ * - solvaris/solvaris_catalog_populate.sql: Slovaris catalog
+ *
+ * This file only contains the ISO Standards catalog for core country/currency data.
  */
 
 set schema 'ores';
@@ -40,32 +43,8 @@ set schema 'ores';
 \echo '--- Data Quality Catalogs ---'
 
 select ores.upsert_dq_catalogs(
-    'Visual Assets',
-    'Visual media assets including country flag images, cryptocurrency icons, and other imagery used to enrich reference data displays.',
-    'Reference Data Team'
-);
-
-select ores.upsert_dq_catalogs(
     'ISO Standards',
     'International Organization for Standardization (ISO) reference data including ISO 3166 country codes and ISO 4217 currency codes.',
-    'Reference Data Team'
-);
-
-select ores.upsert_dq_catalogs(
-    'Cryptocurrency',
-    'Digital asset reference data including cryptocurrency symbols and names from community-maintained repositories.',
-    'Digital Assets Team'
-);
-
-select ores.upsert_dq_catalogs(
-    'FpML Standards',
-    'Financial products Markup Language (FpML) coding schemes and reference data for OTC derivatives trading. Includes non-ISO currencies, business centers, and other FpML-defined code lists.',
-    'Reference Data Team'
-);
-
-select ores.upsert_dq_catalogs(
-    'IP Geolocation',
-    'IP address geolocation reference data including IPv4 and IPv6 to country mappings. Sourced from community-maintained databases for geographic IP lookup.',
     'Reference Data Team'
 );
 

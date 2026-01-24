@@ -121,9 +121,31 @@ echo "Skip validation: ${SKIP_VALIDATION}"
 echo "Script directory: ${SCRIPT_DIR}"
 echo ""
 
+# Change to script directory so relative paths in SQL files work
+cd "${SCRIPT_DIR}"
+
+# Generate teardown_instances.sql with current instance databases
+# This must happen BEFORE confirmation so user can review what will be dropped
+echo "--- Generating teardown_instances.sql ---"
+if PGPASSWORD="${POSTGRES_PASSWORD}" psql -h localhost -U postgres -lqt | grep -qw ores_admin; then
+    PGPASSWORD="${POSTGRES_PASSWORD}" psql \
+        -h localhost \
+        -f ./admin/admin_teardown_instances_generate.sql \
+        -U postgres \
+        -q
+    echo ""
+    echo "Instance databases to be dropped:"
+    grep -E "^-- Instance:" ./teardown_instances.sql 2>/dev/null || echo "  (none)"
+    echo ""
+else
+    echo "ores_admin does not exist - no instance databases to drop."
+    echo ""
+fi
+
 # Confirmation prompt (unless -y flag is set)
 if [[ -z "${ASSUME_YES}" ]]; then
     echo "WARNING: This will DROP all ORES databases and recreate from scratch!"
+    echo "Review teardown_instances.sql before proceeding."
     echo ""
     read -p "Type 'yes' to proceed: " confirm
     if [[ "${confirm}" != "yes" ]]; then
@@ -132,29 +154,6 @@ if [[ -z "${ASSUME_YES}" ]]; then
     fi
     echo ""
 fi
-
-# Change to script directory so relative paths in SQL files work
-cd "${SCRIPT_DIR}"
-
-# Drop any existing ORES instance databases (dev recreate = clean slate)
-# This is needed because teardown_instances.sql may be empty
-echo "--- Dropping existing ORES instance databases ---"
-INSTANCE_DBS=$(PGPASSWORD="${POSTGRES_PASSWORD}" psql -h localhost -U postgres -t -A -c "
-    SELECT datname FROM pg_database
-    WHERE (datname LIKE 'ores_%' OR datname LIKE 'oresdb_%')
-      AND datname NOT IN ('ores_admin', 'ores_template')
-    ORDER BY datname;
-" 2>/dev/null || true)
-
-if [[ -n "${INSTANCE_DBS}" ]]; then
-    for db in ${INSTANCE_DBS}; do
-        echo "Dropping instance database: ${db}"
-        PGPASSWORD="${POSTGRES_PASSWORD}" psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS \"${db}\";" 2>/dev/null || true
-    done
-else
-    echo "No instance databases found."
-fi
-echo ""
 
 # Run the recreate_database.sql script
 # Note: psql's :'var' syntax handles quoting for string literals

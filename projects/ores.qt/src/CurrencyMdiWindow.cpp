@@ -137,25 +137,25 @@ CurrencyMdiWindow(ClientManager* clientManager,
 
     toolBar_->addSeparator();
 
-    auto importXMLAction = new QAction("Import XML", this);
+    auto importXMLAction = new QAction("Import", this);
     importXMLAction->setIcon(IconUtils::createRecoloredIcon(
-            Icon::DocumentCode, IconUtils::DefaultIconColor));
+            Icon::ImportOre, IconUtils::DefaultIconColor));
     importXMLAction->setToolTip("Import currencies from ORE XML");
     connect(importXMLAction, &QAction::triggered, this,
         &CurrencyMdiWindow::importFromXML);
     toolBar_->addAction(importXMLAction);
 
-    auto exportCSVAction = new QAction("Export CSV", this);
+    auto exportCSVAction = new QAction("Export", this);
     exportCSVAction->setIcon(IconUtils::createRecoloredIcon(
-            Icon::DocumentTable, IconUtils::DefaultIconColor));
+            Icon::ExportCsv, IconUtils::DefaultIconColor));
     exportCSVAction->setToolTip("Export currencies to CSV");
     connect(exportCSVAction, &QAction::triggered, this,
         &CurrencyMdiWindow::exportToCSV);
     toolBar_->addAction(exportCSVAction);
 
-    auto exportXMLAction = new QAction("Export XML", this);
+    auto exportXMLAction = new QAction("Export", this);
     exportXMLAction->setIcon(IconUtils::createRecoloredIcon(
-            Icon::DocumentCode, IconUtils::DefaultIconColor));
+            Icon::ExportOre, IconUtils::DefaultIconColor));
     exportXMLAction->setToolTip("Export currencies to ORE XML");
     connect(exportXMLAction, &QAction::triggered, this,
         &CurrencyMdiWindow::exportToXML);
@@ -291,11 +291,11 @@ CurrencyMdiWindow::~CurrencyMdiWindow() {
 void CurrencyMdiWindow::onConnectionStateChanged() {
     const bool connected = clientManager_ && clientManager_->isConnected();
     toolBar_->setEnabled(connected);
-    
+
     if (connected) {
         emit statusChanged("Connected");
         // Optionally auto-refresh on reconnect?
-        // currencyModel_->refresh(); 
+        // currencyModel_->refresh();
     } else {
         emit statusChanged("Disconnected - Offline");
     }
@@ -464,12 +464,12 @@ void CurrencyMdiWindow::deleteSelected() {
 
     QPointer<CurrencyMdiWindow> self = this;
     using DeleteResult = std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
-    
+
     // Capture iso_codes by value
     auto task = [self, iso_codes]() -> DeleteResult {
         DeleteResult results;
         if (!self) return {};
-        
+
         BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
                                    << iso_codes.size() << " currencies";
 

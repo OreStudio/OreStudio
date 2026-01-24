@@ -225,6 +225,54 @@ Download content, export data.
 
 *Usage*: Download buttons, export actions.
 
+*** Arrow Download CSV
+Import CSV data.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_download_csv_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_download_csv_20_filled.svg]]
+
+*Usage*: Import CSV actions, clearly labeled with text overlay.
+
+*** Arrow Download FPML
+Import FPML data.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_download_fpml_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_download_fpml_20_filled.svg]]
+
+*Usage*: Import FPML actions, clearly labeled with text overlay.
+
+*** Arrow Download ORE
+Import ORE data.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_download_ore_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_download_ore_20_filled.svg]]
+
+*Usage*: Import ORE actions, clearly labeled with text overlay.
+
+*** Arrow Upload CSV
+Export CSV data.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_csv_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_csv_20_filled.svg]]
+
+*Usage*: Export CSV actions, clearly labeled with text overlay.
+
+*** Arrow Upload FPML
+Export FPML data.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_fpml_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_fpml_20_filled.svg]]
+
+*Usage*: Export FPML actions, clearly labeled with text overlay.
+
+*** Arrow Upload ORE
+Export ORE data.
+
+- Regular: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_ore_20_regular.svg]]
+- Filled: [[proj:projects/ores.qt/resources/icons/ic_fluent_arrow_upload_ore_20_filled.svg]]
+
+*Usage*: Export ORE actions, clearly labeled with text overlay.
+
 *** Arrow Sync
 Synchronize data, refresh with server.
 
@@ -544,6 +592,12 @@ Text validation, spell check, language processing.
 | Currency             | currency_dollar_euro_20          | Default | Active |
 | Time                 | clock_16                         | Default | Active |
 | History              | history_20                       | Default | Active |
+| Import CSV           | arrow_download_csv_20            | Default | Active |
+| Import FPML          | arrow_download_fpml_20           | Default | Active |
+| Import ORE           | arrow_download_ore_20            | Default | Active |
+| Export CSV           | arrow_upload_csv_20              | Default | Active |
+| Export FPML          | arrow_upload_fpml_20             | Default | Active |
+| Export ORE           | arrow_upload_ore_20              | Default | Active |
 | Publish              | arrow_upload_20                  | Default | Active |
 
 * Adding New Icons

@@ -110,9 +110,9 @@ CountryMdiWindow(ClientManager* clientManager,
 
     toolBar_->addSeparator();
 
-    auto exportCSVAction = new QAction("Export CSV", this);
+    auto exportCSVAction = new QAction("Export", this);
     exportCSVAction->setIcon(IconUtils::createRecoloredIcon(
-            Icon::DocumentTable, IconUtils::DefaultIconColor));
+            Icon::ExportCsv, IconUtils::DefaultIconColor));
     exportCSVAction->setToolTip("Export countries to CSV");
     connect(exportCSVAction, &QAction::triggered, this,
         &CountryMdiWindow::exportToCSV);

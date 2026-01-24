@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="20"
+   height="20"
+   viewBox="0 0 20 20"
+   fill="none"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="ic_fluent_arrow_upload_ore_20_regular.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="42.35"
+     inkscape:cx="10.011806"
+     inkscape:cy="10"
+     inkscape:window-width="1920"
+     inkscape:window-height="1056"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <!-- Shortened upload arrow - horizontal bar is now half the length -->
+  <path
+     d="m 12.5,2.689037 c 0.2761,0 0.5,-0.1538044 0.5,-0.3435434 C 13,2.1768412 12.8231,2.0365791 12.5899,2.0074879 L 12.5,2.00195 h -5 C 7.22386,2.00195 7,2.1557613 7,2.3454936 7,2.5141459 7.17688,2.6544147 7.41012,2.683506 L 7.5,2.689037 Z m -2.4999,10.30476 c 0.2455,0 0.4496,-0.121615 0.4919,-0.281844 l 0.008,-0.06177 -0.004,-8.1034087 1.6454,1.1325532 c 0.1734,0.1193606 0.4428,0.1327864 0.6378,0.040153 l 0.0693,-0.039706 C 13.0222,5.560628 13.0418,5.3755267 12.907,5.2415448 L 12.8492,5.1939296 10.3574,3.476212 C 10.2849,3.426309 10.1956,3.394922 10.102,3.382061 l -0.10592,-0.0067 c -0.16097,0 -0.30416,0.052301 -0.39557,0.1335148 L 7.14386,5.1935311 c -0.1954,0.1340713 -0.19563,0.3515894 -5e-4,0.4858461 0.17344,0.1193402 0.44285,0.1327247 0.63781,0.040064 L 7.85046,5.6797209 9.496,4.5522728 9.5,12.65039 c 8e-5,0.189706 0.224,0.343407 0.5001,0.343407 z"
+     fill="#212121"
+     id="path1"
+     style="stroke-width:0.828907" />
+  <!-- Text label positioned at the bottom of the icon -->
+  <text
+     x="9.952774"
+     y="17.936245"
+     font-family="Arial, sans-serif"
+     font-size="7px"
+     fill="#212121"
+     font-weight="bold"
+     text-anchor="middle"
+     id="text1"
+     style="-inkscape-font-specification:'FreeMono, Bold';font-family:FreeMono;font-weight:bold;font-style:normal;font-stretch:normal;font-variant:normal;font-size:7px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-anchor:middle;fill:#212121">ORE</text>
+</svg>

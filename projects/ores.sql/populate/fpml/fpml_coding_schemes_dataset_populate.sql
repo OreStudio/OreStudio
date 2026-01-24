@@ -19,41 +19,37 @@
  */
 
 /**
- * ISO Standards Dataset Dependencies
+ * FpML Coding Schemes Dataset Population Script
  *
- * Auto-generated from external/iso/manifest.json
- * This script is idempotent.
+ * Creates the dataset entry for fpml.coding_schemes.
+ * This must be run before populating the artefact table.
  */
 
 set schema 'ores';
 
 -- =============================================================================
--- ISO Standards Dataset Dependencies
+-- FpML Coding Schemes Dataset
 -- =============================================================================
 
-\echo '--- ISO Standards Dataset Dependencies ---'
+\echo '--- FpML Coding Schemes Dataset ---'
 
-select ores.upsert_dq_dataset_dependency(
-    'iso.countries',
-    'iso.coding_schemes',
-    'coding_scheme'
+select ores.upsert_dq_datasets(
+    'fpml.coding_schemes',
+    'FpML Standards',
+    'General',
+    'Reference Data',
+    'NONE',
+    'Primary',
+    'Actual',
+    'Raw',
+    'FpML Genericode Download',
+    'FpML Coding Schemes',
+    'FpML coding scheme definitions for account types, asset classes, business centers, and other reference data.',
+    'FPML',
+    'Coding scheme metadata for FpML standards',
+    current_date,
+    'FpML License',
+    'coding_schemes',
+    'dq_coding_schemes_tbl',
+    'dq_populate_coding_schemes'
 );
-
-select ores.upsert_dq_dataset_dependency(
-    'iso.countries',
-    'assets.country_flags',
-    'visual_assets'
-);
-
-select ores.upsert_dq_dataset_dependency(
-    'iso.currencies',
-    'iso.coding_schemes',
-    'coding_scheme'
-);
-
-select ores.upsert_dq_dataset_dependency(
-    'iso.currencies',
-    'assets.country_flags',
-    'visual_assets'
-);
-

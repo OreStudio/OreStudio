@@ -14,13 +14,6 @@
 \ir iso_catalog_populate.sql
 
 -- =============================================================================
--- ISO Standards Coding Schemes
--- =============================================================================
-
-\echo '--- ISO Standards Coding Schemes ---'
-\ir iso_coding_schemes_populate.sql
-
--- =============================================================================
 -- ISO Standards Methodology
 -- =============================================================================
 
@@ -28,7 +21,28 @@
 \ir iso_methodology_populate.sql
 
 -- =============================================================================
--- ISO Standards Datasets
+-- ISO Coding Schemes Dataset (must come first - other datasets reference these schemes)
+-- =============================================================================
+
+\echo '--- ISO Coding Schemes Dataset ---'
+\ir iso_coding_schemes_dataset_populate.sql
+
+-- =============================================================================
+-- ISO Standards Coding Schemes Artefacts
+-- =============================================================================
+
+\echo '--- ISO Standards Coding Schemes Artefacts ---'
+\ir iso_coding_schemes_artefact_populate.sql
+
+-- Publish coding schemes to production (required before other datasets can reference them)
+\echo '--- Publishing ISO Coding Schemes ---'
+select * from ores.dq_populate_coding_schemes(
+    (select id from ores.dq_datasets_tbl where code = 'iso.coding_schemes' and valid_to = ores.utility_infinity_timestamp_fn()),
+    'upsert'
+);
+
+-- =============================================================================
+-- ISO Standards Datasets (countries, currencies - depend on coding schemes)
 -- =============================================================================
 
 \echo '--- ISO Standards Datasets ---'

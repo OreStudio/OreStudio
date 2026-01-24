@@ -4,11 +4,38 @@
     "source_url": "https://www.fpml.org/the_standard/current/",
     "downloaded_at": "2026-01-23",
     "methodology_file": "methodology.txt",
+    "methodologies": [
+        {
+            "name": "FpML Genericode Download",
+            "description": "Extraction of coding schemes and reference data from FpML Genericode XML files.",
+            "url": "https://www.fpml.org/the_standard/current/"
+        }
+    ],
     "catalog": {
         "name": "FpML Standards",
         "description": "Financial products Markup Language (FpML) coding schemes and reference data for OTC derivatives trading. Includes non-ISO currencies, business centers, and other FpML-defined code lists.",
         "owner": "Reference Data Team"
     },
+    "datasets": [
+        {
+            "name": "FpML Coding Schemes",
+            "code": "fpml.coding_schemes",
+            "catalog": "FpML Standards",
+            "subject_area": "General",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "FpML Genericode Download",
+            "description": "FpML coding scheme definitions for account types, asset classes, business centers, and other reference data.",
+            "source_system": "FPML",
+            "business_context": "Coding scheme metadata for FpML standards",
+            "license": "FpML License",
+            "artefact_type": "coding_schemes",
+            "target_table": "dq_coding_schemes_tbl",
+            "populate_function": "dq_populate_coding_schemes",
+            "tag_code": "coding_scheme",
+            "tag_description": "FpML coding scheme definitions"
+        }
+    ],
     "dependencies": [
         {
             "dataset_code": "fpml.non_iso_currency",

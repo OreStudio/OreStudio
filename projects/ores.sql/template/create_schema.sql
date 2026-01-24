@@ -136,6 +136,7 @@ grant create on schema ores to ores;
 \ir ../schema/dq_coding_scheme_authority_types_notify_trigger.sql
 \ir ../schema/dq_coding_scheme_create.sql
 \ir ../schema/dq_coding_schemes_notify_trigger.sql
+\ir ../schema/dq_coding_schemes_artefact_create.sql
 \ir ../schema/dq_origin_dimension_create.sql
 \ir ../schema/dq_origin_dimensions_notify_trigger.sql
 \ir ../schema/dq_nature_dimension_create.sql
@@ -189,6 +190,7 @@ grant create on schema ores to ores;
 \ir ../schema/dq_regulatory_corporate_sectors_population_functions.sql
 \ir ../schema/dq_reporting_regimes_population_functions.sql
 \ir ../schema/dq_supervisory_bodies_population_functions.sql
+\ir ../schema/dq_coding_schemes_population_functions.sql
 
 \ir ../schema/dq_publication_create.sql
 \ir ../schema/seed_upsert_functions_create.sql

@@ -17,43 +17,32 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
-/**
- * ISO Standards Dataset Dependencies
- *
- * Auto-generated from external/iso/manifest.json
- * This script is idempotent.
- */
-
 set schema 'ores';
 
 -- =============================================================================
--- ISO Standards Dataset Dependencies
+-- Coding Schemes Artefact Table
+--
+-- Staging table for coding/identification schemes before publication to
+-- dq_coding_schemes_tbl. Supports the DQ artefact pipeline pattern.
 -- =============================================================================
 
-\echo '--- ISO Standards Dataset Dependencies ---'
-
-select ores.upsert_dq_dataset_dependency(
-    'iso.countries',
-    'iso.coding_schemes',
-    'coding_scheme'
+create table if not exists "ores"."dq_coding_schemes_artefact_tbl" (
+    "dataset_id" uuid not null,
+    "code" text not null,
+    "version" integer not null default 0,
+    "name" text not null,
+    "authority_type" text not null,
+    "subject_area_name" text not null,
+    "domain_name" text not null,
+    "uri" text,
+    "description" text not null
 );
 
-select ores.upsert_dq_dataset_dependency(
-    'iso.countries',
-    'assets.country_flags',
-    'visual_assets'
-);
+create index if not exists dq_coding_schemes_artefact_dataset_idx
+on "ores"."dq_coding_schemes_artefact_tbl" (dataset_id);
 
-select ores.upsert_dq_dataset_dependency(
-    'iso.currencies',
-    'iso.coding_schemes',
-    'coding_scheme'
-);
+create index if not exists dq_coding_schemes_artefact_code_idx
+on "ores"."dq_coding_schemes_artefact_tbl" (code);
 
-select ores.upsert_dq_dataset_dependency(
-    'iso.currencies',
-    'assets.country_flags',
-    'visual_assets'
-);
-
+create index if not exists dq_coding_schemes_artefact_authority_type_idx
+on "ores"."dq_coding_schemes_artefact_tbl" (authority_type);

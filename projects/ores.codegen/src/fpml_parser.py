@@ -208,6 +208,21 @@ class CodingScheme:
     '{definition}'
 );"""
 
+    def to_artefact_insert(self, subject_area: str = 'General', dataset_code: str = 'fpml.coding_schemes') -> str:
+        """Generate SQL artefact insert statement for this coding scheme."""
+        code = self.to_code()
+        name = self.short_name.replace("'", "''")
+        definition = self.definition.replace("'", "''") if self.definition else ''
+
+        return f"""insert into ores.dq_coding_schemes_artefact_tbl (
+    dataset_id, code, version, name, authority_type,
+    subject_area_name, domain_name, uri, description
+) values (
+    (select id from ores.dq_datasets_tbl where code = '{dataset_code}' and valid_to = ores.utility_infinity_timestamp_fn()),
+    '{code}', 0, '{name}', 'industry',
+    '{subject_area}', 'Reference Data', '{self.canonical_uri}', '{definition}'
+);"""
+
 
 @dataclass
 class CodeListRow:
@@ -773,7 +788,7 @@ def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files
         "-- =============================================================================",
         "",
         "\\echo '--- FPML Coding Schemes ---'",
-        "\\ir fpml_coding_schemes_populate.sql",
+        "\\ir fpml_coding_schemes_artefact_populate.sql",
         "",
         "-- =============================================================================",
         "-- FPML Datasets",
@@ -812,23 +827,38 @@ def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files
 
 
 def generate_coding_schemes_sql(entities: list[MergedEntity], output_path: Path):
-    """Generate SQL file with coding scheme upserts."""
+    """Generate SQL file with coding scheme artefact inserts."""
+    dataset_code = 'fpml.coding_schemes'
     lines = [
         "/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-",
         " *",
-        " * FPML Coding Schemes Population Script",
+        " * FPML Coding Schemes Artefact Population Script",
         " *",
         " * Auto-generated from FPML Genericode XML files.",
-        " * This script is idempotent.",
+        " * Populates the dq_coding_schemes_artefact_tbl staging table.",
+        " *",
+        " * To publish to production:",
+        f" *   SELECT * FROM ores.dq_populate_coding_schemes(",
+        f" *       (SELECT id FROM ores.dq_datasets_tbl WHERE code = '{dataset_code}' AND valid_to = ores.utility_infinity_timestamp_fn()),",
+        " *       'upsert'",
+        " *   );",
         " */",
         "",
         "set schema 'ores';",
         "",
         "-- =============================================================================",
-        "-- FPML Coding Schemes",
+        "-- FPML Coding Schemes Artefacts",
         "-- =============================================================================",
         "",
-        "\\echo '--- FPML Coding Schemes ---'",
+        "\\echo '--- FPML Coding Schemes Artefacts ---'",
+        "",
+        "-- Clear existing artefacts for this dataset before inserting",
+        "delete from ores.dq_coding_schemes_artefact_tbl",
+        "where dataset_id = (",
+        "    select id from ores.dq_datasets_tbl",
+        f"    where code = '{dataset_code}'",
+        "    and valid_to = ores.utility_infinity_timestamp_fn()",
+        ");",
         ""
     ]
 
@@ -838,7 +868,7 @@ def generate_coding_schemes_sql(entities: list[MergedEntity], output_path: Path)
             code = cs.to_code()
             if code not in seen_schemes:
                 seen_schemes.add(code)
-                lines.append(cs.to_sql_insert(entity.subject_area))
+                lines.append(cs.to_artefact_insert(entity.subject_area, dataset_code))
                 lines.append("")
 
     output_path.write_text('\n'.join(lines))
@@ -961,7 +991,7 @@ def main():
     # Always generate coding schemes SQL
     generate_coding_schemes_sql(
         entities,
-        args.output_dir / "fpml_coding_schemes_populate.sql"
+        args.output_dir / "fpml_coding_schemes_artefact_populate.sql"
     )
 
     if not args.coding_schemes_only:

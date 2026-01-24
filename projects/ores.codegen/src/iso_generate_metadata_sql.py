@@ -107,29 +107,56 @@ set schema 'ores';
     print(f"  Generated catalog: {catalog['name']}")
 
 
-def generate_coding_schemes_sql(manifest: dict, output_file: Path):
-    """Generate the coding schemes populate SQL file."""
+def generate_coding_schemes_artefact_sql(manifest: dict, output_file: Path):
+    """Generate the coding schemes artefact populate SQL file."""
     print(f"Generating {output_file.name}...")
 
     coding_schemes = manifest.get('coding_schemes', [])
 
+    # Find the coding schemes dataset to get its code for UUID generation
+    datasets = manifest.get('datasets', [])
+    coding_scheme_dataset = next(
+        (d for d in datasets if d.get('artefact_type') == 'coding_schemes'),
+        None
+    )
+
+    if not coding_scheme_dataset:
+        print("  No coding_schemes dataset defined, skipping")
+        return
+
+    dataset_code = coding_scheme_dataset['code']
+
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(get_header())
-        f.write("""
+        f.write(f"""
 /**
- * ISO Standards Coding Schemes Population Script
+ * ISO Standards Coding Schemes Artefact Population Script
  *
  * Auto-generated from external/iso/manifest.json
- * This script is idempotent.
+ * Populates the dq_coding_schemes_artefact_tbl staging table.
+ *
+ * To publish to production:
+ *   SELECT * FROM ores.dq_populate_coding_schemes(
+ *       (SELECT id FROM ores.dq_datasets_tbl WHERE code = '{dataset_code}' AND valid_to = ores.utility_infinity_timestamp_fn()),
+ *       'upsert'
+ *   );
  */
 
 set schema 'ores';
 
 -- =============================================================================
--- ISO Standards Coding Schemes
+-- ISO Standards Coding Schemes Artefacts
 -- =============================================================================
 
-\\echo '--- ISO Standards Coding Schemes ---'
+\\echo '--- ISO Standards Coding Schemes Artefacts ---'
+
+-- Clear existing artefacts for this dataset before inserting
+delete from ores.dq_coding_schemes_artefact_tbl
+where dataset_id = (
+    select id from ores.dq_datasets_tbl
+    where code = '{dataset_code}'
+    and valid_to = ores.utility_infinity_timestamp_fn()
+);
 
 """)
 
@@ -139,24 +166,22 @@ set schema 'ores';
             authority_type = cs['authority_type']
             subject_area = escape_sql_string(cs['subject_area'])
             domain = escape_sql_string(cs['domain'])
-            uri = cs.get('uri') or 'null'
-            if uri != 'null':
-                uri = f"'{uri}'"
+            uri = cs.get('uri')
+            uri_sql = f"'{uri}'" if uri else 'null'
             description = escape_sql_string(cs['description'])
 
-            f.write(f"""select ores.upsert_dq_coding_schemes(
-    '{code}',
-    '{name}',
-    '{authority_type}',
-    '{subject_area}',
-    '{domain}',
-    {uri},
-    '{description}'
+            f.write(f"""insert into ores.dq_coding_schemes_artefact_tbl (
+    dataset_id, code, version, name, authority_type,
+    subject_area_name, domain_name, uri, description
+) values (
+    (select id from ores.dq_datasets_tbl where code = '{dataset_code}' and valid_to = ores.utility_infinity_timestamp_fn()),
+    '{code}', 0, '{name}', '{authority_type}',
+    '{subject_area}', '{domain}', {uri_sql}, '{description}'
 );
 
 """)
 
-    print(f"  Generated {len(coding_schemes)} coding scheme entries")
+    print(f"  Generated {len(coding_schemes)} coding scheme artefact entries")
 
 
 def generate_methodology_sql(manifest: dict, output_file: Path):
@@ -207,33 +232,38 @@ See methodology documentation for detailed steps."""
     print(f"  Generated {len(methodologies)} methodology entries")
 
 
-def generate_dataset_sql(manifest: dict, output_file: Path):
-    """Generate the dataset populate SQL file."""
+def generate_coding_schemes_dataset_sql(manifest: dict, output_file: Path):
+    """Generate the coding schemes dataset populate SQL file (separate for ordering)."""
     print(f"Generating {output_file.name}...")
 
     datasets = manifest.get('datasets', [])
+    coding_scheme_datasets = [d for d in datasets if d.get('artefact_type') == 'coding_schemes']
+
+    if not coding_scheme_datasets:
+        print("  No coding_schemes dataset defined, skipping")
+        return
 
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(get_header())
         f.write("""
 /**
- * ISO Standards Dataset Population Script
+ * ISO Coding Schemes Dataset Population Script
  *
  * Auto-generated from external/iso/manifest.json
- * This script is idempotent.
+ * This must be run before other datasets that reference these coding schemes.
  */
 
 set schema 'ores';
 
 -- =============================================================================
--- ISO Standards Datasets
+-- ISO Coding Schemes Dataset
 -- =============================================================================
 
-\\echo '--- ISO Standards Datasets ---'
+\\echo '--- ISO Coding Schemes Dataset ---'
 
 """)
 
-        for dataset in datasets:
+        for dataset in coding_scheme_datasets:
             name = escape_sql_string(dataset['name'])
             code = dataset['code']
             catalog = escape_sql_string(dataset['catalog'])
@@ -273,7 +303,80 @@ select ores.upsert_dq_datasets(
 
 """)
 
-    print(f"  Generated {len(datasets)} dataset entries")
+    print(f"  Generated {len(coding_scheme_datasets)} coding schemes dataset entries")
+
+
+def generate_dataset_sql(manifest: dict, output_file: Path):
+    """Generate the dataset populate SQL file (excludes coding_schemes datasets)."""
+    print(f"Generating {output_file.name}...")
+
+    datasets = manifest.get('datasets', [])
+    # Exclude coding_schemes datasets - they're in a separate file for ordering
+    other_datasets = [d for d in datasets if d.get('artefact_type') != 'coding_schemes']
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(get_header())
+        f.write("""
+/**
+ * ISO Standards Dataset Population Script
+ *
+ * Auto-generated from external/iso/manifest.json
+ * This script is idempotent.
+ *
+ * Note: Coding schemes dataset is in iso_coding_schemes_dataset_populate.sql
+ */
+
+set schema 'ores';
+
+-- =============================================================================
+-- ISO Standards Datasets
+-- =============================================================================
+
+\\echo '--- ISO Standards Datasets ---'
+
+""")
+
+        for dataset in other_datasets:
+            name = escape_sql_string(dataset['name'])
+            code = dataset['code']
+            catalog = escape_sql_string(dataset['catalog'])
+            subject_area = escape_sql_string(dataset['subject_area'])
+            domain = escape_sql_string(dataset['domain'])
+            coding_scheme = dataset['coding_scheme']
+            methodology = escape_sql_string(dataset['methodology'])
+            description = escape_sql_string(dataset['description'])
+            source_system = escape_sql_string(dataset['source_system'])
+            business_context = escape_sql_string(dataset['business_context'])
+            license_info = escape_sql_string(dataset['license'])
+            artefact_type = dataset['artefact_type']
+            target_table = dataset['target_table']
+            populate_function = dataset['populate_function']
+
+            f.write(f"""-- {name}
+select ores.upsert_dq_datasets(
+    '{code}',
+    '{catalog}',
+    '{subject_area}',
+    '{domain}',
+    '{coding_scheme}',
+    'Primary',
+    'Actual',
+    'Raw',
+    '{methodology}',
+    '{name}',
+    '{description}',
+    '{source_system}',
+    '{business_context}',
+    current_date,
+    '{license_info}',
+    '{artefact_type}',
+    '{target_table}',
+    '{populate_function}'
+);
+
+""")
+
+    print(f"  Generated {len(other_datasets)} dataset entries")
 
 
 def generate_dataset_tag_sql(manifest: dict, output_file: Path):
@@ -389,13 +492,6 @@ def generate_master_sql(output_file: Path):
 \\ir iso_catalog_populate.sql
 
 -- =============================================================================
--- ISO Standards Coding Schemes
--- =============================================================================
-
-\\echo '--- ISO Standards Coding Schemes ---'
-\\ir iso_coding_schemes_populate.sql
-
--- =============================================================================
 -- ISO Standards Methodology
 -- =============================================================================
 
@@ -403,7 +499,28 @@ def generate_master_sql(output_file: Path):
 \\ir iso_methodology_populate.sql
 
 -- =============================================================================
--- ISO Standards Datasets
+-- ISO Coding Schemes Dataset (must come first - other datasets reference these schemes)
+-- =============================================================================
+
+\\echo '--- ISO Coding Schemes Dataset ---'
+\\ir iso_coding_schemes_dataset_populate.sql
+
+-- =============================================================================
+-- ISO Standards Coding Schemes Artefacts
+-- =============================================================================
+
+\\echo '--- ISO Standards Coding Schemes Artefacts ---'
+\\ir iso_coding_schemes_artefact_populate.sql
+
+-- Publish coding schemes to production (required before other datasets can reference them)
+\\echo '--- Publishing ISO Coding Schemes ---'
+select * from ores.dq_populate_coding_schemes(
+    (select id from ores.dq_datasets_tbl where code = 'iso.coding_schemes' and valid_to = ores.utility_infinity_timestamp_fn()),
+    'upsert'
+);
+
+-- =============================================================================
+-- ISO Standards Datasets (countries, currencies - depend on coding schemes)
 -- =============================================================================
 
 \\echo '--- ISO Standards Datasets ---'
@@ -486,8 +603,9 @@ def main():
 
     # Generate files
     generate_catalog_sql(manifest, output_dir / 'iso_catalog_populate.sql')
-    generate_coding_schemes_sql(manifest, output_dir / 'iso_coding_schemes_populate.sql')
     generate_methodology_sql(manifest, output_dir / 'iso_methodology_populate.sql')
+    generate_coding_schemes_dataset_sql(manifest, output_dir / 'iso_coding_schemes_dataset_populate.sql')
+    generate_coding_schemes_artefact_sql(manifest, output_dir / 'iso_coding_schemes_artefact_populate.sql')
     generate_dataset_sql(manifest, output_dir / 'iso_dataset_populate.sql')
     generate_dataset_tag_sql(manifest, output_dir / 'iso_dataset_tag_populate.sql')
     generate_dataset_dependency_sql(manifest, output_dir / 'iso_dataset_dependency_populate.sql')

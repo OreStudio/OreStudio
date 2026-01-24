@@ -50,6 +50,24 @@
     ],
     "datasets": [
         {
+            "name": "ISO Coding Schemes",
+            "code": "iso.coding_schemes",
+            "catalog": "ISO Standards",
+            "subject_area": "General",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "Wikipedia ISO 3166 Extraction",
+            "description": "ISO coding scheme definitions for countries (ISO 3166) and currencies (ISO 4217).",
+            "source_system": "WIKIPEDIA",
+            "business_context": "Coding scheme metadata for ISO standards",
+            "license": "CC BY-SA 3.0",
+            "artefact_type": "coding_schemes",
+            "target_table": "dq_coding_schemes_tbl",
+            "populate_function": "dq_populate_coding_schemes",
+            "tag_code": "coding_scheme",
+            "tag_description": "ISO coding scheme definitions"
+        },
+        {
             "name": "ISO 3166 Country Codes",
             "code": "iso.countries",
             "catalog": "ISO Standards",
@@ -89,8 +107,18 @@
     "dependencies": [
         {
             "dataset_code": "iso.countries",
+            "dependency_code": "iso.coding_schemes",
+            "role": "coding_scheme"
+        },
+        {
+            "dataset_code": "iso.countries",
             "dependency_code": "assets.country_flags",
             "role": "visual_assets"
+        },
+        {
+            "dataset_code": "iso.currencies",
+            "dependency_code": "iso.coding_schemes",
+            "role": "coding_scheme"
         },
         {
             "dataset_code": "iso.currencies",

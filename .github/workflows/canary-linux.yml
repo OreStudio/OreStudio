@@ -41,6 +41,16 @@ jobs:
         with:
           submodules: true
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate SQL Schema
+        run: |
+          pip install --quiet pystache
+          ./projects/ores.sql/validate_schema.sh
+
       - name: Ccache for gh actions
         uses: hendrikmuhs/ccache-action@v1.2.20
         with:

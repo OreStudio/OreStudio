@@ -60,11 +60,17 @@ static IconDef getIconDef(Icon icon) {
         case Icon::DocumentTable: return {"ic_fluent_document_table_20", "document-add.svg"};
         case Icon::Edit: return {"ic_fluent_edit_20", "pen-new-square.svg"};
         case Icon::Error: return {"ic_fluent_error_circle_20", "forbidden-circle.svg"};
+        case Icon::ExportCsv: return {"ic_fluent_arrow_upload_csv_20", "export_csv.svg"};
+        case Icon::ExportFpml: return {"ic_fluent_arrow_upload_fpml_20", "export_fpml.svg"};
+        case Icon::ExportOre: return {"ic_fluent_arrow_upload_ore_20", "export_ore.svg"};
         case Icon::Flag: return {"ic_fluent_flag_20", "flag.svg"};
         case Icon::Folder: return {"ic_fluent_folder_20", "folder.svg"};
         case Icon::FolderOpen: return {"ic_fluent_folder_open_20", "folder-open.svg"};
         case Icon::Globe: return {"ic_fluent_globe_20", "earth.svg"};
         case Icon::History: return {"ic_fluent_history_20", "history.svg"};
+        case Icon::ImportCsv: return {"ic_fluent_arrow_download_csv_20", "import_csv.svg"};
+        case Icon::ImportFpml: return {"ic_fluent_arrow_download_fpml_20", "import_fpml.svg"};
+        case Icon::ImportOre: return {"ic_fluent_arrow_download_ore_20", "import_ore.svg"};
         case Icon::Info: return {"ic_fluent_info_20", "info-circle.svg"};
         case Icon::Key: return {"ic_fluent_key_20", "key-minimalistic-square.svg"};
         case Icon::KeyMultiple: return {"ic_fluent_key_multiple_20", "key-minimalistic-square.svg"};

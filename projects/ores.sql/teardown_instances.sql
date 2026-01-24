@@ -15,7 +15,7 @@
  *   For production: Generate this file using the admin script, then review
  *   and commit before running teardown_all.sql.
  *
- *   psql -U postgres -f admin/generate_teardown_instances.sql
+ *   psql -U postgres -f admin/admin_teardown_instances_generate.sql
  *   cat teardown_instances.sql   # Review
  *   git add teardown_instances.sql && git commit
  *   psql -U postgres -f teardown_all.sql
@@ -35,4 +35,4 @@
  */
 
 -- No instance databases to drop (placeholder).
--- Run admin/generate_teardown_instances.sql to populate this file.
+-- Run admin/admin_teardown_instances_generate.sql to populate this file.

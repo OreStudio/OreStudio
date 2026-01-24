@@ -35,7 +35,7 @@
  *   :skip_validation - 'on' to skip input validation in seed functions (faster)
  *
  * NOTE: To drop instance databases, first run:
- *   psql -U postgres -f admin/generate_teardown_instances.sql
+ *   psql -U postgres -f admin/admin_teardown_instances_generate.sql
  */
 \pset pager off
 \pset tuples_only on

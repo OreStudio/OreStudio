@@ -97,6 +97,23 @@ collections of entities.
 | Notify drop file   | ={component}_{entity}_notify_trigger_drop.sql=   |
 | Populate file      | ={component}_{entity}_populate.sql=              |
 
+** Utility and generation scripts
+
+Scripts that don't create schema objects but provide utility functions or generate
+other SQL files follow a similar pattern:
+
+| Script Type        | Pattern                                          | Example                                      |
+|--------------------+--------------------------------------------------+----------------------------------------------|
+| Generation script  | ={component}_{feature}_generate.sql=             | =admin_teardown_instances_generate.sql=      |
+| Teardown script    | ={component}_{feature}_teardown.sql=             | =admin_teardown.sql=                         |
+| Setup script       | =setup_{feature}.sql=                            | =setup_template.sql=, =setup_user.sql=       |
+
+Generation scripts produce other SQL files (e.g., for review before execution).
+They should:
+- Output to a well-known filename
+- Include comments in generated output explaining how to regenerate
+- Be idempotent (safe to run multiple times)
+
 ** Existing entities by component
 
 *** IAM Component (=iam_=)
@@ -215,24 +232,36 @@ All SQL files are located under =projects/ores.sql/= with the following structur
 
 #+begin_example
 projects/ores.sql/
-├── schema/                          # Table creation and trigger scripts
-│   ├── {component}_{entity}_create.sql
-│   ├── {component}_{entity}_notify_trigger.sql
-│   └── {component}_{functions}_create.sql
+├── create/                          # Table creation and trigger scripts
+│   ├── {component}/                 # Component subdirectories
+│   │   ├── create_{component}.sql   # Component master script
+│   │   ├── {component}_{entity}_create.sql
+│   │   └── {component}_{entity}_notify_trigger_create.sql
+│   └── create.sql                   # Master-of-masters
 ├── drop/                            # Drop scripts for cleanup
-│   ├── {component}_{entity}_drop.sql
-│   └── {component}_{entity}_notify_trigger_drop.sql
+│   ├── {component}/                 # Component subdirectories
+│   │   ├── drop_{component}.sql     # Component master script
+│   │   ├── {component}_{entity}_drop.sql
+│   │   └── {component}_{entity}_notify_trigger_drop.sql
+│   └── drop.sql                     # Master-of-masters
 ├── populate/                        # Reference data population
-│   ├── {component}_{entity}_populate.sql
-│   └── data/                        # Static data files (SVG flags, etc.)
-├── template/                        # Template database orchestration
-│   ├── create_schema.sql            # Main schema creation script
-│   └── database_functions.sql
+│   ├── {component}/                 # Component subdirectories
+│   │   ├── populate_{component}.sql # Component master script
+│   │   └── {component}_{entity}_populate.sql
+│   ├── data/                        # Static data files (SVG flags, etc.)
+│   └── populate.sql                 # Master-of-masters
+├── admin/                           # Cluster-level admin utilities
+│   ├── setup_admin.sql              # Creates ores_admin database
+│   ├── teardown_admin.sql           # Drops ores_admin database
+│   ├── admin_{feature}_create.sql   # Admin function creation
+│   └── admin_{feature}_generate.sql # Generation scripts
 ├── instance/                        # Instance-specific initialization
 │   └── init_instance.sql
-├── drop_all.sql                     # Drops all schema objects
 ├── setup_template.sql               # Creates template database
-└── create_instance.sql              # Creates new database instance
+├── teardown_template.sql            # Drops template database
+├── teardown_all.sql                 # Complete cluster teardown
+├── create_instance.sql              # Creates new database instance
+└── recreate_database.sql            # Full wipe and rebuild (dev)
 #+end_example
 
 * Detailed instructions

@@ -41,7 +41,7 @@
  *   For production environments, instance drops must be explicit and reviewable:
  *
  *   1. Generate the teardown script:
- *      psql -U postgres -f admin/generate_teardown_instances.sql
+ *      psql -U postgres -f admin/admin_teardown_instances_generate.sql
  *
  *   2. Review the generated file:
  *      cat teardown_instances.sql

@@ -17,6 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-drop schema if exists ores;
-drop extension if exists btree_gist;
-drop database if exists ores;
+
+-- Drop functions first (depend on views)
+drop function if exists admin_generate_cleanup_ores_instance_databases_sql_fn();
+drop function if exists admin_generate_cleanup_ores_databases_sql_fn();
+drop function if exists admin_generate_cleanup_test_databases_sql_fn();
+drop function if exists admin_list_ores_instance_databases_fn();
+drop function if exists admin_list_ores_databases_fn();
+drop function if exists admin_list_test_databases_fn();
+
+-- Drop views
+drop view if exists admin_ores_instance_databases_view;
+drop view if exists admin_ores_databases_view;
+drop view if exists admin_test_databases_view;

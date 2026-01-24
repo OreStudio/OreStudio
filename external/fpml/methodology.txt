@@ -17,7 +17,7 @@ Data Sourcing and Generation Steps:
    Output: Schema and populate SQL files in projects/ores.sql/
 
 4. COMMIT GENERATED SQL
-   git add projects/ores.sql/schema/refdata_<entity>*.sql
+   git add projects/ores.sql/create/refdata_<entity>*.sql
    git add projects/ores.sql/populate/fpml*.sql dq_<entity>*.sql
    git commit -m "[sql] Regenerate FPML reference data files"
 

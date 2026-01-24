@@ -403,7 +403,7 @@ These recipes require the initial setup (Steps 1-3) to be completed first.
 List all databases created from the ORES template:
 
 #+begin_src sql
-select * from ores_databases;
+select * from admin_ores_databases_view;
 #+end_src
 
 #+RESULTS:
@@ -417,7 +417,7 @@ ores_nameless_sea
 List databases created by automated tests (=ores_test_*=, =oresdb_test_*=):
 
 #+begin_src sql :database ores_admin
-select * from test_databases;
+select * from admin_test_databases_view;
 #+end_src
 
 #+RESULTS:
@@ -459,7 +459,7 @@ with caution!
 
 #+begin_src sql :database ores_admin
 select format('DROP DATABASE IF EXISTS %I;', database_name)
-from ores_databases \gexec
+from admin_ores_databases_view \gexec
 #+end_src
 
 #+RESULTS:
@@ -473,7 +473,7 @@ Delete all instance databases (preserves templates and test databases):
 
 #+begin_src sql :database ores_admin
 select format('DROP DATABASE IF EXISTS %I;', database_name)
-from ores_instance_databases \gexec
+from admin_ores_instance_databases_view \gexec
 #+end_src
 
 #+RESULTS:
@@ -500,12 +500,12 @@ generate_cleanup_test_databases_sql
 Generate a unique whimsical name for a new database:
 
 #+begin_src sql :database ores_admin
-select generate_unique_database_name_from_server();
+select admin_generate_unique_database_name_from_server_fn();
 #+end_src
 
 #+RESULTS:
 #+begin_example
-generate_unique_database_name_from_server
+admin_generate_unique_database_name_from_server_fn
 ores_little_morning
 #+end_example
 

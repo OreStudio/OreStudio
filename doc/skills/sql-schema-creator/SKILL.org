@@ -239,7 +239,7 @@ projects/ores.sql/
 
 ** Step 1: Create the table definition
 
-Create a file =projects/ores.sql/schema/{component}_{entity}_create.sql=.
+Create a file =projects/ores.sql/create/{component}_{entity}_create.sql=.
 
 The file must include:
 
@@ -401,7 +401,7 @@ on delete to "ores"."{component}_{entity}_tbl" do instead
       and valid_to = ores.utility_infinity_timestamp_fn();
 #+end_src
 
-Follow the pattern in =projects/ores.sql/schema/iam_accounts_create.sql=.
+Follow the pattern in =projects/ores.sql/create/iam_accounts_create.sql=.
 
 ** Step 2: Create notification trigger
 
@@ -416,7 +416,7 @@ Database Trigger (pg_notify) → Event Source → Event Bus → Clients
 Without the trigger, clients won't receive change notifications and their UI
 will become stale without any indication.
 
-Create =projects/ores.sql/schema/{component}_{entity}_notify_trigger.sql=:
+Create =projects/ores.sql/create/{component}_{entity}_notify_trigger.sql=:
 
 #+begin_src sql
 create or replace function ores.{component}_{entity}_notify_fn()
@@ -453,7 +453,7 @@ Where:
 - ={cpp_namespace}= is the C++ namespace (e.g., =iam=, =refdata=, =assets=)
 - ={entity_plural}= is the plural form for the notification channel
 
-Follow the pattern in =projects/ores.sql/schema/iam_accounts_notify_trigger.sql=.
+Follow the pattern in =projects/ores.sql/create/iam_accounts_notify_trigger.sql=.
 
 ** Step 3: Create drop scripts
 

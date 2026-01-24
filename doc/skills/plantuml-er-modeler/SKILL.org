@@ -23,7 +23,7 @@ relationships.
 
 * How to Use This Skill
 
-1. *Identify tables* - Review the SQL schema files under =projects/ores.sql/schema/=.
+1. *Identify tables* - Review the SQL schema files under =projects/ores.sql/create/=.
 2. *Read schema* - Analyze table definitions, primary keys, foreign keys, and
    junction tables.
 3. *Generate* - Follow the rules below to produce a clean ER diagram.
@@ -161,7 +161,7 @@ Junction tables typically have:
 
 ** 8. Schema organization
 
-The SQL schema files are organized under =projects/ores.sql/schema/=:
+The SQL schema files are organized under =projects/ores.sql/create/=:
 - =*_create.sql=: Table definitions with triggers
 - =*_notify_trigger.sql=: PostgreSQL NOTIFY triggers for change events
 
@@ -175,7 +175,7 @@ Read the create scripts to understand:
 
 | Check                    | How                                                      |
 |--------------------------+----------------------------------------------------------|
-| All tables represented   | Compare with =projects/ores.sql/schema/*_create.sql=          |
+| All tables represented   | Compare with =projects/ores.sql/create/*_create.sql=          |
 | Correct relationships    | Verify FK references in SQL match diagram arrows         |
 | Proper stereotypes       | Temporal tables have =<<temporal>>=, junctions have =<<junction>>= |
 | Domain packages          | Related entities grouped logically                       |

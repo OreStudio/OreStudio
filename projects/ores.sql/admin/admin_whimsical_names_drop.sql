@@ -18,27 +18,10 @@
  *
  */
 
-/**
- * DEPRECATED: This file is kept for backwards compatibility.
- *
- * The SQL scripts have been reorganized. Please use:
- *
- *   - setup_template.sql      : Create the template database (one-time setup)
- *   - create_instance.sql     : Create instance from template (fast, recommended)
- *   - create_database_direct.sql : Create database without template (slower)
- *
- * This file now delegates to the new structure.
- */
-
-\echo ''
-\echo 'WARNING: create_all.sql is deprecated.'
-\echo 'Please use the new organized scripts instead.'
-\echo ''
-\echo 'See: setup_template.sql, create_instance.sql, create_database_direct.sql'
-\echo ''
-
--- Include schema creation (for backwards compatibility when run in existing database)
-\ir ./template/create_schema.sql
-
--- Include instance initialization
-\ir ./instance/init_instance.sql
+drop function if exists admin_generate_unique_database_name_from_server_fn();
+drop function if exists admin_generate_unique_database_name_fn(text[], int);
+drop function if exists admin_generate_database_name_fn(boolean);
+drop function if exists admin_generate_whimsical_name_fn(boolean);
+drop function if exists admin_generate_whimsical_name_fn();
+drop function if exists admin_whimsical_nouns_fn();
+drop function if exists admin_whimsical_adjectives_fn();

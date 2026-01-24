@@ -33,38 +33,37 @@
 -- Parameters:
 --   db_name: Optional database name. If NULL, generates a whimsical name.
 -- Returns: SQL command string to execute
-CREATE OR REPLACE FUNCTION generate_create_database_sql(db_name TEXT DEFAULT NULL)
-RETURNS TEXT AS $$
-DECLARE
-    final_name TEXT;
-BEGIN
-    IF db_name IS NULL THEN
-        final_name := generate_unique_database_name_from_server();
-    ELSE
+create or replace function admin_generate_create_database_sql_fn(db_name text default null)
+returns text as $$
+declare
+    final_name text;
+begin
+    if db_name is null then
+        final_name := admin_generate_unique_database_name_from_server_fn();
+    else
         final_name := db_name;
-    END IF;
+    end if;
 
-    RETURN format(
-        E'-- Create database from template\n'
-        'CREATE DATABASE %I WITH TEMPLATE = ores_template;\n'
-        'GRANT ALL PRIVILEGES ON DATABASE %I TO ores;\n'
+    return format(
+        e'-- create database from template\n'
+        'create database %I with template = ores_template;\n'
+        'grant all privileges on database %I to ores;\n'
         '\n'
         '-- Connect to new database and initialize\n'
         '\\c %I\n'
         '\\ir ./instance/init_instance.sql\n',
         final_name, final_name, final_name
     );
-END;
-$$ LANGUAGE plpgsql VOLATILE;
+end;
+$$ language plpgsql volatile;
 
 -- Convenience function that outputs the command directly.
--- Usage: SELECT create_database_command();
---        SELECT create_database_command('my_custom_name');
-CREATE OR REPLACE FUNCTION create_database_command(db_name TEXT DEFAULT NULL)
-RETURNS VOID AS $$
-BEGIN
-    RAISE NOTICE E'\n%', generate_create_database_sql(db_name);
-    RAISE NOTICE E'\nCopy and paste the above commands to create the database.\n';
-END;
-$$ LANGUAGE plpgsql VOLATILE;
-
+-- Usage: select admin_create_database_command_fn();
+--        select admin_create_database_command_fn('my_custom_name');
+create or replace function admin_create_database_command_fn(db_name text default null)
+returns void as $$
+begin
+    raise notice e'\n%', admin_generate_create_database_sql_fn(db_name);
+    raise notice e'\ncopy and paste the above commands to create the database.\n';
+end;
+$$ language plpgsql volatile;

@@ -84,6 +84,6 @@ FUTURE STEPS (NOT YET IMPLEMENTED)
    - Output: Schema and populate SQL files for LEI entities
 
 5. COMMIT GENERATED SQL
-   - git add projects/ores.sql/schema/refdata_lei*.sql
+   - git add projects/ores.sql/create/refdata_lei*.sql
    - git add projects/ores.sql/populate/lei*.sql
    - git commit -m "[sql] Generate LEI reference data files"

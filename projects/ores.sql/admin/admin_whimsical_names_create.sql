@@ -26,9 +26,9 @@
 --
 
 -- Word lists for whimsical name generation (nature-themed, Heroku-style)
-CREATE OR REPLACE FUNCTION whimsical_adjectives()
-RETURNS TEXT[] AS $$
-    SELECT ARRAY[
+create or replace function admin_whimsical_adjectives_fn()
+returns text[] as $$
+    select array[
         'autumn', 'hidden', 'bitter', 'misty', 'silent', 'empty', 'dry', 'dark',
         'summer', 'icy', 'delicate', 'quiet', 'white', 'cool', 'spring', 'winter',
         'patient', 'twilight', 'crimson', 'wispy', 'weathered', 'blue', 'billowing',
@@ -39,11 +39,11 @@ RETURNS TEXT[] AS $$
         'restless', 'divine', 'polished', 'ancient', 'purple', 'lively', 'nameless',
         'golden', 'silver', 'crystal', 'velvet'
     ];
-$$ LANGUAGE sql IMMUTABLE;
+$$ language sql immutable;
 
-CREATE OR REPLACE FUNCTION whimsical_nouns()
-RETURNS TEXT[] AS $$
-    SELECT ARRAY[
+create or replace function admin_whimsical_nouns_fn()
+returns text[] as $$
+    select array[
         'waterfall', 'river', 'breeze', 'moon', 'rain', 'wind', 'sea', 'morning',
         'snow', 'lake', 'sunset', 'pine', 'shadow', 'leaf', 'dawn', 'glitter',
         'forest', 'hill', 'cloud', 'meadow', 'sun', 'glade', 'bird', 'brook',
@@ -54,59 +54,59 @@ RETURNS TEXT[] AS $$
         'cherry', 'tree', 'fog', 'frost', 'voice', 'paper', 'frog', 'smoke',
         'star', 'horizon', 'summit', 'cascade', 'pinnacle'
     ];
-$$ LANGUAGE sql IMMUTABLE;
+$$ language sql immutable;
 
 -- Generates a random whimsical name without any prefix or suffix.
 -- Returns names like: "silent_meadow", "autumn_frost"
-CREATE OR REPLACE FUNCTION generate_whimsical_name()
-RETURNS TEXT AS $$
-DECLARE
-    adjectives TEXT[];
-    nouns TEXT[];
-    adj TEXT;
-    noun TEXT;
-BEGIN
-    adjectives := whimsical_adjectives();
-    nouns := whimsical_nouns();
+create or replace function admin_generate_whimsical_name_fn()
+returns text as $$
+declare
+    adjectives text[];
+    nouns text[];
+    adj text;
+    noun text;
+begin
+    adjectives := admin_whimsical_adjectives_fn();
+    nouns := admin_whimsical_nouns_fn();
 
     adj := adjectives[1 + floor(random() * array_length(adjectives, 1))::int];
     noun := nouns[1 + floor(random() * array_length(nouns, 1))::int];
 
-    RETURN adj || '_' || noun;
-END;
-$$ LANGUAGE plpgsql VOLATILE;
+    return adj || '_' || noun;
+end;
+$$ language plpgsql volatile;
 
 -- Generates a whimsical name with an optional numeric suffix.
 -- Parameters:
 --   with_suffix: If true, appends a random 4-digit number (e.g., "silent_meadow_4217")
 -- Returns names like: "silent_meadow" or "silent_meadow_4217"
-CREATE OR REPLACE FUNCTION generate_whimsical_name(with_suffix BOOLEAN)
-RETURNS TEXT AS $$
-DECLARE
-    base_name TEXT;
-    suffix INT;
-BEGIN
-    base_name := generate_whimsical_name();
+create or replace function admin_generate_whimsical_name_fn(with_suffix boolean)
+returns text as $$
+declare
+    base_name text;
+    suffix int;
+begin
+    base_name := admin_generate_whimsical_name_fn();
 
-    IF with_suffix THEN
+    if with_suffix then
         suffix := 1000 + floor(random() * 9000)::int;  -- 1000-9999
-        RETURN base_name || '_' || suffix::text;
-    ELSE
-        RETURN base_name;
-    END IF;
-END;
-$$ LANGUAGE plpgsql VOLATILE;
+        return base_name || '_' || suffix::text;
+    else
+        return base_name;
+    end if;
+end;
+$$ language plpgsql volatile;
 
 -- Generates a database name with the 'ores_' prefix.
 -- Parameters:
 --   with_suffix: If true, appends a random 4-digit number
 -- Returns names like: "ores_silent_meadow" or "ores_silent_meadow_4217"
-CREATE OR REPLACE FUNCTION generate_database_name(with_suffix BOOLEAN DEFAULT FALSE)
-RETURNS TEXT AS $$
-BEGIN
-    RETURN 'ores_' || generate_whimsical_name(with_suffix);
-END;
-$$ LANGUAGE plpgsql VOLATILE;
+create or replace function admin_generate_database_name_fn(with_suffix boolean default false)
+returns text as $$
+begin
+    return 'ores_' || admin_generate_whimsical_name_fn(with_suffix);
+end;
+$$ language plpgsql volatile;
 
 -- Generates a unique database name that doesn't exist in the provided list.
 -- Useful when creating new tenant databases to avoid collisions.
@@ -114,49 +114,49 @@ $$ LANGUAGE plpgsql VOLATILE;
 --   existing_names: Array of already-used database names
 --   max_attempts: Maximum number of generation attempts before adding suffix (default 10)
 -- Returns a unique name, adding numeric suffix if needed after max_attempts
-CREATE OR REPLACE FUNCTION generate_unique_database_name(
-    existing_names TEXT[] DEFAULT ARRAY[]::TEXT[],
-    max_attempts INT DEFAULT 10
+create or replace function admin_generate_unique_database_name_fn(
+    existing_names text[] default array[]::text[],
+    max_attempts int default 10
 )
-RETURNS TEXT AS $$
-DECLARE
-    candidate TEXT;
-    attempt INT := 0;
-BEGIN
-    -- First try without suffix
-    LOOP
+returns text as $$
+declare
+    candidate text;
+    attempt int := 0;
+begin
+    -- first try without suffix
+    loop
         attempt := attempt + 1;
-        candidate := generate_database_name(false);
+        candidate := admin_generate_database_name_fn(false);
 
-        IF NOT (candidate = ANY(existing_names)) THEN
-            RETURN candidate;
-        END IF;
+        if not (candidate = any(existing_names)) then
+            return candidate;
+        end if;
 
-        EXIT WHEN attempt >= max_attempts;
-    END LOOP;
+        exit when attempt >= max_attempts;
+    end loop;
 
-    -- Fall back to suffix if all attempts collided
-    LOOP
-        candidate := generate_database_name(true);
+    -- fall back to suffix if all attempts collided
+    loop
+        candidate := admin_generate_database_name_fn(true);
 
-        IF NOT (candidate = ANY(existing_names)) THEN
-            RETURN candidate;
-        END IF;
-    END LOOP;
-END;
-$$ LANGUAGE plpgsql VOLATILE;
+        if not (candidate = any(existing_names)) then
+            return candidate;
+        end if;
+    end loop;
+end;
+$$ language plpgsql volatile;
 
 -- Convenience function to check all existing databases on the server.
 -- Returns a unique database name that doesn't conflict with any existing database.
-CREATE OR REPLACE FUNCTION generate_unique_database_name_from_server()
-RETURNS TEXT AS $$
-DECLARE
-    existing_dbs TEXT[];
-BEGIN
-    SELECT array_agg(datname) INTO existing_dbs
-    FROM pg_database
-    WHERE datname LIKE 'ores_%';
+create or replace function admin_generate_unique_database_name_from_server_fn()
+returns text as $$
+declare
+    existing_dbs text[];
+begin
+    select array_agg(datname) into existing_dbs
+    from pg_database
+    where datname like 'ores_%';
 
-    RETURN generate_unique_database_name(COALESCE(existing_dbs, ARRAY[]::TEXT[]));
-END;
-$$ LANGUAGE plpgsql VOLATILE;
+    return admin_generate_unique_database_name_fn(coalesce(existing_dbs, array[]::text[]));
+end;
+$$ language plpgsql volatile;

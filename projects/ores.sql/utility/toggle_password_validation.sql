@@ -42,15 +42,11 @@ set schema 'ores';
     \set new_value 0
 \endif
 
--- Update the flag using bitemporal pattern
-insert into ores.variability_feature_flags_tbl (name, enabled, description, modified_by, valid_from, valid_to)
-values (
+-- Update the flag using the upsert function
+select ores.upsert_system_flag(
     'system.disable_password_validation',
-    true,
-    'When enabled (1), disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.',
-    current_user,
-    current_timestamp,
-    ores.utility_infinity_timestamp_fn()
+    :new_value::boolean,
+    'When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.'
 );
 
 -- Show the updated state

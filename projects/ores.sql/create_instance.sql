@@ -60,7 +60,7 @@
     \c ores_admin
 
     -- Generate and store the name
-    select generate_unique_database_name_from_server() as generated_name \gset
+    select admin_generate_unique_database_name_from_server_fn() as generated_name \gset
 
     -- Set db_name to the generated value
     \set db_name :generated_name

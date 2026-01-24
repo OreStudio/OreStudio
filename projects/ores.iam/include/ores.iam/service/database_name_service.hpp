@@ -39,8 +39,11 @@ namespace ores::iam::service {
  *   - ores_crimson_dawn_4217
  *
  * The service delegates to PostgreSQL functions defined in
- * whimsical_names_create.sql, ensuring a single source of truth for the
- * word lists and generation logic.
+ * admin_whimsical_names_create.sql (in ores_admin database), ensuring a
+ * single source of truth for the word lists and generation logic.
+ *
+ * NOTE: This service must connect to the ores_admin database to access
+ * the name generation functions.
  *
  * Usage patterns:
  *   - Local development: generate_database_name() without suffix

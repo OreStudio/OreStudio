@@ -73,7 +73,7 @@ geoip tables populated with MaxMind GeoLite2-City CSV data.
 
 1. Create the geoip tables:
    #+begin_src shell
-   psql -d ores -f projects/ores.sql/schema/geolocation_create.sql
+   psql -d ores -f projects/ores.sql/create/geolocation_create.sql
    #+end_src
 
 2. Download GeoLite2-City-CSV.zip from MaxMind (requires free account):

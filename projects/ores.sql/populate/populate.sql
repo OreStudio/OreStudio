@@ -82,16 +82,15 @@
 \echo '--- Cryptocurrency Reference Data ---'
 \ir crypto/crypto.sql
 
--- RBAC (Role-Based Access Control)
+-- IAM (Identity and Access Management)
 \echo ''
-\echo '--- RBAC Data ---'
-\ir iam_permissions_populate.sql
-\ir iam_roles_populate.sql
+\echo '--- IAM ---'
+\ir iam/iam.sql
 
--- System Flags
+-- Variability (Feature Flags)
 \echo ''
-\echo '--- System Flags ---'
-\ir variability_system_flags_populate.sql
+\echo '--- Variability ---'
+\ir variability/variability.sql
 
 \echo ''
 \echo '=== System Population Complete ==='

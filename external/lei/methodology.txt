@@ -1,0 +1,89 @@
+Data Sourcing and Generation Steps:
+
+1. SOURCE DATA DOWNLOAD
+   Option A - Automatic download via script:
+     Script: projects/ores.codegen/src/lei_extract_subset.py --download-only
+     Command: python3 lei_extract_subset.py --download-only
+     Output: Downloads to external/lei/
+
+   Option B - Manual download:
+     Visit: https://www.gleif.org/en/lei-data/gleif-golden-copy/download-the-golden-copy
+     Download: LEI-CDF v3.1 (Concatenated File) and RR-CDF v2.1
+     Extract: Unzip into external/lei/
+
+2. GENERATE SUBSET FILES
+   Script: projects/ores.codegen/scripts/generate_lei_subsets.sh
+   Command: ./generate_lei_subsets.sh
+   Output: Both small and large subsets in external/lei/
+
+   Or generate specific sizes:
+     ./generate_lei_subsets.sh --small    # Small subset only
+     ./generate_lei_subsets.sh --large    # Large subset only
+
+3. COMMIT TO REPOSITORY
+   Note: Full LEI files are too large to commit (~4.3 GB).
+   Only subset files should be committed.
+
+   git add external/lei/*-subset-small.csv
+   git add external/lei/*-subset-large.csv
+   git commit -m "[data] Update LEI subset files"
+
+SUBSET GENERATION METHODOLOGY
+-----------------------------
+The subset extractor creates diverse, representative subsets for testing by
+sampling across multiple dimensions:
+
+1. Geographic Diversity
+   - Samples entities from all ~235 countries in the dataset
+   - Configurable entities per country (small: 20, large: 60)
+
+2. Entity Category Diversity
+   - GENERAL (corporations, LLCs)
+   - FUND (investment funds)
+   - SOLE_PROPRIETOR
+   - RESIDENT_GOVERNMENT_ENTITY
+   - BRANCH
+   - INTERNATIONAL_ORGANIZATION
+
+3. Sector Diversity (detected from entity names via keywords)
+   - Financial: BANK, INSURANCE, BROKER_DEALER, ASSET_MANAGEMENT
+   - Funds: INVESTMENT_FUND, ETF, HEDGE_FUND, PRIVATE_EQUITY, PENSION
+   - Industrial: ENERGY, MANUFACTURING, MINING, CONSTRUCTION
+   - Services: TECHNOLOGY, HEALTHCARE, RETAIL, TELECOM
+   - Other: REAL_ESTATE, AEROSPACE, SHIPPING, AGRICULTURE, MEDIA
+
+4. Fund Type Diversity (for FUND entities)
+   - ETF, BOND, EQUITY, INDEX, MONEY_MARKET
+   - BALANCED, COMMODITY, REAL_ESTATE
+   - GLOBAL, EMERGING_MARKETS
+
+5. Relationship Depth
+   - Entities with 0 children (standalone)
+   - Entities with 1-4 children (small groups)
+   - Entities with 5+ children (large corporate groups)
+
+6. Hierarchy Completeness
+   - After sampling, adds all children of selected parents
+   - Adds all parents of selected children
+   - Ensures complete parent-child relationships in subset
+
+SIZE PRESETS
+------------
+Small (~10K entities):
+  per_country=20, per_depth=10, per_sector=15
+  per_category=20, per_fund_type=10, per_legal_form=5
+
+Large (~50K entities):
+  per_country=60, per_depth=30, per_sector=40
+  per_category=60, per_fund_type=30, per_legal_form=10
+
+FUTURE STEPS (NOT YET IMPLEMENTED)
+----------------------------------
+4. GENERATE SQL FILES
+   - Parser to read LEI subset CSV and generate SQL
+   - Output: Schema and populate SQL files for LEI entities
+
+5. COMMIT GENERATED SQL
+   - git add projects/ores.sql/schema/refdata_lei*.sql
+   - git add projects/ores.sql/populate/lei*.sql
+   - git commit -m "[sql] Generate LEI reference data files"

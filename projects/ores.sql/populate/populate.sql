@@ -47,128 +47,50 @@
 \echo '=== Starting System Population ==='
 \echo ''
 
--- Change Control (must be populated before entities that use reasons)
-\echo '--- Change Control ---'
-\ir dq_change_reasons_populate.sql
-
--- Data Quality Catalogs
+-- Data Quality Framework (change control, dimensions, domains, subject areas, coding schemes)
 \echo ''
-\echo '--- Data Quality Catalogs ---'
-\ir dq_catalog_populate.sql
+\echo '--- Data Quality Framework ---'
+\ir dq/dq.sql
 
--- Data Quality Data Domains
+-- Flag Icons Reference Data (Visual Assets catalog, datasets, and images - must come before ISO)
 \echo ''
-\echo '--- Data Quality Data Domains ---'
-\ir dq_data_domain_populate.sql
+\echo '--- Flag Icons Reference Data ---'
+\ir flags/flags.sql
 
--- Data Quality Dimensions
+-- ISO Standards Reference Data (catalog, datasets, countries, currencies)
 \echo ''
-\echo '--- Data Quality Dimensions ---'
-\ir dq_origin_dimension_populate.sql
-\ir dq_nature_dimension_populate.sql
-\ir dq_treatment_dimension_populate.sql
+\echo '--- ISO Standards Reference Data ---'
+\ir iso/iso.sql
 
--- Data Quality Subject Areas
+-- Solvaris Reference Data
 \echo ''
-\echo '--- Data Quality Subject Areas ---'
-\ir dq_subject_area_populate.sql
+\echo '--- Solvaris Reference Data ---'
+\ir solvaris/solvaris.sql
 
--- Data Quality Coding Scheme Authority Types
+-- IP to Country Reference Data (iptoasn.com)
 \echo ''
-\echo '--- Data Quality Coding Scheme Authority Types ---'
-\ir dq_coding_scheme_authority_type_populate.sql
+\echo '--- IP to Country Reference Data ---'
+\ir ip2country/ip2country.sql
 
--- Data Quality Coding Schemes
+-- FPML Reference Data (methodology, coding schemes, datasets, artefacts)
 \echo ''
-\echo '--- Data Quality Coding Schemes ---'
-\ir dq_coding_scheme_populate.sql
-\ir fpml_coding_schemes_populate.sql
+\echo '--- FPML Reference Data ---'
+\ir fpml/fpml.sql
 
--- Data Quality Methodologies
+-- Cryptocurrency Reference Data (datasets, images, currencies)
 \echo ''
-\echo '--- Data Quality Methodologies ---'
-\ir dq_methodology_populate.sql
+\echo '--- Cryptocurrency Reference Data ---'
+\ir crypto/crypto.sql
 
--- Data Quality Datasets
+-- IAM (Identity and Access Management)
 \echo ''
-\echo '--- Data Quality Datasets ---'
-\ir dq_dataset_populate.sql
+\echo '--- IAM ---'
+\ir iam/iam.sql
 
--- Data Quality Dataset Tags
+-- Variability (Feature Flags)
 \echo ''
-\echo '--- Data Quality Dataset Tags ---'
-\ir dq_dataset_tag_populate.sql
-
--- Data Quality Dataset Dependencies
-\echo ''
-\echo '--- Data Quality Dataset Dependencies ---'
-\ir dq_dataset_dependency_populate.sql
-
--- Data Quality Artefacts
-\ir dq_flags_images_artefact_populate.sql
-\ir dq_crypto_images_artefact_populate.sql
-\ir dq_countries_artefact_populate.sql
-\ir dq_currencies_artefact_populate.sql
-\ir dq_fpml_non_iso_currencies_artefact_populate.sql
-\ir dq_cryptocurrencies_artefact_populate.sql
-\ir dq_cryptocurrencies_top100_artefact_populate.sql
-\ir dq_ip2country_artefact_populate.sql
-\ir solvaris_batch_execute.sql
-
--- FPML Reference Data Datasets (18 datasets for 15 entity types)
-\echo ''
-\echo '--- FPML Reference Data Datasets ---'
-\ir fpml_account_type_dataset_populate.sql
-\ir fpml_asset_class_dataset_populate.sql
-\ir fpml_asset_measure_dataset_populate.sql
-\ir fpml_benchmark_rate_dataset_populate.sql
-\ir fpml_business_center_dataset_populate.sql
-\ir fpml_business_process_dataset_populate.sql
-\ir fpml_cashflow_type_dataset_populate.sql
-\ir fpml_cftc_entity_classification_dataset_populate.sql
-\ir fpml_cftc_organization_type_dataset_populate.sql
-\ir fpml_entity_type_dataset_populate.sql
-\ir fpml_hkma_rewrite_party_relationship_type_dataset_populate.sql
-\ir fpml_hkma_rewrite_regulatory_corporate_sector_dataset_populate.sql
-\ir fpml_local_jurisdiction_dataset_populate.sql
-\ir fpml_party_relationship_type_dataset_populate.sql
-\ir fpml_party_role_dataset_populate.sql
-\ir fpml_person_role_dataset_populate.sql
-\ir fpml_reporting_regime_dataset_populate.sql
-\ir fpml_supervisory_body_dataset_populate.sql
-
--- FPML Reference Data Artefacts (18 datasets for 15 entity types)
-\echo ''
-\echo '--- FPML Reference Data Artefacts ---'
-\ir dq_account_type_artefact_populate.sql
-\ir dq_asset_class_artefact_populate.sql
-\ir dq_asset_measure_artefact_populate.sql
-\ir dq_benchmark_rate_artefact_populate.sql
-\ir dq_business_center_artefact_populate.sql
-\ir dq_business_process_artefact_populate.sql
-\ir dq_cashflow_type_artefact_populate.sql
-\ir dq_cftc_entity_classification_artefact_populate.sql
-\ir dq_cftc_organization_type_artefact_populate.sql
-\ir dq_entity_type_artefact_populate.sql
-\ir dq_hkma_rewrite_party_relationship_type_artefact_populate.sql
-\ir dq_hkma_rewrite_regulatory_corporate_sector_artefact_populate.sql
-\ir dq_local_jurisdiction_artefact_populate.sql
-\ir dq_party_relationship_type_artefact_populate.sql
-\ir dq_party_role_artefact_populate.sql
-\ir dq_person_role_artefact_populate.sql
-\ir dq_reporting_regime_artefact_populate.sql
-\ir dq_supervisory_body_artefact_populate.sql
-
--- RBAC (Role-Based Access Control)
-\echo ''
-\echo '--- RBAC Data ---'
-\ir iam_permissions_populate.sql
-\ir iam_roles_populate.sql
-
--- System Flags
-\echo ''
-\echo '--- System Flags ---'
-\ir variability_system_flags_populate.sql
+\echo '--- Variability ---'
+\ir variability/variability.sql
 
 \echo ''
 \echo '=== System Population Complete ==='

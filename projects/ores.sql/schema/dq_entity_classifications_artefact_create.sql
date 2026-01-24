@@ -20,7 +20,7 @@
 set schema 'ores';
 
 -- =============================================================================
--- Financial Entity Indicator. - Artefact Table
+-- Financial Entity Indicator as defined by the CFTC. - Artefact Table
 -- =============================================================================
 
 create table if not exists "ores"."dq_entity_classifications_artefact_tbl" (

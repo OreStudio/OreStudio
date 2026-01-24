@@ -32,7 +32,7 @@
  *
  * Examples:
  * - "iso.countries" depends on "assets.country_flags" for visual display
- * - "crypto.coins" depends on "assets.crypto_icons" for icon display
+ * - "crypto.large" and "crypto.small" depend on "assets.crypto_icons" for icon display
  */
 
 set schema 'ores';

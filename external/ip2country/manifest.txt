@@ -1,0 +1,16 @@
+# IP to Country Mapping Data Manifest
+#
+# Source: iptoasn.com
+# URL: https://iptoasn.com/
+# License: PDDL v1.0 (Public Domain Dedication and License)
+#
+# Files:
+#   ip2country-v4-u32.tsv - IPv4 ranges mapped to country codes
+#
+# Format: TSV (tab-separated values)
+#   Column 1: range_start (bigint) - Start of IP range as unsigned 32-bit integer
+#   Column 2: range_end (bigint) - End of IP range as unsigned 32-bit integer
+#   Column 3: country_code (text) - ISO 3166-1 alpha-2 country code or "None"
+#
+# Download date: 2025-01-21
+# Record count: ~500,000 ranges

@@ -56,6 +56,114 @@ ENTITY_SUBJECT_AREA_MAP = {
     'regulatory-corporate-sectors': 'Regulatory',
     'reporting-regimes': 'Regulatory',
     'supervisory-bodies': 'Regulatory',
+    # Currencies - currency codes
+    'non-iso-currencies': 'Currencies',
+}
+
+# Mapping of entity names to file patterns for flat directory structure
+# The pattern is used to find XML files when they're not in subdirectories
+ENTITY_FILE_PATTERNS = {
+    'account-types': ['account-type-*.xml'],
+    'asset-classes': ['asset-class-*.xml'],
+    'asset-measures': ['asset-measure-*.xml'],
+    'benchmark-rates': ['benchmark-rate-*.xml'],
+    'business-centres': ['business-center-*.xml'],
+    'business-processes': ['business-process-*.xml'],
+    'cashflow-types': ['cashflow-type-*.xml'],
+    'entity-classifications': ['entity-type-*.xml', 'cftc-entity-classification-*.xml', 'cftc-organization-type-*.xml'],
+    'local-jurisdictions': ['local-jurisdiction-*.xml'],
+    'non-iso-currencies': ['non-iso-currency-*.xml'],
+    'party-relationships': ['party-relationship-type-*.xml', 'hkma-rewrite-party-relationship-type-*.xml'],
+    'party-roles': ['party-role-*.xml'],
+    'person-roles': ['person-role-*.xml'],
+    'regulatory-corporate-sectors': ['regulatory-corporate-sector-*.xml', 'hkma-rewrite-regulatory-corporate-sector-*.xml'],
+    'reporting-regimes': ['reporting-regime-*.xml'],
+    'supervisory-bodies': ['supervisory-body-*.xml'],
+}
+
+# Enrichment data for non-ISO currencies
+# These currencies are from FPML but need additional metadata to populate
+# the shared dq_currencies_artefact_tbl (which has a richer schema than
+# standard FPML reference data tables).
+#
+# Fields: symbol, fraction_symbol, fractions_per_unit, rounding_type,
+#         rounding_precision, format, currency_type, flag_key
+NON_ISO_CURRENCY_ENRICHMENT = {
+    # Offshore Chinese Yuan variants
+    'CNH': {
+        'name': 'Offshore Chinese Yuan (Hong Kong)',
+        'symbol': '¥', 'fraction_symbol': '分', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '¥#,##0.00', 'currency_type': 'fiat.offshore', 'flag_key': 'hk'
+    },
+    'CNT': {
+        'name': 'Offshore Chinese Yuan (Taiwan)',
+        'symbol': '¥', 'fraction_symbol': '分', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '¥#,##0.00', 'currency_type': 'fiat.offshore', 'flag_key': 'tw'
+    },
+    # British Crown Dependencies (pegged to GBP)
+    'GGP': {
+        'name': 'Guernsey Pound',
+        'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '£#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'gg'
+    },
+    'IMP': {
+        'name': 'Isle of Man Pound',
+        'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '£#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'im'
+    },
+    'JEP': {
+        'name': 'Jersey Pound',
+        'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '£#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'je'
+    },
+    # Pacific Island currencies (pegged to AUD)
+    'KID': {
+        'name': 'Kiribati Dollar',
+        'symbol': '$', 'fraction_symbol': '¢', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '$#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'ki'
+    },
+    'TVD': {
+        'name': 'Tuvalu Dollar',
+        'symbol': '$', 'fraction_symbol': '¢', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '$#,##0.00', 'currency_type': 'fiat.emerging', 'flag_key': 'tv'
+    },
+    # Historical European currencies
+    'MCF': {
+        'name': 'Monegasque Franc',
+        'symbol': '₣', 'fraction_symbol': 'c', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '₣#,##0.00', 'currency_type': 'fiat.historical', 'flag_key': 'mc'
+    },
+    'SML': {
+        'name': 'Sammarinese Lira',
+        'symbol': '₤', 'fraction_symbol': 'c', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '₤#,##0.00', 'currency_type': 'fiat.historical', 'flag_key': 'sm'
+    },
+    'VAL': {
+        'name': 'Vatican Lira',
+        'symbol': '₤', 'fraction_symbol': 'c', 'fractions_per_unit': 100,
+        'rounding_type': 'standard', 'rounding_precision': 2,
+        'format': '₤#,##0.00', 'currency_type': 'fiat.historical', 'flag_key': 'va'
+    },
+}
+
+# Entities that use shared tables instead of their own entity-specific tables
+# These entities have their artefact data stored in existing tables with richer schemas
+ENTITIES_WITH_SHARED_TABLES = {
+    'non-iso-currencies': {
+        'artefact_table': 'dq_currencies_artefact_tbl',
+        'production_table': 'refdata_currencies_tbl',
+        'populate_function': 'dq_populate_currencies',
+        'skip_schema_generation': True,
+    }
 }
 
 
@@ -176,8 +284,13 @@ class MergedEntity:
         For entities with multiple coding schemes (e.g., entity_classifications),
         this produces multiple datasets. Each dataset contains only the rows
         belonging to that coding scheme.
+
+        For non-ISO currencies, enrichment data is added to populate the
+        shared dq_currencies_artefact_tbl (which has a richer schema).
         """
         datasets = []
+        is_non_iso_currency = self.entity_plural == 'non_iso_currencies'
+
         for cs in self.coding_schemes:
             coding_scheme_code = cs.to_code()
             # Filter rows for this coding scheme
@@ -195,12 +308,28 @@ class MergedEntity:
 
             items = []
             for row in scheme_rows:
-                items.append({
+                item = {
                     "code": row.code,
                     "coding_scheme_code": row.coding_scheme_code,
                     "source": row.source,
                     "description": row.description
-                })
+                }
+                # Add enrichment data for non-ISO currencies
+                if is_non_iso_currency and row.code in NON_ISO_CURRENCY_ENRICHMENT:
+                    enrichment = NON_ISO_CURRENCY_ENRICHMENT[row.code]
+                    item.update({
+                        "name": enrichment['name'],
+                        "numeric_code": "",  # Non-ISO currencies don't have ISO numeric codes
+                        "symbol": enrichment['symbol'],
+                        "fraction_symbol": enrichment['fraction_symbol'],
+                        "fractions_per_unit": enrichment['fractions_per_unit'],
+                        "rounding_type": enrichment['rounding_type'],
+                        "rounding_precision": enrichment['rounding_precision'],
+                        "format": enrichment['format'],
+                        "currency_type": enrichment['currency_type'],
+                        "flag_key": enrichment['flag_key'],
+                    })
+                items.append(item)
 
             entity_data = {
                 "entity_singular": self.entity_name,
@@ -215,16 +344,30 @@ class MergedEntity:
                     "placeholder_key": "xx"
                 }
 
-            datasets.append({
+            dataset_entry = {
                 "dataset": {
                     "code": dataset_code,
                     "name": display_name,
                     "coding_scheme_code": coding_scheme_code,
                     "description": cs.definition or f"Reference data for {display_name}",
+                    "source_version": cs.version,
+                    "canonical_version_uri": cs.canonical_version_uri,
+                    "publication_date": cs.publication_date,
                 },
                 "entity": entity_data,
                 "items": items,
-            })
+            }
+
+            # Mark non-ISO currencies as using shared tables
+            if is_non_iso_currency:
+                dataset_entry["uses_shared_currency_table"] = True
+                dataset_entry["shared_table_config"] = {
+                    "artefact_table": "dq_currencies_artefact_tbl",
+                    "production_table": "refdata_currencies_tbl",
+                    "populate_function": "dq_populate_currencies",
+                }
+
+            datasets.append(dataset_entry)
 
         return datasets
 
@@ -389,18 +532,26 @@ def derive_entity_name(directory_name: str) -> tuple[str, str]:
     return singular, plural
 
 
-def process_directory(dir_path: Path) -> MergedEntity:
+def process_entity(input_dir: Path, entity_name: str) -> MergedEntity:
     """
-    Process a directory containing FPML XML files.
+    Process FPML XML files for a given entity from a flat directory.
 
+    Uses ENTITY_FILE_PATTERNS to find matching files.
     If multiple files exist, merge them tracking each row's source coding scheme.
     """
-    xml_files = sorted(dir_path.glob('*.xml'))
-    if not xml_files:
-        raise ValueError(f"No XML files found in {dir_path}")
+    patterns = ENTITY_FILE_PATTERNS.get(entity_name, [])
+    if not patterns:
+        raise ValueError(f"No file patterns defined for entity: {entity_name}")
 
-    entity_singular, entity_plural = derive_entity_name(dir_path.name)
-    subject_area = get_subject_area(dir_path.name)
+    xml_files = []
+    for pattern in patterns:
+        xml_files.extend(input_dir.glob(pattern))
+
+    if not xml_files:
+        raise ValueError(f"No XML files found for entity {entity_name}")
+
+    entity_singular, entity_plural = derive_entity_name(entity_name)
+    subject_area = get_subject_area(entity_name)
 
     merged = MergedEntity(
         entity_name=entity_singular,
@@ -411,7 +562,7 @@ def process_directory(dir_path: Path) -> MergedEntity:
 
     seen_codes: dict[tuple[str, str], CodeListRow] = {}
 
-    for xml_file in xml_files:
+    for xml_file in sorted(xml_files):
         print(f"  Parsing {xml_file.name}...")
         code_list = parse_xml_file(xml_file)
         merged.coding_schemes.append(code_list.coding_scheme)
@@ -431,6 +582,233 @@ def process_directory(dir_path: Path) -> MergedEntity:
 
     print(f"  Merged {len(merged.rows)} rows from {len(merged.coding_schemes)} scheme(s)")
     return merged
+
+
+def load_manifest(manifest_path: Path) -> dict:
+    """Load the data manifest JSON file."""
+    if not manifest_path.exists():
+        return {}
+    with open(manifest_path, 'r') as f:
+        return json.load(f)
+
+
+def load_methodology_text(methodology_path: Path) -> str:
+    """Load the methodology text file."""
+    if not methodology_path.exists():
+        return ''
+    return methodology_path.read_text().strip()
+
+
+def generate_catalog_sql(manifest: dict, output_path: Path):
+    """Generate SQL file with catalog upsert from manifest."""
+    if not manifest:
+        print("Warning: No manifest found, skipping catalog generation")
+        return
+
+    catalog = manifest.get('catalog')
+    if not catalog:
+        print("Warning: No catalog in manifest, skipping catalog generation")
+        return
+
+    name = catalog.get('name', 'FpML Standards')
+    description = catalog.get('description', '')
+    owner = catalog.get('owner', 'Reference Data Team')
+
+    # Escape single quotes for SQL
+    name_escaped = name.replace("'", "''")
+    description_escaped = description.replace("'", "''")
+    owner_escaped = owner.replace("'", "''")
+
+    lines = [
+        "/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-",
+        " *",
+        " * FPML Catalog Population Script",
+        " *",
+        " * Auto-generated from external/fpml/manifest.json",
+        " * This script is idempotent.",
+        " */",
+        "",
+        "set schema 'ores';",
+        "",
+        "-- =============================================================================",
+        "-- FpML Standards Catalog",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FpML Standards Catalog ---'",
+        "",
+        f"select ores.upsert_dq_catalogs(",
+        f"    '{name_escaped}',",
+        f"    '{description_escaped}',",
+        f"    '{owner_escaped}'",
+        ");",
+        ""
+    ]
+
+    output_path.write_text('\n'.join(lines))
+    print(f"Generated: {output_path}")
+
+
+def generate_methodology_sql(manifest: dict, methodology_text: str, output_path: Path):
+    """Generate SQL file with methodology upsert from manifest."""
+    if not manifest:
+        print("Warning: No manifest found, skipping methodology generation")
+        return
+
+    name = manifest.get('name', 'FpML Genericode Download')
+    description = manifest.get('description', '')
+    source_url = manifest.get('source_url', '')
+    downloaded_at = manifest.get('downloaded_at', '')
+
+    # Escape single quotes for SQL
+    name_escaped = name.replace("'", "''")
+    description_escaped = description.replace("'", "''")
+    source_url_escaped = source_url.replace("'", "''")
+
+    # Build implementation details with download date
+    impl_details_parts = []
+    if downloaded_at:
+        impl_details_parts.append(f"Last Download: {downloaded_at}")
+        impl_details_parts.append("")
+    if methodology_text:
+        impl_details_parts.append(methodology_text)
+
+    implementation_details = '\n'.join(impl_details_parts).replace("'", "''")
+
+    lines = [
+        "/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-",
+        " *",
+        " * FPML Methodology Population Script",
+        " *",
+        " * Auto-generated from external/fpml/manifest.json",
+        " * This script is idempotent.",
+        " */",
+        "",
+        "set schema 'ores';",
+        "",
+        "-- =============================================================================",
+        "-- FPML Data Sourcing Methodology",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FPML Methodology ---'",
+        "",
+        f"select ores.upsert_dq_methodologies(",
+        f"    '{name_escaped}',",
+        f"    '{description_escaped}',",
+        f"    '{source_url_escaped}',",
+        f"    '{implementation_details}'",
+        ");",
+        ""
+    ]
+
+    output_path.write_text('\n'.join(lines))
+    print(f"Generated: {output_path}")
+
+
+def generate_dataset_dependency_sql(manifest: dict, output_path: Path):
+    """Generate SQL file with dataset dependency upserts from manifest."""
+    dependencies = manifest.get('dependencies', [])
+
+    lines = [
+        "/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-",
+        " *",
+        " * FPML Dataset Dependencies Population Script",
+        " *",
+        " * Auto-generated from external/fpml/manifest.json",
+        " * Must be run after fpml dataset populate scripts.",
+        " */",
+        "",
+        "set schema 'ores';",
+        "",
+        "-- =============================================================================",
+        "-- FPML Dataset Dependencies",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FPML Dataset Dependencies ---'",
+        ""
+    ]
+
+    for dep in dependencies:
+        dataset_code = dep['dataset_code']
+        dependency_code = dep['dependency_code']
+        role = dep['role']
+
+        lines.append(f"select ores.upsert_dq_dataset_dependency(")
+        lines.append(f"    '{dataset_code}',")
+        lines.append(f"    '{dependency_code}',")
+        lines.append(f"    '{role}'")
+        lines.append(");")
+        lines.append("")
+
+    output_path.write_text('\n'.join(lines))
+    print(f"Generated: {output_path}")
+
+
+def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files: list[str]):
+    """Generate fpml.sql master include file with all FPML files in correct order."""
+    lines = [
+        "/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-",
+        " *",
+        " * FPML Reference Data Master Include File",
+        " *",
+        " * Auto-generated by generate_fpml_refdata.sh",
+        " * Includes all FPML SQL files in the correct dependency order.",
+        " */",
+        "",
+        "-- =============================================================================",
+        "-- FpML Standards Catalog (must come first)",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FpML Standards Catalog ---'",
+        "\\ir fpml_catalog_populate.sql",
+        "",
+        "-- =============================================================================",
+        "-- FPML Methodology",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FPML Methodology ---'",
+        "\\ir fpml_methodology_populate.sql",
+        "",
+        "-- =============================================================================",
+        "-- FPML Coding Schemes",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FPML Coding Schemes ---'",
+        "\\ir fpml_coding_schemes_populate.sql",
+        "",
+        "-- =============================================================================",
+        "-- FPML Datasets",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FPML Datasets ---'",
+    ]
+
+    for f in sorted(dataset_files):
+        lines.append(f"\\ir {f}")
+
+    lines.extend([
+        "",
+        "-- =============================================================================",
+        "-- FPML Dataset Dependencies",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FPML Dataset Dependencies ---'",
+        "\\ir fpml_dataset_dependency_populate.sql",
+        "",
+        "-- =============================================================================",
+        "-- FPML Artefacts",
+        "-- =============================================================================",
+        "",
+        "\\echo '--- FPML Artefacts ---'",
+    ])
+
+    for f in sorted(artefact_files):
+        lines.append(f"\\ir {f}")
+
+    lines.append("")
+
+    output_path = output_dir / "fpml.sql"
+    output_path.write_text('\n'.join(lines))
+    print(f"Generated: {output_path}")
 
 
 def generate_coding_schemes_sql(entities: list[MergedEntity], output_path: Path):
@@ -504,15 +882,17 @@ def main():
         description='Parse FPML Genericode XML files and generate SQL/JSON outputs'
     )
     parser.add_argument('input_dir', type=Path,
-                        help='Directory containing FPML data subdirectories')
+                        help='Directory containing FPML codelist XML files (flat structure)')
     parser.add_argument('output_dir', type=Path,
                         help='Output directory for generated files')
+    parser.add_argument('--external-dir', type=Path, default=None,
+                        help='External data directory containing manifest.json (default: parent of input_dir)')
     parser.add_argument('--coding-schemes-only', action='store_true',
                         help='Only generate coding schemes SQL')
     parser.add_argument('--entities', type=str, nargs='*',
-                        help='Specific entity directories to process (default: all)')
+                        help='Specific entities to process (default: all)')
     parser.add_argument('--exclude', type=str, nargs='*', default=[],
-                        help='Entity directories to exclude (e.g., currencies)')
+                        help='Entities to exclude (e.g., currencies)')
 
     args = parser.parse_args()
 
@@ -522,33 +902,27 @@ def main():
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Find all subdirectories with XML files
+    # Determine external directory (contains manifest.json and methodology.txt)
+    external_dir = args.external_dir if args.external_dir else args.input_dir.parent
+
     exclude_set = set(args.exclude) if args.exclude else set()
-
-    if args.entities:
-        subdirs = [args.input_dir / e for e in args.entities if e not in exclude_set]
-    else:
-        subdirs = sorted([d for d in args.input_dir.iterdir()
-                         if d.is_dir() and list(d.glob('*.xml')) and d.name not in exclude_set])
-
     if exclude_set:
-        print(f"Excluding directories: {', '.join(exclude_set)}")
+        print(f"Excluding entities: {', '.join(exclude_set)}")
 
-    if not subdirs:
-        print("No directories with XML files found")
-        sys.exit(1)
+    # Determine which entities to process
+    if args.entities:
+        entity_names = [e for e in args.entities if e not in exclude_set]
+    else:
+        entity_names = [e for e in ENTITY_FILE_PATTERNS.keys() if e not in exclude_set]
 
-    print(f"Processing {len(subdirs)} entity directories...")
+    print(f"Processing {len(entity_names)} entities from {args.input_dir}...")
+
     entities: list[MergedEntity] = []
 
-    for subdir in subdirs:
-        if not subdir.exists():
-            print(f"Warning: Directory does not exist: {subdir}")
-            continue
-
-        print(f"\nProcessing: {subdir.name}")
+    for entity_name in entity_names:
+        print(f"\nProcessing: {entity_name}")
         try:
-            entity = process_directory(subdir)
+            entity = process_entity(args.input_dir, entity_name)
             entities.append(entity)
         except Exception as e:
             print(f"  Error: {e}")
@@ -560,6 +934,29 @@ def main():
 
     # Generate outputs
     print(f"\n--- Generating outputs to {args.output_dir} ---")
+
+    # Load manifest and methodology text
+    manifest = load_manifest(external_dir / "manifest.json")
+    methodology_text = load_methodology_text(external_dir / "methodology.txt")
+
+    # Generate catalog SQL
+    generate_catalog_sql(
+        manifest,
+        args.output_dir / "fpml_catalog_populate.sql"
+    )
+
+    # Generate methodology SQL
+    generate_methodology_sql(
+        manifest,
+        methodology_text,
+        args.output_dir / "fpml_methodology_populate.sql"
+    )
+
+    # Generate dataset dependency SQL
+    generate_dataset_dependency_sql(
+        manifest,
+        args.output_dir / "fpml_dataset_dependency_populate.sql"
+    )
 
     # Always generate coding schemes SQL
     generate_coding_schemes_sql(
@@ -574,9 +971,32 @@ def main():
         models_dir.mkdir(exist_ok=True)
         data_dir.mkdir(exist_ok=True)
 
+        # Track generated files for fpml.sql
+        dataset_files = []
+        artefact_files = []
+
         for entity in entities:
-            generate_entity_model(entity, models_dir)
+            # Skip schema generation for entities using shared tables (e.g., non-ISO currencies)
+            # They use existing tables like dq_currencies_artefact_tbl
+            entity_key = entity.entity_plural.replace('_', '-')
+            if entity_key not in ENTITIES_WITH_SHARED_TABLES:
+                generate_entity_model(entity, models_dir)
+            else:
+                print(f"  Skipping schema generation for {entity.entity_plural} (uses shared table)")
+
             generate_populate_data(entity, data_dir)
+
+            # Collect dataset and artefact filenames
+            datasets = entity.get_datasets()
+            for ds in datasets:
+                dataset_code = ds['dataset']['code']
+                filename_base = dataset_code.replace('fpml.', '').replace('.', '_')
+                dataset_files.append(f"fpml_{filename_base}_dataset_populate.sql")
+                # All FPML artefacts use fpml_ prefix
+                artefact_files.append(f"fpml_{filename_base}_artefact_populate.sql")
+
+        # Generate fpml.sql master include file
+        generate_fpml_sql(args.output_dir, dataset_files, artefact_files)
 
     print(f"\nDone! Processed {len(entities)} entities.")
 

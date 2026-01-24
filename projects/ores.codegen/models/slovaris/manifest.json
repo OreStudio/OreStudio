@@ -1,0 +1,72 @@
+{
+    "name": "Solvaris Reference Data",
+    "description": "Synthetic test data for an imaginary world to exercise all system functions",
+    "generated_at": "2026-01-23",
+    "methodologies": [
+        {
+            "name": "OreStudio Code Generation Methodology",
+            "description": "Methodology for generating artefact files using the OreStudio code generator",
+            "url": "https://github.com/OreStudio/OreStudio/tree/main/projects/ores.codegen",
+            "steps_file": "methodology.txt"
+        }
+    ],
+    "catalogs": [
+        {
+            "name": "Slovaris",
+            "description": "Imaginary world to test all system functions.",
+            "owner": "Testing Team"
+        }
+    ],
+    "datasets": [
+        {
+            "name": "Solvaris Country Flag Images",
+            "code": "slovaris.country_flags",
+            "catalog": "Slovaris",
+            "subject_area": "Country Flags",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "SVG flag images for each Solvaris country.",
+            "source_system": "SOLVARIS",
+            "business_context": "Visual assets for solvaris countries",
+            "license": "CC BY 4.0",
+            "artefact_type": "images",
+            "tag_code": "flag",
+            "tag_description": "Country and region flag images"
+        },
+        {
+            "name": "Solvaris Countries",
+            "code": "slovaris.countries",
+            "catalog": "Slovaris",
+            "subject_area": "Countries",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "Solvaris country codes and official names.",
+            "source_system": "SOLVARIS",
+            "business_context": "Reference data for solvaris country codes",
+            "license": "CC BY 4.0",
+            "artefact_type": "countries",
+            "dependencies": ["slovaris.country_flags"],
+            "tag_code": "country",
+            "tag_description": "Country reference data"
+        },
+        {
+            "name": "Solvaris Currencies",
+            "code": "slovaris.currencies",
+            "catalog": "Slovaris",
+            "subject_area": "Currencies",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "OreStudio Code Generation Methodology",
+            "description": "Solvaris alphabetic and numeric currency codes.",
+            "source_system": "SOLVARIS",
+            "business_context": "Reference data for solvaris currency codes",
+            "license": "CC BY 4.0",
+            "artefact_type": "currencies",
+            "dependencies": ["slovaris.country_flags"],
+            "tag_code": "currency",
+            "tag_description": "Currency reference data"
+        }
+    ]
+}

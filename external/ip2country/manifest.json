@@ -1,0 +1,41 @@
+{
+    "name": "IP to Country Mapping",
+    "description": "IPv4 address ranges mapped to ISO 3166-1 country codes from iptoasn.com",
+    "downloaded_at": "2025-01-21",
+    "methodology_file": "methodology.txt",
+    "catalog": {
+        "name": "IP Geolocation",
+        "description": "IP address geolocation reference data including IPv4 and IPv6 to country mappings. Sourced from community-maintained databases for geographic IP lookup.",
+        "owner": "Reference Data Team"
+    },
+    "sources": [
+        {
+            "name": "iptoasn.com IP to Country Database",
+            "description": "IPv4 ranges mapped to country codes from iptoasn.com",
+            "url": "https://iptoasn.com/",
+            "license": "PDDL v1.0",
+            "data_file": "ip2country-v4-u32.tsv"
+        }
+    ],
+    "datasets": [
+        {
+            "name": "IP to Country IPv4 Ranges",
+            "code": "geo.ip2country",
+            "catalog": "IP Geolocation",
+            "subject_area": "IP Address to Country maps",
+            "domain": "Reference Data",
+            "coding_scheme": "ISO_3166_1_ALPHA_2",
+            "methodology": "iptoasn.com IP to Country Database",
+            "description": "IPv4 address ranges mapped to ISO 3166-1 alpha-2 country codes.",
+            "source_system": "iptoasn.com",
+            "business_context": "Geographic IP lookup for network analysis",
+            "as_of_date": "2025-01-21",
+            "license": "PDDL v1.0",
+            "artefact_type": "ip_ranges",
+            "target_table": "refdata_ip2country_tbl",
+            "populate_function": "dq_populate_ip2country",
+            "tag_code": "geolocation",
+            "tag_description": "IP address geolocation data"
+        }
+    ]
+}

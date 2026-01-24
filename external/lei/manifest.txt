@@ -1,0 +1,46 @@
+LEI Reference Data Manifest
+
+Source: GLEIF (Global Legal Entity Identifier Foundation)
+Website: https://www.gleif.org/
+Download: https://www.gleif.org/en/lei-data/gleif-golden-copy/download-the-golden-copy
+
+Data Files
+----------
+1. LEI Golden Copy (lei2)
+   - Pattern: YYYYMMDD-0800-gleif-goldencopy-lei2-golden-copy.csv
+   - Content: All registered LEI entities (~3.2M records)
+   - Size: ~4.3 GB
+   - Fields: 200+ columns including LEI, legal name, address, category, status
+
+2. Relationship Records (rr)
+   - Pattern: YYYYMMDD-0800-gleif-goldencopy-rr-golden-copy.csv
+   - Content: Corporate hierarchy relationships (~463K records)
+   - Size: ~221 MB
+   - Fields: Start node, end node, relationship type, dates
+
+Subset Files
+------------
+3. LEI Subset (small)
+   - Pattern: YYYYMMDD-0800-gleif-goldencopy-lei2-golden-copy-subset-small.csv
+   - Content: Diverse subset (~10K entities)
+   - Size: ~7 MB
+
+4. LEI Subset (large)
+   - Pattern: YYYYMMDD-0800-gleif-goldencopy-lei2-golden-copy-subset-large.csv
+   - Content: Diverse subset (~50K entities)
+   - Size: ~35 MB
+
+5. RR Subset (small)
+   - Pattern: YYYYMMDD-0800-gleif-goldencopy-rr-golden-copy-subset-small.csv
+   - Content: Relationships for small subset
+   - Size: ~1 MB
+
+6. RR Subset (large)
+   - Pattern: YYYYMMDD-0800-gleif-goldencopy-rr-golden-copy-subset-large.csv
+   - Content: Relationships for large subset
+   - Size: ~5 MB
+
+Version
+-------
+Current data: 2026-01-23 (updated daily by GLEIF)
+Golden copy is refreshed daily at 08:00 UTC.

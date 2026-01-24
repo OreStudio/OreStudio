@@ -20,7 +20,7 @@
 set schema 'ores';
 
 -- =============================================================================
--- Financial Entity Indicator.
+-- Financial Entity Indicator as defined by the CFTC.
 -- =============================================================================
 
 create table if not exists "ores"."refdata_entity_classifications_tbl" (

@@ -1,0 +1,92 @@
+{
+    "name": "Cryptocurrency Reference Data",
+    "description": "Cryptocurrency symbols, names, and icon images from community-maintained repositories",
+    "downloaded_at": "2026-01-20",
+    "methodology_file": "methodology.txt",
+    "catalog": {
+        "name": "Cryptocurrency",
+        "description": "Digital asset reference data including cryptocurrency symbols and names from community-maintained repositories.",
+        "owner": "Digital Assets Team"
+    },
+    "sources": [
+        {
+            "name": "GitHub Cryptocurrency Icons Download",
+            "description": "SVG images downloaded from spothq/cryptocurrency-icons GitHub repository",
+            "url": "https://github.com/spothq/cryptocurrency-icons",
+            "license": "MIT License",
+            "data_dir": "cryptocurrency-icons"
+        },
+        {
+            "name": "GitHub Cryptocurrencies JSON Download",
+            "description": "Cryptocurrency symbol-to-name mappings from crypti/cryptocurrencies GitHub repository",
+            "url": "https://github.com/crypti/cryptocurrencies",
+            "license": "Public Domain",
+            "data_dir": "cryptocurrencies"
+        }
+    ],
+    "datasets": [
+        {
+            "name": "Cryptocurrency Icon Images",
+            "code": "assets.crypto_icons",
+            "catalog": "Cryptocurrency",
+            "subject_area": "Cryptocurrencies",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "GitHub Cryptocurrency Icons Download",
+            "description": "SVG icon images for cryptocurrency symbols from the cryptocurrency-icons project.",
+            "source_system": "spothq/cryptocurrency-icons",
+            "business_context": "Visual assets for cryptocurrency displays",
+            "as_of_date": "2024-01-15",
+            "license": "MIT License",
+            "artefact_type": "cryptocurrency_icons",
+            "target_table": "refdata_images_tbl",
+            "populate_function": "dq_populate_images",
+            "tag_code": "cryptocurrency",
+            "tag_description": "Cryptocurrency icon images"
+        },
+        {
+            "name": "Cryptocurrencies Large",
+            "code": "crypto.large",
+            "catalog": "Cryptocurrency",
+            "subject_area": "Cryptocurrencies",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "GitHub Cryptocurrencies JSON Download",
+            "description": "Complete list of ~12,243 cryptocurrencies with symbol and name.",
+            "source_system": "crypti/cryptocurrencies",
+            "business_context": "Full cryptocurrency reference data (~12K coins)",
+            "as_of_date": "2026-01-20",
+            "license": "Public Domain",
+            "artefact_type": "cryptocurrencies_large",
+            "target_table": "refdata_currencies_tbl",
+            "populate_function": "dq_populate_currencies",
+            "tag_code": "cryptocurrency",
+            "tag_description": "Cryptocurrency reference data (~12K coins)",
+            "dependencies": [
+                {"code": "assets.crypto_icons", "role": "visual_assets"}
+            ]
+        },
+        {
+            "name": "Cryptocurrencies Small",
+            "code": "crypto.small",
+            "catalog": "Cryptocurrency",
+            "subject_area": "Cryptocurrencies",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "GitHub Cryptocurrencies JSON Download",
+            "description": "Top 100 cryptocurrencies by market capitalization.",
+            "source_system": "crypti/cryptocurrencies",
+            "business_context": "Top 100 cryptocurrency reference data by market cap",
+            "as_of_date": "2026-01-20",
+            "license": "Public Domain",
+            "artefact_type": "cryptocurrencies_small",
+            "target_table": "refdata_currencies_tbl",
+            "populate_function": "dq_populate_currencies",
+            "tag_code": "cryptocurrency",
+            "tag_description": "Top 100 cryptocurrencies by market cap",
+            "dependencies": [
+                {"code": "assets.crypto_icons", "role": "visual_assets"}
+            ]
+        }
+    ]
+}

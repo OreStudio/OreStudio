@@ -9,7 +9,7 @@
     },
     {
       "name": "methodology_populate.sql",
-      "model": "methodologies.json",
+      "model": "manifest.json",
       "template": "sql_methodology_populate.mustache",
       "description": "Methodologies data for Slovaris"
     },

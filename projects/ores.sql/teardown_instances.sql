@@ -2,8 +2,14 @@
  *
  * Instance Database Teardown
  *
- * This file contains explicit DROP DATABASE statements for instance databases.
+ * This file contains explicit teardown sequences for instance databases.
  * It is included by teardown_all.sql during Step 2.
+ *
+ * For each instance database, this script:
+ *   1. Connects to the database
+ *   2. Runs drop/drop.sql to drop all schema objects (validates drop logic)
+ *   3. Connects back to postgres
+ *   4. Drops the database
  *
  * USAGE:
  *   For production: Generate this file using the admin script, then review
@@ -18,13 +24,14 @@
  *   are no instance databases to drop.
  *
  * FORMAT:
- *   Each database should have an explicit drop statement:
+ *   Each database should have a complete teardown sequence:
  *
  *   -- Instance: ores_happy_penguin
+ *   \echo 'Dropping schema objects in ores_happy_penguin...'
+ *   \c ores_happy_penguin
+ *   \ir drop/drop.sql
+ *   \c postgres
  *   drop database if exists ores_happy_penguin;
- *
- *   -- Instance: ores_dancing_fox
- *   drop database if exists ores_dancing_fox;
  */
 
 -- No instance databases to drop (placeholder).

@@ -34,14 +34,14 @@
 \echo 'Dropping ores_template database...'
 
 -- Unmark as template so it can be dropped
-UPDATE pg_database SET datistemplate = false WHERE datname = 'ores_template';
+update pg_database set datistemplate = false where datname = 'ores_template';
 
 -- Terminate any connections
-SELECT pg_terminate_backend(pid)
-FROM pg_stat_activity
-WHERE datname = 'ores_template' AND pid <> pg_backend_pid();
+select pg_terminate_backend(pid)
+from pg_stat_activity
+where datname = 'ores_template' and pid <> pg_backend_pid();
 
-DROP DATABASE IF EXISTS ores_template;
+drop database if exists ores_template;
 
 \echo 'ores_template dropped.'
 \echo ''

@@ -48,7 +48,7 @@
 \endif
 
 -- Check if database exists
-SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = :'db_name') AS db_exists \gset
+select exists(select 1 from pg_database where datname = :'db_name') as db_exists \gset
 
 \if :db_exists
 \else
@@ -59,11 +59,11 @@ SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname = :'db_name') AS db_exists
 \endif
 
 -- Refuse to drop infrastructure databases (use dedicated teardown scripts)
-SELECT CASE
-    WHEN :'db_name' IN ('ores_admin', 'ores_template')
-    THEN true
-    ELSE false
-END AS is_infrastructure \gset
+select case
+    when :'db_name' in ('ores_admin', 'ores_template')
+    then true
+    else false
+end as is_infrastructure \gset
 
 \if :is_infrastructure
     \echo ''
@@ -77,11 +77,11 @@ END AS is_infrastructure \gset
 \endif
 
 -- Refuse to drop system databases
-SELECT CASE
-    WHEN :'db_name' IN ('postgres', 'template0', 'template1')
-    THEN true
-    ELSE false
-END AS is_system \gset
+select case
+    when :'db_name' in ('postgres', 'template0', 'template1')
+    then true
+    else false
+end as is_system \gset
 
 \if :is_system
     \echo ''
@@ -107,15 +107,15 @@ END AS is_system \gset
 \c postgres
 
 -- Unmark as template if needed (in case it was marked)
-UPDATE pg_database SET datistemplate = false WHERE datname = :'db_name';
+update pg_database set datistemplate = false where datname = :'db_name';
 
 -- Terminate any remaining connections
-SELECT pg_terminate_backend(pid)
-FROM pg_stat_activity
-WHERE datname = :'db_name' AND pid <> pg_backend_pid();
+select pg_terminate_backend(pid)
+from pg_stat_activity
+where datname = :'db_name' and pid <> pg_backend_pid();
 
 -- Drop the database
-DROP DATABASE :db_name;
+drop database :db_name;
 
 \echo ''
 \echo 'Database dropped successfully:' :db_name

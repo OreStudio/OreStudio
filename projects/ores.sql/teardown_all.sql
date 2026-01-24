@@ -25,27 +25,32 @@
  * This script is explicit about what it drops for full traceability.
  *
  * USAGE:
- *   -- Full wipe (no instance databases):
  *   psql -U postgres -f teardown_all.sql
- *
- *   -- With instance databases (explicit list required):
- *   psql -U postgres -v db_list="ores_happy_penguin,ores_dancing_fox" -f teardown_all.sql
  *
  * WHAT IT DROPS (in order):
  *   1. Test databases (pattern-based - acceptable for ephemeral DBs)
- *   2. Instance databases (from explicit db_list, if provided)
+ *   2. Instance databases (from teardown_instances.sql - explicit, reviewable)
  *   3. ores_template (explicit)
  *   4. ores_admin (explicit)
  *   5. ores role (explicit)
  *
- * TO DISCOVER INSTANCE DATABASES:
- *   Before running teardown, list existing instances:
+ * INSTANCE DATABASE WORKFLOW:
+ *   For production environments, instance drops must be explicit and reviewable:
  *
- *   \c ores_admin
- *   SELECT * FROM admin_ores_instance_databases_view;
+ *   1. Generate the teardown script:
+ *      psql -U postgres -f admin/generate_teardown_instances.sql
  *
- *   Then provide the list to this script. This ensures production drops
- *   are intentional and can be reviewed/checked-in before execution.
+ *   2. Review the generated file:
+ *      cat teardown_instances.sql
+ *
+ *   3. Commit to git for audit trail:
+ *      git add teardown_instances.sql && git commit -m "Teardown: list DBs to drop"
+ *
+ *   4. Run this script:
+ *      psql -U postgres -f teardown_all.sql
+ *
+ * If teardown_instances.sql is empty or contains only comments, no instance
+ * databases will be dropped (useful for dev environments with no instances).
  */
 
 \set ON_ERROR_STOP on
@@ -57,6 +62,31 @@
 \echo ''
 \echo 'WARNING: This will remove ALL ORES components!'
 \echo ''
+\echo 'Before proceeding, ensure you have:'
+\echo '  - Generated teardown_instances.sql (if dropping instances)'
+\echo '  - Reviewed all databases that will be dropped'
+\echo '  - Committed the teardown script for audit trail (production)'
+\echo ''
+
+-- Confirmation prompt
+\prompt 'Type "yes" to proceed with teardown: ' confirm_teardown
+
+-- Check confirmation (case-insensitive)
+select case
+    when lower(:'confirm_teardown') = 'yes' then false
+    else true
+end as abort_teardown \gset
+
+\if :abort_teardown
+    \echo ''
+    \echo 'Teardown aborted. You must type "yes" to proceed.'
+    \echo ''
+    \quit
+\endif
+
+\echo ''
+\echo 'Proceeding with teardown...'
+\echo ''
 
 --------------------------------------------------------------------------------
 -- Step 1: Drop test databases (pattern-based is OK for ephemeral test DBs)
@@ -64,20 +94,20 @@
 \echo '--- Step 1: Dropping test databases ---'
 \echo ''
 
-SELECT COUNT(*) AS test_db_count
-FROM pg_database
-WHERE datname LIKE 'ores_test_%'
-   OR datname LIKE 'oresdb_test_%'
+select count(*) as test_db_count
+from pg_database
+where datname like 'ores_test_%'
+   or datname like 'oresdb_test_%'
 \gset
 
 \if :test_db_count
     \echo 'Found' :test_db_count 'test database(s) to drop.'
 
-    SELECT format('DROP DATABASE IF EXISTS %I;', datname)
-    FROM pg_database
-    WHERE datname LIKE 'ores_test_%'
-       OR datname LIKE 'oresdb_test_%'
-    ORDER BY datname
+    select format('drop database if exists %I;', datname)
+    from pg_database
+    where datname like 'ores_test_%'
+       or datname like 'oresdb_test_%'
+    order by datname
     \gexec
 
     \echo 'Test databases dropped.'
@@ -86,66 +116,21 @@ WHERE datname LIKE 'ores_test_%'
 \endif
 
 --------------------------------------------------------------------------------
--- Step 2: Drop instance databases (explicit list required)
+-- Step 2: Drop instance databases (from teardown_instances.sql)
 --------------------------------------------------------------------------------
 \echo ''
 \echo '--- Step 2: Dropping instance databases ---'
 \echo ''
+\echo 'Running teardown_instances.sql...'
+\echo ''
 
-\if :{?db_list}
-    \echo 'Dropping instances from provided list: ' :db_list
-    \echo ''
+-- Include the generated instance teardown script
+-- This file should contain explicit DROP DATABASE statements
+-- If empty or not generated, no instances will be dropped
+\ir teardown_instances.sql
 
-    -- Parse comma-separated list and drop each database
-    -- Note: This uses a DO block to iterate over the list
-    DO $$
-    DECLARE
-        db_name text;
-        db_array text[];
-    BEGIN
-        -- Split the comma-separated list into an array
-        db_array := string_to_array(:'db_list', ',');
-
-        FOREACH db_name IN ARRAY db_array
-        LOOP
-            -- Trim whitespace
-            db_name := trim(db_name);
-
-            -- Skip empty entries
-            IF db_name = '' THEN
-                CONTINUE;
-            END IF;
-
-            -- Safety check: refuse to drop infrastructure DBs
-            IF db_name IN ('ores_admin', 'ores_template', 'postgres', 'template0', 'template1') THEN
-                RAISE NOTICE 'Skipping infrastructure database: %', db_name;
-                CONTINUE;
-            END IF;
-
-            -- Terminate connections
-            PERFORM pg_terminate_backend(pid)
-            FROM pg_stat_activity
-            WHERE datname = db_name AND pid <> pg_backend_pid();
-
-            -- Drop the database
-            EXECUTE format('DROP DATABASE IF EXISTS %I', db_name);
-            RAISE NOTICE 'Dropped database: %', db_name;
-        END LOOP;
-    END;
-    $$;
-
-    \echo ''
-    \echo 'Instance databases dropped.'
-\else
-    \echo 'No db_list provided. Skipping instance database drops.'
-    \echo ''
-    \echo 'To drop instance databases, first discover them:'
-    \echo '  \c ores_admin'
-    \echo '  SELECT * FROM admin_ores_instance_databases_view;'
-    \echo ''
-    \echo 'Then provide the list:'
-    \echo '  psql -U postgres -v db_list="db1,db2,db3" -f teardown_all.sql'
-\endif
+\echo ''
+\echo 'Instance database teardown complete.'
 
 --------------------------------------------------------------------------------
 -- Step 3: Drop template
@@ -154,14 +139,14 @@ WHERE datname LIKE 'ores_test_%'
 \echo '--- Step 3: Dropping ores_template ---'
 
 -- Unmark as template so it can be dropped
-UPDATE pg_database SET datistemplate = false WHERE datname = 'ores_template';
+update pg_database set datistemplate = false where datname = 'ores_template';
 
 -- Terminate connections
-SELECT pg_terminate_backend(pid)
-FROM pg_stat_activity
-WHERE datname = 'ores_template' AND pid <> pg_backend_pid();
+select pg_terminate_backend(pid)
+from pg_stat_activity
+where datname = 'ores_template' and pid <> pg_backend_pid();
 
-DROP DATABASE IF EXISTS ores_template;
+drop database if exists ores_template;
 \echo 'ores_template dropped.'
 
 --------------------------------------------------------------------------------
@@ -171,11 +156,11 @@ DROP DATABASE IF EXISTS ores_template;
 \echo '--- Step 4: Dropping ores_admin ---'
 
 -- Terminate connections
-SELECT pg_terminate_backend(pid)
-FROM pg_stat_activity
-WHERE datname = 'ores_admin' AND pid <> pg_backend_pid();
+select pg_terminate_backend(pid)
+from pg_stat_activity
+where datname = 'ores_admin' and pid <> pg_backend_pid();
 
-DROP DATABASE IF EXISTS ores_admin;
+drop database if exists ores_admin;
 \echo 'ores_admin dropped.'
 
 --------------------------------------------------------------------------------
@@ -184,7 +169,7 @@ DROP DATABASE IF EXISTS ores_admin;
 \echo ''
 \echo '--- Step 5: Dropping ores role ---'
 
-DROP ROLE IF EXISTS ores;
+drop role if exists ores;
 \echo 'ores role dropped.'
 
 \echo ''

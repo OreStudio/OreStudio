@@ -33,11 +33,11 @@
 \echo 'Dropping ores_admin database...'
 
 -- Terminate any connections to ores_admin
-SELECT pg_terminate_backend(pid)
-FROM pg_stat_activity
-WHERE datname = 'ores_admin' AND pid <> pg_backend_pid();
+select pg_terminate_backend(pid)
+from pg_stat_activity
+where datname = 'ores_admin' and pid <> pg_backend_pid();
 
-DROP DATABASE IF EXISTS ores_admin;
+drop database if exists ores_admin;
 
 \echo 'ores_admin dropped.'
 \echo ''

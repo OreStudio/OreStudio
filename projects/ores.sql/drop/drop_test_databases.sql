@@ -50,17 +50,17 @@
 \echo 'Test databases found:'
 \echo ''
 
-SELECT datname AS database_name
-FROM pg_database
-WHERE datname LIKE 'ores_test_%'
-   OR datname LIKE 'oresdb_test_%'
-ORDER BY datname;
+select datname as database_name
+from pg_database
+where datname like 'ores_test_%'
+   or datname like 'oresdb_test_%'
+order by datname;
 
 -- Count databases
-SELECT COUNT(*) AS test_db_count
-FROM pg_database
-WHERE datname LIKE 'ores_test_%'
-   OR datname LIKE 'oresdb_test_%'
+select count(*) as test_db_count
+from pg_database
+where datname like 'ores_test_%'
+   or datname like 'oresdb_test_%'
 \gset
 
 \if :test_db_count
@@ -69,11 +69,11 @@ WHERE datname LIKE 'ores_test_%'
     \echo ''
 
     -- Generate and execute DROP statements
-    SELECT format('DROP DATABASE IF EXISTS %I;', datname)
-    FROM pg_database
-    WHERE datname LIKE 'ores_test_%'
-       OR datname LIKE 'oresdb_test_%'
-    ORDER BY datname
+    select format('drop database if exists %I;', datname)
+    from pg_database
+    where datname like 'ores_test_%'
+       or datname like 'oresdb_test_%'
+    order by datname
     \gexec
 
     \echo ''

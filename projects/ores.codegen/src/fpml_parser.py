@@ -209,8 +209,13 @@ class CodingScheme:
     '{definition}'
 );"""
 
-    def to_artefact_insert(self, subject_area: str = 'General', dataset_code: str = 'fpml.coding_schemes') -> str:
-        """Generate SQL artefact insert statement for this coding scheme."""
+    def to_artefact_insert(self, subject_area: str = 'General', use_variable: bool = True) -> str:
+        """Generate SQL artefact insert statement for this coding scheme.
+
+        Args:
+            subject_area: The subject area for this coding scheme.
+            use_variable: If True, use :v_dataset_id variable (requires \\gset setup).
+        """
         code = self.to_code()
         name = self.short_name.replace("'", "''")
         definition = self.definition.replace("'", "''") if self.definition else ''
@@ -220,7 +225,7 @@ class CodingScheme:
     dataset_id, code, version, name, authority_type,
     subject_area_name, domain_name, uri, description
 ) values (
-    (select id from ores.dq_datasets_tbl where code = '{dataset_code}' and valid_to = ores.utility_infinity_timestamp_fn()),
+    :'v_dataset_id',
     '{code}', 0, '{name}', 'industry',
     '{subject_area}', 'Reference Data', '{uri}', '{definition}'
 );"""
@@ -854,13 +859,12 @@ def generate_coding_schemes_sql(entities: list[MergedEntity], output_path: Path)
         "",
         "\\echo '--- FPML Coding Schemes Artefacts ---'",
         "",
+        "-- Store dataset_id in psql variable for reuse",
+        f"select id as v_dataset_id from ores.dq_datasets_tbl where code = '{dataset_code}' and valid_to = ores.utility_infinity_timestamp_fn() \\gset",
+        "",
         "-- Clear existing artefacts for this dataset before inserting",
         "delete from ores.dq_coding_schemes_artefact_tbl",
-        "where dataset_id = (",
-        "    select id from ores.dq_datasets_tbl",
-        f"    where code = '{dataset_code}'",
-        "    and valid_to = ores.utility_infinity_timestamp_fn()",
-        ");",
+        "where dataset_id = :'v_dataset_id';",
         ""
     ]
 
@@ -870,7 +874,7 @@ def generate_coding_schemes_sql(entities: list[MergedEntity], output_path: Path)
             code = cs.to_code()
             if code not in seen_schemes:
                 seen_schemes.add(code)
-                lines.append(cs.to_artefact_insert(entity.subject_area, dataset_code))
+                lines.append(cs.to_artefact_insert(entity.subject_area))
                 lines.append("")
 
     output_path.write_text('\n'.join(lines))

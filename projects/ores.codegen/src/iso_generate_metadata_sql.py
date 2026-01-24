@@ -150,13 +150,12 @@ set schema 'ores';
 
 \\echo '--- ISO Standards Coding Schemes Artefacts ---'
 
+-- Store dataset_id in psql variable for reuse
+select id as v_dataset_id from ores.dq_datasets_tbl where code = '{dataset_code}' and valid_to = ores.utility_infinity_timestamp_fn() \\gset
+
 -- Clear existing artefacts for this dataset before inserting
 delete from ores.dq_coding_schemes_artefact_tbl
-where dataset_id = (
-    select id from ores.dq_datasets_tbl
-    where code = '{dataset_code}'
-    and valid_to = ores.utility_infinity_timestamp_fn()
-);
+where dataset_id = :'v_dataset_id';
 
 """)
 
@@ -167,14 +166,14 @@ where dataset_id = (
             subject_area = escape_sql_string(cs['subject_area'])
             domain = escape_sql_string(cs['domain'])
             uri = cs.get('uri')
-            uri_sql = f"'{uri.replace(\"'\", \"''\")}'" if uri else 'null'
+            uri_sql = "'" + uri.replace("'", "''") + "'" if uri else 'null'
             description = escape_sql_string(cs['description'])
 
             f.write(f"""insert into ores.dq_coding_schemes_artefact_tbl (
     dataset_id, code, version, name, authority_type,
     subject_area_name, domain_name, uri, description
 ) values (
-    (select id from ores.dq_datasets_tbl where code = '{dataset_code}' and valid_to = ores.utility_infinity_timestamp_fn()),
+    :'v_dataset_id',
     '{code}', 0, '{name}', '{authority_type}',
     '{subject_area}', '{domain}', {uri_sql}, '{description}'
 );

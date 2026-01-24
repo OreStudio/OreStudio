@@ -19,12 +19,5 @@
  */
 set schema 'ores';
 
-drop function if exists ores.dq_list_populatable_datasets;
-drop function if exists ores.dq_preview_image_population;
-drop function if exists ores.dq_populate_images;
-drop function if exists ores.dq_preview_country_population;
-drop function if exists ores.dq_populate_countries;
-drop function if exists ores.dq_preview_currency_population;
-drop function if exists ores.dq_populate_currencies;
-drop function if exists ores.dq_preview_ip2country_population;
-drop function if exists ores.dq_populate_ip2country;
+drop trigger if exists refdata_business_centres_notify_trg on "ores"."refdata_business_centres_tbl";
+drop function if exists ores.refdata_business_centres_notify_fn;

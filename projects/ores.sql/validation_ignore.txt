@@ -11,52 +11,6 @@
 # - TEMPORAL_004: Missing version column
 # - TEMPORAL_005: Missing modified_by column
 # - TEMPORAL_006: Missing change_reason_code column
-# - NAMING_001: Missing _tbl suffix
-# - NAMING_002: Missing component prefix
-# - NAMING_010: Unknown component prefix
-
-# =============================================================================
-# Artefact tables - drop scripts not yet implemented
-# These are staging tables for data population
-# =============================================================================
-DROP_001 dq_*_artefact_tbl
-
-# =============================================================================
-# New refdata tables - drop scripts pending
-# =============================================================================
-DROP_001 refdata_account_types_tbl
-DROP_001 refdata_asset_classes_tbl
-DROP_001 refdata_asset_measures_tbl
-DROP_001 refdata_benchmark_rates_tbl
-DROP_001 refdata_business_centres_tbl
-DROP_001 refdata_business_processes_tbl
-DROP_001 refdata_cashflow_types_tbl
-DROP_001 refdata_entity_classifications_tbl
-DROP_001 refdata_local_jurisdictions_tbl
-DROP_001 refdata_party_relationships_tbl
-DROP_001 refdata_party_roles_tbl
-DROP_001 refdata_person_roles_tbl
-DROP_001 refdata_regulatory_corporate_sectors_tbl
-DROP_001 refdata_reporting_regimes_tbl
-DROP_001 refdata_supervisory_bodies_tbl
-
-# =============================================================================
-# Population functions - drop scripts pending
-# =============================================================================
-DROP_002 dq_list_populatable_datasets
-DROP_002 dq_populate_*
-DROP_002 dq_preview_*
-
-# =============================================================================
-# Artefact insert functions - drop scripts pending
-# =============================================================================
-DROP_002 dq_*_artefact_insert_fn
-
-# =============================================================================
-# Refdata functions - drop scripts pending
-# =============================================================================
-DROP_002 refdata_*_insert_fn
-DROP_002 refdata_*_notify_fn
 
 # =============================================================================
 # Change reason tables - intentionally missing change_reason_code
@@ -66,13 +20,13 @@ TEMPORAL_006 dq_change_reason_categories_tbl
 TEMPORAL_006 dq_change_reasons_tbl
 
 # =============================================================================
-# Dataset dependencies - lightweight junction table
-# Intentionally omits version/modified_by for simplicity
+# Lightweight junction tables - intentionally omit version/modified_by
+# These are simple relationship tables without full audit trail
 # =============================================================================
 TEMPORAL_004 dq_dataset_dependencies_tbl
 TEMPORAL_005 dq_dataset_dependencies_tbl
 
 # =============================================================================
-# Permissions table - system-managed, no version tracking needed
+# System-managed tables - no user audit trail needed
 # =============================================================================
 TEMPORAL_004 iam_permissions_tbl

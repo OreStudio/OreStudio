@@ -19,12 +19,17 @@
  */
 set schema 'ores';
 
-drop function if exists ores.dq_list_populatable_datasets;
-drop function if exists ores.dq_preview_image_population;
-drop function if exists ores.dq_populate_images;
-drop function if exists ores.dq_preview_country_population;
-drop function if exists ores.dq_populate_countries;
-drop function if exists ores.dq_preview_currency_population;
-drop function if exists ores.dq_populate_currencies;
-drop function if exists ores.dq_preview_ip2country_population;
-drop function if exists ores.dq_populate_ip2country;
+drop function if exists ores.upsert_dq_data_domains;
+drop function if exists ores.upsert_dq_subject_areas;
+drop function if exists ores.upsert_dq_catalogs;
+drop function if exists ores.upsert_dq_dataset_dependency;
+drop function if exists ores.upsert_dq_origin_dimensions;
+drop function if exists ores.upsert_dq_nature_dimensions;
+drop function if exists ores.upsert_dq_treatment_dimensions;
+drop function if exists ores.upsert_change_reason_category;
+drop function if exists ores.upsert_change_reason;
+drop function if exists ores.upsert_dq_coding_scheme_authority_type;
+drop function if exists ores.upsert_dq_coding_schemes;
+drop function if exists ores.upsert_dq_methodologies;
+drop function if exists ores.upsert_dq_datasets;
+drop function if exists ores.upsert_dq_tag;

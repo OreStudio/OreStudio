@@ -192,9 +192,11 @@ set schema 'ores';
             target_table = dataset['target_table']
             populate_function = dataset['populate_function']
 
+            code = dataset['code']
+
             f.write(f"""-- {name}
 select ores.upsert_dq_datasets(
-    '{name}',
+    '{code}',
     '{catalog}',
     '{subject_area}',
     '{domain}',

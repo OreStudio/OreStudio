@@ -196,7 +196,7 @@ set schema 'ores';
 
             f.write(f"""-- {name}
 select ores.upsert_dq_datasets(
-    '{name}',
+    '{code}',
     '{catalog}',
     '{subject_area}',
     '{domain}',

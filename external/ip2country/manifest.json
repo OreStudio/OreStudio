@@ -20,7 +20,7 @@
     "datasets": [
         {
             "name": "IP to Country IPv4 Ranges",
-            "code": "IP2COUNTRY_V4",
+            "code": "geo.ip2country",
             "catalog": "IP Geolocation",
             "subject_area": "IP Address to Country maps",
             "domain": "Reference Data",

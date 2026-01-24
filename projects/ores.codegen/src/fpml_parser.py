@@ -271,7 +271,7 @@ class MergedEntity:
                 ],
                 "has_artefact_insert_fn": False,
                 **({"image_linking": {
-                    "flags_dataset_code": "FLAG_ICONS",
+                    "flags_dataset_code": "assets.country_flags",
                     "key_expression": "lower(substring(bc.code, 1, 2))",
                     "placeholder_key": "xx"
                 }} if self.entity_plural == "business_centres" else {})
@@ -339,7 +339,7 @@ class MergedEntity:
             # Add image linking config for entities that need it
             if self.entity_plural == "business_centres":
                 entity_data["image_linking"] = {
-                    "flags_dataset_code": "FLAG_ICONS",
+                    "flags_dataset_code": "assets.country_flags",
                     "key_expression": "lower(substring(bc.code, 1, 2))",
                     "placeholder_key": "xx"
                 }

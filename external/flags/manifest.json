@@ -20,7 +20,7 @@
     "datasets": [
         {
             "name": "Country Flag Images",
-            "code": "FLAG_ICONS",
+            "code": "assets.country_flags",
             "catalog": "Visual Assets",
             "subject_area": "Country Flags",
             "domain": "Reference Data",

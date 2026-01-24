@@ -178,6 +178,7 @@ set schema 'ores';
 
         for dataset in datasets:
             name = escape_sql_string(dataset['name'])
+            code = dataset['code']
             catalog = escape_sql_string(dataset['catalog'])
             subject_area = escape_sql_string(dataset['subject_area'])
             domain = escape_sql_string(dataset['domain'])
@@ -194,7 +195,7 @@ set schema 'ores';
 
             f.write(f"""-- {name}
 select ores.upsert_dq_datasets(
-    '{name}',
+    '{code}',
     '{catalog}',
     '{subject_area}',
     '{domain}',

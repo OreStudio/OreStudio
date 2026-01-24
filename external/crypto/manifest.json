@@ -27,7 +27,7 @@
     "datasets": [
         {
             "name": "Cryptocurrency Icon Images",
-            "code": "CRYPTO_ICONS",
+            "code": "assets.crypto_icons",
             "catalog": "Cryptocurrency",
             "subject_area": "Cryptocurrencies",
             "domain": "Reference Data",
@@ -46,7 +46,7 @@
         },
         {
             "name": "Cryptocurrencies Large",
-            "code": "CRYPTO_LARGE",
+            "code": "crypto.large",
             "catalog": "Cryptocurrency",
             "subject_area": "Cryptocurrencies",
             "domain": "Reference Data",
@@ -65,7 +65,7 @@
         },
         {
             "name": "Cryptocurrencies Small",
-            "code": "CRYPTO_SMALL",
+            "code": "crypto.small",
             "catalog": "Cryptocurrency",
             "subject_area": "Cryptocurrencies",
             "domain": "Reference Data",

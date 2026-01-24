@@ -36,7 +36,7 @@ set schema 'ores';
 
 -- Country Flag Images
 select ores.upsert_dq_datasets(
-    'Country Flag Images',
+    'assets.country_flags',
     'Visual Assets',
     'Country Flags',
     'Reference Data',

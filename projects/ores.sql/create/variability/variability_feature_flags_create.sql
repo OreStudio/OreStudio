@@ -19,6 +19,11 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- Feature toggles for runtime configuration.
+-- Uses name as natural key.
+-- =============================================================================
+
 create table if not exists "ores"."variability_feature_flags_tbl" (
     "name" text not null,
     "version" integer not null,

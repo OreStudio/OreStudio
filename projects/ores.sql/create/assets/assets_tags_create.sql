@@ -19,6 +19,11 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- Categories for images.
+-- Examples: flag, currency, commodity.
+-- =============================================================================
+
 create table if not exists "ores"."assets_tags_tbl" (
     "tag_id" uuid not null,
     "version" integer not null,

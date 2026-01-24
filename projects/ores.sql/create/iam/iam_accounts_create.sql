@@ -19,6 +19,12 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- User accounts with authentication credentials.
+-- Supports optimistic locking via version field.
+-- Username and email unique for current records.
+-- =============================================================================
+
 create table if not exists "ores"."iam_accounts_tbl" (
     "id" uuid not null,
     "version" integer not null,

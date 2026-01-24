@@ -19,6 +19,11 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- IP range to country code mapping.
+-- Uses GiST index for fast lookups.
+-- =============================================================================
+
 create table if not exists "ores"."geo_ip2country_tbl" (
     "ip_range" int8range not null,
     "country_code" text not null

@@ -19,6 +19,11 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- Named roles for grouping permissions.
+-- Examples: admin, viewer, editor.
+-- =============================================================================
+
 create table if not exists "ores"."iam_roles_tbl" (
     "id" uuid not null,
     "version" integer not null,

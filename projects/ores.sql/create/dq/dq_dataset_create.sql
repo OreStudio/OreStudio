@@ -18,6 +18,12 @@
  *
  */
 
+-- =============================================================================
+-- Central dataset registry with full lineage.
+-- Tracks provenance via upstream_derivation_id.
+-- lineage_depth auto-calculated from hierarchy.
+-- =============================================================================
+
 create table if not exists "ores"."dq_datasets_tbl" (
     "id" uuid not null,
     "version" integer not null,

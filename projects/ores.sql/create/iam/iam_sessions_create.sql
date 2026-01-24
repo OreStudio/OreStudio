@@ -19,6 +19,12 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- User session tracking with country-level geolocation.
+-- Designed for TimescaleDB hypertable.
+-- Partitioned by start_time.
+-- =============================================================================
+
 create table if not exists "ores"."iam_sessions_tbl" (
     "id" uuid not null,
     "account_id" uuid not null,

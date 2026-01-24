@@ -18,6 +18,11 @@
  *
  */
 
+-- =============================================================================
+-- Describes the nature of data.
+-- Examples: raw, cleansed, derived.
+-- =============================================================================
+
 create table if not exists "ores"."dq_nature_dimensions_tbl" (
     "code" text not null,
     "version" integer not null,

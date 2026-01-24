@@ -18,6 +18,11 @@
  *
  */
 
+-- =============================================================================
+-- Describes transformation/derivation logic.
+-- Links to documentation and implementation.
+-- =============================================================================
+
 create table if not exists "ores"."dq_methodologies_tbl" (
     "id" uuid not null,
     "version" integer not null,

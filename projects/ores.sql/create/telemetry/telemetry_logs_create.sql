@@ -19,6 +19,12 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- Application log entries.
+-- Designed for TimescaleDB hypertable.
+-- Partitioned by timestamp.
+-- =============================================================================
+
 create table if not exists "ores"."telemetry_logs_tbl" (
     "id" uuid not null,
     "timestamp" timestamp with time zone not null,

@@ -24,6 +24,12 @@
  * Creates the ores_template database which serves as a blueprint for
  * creating new ORES database instances quickly.
  *
+ * Creates the complete ORES database schema including:
+ * - Schema and extensions
+ * - Utility functions
+ * - All tables with temporal/bitemporal support
+ * - Triggers and notification functions
+ *
  * USAGE:
  *   psql -U postgres -f setup_template.sql
  *
@@ -56,8 +62,33 @@ grant all privileges on database ores_template to ores;
 -- (Extensions are per-database, so we need them here even if installed in postgres)
 \ir ./setup_extensions.sql
 
--- Create the complete schema (tables, functions, reference data)
-\ir ./template/create_schema.sql
+-- Create schema
+create schema if not exists ores;
+create extension if not exists btree_gist;
+
+-- Grant schema permissions to ores user
+grant usage on schema ores to ores;
+grant create on schema ores to ores;
+
+-- NOTE: Whimsical names and database management functions are now in ores_admin.
+-- See admin/setup_admin.sql for cluster-level utilities.
+
+-- Create all tables, triggers, and functions
+\ir ./create/create.sql
+
+-- NOTE: The template database contains schema only, no data.
+-- To seed data after creating an instance:
+--   psql -U ores -d your_database -f populate/populate.sql        # RBAC + system flags
+--   psql -U ores -d your_database -f populate/reference_data.sql  # Currencies, flags, images
+
+-- Grant table permissions to ores user
+-- Note: TRUNCATE is included for test database cleanup
+grant select, insert, update, delete, truncate on all tables in schema ores to ores;
+grant usage, select on all sequences in schema ores to ores;
+
+-- Set default privileges for any future tables
+alter default privileges in schema ores grant select, insert, update, delete, truncate on tables to ores;
+alter default privileges in schema ores grant usage, select on sequences to ores;
 
 -- NOTE: Instance-specific initialization (feature flags) is NOT included here.
 -- Each instance created from this template should run instance/init_instance.sql

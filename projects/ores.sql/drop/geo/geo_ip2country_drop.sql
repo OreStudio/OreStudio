@@ -19,7 +19,7 @@
  */
 set schema 'ores';
 
-drop function if exists ores.geo_ip_lookup_fn;
+drop function if exists ores.geo_ip2country_lookup_fn;
 drop function if exists ores.geo_inet_to_bigint_fn;
 drop index if exists geo_ip2country_range_idx;
 drop table if exists "ores"."geo_ip2country_tbl";

@@ -19,4 +19,8 @@
  */
 set schema 'ores';
 
-drop function if exists ores.iam_session_stats_fn;
+drop function if exists ores.iam_active_session_count_for_account_fn;
+drop function if exists ores.iam_active_session_count_fn;
+drop materialized view if exists "ores"."iam_session_stats_aggregate_daily";
+drop materialized view if exists "ores"."iam_session_stats_hourly";
+drop materialized view if exists "ores"."iam_session_stats_daily";

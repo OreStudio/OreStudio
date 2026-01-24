@@ -49,24 +49,40 @@ Then add the secure password to your =authinfo.gpg=, e.g.:
 machine localhost login postgres password ohzo4cohmoof1Cai2Xaxohsie
 #+end_src
 
-** Step 2: Clean Slate
+** Step 2: Teardown (Clean Slate)
 
 To make sure you do not have any remnants of a previous install, do:
 
 #+begin_src sql :database template1 :wrap example
-\ir '$project_sql_dir'/clean_slate.sql
+\ir '$project_sql_dir'/teardown_all.sql
 #+end_src
 
 #+RESULTS:
 #+begin_example
-UPDATE 1
+--- Step 1: Dropping test databases ---
+No test databases found.
+--- Step 2: Dropping instance databases ---
+No db_list provided. Skipping instance database drops.
+--- Step 3: Dropping ores_template ---
 DROP DATABASE
+--- Step 4: Dropping ores_admin ---
 DROP DATABASE
-DROP DATABASE
+--- Step 5: Dropping ores role ---
 DROP ROLE
 #+end_example
 
-This will drop *all* databases related to ores.
+This will drop *all* ORES infrastructure databases (template, admin) and the
+ores role. To also drop instance databases, provide an explicit list:
+
+#+begin_src sql :database template1 :wrap example
+-- First discover instances (if ores_admin exists):
+-- \c ores_admin
+-- SELECT * FROM admin_ores_instance_databases_view;
+
+-- Then teardown with explicit list:
+\set db_list 'ores_happy_penguin,ores_dancing_fox'
+\ir '$project_sql_dir'/teardown_all.sql
+#+end_src
 
 ** Step 3: Install Extensions
 

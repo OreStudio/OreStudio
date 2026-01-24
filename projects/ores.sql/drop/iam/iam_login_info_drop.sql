@@ -19,5 +19,4 @@
  */
 set schema 'ores';
 
-drop index if exists iam_login_info_account_idx;
 drop table if exists "ores"."iam_login_info_tbl";

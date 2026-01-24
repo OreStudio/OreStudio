@@ -19,4 +19,4 @@
  */
 set schema 'ores';
 
-drop function if exists ores.utility_infinity_timestamp_fn;
+drop function if exists ores.utility_infinity_timestamp_fn cascade;

@@ -53,6 +53,9 @@ bitemporal data management. Key patterns include:
 - Version fields provide optimistic locking (version 0 is "force overwrite" sentinel)
 - Triggers manage version auto-increment and temporal validity period transitions
 
+For detailed implementation patterns and step-by-step instructions on creating
+new tables, see the [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator]] skill.
+
 * PostgreSQL Extensions
 
 ORES uses the following PostgreSQL extensions:
@@ -202,75 +205,10 @@ For environments without template support, create a standalone database:
 psql -U postgres -v db_name='my_database' -f create_database_direct.sql
 #+end_src
 
-* Directory Structure
+* Project Structure
 
-The SQL project is organised into the following directories:
-
-** =schema/= - Table and Function Definitions
-
-Contains DDL scripts for all database objects:
-
-- =accounts_create.sql= - Account table with temporal support
-- =currencies_create.sql= - ISO 4217 currency definitions
-- =feature_flags_create.sql= - Feature toggle table
-- =images_create.sql=, =tags_create.sql=, =image_tags_create.sql= - Image assets
-- =sessions_create.sql=, =login_info_create.sql= - Session and security tracking
-- =permissions_create.sql=, =roles_create.sql= - RBAC tables
-- =role_permissions_create.sql=, =account_roles_create.sql= - RBAC junction tables
-- =rbac_functions_create.sql= - RBAC helper functions
-- =utility_functions_create.sql= - General utility functions
-- =whimsical_names_create.sql= - Database name generation function
-
-** =template/= - Template Database Creation
-
-Scripts for creating the template database:
-
-- =create_schema.sql= - Main schema orchestrator that includes all tables and
-  reference data
-- =database_functions.sql= - Database management functions
-  (=generate_create_database_sql=, =list_ores_databases=)
-
-** =instance/= - Instance-Specific Initialization
-
-Scripts run after creating an instance from template:
-
-- =init_instance.sql= - Initialises instance-specific feature flags and settings
-
-** =data/= - Reference Data
-
-Large reference data files loaded into the template:
-
-- =currencies_populate.sql= - ISO 4217 currency data (100+ currencies)
-- =currency_images_populate.sql= - Sets image_id on currencies to link to flag images
-- =flags_populate.sql= - Country flag SVG inline data
-- =flags/= - Source SVG files for country flags
-
-** =drop/= - Drop Scripts
-
-DDL scripts to drop all database objects (mirrors =schema/= structure).
-
-** =modeling/= - Schema Documentation
-
-Architecture documentation and diagrams:
-
-- =ores_schema.puml= - PlantUML Entity-Relationship diagram
-- =sql.org= - This documentation file
-
-* Top-Level Scripts
-
-| Script                            | Purpose                                    |
-|-----------------------------------+--------------------------------------------|
-| =setup_extensions.sql=            | Install PostgreSQL extensions              |
-| =setup_user.sql=                  | Create application user                    |
-| =setup_template.sql=              | Create template database                   |
-| =create_instance.sql=             | Create instance from template (fast)       |
-| =create_database_direct.sql=      | Create standalone database (no template)   |
-| =drop_database.sql=               | Drop a database                            |
-| =drop_all.sql=                    | Drop all database objects                  |
-| =bootstrap_mode_setup.sql=        | Bootstrap mode feature flag setup          |
-| =toggle_password_validation.sql=  | Toggle password validation setting         |
-| =cheat_sheet.sql=                 | Quick reference commands                   |
-| =psqlrc.sql=                      | PostgreSQL client configuration            |
+For detailed directory structure, file organization, and naming conventions,
+see the [[id:a08fc2a2-4e42-41ec-ac92-d1af50dc61cb][SQL Schema Creator]] skill documentation.
 
 * SQL Recipes
 

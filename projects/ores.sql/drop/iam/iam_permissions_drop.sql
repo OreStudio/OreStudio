@@ -22,6 +22,4 @@ set schema 'ores';
 drop rule if exists iam_permissions_delete_rule on "ores"."iam_permissions_tbl";
 drop trigger if exists iam_permissions_insert_trg on "ores"."iam_permissions_tbl";
 drop function if exists ores.iam_permissions_insert_fn;
-drop index if exists iam_permissions_name_uniq_idx;
-drop index if exists iam_permissions_version_uniq_idx;
 drop table if exists "ores"."iam_permissions_tbl";

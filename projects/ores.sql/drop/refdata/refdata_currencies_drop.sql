@@ -22,6 +22,4 @@ set schema 'ores';
 drop rule if exists refdata_currencies_delete_rule on "ores"."refdata_currencies_tbl";
 drop trigger if exists refdata_currencies_insert_trg on "ores"."refdata_currencies_tbl";
 drop function if exists ores.refdata_currencies_insert_fn;
-drop index if exists refdata_currencies_code_uniq_idx;
-drop index if exists refdata_currencies_version_uniq_idx;
 drop table if exists "ores"."refdata_currencies_tbl";

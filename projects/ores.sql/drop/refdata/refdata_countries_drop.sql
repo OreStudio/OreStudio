@@ -22,6 +22,4 @@ set schema 'ores';
 drop rule if exists refdata_countries_delete_rule on "ores"."refdata_countries_tbl";
 drop trigger if exists refdata_countries_insert_trg on "ores"."refdata_countries_tbl";
 drop function if exists ores.refdata_countries_insert_fn;
-drop index if exists refdata_countries_code_uniq_idx;
-drop index if exists refdata_countries_version_uniq_idx;
 drop table if exists "ores"."refdata_countries_tbl";

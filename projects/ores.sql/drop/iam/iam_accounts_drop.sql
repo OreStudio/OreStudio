@@ -19,7 +19,6 @@
  */
 set schema 'ores';
 
-drop rule if exists iam_accounts_delete_rule on "ores"."iam_accounts_tbl";
 drop trigger if exists iam_accounts_insert_trg on "ores"."iam_accounts_tbl";
 drop function if exists ores.iam_accounts_insert_fn;
 drop index if exists iam_accounts_username_uniq_idx;

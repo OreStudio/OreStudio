@@ -20,5 +20,3 @@
 set schema 'ores';
 
 drop function if exists ores.iam_account_has_permission_fn;
-drop function if exists ores.iam_account_permissions_fn;
-drop function if exists ores.iam_account_roles_fn;

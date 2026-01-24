@@ -19,4 +19,4 @@
  */
 set schema 'ores';
 
-drop function if exists ores.iam_session_stats_fn;
+-- No objects to drop (stale entries removed)

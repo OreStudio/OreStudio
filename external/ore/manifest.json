@@ -1,0 +1,56 @@
+{
+    "name": "Open Source Risk Engine",
+    "description": "XML Schemas and Examples from ORE.",
+    "source_url": "https://github.com/OpenSourceRisk/Engine",
+    "catalog": {
+        "name": "Open Source Risk Engine",
+        "description": "XML Schemas and Examples from ORE.",
+        "owner": "Testing Team"
+    },
+    "methodologies": [
+        {
+            "name": "ORE GitHub Extraction",
+            "description": "Data extracted from ORE GitHub project",
+            "url": "https://github.com/OpenSourceRisk/Engine"
+        }
+    ],
+    "datasets": [
+        {
+            "name": "ORE XML Schemas",
+            "code": "ore.xsd",
+            "catalog": "Open Source Risk Engine",
+            "subject_area": "General",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "ORE GitHub Extraction",
+            "description": "XML Schemas (XSDs) for ORE data.",
+            "source_system": "ORE",
+            "business_context": "Technical requirement.",
+            "license": "Modified BSD License",
+            "artefact_type": "none",
+            "target_table": "not_applicable",
+            "populate_function": "not_applicable",
+            "tag_code": "ore",
+            "tag_description": "ORE Data"
+        },
+        {
+            "name": "ORE XML Examples",
+            "code": "ore.xml",
+            "catalog": "Open Source Risk Engine",
+            "subject_area": "General",
+            "domain": "Reference Data",
+            "coding_scheme": "NONE",
+            "methodology": "ORE GitHub Extraction",
+            "description": "XML data from ORE.",
+            "source_system": "ORE",
+            "business_context": "Sample data.",
+            "license": "Modified BSD License",
+            "artefact_type": "none",
+            "target_table": "not_applicable",
+            "populate_function": "not_applicable",
+            "tag_code": "ore",
+            "tag_description": "ORE Data"
+        }
+    ],
+    "dependencies": []
+}

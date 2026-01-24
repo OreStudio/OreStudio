@@ -1,0 +1,13 @@
+Data Sourcing and Generation Steps:
+
+1. SOURCE DATA DOWNLOAD
+   Option A - Manual download:
+     Download: https://github.com/OreStudio/OreStudio/archive/refs/heads/main.zip
+     Extract: Unzip into a temporary directory
+     Copy:
+       - Content of Examples directory into external/ore/examples
+       - xsd directory into external/ore/xsd.
+
+3. COMMIT TO REPOSITORY
+   git add external/ore/*
+   git commit -m "[data] Update ORE Sample Data"

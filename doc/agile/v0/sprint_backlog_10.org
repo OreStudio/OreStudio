@@ -17,41 +17,47 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-24 Sat 09:04], for Saturday, January 24, 2026.
-|      | <75>                                    |        |      |      |       |
-| Tags | Headline                                | Time   |      |      |     % |
-|------+-----------------------------------------+--------+------+------+-------|
-|      | *Total time*                            | *4:25* |      |      | 100.0 |
-|------+-----------------------------------------+--------+------+------+-------|
-|      | Stories                                 | 4:25   |      |      | 100.0 |
-|      | Active                                  |        | 4:25 |      | 100.0 |
-| code | Tidy-up external data storage           |        |      | 1:04 |  24.2 |
-| code | Coding schemes are in production tables |        |      | 1:39 |  37.4 |
-| code | Refactor schema directories             |        |      | 1:42 |  38.5 |
+#+CAPTION: Clock summary at [2026-01-24 Sat 23:45], for Saturday, January 24, 2026.
+|      | <75>                                         |         |       |      |       |
+| Tags | Headline                                     | Time    |       |      |     % |
+|------+----------------------------------------------+---------+-------+------+-------|
+|      | *Total time*                                 | *11:11* |       |      | 100.0 |
+|------+----------------------------------------------+---------+-------+------+-------|
+|      | Stories                                      | 11:11   |       |      | 100.0 |
+|      | Active                                       |         | 11:11 |      | 100.0 |
+| code | Tidy-up external data storage                |         |       | 1:04 |   9.5 |
+| code | Coding schemes are in production tables      |         |       | 1:39 |  14.8 |
+| code | Refactor SQL directories                     |         |       | 3:24 |  30.4 |
+| code | Code-generate ER diagram                     |         |       | 3:01 |  27.0 |
+| code | Add "words" to icons                         |         |       | 0:28 |   4.2 |
+| code | Add mapping artefact to population functions |         |       | 1:35 |  14.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-24 Sat 09:04]
+#+CAPTION: Clock summary at [2026-01-24 Sat 23:45]
 |       | <75>                                                |         |       |      |       |
 | Tags  | Headline                                            | Time    |       |      |     % |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *34:02* |       |      | 100.0 |
+|       | *Total time*                                        | *40:48* |       |      | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 34:02   |       |      | 100.0 |
-|       | Active                                              |         | 34:02 |      | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       | 1:04 |   3.1 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  18.6 |
-| code  | Create a simple code generator                      |         |       | 7:38 |  22.4 |
-| code  | Party related schemes                               |         |       | 5:20 |  15.7 |
-| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   5.0 |
-| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   1.2 |
-| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.5 |
-| code  | Fix issues with misspell action                     |         |       | 2:47 |   8.2 |
-| code  | Tidy-up external data storage                       |         |       | 3:33 |  10.4 |
-| code  | Coding schemes are in production tables             |         |       | 1:39 |   4.8 |
-| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   3.9 |
-| code  | Refactor schema directories                         |         |       | 1:42 |   5.0 |
+|       | Stories                                             | 40:48   |       |      | 100.0 |
+|       | Active                                              |         | 40:48 |      | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       | 1:04 |   2.6 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  15.5 |
+| code  | Create a simple code generator                      |         |       | 7:38 |  18.7 |
+| code  | Party related schemes                               |         |       | 5:20 |  13.1 |
+| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   4.2 |
+| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   1.0 |
+| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.3 |
+| code  | Fix issues with misspell action                     |         |       | 2:47 |   6.8 |
+| code  | Tidy-up external data storage                       |         |       | 3:33 |   8.7 |
+| code  | Coding schemes are in production tables             |         |       | 1:39 |   4.0 |
+| code  | Refactor SQL directories                            |         |       | 3:24 |   8.3 |
+| code  | Code-generate ER diagram                            |         |       | 3:01 |   7.4 |
+| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   3.3 |
+| code  | Add "words" to icons                                |         |       | 0:28 |   1.1 |
+| code  | Add mapping artefact to population functions        |         |       | 1:35 |   3.9 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -514,23 +520,53 @@ Highlights:
   pipeline.
 #+end_quote
 
-*** STARTED Add code generation support for domain types SQL           :code:
+*** COMPLETED Refactor SQL directories                                 :code:
     :LOGBOOK:
-    CLOCK: [2026-01-22 Thu 17:19]--[2026-01-22 Thu 18:30] =>  1:11
-    CLOCK: [2026-01-21 Wed 23:47]--[2026-01-21 Wed 23:56] =>  0:09
-    :END:
-
-Now that we got the basic codegen infrastructure working, we need to start code
-generating the SQL for domain types.
-
-*** STARTED Refactor schema directories                                :code:
-    :LOGBOOK:
+    CLOCK: [2026-01-24 Sat 09:40]--[2026-01-24 Sat 11:22] =>  1:42
     CLOCK: [2026-01-24 Sat 08:43]--[2026-01-24 Sat 09:04] =>  0:21
     CLOCK: [2026-01-24 Sat 07:21]--[2026-01-24 Sat 08:42] =>  1:21
     :END:
 
 At present we have all files in one directory. As we add more tables it's
 becoming quite hard to follow.
+
+Notes:
+
+- user ores must be a variable.
+
+**** Restructure create, drop/teardown and update documentation
+
+#+begin_quote
+This pull request significantly refactors the SQL project's structure and
+database management processes. The primary goal is to enhance the organization
+of SQL creation scripts into logical components, improve the safety and
+auditability of database teardown operations, and update documentation to
+reflect these changes and provide clearer guidance. These changes streamline
+development workflows and reduce the risk of accidental data loss, particularly
+in production environments.
+
+Highlights:
+
+- Directory Structure Refactoring: The create/ directory has been reorganized
+  from a flat structure into component-based subdirectories (e.g., iam/, dq/,
+  refdata/, assets/), each with a master script to orchestrate its files.
+- Enhanced Drop/Teardown Approach: The database teardown process has been
+  restructured for improved traceability and safety. Production database drops
+  now require explicit, reviewable SQL scripts generated by
+  admin/admin_teardown_instances_generate.sql, moving away from pattern matching
+  for critical databases. A centralized drop/drop_database.sql handles single
+  database teardowns, and teardown_all.sql provides a comprehensive, confirmed
+  cluster-wide cleanup.
+- Documentation Cleanup and Updates: Outdated directory structure information
+  has been removed from ores.sql.org and cross-references added to the SQL
+  Schema Creator skill documentation. The ER diagram (ores_schema.puml) has been
+  significantly updated to include 15 new refdata tables and 19 new data quality
+  tables, reflecting a more complete schema.
+- Stale Code Removal and Fixes: Thirteen stale entries have been removed from
+  various drop scripts, and a redundant constraint drop in
+  dq_tags_artefact_create.sql has been fixed, improving code cleanliness and
+  efficiency.
+#+end_quote
 
 **** Refactor drop/ and populate/ directory structure
 
@@ -592,7 +628,76 @@ Highlights:
   refactored database utilities.
 #+end_quote
 
-*** Add "words" to icons                                               :code:
+*** COMPLETED Code-generate ER diagram                                 :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-24 Sat 15:04]--[2026-01-24 Sat 16:09] =>  1:05
+    CLOCK: [2026-01-24 Sat 14:30]--[2026-01-24 Sat 15:04] =>  0:34
+    CLOCK: [2026-01-24 Sat 11:23]--[2026-01-24 Sat 12:45] =>  1:22
+    :END:
+
+The diagrams are getting too out of line with the code, see if we can do a quick
+hack to code-generate them from source.
+
+#+begin_quote
+This pull request introduces a significant enhancement to the ores.codegen
+project by implementing an automated system for generating PlantUML
+Entity-Relationship diagrams directly from the SQL schema. This system not only
+creates visual representations of the database structure but also incorporates a
+comprehensive validation engine to enforce schema conventions, ensuring
+consistency and adherence to best practices. The new tooling streamlines
+documentation, reduces manual effort, and provides a single source of truth for
+the database design, making it easier for developers and stakeholders to
+understand and maintain the data model.
+
+Highlights:
+
+- Automated ER Diagram Generation: Introduced a new codegen system to
+  automatically generate PlantUML Entity-Relationship (ER) diagrams directly
+  from SQL CREATE/DROP statements.
+- Comprehensive SQL Parsing: Developed a Python-based SQL parser
+  (plantuml_er_parse_sql.py) capable of extracting detailed schema information
+  including tables, columns, primary keys, unique indexes, and foreign key
+  relationships.
+- Intelligent Table Classification: The parser automatically classifies tables
+  into categories like 'temporal', 'junction', and 'artefact' based on their
+  column structure and naming conventions, applying appropriate stereotypes in
+  the diagram.
+- Convention Validation: Integrated a robust validation system that checks SQL
+  schema against predefined naming, temporal table, column, drop script
+  completeness, and file organization conventions, issuing warnings or failing
+  builds in strict mode.
+- Dynamic Relationship Inference: Relationships between tables are inferred
+  based on foreign key column naming conventions and explicit references,
+  supporting one-to-many and one-to-one cardinalities.
+- Mustache Templating for Output: Utilizes a Mustache template
+  (plantuml_er.mustache) to render the parsed JSON model into a human-readable
+  and machine-processable PlantUML diagram format, including descriptions from
+  SQL comments.
+- Orchestration and Integration: A shell script (plantuml_er_generate.sh)
+  orchestrates the parsing, model generation, and PlantUML rendering, with an
+  optional step to generate PNG images. A separate validate_schema.sh script
+  provides a dedicated validation entry point.
+- Enhanced Documentation: A new doc/plans/er_diagram_codegen.md document
+  outlines the objective, design principles, architecture, components, and
+  implementation steps of the ER diagram generation system.
+- SQL Schema Descriptions: Added descriptive comments to 22 existing SQL table
+  definitions (projects/ores.sql/create/**/*.sql) to enrich the generated ER
+  diagram with meaningful context.
+#+end_quote
+
+*** STARTED Add code generation support for domain types SQL           :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-22 Thu 17:19]--[2026-01-22 Thu 18:30] =>  1:11
+    CLOCK: [2026-01-21 Wed 23:47]--[2026-01-21 Wed 23:56] =>  0:09
+    :END:
+
+Now that we got the basic codegen infrastructure working, we need to start code
+generating the SQL for domain types.
+
+*** STARTED Add "words" to icons                                       :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-24 Sat 20:55]--[2026-01-24 Sat 21:23] =>  0:28
+    :END:
 
 To make the toolbar more readable, it would be nice if we could add some words
 to icons such as the icons for export and import:
@@ -603,6 +708,56 @@ to icons such as the icons for export and import:
 
 Then we could use 2 well-defined icons for import and export across the
 code-base.
+
+*** STARTED Add mapping artefact to population functions               :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-24 Sat 22:10]--[2026-01-24 Sat 23:45] =>  1:35
+    :END:
+
+At present this is hard-coded.
+
+*** External data issues                                               :code:
+
+Problems observed:
+
+- missing =downloaded_at= for a lot of data.
+- spurious =manifest.txt=, we should only have =manifest.json=.
+- duplication of data in catalog and main manifest. The manifest is the catalog.
+  Remove duplication.
+- for github downloads, add git commit.
+- not clear who "owner" is. It has to map to an account or group in the system.
+- datasets have a catalog, but they shoud be forced to use the catalog of the
+  manifest:
+
+:             "catalog": "Open Source Risk Engine",
+
+- need a domain for data such as XML Schemas.
+- we should ensure the methodology is one of the defined methodologies in the
+  file.
+- since datasets refer to data in subdirectories, we should add the directory to
+  the manifest. Not needed in DB.
+
+*** Check for uses of raw libpq                                        :code:
+
+Claude has the habit of sneaking in uses of raw libpq. We need to do a review of
+the code to make sure we are using sqlgen.
+
+Notes:
+
+- check for raw libpq in bitemporal operations.
+
+*** ORE Sample Data                                                    :code:
+
+We added examples and XSDs from ORE. We should consider some improvements to
+this dataset:
+
+- remove unnecessary files (notebooks, pngs, pdfs, etc).
+
+*** Make the icon theme "configurable"                                 :code:
+
+While we are trying to find a good icon theme, it should be possible to change
+the icons without having to rebuild. Ideally without having to restart, but if
+we have to restart that's not too bad.
 
 *** Add FPML export and import                                         :code:
 

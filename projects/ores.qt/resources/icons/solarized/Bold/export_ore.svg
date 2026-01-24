@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="24"
+   viewBox="0 0 24 24"
+   fill="none"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="export_ore.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="35.291667"
+     inkscape:cx="12"
+     inkscape:cy="12"
+     inkscape:window-width="1920"
+     inkscape:window-height="1056"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <path
+     fill-rule="evenodd"
+     clip-rule="evenodd"
+     d="m 8.84467,5.9225938 c 0.29289,0.1572173 0.76777,0.1572173 1.06066,0 L 11.625,4.9995105 v 4.3958684 c 0,0.2223338 0.3358,0.4025844 0.75,0.4025844 0.4142,0 0.75,-0.1802506 0.75,-0.4025844 V 4.9995105 l 1.7197,0.9230833 c 0.2929,0.1572173 0.7677,0.1572173 1.0606,0 0.2929,-0.1572173 0.2929,-0.4121231 0,-0.5693404 l -3,-1.6103379 c -0.2929,-0.1572173 -0.7677,-0.1572173 -1.0606,0 L 8.84467,5.3532534 c -0.29289,0.1572173 -0.29289,0.4121231 0,0.5693404 z"
+     fill="#1c274c"
+     id="path1"
+     style="stroke-width:0.732652" />
+  <path
+     d="m 12.318329,14.396251 c 4.4183,0 8,-3.5817 8,-7.9999995 h -3.75 c -0.9428,0 -1.4142,0 -1.7071,0.2929 -0.2929,0.2929 -0.2929,0.7643 -0.2929,1.7071 0,1.2426 -1.0074,2.2499995 -2.25,2.2499995 -1.2426,0 -2.25,-1.0073995 -2.25,-2.2499995 0,-0.9428 0,-1.4142 -0.2928896,-1.7071 -0.2929,-0.2929 -0.7643,-0.2929 -1.70711,-0.2929 h -3.75 c 0,4.4182995 3.58172,7.9999995 7.9999996,7.9999995 z"
+     fill="#1c274c"
+     id="path2" />
+  <!-- Text label positioned at the bottom of the icon -->
+  <text
+     x="12"
+     y="20"
+     font-family="Arial, sans-serif"
+     font-size="7"
+     fill="#1C274C"
+     font-weight="bold"
+     text-anchor="middle"
+     id="text2">ORE</text>
+</svg>

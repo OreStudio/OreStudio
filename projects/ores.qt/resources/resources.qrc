@@ -119,6 +119,12 @@
     <file>icons/fluentui/regular/ic_fluent_text_abc_underline_double_32_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_wand_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_warning_20_regular.svg</file>
+    <file>icons/solarized/Bold/export_csv.svg</file>
+    <file>icons/solarized/Bold/export_fpml.svg</file>
+    <file>icons/solarized/Bold/export_ore.svg</file>
+    <file>icons/solarized/Bold/import_csv.svg</file>
+    <file>icons/solarized/Bold/import_fpml.svg</file>
+    <file>icons/solarized/Bold/import_ore.svg</file>
     <file>icons/solarized/Bold/add-circle.svg</file>
     <file>icons/solarized/Bold/arrow-left.svg</file>
     <file>icons/solarized/Bold/arrow-right.svg</file>
@@ -165,6 +171,12 @@
     <file>icons/solarized/Bold/user-circle.svg</file>
     <file>icons/solarized/Bold/user-plus-rounded.svg</file>
     <file>icons/solarized/Bold/users-group-rounded.svg</file>
+    <file>icons/solarized/Linear/export_csv.svg</file>
+    <file>icons/solarized/Linear/export_fpml.svg</file>
+    <file>icons/solarized/Linear/export_ore.svg</file>
+    <file>icons/solarized/Linear/import_csv.svg</file>
+    <file>icons/solarized/Linear/import_fpml.svg</file>
+    <file>icons/solarized/Linear/import_ore.svg</file>
     <file>icons/solarized/Linear/add-circle.svg</file>
     <file>icons/solarized/Linear/arrow-left.svg</file>
     <file>icons/solarized/Linear/arrow-right.svg</file>

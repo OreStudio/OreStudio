@@ -25,7 +25,6 @@ generation. Validates SQL against conventions defined in SKILL.org.
 
 import argparse
 import json
-import os
 import re
 import sys
 from dataclasses import dataclass, field, asdict

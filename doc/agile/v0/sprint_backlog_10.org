@@ -16,39 +16,37 @@
 ** Active
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
-#+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-23 Fri 11:46], for Friday, January 23, 2026.
-|       | <75>                                                |        |      |      |       |
-| Tags  | Headline                                            | Time   |      |      |     % |
-|-------+-----------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                        | *2:36* |      |      | 100.0 |
-|-------+-----------------------------------------------------+--------+------+------+-------|
-|       | Stories                                             | 2:36   |      |      | 100.0 |
-|       | Active                                              |        | 2:36 |      | 100.0 |
-| infra | OCR scan notebooks for this sprint                  |        |      | 1:20 |  51.3 |
-| code  | Image cache not reloading on new datasets           |        |      | 0:20 |  12.8 |
-| code  | Create a script to download and split GLEIF data    |        |      | 0:25 |  16.0 |
-| code  | Incremental image cache loading with modified_since |        |      | 0:31 |  19.9 |
+#+CAPTION: Clock summary at [2026-01-24 Sat 01:19], for Saturday, January 24, 2026.
+|      | <75>                          |        |      |      |       |
+| Tags | Headline                      | Time   |      |      |     % |
+|------+-------------------------------+--------+------+------+-------|
+|      | *Total time*                  | *0:52* |      |      | 100.0 |
+|------+-------------------------------+--------+------+------+-------|
+|      | Stories                       | 0:52   |      |      | 100.0 |
+|      | Active                        |        | 0:52 |      | 100.0 |
+| code | Tidy-up external data storage |        |      | 0:52 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-23 Fri 11:46]
+#+CAPTION: Clock summary at [2026-01-24 Sat 01:19]
 |       | <75>                                                |         |       |      |       |
 | Tags  | Headline                                            | Time    |       |      |     % |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *24:21* |       |      | 100.0 |
+|       | *Total time*                                        | *30:29* |       |      | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 24:21   |       |      | 100.0 |
-|       | Active                                              |         | 24:21 |      | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       | 1:04 |   4.4 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  26.0 |
-| code  | Create a simple code generator                      |         |       | 7:38 |  31.3 |
-| code  | Party related schemes                               |         |       | 5:20 |  21.9 |
-| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   7.0 |
-| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   1.7 |
-| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   5.5 |
-| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   2.1 |
+|       | Stories                                             | 30:29   |       |      | 100.0 |
+|       | Active                                              |         | 30:29 |      | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       | 1:04 |   3.5 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  20.8 |
+| code  | Create a simple code generator                      |         |       | 7:38 |  25.0 |
+| code  | Party related schemes                               |         |       | 5:20 |  17.5 |
+| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   5.6 |
+| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   1.4 |
+| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.7 |
+| code  | Fix issues with misspell action                     |         |       | 2:47 |   9.1 |
+| code  | Tidy-up external data storage                       |         |       | 3:21 |  11.0 |
+| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   4.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -426,6 +424,47 @@ This was complicated in the end because we relied on GLM 4.7, but it got very
 confused and kept suggesting approaches that were not very useful. In the end,
 fixed it manually.
 
+*** COMPLETED Tidy-up external data storage                            :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-24 Sat 00:26]--[2026-01-24 Sat 01:18] =>  0:52
+    CLOCK: [2026-01-23 Fri 20:12]--[2026-01-23 Fri 22:00] =>  1:48
+    CLOCK: [2026-01-23 Fri 19:25]--[2026-01-23 Fri 20:06] =>  0:41
+    :END:
+
+At present we have external data all over the place, making it hard to
+understand what's what. We need to consolidate it all under [[proj:external]].
+
+#+begin_quote
+This pull request introduces a significant refactoring of how reference data is
+managed and generated within the project. By reorganizing data into
+domain-specific directories, implementing manifest files for better source
+tracking, and developing code generators, the changes aim to streamline the
+process of maintaining and updating reference data. The relocation of external
+data and the introduction of master include files further enhance the system's
+structure and clarity, ultimately improving the robustness and maintainability
+of the data population process.
+
+Highlights:
+
+- Reference Data Reorganization: The populate directory has been restructured
+  into domain-specific subdirectories, including fpml/, crypto/, flags/, and
+  solvaris/, to improve organization and modularity.
+- Manifest Files Introduction: New manifest.json files have been added for
+  external data sources (flags, crypto) and internal solvaris data, providing a
+  centralized way to manage data sources.
+- Code Generator Creation: Dedicated code generators have been developed for
+  flags, crypto, and solvaris metadata SQL, automating the generation of SQL
+  files from source data.
+- External Data Relocation: External data has been moved to a new 'external/'
+  directory, accompanied by proper methodology documentation to clarify data
+  sourcing and usage.
+- Master Include Files: Master include files (e.g., fpml.sql, crypto.sql,
+  flags.sql, solvaris.sql) have been added for each domain, simplifying the
+  inclusion of related SQL scripts.
+- Populate Ordering Fixes: The ordering of data population has been adjusted to
+  resolve existing dataset dependency issues, ensuring correct data loading.
+#+end_quote
+
 *** STARTED Add code generation support for domain types SQL           :code:
     :LOGBOOK:
     CLOCK: [2026-01-22 Thu 17:19]--[2026-01-22 Thu 18:30] =>  1:11
@@ -435,15 +474,15 @@ fixed it manually.
 Now that we got the basic codegen infrastructure working, we need to start code
 generating the SQL for domain types.
 
-*** STARTED Tidy-up external data storage                              :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-24 Sat 00:26]
-    CLOCK: [2026-01-23 Fri 20:12]--[2026-01-23 Fri 22:00] =>  1:48
-    CLOCK: [2026-01-23 Fri 19:25]--[2026-01-23 Fri 20:06] =>  0:41
-    :END:
+*** Refactor schema directories                                        :code:
 
-At present we have external data all over the place, making it hard to
-understand what's what. We need to consolidate it all under [[proj:external]].
+At present we have all files in one directory. As we add more tables it's
+becoming quite hard to follow.
+
+*** Coding schemes are in production tables                            :code:
+
+We need to add datasets for coding schemes. At present they are going directly
+into production tables.
 
 *** Listener error in comms service                                    :code:
 

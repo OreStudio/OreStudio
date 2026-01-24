@@ -19,10 +19,21 @@
  */
 
 /**
- * Runs a clean up for the current database and then gets it into a ready state.
+ * Recreate Database from Scratch
+ *
+ * Full wipe and rebuild for development environments. Tears down all ORES
+ * components and recreates them from scratch.
+ *
+ * USAGE:
+ *   -- Basic (no instance databases to drop):
+ *   psql -U postgres -v skip_validation='off' -f recreate_database.sql
+ *
+ *   -- With instance databases to drop:
+ *   psql -U postgres -v skip_validation='off' -v db_list="db1,db2" -f recreate_database.sql
  *
  * Variables:
  *   :skip_validation - 'on' to skip input validation in seed functions (faster)
+ *   :db_list         - Comma-separated list of instance databases to drop (optional)
  */
 \pset pager off
 \pset tuples_only on
@@ -32,7 +43,7 @@
 -- This can be checked via current_setting('ores.skip_validation', true)
 select set_config('ores.skip_validation', :'skip_validation', false);
 
-\ir clean_slate.sql
+\ir teardown_all.sql
 \ir setup_user.sql
 \ir admin/setup_admin.sql
 \ir setup_template.sql

@@ -154,6 +154,7 @@ class SQLParser:
         self.drop_tables = set()
         self.drop_functions = set()
         self.unique_columns = {}  # table_name -> set of column names
+        self.table_descriptions = {}  # table_name -> description text
 
     def parse_create_dir(self, create_dir: Path) -> None:
         """Parse all SQL files in the create directory."""
@@ -170,6 +171,9 @@ class SQLParser:
         relative_path = str(file_path.relative_to(file_path.parent.parent.parent))
         content = file_path.read_text()
         lines = content.split('\n')
+
+        # Extract table descriptions (comments before CREATE TABLE)
+        self._extract_table_descriptions(content)
 
         # Extract tables
         self._extract_tables(content, lines, relative_path)
@@ -191,6 +195,83 @@ class SQLParser:
         # Track dropped functions
         for match in re.finditer(r'drop\s+function\s+if\s+exists\s+ores\.(\w+)', content, re.IGNORECASE):
             self.drop_functions.add(match.group(1))
+
+    def _extract_table_descriptions(self, content: str) -> None:
+        """Extract table descriptions from comments before CREATE TABLE.
+
+        Supports two comment formats:
+        1. Block style: -- ===...=== / description lines / -- ===...===
+        2. JavaDoc style: /** ... */
+        """
+        # Pattern 1: -- === block comments
+        # Match: -- ==== / content lines / -- ==== followed by CREATE TABLE
+        block_pattern = re.compile(
+            r'-- =+\s*\n'                          # Opening delimiter
+            r'((?:-- [^\n]*\n)+)'                  # Content lines (captured)
+            r'-- =+\s*\n'                          # Closing delimiter
+            r'\s*'                                  # Optional whitespace
+            r'create\s+table\s+if\s+not\s+exists\s+"?ores"?\."?(\w+)"?',  # Table name
+            re.IGNORECASE
+        )
+
+        for match in block_pattern.finditer(content):
+            comment_block = match.group(1)
+            table_name = match.group(2)
+
+            # Extract description lines (remove -- prefix and clean up)
+            lines = []
+            for line in comment_block.split('\n'):
+                line = line.strip()
+                if line.startswith('-- '):
+                    text = line[3:].strip()
+                    # Skip delimiter lines and empty lines
+                    if text and not text.startswith('=') and not text.startswith('Table:'):
+                        lines.append(text)
+                elif line == '--':
+                    continue
+
+            if lines:
+                self.table_descriptions[table_name] = '\n'.join(lines)
+
+        # Pattern 2: /** ... */ JavaDoc style
+        javadoc_pattern = re.compile(
+            r'/\*\*\s*\n'                          # Opening /**
+            r'((?:\s*\*[^\n]*\n)+)'                # Content lines (captured)
+            r'\s*\*/\s*\n'                         # Closing */
+            r'(?:set\s+schema[^\n]*\n)?'           # Optional set schema
+            r'\s*'                                  # Optional whitespace
+            r'(?:-- [^\n]*\n)*'                    # Optional comment lines
+            r'\s*'                                  # Optional whitespace
+            r'create\s+table\s+if\s+not\s+exists\s+"?ores"?\."?(\w+)"?',  # Table name
+            re.IGNORECASE
+        )
+
+        for match in javadoc_pattern.finditer(content):
+            comment_block = match.group(1)
+            table_name = match.group(2)
+
+            # Skip if we already have a description (block style takes precedence)
+            if table_name in self.table_descriptions:
+                continue
+
+            # Extract description lines (remove * prefix and clean up)
+            lines = []
+            for line in comment_block.split('\n'):
+                line = line.strip()
+                if line.startswith('* '):
+                    text = line[2:].strip()
+                    # Skip title lines (usually first non-empty line)
+                    if text and not lines:
+                        # First line is often the title - skip generic titles
+                        if 'Table' in text or 'Artefact' in text:
+                            continue
+                    if text:
+                        lines.append(text)
+                elif line == '*':
+                    continue
+
+            if lines:
+                self.table_descriptions[table_name] = '\n'.join(lines)
 
     def _extract_tables(self, content: str, lines: list, file_path: str) -> None:
         """Extract table definitions from SQL content."""
@@ -260,6 +341,9 @@ class SQLParser:
         if classification == 'temporal':
             self._validate_temporal_table(name, columns, body, file_path, line_num)
 
+        # Get description from extracted comments
+        description = self.table_descriptions.get(name, '')
+
         table = Table(
             name=name,
             component=component,
@@ -267,7 +351,8 @@ class SQLParser:
             classification=classification,
             columns=columns,
             primary_key=pk,
-            source_file=file_path
+            source_file=file_path,
+            description=description
         )
 
         return table
@@ -570,7 +655,7 @@ class SQLParser:
                 'columns': [asdict(c) for c in ordered_columns],
                 'indexes': [asdict(i) for i in table.indexes],
                 'source_file': table.source_file,
-                'description': table.description
+                'description': self._format_description(table.description)
             }
             packages[comp]['tables'].append(table_dict)
 
@@ -624,6 +709,22 @@ class SQLParser:
         temporal = [c for c in result if c.name in temporal_cols and not c.is_pk]
 
         return non_pk_non_temporal + temporal
+
+    def _format_description(self, description: str) -> str:
+        """Format description for PlantUML note rendering.
+
+        Each line needs proper indentation for the note block.
+        """
+        if not description:
+            return ''
+
+        lines = description.split('\n')
+        # First line doesn't need extra indent (it follows 'note right of')
+        # Subsequent lines need 4 spaces of indent
+        formatted_lines = [lines[0]]
+        for line in lines[1:]:
+            formatted_lines.append('    ' + line)
+        return '\n'.join(formatted_lines)
 
     def _build_pk_for_model(self, primary_key: dict, columns: list, classification: str) -> dict:
         """Build primary key for model.

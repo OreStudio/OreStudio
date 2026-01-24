@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-24T13:18:48.200595Z",
+  "generated_at": "2026-01-24T14:46:32.164331Z",
   "packages": [
     {
       "name": "iam",
@@ -87,7 +87,7 @@
           ],
           "indexes": [],
           "source_file": "create/iam/iam_account_roles_create.sql",
-          "description": ""
+          "description": "Many-to-many: accounts to roles.\n    Tracks who assigned the role."
         },
         {
           "name": "iam_accounts_tbl",
@@ -219,7 +219,7 @@
           ],
           "indexes": [],
           "source_file": "create/iam/iam_accounts_create.sql",
-          "description": ""
+          "description": "User accounts with authentication credentials.\n    Supports optimistic locking via version field.\n    Username and email unique for current records."
         },
         {
           "name": "iam_login_info_tbl",
@@ -312,7 +312,7 @@
           ],
           "indexes": [],
           "source_file": "create/iam/iam_login_info_create.sql",
-          "description": ""
+          "description": "Security tracking for login attempts.\n    Current-state table (no temporal versioning).\n    Tracks failed attempts and lock status."
         },
         {
           "name": "iam_permissions_tbl",
@@ -374,7 +374,7 @@
           ],
           "indexes": [],
           "source_file": "create/iam/iam_permissions_create.sql",
-          "description": ""
+          "description": "Fine-grained permission codes.\n    System-defined constants from bootstrap data.\n    No change tracking (not user-editable)."
         },
         {
           "name": "iam_role_permissions_tbl",
@@ -416,7 +416,7 @@
           ],
           "indexes": [],
           "source_file": "create/iam/iam_role_permissions_create.sql",
-          "description": ""
+          "description": "Many-to-many: roles to permissions."
         },
         {
           "name": "iam_roles_tbl",
@@ -518,7 +518,7 @@
           ],
           "indexes": [],
           "source_file": "create/iam/iam_roles_create.sql",
-          "description": ""
+          "description": "Named roles for grouping permissions.\n    Examples: admin, viewer, editor."
         },
         {
           "name": "iam_sessions_tbl",
@@ -644,7 +644,7 @@
           ],
           "indexes": [],
           "source_file": "create/iam/iam_sessions_create.sql",
-          "description": ""
+          "description": "User session tracking with country-level geolocation.\n    Designed for TimescaleDB hypertable.\n    Partitioned by start_time."
         }
       ]
     },
@@ -714,7 +714,7 @@
           ],
           "indexes": [],
           "source_file": "create/assets/assets_image_tags_create.sql",
-          "description": ""
+          "description": "Many-to-many: images to tags."
         },
         {
           "name": "assets_images_tbl",
@@ -826,7 +826,7 @@
           ],
           "indexes": [],
           "source_file": "create/assets/assets_images_create.sql",
-          "description": ""
+          "description": "SVG image storage.\n    Key provides human-readable lookup."
         },
         {
           "name": "assets_tags_tbl",
@@ -928,7 +928,7 @@
           ],
           "indexes": [],
           "source_file": "create/assets/assets_tags_create.sql",
-          "description": ""
+          "description": "Categories for images.\n    Examples: flag, currency, commodity."
         }
       ]
     },
@@ -1048,7 +1048,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_account_types_create.sql",
-          "description": ""
+          "description": "Contains a code representing the type of an account, for example in a clearing or exchange model."
         },
         {
           "name": "refdata_asset_classes_tbl",
@@ -1160,7 +1160,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_asset_classes_create.sql",
-          "description": ""
+          "description": "Defines a simple asset class categorization. Used for classification of the risk class of the trade."
         },
         {
           "name": "refdata_asset_measures_tbl",
@@ -1272,7 +1272,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_asset_measures_create.sql",
-          "description": ""
+          "description": "The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures."
         },
         {
           "name": "refdata_benchmark_rates_tbl",
@@ -1384,7 +1384,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_benchmark_rates_create.sql",
-          "description": ""
+          "description": "FpML Benchmark rates"
         },
         {
           "name": "refdata_business_centres_tbl",
@@ -1506,7 +1506,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_business_centres_create.sql",
-          "description": ""
+          "description": "The coding-scheme accepts a 4 character code of the real geographical business calendar location or FpML format of the rate publication calendar. While the 4 character codes of the business calendar location are implicitly locatable and used for identifying a bad business day for the purpose of payment and rate calculation day adjustments, the rate publication calendar codes are used in the context of the fixing day offsets."
         },
         {
           "name": "refdata_business_processes_tbl",
@@ -1618,7 +1618,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_business_processes_create.sql",
-          "description": ""
+          "description": "Contains a code representing the type of business process a message (e.g. a status request) applies to."
         },
         {
           "name": "refdata_cashflow_types_tbl",
@@ -1730,7 +1730,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_cashflow_types_create.sql",
-          "description": ""
+          "description": "The type of cash flows associated with OTC derivatives contracts and their lifecycle events."
         },
         {
           "name": "refdata_countries_tbl",
@@ -1872,7 +1872,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_countries_create.sql",
-          "description": ""
+          "description": "ISO 3166-1 country definitions.\n    Includes alpha-2, alpha-3, and numeric codes.\n    Optional flag image reference.\n    coding_scheme_code tracks data provenance."
         },
         {
           "name": "refdata_currencies_tbl",
@@ -2064,7 +2064,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_currencies_create.sql",
-          "description": ""
+          "description": "ISO 4217 currency definitions.\n    Includes formatting rules and optional flag image reference.\n    coding_scheme_code tracks data provenance."
         },
         {
           "name": "refdata_entity_classifications_tbl",
@@ -2176,7 +2176,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_entity_classifications_create.sql",
-          "description": ""
+          "description": "Financial Entity Indicator as defined by the CFTC."
         },
         {
           "name": "refdata_local_jurisdictions_tbl",
@@ -2288,7 +2288,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_local_jurisdictions_create.sql",
-          "description": ""
+          "description": "This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply."
         },
         {
           "name": "refdata_party_relationships_tbl",
@@ -2400,7 +2400,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_party_relationships_create.sql",
-          "description": ""
+          "description": "Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup."
         },
         {
           "name": "refdata_party_roles_tbl",
@@ -2512,7 +2512,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_party_roles_create.sql",
-          "description": ""
+          "description": "Contains a code representing a related party role. This can be extended to provide custom roles."
         },
         {
           "name": "refdata_person_roles_tbl",
@@ -2624,7 +2624,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_person_roles_create.sql",
-          "description": ""
+          "description": "Indicates the role of a person in a transaction."
         },
         {
           "name": "refdata_regulatory_corporate_sectors_tbl",
@@ -2736,7 +2736,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_regulatory_corporate_sectors_create.sql",
-          "description": ""
+          "description": "Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2."
         },
         {
           "name": "refdata_reporting_regimes_tbl",
@@ -2848,7 +2848,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_reporting_regimes_create.sql",
-          "description": ""
+          "description": "Contains a code representing a reporting regime under which this transaction may be reported."
         },
         {
           "name": "refdata_supervisory_bodies_tbl",
@@ -2960,7 +2960,7 @@
           ],
           "indexes": [],
           "source_file": "create/refdata/refdata_supervisory_bodies_create.sql",
-          "description": ""
+          "description": "Contains a code representing a supervisory-body that may be supervising this transaction."
         }
       ]
     },
@@ -3035,7 +3035,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_account_types_artefact_create.sql",
-          "description": ""
+          "description": "Contains a code representing the type of an account, for example in a clearing or exchange model. - Artefact Table"
         },
         {
           "name": "dq_asset_classes_artefact_tbl",
@@ -3102,7 +3102,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_asset_classes_artefact_create.sql",
-          "description": ""
+          "description": "Defines a simple asset class categorization. Used for classification of the risk class of the trade. - Artefact Table"
         },
         {
           "name": "dq_asset_measures_artefact_tbl",
@@ -3169,7 +3169,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_asset_measures_artefact_create.sql",
-          "description": ""
+          "description": "The type of measure about an asset. Used for escribing valuation, sensitivity, and risk measures. - Artefact Table"
         },
         {
           "name": "dq_benchmark_rates_artefact_tbl",
@@ -3236,7 +3236,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_benchmark_rates_artefact_create.sql",
-          "description": ""
+          "description": "FpML Benchmark rates - Artefact Table"
         },
         {
           "name": "dq_business_centres_artefact_tbl",
@@ -3303,7 +3303,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_business_centres_artefact_create.sql",
-          "description": ""
+          "description": "The coding-scheme accepts a 4 character code of the real geographical business calendar location or FpML format of the rate publication calendar. While the 4 character codes of the business calendar location are implicitly locatable and used for identifying a bad business day for the purpose of payment and rate calculation day adjustments, the rate publication calendar codes are used in the context of the fixing day offsets. - Artefact Table"
         },
         {
           "name": "dq_business_processes_artefact_tbl",
@@ -3370,7 +3370,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_business_processes_artefact_create.sql",
-          "description": ""
+          "description": "Contains a code representing the type of business process a message (e.g. a status request) applies to. - Artefact Table"
         },
         {
           "name": "dq_cashflow_types_artefact_tbl",
@@ -3437,7 +3437,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_cashflow_types_artefact_create.sql",
-          "description": ""
+          "description": "The type of cash flows associated with OTC derivatives contracts and their lifecycle events. - Artefact Table"
         },
         {
           "name": "dq_catalogs_tbl",
@@ -3539,7 +3539,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_catalog_create.sql",
-          "description": ""
+          "description": "A catalog is a named collection of related datasets. It provides a\n    high-level grouping mechanism for datasets that share a common theme,\n    source, or purpose.\n    Examples:\n    - \"ISO Standards\" - Contains ISO 3166 countries, ISO 4217 currencies\n    - \"Cryptocurrency\" - Contains crypto reference data and icons"
         },
         {
           "name": "dq_change_reason_categories_tbl",
@@ -3855,7 +3855,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_coding_scheme_authority_type_create.sql",
-          "description": ""
+          "description": "Classifies coding schemes by the authority or governance level behind them.\n    This helps distinguish between formal standards, industry conventions, and\n    proprietary identifiers.\n    Values:\n    - official: Formal standards from recognized standards bodies (ISO, IEEE, etc.)\n    - industry: De facto standards widely adopted in the market but not formally standardized\n    - internal: Proprietary or organization-specific identifiers"
         },
         {
           "name": "dq_coding_schemes_artefact_tbl",
@@ -4104,7 +4104,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_coding_scheme_create.sql",
-          "description": ""
+          "description": "A scheme defines a coding or identification standard used to identify\n    entities such as parties, currencies, or other domain objects. Based on\n    the FPML coding-scheme concept.\n    Each scheme belongs to a subject area within the DQ hierarchy, establishing\n    what type of entity the scheme identifies.\n    Examples:\n    - LEI (Legal Entity Identifier, ISO 17442) for party identification\n    - BIC (Business Identifier Code, ISO 9362) for financial institutions\n    - ISO 4217 for currency codes\n    - ISO 3166 for country codes"
         },
         {
           "name": "dq_countries_artefact_tbl",
@@ -4440,7 +4440,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_data_domain_create.sql",
-          "description": ""
+          "description": "High-level data classification.\n    Examples: reference_data, market_data, trade_data."
         },
         {
           "name": "dq_dataset_dependencies_tbl",
@@ -4526,7 +4526,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_dataset_dependency_create.sql",
-          "description": ""
+          "description": "Declares dependencies between datasets using stable dataset codes.\n    When a dataset is injected into the system, all its dependencies must\n    be satisfied first. Dependencies are resolved by code at injection time.\n    Note: dependency_code is intentionally NOT a foreign key to allow:\n    - Declaring dependencies on datasets that may not exist yet\n    - Referencing datasets in external systems\n    - Loose coupling with validation at injection time\n    Examples:\n    - \"iso.countries\" depends on \"assets.country_flags\" for visual display\n    - \"crypto.large\" and \"crypto.small\" depend on \"assets.crypto_icons\" for icon display"
         },
         {
           "name": "dq_datasets_tbl",
@@ -4818,7 +4818,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_dataset_create.sql",
-          "description": ""
+          "description": "Central dataset registry with full lineage.\n    Tracks provenance via upstream_derivation_id.\n    lineage_depth auto-calculated from hierarchy."
         },
         {
           "name": "dq_entity_classifications_artefact_tbl",
@@ -4885,7 +4885,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_entity_classifications_artefact_create.sql",
-          "description": ""
+          "description": "Financial Entity Indicator as defined by the CFTC. - Artefact Table"
         },
         {
           "name": "dq_image_tags_artefact_tbl",
@@ -5066,7 +5066,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_ip2country_artefact_create.sql",
-          "description": ""
+          "description": "Staging table for IPv4 to country mapping data from iptoasn.com.\n    Data is imported here first, then promoted to geo_ip2country_tbl."
         },
         {
           "name": "dq_local_jurisdictions_artefact_tbl",
@@ -5133,7 +5133,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_local_jurisdictions_artefact_create.sql",
-          "description": ""
+          "description": "This overrides the countryScheme. Specifies the Local Jurisdiction that applies to a Transaction, for example for the purposes of defining which Local Taxes will apply. - Artefact Table"
         },
         {
           "name": "dq_methodologies_tbl",
@@ -5255,7 +5255,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_methodology_create.sql",
-          "description": ""
+          "description": "Describes transformation/derivation logic.\n    Links to documentation and implementation."
         },
         {
           "name": "dq_nature_dimensions_tbl",
@@ -5357,7 +5357,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_nature_dimension_create.sql",
-          "description": ""
+          "description": "Describes the nature of data.\n    Examples: raw, cleansed, derived."
         },
         {
           "name": "dq_origin_dimensions_tbl",
@@ -5459,7 +5459,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_origin_dimension_create.sql",
-          "description": ""
+          "description": "Describes the origin of data.\n    Examples: vendor, internal, regulatory."
         },
         {
           "name": "dq_party_relationships_artefact_tbl",
@@ -5526,7 +5526,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_party_relationships_artefact_create.sql",
-          "description": ""
+          "description": "Indicates the relationship between two parties as defined by Hong Kong Monetary Authority (HKMA) Rewrite field 189 - Intragroup. - Artefact Table"
         },
         {
           "name": "dq_party_roles_artefact_tbl",
@@ -5593,7 +5593,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_party_roles_artefact_create.sql",
-          "description": ""
+          "description": "Contains a code representing a related party role. This can be extended to provide custom roles. - Artefact Table"
         },
         {
           "name": "dq_person_roles_artefact_tbl",
@@ -5660,7 +5660,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_person_roles_artefact_create.sql",
-          "description": ""
+          "description": "Indicates the role of a person in a transaction. - Artefact Table"
         },
         {
           "name": "dq_publications_tbl",
@@ -5782,7 +5782,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_publication_create.sql",
-          "description": ""
+          "description": "Audit table for tracking dataset publication history.\n    Records each time a dataset is published to production tables."
         },
         {
           "name": "dq_regulatory_corporate_sectors_artefact_tbl",
@@ -5849,7 +5849,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_regulatory_corporate_sectors_artefact_create.sql",
-          "description": ""
+          "description": "Defines the corporate sector under HKMA (Hong Kong Monetary Authority) Rewrite fields 190 - Nature of Counterparty 1 and 191 - Nature of Counterparty 2. - Artefact Table"
         },
         {
           "name": "dq_reporting_regimes_artefact_tbl",
@@ -5916,7 +5916,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_reporting_regimes_artefact_create.sql",
-          "description": ""
+          "description": "Contains a code representing a reporting regime under which this transaction may be reported. - Artefact Table"
         },
         {
           "name": "dq_subject_areas_tbl",
@@ -6012,7 +6012,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_subject_area_create.sql",
-          "description": ""
+          "description": "Sub-classification within a data domain.\n    Examples: currencies, countries, images."
         },
         {
           "name": "dq_supervisory_bodies_artefact_tbl",
@@ -6079,7 +6079,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_supervisory_bodies_artefact_create.sql",
-          "description": ""
+          "description": "Contains a code representing a supervisory-body that may be supervising this transaction. - Artefact Table"
         },
         {
           "name": "dq_tags_artefact_tbl",
@@ -6248,7 +6248,7 @@
           ],
           "indexes": [],
           "source_file": "create/dq/dq_treatment_dimension_create.sql",
-          "description": ""
+          "description": "Describes how data should be treated.\n    Examples: golden, provisional, deprecated."
         }
       ]
     },
@@ -6358,7 +6358,7 @@
           ],
           "indexes": [],
           "source_file": "create/variability/variability_feature_flags_create.sql",
-          "description": ""
+          "description": "Feature toggles for runtime configuration.\n    Uses name as natural key."
         }
       ]
     },
@@ -6482,7 +6482,7 @@
           ],
           "indexes": [],
           "source_file": "create/telemetry/telemetry_logs_create.sql",
-          "description": ""
+          "description": "Application log entries.\n    Designed for TimescaleDB hypertable.\n    Partitioned by timestamp."
         }
       ]
     },
@@ -6527,7 +6527,7 @@
           ],
           "indexes": [],
           "source_file": "create/geo/geo_ip2country_create.sql",
-          "description": ""
+          "description": "IP range to country code mapping.\n    Uses GiST index for fast lookups."
         }
       ]
     }

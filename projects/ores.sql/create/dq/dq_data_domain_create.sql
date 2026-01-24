@@ -18,6 +18,11 @@
  *
  */
 
+-- =============================================================================
+-- High-level data classification.
+-- Examples: reference_data, market_data, trade_data.
+-- =============================================================================
+
 create table if not exists "ores"."dq_data_domains_tbl" (
     "name" text not null,
     "version" integer not null,

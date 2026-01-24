@@ -19,6 +19,12 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- Security tracking for login attempts.
+-- Current-state table (no temporal versioning).
+-- Tracks failed attempts and lock status.
+-- =============================================================================
+
 create table if not exists "ores"."iam_login_info_tbl" (
     "account_id" uuid not null,
     "last_ip" inet not null,

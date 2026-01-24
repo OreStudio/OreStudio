@@ -19,6 +19,11 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- SVG image storage.
+-- Key provides human-readable lookup.
+-- =============================================================================
+
 create table if not exists "ores"."assets_images_tbl" (
     "image_id" uuid not null,
     "version" integer not null,

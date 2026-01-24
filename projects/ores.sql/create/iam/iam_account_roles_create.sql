@@ -19,6 +19,11 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- Many-to-many: accounts to roles.
+-- Tracks who assigned the role.
+-- =============================================================================
+
 create table if not exists "ores"."iam_account_roles_tbl" (
     "account_id" uuid not null,
     "role_id" uuid not null,

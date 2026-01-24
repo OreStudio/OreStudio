@@ -311,7 +311,7 @@ find_program(PLANTUML_PROGRAM plantuml)
 if (PLANTUML_PROGRAM)
     message(STATUS "Found PlantUML: ${PLANTUML_PROGRAM}")
     set(WITH_PLANTUML "on")
-    set(PLANTUML_ENVIRONMENT PLANTUML_LIMIT_SIZE=65536 PLANTUML_SECURITY_PROFILE=UNSECURE)
+    set(PLANTUML_ENVIRONMENT PLANTUML_LIMIT_SIZE=131072)
 else()
     message(STATUS "PlantUML not found.")
 endif()
@@ -354,8 +354,7 @@ add_custom_target(generate_protocol_docs
 #
 set(ORES_PLANTUML_JAR "/usr/share/plantuml/plantuml.jar")
 set(ORES_JAVA_ARGS "-Djava.awt.headless=true")
-list(APPEND ORES_JAVA_ARGS "-DPLANTUML_SECURITY_PROFILE=UNSECURE")
-list(APPEND ORES_JAVA_ARGS "-DPLANTUML_LIMIT_SIZE=131070")
+list(APPEND ORES_JAVA_ARGS "-DPLANTUML_LIMIT_SIZE=131072")
 
 #
 # aggregate targets and their aliases

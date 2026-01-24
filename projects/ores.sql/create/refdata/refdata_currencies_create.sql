@@ -19,6 +19,12 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- ISO 4217 currency definitions.
+-- Includes formatting rules and optional flag image reference.
+-- coding_scheme_code tracks data provenance.
+-- =============================================================================
+
 create table if not exists "ores"."refdata_currencies_tbl" (
     "iso_code" text not null,
     "version" integer not null,

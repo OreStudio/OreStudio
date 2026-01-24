@@ -17,44 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
-/**
- * Drop Data Quality Population Functions
- *
- * Drops all helper functions used by DQ population scripts.
- * This script is safe to run even if functions don't exist (uses IF EXISTS).
- */
-
 set schema 'ores';
 
--- Data Domains
-drop function if exists ores.upsert_dq_data_domains(text, text);
-
--- Subject Areas
-drop function if exists ores.upsert_dq_subject_areas(text, text, text);
-
--- Catalogs
-drop function if exists ores.upsert_dq_catalogs(text, text, text);
-
--- Dataset Dependencies
-drop function if exists ores.upsert_dq_dataset_dependency(text, text, text);
-
--- Dimensions
-drop function if exists ores.upsert_dq_origin_dimensions(text, text, text);
-drop function if exists ores.upsert_dq_nature_dimensions(text, text, text);
-drop function if exists ores.upsert_dq_treatment_dimensions(text, text, text);
-
--- Change Reasons
-drop function if exists ores.upsert_change_reason_category(text, text);
-drop function if exists ores.upsert_change_reason(text, text, text, boolean, boolean, boolean, integer);
-
--- Coding Schemes
-drop function if exists ores.upsert_dq_coding_scheme_authority_type(text, text, text);
-drop function if exists ores.upsert_dq_coding_schemes(text, text, text, text, text, text, text);
-
--- Methodologies
-drop function if exists ores.upsert_dq_methodologies(text, text, text, text);
-
--- Datasets and Tags
-drop function if exists ores.upsert_dq_datasets(text, text, text, text, text, text, text, text, text, text, text, text, text, date, text);
-drop function if exists ores.upsert_dq_tag(text, text, text, text, text);
+drop function if exists ores.dq_list_populatable_datasets;
+drop function if exists ores.dq_preview_image_population;
+drop function if exists ores.dq_populate_images;
+drop function if exists ores.dq_preview_country_population;
+drop function if exists ores.dq_populate_countries;
+drop function if exists ores.dq_preview_currency_population;
+drop function if exists ores.dq_populate_currencies;
+drop function if exists ores.dq_preview_ip2country_population;
+drop function if exists ores.dq_populate_ip2country;

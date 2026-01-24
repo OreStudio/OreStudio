@@ -19,6 +19,10 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- Many-to-many: images to tags.
+-- =============================================================================
+
 create table if not exists "ores"."assets_image_tags_tbl" (
     "image_id" uuid not null,
     "tag_id" uuid not null,

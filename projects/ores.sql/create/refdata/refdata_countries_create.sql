@@ -19,6 +19,13 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- ISO 3166-1 country definitions.
+-- Includes alpha-2, alpha-3, and numeric codes.
+-- Optional flag image reference.
+-- coding_scheme_code tracks data provenance.
+-- =============================================================================
+
 create table if not exists "ores"."refdata_countries_tbl" (
     "alpha2_code" text not null,
     "version" integer not null,

@@ -18,6 +18,11 @@
  *
  */
 
+-- =============================================================================
+-- Describes the origin of data.
+-- Examples: vendor, internal, regulatory.
+-- =============================================================================
+
 create table if not exists "ores"."dq_origin_dimensions_tbl" (
     "code" text not null,
     "version" integer not null,

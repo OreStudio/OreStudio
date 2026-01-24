@@ -19,6 +19,12 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- Fine-grained permission codes.
+-- System-defined constants from bootstrap data.
+-- No change tracking (not user-editable).
+-- =============================================================================
+
 create table if not exists "ores"."iam_permissions_tbl" (
     "id" uuid not null,
     "code" text not null,

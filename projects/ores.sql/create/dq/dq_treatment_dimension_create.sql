@@ -18,6 +18,11 @@
  *
  */
 
+-- =============================================================================
+-- Describes how data should be treated.
+-- Examples: golden, provisional, deprecated.
+-- =============================================================================
+
 create table if not exists "ores"."dq_treatment_dimensions_tbl" (
     "code" text not null,
     "version" integer not null,

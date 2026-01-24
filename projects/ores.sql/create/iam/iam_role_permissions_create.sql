@@ -19,6 +19,10 @@
  */
 set schema 'ores';
 
+-- =============================================================================
+-- Many-to-many: roles to permissions.
+-- =============================================================================
+
 create table if not exists "ores"."iam_role_permissions_tbl" (
     "role_id" uuid not null,
     "permission_id" uuid not null,

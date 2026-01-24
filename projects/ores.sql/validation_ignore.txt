@@ -1,0 +1,32 @@
+# Validation Ignore Rules
+#
+# Format: WARNING_CODE entity_pattern
+# - Lines starting with # are comments
+# - Empty lines are skipped
+# - Patterns support * wildcard (e.g., dq_*_artefact_tbl)
+#
+# Warning codes:
+# - DROP_001: Table created but no drop script
+# - DROP_002: Function created but no drop script
+# - TEMPORAL_004: Missing version column
+# - TEMPORAL_005: Missing modified_by column
+# - TEMPORAL_006: Missing change_reason_code column
+
+# =============================================================================
+# Change reason tables - intentionally missing change_reason_code
+# These ARE the change reason tables, they can't reference themselves
+# =============================================================================
+TEMPORAL_006 dq_change_reason_categories_tbl
+TEMPORAL_006 dq_change_reasons_tbl
+
+# =============================================================================
+# Lightweight junction tables - intentionally omit version/modified_by
+# These are simple relationship tables without full audit trail
+# =============================================================================
+TEMPORAL_004 dq_dataset_dependencies_tbl
+TEMPORAL_005 dq_dataset_dependencies_tbl
+
+# =============================================================================
+# System-managed tables - no user audit trail needed
+# =============================================================================
+TEMPORAL_004 iam_permissions_tbl

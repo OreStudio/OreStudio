@@ -18,6 +18,11 @@
  *
  */
 
+-- =============================================================================
+-- Sub-classification within a data domain.
+-- Examples: currencies, countries, images.
+-- =============================================================================
+
 create table if not exists "ores"."dq_subject_areas_tbl" (
     "name" text not null,
     "version" integer not null,

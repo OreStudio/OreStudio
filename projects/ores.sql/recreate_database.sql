@@ -25,15 +25,18 @@
  * components and recreates them from scratch.
  *
  * USAGE:
- *   -- Basic (no instance databases to drop):
+ *   -- With confirmation prompt:
  *   psql -U postgres -v skip_validation='off' -f recreate_database.sql
  *
- *   -- With instance databases to drop:
- *   psql -U postgres -v skip_validation='off' -v db_list="db1,db2" -f recreate_database.sql
+ *   -- Skip confirmation prompt (-y flag):
+ *   psql -U postgres -v skip_validation='off' -v y=1 -f recreate_database.sql
  *
  * Variables:
  *   :skip_validation - 'on' to skip input validation in seed functions (faster)
- *   :db_list         - Comma-separated list of instance databases to drop (optional)
+ *   :y               - Set to skip teardown confirmation prompt
+ *
+ * NOTE: To drop instance databases, first run:
+ *   psql -U postgres -f admin/generate_teardown_instances.sql
  */
 \pset pager off
 \pset tuples_only on
@@ -42,6 +45,11 @@
 -- Set session variable for seed function validation control
 -- This can be checked via current_setting('ores.skip_validation', true)
 select set_config('ores.skip_validation', :'skip_validation', false);
+
+-- Pass through -y flag to skip confirmation prompt
+\if :{?y}
+    \set skip_confirm 1
+\endif
 
 \ir teardown_all.sql
 \ir setup_user.sql

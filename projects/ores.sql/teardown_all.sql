@@ -27,6 +27,9 @@
  * USAGE:
  *   psql -U postgres -f teardown_all.sql
  *
+ *   -- Skip confirmation prompt (for automated/dev use):
+ *   psql -U postgres -v skip_confirm=1 -f teardown_all.sql
+ *
  * WHAT IT DROPS (in order):
  *   1. Test databases (pattern-based - acceptable for ephemeral DBs)
  *   2. Instance databases (from teardown_instances.sql - explicit, reviewable)
@@ -62,29 +65,35 @@
 \echo ''
 \echo 'WARNING: This will remove ALL ORES components!'
 \echo ''
-\echo 'Before proceeding, ensure you have:'
-\echo '  - Generated teardown_instances.sql (if dropping instances)'
-\echo '  - Reviewed all databases that will be dropped'
-\echo '  - Committed the teardown script for audit trail (production)'
-\echo ''
 
--- Confirmation prompt
-\prompt 'Type "yes" to proceed with teardown: ' confirm_teardown
-
--- Check confirmation (case-insensitive)
-select case
-    when lower(:'confirm_teardown') = 'yes' then false
-    else true
-end as abort_teardown \gset
-
-\if :abort_teardown
+-- Check if confirmation should be skipped (for automated/dev use)
+\if :{?skip_confirm}
+    \echo 'Confirmation skipped (skip_confirm set).'
     \echo ''
-    \echo 'Teardown aborted. You must type "yes" to proceed.'
+\else
+    \echo 'Before proceeding, ensure you have:'
+    \echo '  - Generated teardown_instances.sql (if dropping instances)'
+    \echo '  - Reviewed all databases that will be dropped'
+    \echo '  - Committed the teardown script for audit trail (production)'
     \echo ''
-    \quit
+
+    -- Confirmation prompt
+    \prompt 'Type "yes" to proceed with teardown: ' confirm_teardown
+
+    -- Check confirmation (case-insensitive)
+    select case
+        when lower(:'confirm_teardown') = 'yes' then false
+        else true
+    end as abort_teardown \gset
+
+    \if :abort_teardown
+        \echo ''
+        \echo 'Teardown aborted. You must type "yes" to proceed.'
+        \echo ''
+        \quit
+    \endif
 \endif
 
-\echo ''
 \echo 'Proceeding with teardown...'
 \echo ''
 

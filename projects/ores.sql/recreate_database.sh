@@ -121,29 +121,32 @@ echo "Skip validation: ${SKIP_VALIDATION}"
 echo "Script directory: ${SCRIPT_DIR}"
 echo ""
 
+# Confirmation prompt (unless -y flag is set)
+if [[ -z "${ASSUME_YES}" ]]; then
+    echo "WARNING: This will DROP all ORES databases and recreate from scratch!"
+    echo ""
+    read -p "Type 'yes' to proceed: " confirm
+    if [[ "${confirm}" != "yes" ]]; then
+        echo "Aborted."
+        exit 1
+    fi
+    echo ""
+fi
+
 # Change to script directory so relative paths in SQL files work
 cd "${SCRIPT_DIR}"
-
-# Build psql arguments
-PSQL_ARGS=(
-    -h localhost
-    -f ./recreate_database.sql
-    -U postgres
-    -v ores_password="${ORES_PASSWORD}"
-    -v db_name="${DB_NAME}"
-    -v skip_validation="${SKIP_VALIDATION}"
-)
-
-# Add -y flag if assume yes is set
-if [[ -n "${ASSUME_YES}" ]]; then
-    PSQL_ARGS+=(-v y=1)
-fi
 
 # Run the recreate_database.sql script
 # Note: psql's :'var' syntax handles quoting for string literals
 # Note: db_name should NOT have quotes (it's an identifier in SQL)
 # Note: -h localhost forces TCP connection (password auth vs peer auth on socket)
-PGPASSWORD="${POSTGRES_PASSWORD}" psql "${PSQL_ARGS[@]}"
+PGPASSWORD="${POSTGRES_PASSWORD}" psql \
+    -h localhost \
+    -f ./recreate_database.sql \
+    -U postgres \
+    -v ores_password="${ORES_PASSWORD}" \
+    -v db_name="${DB_NAME}" \
+    -v skip_validation="${SKIP_VALIDATION}"
 
 echo ""
 echo "=== Database recreation complete ==="

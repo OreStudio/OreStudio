@@ -25,16 +25,14 @@
  * components and recreates them from scratch.
  *
  * USAGE:
- *   Typically called via recreate_database.sh:
- *     ./recreate_database.sh -p postgres_pass -o ores_pass [-y] [-n]
+ *   Typically called via recreate_database.sh (handles confirmation prompt):
+ *     ./recreate_database.sh -p postgres_pass -o ores_pass [-y] [--no-sql-validation]
  *
- *   Direct psql usage:
+ *   Direct psql usage (no confirmation prompt):
  *     psql -U postgres -v skip_validation='off' -f recreate_database.sql
- *     psql -U postgres -v skip_validation='off' -v y=1 -f recreate_database.sql
  *
  * Variables:
  *   :skip_validation - 'on' to skip input validation in seed functions (faster)
- *   :y               - Set to skip teardown confirmation prompt
  *
  * NOTE: To drop instance databases, first run:
  *   psql -U postgres -f admin/generate_teardown_instances.sql
@@ -47,10 +45,8 @@
 -- This can be checked via current_setting('ores.skip_validation', true)
 select set_config('ores.skip_validation', :'skip_validation', false);
 
--- Pass through -y flag to teardown_all.sql as skip_confirm
-\if :{?y}
-    \set skip_confirm 1
-\endif
+-- Skip confirmation in teardown_all.sql - shell script handles this
+\set skip_confirm 1
 
 \ir teardown_all.sql
 \ir setup_user.sql

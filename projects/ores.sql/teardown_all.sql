@@ -68,7 +68,7 @@
 
 -- Check if confirmation should be skipped (for automated/dev use)
 \if :{?skip_confirm}
-    \echo 'Confirmation skipped (skip_confirm set).'
+    \echo 'Confirmation skipped.'
     \echo ''
 \else
     \echo 'Before proceeding, ensure you have:'

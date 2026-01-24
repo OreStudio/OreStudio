@@ -1,0 +1,67 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+' GENERATED FILE - DO NOT EDIT
+' Generated: {{generated_at}}
+' Regenerate with: ./projects/ores.codegen/plantuml_er_generate.sh
+'
+@startuml
+
+title ORES Database Schema
+hide circle
+skinparam linetype ortho
+
+note as SchemaNote
+ORES Database Schema
+
+All temporal tables use valid_from/valid_to
+for bitemporal data management. Junction tables enable
+soft deletes via validity period closure.
+
+Change tracking: Most entities include change_reason_code
+and change_commentary for audit trail support.
+
+Table naming: <component>_<entity>_tbl
+end note
+
+{{#packages}}
+'
+' ==================== {{name}} ({{description}}) ====================
+'
+package "{{name}}" {{color}} {
+{{#tables}}
+    entity {{name}} {{stereotype}} {{color}} {
+{{#primary_key.columns}}
+        * {{name}} : {{type}} <<PK>>
+{{/primary_key.columns}}
+        --
+{{#columns}}
+{{^is_pk}}
+        {{^nullable}}* {{/nullable}}{{#nullable}}  {{/nullable}}{{name}} : {{type}}{{#is_fk}} <<FK>>{{/is_fk}}
+{{/is_pk}}
+{{/columns}}
+    }
+
+{{/tables}}
+}
+
+{{/packages}}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores_schema.puml"
+' End:
+@enduml

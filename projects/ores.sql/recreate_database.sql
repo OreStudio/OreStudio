@@ -25,11 +25,12 @@
  * components and recreates them from scratch.
  *
  * USAGE:
- *   -- With confirmation prompt:
- *   psql -U postgres -v skip_validation='off' -f recreate_database.sql
+ *   Typically called via recreate_database.sh:
+ *     ./recreate_database.sh -p postgres_pass -o ores_pass [-y] [-n]
  *
- *   -- Skip confirmation prompt (-y flag):
- *   psql -U postgres -v skip_validation='off' -v y=1 -f recreate_database.sql
+ *   Direct psql usage:
+ *     psql -U postgres -v skip_validation='off' -f recreate_database.sql
+ *     psql -U postgres -v skip_validation='off' -v y=1 -f recreate_database.sql
  *
  * Variables:
  *   :skip_validation - 'on' to skip input validation in seed functions (faster)
@@ -46,7 +47,7 @@
 -- This can be checked via current_setting('ores.skip_validation', true)
 select set_config('ores.skip_validation', :'skip_validation', false);
 
--- Pass through -y flag to skip confirmation prompt
+-- Pass through -y flag to teardown_all.sql as skip_confirm
 \if :{?y}
     \set skip_confirm 1
 \endif

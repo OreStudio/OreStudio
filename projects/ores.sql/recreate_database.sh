@@ -28,7 +28,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
     cat <<EOF
-Usage: $(basename "$0") -p POSTGRES_PASSWORD -o ORES_PASSWORD [-d DB_NAME] [-n]
+Usage: $(basename "$0") -p POSTGRES_PASSWORD -o ORES_PASSWORD [-d DB_NAME] [-y] [-n]
 
 Recreates the ORE Studio database from scratch.
 Population scripts are automatically run as part of database recreation.
@@ -39,13 +39,14 @@ Required arguments:
 
 Optional arguments:
     -d DB_NAME              Database name (default: ${DEFAULT_DB_NAME})
+    -y                      Assume yes to all prompts (skip confirmation)
     -n                      Skip input validation in seed functions (faster)
     -h                      Show this help message
 
 Example:
     $(basename "$0") -p myPostgresPass -o myOresPass
     $(basename "$0") -p myPostgresPass -o myOresPass -d my_custom_db
-    $(basename "$0") -p myPostgresPass -o myOresPass -n
+    $(basename "$0") -p myPostgresPass -o myOresPass -y -n
 
 EOF
     exit 1
@@ -55,9 +56,10 @@ EOF
 POSTGRES_PASSWORD=""
 ORES_PASSWORD=""
 DB_NAME="${DEFAULT_DB_NAME}"
+ASSUME_YES=""
 SKIP_VALIDATION="off"
 
-while getopts "p:o:d:nh" opt; do
+while getopts "p:o:d:ynh" opt; do
     case ${opt} in
         p)
             POSTGRES_PASSWORD="${OPTARG}"
@@ -67,6 +69,9 @@ while getopts "p:o:d:nh" opt; do
             ;;
         d)
             DB_NAME="${OPTARG}"
+            ;;
+        y)
+            ASSUME_YES="1"
             ;;
         n)
             SKIP_VALIDATION="on"
@@ -98,6 +103,7 @@ fi
 
 echo "=== ORE Studio Database Recreation ==="
 echo "Database name: ${DB_NAME}"
+echo "Assume yes: ${ASSUME_YES:-no}"
 echo "Skip validation: ${SKIP_VALIDATION}"
 echo "Script directory: ${SCRIPT_DIR}"
 echo ""
@@ -105,17 +111,26 @@ echo ""
 # Change to script directory so relative paths in SQL files work
 cd "${SCRIPT_DIR}"
 
+# Build psql arguments
+PSQL_ARGS=(
+    -h localhost
+    -f ./recreate_database.sql
+    -U postgres
+    -v ores_password="${ORES_PASSWORD}"
+    -v db_name="${DB_NAME}"
+    -v skip_validation="${SKIP_VALIDATION}"
+)
+
+# Add -y flag if assume yes is set
+if [[ -n "${ASSUME_YES}" ]]; then
+    PSQL_ARGS+=(-v y=1)
+fi
+
 # Run the recreate_database.sql script
 # Note: psql's :'var' syntax handles quoting for string literals
 # Note: db_name should NOT have quotes (it's an identifier in SQL)
 # Note: -h localhost forces TCP connection (password auth vs peer auth on socket)
-PGPASSWORD="${POSTGRES_PASSWORD}" psql \
-    -h localhost \
-    -f ./recreate_database.sql \
-    -U postgres \
-    -v ores_password="${ORES_PASSWORD}" \
-    -v db_name="${DB_NAME}" \
-    -v skip_validation="${SKIP_VALIDATION}"
+PGPASSWORD="${POSTGRES_PASSWORD}" psql "${PSQL_ARGS[@]}"
 
 echo ""
 echo "=== Database recreation complete ==="

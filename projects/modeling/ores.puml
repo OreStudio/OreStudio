@@ -240,6 +240,19 @@ package "Domain Layer" #F2F2F2 {
     Organized into: domain, repository, service, messaging, eventing, generators namespaces.
     end note
 
+    component [ores.ore] as ore #F7E5FF
+
+    note right of ore
+    ORE (Open Source Risk Engine) specific code, mainly importing and exporting capabilities:
+    - ORE Import/Export: Functions to import from and export to ORE formats
+    - Format Conversion: Converting between ORE-specific formats and internal representations
+    - ORE Domain Model: Core types and structures specific to ORE operations
+    - Temporal Support: Version tracking with valid_from/valid_to fields
+    - Message API: Request/response handlers for ORE operations
+    Provides specialized functionality for working with ORE-specific data formats.
+    Organized into: domain, repository, orexml, csv, messaging, generators namespaces.
+    end note
+
     component [ores.dq] as dq #F7E5FF
 
     note right of dq
@@ -404,14 +417,16 @@ iam --> telemetry
 iam --> database
 iam --> geo
 iam --> security
+ore --> refdata
+ore --> log
+ore --> platform
 dq --> eventing
 dq --> database
 dq --> utility
 dq --> comms
 dq --> iam
 
-fpml --> variability
-fpml --> database
+fpml --> log
 fpml --> telemetry
 fpml --> platform
 

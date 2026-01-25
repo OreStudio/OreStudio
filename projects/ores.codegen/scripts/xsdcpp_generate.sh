@@ -12,7 +12,6 @@
 #   --project NAME    Target project name (e.g., ores.ore)
 #   --namespace NS    C++ namespace to wrap generated code (e.g., ores::ore)
 #   --name NAME       Name for generated files (e.g., domain)
-#   --dry-run         Print command without executing
 #   --help            Show this help message
 #
 # Example:
@@ -45,12 +44,18 @@ show_help() {
     exit 0
 }
 
+# Check xsdcpp is available
+if ! command -v xsdcpp &> /dev/null; then
+    echo "Error: xsdcpp not found on PATH" >&2
+    echo "Please ensure xsdcpp is installed and available in your PATH" >&2
+    exit 1
+fi
+
 # Default values
 XSD_PATH=""
 PROJECT=""
 NAMESPACE=""
 NAME=""
-DRY_RUN=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -70,10 +75,6 @@ while [[ $# -gt 0 ]]; do
         --name)
             NAME="$2"
             shift 2
-            ;;
-        --dry-run)
-            DRY_RUN=true
-            shift
             ;;
         --help|-h)
             show_help
@@ -109,7 +110,6 @@ fi
 
 # Get git root
 GIT_ROOT=$(find_git_root)
-echo "Git root: $GIT_ROOT"
 
 # Build paths relative to git root
 XSD_FULL_PATH="${GIT_ROOT}/${XSD_PATH}"
@@ -137,29 +137,12 @@ echo "Header output:  projects/${PROJECT}/include/${PROJECT}/${NAME}"
 echo "CPP output:     projects/${PROJECT}/src/${NAME}"
 echo ""
 
-# Build command
-CMD=(
-    xsdcpp
-    "$XSD_FULL_PATH"
-    "--header-output=$HEADER_OUTPUT"
-    "--cpp-output=$CPP_OUTPUT"
-    "--wrap-namespace=$NAMESPACE"
+echo "Running xsdcpp..."
+xsdcpp "$XSD_FULL_PATH" \
+    "--header-output=$HEADER_OUTPUT" \
+    "--cpp-output=$CPP_OUTPUT" \
+    "--wrap-namespace=$NAMESPACE" \
     "--name=$NAME"
-)
 
-if [ "$DRY_RUN" = true ]; then
-    echo "Dry run - would execute:"
-    echo "${CMD[*]}"
-else
-    # Check xsdcpp is available (only when actually running)
-    if ! command -v xsdcpp &> /dev/null; then
-        echo "Error: xsdcpp not found on PATH" >&2
-        echo "Please ensure xsdcpp is installed and available in your PATH" >&2
-        exit 1
-    fi
-
-    echo "Running xsdcpp..."
-    "${CMD[@]}"
-    echo ""
-    echo "=== Done ==="
-fi
+echo ""
+echo "=== Done ==="

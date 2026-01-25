@@ -5,7 +5,7 @@
 # This script generates C++ code for ORE XML parsing using xsdcpp.
 # All paths are relative to the git repository root.
 #
-# Usage: ./xsdcpp_generate_ore.sh [--dry-run]
+# Usage: ./xsdcpp_generate_ore.sh
 #
 
 set -e
@@ -25,29 +25,12 @@ find_git_root() {
     return 1
 }
 
-# Parse arguments
-DRY_RUN=false
-for arg in "$@"; do
-    case $arg in
-        --dry-run)
-            DRY_RUN=true
-            ;;
-        --help|-h)
-            echo "Usage: $0 [--dry-run]"
-            echo ""
-            echo "Generate C++ domain types from ORE XSD schema."
-            echo ""
-            echo "Options:"
-            echo "  --dry-run    Print command without executing"
-            echo "  --help       Show this help message"
-            exit 0
-            ;;
-        *)
-            echo "Error: Unknown option: $arg" >&2
-            exit 1
-            ;;
-    esac
-done
+# Check xsdcpp is available
+if ! command -v xsdcpp &> /dev/null; then
+    echo "Error: xsdcpp not found on PATH" >&2
+    echo "Please ensure xsdcpp is installed and available in your PATH" >&2
+    exit 1
+fi
 
 # Get git root
 GIT_ROOT=$(find_git_root)
@@ -75,36 +58,18 @@ mkdir -p "$CPP_OUTPUT"
 
 echo "=== ORE XSD Code Generation ==="
 echo ""
-echo "Git root:       ${GIT_ROOT}"
 echo "XSD input:      ${XSD_PATH}"
 echo "Header output:  projects/${PROJECT}/include/${PROJECT}/${NAME}"
 echo "CPP output:     projects/${PROJECT}/src/${NAME}"
 echo "Namespace:      ${NAMESPACE}"
 echo ""
 
-# Build command
-CMD=(
-    xsdcpp
-    "$XSD_FULL_PATH"
-    "--header-output=$HEADER_OUTPUT"
-    "--cpp-output=$CPP_OUTPUT"
-    "--wrap-namespace=$NAMESPACE"
+echo "Running xsdcpp..."
+xsdcpp "$XSD_FULL_PATH" \
+    "--header-output=$HEADER_OUTPUT" \
+    "--cpp-output=$CPP_OUTPUT" \
+    "--wrap-namespace=$NAMESPACE" \
     "--name=$NAME"
-)
 
-if [ "$DRY_RUN" = true ]; then
-    echo "Dry run - would execute:"
-    echo "${CMD[*]}"
-else
-    # Check xsdcpp is available
-    if ! command -v xsdcpp &> /dev/null; then
-        echo "Error: xsdcpp not found on PATH" >&2
-        echo "Please ensure xsdcpp is installed and available in your PATH" >&2
-        exit 1
-    fi
-
-    echo "Running xsdcpp..."
-    "${CMD[@]}"
-    echo ""
-    echo "=== Done ==="
-fi
+echo ""
+echo "=== Done ==="

@@ -8682,57 +8682,93 @@ struct defaultCurve_Configurations_t_Configuration_t_SwitchDates_t_SwitchDate_t 
 
 void load_file(const std::string& file, portfolio& Portfolio);
 void load_data(const std::string& data, portfolio& Portfolio);
+void save_file(const std::string& file, const portfolio& Portfolio);
+std::string save_data(const portfolio& Portfolio);
 
 void load_file(const std::string& file, trade& Trade);
 void load_data(const std::string& data, trade& Trade);
+void save_file(const std::string& file, const trade& Trade);
+std::string save_data(const trade& Trade);
 
 void load_file(const std::string& file, simulation& Simulation);
 void load_data(const std::string& data, simulation& Simulation);
+void save_file(const std::string& file, const simulation& Simulation);
+std::string save_data(const simulation& Simulation);
 
 void load_file(const std::string& file, crossAssetModel& CrossAssetModel);
 void load_data(const std::string& data, crossAssetModel& CrossAssetModel);
+void save_file(const std::string& file, const crossAssetModel& CrossAssetModel);
+std::string save_data(const crossAssetModel& CrossAssetModel);
 
 void load_file(const std::string& file, creditsimulation& CreditSimulation);
 void load_data(const std::string& data, creditsimulation& CreditSimulation);
+void save_file(const std::string& file, const creditsimulation& CreditSimulation);
+std::string save_data(const creditsimulation& CreditSimulation);
 
 void load_file(const std::string& file, curveconfiguration& CurveConfiguration);
 void load_data(const std::string& data, curveconfiguration& CurveConfiguration);
+void save_file(const std::string& file, const curveconfiguration& CurveConfiguration);
+std::string save_data(const curveconfiguration& CurveConfiguration);
 
 void load_file(const std::string& file, conventions& Conventions);
 void load_data(const std::string& data, conventions& Conventions);
+void save_file(const std::string& file, const conventions& Conventions);
+std::string save_data(const conventions& Conventions);
 
 void load_file(const std::string& file, collateralBalances& CollateralBalances);
 void load_data(const std::string& data, collateralBalances& CollateralBalances);
+void save_file(const std::string& file, const collateralBalances& CollateralBalances);
+std::string save_data(const collateralBalances& CollateralBalances);
 
 void load_file(const std::string& file, nettingsetdefinitions& NettingSetDefinitions);
 void load_data(const std::string& data, nettingsetdefinitions& NettingSetDefinitions);
+void save_file(const std::string& file, const nettingsetdefinitions& NettingSetDefinitions);
+std::string save_data(const nettingsetdefinitions& NettingSetDefinitions);
 
 void load_file(const std::string& file, pricingengines& PricingEngines);
 void load_data(const std::string& data, pricingengines& PricingEngines);
+void save_file(const std::string& file, const pricingengines& PricingEngines);
+std::string save_data(const pricingengines& PricingEngines);
 
 void load_file(const std::string& file, todaysmarket& TodaysMarket);
 void load_data(const std::string& data, todaysmarket& TodaysMarket);
+void save_file(const std::string& file, const todaysmarket& TodaysMarket);
+std::string save_data(const todaysmarket& TodaysMarket);
 
 void load_file(const std::string& file, sensitivityanalysis& SensitivityAnalysis);
 void load_data(const std::string& data, sensitivityanalysis& SensitivityAnalysis);
+void save_file(const std::string& file, const sensitivityanalysis& SensitivityAnalysis);
+std::string save_data(const sensitivityanalysis& SensitivityAnalysis);
 
 void load_file(const std::string& file, stresstesting& StressTesting);
 void load_data(const std::string& data, stresstesting& StressTesting);
+void save_file(const std::string& file, const stresstesting& StressTesting);
+std::string save_data(const stresstesting& StressTesting);
 
 void load_file(const std::string& file, ore& ORE);
 void load_data(const std::string& data, ore& ORE);
+void save_file(const std::string& file, const ore& ORE);
+std::string save_data(const ore& ORE);
 
 void load_file(const std::string& file, calendaradjustment& CalendarAdjustments);
 void load_data(const std::string& data, calendaradjustment& CalendarAdjustments);
+void save_file(const std::string& file, const calendaradjustment& CalendarAdjustments);
+std::string save_data(const calendaradjustment& CalendarAdjustments);
 
 void load_file(const std::string& file, currencyConfig& CurrencyConfig);
 void load_data(const std::string& data, currencyConfig& CurrencyConfig);
+void save_file(const std::string& file, const currencyConfig& CurrencyConfig);
+std::string save_data(const currencyConfig& CurrencyConfig);
 
 void load_file(const std::string& file, currencyDefinition& Currency);
 void load_data(const std::string& data, currencyDefinition& Currency);
+void save_file(const std::string& file, const currencyDefinition& Currency);
+std::string save_data(const currencyDefinition& Currency);
 
 void load_file(const std::string& file, counterpartyInformation& CounterpartyInformation);
 void load_data(const std::string& data, counterpartyInformation& CounterpartyInformation);
+void save_file(const std::string& file, const counterpartyInformation& CounterpartyInformation);
+std::string save_data(const counterpartyInformation& CounterpartyInformation);
 
 }
 }

@@ -19,9 +19,8 @@
  */
 #include "ores.ore/xml/exporter.hpp"
 
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep. Must be before rfl/json.hpp
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.ore/domain/CurrencyConfig.hpp"
+#include "ores.ore/domain/domain.hpp"
 #include "ores.ore/domain/currency_mapper.hpp"
 
 namespace ores::ore::xml {
@@ -35,7 +34,7 @@ exporter::export_currency_config(const std::vector<currency>& v) {
     BOOST_LOG_SEV(lg(), trace) << "Currencies: " << v;
 
     const auto mapped = domain::currency_mapper::map(v);
-    std::string r = domain::CurrencyConfig::to_xml(mapped);
+    std::string r = domain::save_data(mapped);
     BOOST_LOG_SEV(lg(), trace) << "XML: " << r;
 
     BOOST_LOG_SEV(lg(), debug) << "Finished exporting. Result: " << r;

@@ -21,9 +21,8 @@
 
 #include <sstream>
 #include "ores.platform/filesystem/file.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep. Must be before rfl/json.hpp
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.ore/domain/CurrencyConfig.hpp"
+#include "ores.ore/domain/domain.hpp"
 #include "ores.ore/domain/currency_mapper.hpp"
 
 namespace ores::ore::xml {
@@ -67,7 +66,8 @@ importer::import_currency_config(const std::filesystem::path& path) {
     const std::string c(file::read_content(path));
     BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
 
-    domain::CurrencyConfig ccy_cfg = domain::CurrencyConfig::from_xml(c);
+    domain::currencyConfig ccy_cfg;
+    domain::load_data(c, ccy_cfg);
     const auto r = domain::currency_mapper::map(ccy_cfg);
 
     BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size()

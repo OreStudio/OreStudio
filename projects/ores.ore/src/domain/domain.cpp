@@ -740,6 +740,188 @@ std::string read_file(const std::string& filePath)
 
 }
 
+#include <string>
+#include <cstdint>
+#include <sstream>
+#include <iomanip>
+#include <fstream>
+
+#ifdef __GNUC__
+#define XSDCPP_MAYBE_UNUSED __attribute__((unused))
+#elif defined(_MSC_VER)
+#define XSDCPP_MAYBE_UNUSED
+#else
+#define XSDCPP_MAYBE_UNUSED
+#endif
+
+namespace xsdcpp {
+
+class XmlWriter {
+public:
+    XmlWriter()
+        : _depth(0)
+        , _tagOpen(false)
+        , _hasContent(false)
+    {
+    }
+
+    void startElement(const char* name)
+    {
+        closeTagIfOpen();
+        _buffer += std::string(_depth * 2, ' ');
+        _buffer += '<';
+        _buffer += name;
+        _tagOpen = true;
+        _hasContent = false;
+        ++_depth;
+    }
+
+    void endElement(const char* name)
+    {
+        --_depth;
+        if (_tagOpen)
+        {
+            _buffer += "/>\n";
+            _tagOpen = false;
+        }
+        else
+        {
+            if (!_hasContent)
+                _buffer += std::string(_depth * 2, ' ');
+            _buffer += "</";
+            _buffer += name;
+            _buffer += ">\n";
+        }
+        _hasContent = false;
+    }
+
+    void writeAttribute(const char* name, const std::string& value)
+    {
+        _buffer += ' ';
+        _buffer += name;
+        _buffer += "=\"";
+        _buffer += escape_xml(value);
+        _buffer += '"';
+    }
+
+    void writeText(const std::string& text)
+    {
+        // Close tag without newline - text follows immediately
+        if (_tagOpen)
+        {
+            _buffer += ">";
+            _tagOpen = false;
+        }
+        _buffer += escape_xml(text);
+        _hasContent = true;
+    }
+
+    std::string str() const
+    {
+        return _buffer;
+    }
+
+private:
+    void closeTagIfOpen()
+    {
+        if (_tagOpen)
+        {
+            _buffer += ">\n";
+            _tagOpen = false;
+        }
+    }
+
+    static std::string escape_xml(const std::string& s)
+    {
+        std::string result;
+        result.reserve(s.size());
+        for (char c : s)
+        {
+            switch (c)
+            {
+            case '<':
+                result += "&lt;";
+                break;
+            case '>':
+                result += "&gt;";
+                break;
+            case '&':
+                result += "&amp;";
+                break;
+            case '"':
+                result += "&quot;";
+                break;
+            case '\'':
+                result += "&apos;";
+                break;
+            default:
+                result += c;
+                break;
+            }
+        }
+        return result;
+    }
+
+    std::string _buffer;
+    int _depth;
+    bool _tagOpen;
+    bool _hasContent;
+};
+
+inline std::string get_string(const std::string& v) { return v; }
+inline std::string get_string(uint64_t v) { return std::to_string(v); }
+inline std::string get_string(int64_t v) { return std::to_string(v); }
+inline std::string get_string(uint32_t v) { return std::to_string(v); }
+inline std::string get_string(int32_t v) { return std::to_string(v); }
+inline std::string get_string(uint16_t v) { return std::to_string(v); }
+inline std::string get_string(int16_t v) { return std::to_string(v); }
+inline std::string get_string(bool v) { return v ? "true" : "false"; }
+
+inline std::string get_string(float v)
+{
+    std::ostringstream ss;
+    ss << std::setprecision(9) << v;
+    return ss.str();
+}
+
+inline std::string get_string(double v)
+{
+    std::ostringstream ss;
+    ss << std::setprecision(17) << v;
+    return ss.str();
+}
+
+inline void write_file(const std::string& filePath, const std::string& content)
+{
+    std::ofstream file;
+    file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+    file.open(filePath);
+    file << content;
+}
+
+template <typename T>
+inline std::string _serialize_list(const T& vec)
+{
+    std::string result;
+    for (size_t i = 0; i < vec.size(); ++i)
+    {
+        if (i > 0) result += ' ';
+        result += get_string(vec[i]);
+    }
+    return result;
+}
+
+}
+
+// XmlWriter implementation
+// Most functionality is in XmlWriter.hpp as inline functions
+
+namespace xsdcpp {
+
+// Placeholder for any future non-inline implementations
+
+}
+
 #include "ores.ore/domain/domain.hpp"
 
 namespace ores {
@@ -9560,6 +9742,8679 @@ xsdcpp::ChildElementInfo _offPeakDailyType_Children[] = {
     {nullptr}
 };
 
+XSDCPP_MAYBE_UNUSED void _serialize_oreTradeType(xsdcpp::XmlWriter& w, const char* name, const domain::oreTradeType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_xsd__string(xsdcpp::XmlWriter& w, const char* name, const xsd::string& v) {
+    w.startElement(name);
+    w.writeText(v);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_envelope_CounterParty_t(xsdcpp::XmlWriter& w, const char* name, const domain::envelope_CounterParty_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_envelope_PortfolioIds_t_PortfolioId_t(xsdcpp::XmlWriter& w, const char* name, const domain::envelope_PortfolioIds_t_PortfolioId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_envelope_PortfolioIds_t(xsdcpp::XmlWriter& w, const char* name, const domain::envelope_PortfolioIds_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.PortfolioId) _serialize_envelope_PortfolioIds_t_PortfolioId_t(w, "PortfolioId", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_envelope_AdditionalFields_t(xsdcpp::XmlWriter& w, const char* name, const domain::envelope_AdditionalFields_t& v) {
+    w.startElement(name);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_envelope(xsdcpp::XmlWriter& w, const char* name, const domain::envelope& v) {
+    w.startElement(name);
+    if (v.CounterParty) _serialize_envelope_CounterParty_t(w, "CounterParty", *v.CounterParty);
+    if (v.PortfolioIds) _serialize_envelope_PortfolioIds_t(w, "PortfolioIds", *v.PortfolioIds);
+    if (v.AdditionalFields) _serialize_envelope_AdditionalFields_t(w, "AdditionalFields", *v.AdditionalFields);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tradeActionType(xsdcpp::XmlWriter& w, const char* name, const domain::tradeActionType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tradeActionOwner(xsdcpp::XmlWriter& w, const char* name, const domain::tradeActionOwner& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_date(xsdcpp::XmlWriter& w, const char* name, const domain::date& v) {
+    w.startElement(name);
+    w.writeText(v);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bool_(xsdcpp::XmlWriter& w, const char* name, const domain::bool_& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_scheduleData_Rules_t_Tenor_t(xsdcpp::XmlWriter& w, const char* name, const domain::scheduleData_Rules_t_Tenor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_calendar(xsdcpp::XmlWriter& w, const char* name, const domain::calendar& v) {
+    w.startElement(name);
+    w.writeText(v);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_businessDayConvention(xsdcpp::XmlWriter& w, const char* name, const domain::businessDayConvention& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dateRule(xsdcpp::XmlWriter& w, const char* name, const domain::dateRule& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bool(xsdcpp::XmlWriter& w, const char* name, bool v) {
+    w.startElement(name);
+    w.writeText(xsdcpp::get_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_scheduleData_Rules_t(xsdcpp::XmlWriter& w, const char* name, const domain::scheduleData_Rules_t& v) {
+    w.startElement(name);
+    _serialize_date(w, "StartDate", v.StartDate);
+    if (v.EndDate) _serialize_date(w, "EndDate", *v.EndDate);
+    if (v.AdjustEndDateToPreviousMonthEnd) _serialize_bool_(w, "AdjustEndDateToPreviousMonthEnd", *v.AdjustEndDateToPreviousMonthEnd);
+    _serialize_scheduleData_Rules_t_Tenor_t(w, "Tenor", v.Tenor);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    _serialize_businessDayConvention(w, "Convention", v.Convention);
+    if (v.TermConvention) _serialize_businessDayConvention(w, "TermConvention", *v.TermConvention);
+    if (v.Rule) _serialize_dateRule(w, "Rule", *v.Rule);
+    if (v.EndOfMonth) _serialize_bool_(w, "EndOfMonth", *v.EndOfMonth);
+    if (v.EndOfMonthConvention) _serialize_businessDayConvention(w, "EndOfMonthConvention", *v.EndOfMonthConvention);
+    if (v.FirstDate) _serialize_date(w, "FirstDate", *v.FirstDate);
+    if (v.LastDate) _serialize_date(w, "LastDate", *v.LastDate);
+    if (v.RemoveFirstDate) _serialize_bool(w, "RemoveFirstDate", *v.RemoveFirstDate);
+    if (v.RemoveLastDate) _serialize_bool(w, "RemoveLastDate", *v.RemoveLastDate);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_scheduleData_Dates_t_Tenor_t(xsdcpp::XmlWriter& w, const char* name, const domain::scheduleData_Dates_t_Tenor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_scheduleData_Dates_t_Dates_t(xsdcpp::XmlWriter& w, const char* name, const domain::scheduleData_Dates_t_Dates_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Date) _serialize_date(w, "Date", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_scheduleData_Dates_t(xsdcpp::XmlWriter& w, const char* name, const domain::scheduleData_Dates_t& v) {
+    w.startElement(name);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    if (v.Convention) _serialize_businessDayConvention(w, "Convention", *v.Convention);
+    if (v.Tenor) _serialize_scheduleData_Dates_t_Tenor_t(w, "Tenor", *v.Tenor);
+    if (v.EndOfMonth) _serialize_bool_(w, "EndOfMonth", *v.EndOfMonth);
+    if (v.IncludeDuplicateDates) _serialize_bool_(w, "IncludeDuplicateDates", *v.IncludeDuplicateDates);
+    _serialize_scheduleData_Dates_t_Dates_t(w, "Dates", v.Dates);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_scheduleData(xsdcpp::XmlWriter& w, const char* name, const domain::scheduleData& v) {
+    w.startElement(name);
+    for (const auto& item : v.Rules) _serialize_scheduleData_Rules_t(w, "Rules", item);
+    for (const auto& item : v.Dates) _serialize_scheduleData_Dates_t(w, "Dates", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tradeAction(xsdcpp::XmlWriter& w, const char* name, const domain::tradeAction& v) {
+    w.startElement(name);
+    _serialize_tradeActionType(w, "Type", v.Type);
+    _serialize_tradeActionOwner(w, "Owner", v.Owner);
+    _serialize_scheduleData(w, "Schedule", v.Schedule);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tradeActions(xsdcpp::XmlWriter& w, const char* name, const domain::tradeActions& v) {
+    w.startElement(name);
+    for (const auto& item : v.TradeAction) _serialize_tradeAction(w, "TradeAction", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_trade(xsdcpp::XmlWriter& w, const char* name, const domain::trade& v) {
+    w.startElement(name);
+    w.writeAttribute("id", (&v)->id);
+    _serialize_oreTradeType(w, "TradeType", v.TradeType);
+    if (v.Envelope) _serialize_envelope(w, "Envelope", *v.Envelope);
+    if (v.TradeActions) _serialize_tradeActions(w, "TradeActions", *v.TradeActions);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_portfolio(xsdcpp::XmlWriter& w, const char* name, const domain::portfolio& v) {
+    w.startElement(name);
+    for (const auto& item : v.Trade) _serialize_trade(w, "Trade", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parameters_Grid_t(xsdcpp::XmlWriter& w, const char* name, const domain::parameters_Grid_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parameters_Calendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::parameters_Calendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dayCounter(xsdcpp::XmlWriter& w, const char* name, const domain::dayCounter& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_sequenceType(xsdcpp::XmlWriter& w, const char* name, const domain::sequenceType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parameters_Scenario_t(xsdcpp::XmlWriter& w, const char* name, const domain::parameters_Scenario_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_discretizationType(xsdcpp::XmlWriter& w, const char* name, const domain::discretizationType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_int64_t(xsdcpp::XmlWriter& w, const char* name, int64_t v) {
+    w.startElement(name);
+    w.writeText(xsdcpp::get_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_uint64_t(xsdcpp::XmlWriter& w, const char* name, uint64_t v) {
+    w.startElement(name);
+    w.writeText(xsdcpp::get_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_SobolBrownianGeneratorOrdering(xsdcpp::XmlWriter& w, const char* name, const domain::SobolBrownianGeneratorOrdering& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_SobolRsgDirectionIntegers(xsdcpp::XmlWriter& w, const char* name, const domain::SobolRsgDirectionIntegers& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parameters_CloseOutLag_t(xsdcpp::XmlWriter& w, const char* name, const domain::parameters_CloseOutLag_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_mporMode(xsdcpp::XmlWriter& w, const char* name, const domain::mporMode& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parameters(xsdcpp::XmlWriter& w, const char* name, const domain::parameters& v) {
+    w.startElement(name);
+    _serialize_parameters_Grid_t(w, "Grid", v.Grid);
+    _serialize_parameters_Calendar_t(w, "Calendar", v.Calendar);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    _serialize_sequenceType(w, "Sequence", v.Sequence);
+    if (v.Scenario) _serialize_parameters_Scenario_t(w, "Scenario", *v.Scenario);
+    if (v.Discretization) _serialize_discretizationType(w, "Discretization", *v.Discretization);
+    _serialize_int64_t(w, "Seed", v.Seed);
+    _serialize_uint64_t(w, "Samples", v.Samples);
+    if (v.Ordering) _serialize_SobolBrownianGeneratorOrdering(w, "Ordering", *v.Ordering);
+    if (v.DirectionIntegers) _serialize_SobolRsgDirectionIntegers(w, "DirectionIntegers", *v.DirectionIntegers);
+    if (v.CloseOutLag) _serialize_parameters_CloseOutLag_t(w, "CloseOutLag", *v.CloseOutLag);
+    if (v.MporMode) _serialize_mporMode(w, "MporMode", *v.MporMode);
+    if (v.TimeStepsPerYear) _serialize_int64_t(w, "TimeStepsPerYear", *v.TimeStepsPerYear);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_currencyCode(xsdcpp::XmlWriter& w, const char* name, const domain::currencyCode& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_Currencies_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_Currencies_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Currency) _serialize_currencyCode(w, "Currency", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_Equities_t_Equity_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_Equities_t_Equity_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_Equities_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_Equities_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Equity) _serialize_crossAssetModel_Equities_t_Equity_t(w, "Equity", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_InflationIndices_t_InflationIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_InflationIndices_t_InflationIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_InflationIndices_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_InflationIndices_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.InflationIndex) _serialize_crossAssetModel_InflationIndices_t_InflationIndex_t(w, "InflationIndex", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_CreditNames_t_CreditName_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_CreditNames_t_CreditName_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_CreditNames_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_CreditNames_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.CreditName) _serialize_crossAssetModel_CreditNames_t_CreditName_t(w, "CreditName", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_Commodities_t_Commodity_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_Commodities_t_Commodity_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_Commodities_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_Commodities_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Commodity) _serialize_crossAssetModel_Commodities_t_Commodity_t(w, "Commodity", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_float(xsdcpp::XmlWriter& w, const char* name, float v) {
+    w.startElement(name);
+    w.writeText(xsdcpp::get_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_measureType(xsdcpp::XmlWriter& w, const char* name, const domain::measureType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_salvagingAlgoType(xsdcpp::XmlWriter& w, const char* name, const domain::salvagingAlgoType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_IntegrationPolicy_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_IntegrationPolicy_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_calibrationTypeType(xsdcpp::XmlWriter& w, const char* name, const domain::calibrationTypeType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityTypeType(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityTypeType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_paramTypeType(xsdcpp::XmlWriter& w, const char* name, const domain::paramTypeType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_Volatility_t_TimeGrid_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_Volatility_t_TimeGrid_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_Volatility_t_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_Volatility_t_InitialValue_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_Volatility_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_Volatility_t& v) {
+    w.startElement(name);
+    _serialize_bool_(w, "Calibrate", v.Calibrate);
+    _serialize_volatilityTypeType(w, "VolatilityType", v.VolatilityType);
+    _serialize_paramTypeType(w, "ParamType", v.ParamType);
+    _serialize_lgm_Volatility_t_TimeGrid_t(w, "TimeGrid", v.TimeGrid);
+    _serialize_lgm_Volatility_t_InitialValue_t(w, "InitialValue", v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_reversionTypeType(xsdcpp::XmlWriter& w, const char* name, const domain::reversionTypeType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_Reversion_t_TimeGrid_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_Reversion_t_TimeGrid_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_Reversion_t_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_Reversion_t_InitialValue_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_Reversion_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_Reversion_t& v) {
+    w.startElement(name);
+    _serialize_bool_(w, "Calibrate", v.Calibrate);
+    _serialize_reversionTypeType(w, "ReversionType", v.ReversionType);
+    _serialize_paramTypeType(w, "ParamType", v.ParamType);
+    _serialize_lgm_Reversion_t_TimeGrid_t(w, "TimeGrid", v.TimeGrid);
+    _serialize_lgm_Reversion_t_InitialValue_t(w, "InitialValue", v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_CalibrationSwaptions_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_CalibrationSwaptions_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_CalibrationSwaptions_t_Terms_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_CalibrationSwaptions_t_Terms_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_CalibrationSwaptions_t_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_CalibrationSwaptions_t_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_CalibrationSwaptions_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_CalibrationSwaptions_t& v) {
+    w.startElement(name);
+    _serialize_lgm_CalibrationSwaptions_t_Expiries_t(w, "Expiries", v.Expiries);
+    _serialize_lgm_CalibrationSwaptions_t_Terms_t(w, "Terms", v.Terms);
+    _serialize_lgm_CalibrationSwaptions_t_Strikes_t(w, "Strikes", v.Strikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_CalibrationCapFloors_t_CapFloor_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_CalibrationCapFloors_t_CapFloor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_CalibrationCapFloors_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_CalibrationCapFloors_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_CalibrationCapFloors_t_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_CalibrationCapFloors_t_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_CalibrationCapFloors_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_CalibrationCapFloors_t& v) {
+    w.startElement(name);
+    _serialize_lgm_CalibrationCapFloors_t_CapFloor_t(w, "CapFloor", v.CapFloor);
+    _serialize_lgm_CalibrationCapFloors_t_Expiries_t(w, "Expiries", v.Expiries);
+    _serialize_lgm_CalibrationCapFloors_t_Strikes_t(w, "Strikes", v.Strikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloor(xsdcpp::XmlWriter& w, const char* name, const domain::capFloor& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_calibrationCpiCapFloor_Maturity_t(xsdcpp::XmlWriter& w, const char* name, const domain::calibrationCpiCapFloor_Maturity_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_calibrationCpiCapFloor_Strike_t(xsdcpp::XmlWriter& w, const char* name, const domain::calibrationCpiCapFloor_Strike_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_calibrationCpiCapFloor(xsdcpp::XmlWriter& w, const char* name, const domain::calibrationCpiCapFloor& v) {
+    w.startElement(name);
+    _serialize_capFloor(w, "Type", v.Type);
+    _serialize_calibrationCpiCapFloor_Maturity_t(w, "Maturity", v.Maturity);
+    _serialize_calibrationCpiCapFloor_Strike_t(w, "Strike", v.Strike);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_calibrationYoYCapFloor_Tenor_t(xsdcpp::XmlWriter& w, const char* name, const domain::calibrationYoYCapFloor_Tenor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_calibrationYoYCapFloor_Strike_t(xsdcpp::XmlWriter& w, const char* name, const domain::calibrationYoYCapFloor_Strike_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_calibrationYoYCapFloor(xsdcpp::XmlWriter& w, const char* name, const domain::calibrationYoYCapFloor& v) {
+    w.startElement(name);
+    _serialize_capFloor(w, "Type", v.Type);
+    _serialize_calibrationYoYCapFloor_Tenor_t(w, "Tenor", v.Tenor);
+    _serialize_calibrationYoYCapFloor_Strike_t(w, "Strike", v.Strike);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_calibrationYoYSwap_Tenor_t(xsdcpp::XmlWriter& w, const char* name, const domain::calibrationYoYSwap_Tenor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_calibrationYoYSwap(xsdcpp::XmlWriter& w, const char* name, const domain::calibrationYoYSwap& v) {
+    w.startElement(name);
+    _serialize_calibrationYoYSwap_Tenor_t(w, "Tenor", v.Tenor);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_calibrationBasket(xsdcpp::XmlWriter& w, const char* name, const domain::calibrationBasket& v) {
+    w.startElement(name);
+    if ((&v)->parameter) w.writeAttribute("parameter", *(&v)->parameter);
+    if (v.CpiCapFloor) _serialize_calibrationCpiCapFloor(w, "CpiCapFloor", *v.CpiCapFloor);
+    if (v.YoYCapFloor) _serialize_calibrationYoYCapFloor(w, "YoYCapFloor", *v.YoYCapFloor);
+    if (v.YoYSwap) _serialize_calibrationYoYSwap(w, "YoYSwap", *v.YoYSwap);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_CalibrationBaskets_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_CalibrationBaskets_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.CalibrationBasket) _serialize_calibrationBasket(w, "CalibrationBasket", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm_ParameterTransformation_t(xsdcpp::XmlWriter& w, const char* name, const domain::lgm_ParameterTransformation_t& v) {
+    w.startElement(name);
+    _serialize_float(w, "ShiftHorizon", v.ShiftHorizon);
+    _serialize_float(w, "Scaling", v.Scaling);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_floatSpreadMappingType(xsdcpp::XmlWriter& w, const char* name, const domain::floatSpreadMappingType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgm(xsdcpp::XmlWriter& w, const char* name, const domain::lgm& v) {
+    w.startElement(name);
+    if ((&v)->ccy) w.writeAttribute("ccy", *(&v)->ccy);
+    if ((&v)->index) w.writeAttribute("index", *(&v)->index);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    if (v.Currency) _serialize_currencyCode(w, "Currency", *v.Currency);
+    _serialize_calibrationTypeType(w, "CalibrationType", v.CalibrationType);
+    _serialize_lgm_Volatility_t(w, "Volatility", v.Volatility);
+    _serialize_lgm_Reversion_t(w, "Reversion", v.Reversion);
+    if (v.CalibrationSwaptions) _serialize_lgm_CalibrationSwaptions_t(w, "CalibrationSwaptions", *v.CalibrationSwaptions);
+    if (v.CalibrationCapFloors) _serialize_lgm_CalibrationCapFloors_t(w, "CalibrationCapFloors", *v.CalibrationCapFloors);
+    if (v.CalibrationBaskets) _serialize_lgm_CalibrationBaskets_t(w, "CalibrationBaskets", *v.CalibrationBaskets);
+    _serialize_lgm_ParameterTransformation_t(w, "ParameterTransformation", v.ParameterTransformation);
+    if (v.FloatSpreadMapping) _serialize_floatSpreadMappingType(w, "FloatSpreadMapping", *v.FloatSpreadMapping);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_Volatility_t_TimeGrid_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_Volatility_t_TimeGrid_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_Volatility_t_InitialValue_t_Sigma_t_Row_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_Volatility_t_InitialValue_t_Sigma_t_Row_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_Volatility_t_InitialValue_t_Sigma_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_Volatility_t_InitialValue_t_Sigma_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Row) _serialize_hw_Volatility_t_InitialValue_t_Sigma_t_Row_t(w, "Row", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_Volatility_t_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_Volatility_t_InitialValue_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Sigma) _serialize_hw_Volatility_t_InitialValue_t_Sigma_t(w, "Sigma", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_Volatility_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_Volatility_t& v) {
+    w.startElement(name);
+    _serialize_bool_(w, "Calibrate", v.Calibrate);
+    if (v.VolatilityType) _serialize_volatilityTypeType(w, "VolatilityType", *v.VolatilityType);
+    _serialize_paramTypeType(w, "ParamType", v.ParamType);
+    _serialize_hw_Volatility_t_TimeGrid_t(w, "TimeGrid", v.TimeGrid);
+    _serialize_hw_Volatility_t_InitialValue_t(w, "InitialValue", v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_Reversion_t_TimeGrid_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_Reversion_t_TimeGrid_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_Reversion_t_InitialValue_t_Kappa_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_Reversion_t_InitialValue_t_Kappa_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_Reversion_t_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_Reversion_t_InitialValue_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Kappa) _serialize_hw_Reversion_t_InitialValue_t_Kappa_t(w, "Kappa", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_Reversion_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_Reversion_t& v) {
+    w.startElement(name);
+    _serialize_bool_(w, "Calibrate", v.Calibrate);
+    if (v.ReversionType) _serialize_reversionTypeType(w, "ReversionType", *v.ReversionType);
+    _serialize_paramTypeType(w, "ParamType", v.ParamType);
+    _serialize_hw_Reversion_t_TimeGrid_t(w, "TimeGrid", v.TimeGrid);
+    _serialize_hw_Reversion_t_InitialValue_t(w, "InitialValue", v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_PCALoadings_t_Loadings_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_PCALoadings_t_Loadings_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_PCALoadings_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_PCALoadings_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Loadings) _serialize_hw_PCALoadings_t_Loadings_t(w, "Loadings", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityParameter_TimeGrid_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityParameter_TimeGrid_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityParameter_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityParameter_InitialValue_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityParameter(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityParameter& v) {
+    w.startElement(name);
+    if (v.VolatilityType) _serialize_volatilityTypeType(w, "VolatilityType", *v.VolatilityType);
+    _serialize_bool_(w, "Calibrate", v.Calibrate);
+    _serialize_paramTypeType(w, "ParamType", v.ParamType);
+    if (v.TimeGrid) _serialize_volatilityParameter_TimeGrid_t(w, "TimeGrid", *v.TimeGrid);
+    _serialize_volatilityParameter_InitialValue_t(w, "InitialValue", v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_PCASigmaRatios_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_PCASigmaRatios_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_CalibrationSwaptions_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_CalibrationSwaptions_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_CalibrationSwaptions_t_Terms_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_CalibrationSwaptions_t_Terms_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_CalibrationSwaptions_t_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_CalibrationSwaptions_t_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw_CalibrationSwaptions_t(xsdcpp::XmlWriter& w, const char* name, const domain::hw_CalibrationSwaptions_t& v) {
+    w.startElement(name);
+    _serialize_hw_CalibrationSwaptions_t_Expiries_t(w, "Expiries", v.Expiries);
+    _serialize_hw_CalibrationSwaptions_t_Terms_t(w, "Terms", v.Terms);
+    _serialize_hw_CalibrationSwaptions_t_Strikes_t(w, "Strikes", v.Strikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_hw(xsdcpp::XmlWriter& w, const char* name, const domain::hw& v) {
+    w.startElement(name);
+    if ((&v)->ccy) w.writeAttribute("ccy", *(&v)->ccy);
+    if ((&v)->index) w.writeAttribute("index", *(&v)->index);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    if (v.Currency) _serialize_currencyCode(w, "Currency", *v.Currency);
+    _serialize_calibrationTypeType(w, "CalibrationType", v.CalibrationType);
+    if (v.Volatility) _serialize_hw_Volatility_t(w, "Volatility", *v.Volatility);
+    _serialize_hw_Reversion_t(w, "Reversion", v.Reversion);
+    if (v.PCALoadings) _serialize_hw_PCALoadings_t(w, "PCALoadings", *v.PCALoadings);
+    if (v.PCASigma0) _serialize_volatilityParameter(w, "PCASigma0", *v.PCASigma0);
+    if (v.PCASigmaRatios) _serialize_hw_PCASigmaRatios_t(w, "PCASigmaRatios", *v.PCASigmaRatios);
+    if (v.CalibrationSwaptions) _serialize_hw_CalibrationSwaptions_t(w, "CalibrationSwaptions", *v.CalibrationSwaptions);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_InterestRateModels_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_InterestRateModels_t& v) {
+    w.startElement(name);
+    if (v.LGM) _serialize_lgm(w, "LGM", *v.LGM);
+    if (v.HWModel) _serialize_hw(w, "HWModel", *v.HWModel);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyLGM_CalibrationType_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyLGM_CalibrationType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyLGM_Sigma_t_ParamType_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyLGM_Sigma_t_ParamType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyLGM_Sigma_t_TimeGrid_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyLGM_Sigma_t_TimeGrid_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyLGM_Sigma_t_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyLGM_Sigma_t_InitialValue_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyLGM_Sigma_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyLGM_Sigma_t& v) {
+    w.startElement(name);
+    _serialize_bool_(w, "Calibrate", v.Calibrate);
+    _serialize_crossCurrencyLGM_Sigma_t_ParamType_t(w, "ParamType", v.ParamType);
+    _serialize_crossCurrencyLGM_Sigma_t_TimeGrid_t(w, "TimeGrid", v.TimeGrid);
+    _serialize_crossCurrencyLGM_Sigma_t_InitialValue_t(w, "InitialValue", v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyLGM_CalibrationOptions_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyLGM_CalibrationOptions_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyLGM_CalibrationOptions_t_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyLGM_CalibrationOptions_t_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyLGM_CalibrationOptions_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyLGM_CalibrationOptions_t& v) {
+    w.startElement(name);
+    if (v.Expiries) _serialize_crossCurrencyLGM_CalibrationOptions_t_Expiries_t(w, "Expiries", *v.Expiries);
+    if (v.Strikes) _serialize_crossCurrencyLGM_CalibrationOptions_t_Strikes_t(w, "Strikes", *v.Strikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyLGM(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyLGM& v) {
+    w.startElement(name);
+    w.writeAttribute("foreignCcy", (&v)->foreignCcy);
+    _serialize_currencyCode(w, "DomesticCcy", v.DomesticCcy);
+    _serialize_crossCurrencyLGM_CalibrationType_t(w, "CalibrationType", v.CalibrationType);
+    _serialize_crossCurrencyLGM_Sigma_t(w, "Sigma", v.Sigma);
+    if (v.CalibrationOptions) _serialize_crossCurrencyLGM_CalibrationOptions_t(w, "CalibrationOptions", *v.CalibrationOptions);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_ForeignExchangeModels_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_ForeignExchangeModels_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.CrossCcyLGM) _serialize_crossCurrencyLGM(w, "CrossCcyLGM", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetLGM_CalibrationType_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetLGM_CalibrationType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetLGM_Sigma_t_ParamType_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetLGM_Sigma_t_ParamType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetLGM_Sigma_t_TimeGrid_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetLGM_Sigma_t_TimeGrid_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetLGM_Sigma_t_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetLGM_Sigma_t_InitialValue_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetLGM_Sigma_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetLGM_Sigma_t& v) {
+    w.startElement(name);
+    _serialize_bool_(w, "Calibrate", v.Calibrate);
+    _serialize_crossAssetLGM_Sigma_t_ParamType_t(w, "ParamType", v.ParamType);
+    _serialize_crossAssetLGM_Sigma_t_TimeGrid_t(w, "TimeGrid", v.TimeGrid);
+    _serialize_crossAssetLGM_Sigma_t_InitialValue_t(w, "InitialValue", v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetLGM_CalibrationOptions_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetLGM_CalibrationOptions_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetLGM_CalibrationOptions_t_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetLGM_CalibrationOptions_t_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetLGM_CalibrationOptions_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetLGM_CalibrationOptions_t& v) {
+    w.startElement(name);
+    _serialize_crossAssetLGM_CalibrationOptions_t_Expiries_t(w, "Expiries", v.Expiries);
+    _serialize_crossAssetLGM_CalibrationOptions_t_Strikes_t(w, "Strikes", v.Strikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetLGM(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetLGM& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    _serialize_crossAssetLGM_CalibrationType_t(w, "CalibrationType", v.CalibrationType);
+    _serialize_crossAssetLGM_Sigma_t(w, "Sigma", v.Sigma);
+    if (v.CalibrationOptions) _serialize_crossAssetLGM_CalibrationOptions_t(w, "CalibrationOptions", *v.CalibrationOptions);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_EquityModels_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_EquityModels_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.CrossAssetLGM) _serialize_crossAssetLGM(w, "CrossAssetLGM", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_jarrowYildrim_CalibrationBaskets_t(xsdcpp::XmlWriter& w, const char* name, const domain::jarrowYildrim_CalibrationBaskets_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.CalibrationBasket) _serialize_calibrationBasket(w, "CalibrationBasket", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_reversionParameter_TimeGrid_t(xsdcpp::XmlWriter& w, const char* name, const domain::reversionParameter_TimeGrid_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_reversionParameter_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::reversionParameter_InitialValue_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_reversionParameter(xsdcpp::XmlWriter& w, const char* name, const domain::reversionParameter& v) {
+    w.startElement(name);
+    _serialize_reversionTypeType(w, "ReversionType", v.ReversionType);
+    _serialize_bool_(w, "Calibrate", v.Calibrate);
+    _serialize_paramTypeType(w, "ParamType", v.ParamType);
+    if (v.TimeGrid) _serialize_reversionParameter_TimeGrid_t(w, "TimeGrid", *v.TimeGrid);
+    _serialize_reversionParameter_InitialValue_t(w, "InitialValue", v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_lgmReversionTransformation(xsdcpp::XmlWriter& w, const char* name, const domain::lgmReversionTransformation& v) {
+    w.startElement(name);
+    _serialize_float(w, "ShiftHorizon", v.ShiftHorizon);
+    _serialize_float(w, "Scaling", v.Scaling);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_jarrowYildrim_RealRate_t(xsdcpp::XmlWriter& w, const char* name, const domain::jarrowYildrim_RealRate_t& v) {
+    w.startElement(name);
+    _serialize_volatilityParameter(w, "Volatility", v.Volatility);
+    _serialize_reversionParameter(w, "Reversion", v.Reversion);
+    _serialize_lgmReversionTransformation(w, "ParameterTransformation", v.ParameterTransformation);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_jarrowYildrim_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::jarrowYildrim_Index_t& v) {
+    w.startElement(name);
+    _serialize_volatilityParameter(w, "Volatility", v.Volatility);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_double(xsdcpp::XmlWriter& w, const char* name, double v) {
+    w.startElement(name);
+    w.writeText(xsdcpp::get_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_positiveDecimal(xsdcpp::XmlWriter& w, const char* name, const domain::positiveDecimal& v) {
+    _serialize_double(w, name, v);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_boundaryConstraint(xsdcpp::XmlWriter& w, const char* name, const domain::boundaryConstraint& v) {
+    w.startElement(name);
+    w.writeAttribute("parameter", (&v)->parameter);
+    _serialize_float(w, "LowerBound", v.LowerBound);
+    _serialize_float(w, "UpperBound", v.UpperBound);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_calibrationConfiguration_Constraints_t(xsdcpp::XmlWriter& w, const char* name, const domain::calibrationConfiguration_Constraints_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.BoundaryConstraint) _serialize_boundaryConstraint(w, "BoundaryConstraint", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_calibrationConfiguration(xsdcpp::XmlWriter& w, const char* name, const domain::calibrationConfiguration& v) {
+    w.startElement(name);
+    if (v.RmseTolerance) _serialize_positiveDecimal(w, "RmseTolerance", *v.RmseTolerance);
+    if (v.MaxIterations) _serialize_uint64_t(w, "MaxIterations", *v.MaxIterations);
+    if (v.Constraints) _serialize_calibrationConfiguration_Constraints_t(w, "Constraints", *v.Constraints);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_jarrowYildrim(xsdcpp::XmlWriter& w, const char* name, const domain::jarrowYildrim& v) {
+    w.startElement(name);
+    if ((&v)->index) w.writeAttribute("index", *(&v)->index);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    _serialize_calibrationTypeType(w, "CalibrationType", v.CalibrationType);
+    if (v.CalibrationBaskets) _serialize_jarrowYildrim_CalibrationBaskets_t(w, "CalibrationBaskets", *v.CalibrationBaskets);
+    _serialize_jarrowYildrim_RealRate_t(w, "RealRate", v.RealRate);
+    _serialize_jarrowYildrim_Index_t(w, "Index", v.Index);
+    if (v.CalibrationConfiguration) _serialize_calibrationConfiguration(w, "CalibrationConfiguration", *v.CalibrationConfiguration);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dodgsonKainth_CalibrationBaskets_t(xsdcpp::XmlWriter& w, const char* name, const domain::dodgsonKainth_CalibrationBaskets_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.CalibrationBasket) _serialize_calibrationBasket(w, "CalibrationBasket", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dodgsonKainth_Reversion_t_TimeGrid_t(xsdcpp::XmlWriter& w, const char* name, const domain::dodgsonKainth_Reversion_t_TimeGrid_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dodgsonKainth_Reversion_t_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::dodgsonKainth_Reversion_t_InitialValue_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dodgsonKainth_Reversion_t(xsdcpp::XmlWriter& w, const char* name, const domain::dodgsonKainth_Reversion_t& v) {
+    w.startElement(name);
+    _serialize_bool_(w, "Calibrate", v.Calibrate);
+    _serialize_reversionTypeType(w, "ReversionType", v.ReversionType);
+    _serialize_paramTypeType(w, "ParamType", v.ParamType);
+    _serialize_dodgsonKainth_Reversion_t_TimeGrid_t(w, "TimeGrid", v.TimeGrid);
+    _serialize_dodgsonKainth_Reversion_t_InitialValue_t(w, "InitialValue", v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dodgsonKainth_Volatility_t_TimeGrid_t(xsdcpp::XmlWriter& w, const char* name, const domain::dodgsonKainth_Volatility_t_TimeGrid_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dodgsonKainth_Volatility_t_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::dodgsonKainth_Volatility_t_InitialValue_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dodgsonKainth_Volatility_t(xsdcpp::XmlWriter& w, const char* name, const domain::dodgsonKainth_Volatility_t& v) {
+    w.startElement(name);
+    _serialize_bool_(w, "Calibrate", v.Calibrate);
+    _serialize_volatilityTypeType(w, "VolatilityType", v.VolatilityType);
+    _serialize_paramTypeType(w, "ParamType", v.ParamType);
+    _serialize_dodgsonKainth_Volatility_t_TimeGrid_t(w, "TimeGrid", v.TimeGrid);
+    _serialize_dodgsonKainth_Volatility_t_InitialValue_t(w, "InitialValue", v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dodgsonKainth_ParameterTransformation_t(xsdcpp::XmlWriter& w, const char* name, const domain::dodgsonKainth_ParameterTransformation_t& v) {
+    w.startElement(name);
+    _serialize_float(w, "ShiftHorizon", v.ShiftHorizon);
+    _serialize_float(w, "Scaling", v.Scaling);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dodgsonKainth(xsdcpp::XmlWriter& w, const char* name, const domain::dodgsonKainth& v) {
+    w.startElement(name);
+    if ((&v)->index) w.writeAttribute("index", *(&v)->index);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    _serialize_calibrationTypeType(w, "CalibrationType", v.CalibrationType);
+    if (v.CalibrationBaskets) _serialize_dodgsonKainth_CalibrationBaskets_t(w, "CalibrationBaskets", *v.CalibrationBaskets);
+    _serialize_dodgsonKainth_Reversion_t(w, "Reversion", v.Reversion);
+    _serialize_dodgsonKainth_Volatility_t(w, "Volatility", v.Volatility);
+    _serialize_dodgsonKainth_ParameterTransformation_t(w, "ParameterTransformation", v.ParameterTransformation);
+    if (v.CalibrationConfiguration) _serialize_calibrationConfiguration(w, "CalibrationConfiguration", *v.CalibrationConfiguration);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_InflationIndexModels_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_InflationIndexModels_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.LGM) _serialize_lgm(w, "LGM", item);
+    for (const auto& item : v.JarrowYildirim) _serialize_jarrowYildrim(w, "JarrowYildirim", item);
+    for (const auto& item : v.DodgsonKainth) _serialize_dodgsonKainth(w, "DodgsonKainth", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crlgm_Volatility_t_TimeGrid_t(xsdcpp::XmlWriter& w, const char* name, const domain::crlgm_Volatility_t_TimeGrid_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crlgm_Volatility_t_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::crlgm_Volatility_t_InitialValue_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crlgm_Volatility_t(xsdcpp::XmlWriter& w, const char* name, const domain::crlgm_Volatility_t& v) {
+    w.startElement(name);
+    _serialize_bool_(w, "Calibrate", v.Calibrate);
+    _serialize_volatilityTypeType(w, "VolatilityType", v.VolatilityType);
+    _serialize_paramTypeType(w, "ParamType", v.ParamType);
+    _serialize_crlgm_Volatility_t_TimeGrid_t(w, "TimeGrid", v.TimeGrid);
+    _serialize_crlgm_Volatility_t_InitialValue_t(w, "InitialValue", v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crlgm_Reversion_t_TimeGrid_t(xsdcpp::XmlWriter& w, const char* name, const domain::crlgm_Reversion_t_TimeGrid_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crlgm_Reversion_t_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::crlgm_Reversion_t_InitialValue_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crlgm_Reversion_t(xsdcpp::XmlWriter& w, const char* name, const domain::crlgm_Reversion_t& v) {
+    w.startElement(name);
+    _serialize_bool_(w, "Calibrate", v.Calibrate);
+    _serialize_reversionTypeType(w, "ReversionType", v.ReversionType);
+    _serialize_paramTypeType(w, "ParamType", v.ParamType);
+    _serialize_crlgm_Reversion_t_TimeGrid_t(w, "TimeGrid", v.TimeGrid);
+    _serialize_crlgm_Reversion_t_InitialValue_t(w, "InitialValue", v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crlgm_CalibrationCdsOptions_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::crlgm_CalibrationCdsOptions_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crlgm_CalibrationCdsOptions_t_Terms_t(xsdcpp::XmlWriter& w, const char* name, const domain::crlgm_CalibrationCdsOptions_t_Terms_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crlgm_CalibrationCdsOptions_t_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::crlgm_CalibrationCdsOptions_t_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crlgm_CalibrationCdsOptions_t(xsdcpp::XmlWriter& w, const char* name, const domain::crlgm_CalibrationCdsOptions_t& v) {
+    w.startElement(name);
+    _serialize_crlgm_CalibrationCdsOptions_t_Expiries_t(w, "Expiries", v.Expiries);
+    _serialize_crlgm_CalibrationCdsOptions_t_Terms_t(w, "Terms", v.Terms);
+    _serialize_crlgm_CalibrationCdsOptions_t_Strikes_t(w, "Strikes", v.Strikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crlgm_ParameterTransformation_t(xsdcpp::XmlWriter& w, const char* name, const domain::crlgm_ParameterTransformation_t& v) {
+    w.startElement(name);
+    _serialize_float(w, "ShiftHorizon", v.ShiftHorizon);
+    _serialize_float(w, "Scaling", v.Scaling);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crlgm(xsdcpp::XmlWriter& w, const char* name, const domain::crlgm& v) {
+    w.startElement(name);
+    if ((&v)->name) w.writeAttribute("name", *(&v)->name);
+    if (v.Currency) _serialize_currencyCode(w, "Currency", *v.Currency);
+    _serialize_calibrationTypeType(w, "CalibrationType", v.CalibrationType);
+    _serialize_crlgm_Volatility_t(w, "Volatility", v.Volatility);
+    _serialize_crlgm_Reversion_t(w, "Reversion", v.Reversion);
+    if (v.CalibrationCdsOptions) _serialize_crlgm_CalibrationCdsOptions_t(w, "CalibrationCdsOptions", *v.CalibrationCdsOptions);
+    _serialize_crlgm_ParameterTransformation_t(w, "ParameterTransformation", v.ParameterTransformation);
+    if (v.FloatSpreadMapping) _serialize_floatSpreadMappingType(w, "FloatSpreadMapping", *v.FloatSpreadMapping);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cir_CalibrationStrategy_t(xsdcpp::XmlWriter& w, const char* name, const domain::cir_CalibrationStrategy_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cir_CalibrationCdsOptions_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::cir_CalibrationCdsOptions_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cir_CalibrationCdsOptions_t_Terms_t(xsdcpp::XmlWriter& w, const char* name, const domain::cir_CalibrationCdsOptions_t_Terms_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cir_CalibrationCdsOptions_t_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::cir_CalibrationCdsOptions_t_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cir_CalibrationCdsOptions_t(xsdcpp::XmlWriter& w, const char* name, const domain::cir_CalibrationCdsOptions_t& v) {
+    w.startElement(name);
+    _serialize_cir_CalibrationCdsOptions_t_Expiries_t(w, "Expiries", v.Expiries);
+    _serialize_cir_CalibrationCdsOptions_t_Terms_t(w, "Terms", v.Terms);
+    _serialize_cir_CalibrationCdsOptions_t_Strikes_t(w, "Strikes", v.Strikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cir(xsdcpp::XmlWriter& w, const char* name, const domain::cir& v) {
+    w.startElement(name);
+    if (v.Currency) _serialize_currencyCode(w, "Currency", *v.Currency);
+    _serialize_calibrationTypeType(w, "CalibrationType", v.CalibrationType);
+    _serialize_cir_CalibrationStrategy_t(w, "CalibrationStrategy", v.CalibrationStrategy);
+    _serialize_float(w, "StartValue", v.StartValue);
+    _serialize_float(w, "ReversionValue", v.ReversionValue);
+    _serialize_float(w, "LongTermValue", v.LongTermValue);
+    _serialize_float(w, "Volatility", v.Volatility);
+    _serialize_bool_(w, "RelaxedFeller", v.RelaxedFeller);
+    _serialize_float(w, "FellerFactor", v.FellerFactor);
+    _serialize_float(w, "Tolerance", v.Tolerance);
+    _serialize_cir_CalibrationCdsOptions_t(w, "CalibrationCdsOptions", v.CalibrationCdsOptions);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_CreditModels_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_CreditModels_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.LGM) _serialize_crlgm(w, "LGM", item);
+    for (const auto& item : v.CIR) _serialize_cir(w, "CIR", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commoditySchwartz_CalibrationType_t(xsdcpp::XmlWriter& w, const char* name, const domain::commoditySchwartz_CalibrationType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commoditySchwartz_Sigma_t_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::commoditySchwartz_Sigma_t_InitialValue_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commoditySchwartz_Sigma_t(xsdcpp::XmlWriter& w, const char* name, const domain::commoditySchwartz_Sigma_t& v) {
+    w.startElement(name);
+    _serialize_bool_(w, "Calibrate", v.Calibrate);
+    _serialize_commoditySchwartz_Sigma_t_InitialValue_t(w, "InitialValue", v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commoditySchwartz_Kappa_t_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::commoditySchwartz_Kappa_t_InitialValue_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commoditySchwartz_Kappa_t(xsdcpp::XmlWriter& w, const char* name, const domain::commoditySchwartz_Kappa_t& v) {
+    w.startElement(name);
+    _serialize_bool_(w, "Calibrate", v.Calibrate);
+    _serialize_commoditySchwartz_Kappa_t_InitialValue_t(w, "InitialValue", v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commoditySchwartz_Seasonality_t_TimeGrid_t(xsdcpp::XmlWriter& w, const char* name, const domain::commoditySchwartz_Seasonality_t_TimeGrid_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commoditySchwartz_Seasonality_t_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::commoditySchwartz_Seasonality_t_InitialValue_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commoditySchwartz_Seasonality_t(xsdcpp::XmlWriter& w, const char* name, const domain::commoditySchwartz_Seasonality_t& v) {
+    w.startElement(name);
+    if (v.Calibrate) _serialize_bool_(w, "Calibrate", *v.Calibrate);
+    if (v.ParamType) _serialize_paramTypeType(w, "ParamType", *v.ParamType);
+    if (v.TimeGrid) _serialize_commoditySchwartz_Seasonality_t_TimeGrid_t(w, "TimeGrid", *v.TimeGrid);
+    if (v.InitialValue) _serialize_commoditySchwartz_Seasonality_t_InitialValue_t(w, "InitialValue", *v.InitialValue);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commoditySchwartz_CalibrationOptions_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::commoditySchwartz_CalibrationOptions_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commoditySchwartz_CalibrationOptions_t_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::commoditySchwartz_CalibrationOptions_t_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commoditySchwartz_CalibrationOptions_t(xsdcpp::XmlWriter& w, const char* name, const domain::commoditySchwartz_CalibrationOptions_t& v) {
+    w.startElement(name);
+    _serialize_commoditySchwartz_CalibrationOptions_t_Expiries_t(w, "Expiries", v.Expiries);
+    _serialize_commoditySchwartz_CalibrationOptions_t_Strikes_t(w, "Strikes", v.Strikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commoditySchwartz(xsdcpp::XmlWriter& w, const char* name, const domain::commoditySchwartz& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    _serialize_commoditySchwartz_CalibrationType_t(w, "CalibrationType", v.CalibrationType);
+    _serialize_commoditySchwartz_Sigma_t(w, "Sigma", v.Sigma);
+    _serialize_commoditySchwartz_Kappa_t(w, "Kappa", v.Kappa);
+    if (v.Seasonality) _serialize_commoditySchwartz_Seasonality_t(w, "Seasonality", *v.Seasonality);
+    if (v.CalibrationOptions) _serialize_commoditySchwartz_CalibrationOptions_t(w, "CalibrationOptions", *v.CalibrationOptions);
+    if (v.DriftFreeState) _serialize_bool(w, "DriftFreeState", *v.DriftFreeState);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_CommodityModels_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_CommodityModels_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.CommoditySchwartz) _serialize_commoditySchwartz(w, "CommoditySchwartz", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_CreditStates_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_CreditStates_t& v) {
+    w.startElement(name);
+    _serialize_int64_t(w, "NumberOfFactors", v.NumberOfFactors);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlationValue(xsdcpp::XmlWriter& w, const char* name, const domain::correlationValue& v) {
+    _serialize_double(w, name, v);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_InstantaneousCorrelations_t_Correlation_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_InstantaneousCorrelations_t_Correlation_t& v) {
+    w.startElement(name);
+    w.writeAttribute("factor1", (&v)->factor1);
+    w.writeAttribute("factor2", (&v)->factor2);
+    if ((&v)->index1) w.writeAttribute("index1", *(&v)->index1);
+    if ((&v)->index2) w.writeAttribute("index2", *(&v)->index2);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel_InstantaneousCorrelations_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel_InstantaneousCorrelations_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Correlation) _serialize_crossAssetModel_InstantaneousCorrelations_t_Correlation_t(w, "Correlation", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossAssetModel(xsdcpp::XmlWriter& w, const char* name, const domain::crossAssetModel& v) {
+    w.startElement(name);
+    _serialize_currencyCode(w, "DomesticCcy", v.DomesticCcy);
+    _serialize_crossAssetModel_Currencies_t(w, "Currencies", v.Currencies);
+    if (v.Equities) _serialize_crossAssetModel_Equities_t(w, "Equities", *v.Equities);
+    if (v.InflationIndices) _serialize_crossAssetModel_InflationIndices_t(w, "InflationIndices", *v.InflationIndices);
+    if (v.CreditNames) _serialize_crossAssetModel_CreditNames_t(w, "CreditNames", *v.CreditNames);
+    if (v.Commodities) _serialize_crossAssetModel_Commodities_t(w, "Commodities", *v.Commodities);
+    _serialize_float(w, "BootstrapTolerance", v.BootstrapTolerance);
+    if (v.Measure) _serialize_measureType(w, "Measure", *v.Measure);
+    if (v.Discretization) _serialize_discretizationType(w, "Discretization", *v.Discretization);
+    if (v.SalvagingAlgorithm) _serialize_salvagingAlgoType(w, "SalvagingAlgorithm", *v.SalvagingAlgorithm);
+    if (v.IntegrationPolicy) _serialize_crossAssetModel_IntegrationPolicy_t(w, "IntegrationPolicy", *v.IntegrationPolicy);
+    if (v.PiecewiseIntegration) _serialize_bool_(w, "PiecewiseIntegration", *v.PiecewiseIntegration);
+    _serialize_crossAssetModel_InterestRateModels_t(w, "InterestRateModels", v.InterestRateModels);
+    if (v.ForeignExchangeModels) _serialize_crossAssetModel_ForeignExchangeModels_t(w, "ForeignExchangeModels", *v.ForeignExchangeModels);
+    if (v.EquityModels) _serialize_crossAssetModel_EquityModels_t(w, "EquityModels", *v.EquityModels);
+    if (v.InflationIndexModels) _serialize_crossAssetModel_InflationIndexModels_t(w, "InflationIndexModels", *v.InflationIndexModels);
+    if (v.CreditModels) _serialize_crossAssetModel_CreditModels_t(w, "CreditModels", *v.CreditModels);
+    if (v.CommodityModels) _serialize_crossAssetModel_CommodityModels_t(w, "CommodityModels", *v.CommodityModels);
+    if (v.CreditStates) _serialize_crossAssetModel_CreditStates_t(w, "CreditStates", *v.CreditStates);
+    if (v.InstantaneousCorrelations) _serialize_crossAssetModel_InstantaneousCorrelations_t(w, "InstantaneousCorrelations", *v.InstantaneousCorrelations);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Currencies_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Currencies_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Currency) _serialize_currencyCode(w, "Currency", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YieldCurves_t_Configuration_t_Tenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YieldCurves_t_Configuration_t_Tenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_ycInterpolation(xsdcpp::XmlWriter& w, const char* name, const domain::ycInterpolation& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_ycExtrapolation(xsdcpp::XmlWriter& w, const char* name, const domain::ycExtrapolation& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YieldCurves_t_Configuration_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YieldCurves_t_Configuration_t& v) {
+    w.startElement(name);
+    if ((&v)->curve) w.writeAttribute("curve", *(&v)->curve);
+    _serialize_market_YieldCurves_t_Configuration_t_Tenors_t(w, "Tenors", v.Tenors);
+    if (v.Interpolation) _serialize_ycInterpolation(w, "Interpolation", *v.Interpolation);
+    if (v.Extrapolation) _serialize_ycExtrapolation(w, "Extrapolation", *v.Extrapolation);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YieldCurves_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YieldCurves_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Configuration) _serialize_market_YieldCurves_t_Configuration_t(w, "Configuration", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_currencyPair(xsdcpp::XmlWriter& w, const char* name, const domain::currencyPair& v) {
+    w.startElement(name);
+    w.writeText(v);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_FxRates_t_CurrencyPairs_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_FxRates_t_CurrencyPairs_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.CurrencyPair) _serialize_currencyPair(w, "CurrencyPair", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_FxRates_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_FxRates_t& v) {
+    w.startElement(name);
+    if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
+    if (v.CurrencyPairs) _serialize_market_FxRates_t_CurrencyPairs_t(w, "CurrencyPairs", *v.CurrencyPairs);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_indexNameType(xsdcpp::XmlWriter& w, const char* name, const domain::indexNameType& v) {
+    w.startElement(name);
+    w.writeText(v);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Indices_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Indices_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Index) _serialize_indexNameType(w, "Index", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_SwapIndices_t_SwapIndex_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwapIndices_t_SwapIndex_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_SwapIndices_t_SwapIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwapIndices_t_SwapIndex_t& v) {
+    w.startElement(name);
+    _serialize_market_SwapIndices_t_SwapIndex_t_Name_t(w, "Name", v.Name);
+    if (v.ForwardingIndex) _serialize_indexNameType(w, "ForwardingIndex", *v.ForwardingIndex);
+    _serialize_indexNameType(w, "DiscountingIndex", v.DiscountingIndex);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_SwapIndices_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwapIndices_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.SwapIndex) _serialize_market_SwapIndices_t_SwapIndex_t(w, "SwapIndex", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_DefaultCurves_t_Names_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_DefaultCurves_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_DefaultCurves_t_Names_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_DefaultCurves_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name) _serialize_market_DefaultCurves_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_DefaultCurves_t_Tenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_DefaultCurves_t_Tenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_DefaultCurves_t_DayCounters_t_DayCounter_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_DefaultCurves_t_DayCounters_t_DayCounter_t& v) {
+    w.startElement(name);
+    if ((&v)->name) w.writeAttribute("name", *(&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_DefaultCurves_t_DayCounters_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_DefaultCurves_t_DayCounters_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.DayCounter) _serialize_market_DefaultCurves_t_DayCounters_t_DayCounter_t(w, "DayCounter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_DefaultCurves_t_Calendars_t_Calendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_DefaultCurves_t_Calendars_t_Calendar_t& v) {
+    w.startElement(name);
+    if ((&v)->name) w.writeAttribute("name", *(&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_DefaultCurves_t_Calendars_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_DefaultCurves_t_Calendars_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Calendar) _serialize_market_DefaultCurves_t_Calendars_t_Calendar_t(w, "Calendar", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurveExtrapolation(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurveExtrapolation& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_DefaultCurves_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_DefaultCurves_t& v) {
+    w.startElement(name);
+    _serialize_market_DefaultCurves_t_Names_t(w, "Names", v.Names);
+    _serialize_market_DefaultCurves_t_Tenors_t(w, "Tenors", v.Tenors);
+    if (v.SimulateSurvivalProbabilities) _serialize_bool(w, "SimulateSurvivalProbabilities", *v.SimulateSurvivalProbabilities);
+    if (v.SimulateRecoveryRates) _serialize_bool(w, "SimulateRecoveryRates", *v.SimulateRecoveryRates);
+    if (v.DayCounters) _serialize_market_DefaultCurves_t_DayCounters_t(w, "DayCounters", *v.DayCounters);
+    if (v.Calendars) _serialize_market_DefaultCurves_t_Calendars_t(w, "Calendars", *v.Calendars);
+    if (v.Extrapolation) _serialize_defaultCurveExtrapolation(w, "Extrapolation", *v.Extrapolation);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Equities_t_Names_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Equities_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Equities_t_Names_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Equities_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name) _serialize_market_Equities_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Equities_t_DividendTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Equities_t_DividendTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Equities_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Equities_t& v) {
+    w.startElement(name);
+    if (v.SimulateEquityForecastCurve) _serialize_bool_(w, "SimulateEquityForecastCurve", *v.SimulateEquityForecastCurve);
+    if (v.SimulateDividendYield) _serialize_bool_(w, "SimulateDividendYield", *v.SimulateDividendYield);
+    _serialize_market_Equities_t_Names_t(w, "Names", v.Names);
+    _serialize_market_Equities_t_DividendTenors_t(w, "DividendTenors", v.DividendTenors);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_timeDecayType(xsdcpp::XmlWriter& w, const char* name, const domain::timeDecayType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_SwaptionVolatilities_t_Keys_t_Key_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwaptionVolatilities_t_Keys_t_Key_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_SwaptionVolatilities_t_Keys_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwaptionVolatilities_t_Keys_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Key) _serialize_market_SwaptionVolatilities_t_Keys_t_Key_t(w, "Key", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_SwaptionVolatilities_t_Currencies_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwaptionVolatilities_t_Currencies_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Currency) _serialize_currencyCode(w, "Currency", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_SwaptionVolatilities_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwaptionVolatilities_t_Expiries_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    if ((&v)->ccy) w.writeAttribute("ccy", *(&v)->ccy);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_SwaptionVolatilities_t_Terms_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwaptionVolatilities_t_Terms_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    if ((&v)->ccy) w.writeAttribute("ccy", *(&v)->ccy);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_SwaptionVolatilities_t_StrikeSpreads_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwaptionVolatilities_t_StrikeSpreads_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    if ((&v)->ccy) w.writeAttribute("ccy", *(&v)->ccy);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_SwaptionVolatilities_t_DayCounters_t_DayCounter_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwaptionVolatilities_t_DayCounters_t_DayCounter_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    if ((&v)->ccy) w.writeAttribute("ccy", *(&v)->ccy);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_SwaptionVolatilities_t_DayCounters_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwaptionVolatilities_t_DayCounters_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.DayCounter) _serialize_market_SwaptionVolatilities_t_DayCounters_t_DayCounter_t(w, "DayCounter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_SwaptionVolatilities_t_SmileDynamics_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwaptionVolatilities_t_SmileDynamics_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_SwaptionVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_SwaptionVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
+    _serialize_timeDecayType(w, "ReactionToTimeDecay", v.ReactionToTimeDecay);
+    if (v.Keys) _serialize_market_SwaptionVolatilities_t_Keys_t(w, "Keys", *v.Keys);
+    if (v.Currencies) _serialize_market_SwaptionVolatilities_t_Currencies_t(w, "Currencies", *v.Currencies);
+    _serialize_market_SwaptionVolatilities_t_Expiries_t(w, "Expiries", v.Expiries);
+    _serialize_market_SwaptionVolatilities_t_Terms_t(w, "Terms", v.Terms);
+    if (v.SimulateATMOnly) _serialize_bool(w, "SimulateATMOnly", *v.SimulateATMOnly);
+    for (const auto& item : v.StrikeSpreads) _serialize_market_SwaptionVolatilities_t_StrikeSpreads_t(w, "StrikeSpreads", item);
+    if (v.DayCounters) _serialize_market_SwaptionVolatilities_t_DayCounters_t(w, "DayCounters", *v.DayCounters);
+    for (const auto& item : v.SmileDynamics) _serialize_market_SwaptionVolatilities_t_SmileDynamics_t(w, "SmileDynamics", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YieldVolatilities_t_Names_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YieldVolatilities_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YieldVolatilities_t_Names_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YieldVolatilities_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name) _serialize_market_YieldVolatilities_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YieldVolatilities_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YieldVolatilities_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YieldVolatilities_t_Terms_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YieldVolatilities_t_Terms_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YieldVolatilities_t_Cube_t_StrikeSpreads_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YieldVolatilities_t_Cube_t_StrikeSpreads_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YieldVolatilities_t_Cube_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YieldVolatilities_t_Cube_t& v) {
+    w.startElement(name);
+    if (v.StrikeSpreads) _serialize_market_YieldVolatilities_t_Cube_t_StrikeSpreads_t(w, "StrikeSpreads", *v.StrikeSpreads);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YieldVolatilities_t_DayCounters_t_DayCounter_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YieldVolatilities_t_DayCounters_t_DayCounter_t& v) {
+    w.startElement(name);
+    if ((&v)->ccy) w.writeAttribute("ccy", *(&v)->ccy);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YieldVolatilities_t_DayCounters_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YieldVolatilities_t_DayCounters_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.DayCounter) _serialize_market_YieldVolatilities_t_DayCounters_t_DayCounter_t(w, "DayCounter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YieldVolatilities_t_SmileDynamics_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YieldVolatilities_t_SmileDynamics_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YieldVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YieldVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
+    _serialize_timeDecayType(w, "ReactionToTimeDecay", v.ReactionToTimeDecay);
+    _serialize_market_YieldVolatilities_t_Names_t(w, "Names", v.Names);
+    _serialize_market_YieldVolatilities_t_Expiries_t(w, "Expiries", v.Expiries);
+    _serialize_market_YieldVolatilities_t_Terms_t(w, "Terms", v.Terms);
+    if (v.SimulateATMOnly) _serialize_bool(w, "SimulateATMOnly", *v.SimulateATMOnly);
+    if (v.Cube) _serialize_market_YieldVolatilities_t_Cube_t(w, "Cube", *v.Cube);
+    if (v.DayCounters) _serialize_market_YieldVolatilities_t_DayCounters_t(w, "DayCounters", *v.DayCounters);
+    for (const auto& item : v.SmileDynamics) _serialize_market_YieldVolatilities_t_SmileDynamics_t(w, "SmileDynamics", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CapFloorVolatilities_t_Keys_t_Key_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CapFloorVolatilities_t_Keys_t_Key_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CapFloorVolatilities_t_Keys_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CapFloorVolatilities_t_Keys_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Key) _serialize_market_CapFloorVolatilities_t_Keys_t_Key_t(w, "Key", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CapFloorVolatilities_t_Currencies_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CapFloorVolatilities_t_Currencies_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Currency) _serialize_currencyCode(w, "Currency", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CapFloorVolatilities_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CapFloorVolatilities_t_Expiries_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    if ((&v)->ccy) w.writeAttribute("ccy", *(&v)->ccy);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CapFloorVolatilities_t_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CapFloorVolatilities_t_Strikes_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    if ((&v)->ccy) w.writeAttribute("ccy", *(&v)->ccy);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CapFloorVolatilities_t_DayCounters_t_DayCounter_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CapFloorVolatilities_t_DayCounters_t_DayCounter_t& v) {
+    w.startElement(name);
+    if ((&v)->ccy) w.writeAttribute("ccy", *(&v)->ccy);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CapFloorVolatilities_t_DayCounters_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CapFloorVolatilities_t_DayCounters_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.DayCounter) _serialize_market_CapFloorVolatilities_t_DayCounters_t_DayCounter_t(w, "DayCounter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CapFloorVolatilities_t_SmileDynamics_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CapFloorVolatilities_t_SmileDynamics_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CapFloorVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CapFloorVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
+    _serialize_timeDecayType(w, "ReactionToTimeDecay", v.ReactionToTimeDecay);
+    if (v.Keys) _serialize_market_CapFloorVolatilities_t_Keys_t(w, "Keys", *v.Keys);
+    if (v.Currencies) _serialize_market_CapFloorVolatilities_t_Currencies_t(w, "Currencies", *v.Currencies);
+    for (const auto& item : v.Expiries) _serialize_market_CapFloorVolatilities_t_Expiries_t(w, "Expiries", item);
+    for (const auto& item : v.Strikes) _serialize_market_CapFloorVolatilities_t_Strikes_t(w, "Strikes", item);
+    if (v.DayCounters) _serialize_market_CapFloorVolatilities_t_DayCounters_t(w, "DayCounters", *v.DayCounters);
+    if (v.AdjustOptionletPillars) _serialize_bool_(w, "AdjustOptionletPillars", *v.AdjustOptionletPillars);
+    if (v.UseCapAtm) _serialize_bool_(w, "UseCapAtm", *v.UseCapAtm);
+    for (const auto& item : v.SmileDynamics) _serialize_market_CapFloorVolatilities_t_SmileDynamics_t(w, "SmileDynamics", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CDSVolatilities_t_Names_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CDSVolatilities_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CDSVolatilities_t_Names_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CDSVolatilities_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name) _serialize_market_CDSVolatilities_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CDSVolatilities_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CDSVolatilities_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CDSVolatilities_t_SmileDynamics_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CDSVolatilities_t_SmileDynamics_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CDSVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CDSVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
+    _serialize_timeDecayType(w, "ReactionToTimeDecay", v.ReactionToTimeDecay);
+    _serialize_market_CDSVolatilities_t_Names_t(w, "Names", v.Names);
+    _serialize_market_CDSVolatilities_t_Expiries_t(w, "Expiries", v.Expiries);
+    for (const auto& item : v.SmileDynamics) _serialize_market_CDSVolatilities_t_SmileDynamics_t(w, "SmileDynamics", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_FxVolatilities_t_CurrencyPairs_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_FxVolatilities_t_CurrencyPairs_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.CurrencyPair) _serialize_currencyPair(w, "CurrencyPair", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_FxVolatilities_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_FxVolatilities_t_Expiries_t& v) {
+    w.startElement(name);
+    if ((&v)->ccyPair) w.writeAttribute("ccyPair", *(&v)->ccyPair);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_FxVolatilities_t_Surface_t_Moneyness_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_FxVolatilities_t_Surface_t_Moneyness_t& v) {
+    w.startElement(name);
+    if ((&v)->ccyPair) w.writeAttribute("ccyPair", *(&v)->ccyPair);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_FxVolatilities_t_Surface_t_StandardDeviations_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_FxVolatilities_t_Surface_t_StandardDeviations_t& v) {
+    w.startElement(name);
+    if ((&v)->ccyPair) w.writeAttribute("ccyPair", *(&v)->ccyPair);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_FxVolatilities_t_Surface_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_FxVolatilities_t_Surface_t& v) {
+    w.startElement(name);
+    if (v.Moneyness) _serialize_market_FxVolatilities_t_Surface_t_Moneyness_t(w, "Moneyness", *v.Moneyness);
+    if (v.StandardDeviations) _serialize_market_FxVolatilities_t_Surface_t_StandardDeviations_t(w, "StandardDeviations", *v.StandardDeviations);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_FxVolatilities_t_DayCounters_t_DayCounter_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_FxVolatilities_t_DayCounters_t_DayCounter_t& v) {
+    w.startElement(name);
+    if ((&v)->ccyPair) w.writeAttribute("ccyPair", *(&v)->ccyPair);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_FxVolatilities_t_DayCounters_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_FxVolatilities_t_DayCounters_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.DayCounter) _serialize_market_FxVolatilities_t_DayCounters_t_DayCounter_t(w, "DayCounter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_FxVolatilities_t_SmileDynamics_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_FxVolatilities_t_SmileDynamics_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_FxVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_FxVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
+    if (v.ReactionToTimeDecay) _serialize_timeDecayType(w, "ReactionToTimeDecay", *v.ReactionToTimeDecay);
+    if (v.CurrencyPairs) _serialize_market_FxVolatilities_t_CurrencyPairs_t(w, "CurrencyPairs", *v.CurrencyPairs);
+    for (const auto& item : v.Expiries) _serialize_market_FxVolatilities_t_Expiries_t(w, "Expiries", item);
+    if (v.SimulateATMOnly) _serialize_bool(w, "SimulateATMOnly", *v.SimulateATMOnly);
+    if (v.Surface) _serialize_market_FxVolatilities_t_Surface_t(w, "Surface", *v.Surface);
+    if (v.DayCounters) _serialize_market_FxVolatilities_t_DayCounters_t(w, "DayCounters", *v.DayCounters);
+    for (const auto& item : v.SmileDynamics) _serialize_market_FxVolatilities_t_SmileDynamics_t(w, "SmileDynamics", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_EquityVolatilities_t_Names_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_EquityVolatilities_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_EquityVolatilities_t_Names_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_EquityVolatilities_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name) _serialize_market_EquityVolatilities_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_EquityVolatilities_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_EquityVolatilities_t_Expiries_t& v) {
+    w.startElement(name);
+    if ((&v)->name) w.writeAttribute("name", *(&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_EquityVolatilities_t_Surface_t_Moneyness_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_EquityVolatilities_t_Surface_t_Moneyness_t& v) {
+    w.startElement(name);
+    if ((&v)->name) w.writeAttribute("name", *(&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_EquityVolatilities_t_Surface_t_StandardDeviations_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_EquityVolatilities_t_Surface_t_StandardDeviations_t& v) {
+    w.startElement(name);
+    if ((&v)->name) w.writeAttribute("name", *(&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_EquityVolatilities_t_Surface_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_EquityVolatilities_t_Surface_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Moneyness) _serialize_market_EquityVolatilities_t_Surface_t_Moneyness_t(w, "Moneyness", item);
+    for (const auto& item : v.StandardDeviations) _serialize_market_EquityVolatilities_t_Surface_t_StandardDeviations_t(w, "StandardDeviations", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_EquityVolatilities_t_DayCounters_t_DayCounter_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_EquityVolatilities_t_DayCounters_t_DayCounter_t& v) {
+    w.startElement(name);
+    if ((&v)->name) w.writeAttribute("name", *(&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_EquityVolatilities_t_DayCounters_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_EquityVolatilities_t_DayCounters_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.DayCounter) _serialize_market_EquityVolatilities_t_DayCounters_t_DayCounter_t(w, "DayCounter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_EquityVolatilities_t_SmileDynamics_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_EquityVolatilities_t_SmileDynamics_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_EquityVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_EquityVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
+    _serialize_timeDecayType(w, "ReactionToTimeDecay", v.ReactionToTimeDecay);
+    _serialize_market_EquityVolatilities_t_Names_t(w, "Names", v.Names);
+    for (const auto& item : v.Expiries) _serialize_market_EquityVolatilities_t_Expiries_t(w, "Expiries", item);
+    if (v.SimulateATMOnly) _serialize_bool(w, "SimulateATMOnly", *v.SimulateATMOnly);
+    if (v.Surface) _serialize_market_EquityVolatilities_t_Surface_t(w, "Surface", *v.Surface);
+    if (v.DayCounters) _serialize_market_EquityVolatilities_t_DayCounters_t(w, "DayCounters", *v.DayCounters);
+    for (const auto& item : v.SmileDynamics) _serialize_market_EquityVolatilities_t_SmileDynamics_t(w, "SmileDynamics", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BenchmarkCurves_t_BenchmarkCurve_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_BenchmarkCurves_t_BenchmarkCurve_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BenchmarkCurves_t_BenchmarkCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_BenchmarkCurves_t_BenchmarkCurve_t& v) {
+    w.startElement(name);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    _serialize_market_BenchmarkCurves_t_BenchmarkCurve_t_Name_t(w, "Name", v.Name);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BenchmarkCurves_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_BenchmarkCurves_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.BenchmarkCurve) _serialize_market_BenchmarkCurves_t_BenchmarkCurve_t(w, "BenchmarkCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Securities_t_Names_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Securities_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Securities_t_Names_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Securities_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name) _serialize_market_Securities_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Securities_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Securities_t& v) {
+    w.startElement(name);
+    if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
+    if (v.Names) _serialize_market_Securities_t_Names_t(w, "Names", *v.Names);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CPRs_t_Names_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CPRs_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CPRs_t_Names_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CPRs_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name) _serialize_market_CPRs_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CPRs_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CPRs_t& v) {
+    w.startElement(name);
+    if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
+    if (v.Names) _serialize_market_CPRs_t_Names_t(w, "Names", *v.Names);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CpiIndices_t_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CpiIndices_t_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CpiIndices_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CpiIndices_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Index) _serialize_market_CpiIndices_t_Index_t(w, "Index", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_ZeroInflationIndexCurves_t_Names_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_ZeroInflationIndexCurves_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_ZeroInflationIndexCurves_t_Names_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_ZeroInflationIndexCurves_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name) _serialize_market_ZeroInflationIndexCurves_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_ZeroInflationIndexCurves_t_Tenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_ZeroInflationIndexCurves_t_Tenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_ZeroInflationIndexCurves_t_DayCounters_t_DayCounter_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_ZeroInflationIndexCurves_t_DayCounters_t_DayCounter_t& v) {
+    w.startElement(name);
+    if ((&v)->name) w.writeAttribute("name", *(&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_ZeroInflationIndexCurves_t_DayCounters_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_ZeroInflationIndexCurves_t_DayCounters_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.DayCounter) _serialize_market_ZeroInflationIndexCurves_t_DayCounters_t_DayCounter_t(w, "DayCounter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_ZeroInflationIndexCurves_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_ZeroInflationIndexCurves_t& v) {
+    w.startElement(name);
+    _serialize_market_ZeroInflationIndexCurves_t_Names_t(w, "Names", v.Names);
+    _serialize_market_ZeroInflationIndexCurves_t_Tenors_t(w, "Tenors", v.Tenors);
+    if (v.DayCounters) _serialize_market_ZeroInflationIndexCurves_t_DayCounters_t(w, "DayCounters", *v.DayCounters);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YYInflationIndexCurves_t_Names_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YYInflationIndexCurves_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YYInflationIndexCurves_t_Names_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YYInflationIndexCurves_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name) _serialize_market_YYInflationIndexCurves_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YYInflationIndexCurves_t_Tenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YYInflationIndexCurves_t_Tenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YYInflationIndexCurves_t_DayCounters_t_DayCounter_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YYInflationIndexCurves_t_DayCounters_t_DayCounter_t& v) {
+    w.startElement(name);
+    if ((&v)->name) w.writeAttribute("name", *(&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YYInflationIndexCurves_t_DayCounters_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YYInflationIndexCurves_t_DayCounters_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.DayCounter) _serialize_market_YYInflationIndexCurves_t_DayCounters_t_DayCounter_t(w, "DayCounter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YYInflationIndexCurves_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YYInflationIndexCurves_t& v) {
+    w.startElement(name);
+    _serialize_market_YYInflationIndexCurves_t_Names_t(w, "Names", v.Names);
+    _serialize_market_YYInflationIndexCurves_t_Tenors_t(w, "Tenors", v.Tenors);
+    if (v.DayCounters) _serialize_market_YYInflationIndexCurves_t_DayCounters_t(w, "DayCounters", *v.DayCounters);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CPICapFloorVolatilities_t_Names_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CPICapFloorVolatilities_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CPICapFloorVolatilities_t_Names_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CPICapFloorVolatilities_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name) _serialize_market_CPICapFloorVolatilities_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CPICapFloorVolatilities_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CPICapFloorVolatilities_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CPICapFloorVolatilities_t_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CPICapFloorVolatilities_t_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CPICapFloorVolatilities_t_SmileDynamics_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CPICapFloorVolatilities_t_SmileDynamics_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CPICapFloorVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CPICapFloorVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
+    _serialize_timeDecayType(w, "ReactionToTimeDecay", v.ReactionToTimeDecay);
+    _serialize_market_CPICapFloorVolatilities_t_Names_t(w, "Names", v.Names);
+    _serialize_market_CPICapFloorVolatilities_t_Expiries_t(w, "Expiries", v.Expiries);
+    _serialize_market_CPICapFloorVolatilities_t_Strikes_t(w, "Strikes", v.Strikes);
+    for (const auto& item : v.SmileDynamics) _serialize_market_CPICapFloorVolatilities_t_SmileDynamics_t(w, "SmileDynamics", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YYCapFloorVolatilities_t_Names_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YYCapFloorVolatilities_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YYCapFloorVolatilities_t_Names_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YYCapFloorVolatilities_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name) _serialize_market_YYCapFloorVolatilities_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YYCapFloorVolatilities_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YYCapFloorVolatilities_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YYCapFloorVolatilities_t_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YYCapFloorVolatilities_t_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YYCapFloorVolatilities_t_SmileDynamics_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YYCapFloorVolatilities_t_SmileDynamics_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_YYCapFloorVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_YYCapFloorVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
+    _serialize_timeDecayType(w, "ReactionToTimeDecay", v.ReactionToTimeDecay);
+    _serialize_market_YYCapFloorVolatilities_t_Names_t(w, "Names", v.Names);
+    _serialize_market_YYCapFloorVolatilities_t_Expiries_t(w, "Expiries", v.Expiries);
+    _serialize_market_YYCapFloorVolatilities_t_Strikes_t(w, "Strikes", v.Strikes);
+    for (const auto& item : v.SmileDynamics) _serialize_market_YYCapFloorVolatilities_t_SmileDynamics_t(w, "SmileDynamics", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Commodities_t_Names_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Commodities_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Commodities_t_Names_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Commodities_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name) _serialize_market_Commodities_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Commodities_t_Tenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Commodities_t_Tenors_t& v) {
+    w.startElement(name);
+    if ((&v)->name) w.writeAttribute("name", *(&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Commodities_t_DayCounters_t_DayCounter_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Commodities_t_DayCounters_t_DayCounter_t& v) {
+    w.startElement(name);
+    if ((&v)->name) w.writeAttribute("name", *(&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Commodities_t_DayCounters_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Commodities_t_DayCounters_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.DayCounter) _serialize_market_Commodities_t_DayCounters_t_DayCounter_t(w, "DayCounter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Commodities_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Commodities_t& v) {
+    w.startElement(name);
+    if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
+    _serialize_market_Commodities_t_Names_t(w, "Names", v.Names);
+    for (const auto& item : v.Tenors) _serialize_market_Commodities_t_Tenors_t(w, "Tenors", item);
+    if (v.DayCounters) _serialize_market_Commodities_t_DayCounters_t(w, "DayCounters", *v.DayCounters);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CommodityVolatilities_t_Names_t_Name_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CommodityVolatilities_t_Names_t_Name_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CommodityVolatilities_t_Names_t_Name_t_Moneyness_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CommodityVolatilities_t_Names_t_Name_t_Moneyness_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CommodityVolatilities_t_Names_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CommodityVolatilities_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    _serialize_market_CommodityVolatilities_t_Names_t_Name_t_Expiries_t(w, "Expiries", v.Expiries);
+    if (v.Moneyness) _serialize_market_CommodityVolatilities_t_Names_t_Name_t_Moneyness_t(w, "Moneyness", *v.Moneyness);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CommodityVolatilities_t_Names_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CommodityVolatilities_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name) _serialize_market_CommodityVolatilities_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CommodityVolatilities_t_DayCounter_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CommodityVolatilities_t_DayCounter_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CommodityVolatilities_t_SmileDynamics_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CommodityVolatilities_t_SmileDynamics_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CommodityVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CommodityVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
+    if (v.SimulateATMOnly) _serialize_bool(w, "SimulateATMOnly", *v.SimulateATMOnly);
+    _serialize_timeDecayType(w, "ReactionToTimeDecay", v.ReactionToTimeDecay);
+    _serialize_market_CommodityVolatilities_t_Names_t(w, "Names", v.Names);
+    if (v.DayCounter) _serialize_market_CommodityVolatilities_t_DayCounter_t(w, "DayCounter", *v.DayCounter);
+    for (const auto& item : v.SmileDynamics) _serialize_market_CommodityVolatilities_t_SmileDynamics_t(w, "SmileDynamics", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_AggregationScenarioDataCurrencies_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_AggregationScenarioDataCurrencies_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Currency) _serialize_currencyCode(w, "Currency", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_AggregationScenarioDataIndices_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_AggregationScenarioDataIndices_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Index) _serialize_indexNameType(w, "Index", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_AggregationScenarioDataCreditStates_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_AggregationScenarioDataCreditStates_t& v) {
+    w.startElement(name);
+    _serialize_int64_t(w, "NumberOfFactors", v.NumberOfFactors);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_AggregationScenarioDataSurvivalWeights_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_AggregationScenarioDataSurvivalWeights_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_AggregationScenarioDataSurvivalWeights_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_AggregationScenarioDataSurvivalWeights_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name) _serialize_market_AggregationScenarioDataSurvivalWeights_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BaseCorrelations_t_IndexNames_t_IndexName_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_BaseCorrelations_t_IndexNames_t_IndexName_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BaseCorrelations_t_IndexNames_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_BaseCorrelations_t_IndexNames_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.IndexName) _serialize_market_BaseCorrelations_t_IndexNames_t_IndexName_t(w, "IndexName", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BaseCorrelations_t_Terms_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_BaseCorrelations_t_Terms_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BaseCorrelations_t_DetachmentPoints_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_BaseCorrelations_t_DetachmentPoints_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BaseCorrelations_t_DayCounters_t_DayCounter_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_BaseCorrelations_t_DayCounters_t_DayCounter_t& v) {
+    w.startElement(name);
+    if ((&v)->name) w.writeAttribute("name", *(&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BaseCorrelations_t_DayCounters_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_BaseCorrelations_t_DayCounters_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.DayCounter) _serialize_market_BaseCorrelations_t_DayCounters_t_DayCounter_t(w, "DayCounter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BaseCorrelations_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_BaseCorrelations_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Simulate) _serialize_bool_(w, "Simulate", item);
+    _serialize_market_BaseCorrelations_t_IndexNames_t(w, "IndexNames", v.IndexNames);
+    for (const auto& item : v.Terms) _serialize_market_BaseCorrelations_t_Terms_t(w, "Terms", item);
+    for (const auto& item : v.DetachmentPoints) _serialize_market_BaseCorrelations_t_DetachmentPoints_t(w, "DetachmentPoints", item);
+    if (v.DayCounters) _serialize_market_BaseCorrelations_t_DayCounters_t(w, "DayCounters", *v.DayCounters);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Correlations_t_Pairs_t_Pair_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Correlations_t_Pairs_t_Pair_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Correlations_t_Pairs_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Correlations_t_Pairs_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Pair) _serialize_market_Correlations_t_Pairs_t_Pair_t(w, "Pair", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Correlations_t_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Correlations_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Correlations_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_Correlations_t& v) {
+    w.startElement(name);
+    if (v.Simulate) _serialize_bool_(w, "Simulate", *v.Simulate);
+    _serialize_market_Correlations_t_Pairs_t(w, "Pairs", v.Pairs);
+    _serialize_market_Correlations_t_Expiries_t(w, "Expiries", v.Expiries);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CreditStates_t_NumberOfFactors_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CreditStates_t_NumberOfFactors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_CreditStates_t(xsdcpp::XmlWriter& w, const char* name, const domain::market_CreditStates_t& v) {
+    w.startElement(name);
+    _serialize_market_CreditStates_t_NumberOfFactors_t(w, "NumberOfFactors", v.NumberOfFactors);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_curveAlgebraCurve_Key_t(xsdcpp::XmlWriter& w, const char* name, const domain::curveAlgebraCurve_Key_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_curveAlgebraCurveOperation_Type_t(xsdcpp::XmlWriter& w, const char* name, const domain::curveAlgebraCurveOperation_Type_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_curveAlgebraCurveOperation_Arguments_t_Argument_t(xsdcpp::XmlWriter& w, const char* name, const domain::curveAlgebraCurveOperation_Arguments_t_Argument_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_curveAlgebraCurveOperation_Arguments_t(xsdcpp::XmlWriter& w, const char* name, const domain::curveAlgebraCurveOperation_Arguments_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Argument) _serialize_curveAlgebraCurveOperation_Arguments_t_Argument_t(w, "Argument", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_curveAlgebraCurveOperation(xsdcpp::XmlWriter& w, const char* name, const domain::curveAlgebraCurveOperation& v) {
+    w.startElement(name);
+    _serialize_curveAlgebraCurveOperation_Type_t(w, "Type", v.Type);
+    if (v.Arguments) _serialize_curveAlgebraCurveOperation_Arguments_t(w, "Arguments", *v.Arguments);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_curveAlgebraCurve(xsdcpp::XmlWriter& w, const char* name, const domain::curveAlgebraCurve& v) {
+    w.startElement(name);
+    _serialize_curveAlgebraCurve_Key_t(w, "Key", v.Key);
+    _serialize_curveAlgebraCurveOperation(w, "Operation", v.Operation);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_curveAlgebra(xsdcpp::XmlWriter& w, const char* name, const domain::curveAlgebra& v) {
+    w.startElement(name);
+    for (const auto& item : v.Curve) _serialize_curveAlgebraCurve(w, "Curve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market(xsdcpp::XmlWriter& w, const char* name, const domain::market& v) {
+    w.startElement(name);
+    _serialize_currencyCode(w, "BaseCurrency", v.BaseCurrency);
+    _serialize_market_Currencies_t(w, "Currencies", v.Currencies);
+    _serialize_market_YieldCurves_t(w, "YieldCurves", v.YieldCurves);
+    if (v.FxRates) _serialize_market_FxRates_t(w, "FxRates", *v.FxRates);
+    if (v.Indices) _serialize_market_Indices_t(w, "Indices", *v.Indices);
+    if (v.SwapIndices) _serialize_market_SwapIndices_t(w, "SwapIndices", *v.SwapIndices);
+    if (v.DefaultCurves) _serialize_market_DefaultCurves_t(w, "DefaultCurves", *v.DefaultCurves);
+    if (v.Equities) _serialize_market_Equities_t(w, "Equities", *v.Equities);
+    if (v.SwaptionVolatilities) _serialize_market_SwaptionVolatilities_t(w, "SwaptionVolatilities", *v.SwaptionVolatilities);
+    if (v.YieldVolatilities) _serialize_market_YieldVolatilities_t(w, "YieldVolatilities", *v.YieldVolatilities);
+    if (v.CapFloorVolatilities) _serialize_market_CapFloorVolatilities_t(w, "CapFloorVolatilities", *v.CapFloorVolatilities);
+    if (v.CDSVolatilities) _serialize_market_CDSVolatilities_t(w, "CDSVolatilities", *v.CDSVolatilities);
+    if (v.FxVolatilities) _serialize_market_FxVolatilities_t(w, "FxVolatilities", *v.FxVolatilities);
+    if (v.EquityVolatilities) _serialize_market_EquityVolatilities_t(w, "EquityVolatilities", *v.EquityVolatilities);
+    if (v.BenchmarkCurves) _serialize_market_BenchmarkCurves_t(w, "BenchmarkCurves", *v.BenchmarkCurves);
+    if (v.Securities) _serialize_market_Securities_t(w, "Securities", *v.Securities);
+    if (v.CPRs) _serialize_market_CPRs_t(w, "CPRs", *v.CPRs);
+    if (v.CpiIndices) _serialize_market_CpiIndices_t(w, "CpiIndices", *v.CpiIndices);
+    if (v.ZeroInflationIndexCurves) _serialize_market_ZeroInflationIndexCurves_t(w, "ZeroInflationIndexCurves", *v.ZeroInflationIndexCurves);
+    if (v.YYInflationIndexCurves) _serialize_market_YYInflationIndexCurves_t(w, "YYInflationIndexCurves", *v.YYInflationIndexCurves);
+    if (v.CPICapFloorVolatilities) _serialize_market_CPICapFloorVolatilities_t(w, "CPICapFloorVolatilities", *v.CPICapFloorVolatilities);
+    if (v.YYCapFloorVolatilities) _serialize_market_YYCapFloorVolatilities_t(w, "YYCapFloorVolatilities", *v.YYCapFloorVolatilities);
+    if (v.Commodities) _serialize_market_Commodities_t(w, "Commodities", *v.Commodities);
+    if (v.CommodityVolatilities) _serialize_market_CommodityVolatilities_t(w, "CommodityVolatilities", *v.CommodityVolatilities);
+    if (v.AggregationScenarioDataCurrencies) _serialize_market_AggregationScenarioDataCurrencies_t(w, "AggregationScenarioDataCurrencies", *v.AggregationScenarioDataCurrencies);
+    if (v.AggregationScenarioDataIndices) _serialize_market_AggregationScenarioDataIndices_t(w, "AggregationScenarioDataIndices", *v.AggregationScenarioDataIndices);
+    if (v.AggregationScenarioDataCreditStates) _serialize_market_AggregationScenarioDataCreditStates_t(w, "AggregationScenarioDataCreditStates", *v.AggregationScenarioDataCreditStates);
+    if (v.AggregationScenarioDataSurvivalWeights) _serialize_market_AggregationScenarioDataSurvivalWeights_t(w, "AggregationScenarioDataSurvivalWeights", *v.AggregationScenarioDataSurvivalWeights);
+    if (v.BaseCorrelations) _serialize_market_BaseCorrelations_t(w, "BaseCorrelations", *v.BaseCorrelations);
+    if (v.Correlations) _serialize_market_Correlations_t(w, "Correlations", *v.Correlations);
+    if (v.CreditStates) _serialize_market_CreditStates_t(w, "CreditStates", *v.CreditStates);
+    if (v.CurveAlgebra) _serialize_curveAlgebra(w, "CurveAlgebra", *v.CurveAlgebra);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simulation(xsdcpp::XmlWriter& w, const char* name, const domain::simulation& v) {
+    w.startElement(name);
+    if (v.Parameters) _serialize_parameters(w, "Parameters", *v.Parameters);
+    if (v.CrossAssetModel) _serialize_crossAssetModel(w, "CrossAssetModel", *v.CrossAssetModel);
+    if (v.Market) _serialize_market(w, "Market", *v.Market);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_transitionmatrix_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::transitionmatrix_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_transitionmatrix_Data_t(xsdcpp::XmlWriter& w, const char* name, const domain::transitionmatrix_Data_t& v) {
+    w.startElement(name);
+    if ((&v)->t0) w.writeAttribute("t0", *(&v)->t0);
+    if ((&v)->t1) w.writeAttribute("t1", *(&v)->t1);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_transitionmatrix(xsdcpp::XmlWriter& w, const char* name, const domain::transitionmatrix& v) {
+    w.startElement(name);
+    _serialize_transitionmatrix_Name_t(w, "Name", v.Name);
+    _serialize_transitionmatrix_Data_t(w, "Data", v.Data);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_transitionmatrices(xsdcpp::XmlWriter& w, const char* name, const domain::transitionmatrices& v) {
+    w.startElement(name);
+    for (const auto& item : v.TransitionMatrix) _serialize_transitionmatrix(w, "TransitionMatrix", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_entity_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::entity_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_entity_FactorLoadings_t(xsdcpp::XmlWriter& w, const char* name, const domain::entity_FactorLoadings_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_entity_TransitionMatrix_t(xsdcpp::XmlWriter& w, const char* name, const domain::entity_TransitionMatrix_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_entity(xsdcpp::XmlWriter& w, const char* name, const domain::entity& v) {
+    w.startElement(name);
+    _serialize_entity_Name_t(w, "Name", v.Name);
+    _serialize_entity_FactorLoadings_t(w, "FactorLoadings", v.FactorLoadings);
+    _serialize_entity_TransitionMatrix_t(w, "TransitionMatrix", v.TransitionMatrix);
+    _serialize_int64_t(w, "InitialState", v.InitialState);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_entities(xsdcpp::XmlWriter& w, const char* name, const domain::entities& v) {
+    w.startElement(name);
+    for (const auto& item : v.Entity) _serialize_entity(w, "Entity", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_creditsimulation_NettingSetIds_t(xsdcpp::XmlWriter& w, const char* name, const domain::creditsimulation_NettingSetIds_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_risk_Evaluation_t(xsdcpp::XmlWriter& w, const char* name, const domain::risk_Evaluation_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_risk_CreditMode_t(xsdcpp::XmlWriter& w, const char* name, const domain::risk_CreditMode_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_risk_LoanExposureMode_t(xsdcpp::XmlWriter& w, const char* name, const domain::risk_LoanExposureMode_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_risk(xsdcpp::XmlWriter& w, const char* name, const domain::risk& v) {
+    w.startElement(name);
+    _serialize_bool_(w, "Market", v.Market);
+    _serialize_bool_(w, "Credit", v.Credit);
+    _serialize_bool_(w, "ZeroMarketPnl", v.ZeroMarketPnl);
+    _serialize_risk_Evaluation_t(w, "Evaluation", v.Evaluation);
+    _serialize_bool_(w, "DoubleDefault", v.DoubleDefault);
+    _serialize_int64_t(w, "Seed", v.Seed);
+    _serialize_int64_t(w, "Paths", v.Paths);
+    _serialize_risk_CreditMode_t(w, "CreditMode", v.CreditMode);
+    _serialize_risk_LoanExposureMode_t(w, "LoanExposureMode", v.LoanExposureMode);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_creditsimulation(xsdcpp::XmlWriter& w, const char* name, const domain::creditsimulation& v) {
+    w.startElement(name);
+    _serialize_transitionmatrices(w, "TransitionMatrices", v.TransitionMatrices);
+    _serialize_entities(w, "Entities", v.Entities);
+    _serialize_creditsimulation_NettingSetIds_t(w, "NettingSetIds", v.NettingSetIds);
+    _serialize_risk(w, "Risk", v.Risk);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_reportConfiguration_Deltas_t(xsdcpp::XmlWriter& w, const char* name, const domain::reportConfiguration_Deltas_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_reportConfiguration_Moneyness_t(xsdcpp::XmlWriter& w, const char* name, const domain::reportConfiguration_Moneyness_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_reportConfiguration_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::reportConfiguration_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_reportConfiguration_StrikeSpreads_t(xsdcpp::XmlWriter& w, const char* name, const domain::reportConfiguration_StrikeSpreads_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_reportConfiguration_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::reportConfiguration_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_reportConfiguration_PillarDates_t(xsdcpp::XmlWriter& w, const char* name, const domain::reportConfiguration_PillarDates_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_reportConfiguration_UnderlyingTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::reportConfiguration_UnderlyingTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_reportConfiguration_ContinuationExpiry_t(xsdcpp::XmlWriter& w, const char* name, const domain::reportConfiguration_ContinuationExpiry_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_reportConfiguration(xsdcpp::XmlWriter& w, const char* name, const domain::reportConfiguration& v) {
+    w.startElement(name);
+    if (v.ReportOnDeltaGrid) _serialize_bool_(w, "ReportOnDeltaGrid", *v.ReportOnDeltaGrid);
+    if (v.ReportOnMoneynessGrid) _serialize_bool_(w, "ReportOnMoneynessGrid", *v.ReportOnMoneynessGrid);
+    if (v.ReportOnStrikeGrid) _serialize_bool_(w, "ReportOnStrikeGrid", *v.ReportOnStrikeGrid);
+    if (v.ReportOnStrikeSpreadGrid) _serialize_bool_(w, "ReportOnStrikeSpreadGrid", *v.ReportOnStrikeSpreadGrid);
+    if (v.Deltas) _serialize_reportConfiguration_Deltas_t(w, "Deltas", *v.Deltas);
+    if (v.Moneyness) _serialize_reportConfiguration_Moneyness_t(w, "Moneyness", *v.Moneyness);
+    if (v.Strikes) _serialize_reportConfiguration_Strikes_t(w, "Strikes", *v.Strikes);
+    if (v.StrikeSpreads) _serialize_reportConfiguration_StrikeSpreads_t(w, "StrikeSpreads", *v.StrikeSpreads);
+    if (v.Expiries) _serialize_reportConfiguration_Expiries_t(w, "Expiries", *v.Expiries);
+    if (v.PillarDates) _serialize_reportConfiguration_PillarDates_t(w, "PillarDates", *v.PillarDates);
+    if (v.UnderlyingTenors) _serialize_reportConfiguration_UnderlyingTenors_t(w, "UnderlyingTenors", *v.UnderlyingTenors);
+    if (v.ContinuationExpiry) _serialize_reportConfiguration_ContinuationExpiry_t(w, "ContinuationExpiry", *v.ContinuationExpiry);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_globalReportConfiguration_FXVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::globalReportConfiguration_FXVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Report) _serialize_reportConfiguration(w, "Report", *v.Report);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_globalReportConfiguration_EquityVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::globalReportConfiguration_EquityVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Report) _serialize_reportConfiguration(w, "Report", *v.Report);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_globalReportConfiguration_CommodityVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::globalReportConfiguration_CommodityVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Report) _serialize_reportConfiguration(w, "Report", *v.Report);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_globalReportConfiguration_IRSwaptionVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::globalReportConfiguration_IRSwaptionVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Report) _serialize_reportConfiguration(w, "Report", *v.Report);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_globalReportConfiguration_IRCapFloorVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::globalReportConfiguration_IRCapFloorVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Report) _serialize_reportConfiguration(w, "Report", *v.Report);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldCurveReport_PillarDates_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldCurveReport_PillarDates_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldCurveReport(xsdcpp::XmlWriter& w, const char* name, const domain::yieldCurveReport& v) {
+    w.startElement(name);
+    if (v.PillarDates) _serialize_yieldCurveReport_PillarDates_t(w, "PillarDates", *v.PillarDates);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_globalReportConfiguration_YieldCurves_t(xsdcpp::XmlWriter& w, const char* name, const domain::globalReportConfiguration_YieldCurves_t& v) {
+    w.startElement(name);
+    if (v.Report) _serialize_yieldCurveReport(w, "Report", *v.Report);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_globalReportConfiguration_InflationCapFloorVolatilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::globalReportConfiguration_InflationCapFloorVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Report) _serialize_reportConfiguration(w, "Report", *v.Report);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_globalReportConfiguration(xsdcpp::XmlWriter& w, const char* name, const domain::globalReportConfiguration& v) {
+    w.startElement(name);
+    if (v.FXVolatilities) _serialize_globalReportConfiguration_FXVolatilities_t(w, "FXVolatilities", *v.FXVolatilities);
+    if (v.EquityVolatilities) _serialize_globalReportConfiguration_EquityVolatilities_t(w, "EquityVolatilities", *v.EquityVolatilities);
+    if (v.CommodityVolatilities) _serialize_globalReportConfiguration_CommodityVolatilities_t(w, "CommodityVolatilities", *v.CommodityVolatilities);
+    if (v.IRSwaptionVolatilities) _serialize_globalReportConfiguration_IRSwaptionVolatilities_t(w, "IRSwaptionVolatilities", *v.IRSwaptionVolatilities);
+    if (v.IRCapFloorVolatilities) _serialize_globalReportConfiguration_IRCapFloorVolatilities_t(w, "IRCapFloorVolatilities", *v.IRCapFloorVolatilities);
+    if (v.YieldCurves) _serialize_globalReportConfiguration_YieldCurves_t(w, "YieldCurves", *v.YieldCurves);
+    if (v.InflationCapFloorVolatilities) _serialize_globalReportConfiguration_InflationCapFloorVolatilities_t(w, "InflationCapFloorVolatilities", *v.InflationCapFloorVolatilities);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxSpot_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxSpot_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxSpot_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxSpot_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxSpot(xsdcpp::XmlWriter& w, const char* name, const domain::fxSpot& v) {
+    w.startElement(name);
+    _serialize_fxSpot_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_fxSpot_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxSpots(xsdcpp::XmlWriter& w, const char* name, const domain::fxSpots& v) {
+    w.startElement(name);
+    for (const auto& item : v.FXSpot) _serialize_fxSpot(w, "FXSpot", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dimensionType(xsdcpp::XmlWriter& w, const char* name, const domain::dimensionType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_smileType(xsdcpp::XmlWriter& w, const char* name, const domain::smileType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolInterpolation(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolInterpolation& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility_Deltas_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility_Deltas_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility_SmileDelta_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility_SmileDelta_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility_FXSpotID_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility_FXSpotID_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility_FXForeignCurveID_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility_FXForeignCurveID_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility_FXDomesticCurveID_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility_FXDomesticCurveID_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility_FXIndexTag_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility_FXIndexTag_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility_BaseVolatility1_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility_BaseVolatility1_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility_BaseVolatility2_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility_BaseVolatility2_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_extrapolationType(xsdcpp::XmlWriter& w, const char* name, const domain::extrapolationType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility_TimeInterpolation_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility_TimeInterpolation_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility_TimeWeighting_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility_TimeWeighting_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatility(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatility& v) {
+    w.startElement(name);
+    _serialize_fxVolatility_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_fxVolatility_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    _serialize_dimensionType(w, "Dimension", v.Dimension);
+    if (v.SmileType) _serialize_smileType(w, "SmileType", *v.SmileType);
+    if (v.SmileInterpolation) _serialize_fxVolInterpolation(w, "SmileInterpolation", *v.SmileInterpolation);
+    if (v.Deltas) _serialize_fxVolatility_Deltas_t(w, "Deltas", *v.Deltas);
+    if (v.SmileDelta) _serialize_fxVolatility_SmileDelta_t(w, "SmileDelta", *v.SmileDelta);
+    if (v.Conventions) _serialize_fxVolatility_Conventions_t(w, "Conventions", *v.Conventions);
+    if (v.Expiries) _serialize_fxVolatility_Expiries_t(w, "Expiries", *v.Expiries);
+    if (v.FXSpotID) _serialize_fxVolatility_FXSpotID_t(w, "FXSpotID", *v.FXSpotID);
+    if (v.FXForeignCurveID) _serialize_fxVolatility_FXForeignCurveID_t(w, "FXForeignCurveID", *v.FXForeignCurveID);
+    if (v.FXDomesticCurveID) _serialize_fxVolatility_FXDomesticCurveID_t(w, "FXDomesticCurveID", *v.FXDomesticCurveID);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    if (v.FXIndexTag) _serialize_fxVolatility_FXIndexTag_t(w, "FXIndexTag", *v.FXIndexTag);
+    if (v.BaseVolatility1) _serialize_fxVolatility_BaseVolatility1_t(w, "BaseVolatility1", *v.BaseVolatility1);
+    if (v.BaseVolatility2) _serialize_fxVolatility_BaseVolatility2_t(w, "BaseVolatility2", *v.BaseVolatility2);
+    if (v.Report) _serialize_reportConfiguration(w, "Report", *v.Report);
+    if (v.SmileExtrapolation) _serialize_extrapolationType(w, "SmileExtrapolation", *v.SmileExtrapolation);
+    if (v.TimeInterpolation) _serialize_fxVolatility_TimeInterpolation_t(w, "TimeInterpolation", *v.TimeInterpolation);
+    if (v.TimeWeighting) _serialize_fxVolatility_TimeWeighting_t(w, "TimeWeighting", *v.TimeWeighting);
+    if (v.ButterflyErrorTolerance) _serialize_float(w, "ButterflyErrorTolerance", *v.ButterflyErrorTolerance);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.FXVolatility) _serialize_fxVolatility(w, "FXVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_ProxyConfig_t_Source_t_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_ProxyConfig_t_Source_t_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_ProxyConfig_t_Source_t_ShortSwapIndexBase_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_ProxyConfig_t_Source_t_ShortSwapIndexBase_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_ProxyConfig_t_Source_t_SwapIndexBase_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_ProxyConfig_t_Source_t_SwapIndexBase_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_ProxyConfig_t_Source_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_ProxyConfig_t_Source_t& v) {
+    w.startElement(name);
+    _serialize_swaptionVolatility_ProxyConfig_t_Source_t_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_swaptionVolatility_ProxyConfig_t_Source_t_ShortSwapIndexBase_t(w, "ShortSwapIndexBase", v.ShortSwapIndexBase);
+    _serialize_swaptionVolatility_ProxyConfig_t_Source_t_SwapIndexBase_t(w, "SwapIndexBase", v.SwapIndexBase);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_ProxyConfig_t_Target_t_ShortSwapIndexBase_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_ProxyConfig_t_Target_t_ShortSwapIndexBase_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_ProxyConfig_t_Target_t_SwapIndexBase_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_ProxyConfig_t_Target_t_SwapIndexBase_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_ProxyConfig_t_Target_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_ProxyConfig_t_Target_t& v) {
+    w.startElement(name);
+    _serialize_swaptionVolatility_ProxyConfig_t_Target_t_ShortSwapIndexBase_t(w, "ShortSwapIndexBase", v.ShortSwapIndexBase);
+    _serialize_swaptionVolatility_ProxyConfig_t_Target_t_SwapIndexBase_t(w, "SwapIndexBase", v.SwapIndexBase);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_ProxyConfig_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_ProxyConfig_t& v) {
+    w.startElement(name);
+    _serialize_swaptionVolatility_ProxyConfig_t_Source_t(w, "Source", v.Source);
+    _serialize_swaptionVolatility_ProxyConfig_t_Target_t(w, "Target", v.Target);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityType(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_Interpolation_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_Interpolation_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parametricSmileConfigParameter_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::parametricSmileConfigParameter_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parametricSmileConfigParameter_InitialValue_t(xsdcpp::XmlWriter& w, const char* name, const domain::parametricSmileConfigParameter_InitialValue_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parametricVolatilityParameterCalibration(xsdcpp::XmlWriter& w, const char* name, const domain::parametricVolatilityParameterCalibration& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parametricSmileConfigParameter(xsdcpp::XmlWriter& w, const char* name, const domain::parametricSmileConfigParameter& v) {
+    w.startElement(name);
+    _serialize_parametricSmileConfigParameter_Name_t(w, "Name", v.Name);
+    _serialize_parametricSmileConfigParameter_InitialValue_t(w, "InitialValue", v.InitialValue);
+    _serialize_parametricVolatilityParameterCalibration(w, "Calibration", v.Calibration);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parametricSmileConfigParameters(xsdcpp::XmlWriter& w, const char* name, const domain::parametricSmileConfigParameters& v) {
+    w.startElement(name);
+    for (const auto& item : v.Parameter) _serialize_parametricSmileConfigParameter(w, "Parameter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parametricSmileConfigCalibration(xsdcpp::XmlWriter& w, const char* name, const domain::parametricSmileConfigCalibration& v) {
+    w.startElement(name);
+    _serialize_int64_t(w, "MaxCalibrationAttempts", v.MaxCalibrationAttempts);
+    _serialize_float(w, "ExitEarlyErrorThreshold", v.ExitEarlyErrorThreshold);
+    _serialize_float(w, "MaxAcceptableError", v.MaxAcceptableError);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parametricSmileConfig(xsdcpp::XmlWriter& w, const char* name, const domain::parametricSmileConfig& v) {
+    w.startElement(name);
+    _serialize_parametricSmileConfigParameters(w, "Parameters", v.Parameters);
+    _serialize_parametricSmileConfigCalibration(w, "Calibration", v.Calibration);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_Extrapolation_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_Extrapolation_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_OutputVolatilityType_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_OutputVolatilityType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_ModelShift_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_ModelShift_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_OutputShift_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_OutputShift_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_OptionTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_OptionTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_SwapTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_SwapTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_ShortSwapIndexBase_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_ShortSwapIndexBase_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_SwapIndexBase_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_SwapIndexBase_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_SmileOptionTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_SmileOptionTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_SmileSwapTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_SmileSwapTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_SmileSpreads_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_SmileSpreads_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility_QuoteTag_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility_QuoteTag_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatility(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatility& v) {
+    w.startElement(name);
+    _serialize_swaptionVolatility_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_swaptionVolatility_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    if (v.ProxyConfig) _serialize_swaptionVolatility_ProxyConfig_t(w, "ProxyConfig", *v.ProxyConfig);
+    if (v.Dimension) _serialize_dimensionType(w, "Dimension", *v.Dimension);
+    if (v.VolatilityType) _serialize_volatilityType(w, "VolatilityType", *v.VolatilityType);
+    if (v.Interpolation) _serialize_swaptionVolatility_Interpolation_t(w, "Interpolation", *v.Interpolation);
+    if (v.ParametricSmileConfiguration) _serialize_parametricSmileConfig(w, "ParametricSmileConfiguration", *v.ParametricSmileConfiguration);
+    if (v.Extrapolation) _serialize_swaptionVolatility_Extrapolation_t(w, "Extrapolation", *v.Extrapolation);
+    if (v.OutputVolatilityType) _serialize_swaptionVolatility_OutputVolatilityType_t(w, "OutputVolatilityType", *v.OutputVolatilityType);
+    if (v.ModelShift) _serialize_swaptionVolatility_ModelShift_t(w, "ModelShift", *v.ModelShift);
+    if (v.OutputShift) _serialize_swaptionVolatility_OutputShift_t(w, "OutputShift", *v.OutputShift);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    if (v.BusinessDayConvention) _serialize_businessDayConvention(w, "BusinessDayConvention", *v.BusinessDayConvention);
+    if (v.OptionTenors) _serialize_swaptionVolatility_OptionTenors_t(w, "OptionTenors", *v.OptionTenors);
+    if (v.SwapTenors) _serialize_swaptionVolatility_SwapTenors_t(w, "SwapTenors", *v.SwapTenors);
+    if (v.ShortSwapIndexBase) _serialize_swaptionVolatility_ShortSwapIndexBase_t(w, "ShortSwapIndexBase", *v.ShortSwapIndexBase);
+    if (v.SwapIndexBase) _serialize_swaptionVolatility_SwapIndexBase_t(w, "SwapIndexBase", *v.SwapIndexBase);
+    if (v.SmileOptionTenors) _serialize_swaptionVolatility_SmileOptionTenors_t(w, "SmileOptionTenors", *v.SmileOptionTenors);
+    if (v.SmileSwapTenors) _serialize_swaptionVolatility_SmileSwapTenors_t(w, "SmileSwapTenors", *v.SmileSwapTenors);
+    if (v.SmileSpreads) _serialize_swaptionVolatility_SmileSpreads_t(w, "SmileSpreads", *v.SmileSpreads);
+    if (v.QuoteTag) _serialize_swaptionVolatility_QuoteTag_t(w, "QuoteTag", *v.QuoteTag);
+    if (v.Report) _serialize_reportConfiguration(w, "Report", *v.Report);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.SwaptionVolatility) _serialize_swaptionVolatility(w, "SwaptionVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldVolatility_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldVolatility_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldVolatility_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldVolatility_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldVolatility_Qualifier_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldVolatility_Qualifier_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldVolatility_OptionTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldVolatility_OptionTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldVolatility_BondTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldVolatility_BondTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldVolatility(xsdcpp::XmlWriter& w, const char* name, const domain::yieldVolatility& v) {
+    w.startElement(name);
+    _serialize_yieldVolatility_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_yieldVolatility_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    _serialize_yieldVolatility_Qualifier_t(w, "Qualifier", v.Qualifier);
+    if (v.Dimension) _serialize_dimensionType(w, "Dimension", *v.Dimension);
+    _serialize_volatilityType(w, "VolatilityType", v.VolatilityType);
+    _serialize_extrapolationType(w, "Extrapolation", v.Extrapolation);
+    _serialize_dayCounter(w, "DayCounter", v.DayCounter);
+    _serialize_calendar(w, "Calendar", v.Calendar);
+    _serialize_businessDayConvention(w, "BusinessDayConvention", v.BusinessDayConvention);
+    _serialize_yieldVolatility_OptionTenors_t(w, "OptionTenors", v.OptionTenors);
+    _serialize_yieldVolatility_BondTenors_t(w, "BondTenors", v.BondTenors);
+    if (v.Report) _serialize_reportConfiguration(w, "Report", *v.Report);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldVolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::yieldVolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.YieldVolatility) _serialize_yieldVolatility(w, "YieldVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_ProxyConfig_t_Source_t_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_ProxyConfig_t_Source_t_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_ProxyConfig_t_Source_t_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_ProxyConfig_t_Source_t_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_ProxyConfig_t_Source_t_RateComputationPeriod_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_ProxyConfig_t_Source_t_RateComputationPeriod_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_ProxyConfig_t_Source_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_ProxyConfig_t_Source_t& v) {
+    w.startElement(name);
+    _serialize_capFloorVolatility_ProxyConfig_t_Source_t_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_capFloorVolatility_ProxyConfig_t_Source_t_Index_t(w, "Index", v.Index);
+    if (v.RateComputationPeriod) _serialize_capFloorVolatility_ProxyConfig_t_Source_t_RateComputationPeriod_t(w, "RateComputationPeriod", *v.RateComputationPeriod);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_ProxyConfig_t_Target_t_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_ProxyConfig_t_Target_t_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_ProxyConfig_t_Target_t_RateComputationPeriod_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_ProxyConfig_t_Target_t_RateComputationPeriod_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_ProxyConfig_t_Target_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_ProxyConfig_t_Target_t& v) {
+    w.startElement(name);
+    _serialize_capFloorVolatility_ProxyConfig_t_Target_t_Index_t(w, "Index", v.Index);
+    if (v.RateComputationPeriod) _serialize_capFloorVolatility_ProxyConfig_t_Target_t_RateComputationPeriod_t(w, "RateComputationPeriod", *v.RateComputationPeriod);
+    if (v.ONCapSettlementDays) _serialize_int64_t(w, "ONCapSettlementDays", *v.ONCapSettlementDays);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_ProxyConfig_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_ProxyConfig_t& v) {
+    w.startElement(name);
+    _serialize_capFloorVolatility_ProxyConfig_t_Source_t(w, "Source", v.Source);
+    _serialize_capFloorVolatility_ProxyConfig_t_Target_t(w, "Target", v.Target);
+    if (v.ScalingFactor) _serialize_double(w, "ScalingFactor", *v.ScalingFactor);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_InterpolationMethod_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_InterpolationMethod_t& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_Tenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_Tenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_RateComputationPeriod_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_RateComputationPeriod_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_DiscountCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_DiscountCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_AtmTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_AtmTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_InterpolateOn_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_InterpolateOn_t& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_TimeInterpolation_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_TimeInterpolation_t& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_StrikeInterpolation_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_StrikeInterpolation_t& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility_InputType_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility_InputType_t& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bootstrapConfigType(xsdcpp::XmlWriter& w, const char* name, const domain::bootstrapConfigType& v) {
+    w.startElement(name);
+    if (v.Accuracy) _serialize_double(w, "Accuracy", *v.Accuracy);
+    if (v.GlobalAccuracy) _serialize_double(w, "GlobalAccuracy", *v.GlobalAccuracy);
+    if (v.DontThrow) _serialize_bool(w, "DontThrow", *v.DontThrow);
+    if (v.MaxAttempts) _serialize_uint64_t(w, "MaxAttempts", *v.MaxAttempts);
+    if (v.MaxFactor) _serialize_double(w, "MaxFactor", *v.MaxFactor);
+    if (v.MinFactor) _serialize_double(w, "MinFactor", *v.MinFactor);
+    if (v.DontThrowSteps) _serialize_uint64_t(w, "DontThrowSteps", *v.DontThrowSteps);
+    if (v.Global) _serialize_bool(w, "Global", *v.Global);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatility& v) {
+    w.startElement(name);
+    _serialize_capFloorVolatility_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_capFloorVolatility_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    if (v.ProxyConfig) _serialize_capFloorVolatility_ProxyConfig_t(w, "ProxyConfig", *v.ProxyConfig);
+    if (v.VolatilityType) _serialize_volatilityType(w, "VolatilityType", *v.VolatilityType);
+    if (v.OutputVolatilityType) _serialize_volatilityType(w, "OutputVolatilityType", *v.OutputVolatilityType);
+    if (v.ModelShift) _serialize_float(w, "ModelShift", *v.ModelShift);
+    if (v.OutputShift) _serialize_float(w, "OutputShift", *v.OutputShift);
+    if (v.Extrapolation) _serialize_extrapolationType(w, "Extrapolation", *v.Extrapolation);
+    if (v.InterpolationMethod) _serialize_capFloorVolatility_InterpolationMethod_t(w, "InterpolationMethod", *v.InterpolationMethod);
+    if (v.IncludeAtm) _serialize_bool_(w, "IncludeAtm", *v.IncludeAtm);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    if (v.BusinessDayConvention) _serialize_businessDayConvention(w, "BusinessDayConvention", *v.BusinessDayConvention);
+    if (v.Tenors) _serialize_capFloorVolatility_Tenors_t(w, "Tenors", *v.Tenors);
+    if (v.Strikes) _serialize_capFloorVolatility_Strikes_t(w, "Strikes", *v.Strikes);
+    if (v.OptionalQuotes) _serialize_bool_(w, "OptionalQuotes", *v.OptionalQuotes);
+    if (v.IborIndex) _serialize_indexNameType(w, "IborIndex", *v.IborIndex);
+    if (v.Index) _serialize_indexNameType(w, "Index", *v.Index);
+    if (v.RateComputationPeriod) _serialize_capFloorVolatility_RateComputationPeriod_t(w, "RateComputationPeriod", *v.RateComputationPeriod);
+    if (v.ONCapSettlementDays) _serialize_int64_t(w, "ONCapSettlementDays", *v.ONCapSettlementDays);
+    if (v.DiscountCurve) _serialize_capFloorVolatility_DiscountCurve_t(w, "DiscountCurve", *v.DiscountCurve);
+    if (v.AtmTenors) _serialize_capFloorVolatility_AtmTenors_t(w, "AtmTenors", *v.AtmTenors);
+    if (v.SettlementDays) _serialize_uint64_t(w, "SettlementDays", *v.SettlementDays);
+    if (v.InterpolateOn) _serialize_capFloorVolatility_InterpolateOn_t(w, "InterpolateOn", *v.InterpolateOn);
+    if (v.TimeInterpolation) _serialize_capFloorVolatility_TimeInterpolation_t(w, "TimeInterpolation", *v.TimeInterpolation);
+    if (v.StrikeInterpolation) _serialize_capFloorVolatility_StrikeInterpolation_t(w, "StrikeInterpolation", *v.StrikeInterpolation);
+    if (v.ParametricSmileConfiguration) _serialize_parametricSmileConfig(w, "ParametricSmileConfiguration", *v.ParametricSmileConfiguration);
+    if (v.InputType) _serialize_capFloorVolatility_InputType_t(w, "InputType", *v.InputType);
+    if (v.QuoteIncludesIndexName) _serialize_bool_(w, "QuoteIncludesIndexName", *v.QuoteIncludesIndexName);
+    if (v.BootstrapConfig) _serialize_bootstrapConfigType(w, "BootstrapConfig", *v.BootstrapConfig);
+    if (v.Report) _serialize_reportConfiguration(w, "Report", *v.Report);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.CapFloorVolatility) _serialize_capFloorVolatility(w, "CapFloorVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsVolatility_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::cdsVolatility_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsVolatility_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::cdsVolatility_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsVolatility_Terms_t_Term_t_Label_t(xsdcpp::XmlWriter& w, const char* name, const domain::cdsVolatility_Terms_t_Term_t_Label_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsVolatility_Terms_t_Term_t_Curve_t(xsdcpp::XmlWriter& w, const char* name, const domain::cdsVolatility_Terms_t_Term_t_Curve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsVolatility_Terms_t_Term_t(xsdcpp::XmlWriter& w, const char* name, const domain::cdsVolatility_Terms_t_Term_t& v) {
+    w.startElement(name);
+    _serialize_cdsVolatility_Terms_t_Term_t_Label_t(w, "Label", v.Label);
+    _serialize_cdsVolatility_Terms_t_Term_t_Curve_t(w, "Curve", v.Curve);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsVolatility_Terms_t(xsdcpp::XmlWriter& w, const char* name, const domain::cdsVolatility_Terms_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Term) _serialize_cdsVolatility_Terms_t_Term_t(w, "Term", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsVolatility_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::cdsVolatility_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_constantVolatilityConfig_QuoteType_t(xsdcpp::XmlWriter& w, const char* name, const domain::constantVolatilityConfig_QuoteType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_constantVolatilityConfig_VolatilityType_t(xsdcpp::XmlWriter& w, const char* name, const domain::constantVolatilityConfig_VolatilityType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_constantVolatilityConfig_ExerciseType_t(xsdcpp::XmlWriter& w, const char* name, const domain::constantVolatilityConfig_ExerciseType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_constantVolatilityConfig_Quote_t(xsdcpp::XmlWriter& w, const char* name, const domain::constantVolatilityConfig_Quote_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_constantVolatilityConfig(xsdcpp::XmlWriter& w, const char* name, const domain::constantVolatilityConfig& v) {
+    w.startElement(name);
+    if ((&v)->priority) w.writeAttribute("priority", xsdcpp::get_string(*(&v)->priority));
+    if (v.QuoteType) _serialize_constantVolatilityConfig_QuoteType_t(w, "QuoteType", *v.QuoteType);
+    if (v.VolatilityType) _serialize_constantVolatilityConfig_VolatilityType_t(w, "VolatilityType", *v.VolatilityType);
+    if (v.ExerciseType) _serialize_constantVolatilityConfig_ExerciseType_t(w, "ExerciseType", *v.ExerciseType);
+    _serialize_constantVolatilityConfig_Quote_t(w, "Quote", v.Quote);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityCurveConfig_QuoteType_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityCurveConfig_QuoteType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityCurveConfig_VolatilityType_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityCurveConfig_VolatilityType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityCurveConfig_ExerciseType_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityCurveConfig_ExerciseType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_quoteType_Quote_t(xsdcpp::XmlWriter& w, const char* name, const domain::quoteType_Quote_t& v) {
+    w.startElement(name);
+    if ((&v)->optional) w.writeAttribute("optional", *(&v)->optional);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_quoteType(xsdcpp::XmlWriter& w, const char* name, const domain::quoteType& v) {
+    w.startElement(name);
+    for (const auto& item : v.Quote) _serialize_quoteType_Quote_t(w, "Quote", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_interpolationMethodType(xsdcpp::XmlWriter& w, const char* name, const domain::interpolationMethodType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityCurveConfig(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityCurveConfig& v) {
+    w.startElement(name);
+    if ((&v)->priority) w.writeAttribute("priority", xsdcpp::get_string(*(&v)->priority));
+    if (v.QuoteType) _serialize_volatilityCurveConfig_QuoteType_t(w, "QuoteType", *v.QuoteType);
+    if (v.VolatilityType) _serialize_volatilityCurveConfig_VolatilityType_t(w, "VolatilityType", *v.VolatilityType);
+    if (v.ExerciseType) _serialize_volatilityCurveConfig_ExerciseType_t(w, "ExerciseType", *v.ExerciseType);
+    _serialize_quoteType(w, "Quotes", v.Quotes);
+    _serialize_interpolationMethodType(w, "Interpolation", v.Interpolation);
+    _serialize_extrapolationType(w, "Extrapolation", v.Extrapolation);
+    if (v.EnforceMontoneVariance) _serialize_bool(w, "EnforceMontoneVariance", *v.EnforceMontoneVariance);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityStrikeSurfaceConfig_QuoteType_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityStrikeSurfaceConfig_QuoteType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityStrikeSurfaceConfig_VolatilityType_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityStrikeSurfaceConfig_VolatilityType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityStrikeSurfaceConfig_ExerciseType_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityStrikeSurfaceConfig_ExerciseType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityStrikeSurfaceConfig_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityStrikeSurfaceConfig_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityStrikeSurfaceConfig_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityStrikeSurfaceConfig_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityStrikeSurfaceConfig(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityStrikeSurfaceConfig& v) {
+    w.startElement(name);
+    if ((&v)->priority) w.writeAttribute("priority", xsdcpp::get_string(*(&v)->priority));
+    if (v.QuoteType) _serialize_volatilityStrikeSurfaceConfig_QuoteType_t(w, "QuoteType", *v.QuoteType);
+    if (v.VolatilityType) _serialize_volatilityStrikeSurfaceConfig_VolatilityType_t(w, "VolatilityType", *v.VolatilityType);
+    if (v.ExerciseType) _serialize_volatilityStrikeSurfaceConfig_ExerciseType_t(w, "ExerciseType", *v.ExerciseType);
+    _serialize_volatilityStrikeSurfaceConfig_Strikes_t(w, "Strikes", v.Strikes);
+    _serialize_volatilityStrikeSurfaceConfig_Expiries_t(w, "Expiries", v.Expiries);
+    _serialize_interpolationMethodType(w, "TimeInterpolation", v.TimeInterpolation);
+    _serialize_interpolationMethodType(w, "StrikeInterpolation", v.StrikeInterpolation);
+    _serialize_bool_(w, "Extrapolation", v.Extrapolation);
+    _serialize_extrapolationType(w, "TimeExtrapolation", v.TimeExtrapolation);
+    if (v.TimeExtrapolationVariance) _serialize_bool_(w, "TimeExtrapolationVariance", *v.TimeExtrapolationVariance);
+    _serialize_extrapolationType(w, "StrikeExtrapolation", v.StrikeExtrapolation);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_proxySurface_ProxyVolatilityCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::proxySurface_ProxyVolatilityCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_proxySurface_FXVolatilityCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::proxySurface_FXVolatilityCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_proxySurface_CorrelationCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::proxySurface_CorrelationCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_proxySurface_CDSVolatilityCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::proxySurface_CDSVolatilityCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_proxySurface(xsdcpp::XmlWriter& w, const char* name, const domain::proxySurface& v) {
+    w.startElement(name);
+    if ((&v)->priority) w.writeAttribute("priority", xsdcpp::get_string(*(&v)->priority));
+    _serialize_proxySurface_ProxyVolatilityCurve_t(w, "ProxyVolatilityCurve", v.ProxyVolatilityCurve);
+    if (v.FXVolatilityCurve) _serialize_proxySurface_FXVolatilityCurve_t(w, "FXVolatilityCurve", *v.FXVolatilityCurve);
+    if (v.CorrelationCurve) _serialize_proxySurface_CorrelationCurve_t(w, "CorrelationCurve", *v.CorrelationCurve);
+    if (v.CDSVolatilityCurve) _serialize_proxySurface_CDSVolatilityCurve_t(w, "CDSVolatilityCurve", *v.CDSVolatilityCurve);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsVolatility_StrikeType_t(xsdcpp::XmlWriter& w, const char* name, const domain::cdsVolatility_StrikeType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsVolatility_QuoteName_t(xsdcpp::XmlWriter& w, const char* name, const domain::cdsVolatility_QuoteName_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsVolatility(xsdcpp::XmlWriter& w, const char* name, const domain::cdsVolatility& v) {
+    w.startElement(name);
+    _serialize_cdsVolatility_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_cdsVolatility_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    if (v.Terms) _serialize_cdsVolatility_Terms_t(w, "Terms", *v.Terms);
+    if (v.Expiries) _serialize_cdsVolatility_Expiries_t(w, "Expiries", *v.Expiries);
+    if (v.Constant) _serialize_constantVolatilityConfig(w, "Constant", *v.Constant);
+    if (v.Curve) _serialize_volatilityCurveConfig(w, "Curve", *v.Curve);
+    if (v.StrikeSurface) _serialize_volatilityStrikeSurfaceConfig(w, "StrikeSurface", *v.StrikeSurface);
+    if (v.ProxySurface) _serialize_proxySurface(w, "ProxySurface", *v.ProxySurface);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    if (v.StrikeType) _serialize_cdsVolatility_StrikeType_t(w, "StrikeType", *v.StrikeType);
+    if (v.QuoteName) _serialize_cdsVolatility_QuoteName_t(w, "QuoteName", *v.QuoteName);
+    if (v.StrikeFactor) _serialize_positiveDecimal(w, "StrikeFactor", *v.StrikeFactor);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsVolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::cdsVolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.CDSVolatility) _serialize_cdsVolatility(w, "CDSVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurveType(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurveType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_t_DiscountCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t_Configuration_t_DiscountCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_t_RecoveryRate_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t_Configuration_t_RecoveryRate_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_t_BenchmarkCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t_Configuration_t_BenchmarkCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_t_SourceCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t_Configuration_t_SourceCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_t_Pillars_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t_Configuration_t_Pillars_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_t_SourceCurves_t_SourceCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t_Configuration_t_SourceCurves_t_SourceCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_t_SourceCurves_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t_Configuration_t_SourceCurves_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.SourceCurve) _serialize_defaultCurve_Configurations_t_Configuration_t_SourceCurves_t_SourceCurve_t(w, "SourceCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_t_SwitchDates_t_SwitchDate_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t_Configuration_t_SwitchDates_t_SwitchDate_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_t_SwitchDates_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t_Configuration_t_SwitchDates_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.SwitchDate) _serialize_defaultCurve_Configurations_t_Configuration_t_SwitchDates_t_SwitchDate_t(w, "SwitchDate", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_t_InitialState_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t_Configuration_t_InitialState_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_t_States_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t_Configuration_t_States_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_t_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t_Configuration_t_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_t_IndexTerm_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t_Configuration_t_IndexTerm_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t_Configuration_t& v) {
+    w.startElement(name);
+    if ((&v)->priority) w.writeAttribute("priority", xsdcpp::get_string(*(&v)->priority));
+    _serialize_defaultCurveType(w, "Type", v.Type);
+    if (v.DiscountCurve) _serialize_defaultCurve_Configurations_t_Configuration_t_DiscountCurve_t(w, "DiscountCurve", *v.DiscountCurve);
+    _serialize_dayCounter(w, "DayCounter", v.DayCounter);
+    if (v.RecoveryRate) _serialize_defaultCurve_Configurations_t_Configuration_t_RecoveryRate_t(w, "RecoveryRate", *v.RecoveryRate);
+    if (v.StartDate) _serialize_date(w, "StartDate", *v.StartDate);
+    if (v.Quotes) _serialize_quoteType(w, "Quotes", *v.Quotes);
+    if (v.BenchmarkCurve) _serialize_defaultCurve_Configurations_t_Configuration_t_BenchmarkCurve_t(w, "BenchmarkCurve", *v.BenchmarkCurve);
+    if (v.SourceCurve) _serialize_defaultCurve_Configurations_t_Configuration_t_SourceCurve_t(w, "SourceCurve", *v.SourceCurve);
+    if (v.Pillars) _serialize_defaultCurve_Configurations_t_Configuration_t_Pillars_t(w, "Pillars", *v.Pillars);
+    if (v.SpotLag) _serialize_double(w, "SpotLag", *v.SpotLag);
+    if (v.SourceCurves) _serialize_defaultCurve_Configurations_t_Configuration_t_SourceCurves_t(w, "SourceCurves", *v.SourceCurves);
+    if (v.SwitchDates) _serialize_defaultCurve_Configurations_t_Configuration_t_SwitchDates_t(w, "SwitchDates", *v.SwitchDates);
+    if (v.InitialState) _serialize_defaultCurve_Configurations_t_Configuration_t_InitialState_t(w, "InitialState", *v.InitialState);
+    if (v.States) _serialize_defaultCurve_Configurations_t_Configuration_t_States_t(w, "States", *v.States);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    if (v.Conventions) _serialize_defaultCurve_Configurations_t_Configuration_t_Conventions_t(w, "Conventions", *v.Conventions);
+    if (v.Extrapolation) _serialize_bool_(w, "Extrapolation", *v.Extrapolation);
+    if (v.RunningSpread) _serialize_double(w, "RunningSpread", *v.RunningSpread);
+    if (v.IndexTerm) _serialize_defaultCurve_Configurations_t_Configuration_t_IndexTerm_t(w, "IndexTerm", *v.IndexTerm);
+    if (v.ImplyDefaultFromMarket) _serialize_bool_(w, "ImplyDefaultFromMarket", *v.ImplyDefaultFromMarket);
+    if (v.BootstrapConfig) _serialize_bootstrapConfigType(w, "BootstrapConfig", *v.BootstrapConfig);
+    if (v.AllowNegativeRates) _serialize_bool_(w, "AllowNegativeRates", *v.AllowNegativeRates);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Configurations_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Configuration) _serialize_defaultCurve_Configurations_t_Configuration_t(w, "Configuration", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_DiscountCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_DiscountCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_RecoveryRate_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_RecoveryRate_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_BenchmarkCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_BenchmarkCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_SourceCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_SourceCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Pillars_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Pillars_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_SourceCurves_t_SourceCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_SourceCurves_t_SourceCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_SourceCurves_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_SourceCurves_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.SourceCurve) _serialize_defaultCurve_SourceCurves_t_SourceCurve_t(w, "SourceCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_SwitchDates_t_SwitchDate_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_SwitchDates_t_SwitchDate_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_SwitchDates_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_SwitchDates_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.SwitchDate) _serialize_defaultCurve_SwitchDates_t_SwitchDate_t(w, "SwitchDate", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_IndexTerm_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_IndexTerm_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_InitialState_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_InitialState_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_States_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve_States_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurve& v) {
+    w.startElement(name);
+    _serialize_defaultCurve_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_defaultCurve_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    if (v.Configurations) _serialize_defaultCurve_Configurations_t(w, "Configurations", *v.Configurations);
+    if (v.Type) _serialize_defaultCurveType(w, "Type", *v.Type);
+    if (v.DiscountCurve) _serialize_defaultCurve_DiscountCurve_t(w, "DiscountCurve", *v.DiscountCurve);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    if (v.RecoveryRate) _serialize_defaultCurve_RecoveryRate_t(w, "RecoveryRate", *v.RecoveryRate);
+    if (v.StartDate) _serialize_date(w, "StartDate", *v.StartDate);
+    if (v.Quotes) _serialize_quoteType(w, "Quotes", *v.Quotes);
+    if (v.BenchmarkCurve) _serialize_defaultCurve_BenchmarkCurve_t(w, "BenchmarkCurve", *v.BenchmarkCurve);
+    if (v.SourceCurve) _serialize_defaultCurve_SourceCurve_t(w, "SourceCurve", *v.SourceCurve);
+    if (v.Pillars) _serialize_defaultCurve_Pillars_t(w, "Pillars", *v.Pillars);
+    if (v.SpotLag) _serialize_double(w, "SpotLag", *v.SpotLag);
+    if (v.SourceCurves) _serialize_defaultCurve_SourceCurves_t(w, "SourceCurves", *v.SourceCurves);
+    if (v.SwitchDates) _serialize_defaultCurve_SwitchDates_t(w, "SwitchDates", *v.SwitchDates);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    if (v.Conventions) _serialize_defaultCurve_Conventions_t(w, "Conventions", *v.Conventions);
+    if (v.Extrapolation) _serialize_bool_(w, "Extrapolation", *v.Extrapolation);
+    if (v.RunningSpread) _serialize_double(w, "RunningSpread", *v.RunningSpread);
+    if (v.IndexTerm) _serialize_defaultCurve_IndexTerm_t(w, "IndexTerm", *v.IndexTerm);
+    if (v.ImplyDefaultFromMarket) _serialize_bool_(w, "ImplyDefaultFromMarket", *v.ImplyDefaultFromMarket);
+    if (v.BootstrapConfig) _serialize_bootstrapConfigType(w, "BootstrapConfig", *v.BootstrapConfig);
+    if (v.AllowNegativeRates) _serialize_bool_(w, "AllowNegativeRates", *v.AllowNegativeRates);
+    if (v.InitialState) _serialize_defaultCurve_InitialState_t(w, "InitialState", *v.InitialState);
+    if (v.States) _serialize_defaultCurve_States_t(w, "States", *v.States);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurves(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.DefaultCurve) _serialize_defaultCurve(w, "DefaultCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldCurve_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldCurve_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldCurve_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldCurve_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldCurve_DiscountCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldCurve_DiscountCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_directSegmentTypeType(xsdcpp::XmlWriter& w, const char* name, const domain::directSegmentTypeType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_directSegmentType_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::directSegmentType_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_directSegmentType_PillarChoice_t(xsdcpp::XmlWriter& w, const char* name, const domain::directSegmentType_PillarChoice_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_directSegmentType(xsdcpp::XmlWriter& w, const char* name, const domain::directSegmentType& v) {
+    w.startElement(name);
+    _serialize_directSegmentTypeType(w, "Type", v.Type);
+    _serialize_quoteType(w, "Quotes", v.Quotes);
+    if (v.Conventions) _serialize_directSegmentType_Conventions_t(w, "Conventions", *v.Conventions);
+    if (v.PillarChoice) _serialize_directSegmentType_PillarChoice_t(w, "PillarChoice", *v.PillarChoice);
+    if (v.Priority) _serialize_uint64_t(w, "Priority", *v.Priority);
+    if (v.MinDistance) _serialize_uint64_t(w, "MinDistance", *v.MinDistance);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simpleSegmentTypeType(xsdcpp::XmlWriter& w, const char* name, const domain::simpleSegmentTypeType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simpleSegmentType_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::simpleSegmentType_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simpleSegmentType_PillarChoice_t(xsdcpp::XmlWriter& w, const char* name, const domain::simpleSegmentType_PillarChoice_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simpleSegmentType_ProjectionCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::simpleSegmentType_ProjectionCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simpleSegmentType(xsdcpp::XmlWriter& w, const char* name, const domain::simpleSegmentType& v) {
+    w.startElement(name);
+    _serialize_simpleSegmentTypeType(w, "Type", v.Type);
+    _serialize_quoteType(w, "Quotes", v.Quotes);
+    _serialize_simpleSegmentType_Conventions_t(w, "Conventions", v.Conventions);
+    if (v.PillarChoice) _serialize_simpleSegmentType_PillarChoice_t(w, "PillarChoice", *v.PillarChoice);
+    if (v.Priority) _serialize_uint64_t(w, "Priority", *v.Priority);
+    if (v.MinDistance) _serialize_uint64_t(w, "MinDistance", *v.MinDistance);
+    if (v.ProjectionCurve) _serialize_simpleSegmentType_ProjectionCurve_t(w, "ProjectionCurve", *v.ProjectionCurve);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_aoisSegmentType_Type_t(xsdcpp::XmlWriter& w, const char* name, const domain::aoisSegmentType_Type_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_compositeQuoteType_CompositeQuote_t_SpreadQuote_t(xsdcpp::XmlWriter& w, const char* name, const domain::compositeQuoteType_CompositeQuote_t_SpreadQuote_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_compositeQuoteType_CompositeQuote_t_RateQuote_t(xsdcpp::XmlWriter& w, const char* name, const domain::compositeQuoteType_CompositeQuote_t_RateQuote_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_compositeQuoteType_CompositeQuote_t(xsdcpp::XmlWriter& w, const char* name, const domain::compositeQuoteType_CompositeQuote_t& v) {
+    w.startElement(name);
+    _serialize_compositeQuoteType_CompositeQuote_t_SpreadQuote_t(w, "SpreadQuote", v.SpreadQuote);
+    _serialize_compositeQuoteType_CompositeQuote_t_RateQuote_t(w, "RateQuote", v.RateQuote);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_compositeQuoteType(xsdcpp::XmlWriter& w, const char* name, const domain::compositeQuoteType& v) {
+    w.startElement(name);
+    for (const auto& item : v.CompositeQuote) _serialize_compositeQuoteType_CompositeQuote_t(w, "CompositeQuote", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_aoisSegmentType_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::aoisSegmentType_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_aoisSegmentType_PillarChoice_t(xsdcpp::XmlWriter& w, const char* name, const domain::aoisSegmentType_PillarChoice_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_aoisSegmentType_ProjectionCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::aoisSegmentType_ProjectionCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_aoisSegmentType(xsdcpp::XmlWriter& w, const char* name, const domain::aoisSegmentType& v) {
+    w.startElement(name);
+    _serialize_aoisSegmentType_Type_t(w, "Type", v.Type);
+    _serialize_compositeQuoteType(w, "Quotes", v.Quotes);
+    _serialize_aoisSegmentType_Conventions_t(w, "Conventions", v.Conventions);
+    if (v.PillarChoice) _serialize_aoisSegmentType_PillarChoice_t(w, "PillarChoice", *v.PillarChoice);
+    if (v.Priority) _serialize_uint64_t(w, "Priority", *v.Priority);
+    if (v.MinDistance) _serialize_uint64_t(w, "MinDistance", *v.MinDistance);
+    if (v.ProjectionCurve) _serialize_aoisSegmentType_ProjectionCurve_t(w, "ProjectionCurve", *v.ProjectionCurve);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSegmentTypeType(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisSegmentTypeType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSegmentType_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisSegmentType_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSegmentType_PillarChoice_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisSegmentType_PillarChoice_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSegmentType_ProjectionCurvePay_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisSegmentType_ProjectionCurvePay_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSegmentType_ProjectionCurveReceive_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisSegmentType_ProjectionCurveReceive_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSegmentType_ProjectionCurveLong_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisSegmentType_ProjectionCurveLong_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSegmentType_ProjectionCurveShort_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisSegmentType_ProjectionCurveShort_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSegmentType(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisSegmentType& v) {
+    w.startElement(name);
+    _serialize_tenorBasisSegmentTypeType(w, "Type", v.Type);
+    _serialize_quoteType(w, "Quotes", v.Quotes);
+    _serialize_tenorBasisSegmentType_Conventions_t(w, "Conventions", v.Conventions);
+    if (v.PillarChoice) _serialize_tenorBasisSegmentType_PillarChoice_t(w, "PillarChoice", *v.PillarChoice);
+    if (v.Priority) _serialize_uint64_t(w, "Priority", *v.Priority);
+    if (v.MinDistance) _serialize_uint64_t(w, "MinDistance", *v.MinDistance);
+    if (v.ProjectionCurvePay) _serialize_tenorBasisSegmentType_ProjectionCurvePay_t(w, "ProjectionCurvePay", *v.ProjectionCurvePay);
+    if (v.ProjectionCurveReceive) _serialize_tenorBasisSegmentType_ProjectionCurveReceive_t(w, "ProjectionCurveReceive", *v.ProjectionCurveReceive);
+    if (v.ProjectionCurveLong) _serialize_tenorBasisSegmentType_ProjectionCurveLong_t(w, "ProjectionCurveLong", *v.ProjectionCurveLong);
+    if (v.ProjectionCurveShort) _serialize_tenorBasisSegmentType_ProjectionCurveShort_t(w, "ProjectionCurveShort", *v.ProjectionCurveShort);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencySegmentTypeType(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencySegmentTypeType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencySegmentType_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencySegmentType_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencySegmentType_PillarChoice_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencySegmentType_PillarChoice_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencySegmentType_DiscountCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencySegmentType_DiscountCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencySegmentType_SpotRate_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencySegmentType_SpotRate_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencySegmentType_ProjectionCurveDomestic_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencySegmentType_ProjectionCurveDomestic_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencySegmentType_ProjectionCurveForeign_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencySegmentType_ProjectionCurveForeign_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencySegmentType(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencySegmentType& v) {
+    w.startElement(name);
+    _serialize_crossCurrencySegmentTypeType(w, "Type", v.Type);
+    _serialize_quoteType(w, "Quotes", v.Quotes);
+    _serialize_crossCurrencySegmentType_Conventions_t(w, "Conventions", v.Conventions);
+    if (v.PillarChoice) _serialize_crossCurrencySegmentType_PillarChoice_t(w, "PillarChoice", *v.PillarChoice);
+    if (v.Priority) _serialize_uint64_t(w, "Priority", *v.Priority);
+    if (v.MinDistance) _serialize_uint64_t(w, "MinDistance", *v.MinDistance);
+    _serialize_crossCurrencySegmentType_DiscountCurve_t(w, "DiscountCurve", v.DiscountCurve);
+    _serialize_crossCurrencySegmentType_SpotRate_t(w, "SpotRate", v.SpotRate);
+    if (v.ProjectionCurveDomestic) _serialize_crossCurrencySegmentType_ProjectionCurveDomestic_t(w, "ProjectionCurveDomestic", *v.ProjectionCurveDomestic);
+    if (v.ProjectionCurveForeign) _serialize_crossCurrencySegmentType_ProjectionCurveForeign_t(w, "ProjectionCurveForeign", *v.ProjectionCurveForeign);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroSpreadSegmentTypeType(xsdcpp::XmlWriter& w, const char* name, const domain::zeroSpreadSegmentTypeType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroSpreadType_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroSpreadType_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroSpreadType_ReferenceCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroSpreadType_ReferenceCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroSpreadType_PillarChoice_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroSpreadType_PillarChoice_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroSpreadType(xsdcpp::XmlWriter& w, const char* name, const domain::zeroSpreadType& v) {
+    w.startElement(name);
+    _serialize_zeroSpreadSegmentTypeType(w, "Type", v.Type);
+    _serialize_quoteType(w, "Quotes", v.Quotes);
+    _serialize_zeroSpreadType_Conventions_t(w, "Conventions", v.Conventions);
+    _serialize_zeroSpreadType_ReferenceCurve_t(w, "ReferenceCurve", v.ReferenceCurve);
+    if (v.PillarChoice) _serialize_zeroSpreadType_PillarChoice_t(w, "PillarChoice", *v.PillarChoice);
+    if (v.Priority) _serialize_uint64_t(w, "Priority", *v.Priority);
+    if (v.MinDistance) _serialize_uint64_t(w, "MinDistance", *v.MinDistance);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_discountRatioTypeType(xsdcpp::XmlWriter& w, const char* name, const domain::discountRatioTypeType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_discountRatioType_PillarChoice_t(xsdcpp::XmlWriter& w, const char* name, const domain::discountRatioType_PillarChoice_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_discountRatioType_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::discountRatioType_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_discountRatioCurveElement(xsdcpp::XmlWriter& w, const char* name, const domain::discountRatioCurveElement& v) {
+    w.startElement(name);
+    w.writeAttribute("currency", (&v)->currency);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_discountRatioType(xsdcpp::XmlWriter& w, const char* name, const domain::discountRatioType& v) {
+    w.startElement(name);
+    _serialize_discountRatioTypeType(w, "Type", v.Type);
+    if (v.PillarChoice) _serialize_discountRatioType_PillarChoice_t(w, "PillarChoice", *v.PillarChoice);
+    if (v.Priority) _serialize_uint64_t(w, "Priority", *v.Priority);
+    if (v.MinDistance) _serialize_uint64_t(w, "MinDistance", *v.MinDistance);
+    if (v.Conventions) _serialize_discountRatioType_Conventions_t(w, "Conventions", *v.Conventions);
+    _serialize_discountRatioCurveElement(w, "BaseCurve", v.BaseCurve);
+    _serialize_discountRatioCurveElement(w, "NumeratorCurve", v.NumeratorCurve);
+    _serialize_discountRatioCurveElement(w, "DenominatorCurve", v.DenominatorCurve);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fittedBondType_Type_t(xsdcpp::XmlWriter& w, const char* name, const domain::fittedBondType_Type_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fittedBondType_PillarChoice_t(xsdcpp::XmlWriter& w, const char* name, const domain::fittedBondType_PillarChoice_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fittedBondType_IborIndexCurves_t_IborIndexCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::fittedBondType_IborIndexCurves_t_IborIndexCurve_t& v) {
+    w.startElement(name);
+    if ((&v)->iborIndex) w.writeAttribute("iborIndex", *(&v)->iborIndex);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fittedBondType_IborIndexCurves_t(xsdcpp::XmlWriter& w, const char* name, const domain::fittedBondType_IborIndexCurves_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.IborIndexCurve) _serialize_fittedBondType_IborIndexCurves_t_IborIndexCurve_t(w, "IborIndexCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fittedBondType(xsdcpp::XmlWriter& w, const char* name, const domain::fittedBondType& v) {
+    w.startElement(name);
+    _serialize_fittedBondType_Type_t(w, "Type", v.Type);
+    _serialize_quoteType(w, "Quotes", v.Quotes);
+    if (v.PillarChoice) _serialize_fittedBondType_PillarChoice_t(w, "PillarChoice", *v.PillarChoice);
+    if (v.Priority) _serialize_uint64_t(w, "Priority", *v.Priority);
+    if (v.MinDistance) _serialize_uint64_t(w, "MinDistance", *v.MinDistance);
+    if (v.IborIndexCurves) _serialize_fittedBondType_IborIndexCurves_t(w, "IborIndexCurves", *v.IborIndexCurves);
+    if (v.ExtrapolateFlat) _serialize_bool(w, "ExtrapolateFlat", *v.ExtrapolateFlat);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_BondYieldShiftedType_Type_t(xsdcpp::XmlWriter& w, const char* name, const domain::BondYieldShiftedType_Type_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_BondYieldShiftedType_ReferenceCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::BondYieldShiftedType_ReferenceCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_BondYieldShiftedType_IborIndexCurves_t_IborIndexCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::BondYieldShiftedType_IborIndexCurves_t_IborIndexCurve_t& v) {
+    w.startElement(name);
+    if ((&v)->iborIndex) w.writeAttribute("iborIndex", *(&v)->iborIndex);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_BondYieldShiftedType_IborIndexCurves_t(xsdcpp::XmlWriter& w, const char* name, const domain::BondYieldShiftedType_IborIndexCurves_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.IborIndexCurve) _serialize_BondYieldShiftedType_IborIndexCurves_t_IborIndexCurve_t(w, "IborIndexCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_BondYieldShiftedType_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::BondYieldShiftedType_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_BondYieldShiftedType(xsdcpp::XmlWriter& w, const char* name, const domain::BondYieldShiftedType& v) {
+    w.startElement(name);
+    _serialize_BondYieldShiftedType_Type_t(w, "Type", v.Type);
+    _serialize_BondYieldShiftedType_ReferenceCurve_t(w, "ReferenceCurve", v.ReferenceCurve);
+    _serialize_quoteType(w, "Quotes", v.Quotes);
+    if (v.IborIndexCurves) _serialize_BondYieldShiftedType_IborIndexCurves_t(w, "IborIndexCurves", *v.IborIndexCurves);
+    _serialize_BondYieldShiftedType_Conventions_t(w, "Conventions", v.Conventions);
+    if (v.ExtrapolateFlat) _serialize_bool(w, "ExtrapolateFlat", *v.ExtrapolateFlat);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_weightedAverageType_Type_t(xsdcpp::XmlWriter& w, const char* name, const domain::weightedAverageType_Type_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_weightedAverageType_ReferenceCurve1_t(xsdcpp::XmlWriter& w, const char* name, const domain::weightedAverageType_ReferenceCurve1_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_weightedAverageType_ReferenceCurve2_t(xsdcpp::XmlWriter& w, const char* name, const domain::weightedAverageType_ReferenceCurve2_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_weightedAverageType(xsdcpp::XmlWriter& w, const char* name, const domain::weightedAverageType& v) {
+    w.startElement(name);
+    _serialize_weightedAverageType_Type_t(w, "Type", v.Type);
+    _serialize_weightedAverageType_ReferenceCurve1_t(w, "ReferenceCurve1", v.ReferenceCurve1);
+    _serialize_weightedAverageType_ReferenceCurve2_t(w, "ReferenceCurve2", v.ReferenceCurve2);
+    _serialize_float(w, "Weight1", v.Weight1);
+    _serialize_float(w, "Weight2", v.Weight2);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldPlusDefaultType_Type_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldPlusDefaultType_Type_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldPlusDefaultType_ReferenceCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldPlusDefaultType_ReferenceCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldPlusDefaultType_DefaultCurves_t_DefaultCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldPlusDefaultType_DefaultCurves_t_DefaultCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldPlusDefaultType_DefaultCurves_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldPlusDefaultType_DefaultCurves_t& v) {
+    w.startElement(name);
+    _serialize_yieldPlusDefaultType_DefaultCurves_t_DefaultCurve_t(w, "DefaultCurve", v.DefaultCurve);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldPlusDefaultType_Weights_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldPlusDefaultType_Weights_t& v) {
+    w.startElement(name);
+    _serialize_float(w, "Weight", v.Weight);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldPlusDefaultType(xsdcpp::XmlWriter& w, const char* name, const domain::yieldPlusDefaultType& v) {
+    w.startElement(name);
+    _serialize_yieldPlusDefaultType_Type_t(w, "Type", v.Type);
+    _serialize_yieldPlusDefaultType_ReferenceCurve_t(w, "ReferenceCurve", v.ReferenceCurve);
+    _serialize_yieldPlusDefaultType_DefaultCurves_t(w, "DefaultCurves", v.DefaultCurves);
+    _serialize_yieldPlusDefaultType_Weights_t(w, "Weights", v.Weights);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_iborFallbackType_Type_t(xsdcpp::XmlWriter& w, const char* name, const domain::iborFallbackType_Type_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_iborFallbackType_RfrCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::iborFallbackType_RfrCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_iborFallbackType_PillarChoice_t(xsdcpp::XmlWriter& w, const char* name, const domain::iborFallbackType_PillarChoice_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_iborFallbackType(xsdcpp::XmlWriter& w, const char* name, const domain::iborFallbackType& v) {
+    w.startElement(name);
+    _serialize_iborFallbackType_Type_t(w, "Type", v.Type);
+    _serialize_indexNameType(w, "IborIndex", v.IborIndex);
+    _serialize_iborFallbackType_RfrCurve_t(w, "RfrCurve", v.RfrCurve);
+    if (v.RfrIndex) _serialize_indexNameType(w, "RfrIndex", *v.RfrIndex);
+    if (v.Spread) _serialize_float(w, "Spread", *v.Spread);
+    if (v.PillarChoice) _serialize_iborFallbackType_PillarChoice_t(w, "PillarChoice", *v.PillarChoice);
+    if (v.Priority) _serialize_uint64_t(w, "Priority", *v.Priority);
+    if (v.MinDistance) _serialize_uint64_t(w, "MinDistance", *v.MinDistance);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_segmentsType(xsdcpp::XmlWriter& w, const char* name, const domain::segmentsType& v) {
+    w.startElement(name);
+    for (const auto& item : v.Direct) _serialize_directSegmentType(w, "Direct", item);
+    for (const auto& item : v.Simple) _serialize_simpleSegmentType(w, "Simple", item);
+    for (const auto& item : v.AverageOIS) _serialize_aoisSegmentType(w, "AverageOIS", item);
+    for (const auto& item : v.TenorBasis) _serialize_tenorBasisSegmentType(w, "TenorBasis", item);
+    for (const auto& item : v.CrossCurrency) _serialize_crossCurrencySegmentType(w, "CrossCurrency", item);
+    for (const auto& item : v.ZeroSpread) _serialize_zeroSpreadType(w, "ZeroSpread", item);
+    for (const auto& item : v.DiscountRatio) _serialize_discountRatioType(w, "DiscountRatio", item);
+    for (const auto& item : v.FittedBond) _serialize_fittedBondType(w, "FittedBond", item);
+    for (const auto& item : v.BondYieldShifted) _serialize_BondYieldShiftedType(w, "BondYieldShifted", item);
+    for (const auto& item : v.WeightedAverage) _serialize_weightedAverageType(w, "WeightedAverage", item);
+    for (const auto& item : v.YieldPlusDefault) _serialize_yieldPlusDefaultType(w, "YieldPlusDefault", item);
+    for (const auto& item : v.IborFallback) _serialize_iborFallbackType(w, "IborFallback", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_interpolationVariableType(xsdcpp::XmlWriter& w, const char* name, const domain::interpolationVariableType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldCurve(xsdcpp::XmlWriter& w, const char* name, const domain::yieldCurve& v) {
+    w.startElement(name);
+    _serialize_yieldCurve_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_yieldCurve_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    _serialize_yieldCurve_DiscountCurve_t(w, "DiscountCurve", v.DiscountCurve);
+    _serialize_segmentsType(w, "Segments", v.Segments);
+    if (v.InterpolationVariable) _serialize_interpolationVariableType(w, "InterpolationVariable", *v.InterpolationVariable);
+    if (v.InterpolationMethod) _serialize_interpolationMethodType(w, "InterpolationMethod", *v.InterpolationMethod);
+    if (v.MixedInterpolationCutoff) _serialize_uint64_t(w, "MixedInterpolationCutoff", *v.MixedInterpolationCutoff);
+    if (v.YieldCurveDayCounter) _serialize_dayCounter(w, "YieldCurveDayCounter", *v.YieldCurveDayCounter);
+    if (v.Tolerance) _serialize_double(w, "Tolerance", *v.Tolerance);
+    if (v.Extrapolation) _serialize_bool_(w, "Extrapolation", *v.Extrapolation);
+    if (v.ExcludeT0FromInterpolation) _serialize_bool_(w, "ExcludeT0FromInterpolation", *v.ExcludeT0FromInterpolation);
+    if (v.BootstrapConfig) _serialize_bootstrapConfigType(w, "BootstrapConfig", *v.BootstrapConfig);
+    if (v.Report) _serialize_yieldCurveReport(w, "Report", *v.Report);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldCurves(xsdcpp::XmlWriter& w, const char* name, const domain::yieldCurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.YieldCurve) _serialize_yieldCurve(w, "YieldCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCurve_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCurve_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCurve_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCurve_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCurve_NominalTermStructure_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCurve_NominalTermStructure_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationType(xsdcpp::XmlWriter& w, const char* name, const domain::inflationType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCurve_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCurve_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inlfSegmentType_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::inlfSegmentType_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inlfSegmentType(xsdcpp::XmlWriter& w, const char* name, const domain::inlfSegmentType& v) {
+    w.startElement(name);
+    _serialize_inlfSegmentType_Conventions_t(w, "Conventions", v.Conventions);
+    _serialize_quoteType(w, "Quotes", v.Quotes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflSegmentsType(xsdcpp::XmlWriter& w, const char* name, const domain::inflSegmentsType& v) {
+    w.startElement(name);
+    for (const auto& item : v.Segment) _serialize_inlfSegmentType(w, "Segment", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCurve_Lag_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCurve_Lag_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_frequencyType(xsdcpp::XmlWriter& w, const char* name, const domain::frequencyType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCurve_BaseRate_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCurve_BaseRate_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_factorType_Factor_t(xsdcpp::XmlWriter& w, const char* name, const domain::factorType_Factor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_factorType(xsdcpp::XmlWriter& w, const char* name, const domain::factorType& v) {
+    w.startElement(name);
+    for (const auto& item : v.Factor) _serialize_factorType_Factor_t(w, "Factor", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_seasonalityType(xsdcpp::XmlWriter& w, const char* name, const domain::seasonalityType& v) {
+    w.startElement(name);
+    _serialize_date(w, "BaseDate", v.BaseDate);
+    _serialize_frequencyType(w, "Frequency", v.Frequency);
+    _serialize_factorType(w, "Factors", v.Factors);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCurve_InterpolationVariable_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCurve_InterpolationVariable_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCurve_InterpolationMethod_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCurve_InterpolationMethod_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCurve(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCurve& v) {
+    w.startElement(name);
+    _serialize_inflationCurve_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_inflationCurve_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    _serialize_inflationCurve_NominalTermStructure_t(w, "NominalTermStructure", v.NominalTermStructure);
+    _serialize_inflationType(w, "Type", v.Type);
+    if (v.Quotes) _serialize_quoteType(w, "Quotes", *v.Quotes);
+    if (v.Conventions) _serialize_inflationCurve_Conventions_t(w, "Conventions", *v.Conventions);
+    if (v.Segments) _serialize_inflSegmentsType(w, "Segments", *v.Segments);
+    if (v.Extrapolation) _serialize_bool_(w, "Extrapolation", *v.Extrapolation);
+    _serialize_calendar(w, "Calendar", v.Calendar);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    _serialize_inflationCurve_Lag_t(w, "Lag", v.Lag);
+    _serialize_frequencyType(w, "Frequency", v.Frequency);
+    if (v.BaseRate) _serialize_inflationCurve_BaseRate_t(w, "BaseRate", *v.BaseRate);
+    if (v.Tolerance) _serialize_double(w, "Tolerance", *v.Tolerance);
+    if (v.Seasonality) _serialize_seasonalityType(w, "Seasonality", *v.Seasonality);
+    if (v.UseLastFixingDate) _serialize_bool_(w, "UseLastFixingDate", *v.UseLastFixingDate);
+    if (v.InterpolationVariable) _serialize_inflationCurve_InterpolationVariable_t(w, "InterpolationVariable", *v.InterpolationVariable);
+    if (v.InterpolationMethod) _serialize_inflationCurve_InterpolationMethod_t(w, "InterpolationMethod", *v.InterpolationMethod);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCurves(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.InflationCurve) _serialize_inflationCurve(w, "InflationCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatility_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatility_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatility_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatility_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatility_QuoteType_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatility_QuoteType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatility_Tenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatility_Tenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatility_CapStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatility_CapStrikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatility_FloorStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatility_FloorStrikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatility_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatility_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatility_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatility_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatility_IndexCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatility_IndexCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatility_ObservationLag_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatility_ObservationLag_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatility_YieldTermStructure_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatility_YieldTermStructure_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatility_QuoteIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatility_QuoteIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatility_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatility_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatility(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatility& v) {
+    w.startElement(name);
+    _serialize_inflationCapFloorVolatility_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_inflationCapFloorVolatility_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    _serialize_inflationType(w, "Type", v.Type);
+    _serialize_inflationCapFloorVolatility_QuoteType_t(w, "QuoteType", v.QuoteType);
+    _serialize_volatilityType(w, "VolatilityType", v.VolatilityType);
+    _serialize_bool_(w, "Extrapolation", v.Extrapolation);
+    _serialize_inflationCapFloorVolatility_Tenors_t(w, "Tenors", v.Tenors);
+    if (v.SettlementDays) _serialize_uint64_t(w, "SettlementDays", *v.SettlementDays);
+    if (v.CapStrikes) _serialize_inflationCapFloorVolatility_CapStrikes_t(w, "CapStrikes", *v.CapStrikes);
+    if (v.FloorStrikes) _serialize_inflationCapFloorVolatility_FloorStrikes_t(w, "FloorStrikes", *v.FloorStrikes);
+    if (v.Strikes) _serialize_inflationCapFloorVolatility_Strikes_t(w, "Strikes", *v.Strikes);
+    _serialize_calendar(w, "Calendar", v.Calendar);
+    _serialize_dayCounter(w, "DayCounter", v.DayCounter);
+    _serialize_businessDayConvention(w, "BusinessDayConvention", v.BusinessDayConvention);
+    _serialize_inflationCapFloorVolatility_Index_t(w, "Index", v.Index);
+    _serialize_inflationCapFloorVolatility_IndexCurve_t(w, "IndexCurve", v.IndexCurve);
+    if (v.IndexInterpolated) _serialize_bool_(w, "IndexInterpolated", *v.IndexInterpolated);
+    _serialize_inflationCapFloorVolatility_ObservationLag_t(w, "ObservationLag", v.ObservationLag);
+    _serialize_inflationCapFloorVolatility_YieldTermStructure_t(w, "YieldTermStructure", v.YieldTermStructure);
+    if (v.QuoteIndex) _serialize_inflationCapFloorVolatility_QuoteIndex_t(w, "QuoteIndex", *v.QuoteIndex);
+    if (v.Conventions) _serialize_inflationCapFloorVolatility_Conventions_t(w, "Conventions", *v.Conventions);
+    if (v.UseLastFixingDate) _serialize_bool_(w, "UseLastFixingDate", *v.UseLastFixingDate);
+    if (v.Report) _serialize_reportConfiguration(w, "Report", *v.Report);
+    if (v.BootstrapConfig) _serialize_bootstrapConfigType(w, "BootstrapConfig", *v.BootstrapConfig);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationCapFloorVolatlities(xsdcpp::XmlWriter& w, const char* name, const domain::inflationCapFloorVolatlities& v) {
+    w.startElement(name);
+    for (const auto& item : v.InflationCapFloorVolatility) _serialize_inflationCapFloorVolatility(w, "InflationCapFloorVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityCurve_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityCurve_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityCurve_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityCurve_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_extendedCurrencyCode(xsdcpp::XmlWriter& w, const char* name, const domain::extendedCurrencyCode& v) {
+    w.startElement(name);
+    w.writeText(v);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityCurve_ForecastingCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityCurve_ForecastingCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityType(xsdcpp::XmlWriter& w, const char* name, const domain::equityType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_exerciseStyle(xsdcpp::XmlWriter& w, const char* name, const domain::exerciseStyle& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityCurve_SpotQuote_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityCurve_SpotQuote_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dividendInterpolation(xsdcpp::XmlWriter& w, const char* name, const domain::dividendInterpolation& v) {
+    w.startElement(name);
+    if (v.InterpolationVariable) _serialize_interpolationVariableType(w, "InterpolationVariable", *v.InterpolationVariable);
+    if (v.InterpolationMethod) _serialize_interpolationMethodType(w, "InterpolationMethod", *v.InterpolationMethod);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityCurve(xsdcpp::XmlWriter& w, const char* name, const domain::equityCurve& v) {
+    w.startElement(name);
+    _serialize_equityCurve_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_equityCurve_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    _serialize_extendedCurrencyCode(w, "Currency", v.Currency);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    _serialize_equityCurve_ForecastingCurve_t(w, "ForecastingCurve", v.ForecastingCurve);
+    _serialize_equityType(w, "Type", v.Type);
+    if (v.ExerciseStyle) _serialize_exerciseStyle(w, "ExerciseStyle", *v.ExerciseStyle);
+    _serialize_equityCurve_SpotQuote_t(w, "SpotQuote", v.SpotQuote);
+    if (v.Quotes) _serialize_quoteType(w, "Quotes", *v.Quotes);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    if (v.DividendInterpolation) _serialize_dividendInterpolation(w, "DividendInterpolation", *v.DividendInterpolation);
+    if (v.DividendExtrapolation) _serialize_bool_(w, "DividendExtrapolation", *v.DividendExtrapolation);
+    if (v.Extrapolation) _serialize_bool_(w, "Extrapolation", *v.Extrapolation);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityCurves(xsdcpp::XmlWriter& w, const char* name, const domain::equityCurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.EquityCurve) _serialize_equityCurve(w, "EquityCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityVolatility_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityVolatility_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityVolatility_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityVolatility_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityVolatility_EquityId_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityVolatility_EquityId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityVolatility_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityVolatility_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityVolatility_Strikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityVolatility_Strikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityMoneynessSurfaceConfig_QuoteType_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityMoneynessSurfaceConfig_QuoteType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityMoneynessSurfaceConfig_VolatilityType_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityMoneynessSurfaceConfig_VolatilityType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityMoneynessSurfaceConfig_ExerciseType_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityMoneynessSurfaceConfig_ExerciseType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_strikeMoneynessType(xsdcpp::XmlWriter& w, const char* name, const domain::strikeMoneynessType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityMoneynessSurfaceConfig_MoneynessLevels_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityMoneynessSurfaceConfig_MoneynessLevels_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityMoneynessSurfaceConfig_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityMoneynessSurfaceConfig_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityMoneynessSurfaceConfig(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityMoneynessSurfaceConfig& v) {
+    w.startElement(name);
+    if ((&v)->priority) w.writeAttribute("priority", xsdcpp::get_string(*(&v)->priority));
+    if (v.QuoteType) _serialize_volatilityMoneynessSurfaceConfig_QuoteType_t(w, "QuoteType", *v.QuoteType);
+    if (v.VolatilityType) _serialize_volatilityMoneynessSurfaceConfig_VolatilityType_t(w, "VolatilityType", *v.VolatilityType);
+    if (v.ExerciseType) _serialize_volatilityMoneynessSurfaceConfig_ExerciseType_t(w, "ExerciseType", *v.ExerciseType);
+    _serialize_strikeMoneynessType(w, "MoneynessType", v.MoneynessType);
+    _serialize_volatilityMoneynessSurfaceConfig_MoneynessLevels_t(w, "MoneynessLevels", v.MoneynessLevels);
+    _serialize_volatilityMoneynessSurfaceConfig_Expiries_t(w, "Expiries", v.Expiries);
+    _serialize_interpolationMethodType(w, "TimeInterpolation", v.TimeInterpolation);
+    _serialize_interpolationMethodType(w, "StrikeInterpolation", v.StrikeInterpolation);
+    _serialize_bool_(w, "Extrapolation", v.Extrapolation);
+    _serialize_extrapolationType(w, "TimeExtrapolation", v.TimeExtrapolation);
+    if (v.TimeExtrapolationVariance) _serialize_bool_(w, "TimeExtrapolationVariance", *v.TimeExtrapolationVariance);
+    _serialize_extrapolationType(w, "StrikeExtrapolation", v.StrikeExtrapolation);
+    if (v.FuturePriceCorrection) _serialize_bool_(w, "FuturePriceCorrection", *v.FuturePriceCorrection);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityDeltaSurfaceConfig_QuoteType_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityDeltaSurfaceConfig_QuoteType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityDeltaSurfaceConfig_VolatilityType_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityDeltaSurfaceConfig_VolatilityType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityDeltaSurfaceConfig_ExerciseType_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityDeltaSurfaceConfig_ExerciseType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_strikeDeltaType(xsdcpp::XmlWriter& w, const char* name, const domain::strikeDeltaType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_strikeAtmType(xsdcpp::XmlWriter& w, const char* name, const domain::strikeAtmType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityDeltaSurfaceConfig_PutDeltas_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityDeltaSurfaceConfig_PutDeltas_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityDeltaSurfaceConfig_CallDeltas_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityDeltaSurfaceConfig_CallDeltas_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityDeltaSurfaceConfig_Expiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityDeltaSurfaceConfig_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityDeltaSurfaceConfig(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityDeltaSurfaceConfig& v) {
+    w.startElement(name);
+    if ((&v)->priority) w.writeAttribute("priority", xsdcpp::get_string(*(&v)->priority));
+    if (v.QuoteType) _serialize_volatilityDeltaSurfaceConfig_QuoteType_t(w, "QuoteType", *v.QuoteType);
+    if (v.VolatilityType) _serialize_volatilityDeltaSurfaceConfig_VolatilityType_t(w, "VolatilityType", *v.VolatilityType);
+    if (v.ExerciseType) _serialize_volatilityDeltaSurfaceConfig_ExerciseType_t(w, "ExerciseType", *v.ExerciseType);
+    _serialize_strikeDeltaType(w, "DeltaType", v.DeltaType);
+    _serialize_strikeAtmType(w, "AtmType", v.AtmType);
+    if (v.AtmDeltaType) _serialize_strikeDeltaType(w, "AtmDeltaType", *v.AtmDeltaType);
+    _serialize_volatilityDeltaSurfaceConfig_PutDeltas_t(w, "PutDeltas", v.PutDeltas);
+    _serialize_volatilityDeltaSurfaceConfig_CallDeltas_t(w, "CallDeltas", v.CallDeltas);
+    _serialize_volatilityDeltaSurfaceConfig_Expiries_t(w, "Expiries", v.Expiries);
+    _serialize_interpolationMethodType(w, "TimeInterpolation", v.TimeInterpolation);
+    _serialize_interpolationMethodType(w, "StrikeInterpolation", v.StrikeInterpolation);
+    _serialize_bool_(w, "Extrapolation", v.Extrapolation);
+    _serialize_extrapolationType(w, "TimeExtrapolation", v.TimeExtrapolation);
+    if (v.TimeExtrapolationVariance) _serialize_bool_(w, "TimeExtrapolationVariance", *v.TimeExtrapolationVariance);
+    _serialize_extrapolationType(w, "StrikeExtrapolation", v.StrikeExtrapolation);
+    if (v.FuturePriceCorrection) _serialize_bool_(w, "FuturePriceCorrection", *v.FuturePriceCorrection);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityApoFutureSurfaceConfig_QuoteType_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityApoFutureSurfaceConfig_QuoteType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityApoFutureSurfaceConfig_VolatilityType_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityApoFutureSurfaceConfig_VolatilityType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityApoFutureSurfaceConfig_MoneynessLevels_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityApoFutureSurfaceConfig_MoneynessLevels_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityApoFutureSurfaceConfig_VolatilityId_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityApoFutureSurfaceConfig_VolatilityId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityApoFutureSurfaceConfig_PriceCurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityApoFutureSurfaceConfig_PriceCurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityApoFutureSurfaceConfig_FutureConventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityApoFutureSurfaceConfig_FutureConventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityApoFutureSurfaceConfig_MaxTenor_t(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityApoFutureSurfaceConfig_MaxTenor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_non_negative_decimal(xsdcpp::XmlWriter& w, const char* name, const domain::non_negative_decimal& v) {
+    _serialize_double(w, name, v);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityApoFutureSurfaceConfig(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityApoFutureSurfaceConfig& v) {
+    w.startElement(name);
+    if ((&v)->priority) w.writeAttribute("priority", xsdcpp::get_string(*(&v)->priority));
+    if (v.QuoteType) _serialize_volatilityApoFutureSurfaceConfig_QuoteType_t(w, "QuoteType", *v.QuoteType);
+    if (v.VolatilityType) _serialize_volatilityApoFutureSurfaceConfig_VolatilityType_t(w, "VolatilityType", *v.VolatilityType);
+    _serialize_volatilityApoFutureSurfaceConfig_MoneynessLevels_t(w, "MoneynessLevels", v.MoneynessLevels);
+    _serialize_volatilityApoFutureSurfaceConfig_VolatilityId_t(w, "VolatilityId", v.VolatilityId);
+    _serialize_volatilityApoFutureSurfaceConfig_PriceCurveId_t(w, "PriceCurveId", v.PriceCurveId);
+    _serialize_volatilityApoFutureSurfaceConfig_FutureConventions_t(w, "FutureConventions", v.FutureConventions);
+    _serialize_interpolationMethodType(w, "TimeInterpolation", v.TimeInterpolation);
+    _serialize_interpolationMethodType(w, "StrikeInterpolation", v.StrikeInterpolation);
+    _serialize_bool_(w, "Extrapolation", v.Extrapolation);
+    _serialize_extrapolationType(w, "TimeExtrapolation", v.TimeExtrapolation);
+    if (v.TimeExtrapolationVariance) _serialize_bool_(w, "TimeExtrapolationVariance", *v.TimeExtrapolationVariance);
+    _serialize_extrapolationType(w, "StrikeExtrapolation", v.StrikeExtrapolation);
+    if (v.MaxTenor) _serialize_volatilityApoFutureSurfaceConfig_MaxTenor_t(w, "MaxTenor", *v.MaxTenor);
+    if (v.Beta) _serialize_non_negative_decimal(w, "Beta", *v.Beta);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_volatilityConfig(xsdcpp::XmlWriter& w, const char* name, const domain::volatilityConfig& v) {
+    w.startElement(name);
+    if (v.Constant) _serialize_constantVolatilityConfig(w, "Constant", *v.Constant);
+    if (v.Curve) _serialize_volatilityCurveConfig(w, "Curve", *v.Curve);
+    if (v.StrikeSurface) _serialize_volatilityStrikeSurfaceConfig(w, "StrikeSurface", *v.StrikeSurface);
+    if (v.MoneynessSurface) _serialize_volatilityMoneynessSurfaceConfig(w, "MoneynessSurface", *v.MoneynessSurface);
+    if (v.DeltaSurface) _serialize_volatilityDeltaSurfaceConfig(w, "DeltaSurface", *v.DeltaSurface);
+    if (v.ApoFutureSurface) _serialize_volatilityApoFutureSurfaceConfig(w, "ApoFutureSurface", *v.ApoFutureSurface);
+    if (v.ProxySurface) _serialize_proxySurface(w, "ProxySurface", *v.ProxySurface);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_minMaxType(xsdcpp::XmlWriter& w, const char* name, const domain::minMaxType& v) {
+    w.startElement(name);
+    _serialize_double(w, "Min", v.Min);
+    _serialize_double(w, "Max", v.Max);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_oneDimSolverConfigType(xsdcpp::XmlWriter& w, const char* name, const domain::oneDimSolverConfigType& v) {
+    w.startElement(name);
+    _serialize_uint64_t(w, "MaxEvaluations", v.MaxEvaluations);
+    _serialize_double(w, "InitialGuess", v.InitialGuess);
+    _serialize_double(w, "Accuracy", v.Accuracy);
+    if (v.MinMax) _serialize_minMaxType(w, "MinMax", *v.MinMax);
+    if (v.Step) _serialize_double(w, "Step", *v.Step);
+    if (v.LowerBound) _serialize_double(w, "LowerBound", *v.LowerBound);
+    if (v.UpperBound) _serialize_double(w, "UpperBound", *v.UpperBound);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityVolatility(xsdcpp::XmlWriter& w, const char* name, const domain::equityVolatility& v) {
+    w.startElement(name);
+    _serialize_equityVolatility_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_equityVolatility_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    if (v.EquityId) _serialize_equityVolatility_EquityId_t(w, "EquityId", *v.EquityId);
+    _serialize_extendedCurrencyCode(w, "Currency", v.Currency);
+    if (v.Dimension) _serialize_dimensionType(w, "Dimension", *v.Dimension);
+    if (v.Expiries) _serialize_equityVolatility_Expiries_t(w, "Expiries", *v.Expiries);
+    if (v.Strikes) _serialize_equityVolatility_Strikes_t(w, "Strikes", *v.Strikes);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    if (v.TimeExtrapolation) _serialize_extrapolationType(w, "TimeExtrapolation", *v.TimeExtrapolation);
+    if (v.StrikeExtrapolation) _serialize_extrapolationType(w, "StrikeExtrapolation", *v.StrikeExtrapolation);
+    if (v.VolatilityConfig) _serialize_volatilityConfig(w, "VolatilityConfig", *v.VolatilityConfig);
+    if (v.Constant) _serialize_constantVolatilityConfig(w, "Constant", *v.Constant);
+    if (v.Curve) _serialize_volatilityCurveConfig(w, "Curve", *v.Curve);
+    if (v.StrikeSurface) _serialize_volatilityStrikeSurfaceConfig(w, "StrikeSurface", *v.StrikeSurface);
+    if (v.MoneynessSurface) _serialize_volatilityMoneynessSurfaceConfig(w, "MoneynessSurface", *v.MoneynessSurface);
+    if (v.DeltaSurface) _serialize_volatilityDeltaSurfaceConfig(w, "DeltaSurface", *v.DeltaSurface);
+    if (v.ProxySurface) _serialize_proxySurface(w, "ProxySurface", *v.ProxySurface);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    if (v.OneDimSolverConfig) _serialize_oneDimSolverConfigType(w, "OneDimSolverConfig", *v.OneDimSolverConfig);
+    if (v.PreferOutOfTheMoney) _serialize_bool_(w, "PreferOutOfTheMoney", *v.PreferOutOfTheMoney);
+    if (v.Report) _serialize_reportConfiguration(w, "Report", *v.Report);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityVolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::equityVolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.EquityVolatility) _serialize_equityVolatility(w, "EquityVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_security_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::security_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_security_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::security_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_security_SpreadQuote_t(xsdcpp::XmlWriter& w, const char* name, const domain::security_SpreadQuote_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_security_RecoveryRateQuote_t(xsdcpp::XmlWriter& w, const char* name, const domain::security_RecoveryRateQuote_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_security_CPRQuote_t(xsdcpp::XmlWriter& w, const char* name, const domain::security_CPRQuote_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_security_PriceQuote_t(xsdcpp::XmlWriter& w, const char* name, const domain::security_PriceQuote_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_security_ConversionFactor_t(xsdcpp::XmlWriter& w, const char* name, const domain::security_ConversionFactor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_security(xsdcpp::XmlWriter& w, const char* name, const domain::security& v) {
+    w.startElement(name);
+    _serialize_security_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_security_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    if (v.SpreadQuote) _serialize_security_SpreadQuote_t(w, "SpreadQuote", *v.SpreadQuote);
+    if (v.RecoveryRateQuote) _serialize_security_RecoveryRateQuote_t(w, "RecoveryRateQuote", *v.RecoveryRateQuote);
+    if (v.CPRQuote) _serialize_security_CPRQuote_t(w, "CPRQuote", *v.CPRQuote);
+    if (v.PriceQuote) _serialize_security_PriceQuote_t(w, "PriceQuote", *v.PriceQuote);
+    if (v.ConversionFactor) _serialize_security_ConversionFactor_t(w, "ConversionFactor", *v.ConversionFactor);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_securities(xsdcpp::XmlWriter& w, const char* name, const domain::securities& v) {
+    w.startElement(name);
+    for (const auto& item : v.Security) _serialize_security(w, "Security", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation_Terms_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation_Terms_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation_DetachmentPoints_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation_DetachmentPoints_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation_QuoteName_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation_QuoteName_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation_IndexTerm_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation_IndexTerm_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation_IndexSpread_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation_IndexSpread_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation_Currency_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation_Currency_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation_RecoveryGrid_t_Grid_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation_RecoveryGrid_t_Grid_t& v) {
+    w.startElement(name);
+    w.writeAttribute("seniority", (&v)->seniority);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation_RecoveryGrid_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation_RecoveryGrid_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Grid) _serialize_baseCorrelation_RecoveryGrid_t_Grid_t(w, "Grid", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation_RecoveryProbabilities_t_Probabilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation_RecoveryProbabilities_t_Probabilities_t& v) {
+    w.startElement(name);
+    w.writeAttribute("seniority", (&v)->seniority);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation_RecoveryProbabilities_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation_RecoveryProbabilities_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Probabilities) _serialize_baseCorrelation_RecoveryProbabilities_t_Probabilities_t(w, "Probabilities", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation_QuoteTypes_t_QuoteType_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation_QuoteTypes_t_QuoteType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation_QuoteTypes_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation_QuoteTypes_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.QuoteType) _serialize_baseCorrelation_QuoteTypes_t_QuoteType_t(w, "QuoteType", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelation(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelation& v) {
+    w.startElement(name);
+    _serialize_baseCorrelation_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_baseCorrelation_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    _serialize_baseCorrelation_Terms_t(w, "Terms", v.Terms);
+    _serialize_baseCorrelation_DetachmentPoints_t(w, "DetachmentPoints", v.DetachmentPoints);
+    _serialize_float(w, "SettlementDays", v.SettlementDays);
+    _serialize_calendar(w, "Calendar", v.Calendar);
+    _serialize_businessDayConvention(w, "BusinessDayConvention", v.BusinessDayConvention);
+    _serialize_dayCounter(w, "DayCounter", v.DayCounter);
+    if (v.Extrapolate) _serialize_bool_(w, "Extrapolate", *v.Extrapolate);
+    if (v.QuoteName) _serialize_baseCorrelation_QuoteName_t(w, "QuoteName", *v.QuoteName);
+    if (v.StartDate) _serialize_date(w, "StartDate", *v.StartDate);
+    if (v.Rule) _serialize_dateRule(w, "Rule", *v.Rule);
+    if (v.AdjustForLosses) _serialize_bool_(w, "AdjustForLosses", *v.AdjustForLosses);
+    if (v.IndexTerm) _serialize_baseCorrelation_IndexTerm_t(w, "IndexTerm", *v.IndexTerm);
+    if (v.IndexSpread) _serialize_baseCorrelation_IndexSpread_t(w, "IndexSpread", *v.IndexSpread);
+    if (v.Currency) _serialize_baseCorrelation_Currency_t(w, "Currency", *v.Currency);
+    if (v.CalibrateConstituentsToIndexSpread) _serialize_bool_(w, "CalibrateConstituentsToIndexSpread", *v.CalibrateConstituentsToIndexSpread);
+    if (v.UseAssumedRecovery) _serialize_bool_(w, "UseAssumedRecovery", *v.UseAssumedRecovery);
+    if (v.RecoveryGrid) _serialize_baseCorrelation_RecoveryGrid_t(w, "RecoveryGrid", *v.RecoveryGrid);
+    if (v.RecoveryProbabilities) _serialize_baseCorrelation_RecoveryProbabilities_t(w, "RecoveryProbabilities", *v.RecoveryProbabilities);
+    if (v.QuoteTypes) _serialize_baseCorrelation_QuoteTypes_t(w, "QuoteTypes", *v.QuoteTypes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelations(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelations& v) {
+    w.startElement(name);
+    for (const auto& item : v.BaseCorrelation) _serialize_baseCorrelation(w, "BaseCorrelation", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simCommodityCurve_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::simCommodityCurve_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simCommodityCurve_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::simCommodityCurve_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simCommodityCurve_BasePriceCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::simCommodityCurve_BasePriceCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simCommodityCurve_BaseYieldCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::simCommodityCurve_BaseYieldCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simCommodityCurve_YieldCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::simCommodityCurve_YieldCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simCommodityCurve_SpotQuote_t(xsdcpp::XmlWriter& w, const char* name, const domain::simCommodityCurve_SpotQuote_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityInterpolationType(xsdcpp::XmlWriter& w, const char* name, const domain::commodityInterpolationType& v) {
+    _serialize_interpolationMethodType(w, name, v);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simCommodityCurve_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::simCommodityCurve_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityBasisConfig_BasePriceCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityBasisConfig_BasePriceCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityBasisConfig_BasePriceConventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityBasisConfig_BasePriceConventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityBasisConfig_BasisConventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityBasisConfig_BasisConventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityBasisConfig(xsdcpp::XmlWriter& w, const char* name, const domain::commodityBasisConfig& v) {
+    w.startElement(name);
+    _serialize_commodityBasisConfig_BasePriceCurve_t(w, "BasePriceCurve", v.BasePriceCurve);
+    _serialize_commodityBasisConfig_BasePriceConventions_t(w, "BasePriceConventions", v.BasePriceConventions);
+    _serialize_quoteType(w, "BasisQuotes", v.BasisQuotes);
+    _serialize_commodityBasisConfig_BasisConventions_t(w, "BasisConventions", v.BasisConventions);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    if (v.InterpolationMethod) _serialize_commodityInterpolationType(w, "InterpolationMethod", *v.InterpolationMethod);
+    if (v.AddBasis) _serialize_bool_(w, "AddBasis", *v.AddBasis);
+    if (v.MonthOffset) _serialize_uint64_t(w, "MonthOffset", *v.MonthOffset);
+    if (v.AverageBase) _serialize_bool_(w, "AverageBase", *v.AverageBase);
+    if (v.PriceAsHistoricalFixing) _serialize_bool_(w, "PriceAsHistoricalFixing", *v.PriceAsHistoricalFixing);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_priceSegmentTypeType(xsdcpp::XmlWriter& w, const char* name, const domain::priceSegmentTypeType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_priceSegmentType_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::priceSegmentType_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_priceSegmentType_PeakPriceCurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::priceSegmentType_PeakPriceCurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_priceSegmentType_PeakPriceCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::priceSegmentType_PeakPriceCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_offPeakDailyType(xsdcpp::XmlWriter& w, const char* name, const domain::offPeakDailyType& v) {
+    w.startElement(name);
+    _serialize_quoteType(w, "OffPeakQuotes", v.OffPeakQuotes);
+    _serialize_quoteType(w, "PeakQuotes", v.PeakQuotes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_priceSegmentType(xsdcpp::XmlWriter& w, const char* name, const domain::priceSegmentType& v) {
+    w.startElement(name);
+    _serialize_priceSegmentTypeType(w, "Type", v.Type);
+    if (v.Priority) _serialize_uint64_t(w, "Priority", *v.Priority);
+    _serialize_priceSegmentType_Conventions_t(w, "Conventions", v.Conventions);
+    if (v.Quotes) _serialize_quoteType(w, "Quotes", *v.Quotes);
+    if (v.PeakPriceCurveId) _serialize_priceSegmentType_PeakPriceCurveId_t(w, "PeakPriceCurveId", *v.PeakPriceCurveId);
+    if (v.PeakPriceCalendar) _serialize_priceSegmentType_PeakPriceCalendar_t(w, "PeakPriceCalendar", *v.PeakPriceCalendar);
+    if (v.OffPeakDaily) _serialize_offPeakDailyType(w, "OffPeakDaily", *v.OffPeakDaily);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_priceSegmentsType(xsdcpp::XmlWriter& w, const char* name, const domain::priceSegmentsType& v) {
+    w.startElement(name);
+    for (const auto& item : v.PriceSegment) _serialize_priceSegmentType(w, "PriceSegment", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simCommodityCurve(xsdcpp::XmlWriter& w, const char* name, const domain::simCommodityCurve& v) {
+    w.startElement(name);
+    _serialize_simCommodityCurve_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_simCommodityCurve_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    if (v.BasePriceCurve) _serialize_simCommodityCurve_BasePriceCurve_t(w, "BasePriceCurve", *v.BasePriceCurve);
+    if (v.BaseYieldCurve) _serialize_simCommodityCurve_BaseYieldCurve_t(w, "BaseYieldCurve", *v.BaseYieldCurve);
+    if (v.YieldCurve) _serialize_simCommodityCurve_YieldCurve_t(w, "YieldCurve", *v.YieldCurve);
+    if (v.SpotQuote) _serialize_simCommodityCurve_SpotQuote_t(w, "SpotQuote", *v.SpotQuote);
+    if (v.Quotes) _serialize_quoteType(w, "Quotes", *v.Quotes);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    if (v.InterpolationMethod) _serialize_commodityInterpolationType(w, "InterpolationMethod", *v.InterpolationMethod);
+    if (v.Conventions) _serialize_simCommodityCurve_Conventions_t(w, "Conventions", *v.Conventions);
+    if (v.BasisConfiguration) _serialize_commodityBasisConfig(w, "BasisConfiguration", *v.BasisConfiguration);
+    if (v.PriceSegments) _serialize_priceSegmentsType(w, "PriceSegments", *v.PriceSegments);
+    if (v.Extrapolation) _serialize_bool_(w, "Extrapolation", *v.Extrapolation);
+    if (v.BootstrapConfig) _serialize_bootstrapConfigType(w, "BootstrapConfig", *v.BootstrapConfig);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_simCommodityCurves(xsdcpp::XmlWriter& w, const char* name, const domain::simCommodityCurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.CommodityCurve) _serialize_simCommodityCurve(w, "CommodityCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityVolatility_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityVolatility_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityVolatility_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityVolatility_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityVolatility_FutureConventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityVolatility_FutureConventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityVolatility_OptionExpiryRollDays_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityVolatility_OptionExpiryRollDays_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityVolatility_PriceCurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityVolatility_PriceCurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityVolatility_YieldCurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityVolatility_YieldCurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commVolQuoteSuffix(xsdcpp::XmlWriter& w, const char* name, const domain::commVolQuoteSuffix& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityVolatility(xsdcpp::XmlWriter& w, const char* name, const domain::commodityVolatility& v) {
+    w.startElement(name);
+    _serialize_commodityVolatility_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_commodityVolatility_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    if (v.VolatilityConfig) _serialize_volatilityConfig(w, "VolatilityConfig", *v.VolatilityConfig);
+    if (v.Constant) _serialize_constantVolatilityConfig(w, "Constant", *v.Constant);
+    if (v.Curve) _serialize_volatilityCurveConfig(w, "Curve", *v.Curve);
+    if (v.StrikeSurface) _serialize_volatilityStrikeSurfaceConfig(w, "StrikeSurface", *v.StrikeSurface);
+    if (v.MoneynessSurface) _serialize_volatilityMoneynessSurfaceConfig(w, "MoneynessSurface", *v.MoneynessSurface);
+    if (v.DeltaSurface) _serialize_volatilityDeltaSurfaceConfig(w, "DeltaSurface", *v.DeltaSurface);
+    if (v.ApoFutureSurface) _serialize_volatilityApoFutureSurfaceConfig(w, "ApoFutureSurface", *v.ApoFutureSurface);
+    if (v.ProxySurface) _serialize_proxySurface(w, "ProxySurface", *v.ProxySurface);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    if (v.FutureConventions) _serialize_commodityVolatility_FutureConventions_t(w, "FutureConventions", *v.FutureConventions);
+    if (v.OptionExpiryRollDays) _serialize_commodityVolatility_OptionExpiryRollDays_t(w, "OptionExpiryRollDays", *v.OptionExpiryRollDays);
+    if (v.PriceCurveId) _serialize_commodityVolatility_PriceCurveId_t(w, "PriceCurveId", *v.PriceCurveId);
+    if (v.YieldCurveId) _serialize_commodityVolatility_YieldCurveId_t(w, "YieldCurveId", *v.YieldCurveId);
+    if (v.QuoteSuffix) _serialize_commVolQuoteSuffix(w, "QuoteSuffix", *v.QuoteSuffix);
+    if (v.OneDimSolverConfig) _serialize_oneDimSolverConfigType(w, "OneDimSolverConfig", *v.OneDimSolverConfig);
+    if (v.PreferOutOfTheMoney) _serialize_bool_(w, "PreferOutOfTheMoney", *v.PreferOutOfTheMoney);
+    if (v.Report) _serialize_reportConfiguration(w, "Report", *v.Report);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityVolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::commodityVolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.CommodityVolatility) _serialize_commodityVolatility(w, "CommodityVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlation_CurveId_t(xsdcpp::XmlWriter& w, const char* name, const domain::correlation_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlation_CurveDescription_t(xsdcpp::XmlWriter& w, const char* name, const domain::correlation_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlationType(xsdcpp::XmlWriter& w, const char* name, const domain::correlationType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlation_Index1_t(xsdcpp::XmlWriter& w, const char* name, const domain::correlation_Index1_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlation_Index2_t(xsdcpp::XmlWriter& w, const char* name, const domain::correlation_Index2_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlation_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::correlation_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlation_SwaptionVolatility_t(xsdcpp::XmlWriter& w, const char* name, const domain::correlation_SwaptionVolatility_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlation_DiscountCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::correlation_DiscountCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlationQuoteType(xsdcpp::XmlWriter& w, const char* name, const domain::correlationQuoteType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlation_OptionTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::correlation_OptionTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlation(xsdcpp::XmlWriter& w, const char* name, const domain::correlation& v) {
+    w.startElement(name);
+    _serialize_correlation_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_correlation_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    _serialize_correlationType(w, "CorrelationType", v.CorrelationType);
+    if (v.Index1) _serialize_correlation_Index1_t(w, "Index1", *v.Index1);
+    if (v.Index2) _serialize_correlation_Index2_t(w, "Index2", *v.Index2);
+    if (v.Conventions) _serialize_correlation_Conventions_t(w, "Conventions", *v.Conventions);
+    if (v.SwaptionVolatility) _serialize_correlation_SwaptionVolatility_t(w, "SwaptionVolatility", *v.SwaptionVolatility);
+    if (v.DiscountCurve) _serialize_correlation_DiscountCurve_t(w, "DiscountCurve", *v.DiscountCurve);
+    if (v.Currency) _serialize_currencyCode(w, "Currency", *v.Currency);
+    if (v.Dimension) _serialize_dimensionType(w, "Dimension", *v.Dimension);
+    if (v.QuoteType) _serialize_correlationQuoteType(w, "QuoteType", *v.QuoteType);
+    if (v.Extrapolation) _serialize_bool_(w, "Extrapolation", *v.Extrapolation);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    if (v.Calendar) _serialize_calendar(w, "Calendar", *v.Calendar);
+    if (v.BusinessDayConvention) _serialize_businessDayConvention(w, "BusinessDayConvention", *v.BusinessDayConvention);
+    if (v.OptionTenors) _serialize_correlation_OptionTenors_t(w, "OptionTenors", *v.OptionTenors);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlations(xsdcpp::XmlWriter& w, const char* name, const domain::correlations& v) {
+    w.startElement(name);
+    for (const auto& item : v.Correlation) _serialize_correlation(w, "Correlation", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_curveconfiguration(xsdcpp::XmlWriter& w, const char* name, const domain::curveconfiguration& v) {
+    w.startElement(name);
+    if (v.ReportConfiguration) _serialize_globalReportConfiguration(w, "ReportConfiguration", *v.ReportConfiguration);
+    if (v.FXSpots) _serialize_fxSpots(w, "FXSpots", *v.FXSpots);
+    if (v.FXVolatilities) _serialize_fxVolatilities(w, "FXVolatilities", *v.FXVolatilities);
+    if (v.SwaptionVolatilities) _serialize_swaptionVolatilities(w, "SwaptionVolatilities", *v.SwaptionVolatilities);
+    if (v.YieldVolatilities) _serialize_yieldVolatilities(w, "YieldVolatilities", *v.YieldVolatilities);
+    if (v.CapFloorVolatilities) _serialize_capFloorVolatilities(w, "CapFloorVolatilities", *v.CapFloorVolatilities);
+    if (v.CDSVolatilities) _serialize_cdsVolatilities(w, "CDSVolatilities", *v.CDSVolatilities);
+    if (v.DefaultCurves) _serialize_defaultCurves(w, "DefaultCurves", *v.DefaultCurves);
+    if (v.YieldCurves) _serialize_yieldCurves(w, "YieldCurves", *v.YieldCurves);
+    if (v.InflationCurves) _serialize_inflationCurves(w, "InflationCurves", *v.InflationCurves);
+    if (v.InflationCapFloorVolatilities) _serialize_inflationCapFloorVolatlities(w, "InflationCapFloorVolatilities", *v.InflationCapFloorVolatilities);
+    if (v.EquityCurves) _serialize_equityCurves(w, "EquityCurves", *v.EquityCurves);
+    if (v.EquityVolatilities) _serialize_equityVolatilities(w, "EquityVolatilities", *v.EquityVolatilities);
+    if (v.Securities) _serialize_securities(w, "Securities", *v.Securities);
+    if (v.BaseCorrelations) _serialize_baseCorrelations(w, "BaseCorrelations", *v.BaseCorrelations);
+    if (v.CommodityCurves) _serialize_simCommodityCurves(w, "CommodityCurves", *v.CommodityCurves);
+    if (v.CommodityVolatilities) _serialize_commodityVolatilities(w, "CommodityVolatilities", *v.CommodityVolatilities);
+    if (v.Correlations) _serialize_correlations(w, "Correlations", *v.Correlations);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_compounding(xsdcpp::XmlWriter& w, const char* name, const domain::compounding& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroType_TenorCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroType_TenorCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroType_SpotCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroType_SpotCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroType(xsdcpp::XmlWriter& w, const char* name, const domain::zeroType& v) {
+    w.startElement(name);
+    _serialize_zeroType_Id_t(w, "Id", v.Id);
+    _serialize_bool_(w, "TenorBased", v.TenorBased);
+    _serialize_dayCounter(w, "DayCounter", v.DayCounter);
+    if (v.Compounding) _serialize_compounding(w, "Compounding", *v.Compounding);
+    if (v.CompoundingFrequency) _serialize_frequencyType(w, "CompoundingFrequency", *v.CompoundingFrequency);
+    if (v.TenorCalendar) _serialize_zeroType_TenorCalendar_t(w, "TenorCalendar", *v.TenorCalendar);
+    if (v.SpotLag) _serialize_int64_t(w, "SpotLag", *v.SpotLag);
+    if (v.SpotCalendar) _serialize_zeroType_SpotCalendar_t(w, "SpotCalendar", *v.SpotCalendar);
+    if (v.RollConvention) _serialize_businessDayConvention(w, "RollConvention", *v.RollConvention);
+    if (v.EOM) _serialize_bool_(w, "EOM", *v.EOM);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsConventionsType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::cdsConventionsType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsConventionsType_Calendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::cdsConventionsType_Calendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsConventionsType(xsdcpp::XmlWriter& w, const char* name, const domain::cdsConventionsType& v) {
+    w.startElement(name);
+    _serialize_cdsConventionsType_Id_t(w, "Id", v.Id);
+    _serialize_int64_t(w, "SettlementDays", v.SettlementDays);
+    _serialize_cdsConventionsType_Calendar_t(w, "Calendar", v.Calendar);
+    _serialize_frequencyType(w, "Frequency", v.Frequency);
+    _serialize_businessDayConvention(w, "PaymentConvention", v.PaymentConvention);
+    _serialize_dateRule(w, "Rule", v.Rule);
+    _serialize_dayCounter(w, "DayCounter", v.DayCounter);
+    if (v.UpfrontSettlementDays) _serialize_uint64_t(w, "UpfrontSettlementDays", *v.UpfrontSettlementDays);
+    _serialize_bool_(w, "SettlesAccrual", v.SettlesAccrual);
+    _serialize_bool_(w, "PaysAtDefaultTime", v.PaysAtDefaultTime);
+    if (v.LastPeriodDayCounter) _serialize_dayCounter(w, "LastPeriodDayCounter", *v.LastPeriodDayCounter);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_depositType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::depositType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_depositType_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::depositType_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_depositType_Calendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::depositType_Calendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_depositType(xsdcpp::XmlWriter& w, const char* name, const domain::depositType& v) {
+    w.startElement(name);
+    _serialize_depositType_Id_t(w, "Id", v.Id);
+    _serialize_bool_(w, "IndexBased", v.IndexBased);
+    if (v.Index) _serialize_depositType_Index_t(w, "Index", *v.Index);
+    if (v.Calendar) _serialize_depositType_Calendar_t(w, "Calendar", *v.Calendar);
+    if (v.Convention) _serialize_businessDayConvention(w, "Convention", *v.Convention);
+    if (v.EOM) _serialize_bool_(w, "EOM", *v.EOM);
+    if (v.DayCounter) _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    if (v.SettlementDays) _serialize_uint64_t(w, "SettlementDays", *v.SettlementDays);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_futureType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::futureType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_futureType_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::futureType_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_futureDateGenerationRule(xsdcpp::XmlWriter& w, const char* name, const domain::futureDateGenerationRule& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_overnightIndexFutureNettingType(xsdcpp::XmlWriter& w, const char* name, const domain::overnightIndexFutureNettingType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_futureType_Calendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::futureType_Calendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_futureType(xsdcpp::XmlWriter& w, const char* name, const domain::futureType& v) {
+    w.startElement(name);
+    _serialize_futureType_Id_t(w, "Id", v.Id);
+    _serialize_futureType_Index_t(w, "Index", v.Index);
+    if (v.DateGenerationRule) _serialize_futureDateGenerationRule(w, "DateGenerationRule", *v.DateGenerationRule);
+    if (v.OvernightIndexFutureNettingType) _serialize_overnightIndexFutureNettingType(w, "OvernightIndexFutureNettingType", *v.OvernightIndexFutureNettingType);
+    if (v.Calendar) _serialize_futureType_Calendar_t(w, "Calendar", *v.Calendar);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fraType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::fraType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fraType_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::fraType_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fraType(xsdcpp::XmlWriter& w, const char* name, const domain::fraType& v) {
+    w.startElement(name);
+    _serialize_fraType_Id_t(w, "Id", v.Id);
+    _serialize_fraType_Index_t(w, "Index", v.Index);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_oisType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::oisType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_oisType_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::oisType_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_oisType_FixedCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::oisType_FixedCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_oisType_PaymentCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::oisType_PaymentCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_oisType(xsdcpp::XmlWriter& w, const char* name, const domain::oisType& v) {
+    w.startElement(name);
+    _serialize_oisType_Id_t(w, "Id", v.Id);
+    _serialize_int64_t(w, "SpotLag", v.SpotLag);
+    _serialize_oisType_Index_t(w, "Index", v.Index);
+    _serialize_dayCounter(w, "FixedDayCounter", v.FixedDayCounter);
+    if (v.FixedCalendar) _serialize_oisType_FixedCalendar_t(w, "FixedCalendar", *v.FixedCalendar);
+    if (v.PaymentLag) _serialize_int64_t(w, "PaymentLag", *v.PaymentLag);
+    if (v.EOM) _serialize_bool_(w, "EOM", *v.EOM);
+    if (v.FixedFrequency) _serialize_frequencyType(w, "FixedFrequency", *v.FixedFrequency);
+    if (v.FixedConvention) _serialize_businessDayConvention(w, "FixedConvention", *v.FixedConvention);
+    if (v.FixedPaymentConvention) _serialize_businessDayConvention(w, "FixedPaymentConvention", *v.FixedPaymentConvention);
+    if (v.Rule) _serialize_dateRule(w, "Rule", *v.Rule);
+    if (v.PaymentCalendar) _serialize_oisType_PaymentCalendar_t(w, "PaymentCalendar", *v.PaymentCalendar);
+    if (v.RateCutoff) _serialize_int64_t(w, "RateCutoff", *v.RateCutoff);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swapType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::swapType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swapType_FixedCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::swapType_FixedCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swapType_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::swapType_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_subPeriodsCouponType(xsdcpp::XmlWriter& w, const char* name, const domain::subPeriodsCouponType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swapType(xsdcpp::XmlWriter& w, const char* name, const domain::swapType& v) {
+    w.startElement(name);
+    _serialize_swapType_Id_t(w, "Id", v.Id);
+    if (v.FixedCalendar) _serialize_swapType_FixedCalendar_t(w, "FixedCalendar", *v.FixedCalendar);
+    _serialize_frequencyType(w, "FixedFrequency", v.FixedFrequency);
+    if (v.FixedConvention) _serialize_businessDayConvention(w, "FixedConvention", *v.FixedConvention);
+    _serialize_dayCounter(w, "FixedDayCounter", v.FixedDayCounter);
+    _serialize_swapType_Index_t(w, "Index", v.Index);
+    if (v.FloatFrequency) _serialize_frequencyType(w, "FloatFrequency", *v.FloatFrequency);
+    if (v.SubPeriodsCouponType) _serialize_subPeriodsCouponType(w, "SubPeriodsCouponType", *v.SubPeriodsCouponType);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_averageOISType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::averageOISType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_averageOISType_FixedTenor_t(xsdcpp::XmlWriter& w, const char* name, const domain::averageOISType_FixedTenor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_averageOISType_FixedCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::averageOISType_FixedCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_averageOISType_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::averageOISType_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_averageOISType_OnTenor_t(xsdcpp::XmlWriter& w, const char* name, const domain::averageOISType_OnTenor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_averageOISType_RateCutoff_t(xsdcpp::XmlWriter& w, const char* name, const domain::averageOISType_RateCutoff_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_averageOISType(xsdcpp::XmlWriter& w, const char* name, const domain::averageOISType& v) {
+    w.startElement(name);
+    _serialize_averageOISType_Id_t(w, "Id", v.Id);
+    _serialize_int64_t(w, "SpotLag", v.SpotLag);
+    _serialize_averageOISType_FixedTenor_t(w, "FixedTenor", v.FixedTenor);
+    _serialize_dayCounter(w, "FixedDayCounter", v.FixedDayCounter);
+    _serialize_averageOISType_FixedCalendar_t(w, "FixedCalendar", v.FixedCalendar);
+    _serialize_businessDayConvention(w, "FixedConvention", v.FixedConvention);
+    _serialize_businessDayConvention(w, "FixedPaymentConvention", v.FixedPaymentConvention);
+    if (v.FixedFrequency) _serialize_frequencyType(w, "FixedFrequency", *v.FixedFrequency);
+    _serialize_averageOISType_Index_t(w, "Index", v.Index);
+    _serialize_averageOISType_OnTenor_t(w, "OnTenor", v.OnTenor);
+    _serialize_averageOISType_RateCutoff_t(w, "RateCutoff", v.RateCutoff);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSwapType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisSwapType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSwapType_PayIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisSwapType_PayIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_period(xsdcpp::XmlWriter& w, const char* name, const domain::period& v) {
+    w.startElement(name);
+    w.writeText(v);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSwapType_ReceiveIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisSwapType_ReceiveIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSwapType_LongIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisSwapType_LongIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSwapType_ShortIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisSwapType_ShortIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSwapType(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisSwapType& v) {
+    w.startElement(name);
+    _serialize_tenorBasisSwapType_Id_t(w, "Id", v.Id);
+    if (v.PayIndex) _serialize_tenorBasisSwapType_PayIndex_t(w, "PayIndex", *v.PayIndex);
+    if (v.PayFrequency) _serialize_period(w, "PayFrequency", *v.PayFrequency);
+    if (v.ReceiveIndex) _serialize_tenorBasisSwapType_ReceiveIndex_t(w, "ReceiveIndex", *v.ReceiveIndex);
+    if (v.ReceiveFrequency) _serialize_period(w, "ReceiveFrequency", *v.ReceiveFrequency);
+    if (v.SpreadOnRec) _serialize_bool_(w, "SpreadOnRec", *v.SpreadOnRec);
+    if (v.IncludeSpread) _serialize_bool_(w, "IncludeSpread", *v.IncludeSpread);
+    if (v.SubPeriodsCouponType) _serialize_subPeriodsCouponType(w, "SubPeriodsCouponType", *v.SubPeriodsCouponType);
+    if (v.LongIndex) _serialize_tenorBasisSwapType_LongIndex_t(w, "LongIndex", *v.LongIndex);
+    if (v.LongPayTenor) _serialize_period(w, "LongPayTenor", *v.LongPayTenor);
+    if (v.ShortIndex) _serialize_tenorBasisSwapType_ShortIndex_t(w, "ShortIndex", *v.ShortIndex);
+    if (v.ShortPayTenor) _serialize_period(w, "ShortPayTenor", *v.ShortPayTenor);
+    if (v.SpreadOnShort) _serialize_bool_(w, "SpreadOnShort", *v.SpreadOnShort);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisTwoSwapType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisTwoSwapType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisTwoSwapType_Calendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisTwoSwapType_Calendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisTwoSwapType_LongIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisTwoSwapType_LongIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisTwoSwapType_ShortIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisTwoSwapType_ShortIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisTwoSwapType(xsdcpp::XmlWriter& w, const char* name, const domain::tenorBasisTwoSwapType& v) {
+    w.startElement(name);
+    _serialize_tenorBasisTwoSwapType_Id_t(w, "Id", v.Id);
+    _serialize_tenorBasisTwoSwapType_Calendar_t(w, "Calendar", v.Calendar);
+    _serialize_frequencyType(w, "LongFixedFrequency", v.LongFixedFrequency);
+    _serialize_businessDayConvention(w, "LongFixedConvention", v.LongFixedConvention);
+    _serialize_dayCounter(w, "LongFixedDayCounter", v.LongFixedDayCounter);
+    _serialize_tenorBasisTwoSwapType_LongIndex_t(w, "LongIndex", v.LongIndex);
+    _serialize_frequencyType(w, "ShortFixedFrequency", v.ShortFixedFrequency);
+    _serialize_businessDayConvention(w, "ShortFixedConvention", v.ShortFixedConvention);
+    _serialize_dayCounter(w, "ShortFixedDayCounter", v.ShortFixedDayCounter);
+    _serialize_tenorBasisTwoSwapType_ShortIndex_t(w, "ShortIndex", v.ShortIndex);
+    if (v.LongMinusShort) _serialize_bool_(w, "LongMinusShort", *v.LongMinusShort);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bmaBasisSwapType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::bmaBasisSwapType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bmaBasisSwapType_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::bmaBasisSwapType_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bmaBasisSwapType_BMAIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::bmaBasisSwapType_BMAIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bmaBasisSwapType_BMAPaymentCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::bmaBasisSwapType_BMAPaymentCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bmaBasisSwapType_IndexPaymentCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::bmaBasisSwapType_IndexPaymentCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bmaBasisSwapType(xsdcpp::XmlWriter& w, const char* name, const domain::bmaBasisSwapType& v) {
+    w.startElement(name);
+    _serialize_bmaBasisSwapType_Id_t(w, "Id", v.Id);
+    _serialize_bmaBasisSwapType_Index_t(w, "Index", v.Index);
+    _serialize_bmaBasisSwapType_BMAIndex_t(w, "BMAIndex", v.BMAIndex);
+    if (v.BMAPaymentCalendar) _serialize_bmaBasisSwapType_BMAPaymentCalendar_t(w, "BMAPaymentCalendar", *v.BMAPaymentCalendar);
+    if (v.BMAPaymentConvention) _serialize_businessDayConvention(w, "BMAPaymentConvention", *v.BMAPaymentConvention);
+    if (v.BMAPaymentLag) _serialize_int64_t(w, "BMAPaymentLag", *v.BMAPaymentLag);
+    if (v.IndexPaymentCalendar) _serialize_bmaBasisSwapType_IndexPaymentCalendar_t(w, "IndexPaymentCalendar", *v.IndexPaymentCalendar);
+    if (v.IndexPaymentConvention) _serialize_businessDayConvention(w, "IndexPaymentConvention", *v.IndexPaymentConvention);
+    if (v.IndexPaymentLag) _serialize_int64_t(w, "IndexPaymentLag", *v.IndexPaymentLag);
+    if (v.IndexSettlementDays) _serialize_int64_t(w, "IndexSettlementDays", *v.IndexSettlementDays);
+    if (v.IndexPaymentPeriod) _serialize_period(w, "IndexPaymentPeriod", *v.IndexPaymentPeriod);
+    if (v.OvernightLockoutDays) _serialize_int64_t(w, "OvernightLockoutDays", *v.OvernightLockoutDays);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxType_AdvanceCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxType_AdvanceCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxType(xsdcpp::XmlWriter& w, const char* name, const domain::fxType& v) {
+    w.startElement(name);
+    _serialize_fxType_Id_t(w, "Id", v.Id);
+    _serialize_int64_t(w, "SpotDays", v.SpotDays);
+    _serialize_currencyCode(w, "SourceCurrency", v.SourceCurrency);
+    _serialize_currencyCode(w, "TargetCurrency", v.TargetCurrency);
+    _serialize_double(w, "PointsFactor", v.PointsFactor);
+    if (v.AdvanceCalendar) _serialize_fxType_AdvanceCalendar_t(w, "AdvanceCalendar", *v.AdvanceCalendar);
+    if (v.SpotRelative) _serialize_bool_(w, "SpotRelative", *v.SpotRelative);
+    if (v.EOM) _serialize_bool_(w, "EOM", *v.EOM);
+    if (v.Convention) _serialize_businessDayConvention(w, "Convention", *v.Convention);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyBasisType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyBasisType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyBasisType_SettlementCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyBasisType_SettlementCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyBasisType_FlatIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyBasisType_FlatIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyBasisType_SpreadIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyBasisType_SpreadIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyBasisType_FlatTenor_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyBasisType_FlatTenor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyBasisType_SpreadTenor_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyBasisType_SpreadTenor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyBasisType_SpreadLookback_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyBasisType_SpreadLookback_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyBasisType_FlatLookback_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyBasisType_FlatLookback_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyBasisType(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyBasisType& v) {
+    w.startElement(name);
+    _serialize_crossCurrencyBasisType_Id_t(w, "Id", v.Id);
+    _serialize_int64_t(w, "SettlementDays", v.SettlementDays);
+    if (v.SettlementCalendar) _serialize_crossCurrencyBasisType_SettlementCalendar_t(w, "SettlementCalendar", *v.SettlementCalendar);
+    _serialize_businessDayConvention(w, "RollConvention", v.RollConvention);
+    _serialize_crossCurrencyBasisType_FlatIndex_t(w, "FlatIndex", v.FlatIndex);
+    _serialize_crossCurrencyBasisType_SpreadIndex_t(w, "SpreadIndex", v.SpreadIndex);
+    if (v.EOM) _serialize_bool_(w, "EOM", *v.EOM);
+    if (v.IsResettable) _serialize_bool_(w, "IsResettable", *v.IsResettable);
+    if (v.FlatIndexIsResettable) _serialize_bool_(w, "FlatIndexIsResettable", *v.FlatIndexIsResettable);
+    if (v.FlatTenor) _serialize_crossCurrencyBasisType_FlatTenor_t(w, "FlatTenor", *v.FlatTenor);
+    if (v.SpreadTenor) _serialize_crossCurrencyBasisType_SpreadTenor_t(w, "SpreadTenor", *v.SpreadTenor);
+    if (v.SpreadPaymentLag) _serialize_int64_t(w, "SpreadPaymentLag", *v.SpreadPaymentLag);
+    if (v.FlatPaymentLag) _serialize_int64_t(w, "FlatPaymentLag", *v.FlatPaymentLag);
+    if (v.SpreadIncludeSpread) _serialize_bool_(w, "SpreadIncludeSpread", *v.SpreadIncludeSpread);
+    if (v.SpreadLookback) _serialize_crossCurrencyBasisType_SpreadLookback_t(w, "SpreadLookback", *v.SpreadLookback);
+    if (v.SpreadFixingDays) _serialize_int64_t(w, "SpreadFixingDays", *v.SpreadFixingDays);
+    if (v.SpreadRateCutoff) _serialize_int64_t(w, "SpreadRateCutoff", *v.SpreadRateCutoff);
+    if (v.SpreadIsAveraged) _serialize_bool_(w, "SpreadIsAveraged", *v.SpreadIsAveraged);
+    if (v.FlatIncludeSpread) _serialize_bool_(w, "FlatIncludeSpread", *v.FlatIncludeSpread);
+    if (v.FlatLookback) _serialize_crossCurrencyBasisType_FlatLookback_t(w, "FlatLookback", *v.FlatLookback);
+    if (v.FlatFixingDays) _serialize_int64_t(w, "FlatFixingDays", *v.FlatFixingDays);
+    if (v.FlatRateCutoff) _serialize_int64_t(w, "FlatRateCutoff", *v.FlatRateCutoff);
+    if (v.FlatIsAveraged) _serialize_bool_(w, "FlatIsAveraged", *v.FlatIsAveraged);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyFixFloatType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyFixFloatType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyFixFloatType_SettlementCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyFixFloatType_SettlementCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyFixFloatType_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyFixFloatType_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossCurrencyFixFloatType(xsdcpp::XmlWriter& w, const char* name, const domain::crossCurrencyFixFloatType& v) {
+    w.startElement(name);
+    _serialize_crossCurrencyFixFloatType_Id_t(w, "Id", v.Id);
+    _serialize_int64_t(w, "SettlementDays", v.SettlementDays);
+    _serialize_crossCurrencyFixFloatType_SettlementCalendar_t(w, "SettlementCalendar", v.SettlementCalendar);
+    _serialize_businessDayConvention(w, "SettlementConvention", v.SettlementConvention);
+    _serialize_currencyCode(w, "FixedCurrency", v.FixedCurrency);
+    _serialize_frequencyType(w, "FixedFrequency", v.FixedFrequency);
+    _serialize_businessDayConvention(w, "FixedConvention", v.FixedConvention);
+    _serialize_dayCounter(w, "FixedDayCounter", v.FixedDayCounter);
+    _serialize_crossCurrencyFixFloatType_Index_t(w, "Index", v.Index);
+    if (v.EOM) _serialize_bool_(w, "EOM", *v.EOM);
+    if (v.IsResettable) _serialize_bool_(w, "IsResettable", *v.IsResettable);
+    if (v.FloatIndexIsResettable) _serialize_bool_(w, "FloatIndexIsResettable", *v.FloatIndexIsResettable);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_iborIndexType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::iborIndexType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_iborIndexType_FixingCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::iborIndexType_FixingCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_iborIndexType(xsdcpp::XmlWriter& w, const char* name, const domain::iborIndexType& v) {
+    w.startElement(name);
+    _serialize_iborIndexType_Id_t(w, "Id", v.Id);
+    _serialize_iborIndexType_FixingCalendar_t(w, "FixingCalendar", v.FixingCalendar);
+    _serialize_dayCounter(w, "DayCounter", v.DayCounter);
+    _serialize_int64_t(w, "SettlementDays", v.SettlementDays);
+    _serialize_businessDayConvention(w, "BusinessDayConvention", v.BusinessDayConvention);
+    _serialize_bool_(w, "EndOfMonth", v.EndOfMonth);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_overnightIndexType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::overnightIndexType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_overnightIndexType_FixingCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::overnightIndexType_FixingCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_overnightIndexType(xsdcpp::XmlWriter& w, const char* name, const domain::overnightIndexType& v) {
+    w.startElement(name);
+    _serialize_overnightIndexType_Id_t(w, "Id", v.Id);
+    _serialize_overnightIndexType_FixingCalendar_t(w, "FixingCalendar", v.FixingCalendar);
+    _serialize_dayCounter(w, "DayCounter", v.DayCounter);
+    _serialize_int64_t(w, "SettlementDays", v.SettlementDays);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swapIndexType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::swapIndexType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swapIndexType_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::swapIndexType_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swapIndexType_FixingCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::swapIndexType_FixingCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swapIndexType(xsdcpp::XmlWriter& w, const char* name, const domain::swapIndexType& v) {
+    w.startElement(name);
+    _serialize_swapIndexType_Id_t(w, "Id", v.Id);
+    _serialize_swapIndexType_Conventions_t(w, "Conventions", v.Conventions);
+    if (v.FixingCalendar) _serialize_swapIndexType_FixingCalendar_t(w, "FixingCalendar", *v.FixingCalendar);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationswapType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationswapType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationswapType_FixCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationswapType_FixCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationswapType_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationswapType_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationswapType_ObservationLag_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationswapType_ObservationLag_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationswapType_InflationCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationswapType_InflationCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_publicationRoll(xsdcpp::XmlWriter& w, const char* name, const domain::publicationRoll& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationswapType_StartDelay_t(xsdcpp::XmlWriter& w, const char* name, const domain::inflationswapType_StartDelay_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_inflationswapType(xsdcpp::XmlWriter& w, const char* name, const domain::inflationswapType& v) {
+    w.startElement(name);
+    _serialize_inflationswapType_Id_t(w, "Id", v.Id);
+    _serialize_inflationswapType_FixCalendar_t(w, "FixCalendar", v.FixCalendar);
+    _serialize_businessDayConvention(w, "FixConvention", v.FixConvention);
+    _serialize_dayCounter(w, "DayCounter", v.DayCounter);
+    _serialize_inflationswapType_Index_t(w, "Index", v.Index);
+    _serialize_bool_(w, "Interpolated", v.Interpolated);
+    _serialize_inflationswapType_ObservationLag_t(w, "ObservationLag", v.ObservationLag);
+    _serialize_bool_(w, "AdjustInflationObservationDates", v.AdjustInflationObservationDates);
+    _serialize_inflationswapType_InflationCalendar_t(w, "InflationCalendar", v.InflationCalendar);
+    _serialize_businessDayConvention(w, "InflationConvention", v.InflationConvention);
+    if (v.PublicationRoll) _serialize_publicationRoll(w, "PublicationRoll", *v.PublicationRoll);
+    if (v.PublicationSchedule) _serialize_scheduleData(w, "PublicationSchedule", *v.PublicationSchedule);
+    if (v.StartDelay) _serialize_inflationswapType_StartDelay_t(w, "StartDelay", *v.StartDelay);
+    if (v.StartDelayConvention) _serialize_businessDayConvention(w, "StartDelayConvention", *v.StartDelayConvention);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cmsSpreadOptionType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::cmsSpreadOptionType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cmsSpreadOptionType_ForwardStart_t(xsdcpp::XmlWriter& w, const char* name, const domain::cmsSpreadOptionType_ForwardStart_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cmsSpreadOptionType_SpotDays_t(xsdcpp::XmlWriter& w, const char* name, const domain::cmsSpreadOptionType_SpotDays_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cmsSpreadOptionType_SwapTenor_t(xsdcpp::XmlWriter& w, const char* name, const domain::cmsSpreadOptionType_SwapTenor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cmsSpreadOptionType_Calendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::cmsSpreadOptionType_Calendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cmsSpreadOptionType(xsdcpp::XmlWriter& w, const char* name, const domain::cmsSpreadOptionType& v) {
+    w.startElement(name);
+    _serialize_cmsSpreadOptionType_Id_t(w, "Id", v.Id);
+    _serialize_cmsSpreadOptionType_ForwardStart_t(w, "ForwardStart", v.ForwardStart);
+    _serialize_cmsSpreadOptionType_SpotDays_t(w, "SpotDays", v.SpotDays);
+    _serialize_cmsSpreadOptionType_SwapTenor_t(w, "SwapTenor", v.SwapTenor);
+    _serialize_int64_t(w, "FixingDays", v.FixingDays);
+    _serialize_cmsSpreadOptionType_Calendar_t(w, "Calendar", v.Calendar);
+    _serialize_dayCounter(w, "DayCounter", v.DayCounter);
+    _serialize_businessDayConvention(w, "RollConvention", v.RollConvention);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityForwardType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityForwardType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityForwardType_AdvanceCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityForwardType_AdvanceCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityForwardType(xsdcpp::XmlWriter& w, const char* name, const domain::commodityForwardType& v) {
+    w.startElement(name);
+    _serialize_commodityForwardType_Id_t(w, "Id", v.Id);
+    if (v.SpotDays) _serialize_int64_t(w, "SpotDays", *v.SpotDays);
+    if (v.PointsFactor) _serialize_double(w, "PointsFactor", *v.PointsFactor);
+    if (v.AdvanceCalendar) _serialize_commodityForwardType_AdvanceCalendar_t(w, "AdvanceCalendar", *v.AdvanceCalendar);
+    if (v.SpotRelative) _serialize_bool_(w, "SpotRelative", *v.SpotRelative);
+    if (v.BusinessDayConvention) _serialize_businessDayConvention(w, "BusinessDayConvention", *v.BusinessDayConvention);
+    if (v.Outright) _serialize_bool_(w, "Outright", *v.Outright);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityFutureType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityFutureType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nthWeekdayType_Nth_t(xsdcpp::XmlWriter& w, const char* name, const domain::nthWeekdayType_Nth_t& v) {
+    _serialize_int64_t(w, name, v);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_weekdayType(xsdcpp::XmlWriter& w, const char* name, const domain::weekdayType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nthWeekdayType(xsdcpp::XmlWriter& w, const char* name, const domain::nthWeekdayType& v) {
+    w.startElement(name);
+    _serialize_nthWeekdayType_Nth_t(w, "Nth", v.Nth);
+    _serialize_weekdayType(w, "Weekday", v.Weekday);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dayOfMonth(xsdcpp::XmlWriter& w, const char* name, const domain::dayOfMonth& v) {
+    _serialize_int64_t(w, name, v);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityFutureType_AnchorDay_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityFutureType_AnchorDay_t& v) {
+    w.startElement(name);
+    if (v.NthWeekday) _serialize_nthWeekdayType(w, "NthWeekday", *v.NthWeekday);
+    if (v.DayOfMonth) _serialize_dayOfMonth(w, "DayOfMonth", *v.DayOfMonth);
+    if (v.CalendarDaysBefore) _serialize_uint64_t(w, "CalendarDaysBefore", *v.CalendarDaysBefore);
+    if (v.LastWeekday) _serialize_weekdayType(w, "LastWeekday", *v.LastWeekday);
+    if (v.WeeklyDayOfTheWeek) _serialize_weekdayType(w, "WeeklyDayOfTheWeek", *v.WeeklyDayOfTheWeek);
+    if (v.BusinessDaysAfter) _serialize_int64_t(w, "BusinessDaysAfter", *v.BusinessDaysAfter);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityFutureType_Calendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityFutureType_Calendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityFutureType_ExpiryCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityFutureType_ExpiryCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_monthType(xsdcpp::XmlWriter& w, const char* name, const domain::monthType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_prohibitedExpiriesType_Dates_t_Date_t(xsdcpp::XmlWriter& w, const char* name, const domain::prohibitedExpiriesType_Dates_t_Date_t& v) {
+    w.startElement(name);
+    if ((&v)->forFuture) w.writeAttribute("forFuture", to_string(*(&v)->forFuture));
+    if ((&v)->convention) w.writeAttribute("convention", to_string(*(&v)->convention));
+    if ((&v)->forOption) w.writeAttribute("forOption", to_string(*(&v)->forOption));
+    if ((&v)->optionConvention) w.writeAttribute("optionConvention", to_string(*(&v)->optionConvention));
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_prohibitedExpiriesType_Dates_t(xsdcpp::XmlWriter& w, const char* name, const domain::prohibitedExpiriesType_Dates_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Date) _serialize_prohibitedExpiriesType_Dates_t_Date_t(w, "Date", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_prohibitedExpiriesType(xsdcpp::XmlWriter& w, const char* name, const domain::prohibitedExpiriesType& v) {
+    w.startElement(name);
+    _serialize_prohibitedExpiriesType_Dates_t(w, "Dates", v.Dates);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityFutureType_ValidContractMonths_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityFutureType_ValidContractMonths_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Month) _serialize_monthType(w, "Month", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_continuationMappingType(xsdcpp::XmlWriter& w, const char* name, const domain::continuationMappingType& v) {
+    w.startElement(name);
+    _serialize_uint64_t(w, "From", v.From);
+    _serialize_uint64_t(w, "To", v.To);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_continuationMappingsType(xsdcpp::XmlWriter& w, const char* name, const domain::continuationMappingsType& v) {
+    w.startElement(name);
+    for (const auto& item : v.ContinuationMapping) _serialize_continuationMappingType(w, "ContinuationMapping", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_averagingDataType_CommodityName_t(xsdcpp::XmlWriter& w, const char* name, const domain::averagingDataType_CommodityName_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_averagingDataPeriodType(xsdcpp::XmlWriter& w, const char* name, const domain::averagingDataPeriodType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_averagingDataType_PricingCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::averagingDataType_PricingCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_averagingDataType_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::averagingDataType_Conventions_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_averagingDataType(xsdcpp::XmlWriter& w, const char* name, const domain::averagingDataType& v) {
+    w.startElement(name);
+    _serialize_averagingDataType_CommodityName_t(w, "CommodityName", v.CommodityName);
+    _serialize_averagingDataPeriodType(w, "Period", v.Period);
+    _serialize_averagingDataType_PricingCalendar_t(w, "PricingCalendar", v.PricingCalendar);
+    _serialize_averagingDataType_Conventions_t(w, "Conventions", v.Conventions);
+    if (v.UseBusinessDays) _serialize_bool_(w, "UseBusinessDays", *v.UseBusinessDays);
+    if (v.DeliveryRollDays) _serialize_uint64_t(w, "DeliveryRollDays", *v.DeliveryRollDays);
+    if (v.FutureMonthOffset) _serialize_uint64_t(w, "FutureMonthOffset", *v.FutureMonthOffset);
+    if (v.DailyExpiryOffset) _serialize_uint64_t(w, "DailyExpiryOffset", *v.DailyExpiryOffset);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_offPeakPowerIndexDataType_OffPeakIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::offPeakPowerIndexDataType_OffPeakIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_offPeakPowerIndexDataType_PeakIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::offPeakPowerIndexDataType_PeakIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_offPeakPowerIndexDataType_OffPeakHours_t(xsdcpp::XmlWriter& w, const char* name, const domain::offPeakPowerIndexDataType_OffPeakHours_t& v) {
+    _serialize_double(w, name, v);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_offPeakPowerIndexDataType_PeakCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::offPeakPowerIndexDataType_PeakCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_offPeakPowerIndexDataType(xsdcpp::XmlWriter& w, const char* name, const domain::offPeakPowerIndexDataType& v) {
+    w.startElement(name);
+    _serialize_offPeakPowerIndexDataType_OffPeakIndex_t(w, "OffPeakIndex", v.OffPeakIndex);
+    _serialize_offPeakPowerIndexDataType_PeakIndex_t(w, "PeakIndex", v.PeakIndex);
+    _serialize_offPeakPowerIndexDataType_OffPeakHours_t(w, "OffPeakHours", v.OffPeakHours);
+    _serialize_offPeakPowerIndexDataType_PeakCalendar_t(w, "PeakCalendar", v.PeakCalendar);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityFutureType_IndexName_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityFutureType_IndexName_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityFutureType_SavingsTime_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityFutureType_SavingsTime_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityFutureType_BalanceOfTheMonthPricingCalendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityFutureType_BalanceOfTheMonthPricingCalendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityFutureType_OptionUnderlyingFutureConvention_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityFutureType_OptionUnderlyingFutureConvention_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityFutureType(xsdcpp::XmlWriter& w, const char* name, const domain::commodityFutureType& v) {
+    w.startElement(name);
+    _serialize_commodityFutureType_Id_t(w, "Id", v.Id);
+    if (v.AnchorDay) _serialize_commodityFutureType_AnchorDay_t(w, "AnchorDay", *v.AnchorDay);
+    _serialize_frequencyType(w, "ContractFrequency", v.ContractFrequency);
+    _serialize_commodityFutureType_Calendar_t(w, "Calendar", v.Calendar);
+    if (v.ExpiryCalendar) _serialize_commodityFutureType_ExpiryCalendar_t(w, "ExpiryCalendar", *v.ExpiryCalendar);
+    if (v.ExpiryMonthLag) _serialize_int64_t(w, "ExpiryMonthLag", *v.ExpiryMonthLag);
+    if (v.OneContractMonth) _serialize_monthType(w, "OneContractMonth", *v.OneContractMonth);
+    if (v.OffsetDays) _serialize_int64_t(w, "OffsetDays", *v.OffsetDays);
+    if (v.BusinessDayConvention) _serialize_businessDayConvention(w, "BusinessDayConvention", *v.BusinessDayConvention);
+    if (v.AdjustBeforeOffset) _serialize_bool_(w, "AdjustBeforeOffset", *v.AdjustBeforeOffset);
+    if (v.IsAveraging) _serialize_bool_(w, "IsAveraging", *v.IsAveraging);
+    if (v.ProhibitedExpiries) _serialize_prohibitedExpiriesType(w, "ProhibitedExpiries", *v.ProhibitedExpiries);
+    if (v.ValidContractMonths) _serialize_commodityFutureType_ValidContractMonths_t(w, "ValidContractMonths", *v.ValidContractMonths);
+    if (v.OptionExpiryMonthLag) _serialize_int64_t(w, "OptionExpiryMonthLag", *v.OptionExpiryMonthLag);
+    if (v.OptionContractFrequency) _serialize_frequencyType(w, "OptionContractFrequency", *v.OptionContractFrequency);
+    if (v.OptionExpiryOffset) _serialize_uint64_t(w, "OptionExpiryOffset", *v.OptionExpiryOffset);
+    if (v.OptionCalendarDaysBefore) _serialize_uint64_t(w, "OptionCalendarDaysBefore", *v.OptionCalendarDaysBefore);
+    if (v.OptionMinBusinessDaysBefore) _serialize_uint64_t(w, "OptionMinBusinessDaysBefore", *v.OptionMinBusinessDaysBefore);
+    if (v.OptionExpiryDay) _serialize_dayOfMonth(w, "OptionExpiryDay", *v.OptionExpiryDay);
+    if (v.OptionNthWeekday) _serialize_nthWeekdayType(w, "OptionNthWeekday", *v.OptionNthWeekday);
+    if (v.OptionExpiryLastWeekdayOfMonth) _serialize_weekdayType(w, "OptionExpiryLastWeekdayOfMonth", *v.OptionExpiryLastWeekdayOfMonth);
+    if (v.OptionExpiryWeeklyDayOfTheWeek) _serialize_weekdayType(w, "OptionExpiryWeeklyDayOfTheWeek", *v.OptionExpiryWeeklyDayOfTheWeek);
+    if (v.OptionBusinessDayConvention) _serialize_businessDayConvention(w, "OptionBusinessDayConvention", *v.OptionBusinessDayConvention);
+    if (v.FutureContinuationMappings) _serialize_continuationMappingsType(w, "FutureContinuationMappings", *v.FutureContinuationMappings);
+    if (v.OptionContinuationMappings) _serialize_continuationMappingsType(w, "OptionContinuationMappings", *v.OptionContinuationMappings);
+    if (v.AveragingData) _serialize_averagingDataType(w, "AveragingData", *v.AveragingData);
+    if (v.HoursPerDay) _serialize_uint64_t(w, "HoursPerDay", *v.HoursPerDay);
+    if (v.OffPeakPowerIndexData) _serialize_offPeakPowerIndexDataType(w, "OffPeakPowerIndexData", *v.OffPeakPowerIndexData);
+    if (v.IndexName) _serialize_commodityFutureType_IndexName_t(w, "IndexName", *v.IndexName);
+    if (v.SavingsTime) _serialize_commodityFutureType_SavingsTime_t(w, "SavingsTime", *v.SavingsTime);
+    if (v.BalanceOfTheMonth) _serialize_bool_(w, "BalanceOfTheMonth", *v.BalanceOfTheMonth);
+    if (v.BalanceOfTheMonthPricingCalendar) _serialize_commodityFutureType_BalanceOfTheMonthPricingCalendar_t(w, "BalanceOfTheMonthPricingCalendar", *v.BalanceOfTheMonthPricingCalendar);
+    if (v.OptionUnderlyingFutureConvention) _serialize_commodityFutureType_OptionUnderlyingFutureConvention_t(w, "OptionUnderlyingFutureConvention", *v.OptionUnderlyingFutureConvention);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOption_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOption_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOption_FXConventionID_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOption_FXConventionID_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOption_AtmType_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOption_AtmType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOption_DeltaType_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOption_DeltaType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOption_SwitchTenor_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOption_SwitchTenor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOption_LongTermAtmType_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOption_LongTermAtmType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOption_LongTermDeltaType_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOption_LongTermDeltaType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOption_RiskReversalInFavorOf_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOption_RiskReversalInFavorOf_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOption_ButterflyStyle_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOption_ButterflyStyle_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOption(xsdcpp::XmlWriter& w, const char* name, const domain::fxOption& v) {
+    w.startElement(name);
+    _serialize_fxOption_Id_t(w, "Id", v.Id);
+    if (v.FXConventionID) _serialize_fxOption_FXConventionID_t(w, "FXConventionID", *v.FXConventionID);
+    _serialize_fxOption_AtmType_t(w, "AtmType", v.AtmType);
+    _serialize_fxOption_DeltaType_t(w, "DeltaType", v.DeltaType);
+    if (v.SwitchTenor) _serialize_fxOption_SwitchTenor_t(w, "SwitchTenor", *v.SwitchTenor);
+    if (v.LongTermAtmType) _serialize_fxOption_LongTermAtmType_t(w, "LongTermAtmType", *v.LongTermAtmType);
+    if (v.LongTermDeltaType) _serialize_fxOption_LongTermDeltaType_t(w, "LongTermDeltaType", *v.LongTermDeltaType);
+    if (v.RiskReversalInFavorOf) _serialize_fxOption_RiskReversalInFavorOf_t(w, "RiskReversalInFavorOf", *v.RiskReversalInFavorOf);
+    if (v.ButterflyStyle) _serialize_fxOption_ButterflyStyle_t(w, "ButterflyStyle", *v.ButterflyStyle);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOptionTimeWeighting_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOptionTimeWeighting_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOptionTimeWeighting_WeekdayWeights_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOptionTimeWeighting_WeekdayWeights_t& v) {
+    w.startElement(name);
+    _serialize_float(w, "Monday", v.Monday);
+    _serialize_float(w, "Tuesday", v.Tuesday);
+    _serialize_float(w, "Wednesday", v.Wednesday);
+    _serialize_float(w, "Thursday", v.Thursday);
+    _serialize_float(w, "Friday", v.Friday);
+    _serialize_float(w, "Saturday", v.Saturday);
+    _serialize_float(w, "Sunday", v.Sunday);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t_Calendar_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t_Calendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t& v) {
+    w.startElement(name);
+    _serialize_fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t_Name_t(w, "Name", v.Name);
+    _serialize_fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t_Calendar_t(w, "Calendar", v.Calendar);
+    _serialize_float(w, "Weight", v.Weight);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOptionTimeWeighting_TradingCenters_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOptionTimeWeighting_TradingCenters_t& v) {
+    w.startElement(name);
+    _serialize_fxOptionTimeWeighting_TradingCenters_t_TradingCenter_t(w, "TradingCenter", v.TradingCenter);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOptionTimeWeighting_Events_t_Event_t_Description_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOptionTimeWeighting_Events_t_Event_t_Description_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOptionTimeWeighting_Events_t_Event_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOptionTimeWeighting_Events_t_Event_t& v) {
+    w.startElement(name);
+    _serialize_fxOptionTimeWeighting_Events_t_Event_t_Description_t(w, "Description", v.Description);
+    _serialize_date(w, "Date", v.Date);
+    _serialize_float(w, "Weight", v.Weight);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOptionTimeWeighting_Events_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxOptionTimeWeighting_Events_t& v) {
+    w.startElement(name);
+    _serialize_fxOptionTimeWeighting_Events_t_Event_t(w, "Event", v.Event);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxOptionTimeWeighting(xsdcpp::XmlWriter& w, const char* name, const domain::fxOptionTimeWeighting& v) {
+    w.startElement(name);
+    _serialize_fxOptionTimeWeighting_Id_t(w, "Id", v.Id);
+    _serialize_fxOptionTimeWeighting_WeekdayWeights_t(w, "WeekdayWeights", v.WeekdayWeights);
+    if (v.TradingCenters) _serialize_fxOptionTimeWeighting_TradingCenters_t(w, "TradingCenters", *v.TradingCenters);
+    if (v.Events) _serialize_fxOptionTimeWeighting_Events_t(w, "Events", *v.Events);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationIndexType_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroInflationIndexType_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationIndexType_RegionName_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroInflationIndexType_RegionName_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationIndexType_RegionCode_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroInflationIndexType_RegionCode_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationIndexType_AvailabilityLag_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroInflationIndexType_AvailabilityLag_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationIndexType(xsdcpp::XmlWriter& w, const char* name, const domain::zeroInflationIndexType& v) {
+    w.startElement(name);
+    _serialize_zeroInflationIndexType_Id_t(w, "Id", v.Id);
+    _serialize_zeroInflationIndexType_RegionName_t(w, "RegionName", v.RegionName);
+    _serialize_zeroInflationIndexType_RegionCode_t(w, "RegionCode", v.RegionCode);
+    _serialize_bool_(w, "Revised", v.Revised);
+    _serialize_frequencyType(w, "Frequency", v.Frequency);
+    _serialize_zeroInflationIndexType_AvailabilityLag_t(w, "AvailabilityLag", v.AvailabilityLag);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bondYield_Id_t(xsdcpp::XmlWriter& w, const char* name, const domain::bondYield_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bondYield_Compounding_t(xsdcpp::XmlWriter& w, const char* name, const domain::bondYield_Compounding_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bondYield_PriceType_t(xsdcpp::XmlWriter& w, const char* name, const domain::bondYield_PriceType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bondYield(xsdcpp::XmlWriter& w, const char* name, const domain::bondYield& v) {
+    w.startElement(name);
+    _serialize_bondYield_Id_t(w, "Id", v.Id);
+    _serialize_bondYield_Compounding_t(w, "Compounding", v.Compounding);
+    if (v.Frequency) _serialize_frequencyType(w, "Frequency", *v.Frequency);
+    if (v.PriceType) _serialize_bondYield_PriceType_t(w, "PriceType", *v.PriceType);
+    if (v.Accuracy) _serialize_float(w, "Accuracy", *v.Accuracy);
+    if (v.MaxEvaluations) _serialize_int64_t(w, "MaxEvaluations", *v.MaxEvaluations);
+    if (v.Guess) _serialize_float(w, "Guess", *v.Guess);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_conventions(xsdcpp::XmlWriter& w, const char* name, const domain::conventions& v) {
+    w.startElement(name);
+    for (const auto& item : v.Zero) _serialize_zeroType(w, "Zero", item);
+    for (const auto& item : v.CDS) _serialize_cdsConventionsType(w, "CDS", item);
+    for (const auto& item : v.Deposit) _serialize_depositType(w, "Deposit", item);
+    for (const auto& item : v.Future) _serialize_futureType(w, "Future", item);
+    for (const auto& item : v.FRA) _serialize_fraType(w, "FRA", item);
+    for (const auto& item : v.OIS) _serialize_oisType(w, "OIS", item);
+    for (const auto& item : v.Swap) _serialize_swapType(w, "Swap", item);
+    for (const auto& item : v.AverageOIS) _serialize_averageOISType(w, "AverageOIS", item);
+    for (const auto& item : v.TenorBasisSwap) _serialize_tenorBasisSwapType(w, "TenorBasisSwap", item);
+    for (const auto& item : v.TenorBasisTwoSwap) _serialize_tenorBasisTwoSwapType(w, "TenorBasisTwoSwap", item);
+    for (const auto& item : v.BMABasisSwap) _serialize_bmaBasisSwapType(w, "BMABasisSwap", item);
+    for (const auto& item : v.FX) _serialize_fxType(w, "FX", item);
+    for (const auto& item : v.CrossCurrencyBasis) _serialize_crossCurrencyBasisType(w, "CrossCurrencyBasis", item);
+    for (const auto& item : v.CrossCurrencyFixFloat) _serialize_crossCurrencyFixFloatType(w, "CrossCurrencyFixFloat", item);
+    for (const auto& item : v.IborIndex) _serialize_iborIndexType(w, "IborIndex", item);
+    for (const auto& item : v.OvernightIndex) _serialize_overnightIndexType(w, "OvernightIndex", item);
+    for (const auto& item : v.SwapIndex) _serialize_swapIndexType(w, "SwapIndex", item);
+    for (const auto& item : v.InflationSwap) _serialize_inflationswapType(w, "InflationSwap", item);
+    for (const auto& item : v.CmsSpreadOption) _serialize_cmsSpreadOptionType(w, "CmsSpreadOption", item);
+    for (const auto& item : v.CommodityForward) _serialize_commodityForwardType(w, "CommodityForward", item);
+    for (const auto& item : v.CommodityFuture) _serialize_commodityFutureType(w, "CommodityFuture", item);
+    for (const auto& item : v.FxOption) _serialize_fxOption(w, "FxOption", item);
+    for (const auto& item : v.FxOptionTimeWeighting) _serialize_fxOptionTimeWeighting(w, "FxOptionTimeWeighting", item);
+    for (const auto& item : v.ZeroInflationIndex) _serialize_zeroInflationIndexType(w, "ZeroInflationIndex", item);
+    for (const auto& item : v.BondYield) _serialize_bondYield(w, "BondYield", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_collateralBalances_CollateralBalance_t(xsdcpp::XmlWriter& w, const char* name, const domain::collateralBalances_CollateralBalance_t& v) {
+    w.startElement(name);
+    if (v.Currency) _serialize_currencyCode(w, "Currency", *v.Currency);
+    if (v.InitialMargin) _serialize_double(w, "InitialMargin", *v.InitialMargin);
+    if (v.VariationMargin) _serialize_double(w, "VariationMargin", *v.VariationMargin);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_collateralBalances(xsdcpp::XmlWriter& w, const char* name, const domain::collateralBalances& v) {
+    w.startElement(name);
+    for (const auto& item : v.CollateralBalance) _serialize_collateralBalances_CollateralBalance_t(w, "CollateralBalance", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_csaType(xsdcpp::XmlWriter& w, const char* name, const domain::csaType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_Index_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_independentAmountType(xsdcpp::XmlWriter& w, const char* name, const domain::independentAmountType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_IndependentAmount_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_IndependentAmount_t& v) {
+    w.startElement(name);
+    _serialize_double(w, "IndependentAmountHeld", v.IndependentAmountHeld);
+    _serialize_independentAmountType(w, "IndependentAmountType", v.IndependentAmountType);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t_CallFrequency_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t_CallFrequency_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t_PostFrequency_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t_PostFrequency_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t& v) {
+    w.startElement(name);
+    _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t_CallFrequency_t(w, "CallFrequency", v.CallFrequency);
+    _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t_PostFrequency_t(w, "PostFrequency", v.PostFrequency);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginPeriodOfRisk_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginPeriodOfRisk_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_EligibleCollaterals_t_Currencies_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_EligibleCollaterals_t_Currencies_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Currency) _serialize_currencyCode(w, "Currency", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_EligibleCollaterals_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_EligibleCollaterals_t& v) {
+    w.startElement(name);
+    _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_EligibleCollaterals_t_Currencies_t(w, "Currencies", v.Currencies);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_NonExemptIMRegulations_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_NonExemptIMRegulations_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingsetdefinitions_NettingSet_t_CSADetails_t& v) {
+    w.startElement(name);
+    if (v.Bilateral) _serialize_csaType(w, "Bilateral", *v.Bilateral);
+    if (v.CSACurrency) _serialize_currencyCode(w, "CSACurrency", *v.CSACurrency);
+    if (v.Index) _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_Index_t(w, "Index", *v.Index);
+    if (v.ThresholdPay) _serialize_non_negative_decimal(w, "ThresholdPay", *v.ThresholdPay);
+    if (v.ThresholdReceive) _serialize_non_negative_decimal(w, "ThresholdReceive", *v.ThresholdReceive);
+    if (v.MinimumTransferAmountPay) _serialize_non_negative_decimal(w, "MinimumTransferAmountPay", *v.MinimumTransferAmountPay);
+    if (v.MinimumTransferAmountReceive) _serialize_non_negative_decimal(w, "MinimumTransferAmountReceive", *v.MinimumTransferAmountReceive);
+    if (v.IndependentAmount) _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_IndependentAmount_t(w, "IndependentAmount", *v.IndependentAmount);
+    if (v.MarginingFrequency) _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginingFrequency_t(w, "MarginingFrequency", *v.MarginingFrequency);
+    if (v.MarginPeriodOfRisk) _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_MarginPeriodOfRisk_t(w, "MarginPeriodOfRisk", *v.MarginPeriodOfRisk);
+    if (v.CollateralCompoundingSpreadReceive) _serialize_double(w, "CollateralCompoundingSpreadReceive", *v.CollateralCompoundingSpreadReceive);
+    if (v.CollateralCompoundingSpreadPay) _serialize_double(w, "CollateralCompoundingSpreadPay", *v.CollateralCompoundingSpreadPay);
+    if (v.EligibleCollaterals) _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_EligibleCollaterals_t(w, "EligibleCollaterals", *v.EligibleCollaterals);
+    if (v.ApplyInitialMargin) _serialize_bool(w, "ApplyInitialMargin", *v.ApplyInitialMargin);
+    if (v.InitialMarginType) _serialize_csaType(w, "InitialMarginType", *v.InitialMarginType);
+    if (v.CalculateIMAmount) _serialize_bool(w, "CalculateIMAmount", *v.CalculateIMAmount);
+    if (v.CalculateVMAmount) _serialize_bool(w, "CalculateVMAmount", *v.CalculateVMAmount);
+    if (v.NonExemptIMRegulations) _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t_NonExemptIMRegulations_t(w, "NonExemptIMRegulations", *v.NonExemptIMRegulations);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingsetdefinitions_NettingSet_t(xsdcpp::XmlWriter& w, const char* name, const domain::nettingsetdefinitions_NettingSet_t& v) {
+    w.startElement(name);
+    if (v.ActiveCSAFlag) _serialize_bool(w, "ActiveCSAFlag", *v.ActiveCSAFlag);
+    if (v.CSADetails) _serialize_nettingsetdefinitions_NettingSet_t_CSADetails_t(w, "CSADetails", *v.CSADetails);
+    if (v.RiskWeight) _serialize_double(w, "RiskWeight", *v.RiskWeight);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_nettingsetdefinitions(xsdcpp::XmlWriter& w, const char* name, const domain::nettingsetdefinitions& v) {
+    w.startElement(name);
+    for (const auto& item : v.NettingSet) _serialize_nettingsetdefinitions_NettingSet_t(w, "NettingSet", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_product_Model_t(xsdcpp::XmlWriter& w, const char* name, const domain::product_Model_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parameter(xsdcpp::XmlWriter& w, const char* name, const domain::parameter& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_product_ModelParameters_t(xsdcpp::XmlWriter& w, const char* name, const domain::product_ModelParameters_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Parameter) _serialize_parameter(w, "Parameter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_product_Engine_t(xsdcpp::XmlWriter& w, const char* name, const domain::product_Engine_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_product_EngineParameters_t(xsdcpp::XmlWriter& w, const char* name, const domain::product_EngineParameters_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Parameter) _serialize_parameter(w, "Parameter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_product(xsdcpp::XmlWriter& w, const char* name, const domain::product& v) {
+    w.startElement(name);
+    w.writeAttribute("type", (&v)->type);
+    _serialize_product_Model_t(w, "Model", v.Model);
+    _serialize_product_ModelParameters_t(w, "ModelParameters", v.ModelParameters);
+    _serialize_product_Engine_t(w, "Engine", v.Engine);
+    _serialize_product_EngineParameters_t(w, "EngineParameters", v.EngineParameters);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_globalParameters(xsdcpp::XmlWriter& w, const char* name, const domain::globalParameters& v) {
+    w.startElement(name);
+    for (const auto& item : v.Parameter) _serialize_parameter(w, "Parameter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_pricingengines(xsdcpp::XmlWriter& w, const char* name, const domain::pricingengines& v) {
+    w.startElement(name);
+    for (const auto& item : v.Product) _serialize_product(w, "Product", item);
+    if (v.GlobalParameters) _serialize_globalParameters(w, "GlobalParameters", *v.GlobalParameters);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_YieldCurvesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_YieldCurvesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_DiscountingCurvesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_DiscountingCurvesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_IndexForwardingCurvesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_IndexForwardingCurvesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_SwapIndexCurvesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_SwapIndexCurvesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_ZeroInflationIndexCurvesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_ZeroInflationIndexCurvesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_ZeroInflationCapFloorVolatilitiesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_ZeroInflationCapFloorVolatilitiesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_YYInflationIndexCurvesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_YYInflationIndexCurvesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_FxSpotsId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_FxSpotsId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_BaseCorrelationsId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_BaseCorrelationsId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_FxVolatilitiesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_FxVolatilitiesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_SwaptionVolatilitiesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_SwaptionVolatilitiesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_YieldVolatilitiesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_YieldVolatilitiesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_CapFloorVolatilitiesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_CapFloorVolatilitiesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_CDSVolatilitiesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_CDSVolatilitiesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_DefaultCurvesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_DefaultCurvesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_YYInflationCapFloorVolatilitiesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_YYInflationCapFloorVolatilitiesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_EquityCurvesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_EquityCurvesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_EquityVolatilitiesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_EquityVolatilitiesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_SecuritiesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_SecuritiesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_CommodityCurvesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_CommodityCurvesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_CommodityVolatilitiesId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_CommodityVolatilitiesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_CorrelationsId_t(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_CorrelationsId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType(xsdcpp::XmlWriter& w, const char* name, const domain::configurationType& v) {
+    w.startElement(name);
+    w.writeAttribute("id", (&v)->id);
+    if (v.YieldCurvesId) _serialize_configurationType_YieldCurvesId_t(w, "YieldCurvesId", *v.YieldCurvesId);
+    if (v.DiscountingCurvesId) _serialize_configurationType_DiscountingCurvesId_t(w, "DiscountingCurvesId", *v.DiscountingCurvesId);
+    if (v.IndexForwardingCurvesId) _serialize_configurationType_IndexForwardingCurvesId_t(w, "IndexForwardingCurvesId", *v.IndexForwardingCurvesId);
+    if (v.SwapIndexCurvesId) _serialize_configurationType_SwapIndexCurvesId_t(w, "SwapIndexCurvesId", *v.SwapIndexCurvesId);
+    if (v.ZeroInflationIndexCurvesId) _serialize_configurationType_ZeroInflationIndexCurvesId_t(w, "ZeroInflationIndexCurvesId", *v.ZeroInflationIndexCurvesId);
+    if (v.ZeroInflationCapFloorVolatilitiesId) _serialize_configurationType_ZeroInflationCapFloorVolatilitiesId_t(w, "ZeroInflationCapFloorVolatilitiesId", *v.ZeroInflationCapFloorVolatilitiesId);
+    if (v.YYInflationIndexCurvesId) _serialize_configurationType_YYInflationIndexCurvesId_t(w, "YYInflationIndexCurvesId", *v.YYInflationIndexCurvesId);
+    if (v.FxSpotsId) _serialize_configurationType_FxSpotsId_t(w, "FxSpotsId", *v.FxSpotsId);
+    if (v.BaseCorrelationsId) _serialize_configurationType_BaseCorrelationsId_t(w, "BaseCorrelationsId", *v.BaseCorrelationsId);
+    if (v.FxVolatilitiesId) _serialize_configurationType_FxVolatilitiesId_t(w, "FxVolatilitiesId", *v.FxVolatilitiesId);
+    if (v.SwaptionVolatilitiesId) _serialize_configurationType_SwaptionVolatilitiesId_t(w, "SwaptionVolatilitiesId", *v.SwaptionVolatilitiesId);
+    if (v.YieldVolatilitiesId) _serialize_configurationType_YieldVolatilitiesId_t(w, "YieldVolatilitiesId", *v.YieldVolatilitiesId);
+    if (v.CapFloorVolatilitiesId) _serialize_configurationType_CapFloorVolatilitiesId_t(w, "CapFloorVolatilitiesId", *v.CapFloorVolatilitiesId);
+    if (v.CDSVolatilitiesId) _serialize_configurationType_CDSVolatilitiesId_t(w, "CDSVolatilitiesId", *v.CDSVolatilitiesId);
+    if (v.DefaultCurvesId) _serialize_configurationType_DefaultCurvesId_t(w, "DefaultCurvesId", *v.DefaultCurvesId);
+    if (v.YYInflationCapFloorVolatilitiesId) _serialize_configurationType_YYInflationCapFloorVolatilitiesId_t(w, "YYInflationCapFloorVolatilitiesId", *v.YYInflationCapFloorVolatilitiesId);
+    if (v.EquityCurvesId) _serialize_configurationType_EquityCurvesId_t(w, "EquityCurvesId", *v.EquityCurvesId);
+    if (v.EquityVolatilitiesId) _serialize_configurationType_EquityVolatilitiesId_t(w, "EquityVolatilitiesId", *v.EquityVolatilitiesId);
+    if (v.SecuritiesId) _serialize_configurationType_SecuritiesId_t(w, "SecuritiesId", *v.SecuritiesId);
+    if (v.CommodityCurvesId) _serialize_configurationType_CommodityCurvesId_t(w, "CommodityCurvesId", *v.CommodityCurvesId);
+    if (v.CommodityVolatilitiesId) _serialize_configurationType_CommodityVolatilitiesId_t(w, "CommodityVolatilitiesId", *v.CommodityVolatilitiesId);
+    if (v.CorrelationsId) _serialize_configurationType_CorrelationsId_t(w, "CorrelationsId", *v.CorrelationsId);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldCurvesType_YieldCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldCurvesType_YieldCurve_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldCurvesType(xsdcpp::XmlWriter& w, const char* name, const domain::yieldCurvesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.YieldCurve) _serialize_yieldCurvesType_YieldCurve_t(w, "YieldCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_discountCurvesType_DiscountingCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::discountCurvesType_DiscountingCurve_t& v) {
+    w.startElement(name);
+    w.writeAttribute("currency", (&v)->currency);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_discountCurvesType(xsdcpp::XmlWriter& w, const char* name, const domain::discountCurvesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.DiscountingCurve) _serialize_discountCurvesType_DiscountingCurve_t(w, "DiscountingCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_indexForwardingCurvesType_Index_t(xsdcpp::XmlWriter& w, const char* name, const domain::indexForwardingCurvesType_Index_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_indexForwardingCurvesType(xsdcpp::XmlWriter& w, const char* name, const domain::indexForwardingCurvesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.Index) _serialize_indexForwardingCurvesType_Index_t(w, "Index", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swapIndexCurvesType_SwapIndex_t(xsdcpp::XmlWriter& w, const char* name, const domain::swapIndexCurvesType_SwapIndex_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    _serialize_indexNameType(w, "Discounting", v.Discounting);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swapIndexCurvesType(xsdcpp::XmlWriter& w, const char* name, const domain::swapIndexCurvesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.SwapIndex) _serialize_swapIndexCurvesType_SwapIndex_t(w, "SwapIndex", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationIndexCurvesType_ZeroInflationIndexCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroInflationIndexCurvesType_ZeroInflationIndexCurve_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationIndexCurvesType(xsdcpp::XmlWriter& w, const char* name, const domain::zeroInflationIndexCurvesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.ZeroInflationIndexCurve) _serialize_zeroInflationIndexCurvesType_ZeroInflationIndexCurve_t(w, "ZeroInflationIndexCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yyInflationIndexCurvesType_YYInflationIndexCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::yyInflationIndexCurvesType_YYInflationIndexCurve_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yyInflationIndexCurvesType(xsdcpp::XmlWriter& w, const char* name, const domain::yyInflationIndexCurvesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.YYInflationIndexCurve) _serialize_yyInflationIndexCurvesType_YYInflationIndexCurve_t(w, "YYInflationIndexCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxSpotsType_FxSpot_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxSpotsType_FxSpot_t& v) {
+    w.startElement(name);
+    w.writeAttribute("pair", (&v)->pair);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxSpotsType(xsdcpp::XmlWriter& w, const char* name, const domain::fxSpotsType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.FxSpot) _serialize_fxSpotsType_FxSpot_t(w, "FxSpot", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatilitiesType_FxVolatility_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatilitiesType_FxVolatility_t& v) {
+    w.startElement(name);
+    w.writeAttribute("pair", (&v)->pair);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxVolatilitiesType(xsdcpp::XmlWriter& w, const char* name, const domain::fxVolatilitiesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.FxVolatility) _serialize_fxVolatilitiesType_FxVolatility_t(w, "FxVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatilitiesType_SwaptionVolatility_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatilitiesType_SwaptionVolatility_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    if ((&v)->currency) w.writeAttribute("currency", to_string(*(&v)->currency));
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionVolatilitiesType(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionVolatilitiesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.SwaptionVolatility) _serialize_swaptionVolatilitiesType_SwaptionVolatility_t(w, "SwaptionVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldVolatilitiesType_YieldVolatility_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldVolatilitiesType_YieldVolatility_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldVolatilitiesType(xsdcpp::XmlWriter& w, const char* name, const domain::yieldVolatilitiesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.YieldVolatility) _serialize_yieldVolatilitiesType_YieldVolatility_t(w, "YieldVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatilitiesType_CapFloorVolatility_t(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatilitiesType_CapFloorVolatility_t& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    if ((&v)->currency) w.writeAttribute("currency", to_string(*(&v)->currency));
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatilitiesType(xsdcpp::XmlWriter& w, const char* name, const domain::capFloorVolatilitiesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.CapFloorVolatility) _serialize_capFloorVolatilitiesType_CapFloorVolatility_t(w, "CapFloorVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsVolatilitiesType_CDSVolatility_t(xsdcpp::XmlWriter& w, const char* name, const domain::cdsVolatilitiesType_CDSVolatility_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsVolatilitiesType(xsdcpp::XmlWriter& w, const char* name, const domain::cdsVolatilitiesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.CDSVolatility) _serialize_cdsVolatilitiesType_CDSVolatility_t(w, "CDSVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurvesType_DefaultCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurvesType_DefaultCurve_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_defaultCurvesType(xsdcpp::XmlWriter& w, const char* name, const domain::defaultCurvesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.DefaultCurve) _serialize_defaultCurvesType_DefaultCurve_t(w, "DefaultCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yyInflationCapFloorVolatilitiesType_YYInflationCapFloorVolatility_t(xsdcpp::XmlWriter& w, const char* name, const domain::yyInflationCapFloorVolatilitiesType_YYInflationCapFloorVolatility_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yyInflationCapFloorVolatilitiesType(xsdcpp::XmlWriter& w, const char* name, const domain::yyInflationCapFloorVolatilitiesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.YYInflationCapFloorVolatility) _serialize_yyInflationCapFloorVolatilitiesType_YYInflationCapFloorVolatility_t(w, "YYInflationCapFloorVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationCapFloorVolatilitiesType_ZeroInflationCapFloorVolatility_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroInflationCapFloorVolatilitiesType_ZeroInflationCapFloorVolatility_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationCapFloorVolatilitiesType(xsdcpp::XmlWriter& w, const char* name, const domain::zeroInflationCapFloorVolatilitiesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.ZeroInflationCapFloorVolatility) _serialize_zeroInflationCapFloorVolatilitiesType_ZeroInflationCapFloorVolatility_t(w, "ZeroInflationCapFloorVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityCurvesType_EquityCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityCurvesType_EquityCurve_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityCurvesType(xsdcpp::XmlWriter& w, const char* name, const domain::equityCurvesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.EquityCurve) _serialize_equityCurvesType_EquityCurve_t(w, "EquityCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityVolatilitiesType_EquityVolatility_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityVolatilitiesType_EquityVolatility_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityVolatilitiesType(xsdcpp::XmlWriter& w, const char* name, const domain::equityVolatilitiesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.EquityVolatility) _serialize_equityVolatilitiesType_EquityVolatility_t(w, "EquityVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_securitiesType_Security_t(xsdcpp::XmlWriter& w, const char* name, const domain::securitiesType_Security_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_securitiesType(xsdcpp::XmlWriter& w, const char* name, const domain::securitiesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.Security) _serialize_securitiesType_Security_t(w, "Security", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelationsType_BaseCorrelation_t(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelationsType_BaseCorrelation_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_baseCorrelationsType(xsdcpp::XmlWriter& w, const char* name, const domain::baseCorrelationsType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.BaseCorrelation) _serialize_baseCorrelationsType_BaseCorrelation_t(w, "BaseCorrelation", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityCurvesType_CommodityCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityCurvesType_CommodityCurve_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityCurvesType(xsdcpp::XmlWriter& w, const char* name, const domain::commodityCurvesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.CommodityCurve) _serialize_commodityCurvesType_CommodityCurve_t(w, "CommodityCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityVolatilitiesType_CommodityVolatility_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityVolatilitiesType_CommodityVolatility_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityVolatilitiesType(xsdcpp::XmlWriter& w, const char* name, const domain::commodityVolatilitiesType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.CommodityVolatility) _serialize_commodityVolatilitiesType_CommodityVolatility_t(w, "CommodityVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlationsType_Correlation_t(xsdcpp::XmlWriter& w, const char* name, const domain::correlationsType_Correlation_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlationsType(xsdcpp::XmlWriter& w, const char* name, const domain::correlationsType& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.Correlation) _serialize_correlationsType_Correlation_t(w, "Correlation", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_todaysmarket(xsdcpp::XmlWriter& w, const char* name, const domain::todaysmarket& v) {
+    w.startElement(name);
+    for (const auto& item : v.Configuration) _serialize_configurationType(w, "Configuration", item);
+    for (const auto& item : v.YieldCurves) _serialize_yieldCurvesType(w, "YieldCurves", item);
+    for (const auto& item : v.DiscountingCurves) _serialize_discountCurvesType(w, "DiscountingCurves", item);
+    for (const auto& item : v.IndexForwardingCurves) _serialize_indexForwardingCurvesType(w, "IndexForwardingCurves", item);
+    for (const auto& item : v.SwapIndexCurves) _serialize_swapIndexCurvesType(w, "SwapIndexCurves", item);
+    for (const auto& item : v.ZeroInflationIndexCurves) _serialize_zeroInflationIndexCurvesType(w, "ZeroInflationIndexCurves", item);
+    for (const auto& item : v.YYInflationIndexCurves) _serialize_yyInflationIndexCurvesType(w, "YYInflationIndexCurves", item);
+    for (const auto& item : v.FxSpots) _serialize_fxSpotsType(w, "FxSpots", item);
+    for (const auto& item : v.FxVolatilities) _serialize_fxVolatilitiesType(w, "FxVolatilities", item);
+    for (const auto& item : v.SwaptionVolatilities) _serialize_swaptionVolatilitiesType(w, "SwaptionVolatilities", item);
+    for (const auto& item : v.YieldVolatilities) _serialize_yieldVolatilitiesType(w, "YieldVolatilities", item);
+    for (const auto& item : v.CapFloorVolatilities) _serialize_capFloorVolatilitiesType(w, "CapFloorVolatilities", item);
+    for (const auto& item : v.CDSVolatilities) _serialize_cdsVolatilitiesType(w, "CDSVolatilities", item);
+    for (const auto& item : v.DefaultCurves) _serialize_defaultCurvesType(w, "DefaultCurves", item);
+    for (const auto& item : v.YYInflationCapFloorVolatilities) _serialize_yyInflationCapFloorVolatilitiesType(w, "YYInflationCapFloorVolatilities", item);
+    for (const auto& item : v.ZeroInflationCapFloorVolatilities) _serialize_zeroInflationCapFloorVolatilitiesType(w, "ZeroInflationCapFloorVolatilities", item);
+    for (const auto& item : v.EquityCurves) _serialize_equityCurvesType(w, "EquityCurves", item);
+    for (const auto& item : v.EquityVolatilities) _serialize_equityVolatilitiesType(w, "EquityVolatilities", item);
+    for (const auto& item : v.Securities) _serialize_securitiesType(w, "Securities", item);
+    for (const auto& item : v.BaseCorrelations) _serialize_baseCorrelationsType(w, "BaseCorrelations", item);
+    for (const auto& item : v.CommodityCurves) _serialize_commodityCurvesType(w, "CommodityCurves", item);
+    for (const auto& item : v.CommodityVolatilities) _serialize_commodityVolatilitiesType(w, "CommodityVolatilities", item);
+    for (const auto& item : v.Correlations) _serialize_correlationsType(w, "Correlations", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_shiftType(xsdcpp::XmlWriter& w, const char* name, const domain::shiftType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_shiftTypeEntry(xsdcpp::XmlWriter& w, const char* name, const domain::shiftTypeEntry& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    w.writeText(to_string(static_cast<domain::shiftType>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_shiftSizeEntry(xsdcpp::XmlWriter& w, const char* name, const domain::shiftSizeEntry& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_discountcurve_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::discountcurve_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_shiftScheme(xsdcpp::XmlWriter& w, const char* name, const domain::shiftScheme& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_shiftSchemeEntry(xsdcpp::XmlWriter& w, const char* name, const domain::shiftSchemeEntry& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    w.writeText(to_string(static_cast<domain::shiftScheme>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_discountcurve_ShiftTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::discountcurve_ShiftTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parconversion_Instruments_t(xsdcpp::XmlWriter& w, const char* name, const domain::parconversion_Instruments_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parconversion_DiscountCurve_t(xsdcpp::XmlWriter& w, const char* name, const domain::parconversion_DiscountCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parconversion_RateComputationPeriod_t(xsdcpp::XmlWriter& w, const char* name, const domain::parconversion_RateComputationPeriod_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parconversion_Conventions_t_Convention_t(xsdcpp::XmlWriter& w, const char* name, const domain::parconversion_Conventions_t_Convention_t& v) {
+    w.startElement(name);
+    if ((&v)->id) w.writeAttribute("id", *(&v)->id);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parconversion_Conventions_t(xsdcpp::XmlWriter& w, const char* name, const domain::parconversion_Conventions_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Convention) _serialize_parconversion_Conventions_t_Convention_t(w, "Convention", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parconversion(xsdcpp::XmlWriter& w, const char* name, const domain::parconversion& v) {
+    w.startElement(name);
+    for (const auto& item : v.Instruments) _serialize_parconversion_Instruments_t(w, "Instruments", item);
+    for (const auto& item : v.SingleCurve) _serialize_bool(w, "SingleCurve", item);
+    if (v.DiscountCurve) _serialize_parconversion_DiscountCurve_t(w, "DiscountCurve", *v.DiscountCurve);
+    if (v.OtherCurrency) _serialize_currencyCode(w, "OtherCurrency", *v.OtherCurrency);
+    if (v.RateComputationPeriod) _serialize_parconversion_RateComputationPeriod_t(w, "RateComputationPeriod", *v.RateComputationPeriod);
+    if (v.Conventions) _serialize_parconversion_Conventions_t(w, "Conventions", *v.Conventions);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_discountcurve(xsdcpp::XmlWriter& w, const char* name, const domain::discountcurve& v) {
+    w.startElement(name);
+    w.writeAttribute("ccy", to_string((&v)->ccy));
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_discountcurve_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_discountcurve_ShiftTenors_t(w, "ShiftTenors", v.ShiftTenors);
+    if (v.ParConversion) _serialize_parconversion(w, "ParConversion", *v.ParConversion);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_discountcurves(xsdcpp::XmlWriter& w, const char* name, const domain::discountcurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.DiscountCurve) _serialize_discountcurve(w, "DiscountCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parExcludes_Type_t(xsdcpp::XmlWriter& w, const char* name, const domain::parExcludes_Type_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parExcludes(xsdcpp::XmlWriter& w, const char* name, const domain::parExcludes& v) {
+    w.startElement(name);
+    for (const auto& item : v.Type) _serialize_parExcludes_Type_t(w, "Type", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_sensitivityanalysis_ParSensiRemoveFixing_t(xsdcpp::XmlWriter& w, const char* name, const domain::sensitivityanalysis_ParSensiRemoveFixing_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parConversionMatrixRegularisation(xsdcpp::XmlWriter& w, const char* name, const domain::parConversionMatrixRegularisation& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_indexcurve_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::indexcurve_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_indexcurve_ShiftTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::indexcurve_ShiftTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_indexcurve(xsdcpp::XmlWriter& w, const char* name, const domain::indexcurve& v) {
+    w.startElement(name);
+    w.writeAttribute("index", (&v)->index);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_indexcurve_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_indexcurve_ShiftTenors_t(w, "ShiftTenors", v.ShiftTenors);
+    if (v.ParConversion) _serialize_parconversion(w, "ParConversion", *v.ParConversion);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_indexcurves(xsdcpp::XmlWriter& w, const char* name, const domain::indexcurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.IndexCurve) _serialize_indexcurve(w, "IndexCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldcurve_CurveType_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldcurve_CurveType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldcurve_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldcurve_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldcurve_ShiftTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldcurve_ShiftTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldcurve(xsdcpp::XmlWriter& w, const char* name, const domain::yieldcurve& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    if (v.CurveType) _serialize_yieldcurve_CurveType_t(w, "CurveType", *v.CurveType);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_yieldcurve_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_yieldcurve_ShiftTenors_t(w, "ShiftTenors", v.ShiftTenors);
+    if (v.ParConversion) _serialize_parconversion(w, "ParConversion", *v.ParConversion);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldcurves(xsdcpp::XmlWriter& w, const char* name, const domain::yieldcurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.YieldCurve) _serialize_yieldcurve(w, "YieldCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxspot_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxspot_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxspot(xsdcpp::XmlWriter& w, const char* name, const domain::fxspot& v) {
+    w.startElement(name);
+    w.writeAttribute("ccypair", (&v)->ccypair);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_fxspot_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxspots(xsdcpp::XmlWriter& w, const char* name, const domain::fxspots& v) {
+    w.startElement(name);
+    for (const auto& item : v.FxSpot) _serialize_fxspot(w, "FxSpot", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxvolatility_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxvolatility_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxvolatility_ShiftExpiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxvolatility_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxvolatility_ShiftStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::fxvolatility_ShiftStrikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxvolatility(xsdcpp::XmlWriter& w, const char* name, const domain::fxvolatility& v) {
+    w.startElement(name);
+    w.writeAttribute("ccypair", (&v)->ccypair);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_fxvolatility_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_fxvolatility_ShiftExpiries_t(w, "ShiftExpiries", v.ShiftExpiries);
+    if (v.ShiftStrikes) _serialize_fxvolatility_ShiftStrikes_t(w, "ShiftStrikes", *v.ShiftStrikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fxvolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::fxvolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.FxVolatility) _serialize_fxvolatility(w, "FxVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionvolatility_Shifts_t_Shift_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionvolatility_Shifts_t_Shift_t& v) {
+    w.startElement(name);
+    if ((&v)->expiry) w.writeAttribute("expiry", *(&v)->expiry);
+    if ((&v)->term) w.writeAttribute("term", *(&v)->term);
+    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionvolatility_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionvolatility_Shifts_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Shift) _serialize_swaptionvolatility_Shifts_t_Shift_t(w, "Shift", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionvolatility_ShiftExpiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionvolatility_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionvolatility_ShiftStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionvolatility_ShiftStrikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionvolatility_ShiftTerms_t(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionvolatility_ShiftTerms_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionvolatility(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionvolatility& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    if ((&v)->ccy) w.writeAttribute("ccy", to_string(*(&v)->ccy));
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_swaptionvolatility_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_swaptionvolatility_ShiftExpiries_t(w, "ShiftExpiries", v.ShiftExpiries);
+    if (v.ShiftStrikes) _serialize_swaptionvolatility_ShiftStrikes_t(w, "ShiftStrikes", *v.ShiftStrikes);
+    _serialize_swaptionvolatility_ShiftTerms_t(w, "ShiftTerms", v.ShiftTerms);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_swaptionvolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::swaptionvolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.SwaptionVolatility) _serialize_swaptionvolatility(w, "SwaptionVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldvolatility_Shifts_t_Shift_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldvolatility_Shifts_t_Shift_t& v) {
+    w.startElement(name);
+    if ((&v)->expiry) w.writeAttribute("expiry", *(&v)->expiry);
+    if ((&v)->term) w.writeAttribute("term", *(&v)->term);
+    w.writeText(xsdcpp::get_string(static_cast<float>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldvolatility_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldvolatility_Shifts_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Shift) _serialize_yieldvolatility_Shifts_t_Shift_t(w, "Shift", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldvolatility_ShiftExpiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldvolatility_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldvolatility_ShiftTerms_t(xsdcpp::XmlWriter& w, const char* name, const domain::yieldvolatility_ShiftTerms_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldvolatility(xsdcpp::XmlWriter& w, const char* name, const domain::yieldvolatility& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_yieldvolatility_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_yieldvolatility_ShiftExpiries_t(w, "ShiftExpiries", v.ShiftExpiries);
+    _serialize_yieldvolatility_ShiftTerms_t(w, "ShiftTerms", v.ShiftTerms);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yieldvolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::yieldvolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.YieldVolatility) _serialize_yieldvolatility(w, "YieldVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capfloorvolatility_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::capfloorvolatility_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capfloorvolatility_ShiftExpiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::capfloorvolatility_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capfloorvolatility_ShiftStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::capfloorvolatility_ShiftStrikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capfloorvolatility(xsdcpp::XmlWriter& w, const char* name, const domain::capfloorvolatility& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    if ((&v)->ccy) w.writeAttribute("ccy", to_string(*(&v)->ccy));
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_capfloorvolatility_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_capfloorvolatility_ShiftExpiries_t(w, "ShiftExpiries", v.ShiftExpiries);
+    if (v.ShiftStrikes) _serialize_capfloorvolatility_ShiftStrikes_t(w, "ShiftStrikes", *v.ShiftStrikes);
+    if (v.Index) _serialize_indexNameType(w, "Index", *v.Index);
+    if (v.IsRelative) _serialize_bool(w, "IsRelative", *v.IsRelative);
+    if (v.ParConversion) _serialize_parconversion(w, "ParConversion", *v.ParConversion);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_capfloorvolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::capfloorvolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.CapFloorVolatility) _serialize_capfloorvolatility(w, "CapFloorVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsvolatility_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::cdsvolatility_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsvolatility_ShiftExpiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::cdsvolatility_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsvolatility(xsdcpp::XmlWriter& w, const char* name, const domain::cdsvolatility& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_cdsvolatility_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_cdsvolatility_ShiftExpiries_t(w, "ShiftExpiries", v.ShiftExpiries);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cdsvolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::cdsvolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.CDSVolatility) _serialize_cdsvolatility(w, "CDSVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_creditcurve_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::creditcurve_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_creditcurve_ShiftTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::creditcurve_ShiftTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_creditcurve(xsdcpp::XmlWriter& w, const char* name, const domain::creditcurve& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_creditcurve_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_creditcurve_ShiftTenors_t(w, "ShiftTenors", v.ShiftTenors);
+    if (v.ParConversion) _serialize_parconversion(w, "ParConversion", *v.ParConversion);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_creditcurves(xsdcpp::XmlWriter& w, const char* name, const domain::creditcurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.CreditCurve) _serialize_creditcurve(w, "CreditCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityspot_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityspot_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityspot(xsdcpp::XmlWriter& w, const char* name, const domain::equityspot& v) {
+    w.startElement(name);
+    w.writeAttribute("equity", (&v)->equity);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_equityspot_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityspots(xsdcpp::XmlWriter& w, const char* name, const domain::equityspots& v) {
+    w.startElement(name);
+    for (const auto& item : v.EquitySpot) _serialize_equityspot(w, "EquitySpot", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityvolatility_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityvolatility_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityvolatility_ShiftExpiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityvolatility_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityvolatility_ShiftStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::equityvolatility_ShiftStrikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityvolatility(xsdcpp::XmlWriter& w, const char* name, const domain::equityvolatility& v) {
+    w.startElement(name);
+    w.writeAttribute("equity", (&v)->equity);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_equityvolatility_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_equityvolatility_ShiftExpiries_t(w, "ShiftExpiries", v.ShiftExpiries);
+    if (v.ShiftStrikes) _serialize_equityvolatility_ShiftStrikes_t(w, "ShiftStrikes", *v.ShiftStrikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_equityvolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::equityvolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.EquityVolatility) _serialize_equityvolatility(w, "EquityVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroinflationindexcurve_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroinflationindexcurve_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroinflationindexcurve_ShiftTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::zeroinflationindexcurve_ShiftTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroinflationindexcurve(xsdcpp::XmlWriter& w, const char* name, const domain::zeroinflationindexcurve& v) {
+    w.startElement(name);
+    w.writeAttribute("index", (&v)->index);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_zeroinflationindexcurve_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_zeroinflationindexcurve_ShiftTenors_t(w, "ShiftTenors", v.ShiftTenors);
+    if (v.ParConversion) _serialize_parconversion(w, "ParConversion", *v.ParConversion);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroinflationindexcurves(xsdcpp::XmlWriter& w, const char* name, const domain::zeroinflationindexcurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.ZeroInflationIndexCurve) _serialize_zeroinflationindexcurve(w, "ZeroInflationIndexCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yyinflationindexcurve_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::yyinflationindexcurve_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yyinflationindexcurve_ShiftTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::yyinflationindexcurve_ShiftTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yyinflationindexcurve(xsdcpp::XmlWriter& w, const char* name, const domain::yyinflationindexcurve& v) {
+    w.startElement(name);
+    w.writeAttribute("index", (&v)->index);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_yyinflationindexcurve_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_yyinflationindexcurve_ShiftTenors_t(w, "ShiftTenors", v.ShiftTenors);
+    if (v.ParConversion) _serialize_parconversion(w, "ParConversion", *v.ParConversion);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yyinflationindexcurves(xsdcpp::XmlWriter& w, const char* name, const domain::yyinflationindexcurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.YYInflationIndexCurve) _serialize_yyinflationindexcurve(w, "YYInflationIndexCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cpicapfloorvolatility_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::cpicapfloorvolatility_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cpicapfloorvolatility_ShiftExpiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::cpicapfloorvolatility_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cpicapfloorvolatility_ShiftStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::cpicapfloorvolatility_ShiftStrikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cpicapfloorvolatility(xsdcpp::XmlWriter& w, const char* name, const domain::cpicapfloorvolatility& v) {
+    w.startElement(name);
+    w.writeAttribute("index", (&v)->index);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_cpicapfloorvolatility_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_cpicapfloorvolatility_ShiftExpiries_t(w, "ShiftExpiries", v.ShiftExpiries);
+    if (v.ShiftStrikes) _serialize_cpicapfloorvolatility_ShiftStrikes_t(w, "ShiftStrikes", *v.ShiftStrikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_cpicapfloorvolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::cpicapfloorvolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.CPICapFloorVolatility) _serialize_cpicapfloorvolatility(w, "CPICapFloorVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yycapfloorvolatility_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::yycapfloorvolatility_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yycapfloorvolatility_ShiftExpiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::yycapfloorvolatility_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yycapfloorvolatility_ShiftStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::yycapfloorvolatility_ShiftStrikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yycapfloorvolatility(xsdcpp::XmlWriter& w, const char* name, const domain::yycapfloorvolatility& v) {
+    w.startElement(name);
+    w.writeAttribute("index", (&v)->index);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_yycapfloorvolatility_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_yycapfloorvolatility_ShiftExpiries_t(w, "ShiftExpiries", v.ShiftExpiries);
+    if (v.ShiftStrikes) _serialize_yycapfloorvolatility_ShiftStrikes_t(w, "ShiftStrikes", *v.ShiftStrikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_yycapfloorvolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::yycapfloorvolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.YYCapFloorVolatility) _serialize_yycapfloorvolatility(w, "YYCapFloorVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dividendyield_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::dividendyield_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dividendyield_ShiftTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::dividendyield_ShiftTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dividendyield(xsdcpp::XmlWriter& w, const char* name, const domain::dividendyield& v) {
+    w.startElement(name);
+    w.writeAttribute("equity", (&v)->equity);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_dividendyield_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_dividendyield_ShiftTenors_t(w, "ShiftTenors", v.ShiftTenors);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dividendyields(xsdcpp::XmlWriter& w, const char* name, const domain::dividendyields& v) {
+    w.startElement(name);
+    for (const auto& item : v.DividendYieldCurve) _serialize_dividendyield(w, "DividendYieldCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_basecorrelation_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::basecorrelation_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_basecorrelation_ShiftLossLevels_t(xsdcpp::XmlWriter& w, const char* name, const domain::basecorrelation_ShiftLossLevels_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_basecorrelation_ShiftTerms_t(xsdcpp::XmlWriter& w, const char* name, const domain::basecorrelation_ShiftTerms_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_basecorrelation(xsdcpp::XmlWriter& w, const char* name, const domain::basecorrelation& v) {
+    w.startElement(name);
+    w.writeAttribute("indexName", (&v)->indexName);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_basecorrelation_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_basecorrelation_ShiftLossLevels_t(w, "ShiftLossLevels", v.ShiftLossLevels);
+    _serialize_basecorrelation_ShiftTerms_t(w, "ShiftTerms", v.ShiftTerms);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_basecorrelations(xsdcpp::XmlWriter& w, const char* name, const domain::basecorrelations& v) {
+    w.startElement(name);
+    for (const auto& item : v.BaseCorrelation) _serialize_basecorrelation(w, "BaseCorrelation", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_securityspread_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::securityspread_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_securityspread(xsdcpp::XmlWriter& w, const char* name, const domain::securityspread& v) {
+    w.startElement(name);
+    w.writeAttribute("security", (&v)->security);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_securityspread_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_securityspreads(xsdcpp::XmlWriter& w, const char* name, const domain::securityspreads& v) {
+    w.startElement(name);
+    for (const auto& item : v.SecuritySpread) _serialize_securityspread(w, "SecuritySpread", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityCurve_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityCurve_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityCurve_ShiftTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityCurve_ShiftTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityCurve(xsdcpp::XmlWriter& w, const char* name, const domain::commodityCurve& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_commodityCurve_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_commodityCurve_ShiftTenors_t(w, "ShiftTenors", v.ShiftTenors);
+    if (v.ParConversion) _serialize_parconversion(w, "ParConversion", *v.ParConversion);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityCurves(xsdcpp::XmlWriter& w, const char* name, const domain::commodityCurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.CommodityCurve) _serialize_commodityCurve(w, "CommodityCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityvolatility_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityvolatility_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityvolatility_ShiftExpiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityvolatility_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityvolatility_ShiftStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::commodityvolatility_ShiftStrikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityvolatility(xsdcpp::XmlWriter& w, const char* name, const domain::commodityvolatility& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_commodityvolatility_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_commodityvolatility_ShiftExpiries_t(w, "ShiftExpiries", v.ShiftExpiries);
+    if (v.ShiftStrikes) _serialize_commodityvolatility_ShiftStrikes_t(w, "ShiftStrikes", *v.ShiftStrikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_commodityvolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::commodityvolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.CommodityVolatility) _serialize_commodityvolatility(w, "CommodityVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlationcurve_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::correlationcurve_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlationcurve_ShiftExpiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::correlationcurve_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlationcurve_ShiftStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::correlationcurve_ShiftStrikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlationcurve(xsdcpp::XmlWriter& w, const char* name, const domain::correlationcurve& v) {
+    w.startElement(name);
+    w.writeAttribute("index1", (&v)->index1);
+    w.writeAttribute("index2", (&v)->index2);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_correlationcurve_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_correlationcurve_ShiftExpiries_t(w, "ShiftExpiries", v.ShiftExpiries);
+    if (v.ShiftStrikes) _serialize_correlationcurve_ShiftStrikes_t(w, "ShiftStrikes", *v.ShiftStrikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_correlationcurves(xsdcpp::XmlWriter& w, const char* name, const domain::correlationcurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.Correlation) _serialize_correlationcurve(w, "Correlation", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossgammafilter_Pair_t(xsdcpp::XmlWriter& w, const char* name, const domain::crossgammafilter_Pair_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_crossgammafilter(xsdcpp::XmlWriter& w, const char* name, const domain::crossgammafilter& v) {
+    w.startElement(name);
+    for (const auto& item : v.Pair) _serialize_crossgammafilter_Pair_t(w, "Pair", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_riskFactorKeyType(xsdcpp::XmlWriter& w, const char* name, const domain::riskFactorKeyType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_setRiskFactorKeyTypes(xsdcpp::XmlWriter& w, const char* name, const domain::setRiskFactorKeyTypes& v) {
+    w.startElement(name);
+    _serialize_riskFactorKeyType(w, "RiskFactorKeyType", v.RiskFactorKeyType);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_sensitivityanalysis(xsdcpp::XmlWriter& w, const char* name, const domain::sensitivityanalysis& v) {
+    w.startElement(name);
+    if (v.ParConversionExcludes) _serialize_parExcludes(w, "ParConversionExcludes", *v.ParConversionExcludes);
+    if (v.ParSensiRemoveFixing) _serialize_sensitivityanalysis_ParSensiRemoveFixing_t(w, "ParSensiRemoveFixing", *v.ParSensiRemoveFixing);
+    if (v.ParConversionMatrixRegularisation) _serialize_parConversionMatrixRegularisation(w, "ParConversionMatrixRegularisation", *v.ParConversionMatrixRegularisation);
+    if (v.ParConversion) _serialize_bool(w, "ParConversion", *v.ParConversion);
+    _serialize_discountcurves(w, "DiscountCurves", v.DiscountCurves);
+    if (v.IndexCurves) _serialize_indexcurves(w, "IndexCurves", *v.IndexCurves);
+    if (v.YieldCurves) _serialize_yieldcurves(w, "YieldCurves", *v.YieldCurves);
+    if (v.FxSpots) _serialize_fxspots(w, "FxSpots", *v.FxSpots);
+    if (v.FxVolatilities) _serialize_fxvolatilities(w, "FxVolatilities", *v.FxVolatilities);
+    if (v.SwaptionVolatilities) _serialize_swaptionvolatilities(w, "SwaptionVolatilities", *v.SwaptionVolatilities);
+    if (v.YieldVolatilities) _serialize_yieldvolatilities(w, "YieldVolatilities", *v.YieldVolatilities);
+    if (v.CapFloorVolatilities) _serialize_capfloorvolatilities(w, "CapFloorVolatilities", *v.CapFloorVolatilities);
+    if (v.CDSVolatilities) _serialize_cdsvolatilities(w, "CDSVolatilities", *v.CDSVolatilities);
+    if (v.CreditCurves) _serialize_creditcurves(w, "CreditCurves", *v.CreditCurves);
+    if (v.EquitySpots) _serialize_equityspots(w, "EquitySpots", *v.EquitySpots);
+    if (v.EquityVolatilities) _serialize_equityvolatilities(w, "EquityVolatilities", *v.EquityVolatilities);
+    if (v.ZeroInflationIndexCurves) _serialize_zeroinflationindexcurves(w, "ZeroInflationIndexCurves", *v.ZeroInflationIndexCurves);
+    if (v.YYInflationIndexCurves) _serialize_yyinflationindexcurves(w, "YYInflationIndexCurves", *v.YYInflationIndexCurves);
+    if (v.CPICapFloorVolatilities) _serialize_cpicapfloorvolatilities(w, "CPICapFloorVolatilities", *v.CPICapFloorVolatilities);
+    if (v.YYCapFloorVolatilities) _serialize_yycapfloorvolatilities(w, "YYCapFloorVolatilities", *v.YYCapFloorVolatilities);
+    if (v.DividendYieldCurves) _serialize_dividendyields(w, "DividendYieldCurves", *v.DividendYieldCurves);
+    if (v.BaseCorrelations) _serialize_basecorrelations(w, "BaseCorrelations", *v.BaseCorrelations);
+    if (v.SecuritySpreads) _serialize_securityspreads(w, "SecuritySpreads", *v.SecuritySpreads);
+    if (v.CommodityCurves) _serialize_commodityCurves(w, "CommodityCurves", *v.CommodityCurves);
+    if (v.CommodityVolatilities) _serialize_commodityvolatilities(w, "CommodityVolatilities", *v.CommodityVolatilities);
+    if (v.Correlations) _serialize_correlationcurves(w, "Correlations", *v.Correlations);
+    if (v.CrossGammaFilter) _serialize_crossgammafilter(w, "CrossGammaFilter", *v.CrossGammaFilter);
+    if (v.ComputeGamma) _serialize_bool_(w, "ComputeGamma", *v.ComputeGamma);
+    if (v.UseSpreadedTermStructures) _serialize_bool_(w, "UseSpreadedTermStructures", *v.UseSpreadedTermStructures);
+    if (v.TwoSidedDeltaKeyTypes) _serialize_setRiskFactorKeyTypes(w, "TwoSidedDeltaKeyTypes", *v.TwoSidedDeltaKeyTypes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresstestparshifts(xsdcpp::XmlWriter& w, const char* name, const domain::stresstestparshifts& v) {
+    w.startElement(name);
+    if (v.IRCurves) _serialize_bool_(w, "IRCurves", *v.IRCurves);
+    if (v.CapFloorVolatilities) _serialize_bool_(w, "CapFloorVolatilities", *v.CapFloorVolatilities);
+    if (v.SurvivalProbability) _serialize_bool_(w, "SurvivalProbability", *v.SurvivalProbability);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressfxvolatility_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::stressfxvolatility_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressfxvolatility_ShiftExpiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::stressfxvolatility_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressfxvolatility_WeightedShifts_t_WeightingSchema_t(xsdcpp::XmlWriter& w, const char* name, const domain::stressfxvolatility_WeightedShifts_t_WeightingSchema_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressfxvolatility_WeightedShifts_t_Shift_t(xsdcpp::XmlWriter& w, const char* name, const domain::stressfxvolatility_WeightedShifts_t_Shift_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressfxvolatility_WeightedShifts_t_Tenor_t(xsdcpp::XmlWriter& w, const char* name, const domain::stressfxvolatility_WeightedShifts_t_Tenor_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressfxvolatility_WeightedShifts_t_ShiftWeights_t(xsdcpp::XmlWriter& w, const char* name, const domain::stressfxvolatility_WeightedShifts_t_ShiftWeights_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressfxvolatility_WeightedShifts_t_WeightTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::stressfxvolatility_WeightedShifts_t_WeightTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressfxvolatility_WeightedShifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::stressfxvolatility_WeightedShifts_t& v) {
+    w.startElement(name);
+    _serialize_stressfxvolatility_WeightedShifts_t_WeightingSchema_t(w, "WeightingSchema", v.WeightingSchema);
+    _serialize_stressfxvolatility_WeightedShifts_t_Shift_t(w, "Shift", v.Shift);
+    _serialize_stressfxvolatility_WeightedShifts_t_Tenor_t(w, "Tenor", v.Tenor);
+    if (v.ShiftWeights) _serialize_stressfxvolatility_WeightedShifts_t_ShiftWeights_t(w, "ShiftWeights", *v.ShiftWeights);
+    if (v.WeightTenors) _serialize_stressfxvolatility_WeightedShifts_t_WeightTenors_t(w, "WeightTenors", *v.WeightTenors);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressfxvolatility(xsdcpp::XmlWriter& w, const char* name, const domain::stressfxvolatility& v) {
+    w.startElement(name);
+    w.writeAttribute("ccypair", (&v)->ccypair);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.Shifts) _serialize_stressfxvolatility_Shifts_t(w, "Shifts", *v.Shifts);
+    if (v.ShiftExpiries) _serialize_stressfxvolatility_ShiftExpiries_t(w, "ShiftExpiries", *v.ShiftExpiries);
+    if (v.WeightedShifts) _serialize_stressfxvolatility_WeightedShifts_t(w, "WeightedShifts", *v.WeightedShifts);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressfxvolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::stressfxvolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.FxVolatility) _serialize_stressfxvolatility(w, "FxVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscapfloorvolatility_Shifts_t_Shift_t(xsdcpp::XmlWriter& w, const char* name, const domain::stresscapfloorvolatility_Shifts_t_Shift_t& v) {
+    w.startElement(name);
+    if ((&v)->tenor) w.writeAttribute("tenor", *(&v)->tenor);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscapfloorvolatility_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::stresscapfloorvolatility_Shifts_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Shift) _serialize_stresscapfloorvolatility_Shifts_t_Shift_t(w, "Shift", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscapfloorvolatility_ShiftExpiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::stresscapfloorvolatility_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscapfloorvolatility_ShiftStrikes_t(xsdcpp::XmlWriter& w, const char* name, const domain::stresscapfloorvolatility_ShiftStrikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscapfloorvolatility(xsdcpp::XmlWriter& w, const char* name, const domain::stresscapfloorvolatility& v) {
+    w.startElement(name);
+    if ((&v)->key) w.writeAttribute("key", *(&v)->key);
+    if ((&v)->ccy) w.writeAttribute("ccy", to_string(*(&v)->ccy));
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    _serialize_stresscapfloorvolatility_Shifts_t(w, "Shifts", v.Shifts);
+    _serialize_stresscapfloorvolatility_ShiftExpiries_t(w, "ShiftExpiries", v.ShiftExpiries);
+    if (v.ShiftStrikes) _serialize_stresscapfloorvolatility_ShiftStrikes_t(w, "ShiftStrikes", *v.ShiftStrikes);
+    if (v.Index) _serialize_indexNameType(w, "Index", *v.Index);
+    if (v.IsRelative) _serialize_bool(w, "IsRelative", *v.IsRelative);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscapfloorvolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::stresscapfloorvolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.CapFloorVolatility) _serialize_stresscapfloorvolatility(w, "CapFloorVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscommoditycurve_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::stresscommoditycurve_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscommoditycurve_ShiftTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::stresscommoditycurve_ShiftTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscommoditycurve(xsdcpp::XmlWriter& w, const char* name, const domain::stresscommoditycurve& v) {
+    w.startElement(name);
+    w.writeAttribute("commodity", (&v)->commodity);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    _serialize_stresscommoditycurve_Shifts_t(w, "Shifts", v.Shifts);
+    _serialize_stresscommoditycurve_ShiftTenors_t(w, "ShiftTenors", v.ShiftTenors);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscommoditycurves(xsdcpp::XmlWriter& w, const char* name, const domain::stresscommoditycurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.CommodityCurve) _serialize_stresscommoditycurve(w, "CommodityCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscommodityvolatility_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::stresscommodityvolatility_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscommodityvolatility_ShiftExpiries_t(xsdcpp::XmlWriter& w, const char* name, const domain::stresscommodityvolatility_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscommodityvolatility_ShiftMoneyness_t(xsdcpp::XmlWriter& w, const char* name, const domain::stresscommodityvolatility_ShiftMoneyness_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscommodityvolatility(xsdcpp::XmlWriter& w, const char* name, const domain::stresscommodityvolatility& v) {
+    w.startElement(name);
+    w.writeAttribute("commodity", (&v)->commodity);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    _serialize_stresscommodityvolatility_Shifts_t(w, "Shifts", v.Shifts);
+    _serialize_stresscommodityvolatility_ShiftExpiries_t(w, "ShiftExpiries", v.ShiftExpiries);
+    _serialize_stresscommodityvolatility_ShiftMoneyness_t(w, "ShiftMoneyness", v.ShiftMoneyness);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresscommodityvolatilities(xsdcpp::XmlWriter& w, const char* name, const domain::stresscommodityvolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.CommodityVolatility) _serialize_stresscommodityvolatility(w, "CommodityVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_recoveryrate_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::recoveryrate_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_recoveryrate(xsdcpp::XmlWriter& w, const char* name, const domain::recoveryrate& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_recoveryrate_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_recoveryrates(xsdcpp::XmlWriter& w, const char* name, const domain::recoveryrates& v) {
+    w.startElement(name);
+    for (const auto& item : v.RecoverRate) _serialize_recoveryrate(w, "RecoverRate", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_survivalprobability_Shifts_t(xsdcpp::XmlWriter& w, const char* name, const domain::survivalprobability_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_survivalprobability_ShiftTenors_t(xsdcpp::XmlWriter& w, const char* name, const domain::survivalprobability_ShiftTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_survivalprobability(xsdcpp::XmlWriter& w, const char* name, const domain::survivalprobability& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    for (const auto& item : v.ShiftType) _serialize_shiftTypeEntry(w, "ShiftType", item);
+    if (v.ShiftSize) _serialize_shiftSizeEntry(w, "ShiftSize", *v.ShiftSize);
+    if (v.Shifts) _serialize_survivalprobability_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme) _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_survivalprobability_ShiftTenors_t(w, "ShiftTenors", v.ShiftTenors);
+    if (v.ParConversion) _serialize_parconversion(w, "ParConversion", *v.ParConversion);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_survivalprobabilities(xsdcpp::XmlWriter& w, const char* name, const domain::survivalprobabilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.SurvivalProbability) _serialize_survivalprobability(w, "SurvivalProbability", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresstest(xsdcpp::XmlWriter& w, const char* name, const domain::stresstest& v) {
+    w.startElement(name);
+    w.writeAttribute("id", (&v)->id);
+    if (v.ParShifts) _serialize_stresstestparshifts(w, "ParShifts", *v.ParShifts);
+    if (v.DiscountCurves) _serialize_discountcurves(w, "DiscountCurves", *v.DiscountCurves);
+    if (v.IndexCurves) _serialize_indexcurves(w, "IndexCurves", *v.IndexCurves);
+    if (v.YieldCurves) _serialize_yieldcurves(w, "YieldCurves", *v.YieldCurves);
+    if (v.FxSpots) _serialize_fxspots(w, "FxSpots", *v.FxSpots);
+    if (v.FxVolatilities) _serialize_stressfxvolatilities(w, "FxVolatilities", *v.FxVolatilities);
+    if (v.SwaptionVolatilities) _serialize_swaptionvolatilities(w, "SwaptionVolatilities", *v.SwaptionVolatilities);
+    if (v.CapFloorVolatilities) _serialize_stresscapfloorvolatilities(w, "CapFloorVolatilities", *v.CapFloorVolatilities);
+    if (v.EquitySpots) _serialize_equityspots(w, "EquitySpots", *v.EquitySpots);
+    if (v.EquityVolatilities) _serialize_equityvolatilities(w, "EquityVolatilities", *v.EquityVolatilities);
+    if (v.CommodityCurves) _serialize_stresscommoditycurves(w, "CommodityCurves", *v.CommodityCurves);
+    if (v.CommodityVolatilities) _serialize_stresscommodityvolatilities(w, "CommodityVolatilities", *v.CommodityVolatilities);
+    if (v.SecuritySpreads) _serialize_securityspreads(w, "SecuritySpreads", *v.SecuritySpreads);
+    if (v.RecoveryRates) _serialize_recoveryrates(w, "RecoveryRates", *v.RecoveryRates);
+    if (v.SurvivalProbabilities) _serialize_survivalprobabilities(w, "SurvivalProbabilities", *v.SurvivalProbabilities);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresstesting(xsdcpp::XmlWriter& w, const char* name, const domain::stresstesting& v) {
+    w.startElement(name);
+    if (v.UseSpreadedTermStructures) _serialize_bool_(w, "UseSpreadedTermStructures", *v.UseSpreadedTermStructures);
+    for (const auto& item : v.StressTest) _serialize_stresstest(w, "StressTest", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parameterListType_Parameter_t(xsdcpp::XmlWriter& w, const char* name, const domain::parameterListType_Parameter_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parameterListType(xsdcpp::XmlWriter& w, const char* name, const domain::parameterListType& v) {
+    w.startElement(name);
+    for (const auto& item : v.Parameter) _serialize_parameterListType_Parameter_t(w, "Parameter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_analyticsType_Analytic_t(xsdcpp::XmlWriter& w, const char* name, const domain::analyticsType_Analytic_t& v) {
+    w.startElement(name);
+    if ((&v)->type) w.writeAttribute("type", *(&v)->type);
+    for (const auto& item : static_cast<const domain::parameterListType&>(v).Parameter) _serialize_parameterListType_Parameter_t(w, "Parameter", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_analyticsType(xsdcpp::XmlWriter& w, const char* name, const domain::analyticsType& v) {
+    w.startElement(name);
+    for (const auto& item : v.Analytic) _serialize_analyticsType_Analytic_t(w, "Analytic", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_ore(xsdcpp::XmlWriter& w, const char* name, const domain::ore& v) {
+    w.startElement(name);
+    _serialize_parameterListType(w, "Setup", v.Setup);
+    if (v.Logging) _serialize_parameterListType(w, "Logging", *v.Logging);
+    if (v.Markets) _serialize_parameterListType(w, "Markets", *v.Markets);
+    _serialize_analyticsType(w, "Analytics", v.Analytics);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_Dates(xsdcpp::XmlWriter& w, const char* name, const domain::Dates& v) {
+    w.startElement(name);
+    for (const auto& item : v.Date) _serialize_date(w, "Date", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_newcalendar(xsdcpp::XmlWriter& w, const char* name, const domain::newcalendar& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    if (v.BaseCalendar) _serialize_calendar(w, "BaseCalendar", *v.BaseCalendar);
+    if (v.AdditionalHolidays) _serialize_Dates(w, "AdditionalHolidays", *v.AdditionalHolidays);
+    if (v.AdditionalBusinessDays) _serialize_Dates(w, "AdditionalBusinessDays", *v.AdditionalBusinessDays);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_calendaradjustment(xsdcpp::XmlWriter& w, const char* name, const domain::calendaradjustment& v) {
+    w.startElement(name);
+    for (const auto& item : v.Calendar) _serialize_newcalendar(w, "Calendar", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_currencyDefinition_Name_t(xsdcpp::XmlWriter& w, const char* name, const domain::currencyDefinition_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_currencyDefinition_ISOCode_t(xsdcpp::XmlWriter& w, const char* name, const domain::currencyDefinition_ISOCode_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_currencyDefinition_MinorUnitCodes_t(xsdcpp::XmlWriter& w, const char* name, const domain::currencyDefinition_MinorUnitCodes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_currencyDefinition_Symbol_t(xsdcpp::XmlWriter& w, const char* name, const domain::currencyDefinition_Symbol_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_currencyDefinition_FractionSymbol_t(xsdcpp::XmlWriter& w, const char* name, const domain::currencyDefinition_FractionSymbol_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_roundingType(xsdcpp::XmlWriter& w, const char* name, const domain::roundingType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_currencyDefinition_CurrencyType_t(xsdcpp::XmlWriter& w, const char* name, const domain::currencyDefinition_CurrencyType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_currencyDefinition(xsdcpp::XmlWriter& w, const char* name, const domain::currencyDefinition& v) {
+    w.startElement(name);
+    _serialize_currencyDefinition_Name_t(w, "Name", v.Name);
+    _serialize_currencyDefinition_ISOCode_t(w, "ISOCode", v.ISOCode);
+    if (v.MinorUnitCodes) _serialize_currencyDefinition_MinorUnitCodes_t(w, "MinorUnitCodes", *v.MinorUnitCodes);
+    if (v.NumericCode) _serialize_int64_t(w, "NumericCode", *v.NumericCode);
+    _serialize_currencyDefinition_Symbol_t(w, "Symbol", v.Symbol);
+    _serialize_currencyDefinition_FractionSymbol_t(w, "FractionSymbol", v.FractionSymbol);
+    _serialize_int64_t(w, "FractionsPerUnit", v.FractionsPerUnit);
+    _serialize_roundingType(w, "RoundingType", v.RoundingType);
+    _serialize_int64_t(w, "RoundingPrecision", v.RoundingPrecision);
+    if (v.CurrencyType) _serialize_currencyDefinition_CurrencyType_t(w, "CurrencyType", *v.CurrencyType);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_currencyConfig(xsdcpp::XmlWriter& w, const char* name, const domain::currencyConfig& v) {
+    w.startElement(name);
+    for (const auto& item : v.Currency) _serialize_currencyDefinition(w, "Currency", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_counterparty_CounterpartyId_t(xsdcpp::XmlWriter& w, const char* name, const domain::counterparty_CounterpartyId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_creditQualityType(xsdcpp::XmlWriter& w, const char* name, const domain::creditQualityType& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_counterparty(xsdcpp::XmlWriter& w, const char* name, const domain::counterparty& v) {
+    w.startElement(name);
+    _serialize_counterparty_CounterpartyId_t(w, "CounterpartyId", v.CounterpartyId);
+    if (v.ClearingCounterparty) _serialize_bool(w, "ClearingCounterparty", *v.ClearingCounterparty);
+    if (v.CreditQuality) _serialize_creditQualityType(w, "CreditQuality", *v.CreditQuality);
+    if (v.BaCvaRiskWeight) _serialize_double(w, "BaCvaRiskWeight", *v.BaCvaRiskWeight);
+    if (v.SaCcrRiskWeight) _serialize_double(w, "SaCcrRiskWeight", *v.SaCcrRiskWeight);
+    if (v.SaCvaRiskBucket) _serialize_double(w, "SaCvaRiskBucket", *v.SaCvaRiskBucket);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_counterparties(xsdcpp::XmlWriter& w, const char* name, const domain::counterparties& v) {
+    w.startElement(name);
+    for (const auto& item : v.Counterparty) _serialize_counterparty(w, "Counterparty", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_counterPartyCorrelations_Correlation_t(xsdcpp::XmlWriter& w, const char* name, const domain::counterPartyCorrelations_Correlation_t& v) {
+    w.startElement(name);
+    w.writeAttribute("cpty1", (&v)->cpty1);
+    w.writeAttribute("cpty2", (&v)->cpty2);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_counterPartyCorrelations(xsdcpp::XmlWriter& w, const char* name, const domain::counterPartyCorrelations& v) {
+    w.startElement(name);
+    for (const auto& item : v.Correlation) _serialize_counterPartyCorrelations_Correlation_t(w, "Correlation", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_counterpartyInformation(xsdcpp::XmlWriter& w, const char* name, const domain::counterpartyInformation& v) {
+    w.startElement(name);
+    if (v.Counterparties) _serialize_counterparties(w, "Counterparties", *v.Counterparties);
+    if (v.Correlations) _serialize_counterPartyCorrelations(w, "Correlations", *v.Correlations);
+    w.endElement(name);
+}
+
+
 }
 
 namespace domain {
@@ -10668,6 +19523,18 @@ void load_file(const std::string& filePath, portfolio& output)
     load_data(xsdcpp::read_file(filePath), output);
 }
 
+std::string save_data(const portfolio& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_portfolio(w, "Portfolio", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const portfolio& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
+}
+
 void load_data(const std::string& data, trade& output)
 {
     _root_t rootElement;
@@ -10679,6 +19546,18 @@ void load_data(const std::string& data, trade& output)
 void load_file(const std::string& filePath, trade& output)
 {
     load_data(xsdcpp::read_file(filePath), output);
+}
+
+std::string save_data(const trade& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_trade(w, "Trade", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const trade& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
 }
 
 void load_data(const std::string& data, simulation& output)
@@ -10694,6 +19573,18 @@ void load_file(const std::string& filePath, simulation& output)
     load_data(xsdcpp::read_file(filePath), output);
 }
 
+std::string save_data(const simulation& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_simulation(w, "Simulation", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const simulation& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
+}
+
 void load_data(const std::string& data, crossAssetModel& output)
 {
     _root_t rootElement;
@@ -10705,6 +19596,18 @@ void load_data(const std::string& data, crossAssetModel& output)
 void load_file(const std::string& filePath, crossAssetModel& output)
 {
     load_data(xsdcpp::read_file(filePath), output);
+}
+
+std::string save_data(const crossAssetModel& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_crossAssetModel(w, "CrossAssetModel", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const crossAssetModel& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
 }
 
 void load_data(const std::string& data, creditsimulation& output)
@@ -10720,6 +19623,18 @@ void load_file(const std::string& filePath, creditsimulation& output)
     load_data(xsdcpp::read_file(filePath), output);
 }
 
+std::string save_data(const creditsimulation& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_creditsimulation(w, "CreditSimulation", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const creditsimulation& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
+}
+
 void load_data(const std::string& data, curveconfiguration& output)
 {
     _root_t rootElement;
@@ -10731,6 +19646,18 @@ void load_data(const std::string& data, curveconfiguration& output)
 void load_file(const std::string& filePath, curveconfiguration& output)
 {
     load_data(xsdcpp::read_file(filePath), output);
+}
+
+std::string save_data(const curveconfiguration& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_curveconfiguration(w, "CurveConfiguration", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const curveconfiguration& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
 }
 
 void load_data(const std::string& data, conventions& output)
@@ -10746,6 +19673,18 @@ void load_file(const std::string& filePath, conventions& output)
     load_data(xsdcpp::read_file(filePath), output);
 }
 
+std::string save_data(const conventions& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_conventions(w, "Conventions", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const conventions& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
+}
+
 void load_data(const std::string& data, collateralBalances& output)
 {
     _root_t rootElement;
@@ -10757,6 +19696,18 @@ void load_data(const std::string& data, collateralBalances& output)
 void load_file(const std::string& filePath, collateralBalances& output)
 {
     load_data(xsdcpp::read_file(filePath), output);
+}
+
+std::string save_data(const collateralBalances& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_collateralBalances(w, "CollateralBalances", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const collateralBalances& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
 }
 
 void load_data(const std::string& data, nettingsetdefinitions& output)
@@ -10772,6 +19723,18 @@ void load_file(const std::string& filePath, nettingsetdefinitions& output)
     load_data(xsdcpp::read_file(filePath), output);
 }
 
+std::string save_data(const nettingsetdefinitions& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_nettingsetdefinitions(w, "NettingSetDefinitions", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const nettingsetdefinitions& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
+}
+
 void load_data(const std::string& data, pricingengines& output)
 {
     _root_t rootElement;
@@ -10783,6 +19746,18 @@ void load_data(const std::string& data, pricingengines& output)
 void load_file(const std::string& filePath, pricingengines& output)
 {
     load_data(xsdcpp::read_file(filePath), output);
+}
+
+std::string save_data(const pricingengines& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_pricingengines(w, "PricingEngines", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const pricingengines& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
 }
 
 void load_data(const std::string& data, todaysmarket& output)
@@ -10798,6 +19773,18 @@ void load_file(const std::string& filePath, todaysmarket& output)
     load_data(xsdcpp::read_file(filePath), output);
 }
 
+std::string save_data(const todaysmarket& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_todaysmarket(w, "TodaysMarket", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const todaysmarket& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
+}
+
 void load_data(const std::string& data, sensitivityanalysis& output)
 {
     _root_t rootElement;
@@ -10809,6 +19796,18 @@ void load_data(const std::string& data, sensitivityanalysis& output)
 void load_file(const std::string& filePath, sensitivityanalysis& output)
 {
     load_data(xsdcpp::read_file(filePath), output);
+}
+
+std::string save_data(const sensitivityanalysis& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_sensitivityanalysis(w, "SensitivityAnalysis", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const sensitivityanalysis& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
 }
 
 void load_data(const std::string& data, stresstesting& output)
@@ -10824,6 +19823,18 @@ void load_file(const std::string& filePath, stresstesting& output)
     load_data(xsdcpp::read_file(filePath), output);
 }
 
+std::string save_data(const stresstesting& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_stresstesting(w, "StressTesting", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const stresstesting& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
+}
+
 void load_data(const std::string& data, ore& output)
 {
     _root_t rootElement;
@@ -10835,6 +19846,18 @@ void load_data(const std::string& data, ore& output)
 void load_file(const std::string& filePath, ore& output)
 {
     load_data(xsdcpp::read_file(filePath), output);
+}
+
+std::string save_data(const ore& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_ore(w, "ORE", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const ore& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
 }
 
 void load_data(const std::string& data, calendaradjustment& output)
@@ -10850,6 +19873,18 @@ void load_file(const std::string& filePath, calendaradjustment& output)
     load_data(xsdcpp::read_file(filePath), output);
 }
 
+std::string save_data(const calendaradjustment& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_calendaradjustment(w, "CalendarAdjustments", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const calendaradjustment& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
+}
+
 void load_data(const std::string& data, currencyConfig& output)
 {
     _root_t rootElement;
@@ -10861,6 +19896,18 @@ void load_data(const std::string& data, currencyConfig& output)
 void load_file(const std::string& filePath, currencyConfig& output)
 {
     load_data(xsdcpp::read_file(filePath), output);
+}
+
+std::string save_data(const currencyConfig& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_currencyConfig(w, "CurrencyConfig", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const currencyConfig& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
 }
 
 void load_data(const std::string& data, currencyDefinition& output)
@@ -10876,6 +19923,18 @@ void load_file(const std::string& filePath, currencyDefinition& output)
     load_data(xsdcpp::read_file(filePath), output);
 }
 
+std::string save_data(const currencyDefinition& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_currencyDefinition(w, "Currency", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const currencyDefinition& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
+}
+
 void load_data(const std::string& data, counterpartyInformation& output)
 {
     _root_t rootElement;
@@ -10887,6 +19946,18 @@ void load_data(const std::string& data, counterpartyInformation& output)
 void load_file(const std::string& filePath, counterpartyInformation& output)
 {
     load_data(xsdcpp::read_file(filePath), output);
+}
+
+std::string save_data(const counterpartyInformation& input)
+{
+    xsdcpp::XmlWriter w;
+    _serialize_counterpartyInformation(w, "CounterpartyInformation", input);
+    return w.str();
+}
+
+void save_file(const std::string& filePath, const counterpartyInformation& input)
+{
+    xsdcpp::write_file(filePath, save_data(input));
 }
 
 }

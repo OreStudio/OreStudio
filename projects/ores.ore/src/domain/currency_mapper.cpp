@@ -25,20 +25,33 @@ namespace ores::ore::domain {
 
 using namespace ores::logging;
 
-refdata::domain::currency currency_mapper::map(const CurrencyElement& v) {
-    BOOST_LOG_SEV(lg(), trace) << "Mapping ORE XML entity: " << v;
+namespace {
+
+roundingType parse_rounding_type(const std::string& s) {
+    if (s == "Up") return roundingType::Up;
+    if (s == "Down") return roundingType::Down;
+    if (s == "Closest") return roundingType::Closest;
+    if (s == "Floor") return roundingType::Floor;
+    if (s == "Ceiling") return roundingType::Ceiling;
+    throw std::runtime_error("Invalid rounding type: " + s);
+}
+
+}
+
+refdata::domain::currency currency_mapper::map(const currencyDefinition& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping ORE XML entity: " << std::string(v.ISOCode);
 
     refdata::domain::currency r;
     r.iso_code = v.ISOCode;
     r.name = v.Name;
-    r.numeric_code = v.NumericCode;
+    r.numeric_code = v.NumericCode ? std::to_string(*v.NumericCode) : "";
     r.symbol = v.Symbol;
     r.fraction_symbol = v.FractionSymbol;
-    r.fractions_per_unit = v.FractionsPerUnit;
-    r.rounding_type = v.RoundingType;
-    r.rounding_precision = v.RoundingPrecision;
-    r.format = v.Format ? *v.Format : "";
-    r.currency_type = v.CurrencyType ? *v.CurrencyType : "";
+    r.fractions_per_unit = static_cast<int>(v.FractionsPerUnit);
+    r.rounding_type = to_string(v.RoundingType);
+    r.rounding_precision = static_cast<int>(v.RoundingPrecision);
+    r.format = "";  // Not in XSD
+    r.currency_type = v.CurrencyType ? std::string(*v.CurrencyType) : "";
     r.recorded_by = "ores";
     r.change_reason_code = "system.import";
     r.change_commentary = "Imported from ORE XML";
@@ -47,26 +60,35 @@ refdata::domain::currency currency_mapper::map(const CurrencyElement& v) {
     return r;
 }
 
-CurrencyElement currency_mapper::map(const refdata::domain::currency& v) {
+currencyDefinition currency_mapper::map(const refdata::domain::currency& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
-    CurrencyElement r;
-    r.ISOCode = v.iso_code;
-    r.Name = v.name;
-    r.NumericCode = v.numeric_code;
-    r.Symbol = v.symbol;
-    r.FractionSymbol = v.fraction_symbol;
+    currencyDefinition r;
+    static_cast<xsd::string&>(r.ISOCode) = v.iso_code;
+    static_cast<xsd::string&>(r.Name) = v.name;
+    if (!v.numeric_code.empty()) {
+        try {
+            r.NumericCode = std::stoll(v.numeric_code);
+        } catch (const std::exception&) {
+            // Keep NumericCode empty if not a valid number
+        }
+    }
+    static_cast<xsd::string&>(r.Symbol) = v.symbol;
+    static_cast<xsd::string&>(r.FractionSymbol) = v.fraction_symbol;
     r.FractionsPerUnit = v.fractions_per_unit;
-    r.RoundingType = v.rounding_type;
+    r.RoundingType = parse_rounding_type(v.rounding_type);
     r.RoundingPrecision = v.rounding_precision;
-    r.Format = v.format;
-    r.CurrencyType = v.currency_type;
+    if (!v.currency_type.empty()) {
+        currencyDefinition_CurrencyType_t ct;
+        static_cast<xsd::string&>(ct) = v.currency_type;
+        r.CurrencyType = ct;
+    }
 
-    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. Result: " << r;
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain entity. ISOCode: " << std::string(r.ISOCode);
     return r;
 }
 
-std::vector<refdata::domain::currency> currency_mapper::map(const CurrencyConfig& v) {
+std::vector<refdata::domain::currency> currency_mapper::map(const currencyConfig& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping ORE XML entities. Total: "
                              << v.Currency.size();
 
@@ -78,10 +100,10 @@ std::vector<refdata::domain::currency> currency_mapper::map(const CurrencyConfig
     return r;
 }
 
-CurrencyConfig currency_mapper::map(const std::vector<refdata::domain::currency>& v) {
+currencyConfig currency_mapper::map(const std::vector<refdata::domain::currency>& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entities. Total: " << v.size();
 
-    CurrencyConfig r;
+    currencyConfig r;
     r.Currency.reserve(v.size());
     std::ranges::transform(v, std::back_inserter(r.Currency),
         [](const auto& ve) { return map(ve); });

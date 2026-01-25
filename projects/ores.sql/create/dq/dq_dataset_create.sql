@@ -45,7 +45,7 @@ create table if not exists "ores"."dq_datasets_tbl" (
     "as_of_date" timestamp with time zone not null,
     "ingestion_timestamp" timestamp with time zone not null,
     "license_info" text,
-    "artefact_type" text,
+    "artefact_type" text not null,
     "modified_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
@@ -151,7 +151,7 @@ begin
         using errcode = '23503';
     end if;
 
-    if NEW.artefact_type is not null and not exists (
+    if not exists (
         select 1 from ores.dq_artefact_types_tbl
         where code = NEW.artefact_type
     ) then

@@ -498,14 +498,15 @@ create or replace function ores.upsert_dq_datasets(
     p_source_system_id text,
     p_business_context text,
     p_as_of_date date,
-    p_license_info text default null,
-    p_artefact_type text default null
+    p_license_info text,
+    p_artefact_type text
 ) returns void as $$
 declare
     v_methodology_id uuid;
 begin
     perform ores.seed_validate_not_empty(p_code, 'Dataset code');
     perform ores.seed_validate_not_empty(p_name, 'Dataset name');
+    perform ores.seed_validate_not_empty(p_artefact_type, 'Artefact type');
 
     -- Get methodology ID (only table that still uses UUID PK)
     select id into v_methodology_id from ores.dq_methodologies_tbl where name = p_methodology_name and valid_to = ores.utility_infinity_timestamp_fn();

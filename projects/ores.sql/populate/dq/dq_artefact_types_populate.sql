@@ -35,6 +35,7 @@ set schema 'ores';
 
 insert into ores.dq_artefact_types_tbl (code, name, description, artefact_table, target_table, populate_function, display_order)
 values
+    ('none', 'None', 'Dataset with no artefacts (metadata only)', null, null, null, 0),
     ('images', 'Images', 'Image assets for visual elements', 'dq_images_artefact_tbl', 'assets_images_tbl', 'dq_populate_images_fn', 1),
     ('countries', 'Countries', 'ISO 3166 country codes', 'dq_countries_artefact_tbl', 'refdata_countries_tbl', 'dq_populate_countries_fn', 2),
     ('currencies', 'Currencies', 'ISO 4217 currency codes', 'dq_currencies_artefact_tbl', 'refdata_currencies_tbl', 'dq_populate_currencies_fn', 3),

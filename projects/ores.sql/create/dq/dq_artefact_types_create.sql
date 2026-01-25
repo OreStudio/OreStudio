@@ -28,9 +28,9 @@ create table if not exists "ores"."dq_artefact_types_tbl" (
     "code" text not null primary key,
     "name" text not null,
     "description" text,
-    "artefact_table" text not null,
+    "artefact_table" text,
     "target_table" text,
-    "populate_function" text not null,
+    "populate_function" text,
     "display_order" integer not null default 0,
     check ("code" <> '')
 );

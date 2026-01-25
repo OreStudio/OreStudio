@@ -76,6 +76,9 @@ TEST_CASE("read_currency_config_from_simple_xml", tags) {
     CHECK(first.RoundingType == "Closest");
     CHECK(first.RoundingPrecision == 2);
 
+    REQUIRE(first.Format);
+    CHECK(first.Format.value().empty());
+
     REQUIRE(first.CurrencyType);
     CHECK(first.CurrencyType.value() == "Major");
 }
@@ -149,6 +152,7 @@ TEST_CASE("read_currency_config_from_example_1", tags) {
     CHECK(first.RoundingType == "Closest");
     CHECK(first.RoundingPrecision == 2);
 
+    REQUIRE(!first.Format);
     REQUIRE(!first.CurrencyType);
 }
 

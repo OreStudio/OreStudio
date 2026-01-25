@@ -36,7 +36,7 @@ exporter::export_currency_config(const std::vector<currency>& v) {
 
     const auto mapped = domain::currency_mapper::map(v);
     std::string r = domain::CurrencyConfig::to_xml(mapped);
-    BOOST_LOG_SEV(lg(), trace) << "XML: " << v;
+    BOOST_LOG_SEV(lg(), trace) << "XML: " << r;
 
     BOOST_LOG_SEV(lg(), debug) << "Finished exporting. Result: " << r;
     return r;

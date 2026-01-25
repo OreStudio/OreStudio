@@ -15,4 +15,5 @@ exec "${SCRIPT_DIR}/xsdcpp_generate.sh" \
     --xsd external/ore/xsd/input.xsd \
     --project ores.ore \
     --namespace ores::ore \
-    --name domain
+    --name domain \
+    --include-prefix ores.ore/domain

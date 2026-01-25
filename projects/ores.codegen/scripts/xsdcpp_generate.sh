@@ -8,11 +8,12 @@
 # Usage: ./xsdcpp_generate.sh [options]
 #
 # Options:
-#   --xsd PATH        Path to XSD file (relative to repo root)
-#   --project NAME    Target project name (e.g., ores.ore)
-#   --namespace NS    C++ namespace to wrap generated code (e.g., ores::ore)
-#   --name NAME       Name for generated files (e.g., domain)
-#   --help            Show this help message
+#   --xsd PATH           Path to XSD file (relative to repo root)
+#   --project NAME       Target project name (e.g., ores.ore)
+#   --namespace NS       C++ namespace to wrap generated code (e.g., ores::ore)
+#   --name NAME          Name for generated files (e.g., domain)
+#   --include-prefix PFX Prefix for #include paths (default: PROJECT/NAME)
+#   --help               Show this help message
 #
 # Example:
 #   ./xsdcpp_generate.sh --xsd external/ore/xsd/input.xsd \
@@ -56,6 +57,7 @@ XSD_PATH=""
 PROJECT=""
 NAMESPACE=""
 NAME=""
+INCLUDE_PREFIX=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -74,6 +76,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --name)
             NAME="$2"
+            shift 2
+            ;;
+        --include-prefix)
+            INCLUDE_PREFIX="$2"
             shift 2
             ;;
         --help|-h)
@@ -108,6 +114,11 @@ if [ -z "$NAME" ]; then
     exit 1
 fi
 
+# Default include prefix to PROJECT/NAME if not specified
+if [ -z "$INCLUDE_PREFIX" ]; then
+    INCLUDE_PREFIX="${PROJECT}/${NAME}"
+fi
+
 # Get git root
 GIT_ROOT=$(find_git_root)
 
@@ -128,13 +139,14 @@ mkdir -p "$CPP_OUTPUT"
 
 echo "=== xsdcpp Code Generation ==="
 echo ""
-echo "XSD input:      ${XSD_PATH}"
-echo "Project:        ${PROJECT}"
-echo "Namespace:      ${NAMESPACE}"
-echo "Name:           ${NAME}"
+echo "XSD input:       ${XSD_PATH}"
+echo "Project:         ${PROJECT}"
+echo "Namespace:       ${NAMESPACE}"
+echo "Name:            ${NAME}"
+echo "Include prefix:  ${INCLUDE_PREFIX}"
 echo ""
-echo "Header output:  projects/${PROJECT}/include/${PROJECT}/${NAME}"
-echo "CPP output:     projects/${PROJECT}/src/${NAME}"
+echo "Header output:   projects/${PROJECT}/include/${PROJECT}/${NAME}"
+echo "CPP output:      projects/${PROJECT}/src/${NAME}"
 echo ""
 
 echo "Running xsdcpp..."
@@ -142,7 +154,7 @@ xsdcpp "$XSD_FULL_PATH" \
     "--header-output=$HEADER_OUTPUT" \
     "--cpp-output=$CPP_OUTPUT" \
     "--wrap-namespace=$NAMESPACE" \
-    "--include-prefix=${PROJECT}/${NAME}" \
+    "--include-prefix=$INCLUDE_PREFIX" \
     "--name=$NAME"
 
 echo ""

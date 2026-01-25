@@ -393,6 +393,9 @@ transitively from another linked library. Common transitive dependencies:
 - =reflectcpp= comes from =ores.platform.lib= (PUBLIC)
 - =Boost::program_options= comes from =ores.telemetry.lib= (PUBLIC)
 
+*Note*: If your component uses logging functionality, add =ores.logging.lib= to the PRIVATE
+dependencies of your library's target_link_libraries section.
+
 *** Step 7.5: Create component's tests =CMakeLists.txt=
 
 Create the tests =CMakeLists.txt= under
@@ -436,6 +439,7 @@ target_link_libraries(${tests_target_name}
         ${lib_target_name}
         ores.utility.lib
         ores.testing.lib
+        ores.logging.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
         ${CMAKE_THREAD_LIBS_INIT})
@@ -606,7 +610,7 @@ const std::string tags("[domain]");
 }
 
 using namespace ores::COMPONENT::domain;
-using namespace ores::utility::log;
+using namespace ores::logging;
 
 TEST_CASE("create_stub", tags) {
     auto lg(make_logger(test_suite));
@@ -614,9 +618,9 @@ TEST_CASE("create_stub", tags) {
 }
 #+end_src
 
-
-
-
+*Note:* The logging functionality has been moved from =ores::utility::log= to =ores::logging=.
+When using logging in tests, use =using namespace ores::logging;= and the severity levels
+(trace, debug, info, warn, error) are available in this namespace.
 
 ** Step 9: Add PlantUML diagram
 

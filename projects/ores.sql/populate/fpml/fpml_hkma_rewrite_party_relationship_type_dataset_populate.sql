@@ -50,7 +50,5 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Hkma Rewrite Party Relationship Type (version 1-0)',
     '2025-04-25'::date,
     'FpML Public License 2.0',
-    'party_relationships',
-    'refdata_party_relationships_tbl',
-    'dq_populate_party_relationships'
+    'party_relationships'
 );

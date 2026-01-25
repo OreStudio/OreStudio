@@ -767,8 +767,6 @@ def generate_coding_schemes_dataset_sql(manifest: dict, output_path: Path):
         business_context = dataset['business_context'].replace("'", "''")
         license_info = dataset['license'].replace("'", "''")
         artefact_type = dataset['artefact_type']
-        target_table = dataset['target_table']
-        populate_function = dataset['populate_function']
 
         lines.append(f"-- {name}")
         lines.append("select ores.upsert_dq_datasets(")
@@ -787,9 +785,7 @@ def generate_coding_schemes_dataset_sql(manifest: dict, output_path: Path):
         lines.append(f"    '{business_context}',")
         lines.append("    current_date,")  # p_as_of_date
         lines.append(f"    '{license_info}',")
-        lines.append(f"    '{artefact_type}',")
-        lines.append(f"    '{target_table}',")
-        lines.append(f"    '{populate_function}'")
+        lines.append(f"    '{artefact_type}'")
         lines.append(");")
         lines.append("")
 

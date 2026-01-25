@@ -50,7 +50,5 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Non Iso Currency (version 1-1)',
     '2023-11-03'::date,
     'FpML Public License 2.0',
-    'non_iso_currencies',
-    'refdata_currencies_tbl',
-    'dq_populate_currencies'
+    'currencies'
 );

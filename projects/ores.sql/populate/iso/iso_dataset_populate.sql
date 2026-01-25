@@ -52,9 +52,7 @@ select ores.upsert_dq_datasets(
     'Reference data for country codes',
     current_date,
     'CC BY-SA 3.0',
-    'countries',
-    'refdata_countries_tbl',
-    'dq_populate_countries'
+    'countries'
 );
 
 -- ISO 4217 Currency Codes
@@ -74,8 +72,6 @@ select ores.upsert_dq_datasets(
     'Reference data for currency codes',
     current_date,
     'CC BY-SA 3.0',
-    'currencies',
-    'refdata_currencies_tbl',
-    'dq_populate_currencies'
+    'currencies'
 );
 

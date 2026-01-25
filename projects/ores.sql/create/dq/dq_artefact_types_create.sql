@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,37 +18,19 @@
  *
  */
 
-/**
- * FpML Supervisory Body Dataset Population Script
- *
- * Creates the dataset entry for fpml.supervisory_body.
- * Source version: 2-1
- * This must be run before populating the artefact table.
- */
-
-set schema 'ores';
-
 -- =============================================================================
--- FpML Supervisory Body Dataset
+-- Artefact Types Lookup Table
+-- Maps artefact type codes to their population functions and tables.
+-- Static configuration data - no bitemporal support required.
 -- =============================================================================
 
-\echo '--- FpML Supervisory Body Dataset ---'
-
-select ores.upsert_dq_datasets(
-    'fpml.supervisory_body',
-    'FpML Standards',
-    'Regulatory',
-    'Reference Data',
-    'FPML_SUPERVISORY_BODY',
-    'Primary',
-    'Actual',
-    'Raw',
-    'FpML Genericode Download',
-    'FpML Supervisory Body',
-    'Contains a code representing a supervisory-body that may be supervising this transaction.',
-    'FPML',
-    'Reference data for FpML Supervisory Body (version 2-1)',
-    '2022-06-10'::date,
-    'FpML Public License 2.0',
-    'supervisory_bodies'
+create table if not exists "ores"."dq_artefact_types_tbl" (
+    "code" text not null primary key,
+    "name" text not null,
+    "description" text,
+    "artefact_table" text not null,
+    "target_table" text,
+    "populate_function" text not null,
+    "display_order" integer not null default 0,
+    check ("code" <> '')
 );

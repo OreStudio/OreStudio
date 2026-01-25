@@ -50,7 +50,5 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Asset Class (version 2-1)',
     '2019-10-01'::date,
     'FpML Public License 2.0',
-    'asset_classes',
-    'refdata_asset_classes_tbl',
-    'dq_populate_asset_classes'
+    'asset_classes'
 );

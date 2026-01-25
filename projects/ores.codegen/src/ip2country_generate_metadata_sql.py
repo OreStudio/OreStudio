@@ -190,8 +190,6 @@ set schema 'ores';
             as_of_date = dataset['as_of_date']
             license_info = escape_sql_string(dataset['license'])
             artefact_type = dataset['artefact_type']
-            target_table = dataset['target_table']
-            populate_function = dataset['populate_function']
 
             f.write(f"""-- {name}
 select ores.upsert_dq_datasets(
@@ -210,9 +208,7 @@ select ores.upsert_dq_datasets(
     '{business_context}',
     '{as_of_date}'::date,
     '{license_info}',
-    '{artefact_type}',
-    '{target_table}',
-    '{populate_function}'
+    '{artefact_type}'
 );
 
 """)

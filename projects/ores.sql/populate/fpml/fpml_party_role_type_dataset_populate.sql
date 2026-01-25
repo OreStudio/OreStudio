@@ -50,7 +50,5 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Party Role Type (version 1-0)',
     '2011-04-24'::date,
     'FpML Public License 2.0',
-    'party_roles',
-    'refdata_party_roles_tbl',
-    'dq_populate_party_roles'
+    'party_roles'
 );

@@ -50,7 +50,5 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Person Role (version 1-3)',
     '2019-10-31'::date,
     'FpML Public License 2.0',
-    'person_roles',
-    'refdata_person_roles_tbl',
-    'dq_populate_person_roles'
+    'person_roles'
 );

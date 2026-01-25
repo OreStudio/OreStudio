@@ -50,3 +50,10 @@
 
 \echo '--- General Methodologies ---'
 \ir dq_methodology_populate.sql
+
+-- =============================================================================
+-- Artefact Types (must precede datasets for FK validation)
+-- =============================================================================
+
+\echo '--- Artefact Types ---'
+\ir dq_artefact_types_populate.sql

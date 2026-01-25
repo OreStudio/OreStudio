@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-01-24T15:52:14.103733Z",
+  "generated_at": "2026-01-25T00:13:49.060135Z",
   "packages": [
     {
       "name": "iam",
@@ -3038,6 +3038,93 @@
           "description": "Contains a code representing the type of an account, for example in a clearing or exchange model. - Artefact Table"
         },
         {
+          "name": "dq_artefact_types_tbl",
+          "component": "dq",
+          "entity": "artefact_types",
+          "classification": "artefact",
+          "stereotype": "",
+          "color": "#F7E5FF",
+          "primary_key": {
+            "columns": [],
+            "composite": false
+          },
+          "columns": [
+            {
+              "name": "code",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "name",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "description",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "artefact_table",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "target_table",
+              "type": "text",
+              "nullable": true,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "populate_function",
+              "type": "text",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": null,
+              "references": null
+            },
+            {
+              "name": "display_order",
+              "type": "integer",
+              "nullable": false,
+              "is_pk": false,
+              "is_fk": false,
+              "is_unique": false,
+              "default": "0",
+              "references": null
+            }
+          ],
+          "indexes": [],
+          "source_file": "create/dq/dq_artefact_types_create.sql",
+          "description": "Artefact Types Lookup Table\n    Maps artefact type codes to their population functions and tables.\n    Static configuration data - no bitemporal support required."
+        },
+        {
           "name": "dq_asset_classes_artefact_tbl",
           "component": "dq",
           "entity": "asset_classes_artefact",
@@ -4737,26 +4824,6 @@
             },
             {
               "name": "artefact_type",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "target_table",
-              "type": "text",
-              "nullable": true,
-              "is_pk": false,
-              "is_fk": false,
-              "is_unique": false,
-              "default": null,
-              "references": null
-            },
-            {
-              "name": "populate_function",
               "type": "text",
               "nullable": true,
               "is_pk": false,
@@ -7212,5 +7279,36 @@
       "label": "reason for"
     }
   ],
-  "warnings": []
+  "warnings": [
+    {
+      "file": "create/change_control/dq_change_reason_categories_create.sql",
+      "line": 22,
+      "code": "TEMPORAL_006",
+      "message": "Temporal table 'dq_change_reason_categories_tbl' missing 'change_reason_code' column"
+    },
+    {
+      "file": "create/change_control/dq_change_reasons_create.sql",
+      "line": 22,
+      "code": "TEMPORAL_006",
+      "message": "Temporal table 'dq_change_reasons_tbl' missing 'change_reason_code' column"
+    },
+    {
+      "file": "create/dq/dq_dataset_dependency_create.sql",
+      "line": 40,
+      "code": "TEMPORAL_004",
+      "message": "Temporal table 'dq_dataset_dependencies_tbl' missing 'version' column"
+    },
+    {
+      "file": "create/dq/dq_dataset_dependency_create.sql",
+      "line": 40,
+      "code": "TEMPORAL_005",
+      "message": "Temporal table 'dq_dataset_dependencies_tbl' missing 'modified_by' column"
+    },
+    {
+      "file": "create/iam/iam_permissions_create.sql",
+      "line": 28,
+      "code": "TEMPORAL_004",
+      "message": "Temporal table 'iam_permissions_tbl' missing 'version' column"
+    }
+  ]
 }

@@ -50,7 +50,5 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Entity Type (version 1-0)',
     current_date,
     'FpML Public License 2.0',
-    'entity_classifications',
-    'refdata_entity_classifications_tbl',
-    'dq_populate_entity_classifications'
+    'entity_classifications'
 );

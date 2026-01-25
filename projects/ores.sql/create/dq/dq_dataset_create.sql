@@ -46,8 +46,6 @@ create table if not exists "ores"."dq_datasets_tbl" (
     "ingestion_timestamp" timestamp with time zone not null,
     "license_info" text,
     "artefact_type" text,
-    "target_table" text,
-    "populate_function" text,
     "modified_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
@@ -150,6 +148,14 @@ begin
         and valid_to = ores.utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid upstream_derivation_id: %. Upstream dataset must exist.', NEW.upstream_derivation_id
+        using errcode = '23503';
+    end if;
+
+    if NEW.artefact_type is not null and not exists (
+        select 1 from ores.dq_artefact_types_tbl
+        where code = NEW.artefact_type
+    ) then
+        raise exception 'Invalid artefact_type: %. Artefact type must exist.', NEW.artefact_type
         using errcode = '23503';
     end if;
 

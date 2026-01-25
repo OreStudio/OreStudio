@@ -479,7 +479,7 @@ $$ language plpgsql;
  * Upsert a dataset.
  *
  * @param p_artefact_type The type of artefact this dataset populates.
- *        Valid values: 'images', 'countries', 'currencies', 'ip2country'.
+ *        Valid values are defined in dq_artefact_types_tbl.
  *        Used by the publication service to determine which population
  *        function to call when publishing the dataset.
  */
@@ -499,9 +499,7 @@ create or replace function ores.upsert_dq_datasets(
     p_business_context text,
     p_as_of_date date,
     p_license_info text default null,
-    p_artefact_type text default null,
-    p_target_table text default null,
-    p_populate_function text default null
+    p_artefact_type text default null
 ) returns void as $$
 declare
     v_methodology_id uuid;
@@ -519,7 +517,7 @@ begin
         origin_code, nature_code, treatment_code, methodology_id,
         name, description, source_system_id, business_context,
         upstream_derivation_id, lineage_depth, as_of_date, ingestion_timestamp, license_info,
-        artefact_type, target_table, populate_function,
+        artefact_type,
         modified_by, change_reason_code, change_commentary,
         valid_from, valid_to
     )
@@ -528,7 +526,7 @@ begin
         p_origin_code, p_nature_code, p_treatment_code, v_methodology_id,
         p_name, p_description, p_source_system_id, p_business_context,
         null, 0, p_as_of_date, current_timestamp, p_license_info,
-        p_artefact_type, p_target_table, p_populate_function,
+        p_artefact_type,
         'system', 'system.new_record', 'System seed data',
         current_timestamp, ores.utility_infinity_timestamp_fn()
     )

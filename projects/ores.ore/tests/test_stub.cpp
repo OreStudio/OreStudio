@@ -20,6 +20,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.logging/severity_level.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace {
@@ -30,7 +31,7 @@ const std::string tags("[domain]");
 }
 
 using namespace ores::ore::domain;
-using namespace ores::utility::log;
+using namespace ores::logging;
 
 TEST_CASE("create_stub", tags) {
     auto lg(make_logger(test_suite));

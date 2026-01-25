@@ -418,17 +418,15 @@ iam --> database
 iam --> geo
 iam --> security
 ore --> refdata
-ore --> telemetry
+ore --> log
 ore --> platform
-ore --> database
 dq --> eventing
 dq --> database
 dq --> utility
 dq --> comms
 dq --> iam
 
-fpml --> variability
-fpml --> database
+fpml --> log
 fpml --> telemetry
 fpml --> platform
 

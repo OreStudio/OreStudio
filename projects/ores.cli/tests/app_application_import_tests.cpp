@@ -25,6 +25,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/test_database_manager.hpp"
+#include "ores.testing/project_root.hpp"
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
 #include "ores.refdata/repository/currency_repository.hpp"
@@ -34,6 +35,10 @@ namespace {
 const std::string_view test_suite("ores.cli.tests");
 const std::string database_table("ores.refdata_currencies_tbl");
 const std::string tags("[import]");
+
+std::filesystem::path ore_path(const std::string& relative) {
+    return ores::testing::project_root::resolve("external/ore/" + relative);
+}
 
 }
 
@@ -47,11 +52,11 @@ TEST_CASE("import_currencies_from_test_file", tags) {
     ores::testing::database_helper h;
     h.truncate_table(database_table);
 
-    const std::filesystem::path test_data_file = "../test_data/currencies/currencies_01.xml";
+    const auto test_data_file = ore_path("examples/Legacy/Example_1/Input/currencies.xml");
 
     BOOST_LOG_SEV(lg, debug) << "Importing currencies from: " << test_data_file;
 
-    CHECK(std::filesystem::exists(test_data_file));
+    REQUIRE(std::filesystem::exists(test_data_file));
 
     config::import_options import_cfg;
     import_cfg.target_entity = config::entity::currencies;
@@ -107,8 +112,8 @@ TEST_CASE("import_currencies_from_multiple_files", tags) {
     h.truncate_table(database_table);
 
     const std::vector<std::filesystem::path> test_files = {
-        "../test_data/currencies/currencies_01.xml",
-        "../test_data/currencies/currencies_41.xml"
+        ore_path("examples/Legacy/Example_1/Input/currencies.xml"),
+        ore_path("examples/Legacy/Example_41/Input/currencies.xml")
     };
 
     BOOST_LOG_SEV(lg, debug) << "Importing currencies from multiple files.";
@@ -148,7 +153,7 @@ TEST_CASE("import_and_query_specific_currency", tags) {
     ores::testing::database_helper h;
     h.truncate_table(database_table);
 
-    const std::filesystem::path test_data_file = "../test_data/currencies/currencies_01.xml";
+    const auto test_data_file = ore_path("examples/Legacy/Example_1/Input/currencies.xml");
 
     BOOST_LOG_SEV(lg, debug) << "Importing currencies.";
 
@@ -204,7 +209,7 @@ TEST_CASE("import_currencies_with_empty_database", tags) {
     // Database should be empty after truncation
     CHECK(initial_currencies.empty());
 
-    const std::filesystem::path test_data_file = "../test_data/currencies/currencies_01.xml";
+    const auto test_data_file = ore_path("examples/Legacy/Example_1/Input/currencies.xml");
 
     config::import_options import_cfg;
     import_cfg.target_entity = config::entity::currencies;
@@ -238,7 +243,7 @@ TEST_CASE("import_currencies_verify_all_fields", tags) {
     ores::testing::database_helper h;
     h.truncate_table(database_table);
 
-    const std::filesystem::path test_data_file = "../test_data/currencies/currencies_01.xml";
+    const auto test_data_file = ore_path("examples/Legacy/Example_1/Input/currencies.xml");
 
     BOOST_LOG_SEV(lg, debug) << "Importing and verifying all currency fields.";
 
@@ -287,12 +292,9 @@ TEST_CASE("import_currencies_from_api_test_file", tags) {
     ores::testing::database_helper h;
     h.truncate_table(database_table);
 
-    const std::filesystem::path test_data_file = "../test_data/currencies/currencies_API.xml";
+    const auto test_data_file = ore_path("examples/ORE-API/Input/currencies.xml");
 
-    if (!std::filesystem::exists(test_data_file)) {
-        BOOST_LOG_SEV(lg, warn) << "API test file not found, skipping test";
-        return;
-    }
+    REQUIRE(std::filesystem::exists(test_data_file));
 
     BOOST_LOG_SEV(lg, debug) << "Importing from API test file";
 

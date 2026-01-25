@@ -17,23 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata/orexml/CurrencyConfig.hpp"
+#include "ores.ore/domain/CurrencyElement.hpp"
 
+#include <ostream>
 #include <rfl.hpp>
-#include <rfl/xml.hpp>
 #include <rfl/json.hpp>
 
-namespace ores::refdata::orexml {
+namespace ores::ore::domain {
 
-std::string CurrencyConfig::to_xml(const CurrencyConfig& v) {
-    return rfl::xml::write(v);
-}
-
-CurrencyConfig CurrencyConfig::from_xml(const std::string& xml) {
-    return rfl::xml::read<CurrencyConfig>(xml).value();
-}
-
-std::ostream& operator<<(std::ostream& s, const CurrencyConfig& v) {
+std::ostream& operator<<(std::ostream& s, const CurrencyElement& v) {
     rfl::json::write(v, s);
     return s;
 }

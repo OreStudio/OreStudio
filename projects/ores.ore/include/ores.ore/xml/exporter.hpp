@@ -18,21 +18,21 @@
  * MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_OREXML_EXPORTER_HPP
-#define ORES_REFDATA_OREXML_EXPORTER_HPP
+#ifndef ORES_ORE_XML_EXPORTER_HPP
+#define ORES_ORE_XML_EXPORTER_HPP
 
 #include <vector>
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/currency.hpp"
 
-namespace ores::refdata::orexml {
+namespace ores::ore::xml {
 
 /**
- * @brief Exports domain objects from their ORE XML representation.
+ * @brief Exports domain objects to their ORE XML representation.
  */
 class exporter {
 private:
-    inline static std::string_view logger_name = "ores.refdata.orexml.exporter";
+    inline static std::string_view logger_name = "ores.ore.xml.exporter";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -42,7 +42,7 @@ private:
 
 public:
     static std::string
-    export_currency_config(const std::vector<domain::currency>& v);
+    export_currency_config(const std::vector<refdata::domain::currency>& v);
 };
 
 }

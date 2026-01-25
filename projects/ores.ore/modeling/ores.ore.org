@@ -6,39 +6,44 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
 
-Brief description paragraph for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+This component provides ORE (Open Source Risk Engine) specific functionality for
+[[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. It handles import and export of data in ORE's native XML formats.
 
-,* Component Architecture
+* Component Architecture
 
 Diagram:
 
-#+attr_html: :width 100% :alt Description
+#+attr_html: :width 100% :alt ORE Component Class Diagram
 #+caption: ORE Studio ORE Component Diagram
 [[file:ores.ore.png][file:ores.ore.png]]
 
-This module provides ORE (Open Source Risk Engine) specific functionality, mainly importing and exporting capabilities. Key features include:
+This component provides ORE (Open Source Risk Engine) specific functionality,
+primarily importing and exporting capabilities. Key features include:
 
-- ORE import/export: Functions to import from and export to ORE formats
-- Format conversion: Converting between ORE-specific formats and internal representations
-- Message-based API: asynchronous request/response handlers (subsystem range =0xNNNN-0xNNNN=)
-- Temporal database support: version tracking with =valid_from= and =valid_to= fields
-- Synthetic data generation: test data generation for development
+- ORE XML import: Parse currency configuration from ORE XML format
+- ORE XML export: Generate ORE XML format from internal domain objects
+- Format conversion: Map between ORE-specific structures and internal representations
+- Validation: Validate imported data against ORE XSD schema requirements
 
-The module is organized into namespaces: domain (core entities), repository ([[https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping][ORM]] and persistence), service (business logic), messaging (API handlers), and generators (test data).
+The component is organized into two namespaces:
 
-,* Domain Types
+- =domain=: ORE XML structures and mappers (CurrencyConfig, CurrencyElement, currency_mapper)
+- =xml=: Import and export functionality (importer, exporter)
 
-| Type       | Description                    |
-|------------+--------------------------------|
-| =ore_data= | Representation of ORE data     |
-| =import_result= | Result of import operations  |
+* Domain Types
 
-,* Database Tables
+| Type               | Description                                                          |
+|--------------------+----------------------------------------------------------------------|
+| =CurrencyConfig=   | Root element representing a set of currencies in ORE XML format      |
+| =CurrencyElement=  | Individual currency definition matching ORE's currencyconfig.xsd     |
+| =currency_mapper=  | Maps between ORE XML types and =refdata::domain::currency=           |
+| =parsing_error=    | Exception thrown when XML parsing fails                              |
 
-| Table      | Type     | Description                    |
-|------------+----------+--------------------------------|
-| =ore_data_table= | Temporal | Stores ORE data with historical tracking |
+* XML Types
 
-All temporal tables use bitemporal fields (=valid_from=, =valid_to=) for historical tracking.
+| Type       | Description                                         |
+|------------+-----------------------------------------------------|
+| =importer= | Imports domain objects from ORE XML representation  |
+| =exporter= | Exports domain objects to ORE XML representation    |
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

@@ -15,9 +15,6 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/test_data"
-    DESTINATION "${ORES_PUBLISH_DIRECTORY}/")
-
 set(name "ores.refdata")
 set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)

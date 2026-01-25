@@ -22,10 +22,71 @@ title ores.ore - ORE Component
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "Component for ORE (Open Source Risk Engine) specific code, mainly importing and exporting" as ores_ore_note
-    ore --- ores_ore_note
     namespace ore #F2F2F2 {
 
+        note "Provides ORE (Open Source Risk Engine) specific\nfunctionality for XML import/export" as ore_note
+
+        namespace domain #E8E8E8 {
+
+            struct CurrencyConfig <<D,#FFFFCC>> {
+                +Currency : vector<CurrencyElement>
+                --
+                +{static} to_xml(v : CurrencyConfig) : string
+                +{static} from_xml(xml : string) : CurrencyConfig
+            }
+
+            struct CurrencyElement <<D,#FFFFCC>> {
+                +Name : string
+                +ISOCode : string
+                +NumericCode : string
+                +Symbol : string
+                +FractionSymbol : string
+                +FractionsPerUnit : int
+                +RoundingType : string
+                +RoundingPrecision : int
+                +Format : optional<string>
+                +CurrencyType : optional<string>
+            }
+
+            class currency_mapper <<U,#CCFFCC>> {
+                +{static} map(v : CurrencyElement) : currency
+                +{static} map(v : currency) : CurrencyElement
+                +{static} map(v : CurrencyConfig) : vector<currency>
+                +{static} map(v : vector<currency>) : CurrencyConfig
+            }
+
+            class parsing_error <<X,#FF5555>> {
+                -message_ : string
+                --
+                +parsing_error(message : string_view)
+                +what() : const char*
+            }
+
+            CurrencyConfig *-- "0..*" CurrencyElement : contains
+
+            note "Maps refdata::domain::currency\nto/from ORE XML types" as mapper_note
+            currency_mapper .. mapper_note
+        }
+
+        namespace xml #E8E8E8 {
+
+            class importer <<U,#CCFFCC>> {
+                +{static} validate_currency(currency : currency) : string
+                +{static} import_currency_config(path : path) : vector<currency>
+            }
+
+            class exporter <<U,#CCFFCC>> {
+                +{static} export_currency_config(v : vector<currency>) : string
+            }
+
+            note "Uses rfl (reflect-cpp) for\nXML serialization" as xml_note
+            importer .. xml_note
+        }
+
+        ' Cross-namespace relationships
+        domain::currency_mapper ..> xml::importer : used by
+        domain::currency_mapper ..> xml::exporter : used by
+        domain::parsing_error <.. xml::importer : throws
     }
 }
 

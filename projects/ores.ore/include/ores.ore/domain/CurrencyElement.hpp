@@ -17,26 +17,32 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_OREXML_CURRENCY_CONFIG_HPP
-#define ORES_REFDATA_OREXML_CURRENCY_CONFIG_HPP
+#ifndef ORES_ORE_DOMAIN_CURRENCY_ELEMENT_HPP
+#define ORES_ORE_DOMAIN_CURRENCY_ELEMENT_HPP
 
-#include <vector>
+#include <string>
 #include <ostream>
-#include "ores.refdata/orexml/CurrencyElement.hpp"
+#include <optional>
 
-namespace ores::refdata::orexml {
+namespace ores::ore::domain {
 
 /**
- * @brief Represents a set of currencies in ORE XML format.
+ * @brief Represents a currency in ORE XML format.
  */
-struct CurrencyConfig {
-    std::vector<CurrencyElement> Currency;
-
-    static std::string to_xml(const CurrencyConfig& v);
-    static CurrencyConfig from_xml(const std::string& xml);
+struct CurrencyElement {
+    std::string Name;
+    std::string ISOCode;
+    std::string NumericCode;
+    std::string Symbol;
+    std::string FractionSymbol;
+    int FractionsPerUnit;
+    std::string RoundingType;
+    int RoundingPrecision;
+    std::optional<std::string> Format;
+    std::optional<std::string> CurrencyType;
 };
 
-std::ostream& operator<<(std::ostream& s, const CurrencyConfig& v);
+std::ostream& operator<<(std::ostream& s, const CurrencyElement& v);
 
 }
 

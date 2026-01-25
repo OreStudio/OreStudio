@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_OREXML_PARSING_ERROR_HPP
-#define ORES_REFDATA_OREXML_PARSING_ERROR_HPP
+#ifndef ORES_ORE_DOMAIN_PARSING_ERROR_HPP
+#define ORES_ORE_DOMAIN_PARSING_ERROR_HPP
 
 #include <string>
 #include <boost/exception/info.hpp>
 
-namespace ores::refdata::orexml {
+namespace ores::ore::domain {
 
 /**
  * @brief A fatal error has occurred during parsing of ORE XML.

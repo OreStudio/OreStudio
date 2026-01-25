@@ -37,8 +37,8 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.refdata/orexml/importer.hpp"
-#include "ores.refdata/orexml/exporter.hpp"
+#include "ores.ore/xml/importer.hpp"
+#include "ores.ore/xml/exporter.hpp"
 #include "ores.refdata/csv/exporter.hpp"
 #include "ores.refdata/domain/currency_table.hpp"
 #include "ores.refdata/domain/currency_json.hpp"
@@ -86,8 +86,8 @@
 
 namespace ores::cli::app {
 
-using ore_importer = refdata::orexml::importer;
-using ore_exporter = refdata::orexml::exporter;
+using ore_importer = ore::xml::importer;
+using ore_exporter = ore::xml::exporter;
 using csv_exporter = refdata::csv::exporter;
 using namespace ores::logging;
 using ores::refdata::domain::currency;

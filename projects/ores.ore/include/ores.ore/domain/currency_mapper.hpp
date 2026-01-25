@@ -17,22 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_OREXML_CURRENCY_MAPPER_HPP
-#define ORES_REFDATA_OREXML_CURRENCY_MAPPER_HPP
+#ifndef ORES_ORE_DOMAIN_CURRENCY_MAPPER_HPP
+#define ORES_ORE_DOMAIN_CURRENCY_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/currency.hpp"
-#include "ores.refdata/orexml/CurrencyConfig.hpp"
-#include "ores.refdata/orexml/CurrencyElement.hpp"
+#include "ores.ore/domain/CurrencyConfig.hpp"
+#include "ores.ore/domain/CurrencyElement.hpp"
 
-namespace ores::refdata::orexml {
+namespace ores::ore::domain {
 
 /**
- * @brief Maps domain model entities to ORE XML and vice-versa.
+ * @brief Maps refdata domain entities to ORE XML types and vice-versa.
  */
 class currency_mapper {
 private:
-    inline static std::string_view logger_name = "ores.refdata.orexml.currency_mapper";
+    inline static std::string_view logger_name = "ores.ore.domain.currency_mapper";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -41,12 +41,12 @@ private:
     }
 
 public:
-    static domain::currency map(const CurrencyElement& v);
-    static CurrencyElement map(const domain::currency& v);
+    static refdata::domain::currency map(const CurrencyElement& v);
+    static CurrencyElement map(const refdata::domain::currency& v);
 
-    static std::vector<domain::currency>
+    static std::vector<refdata::domain::currency>
     map(const CurrencyConfig& v);
-    static CurrencyConfig map(const std::vector<domain::currency>& v);
+    static CurrencyConfig map(const std::vector<refdata::domain::currency>& v);
 };
 
 }

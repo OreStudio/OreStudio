@@ -17,49 +17,49 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-25 Sun 02:10], for Sunday, January 25, 2026.
+#+CAPTION: Clock summary at [2026-01-25 Sun 03:55], for Sunday, January 25, 2026.
 |       | <75>                                         |        |      |      |       |
 | Tags  | Headline                                     | Time   |      |      |     % |
 |-------+----------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                 | *1:44* |      |      | 100.0 |
+|       | *Total time*                                 | *5:20* |      |      | 100.0 |
 |-------+----------------------------------------------+--------+------+------+-------|
-|       | Stories                                      | 1:44   |      |      | 100.0 |
-|       | Active                                       |        | 1:44 |      | 100.0 |
-| agile | Sprint and product backlog refinement        |        |      | 0:13 |  12.5 |
-| code  | Add mapping artefact to population functions |        |      | 0:30 |  28.8 |
-| code  | Add FPML export and import                   |        |      | 0:19 |  18.3 |
-| code  | Add a ORE component for import/export        |        |      | 0:24 |  23.1 |
-| code  | Base the compute approach on BOINC           |        |      | 0:18 |  17.3 |
+|       | Stories                                      | 5:20   |      |      | 100.0 |
+|       | Active                                       |        | 5:20 |      | 100.0 |
+| agile | Sprint and product backlog refinement        |        |      | 0:13 |   4.1 |
+| code  | Add mapping artefact to population functions |        |      | 0:30 |   9.4 |
+| code  | Add a ORE component for import/export        |        |      | 4:00 |  75.0 |
+| code  | Add FPML export and import                   |        |      | 0:19 |   5.9 |
+| code  | Base the compute approach on BOINC           |        |      | 0:18 |   5.6 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-25 Sun 02:10]
+#+CAPTION: Clock summary at [2026-01-25 Sun 03:55]
 |       | <75>                                                |         |       |      |       |
 | Tags  | Headline                                            | Time    |       |      |     % |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *42:46* |       |      | 100.0 |
+|       | *Total time*                                        | *46:22* |       |      | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 42:46   |       |      | 100.0 |
-|       | Active                                              |         | 42:46 |      | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       | 1:17 |   3.0 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  14.8 |
-| code  | Create a simple code generator                      |         |       | 7:38 |  17.8 |
-| code  | Party related schemes                               |         |       | 5:20 |  12.5 |
-| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   4.0 |
-| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   1.0 |
-| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.2 |
-| code  | Fix issues with misspell action                     |         |       | 2:47 |   6.5 |
-| code  | Tidy-up external data storage                       |         |       | 3:33 |   8.3 |
-| code  | Coding schemes are in production tables             |         |       | 1:39 |   3.9 |
-| code  | Refactor SQL directories                            |         |       | 3:24 |   8.0 |
-| code  | Code-generate ER diagram                            |         |       | 3:01 |   7.1 |
-| code  | Add "words" to icons                                |         |       | 0:28 |   1.1 |
-| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   3.1 |
-| code  | Add mapping artefact to population functions        |         |       | 2:19 |   5.4 |
+|       | Stories                                             | 46:22   |       |      | 100.0 |
+|       | Active                                              |         | 46:22 |      | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       | 1:17 |   2.8 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  13.7 |
+| code  | Create a simple code generator                      |         |       | 7:38 |  16.5 |
+| code  | Party related schemes                               |         |       | 5:20 |  11.5 |
+| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   3.7 |
+| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   0.9 |
+| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.1 |
+| code  | Fix issues with misspell action                     |         |       | 2:47 |   6.0 |
+| code  | Tidy-up external data storage                       |         |       | 3:33 |   7.7 |
+| code  | Coding schemes are in production tables             |         |       | 1:39 |   3.6 |
+| code  | Refactor SQL directories                            |         |       | 3:24 |   7.3 |
+| code  | Code-generate ER diagram                            |         |       | 3:01 |   6.5 |
+| code  | Add "words" to icons                                |         |       | 0:28 |   1.0 |
+| code  | Add mapping artefact to population functions        |         |       | 2:19 |   5.0 |
+| code  | Add a ORE component for import/export               |         |       | 4:00 |   8.6 |
+| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   2.9 |
 | code  | Add FPML export and import                          |         |       | 0:19 |   0.7 |
-| code  | Add a ORE component for import/export               |         |       | 0:24 |   0.9 |
-| code  | Base the compute approach on BOINC                  |         |       | 0:18 |   0.7 |
+| code  | Base the compute approach on BOINC                  |         |       | 0:18 |   0.6 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -703,6 +703,52 @@ to icons such as the icons for export and import:
 Then we could use 2 well-defined icons for import and export across the
 code-base.
 
+*** COMPLETED Add mapping artefact to population functions             :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-24 Sat 23:46]--[2026-01-25 Sun 00:30] =>  0:44
+    CLOCK: [2026-01-24 Sat 22:10]--[2026-01-24 Sat 23:45] =>  1:35
+    :END:
+
+At present this is hard-coded.
+
+*** COMPLETED Add a ORE component for import/export                    :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-25 Sun 03:06]--[2026-01-25 Sun 03:54] =>  0:48
+    CLOCK: [2026-01-25 Sun 02:00]--[2026-01-25 Sun 02:57] =>  0:57
+    CLOCK: [2026-01-25 Sun 00:51]--[2026-01-25 Sun 03:06] =>  2:15
+    :END:
+
+As per FPML analysis, it is better to have all of the export/import code in one
+place rather than scattered across other components. Add a component specific to
+ORE.
+
+**** Create component
+
+#+begin_quote
+This pull request establishes the groundwork for ORE (Open Source Risk Engine)
+data handling within the system. It introduces a dedicated ores.ore component,
+complete with its directory structure, CMake build configurations, and initial
+code stubs. The changes also ensure that the system's architectural
+documentation is up-to-date with the new component's presence and purpose,
+laying a solid foundation for future development of ORE import and export
+capabilities.
+
+Highlights:
+
+- New Component Introduction: A new component, ores.ore, has been added to the
+  project, providing foundational structure for ORE (Open Source Risk Engine)
+  specific import/export functionality.
+- Build System Integration: The new ores.ore component is fully integrated into
+  the CMake build system, including its source, modeling, and testing
+  subdirectories.
+- Documentation Updates: The system's architectural documentation, including
+  PlantUML diagrams and the system model, has been updated to reflect the
+  inclusion and details of the new ores.ore component.
+- Initial Stub Implementation: Basic stub files for domain logic and testing
+  have been created to ensure the component compiles and integrates correctly
+  from the outset.
+#+end_quote
+
 *** STARTED Add code generation support for domain types SQL           :code:
     :LOGBOOK:
     CLOCK: [2026-01-22 Thu 17:19]--[2026-01-22 Thu 18:30] =>  1:11
@@ -712,14 +758,6 @@ code-base.
 Now that we got the basic codegen infrastructure working, we need to start code
 generating the SQL for domain types.
 
-*** STARTED Add mapping artefact to population functions               :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-24 Sat 23:46]--[2026-01-25 Sun 00:30] =>  0:44
-    CLOCK: [2026-01-24 Sat 22:10]--[2026-01-24 Sat 23:45] =>  1:35
-    :END:
-
-At present this is hard-coded.
-
 *** STARTED Add FPML export and import                                 :code:
     :LOGBOOK:
     CLOCK: [2026-01-25 Sun 00:31]--[2026-01-25 Sun 00:50] =>  0:19
@@ -727,6 +765,39 @@ At present this is hard-coded.
 
 Where we can, we should start to add export and import functionality for FPML.
 This validates our modeling and catches aspects we may be missing.
+
+Currency export:
+
+#+begin_src xml
+<?xml version="1.0" encoding="utf-8"?>
+<referenceDataNotification
+    xmlns="http://www.fpml.org/FpML-5/reporting"
+    fpmlVersion="5-11">
+  <header>
+    <messageId messageIdScheme="http://sys-a.gigabank.com/msg-id">SYNC-CURR-2026-001</messageId>
+    <sentBy>GIGABANK_LEI_A</sentBy>
+    <creationTimestamp>2026-01-25T10:00:00Z</creationTimestamp>
+  </header>
+
+  <currency>
+    <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">USD</currency>
+  </currency>
+
+  <currency>
+    <currency currencyScheme="http://www.fpml.org/coding-scheme/external/iso4217">EUR</currency>
+  </currency>
+</referenceDataNotification>
+#+end_src
+
+and:
+
+#+begin_src xml
+<header>
+  <messageId messageIdScheme="http://instance-a.internal/scheme">MSG_99821</messageId>
+  <sentBy>INSTANCE_A</sentBy>
+  <creationTimestamp>2026-01-25T14:30:00Z</creationTimestamp>
+</header>
+#+end_src
 
 **** Create component
 
@@ -812,15 +883,6 @@ Highlights:
   been updated to include the new 'ores.fpml' component, and its own CMake files
   are set up for building the library, tests, and PlantUML diagrams.
 #+end_quote
-
-*** STARTED Add a ORE component for import/export                      :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-25 Sun 00:51]--[2026-01-25 Sun 01:15] =>  0:24
-    :END:
-
-As per FPML analysis, it is better to have all of the export/import code in one
-place rather than scattered across other components. Add a component specific to
-ORE.
 
 *** STARTED Base the compute approach on BOINC                         :code:
     :LOGBOOK:

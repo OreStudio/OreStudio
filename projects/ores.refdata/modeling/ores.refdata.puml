@@ -21,132 +21,9 @@ title ores.refdata Component
 set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
-    note "Reference data domain model for ORE types and other related classes." as ores_refdata_note
+    note "Reference data domain model for currencies, countries,\nand other reference data entities." as ores_refdata_note
     refdata --- ores_refdata_note
     namespace refdata #F2F2F2 {
-        note "Provides XML serialisation support for the ORE domain model types\nusing native ORE XML." as ores_refdata_orexml_note
-        orexml --- ores_refdata_orexml_note
-        namespace orexml #F2F2F2 {
-            '
-            ' Layout groupings
-            '
-
-            ' Group: Currency XML types
-            together {
-                class CurrencyElement
-                class CurrencyConfig
-            }
-
-            ' Group: Import/Export/Mapping
-            together {
-                class importer
-                class currency_mapper
-                class exporter
-            }
-
-            ' Stack vertically
-            CurrencyElement -[hidden]down- CurrencyConfig
-            importer -[hidden]down- currency_mapper
-            currency_mapper -[hidden]down- exporter
-            CurrencyConfig -[hidden]down- importer
-
-            '
-            ' Class definitions
-            '
-
-            class parsing_error <<exception>> #D6B19F {
-                +parsing_error(std::string_view message)
-                +what() const : const char*
-                -{field} message_ : std::string
-            }
-
-            note top of parsing_error
-            A fatal error has occurred during parsing of ORE XML.
-            end note
-
-            class CurrencyElement #F7E5FF {
-                +{field} Name : std::string
-                +{field} ISOCode : std::string
-                +{field} NumericCode : std::string
-                +{field} Symbol : std::string
-                +{field} FractionSymbol : std::string
-                +{field} FractionsPerUnit : int
-                +{field} RoundingType : std::string
-                +{field} RoundingPrecision : int
-                +{field} Format : std::string
-                +{field} CurrencyType : std::optional<std::string>
-            }
-
-            note top of CurrencyElement
-            Represents a currencies in ORE XML format.
-
-            Fields:
-
-            - Name: Name of the currency.
-            - ISOCode: ISO code for the currency.
-            - NumericCode: Numeric code for the currency.
-            - Symbol: Symbol used for the currency.
-            - FractionSymbol: Symbol for fractions.
-            - FractionsPerUnit: Number of fractions per unit.
-            - RoundingType: Type of rounding used.
-            - RoundingPrecision: Precision for rounding.
-            - Format: Format string for display.
-            - CurrencyType: Optional type of currency.
-            end note
-
-            class CurrencyConfig #F7E5FF {
-                +{field} Currency : std::vector<CurrencyElement>
-                +{static} to_xml(const CurrencyConfig& v) : std::string
-                +{static} from_xml(const std::string& xml) : CurrencyConfig
-            }
-
-            note top of CurrencyConfig
-            Represents a set of currencies in ORE XML format.
-
-            Fields:
-
-            - Currency: Vector of currency elements.
-            end note
-
-            CurrencyConfig o-u- ores::refdata::orexml::CurrencyElement
-
-            class importer #ECECEC {
-                +{static} import_currency_config(const std::filesystem::path& path) : std::vector<domain::currency>
-            }
-
-            note top of importer
-            Imports domain objects from their ORE XML representation.
-            end note
-
-            importer ..> ores::refdata::orexml::CurrencyConfig : uses
-            importer ..> ores::refdata::domain::currency : imports
-
-            class currency_mapper #ECECEC {
-                +{static} map(const CurrencyElement& v) : domain::currency
-                +{static} map(const domain::currency& v) : CurrencyElement
-                +{static} map(const CurrencyConfig& v) : std::vector<domain::currency>
-                +{static} map(const std::vector<domain::currency>& v) : CurrencyConfig
-            }
-
-            note top of currency_mapper
-            Maps domain model entities to ORE XML and vice-versa.
-            end note
-
-            currency_mapper ..> ores::refdata::orexml::CurrencyElement : uses
-            currency_mapper ..> ores::refdata::orexml::CurrencyConfig : uses
-            currency_mapper ..> ores::refdata::domain::currency : uses
-
-            class exporter #ECECEC {
-                +{static} export_currency_config(const std::vector<domain::currency>& v) : std::string
-            }
-
-            note top of exporter
-            Exports domain objects from their ORE XML representation.
-            end note
-
-            exporter ..> ores::refdata::domain::currency : exports
-            exporter ..> ores::refdata::orexml::CurrencyConfig : uses
-        }
 
         namespace domain #F2F2F2 {
             '
@@ -962,14 +839,13 @@ namespace ores #F2F2F2 {
 
             ' Group: Other tests
             together {
-                class orexml_currency_config_tests
                 class repository_currency_repository_tests
             }
 
             ' Stack related tests vertically
             domain_currency_tests -[hidden]down- domain_currency_version_tests
             messaging_protocol_tests -[hidden]down- messaging_risk_message_handler_tests
-            orexml_currency_config_tests -[hidden]down- repository_currency_repository_tests
+            messaging_risk_message_handler_tests -[hidden]down- repository_currency_repository_tests
 
             '
             ' Class definitions
@@ -1054,26 +930,6 @@ namespace ores #F2F2F2 {
             end note
 
             messaging_risk_message_handler_tests ..> ores::refdata::messaging::risk_message_handler : tests
-
-            class orexml_currency_config_tests <<test suite>> #C5E1A5 {
-                +read_currency_config_from_simple_xml() void
-                +read_currency_config_from_currencies_xml() void
-                +read_currency_config_from_currencies_01_xml() void
-                +read_currency_config_from_currencies_41_xml() void
-                +read_currency_config_from_currencies_42_xml() void
-                +read_currency_config_from_currencies_62_xml() void
-                +read_currency_config_from_currencies_API_xml() void
-            }
-
-            note top of orexml_currency_config_tests
-            Test suite for ORE XML currency configuration.
-
-            Tests cover reading currency configurations from
-            various ORE XML format versions.
-            end note
-
-            orexml_currency_config_tests ..> ores::refdata::orexml::CurrencyConfig : tests
-            orexml_currency_config_tests ..> ores::refdata::orexml::importer : tests
 
             class repository_currency_repository_tests <<test suite>> #C5E1A5 {
                 +write_single_currency() void

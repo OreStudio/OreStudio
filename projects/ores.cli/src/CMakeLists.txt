@@ -46,6 +46,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.iam.lib
         ores.dq.lib
+        ores.ore.lib
         ores.refdata.lib
         ores.comms.lib
         ores.security.lib

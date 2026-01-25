@@ -6,7 +6,7 @@ Reads the manifest.json and methodology.txt from external/ip2country/ and genera
   - ip2country_catalog_populate.sql
   - ip2country_methodology_populate.sql
   - ip2country_dataset_populate.sql
-  - ip2country.sql (master include file)
+  - populate_ip2country.sql (master include file)
 
 Usage:
     python3 ip2country_generate_metadata_sql.py
@@ -317,7 +317,7 @@ set schema 'ores';
 
 
 def generate_master_sql(output_file: Path):
-    """Generate the ip2country.sql master include file."""
+    """Generate the populate_ip2country.sql master include file."""
     print(f"Generating {output_file.name}...")
 
     with open(output_file, 'w', encoding='utf-8') as f:
@@ -435,7 +435,7 @@ def main():
     generate_dataset_sql(manifest, output_dir / 'ip2country_dataset_populate.sql')
     generate_dataset_tag_sql(manifest, output_dir / 'ip2country_dataset_tag_populate.sql')
     generate_dataset_dependency_sql(manifest, output_dir / 'ip2country_dataset_dependency_populate.sql')
-    generate_master_sql(output_dir / 'ip2country.sql')
+    generate_master_sql(output_dir / 'populate_ip2country.sql')
 
     print()
     print("Generation complete!")

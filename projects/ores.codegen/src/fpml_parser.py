@@ -835,7 +835,7 @@ def generate_dataset_dependency_sql(manifest: dict, output_path: Path):
 
 
 def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files: list[str]):
-    """Generate fpml.sql master include file with all FPML files in correct order."""
+    """Generate populate_fpml.sql master include file with all FPML files in correct order."""
     lines = [
         "/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-",
         " *",
@@ -911,7 +911,7 @@ def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files
 
     lines.append("")
 
-    output_path = output_dir / "fpml.sql"
+    output_path = output_dir / "populate_fpml.sql"
     output_path.write_text('\n'.join(lines))
     print(f"Generated: {output_path}")
 

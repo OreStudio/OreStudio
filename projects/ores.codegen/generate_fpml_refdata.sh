@@ -27,7 +27,7 @@ cd "$SCRIPT_DIR"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 FPML_DATA_DIR="$PROJECT_ROOT/external/fpml/codelist"
 OUTPUT_DIR="$SCRIPT_DIR/output"
-SCHEMA_DIR="$SCRIPT_DIR/../ores.sql/schema"
+SCHEMA_DIR="$SCRIPT_DIR/../ores.sql/create/refdata"
 POPULATE_DIR="$SCRIPT_DIR/../ores.sql/populate/fpml"
 
 # Hard-coded list of FPML entities to generate
@@ -129,9 +129,9 @@ if [ -f "$OUTPUT_DIR/fpml_coding_schemes_dataset_populate.sql" ]; then
     cp "$OUTPUT_DIR/fpml_coding_schemes_dataset_populate.sql" "$POPULATE_DIR/"
     echo "  -> $POPULATE_DIR/fpml_coding_schemes_dataset_populate.sql"
 fi
-if [ -f "$OUTPUT_DIR/fpml.sql" ]; then
-    cp "$OUTPUT_DIR/fpml.sql" "$POPULATE_DIR/"
-    echo "  -> $POPULATE_DIR/fpml.sql"
+if [ -f "$OUTPUT_DIR/populate_fpml.sql" ]; then
+    cp "$OUTPUT_DIR/populate_fpml.sql" "$POPULATE_DIR/"
+    echo "  -> $POPULATE_DIR/populate_fpml.sql"
 fi
 echo ""
 
@@ -167,7 +167,7 @@ echo "Schema files:   $SCHEMA_DIR/"
 echo "Populate files: $POPULATE_DIR/"
 echo ""
 echo "Generated files:"
-echo "  - fpml.sql (master include file)"
+echo "  - populate_fpml.sql (master include file)"
 echo "  - fpml_methodology_populate.sql"
 echo "  - fpml_coding_schemes_populate.sql"
 

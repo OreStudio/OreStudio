@@ -6,7 +6,7 @@ Reads the manifest.json and methodology.txt from external/flags/ and generates:
   - flags_methodology_populate.sql
   - flags_dataset_populate.sql
   - flags_dataset_tag_populate.sql
-  - flags.sql (master include file)
+  - populate_flags.sql (master include file)
 
 Usage:
     python3 flags_generate_metadata_sql.py
@@ -318,7 +318,7 @@ set schema 'ores';
 
 
 def generate_master_sql(output_file: Path):
-    """Generate the flags.sql master include file."""
+    """Generate the populate_flags.sql master include file."""
     print(f"Generating {output_file.name}...")
 
     with open(output_file, 'w', encoding='utf-8') as f:
@@ -436,7 +436,7 @@ def main():
     generate_dataset_sql(manifest, output_dir / 'flags_dataset_populate.sql')
     generate_dataset_tag_sql(manifest, output_dir / 'flags_dataset_tag_populate.sql')
     generate_dataset_dependency_sql(manifest, output_dir / 'flags_dataset_dependency_populate.sql')
-    generate_master_sql(output_dir / 'flags.sql')
+    generate_master_sql(output_dir / 'populate_flags.sql')
 
     print()
     print("Generation complete!")

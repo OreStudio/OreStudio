@@ -82,7 +82,7 @@ echo "Generated files:"
 echo "  - flags_methodology_populate.sql"
 echo "  - flags_dataset_populate.sql"
 echo "  - flags_dataset_tag_populate.sql"
-echo "  - flags.sql (master include)"
+echo "  - populate_flags.sql (master include)"
 if [ "$SKIP_IMAGES" = false ]; then
     echo "  - flags_images_artefact_populate.sql"
 fi

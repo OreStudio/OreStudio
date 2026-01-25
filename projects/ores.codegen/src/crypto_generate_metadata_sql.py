@@ -6,7 +6,7 @@ Reads the manifest.json and methodology.txt from external/crypto/ and generates:
   - crypto_methodology_populate.sql
   - crypto_dataset_populate.sql
   - crypto_dataset_tag_populate.sql
-  - crypto.sql (master include file)
+  - populate_crypto.sql (master include file)
 
 Usage:
     python3 crypto_generate_metadata_sql.py
@@ -191,8 +191,6 @@ set schema 'ores';
             as_of_date = dataset['as_of_date']
             license_info = escape_sql_string(dataset['license'])
             artefact_type = dataset['artefact_type']
-            target_table = dataset['target_table']
-            populate_function = dataset['populate_function']
 
             f.write(f"""-- {name}
 select ores.upsert_dq_datasets(
@@ -211,9 +209,7 @@ select ores.upsert_dq_datasets(
     '{business_context}',
     '{as_of_date}'::date,
     '{license_info}',
-    '{artefact_type}',
-    '{target_table}',
-    '{populate_function}'
+    '{artefact_type}'
 );
 
 """)
@@ -322,7 +318,7 @@ set schema 'ores';
 
 
 def generate_master_sql(output_file: Path):
-    """Generate the crypto.sql master include file."""
+    """Generate the populate_crypto.sql master include file."""
     print(f"Generating {output_file.name}...")
 
     with open(output_file, 'w', encoding='utf-8') as f:
@@ -448,7 +444,7 @@ def main():
     generate_dataset_sql(manifest, output_dir / 'crypto_dataset_populate.sql')
     generate_dataset_tag_sql(manifest, output_dir / 'crypto_dataset_tag_populate.sql')
     generate_dataset_dependency_sql(manifest, output_dir / 'crypto_dataset_dependency_populate.sql')
-    generate_master_sql(output_dir / 'crypto.sql')
+    generate_master_sql(output_dir / 'populate_crypto.sql')
 
     print()
     print("Generation complete!")

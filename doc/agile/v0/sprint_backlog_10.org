@@ -17,51 +17,54 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-24 Sat 23:45], for Saturday, January 24, 2026.
-|      | <75>                                         |         |       |      |       |
-| Tags | Headline                                     | Time    |       |      |     % |
-|------+----------------------------------------------+---------+-------+------+-------|
-|      | *Total time*                                 | *11:11* |       |      | 100.0 |
-|------+----------------------------------------------+---------+-------+------+-------|
-|      | Stories                                      | 11:11   |       |      | 100.0 |
-|      | Active                                       |         | 11:11 |      | 100.0 |
-| code | Tidy-up external data storage                |         |       | 1:04 |   9.5 |
-| code | Coding schemes are in production tables      |         |       | 1:39 |  14.8 |
-| code | Refactor SQL directories                     |         |       | 3:24 |  30.4 |
-| code | Code-generate ER diagram                     |         |       | 3:01 |  27.0 |
-| code | Add "words" to icons                         |         |       | 0:28 |   4.2 |
-| code | Add mapping artefact to population functions |         |       | 1:35 |  14.2 |
+#+CAPTION: Clock summary at [2026-01-25 Sun 02:10], for Sunday, January 25, 2026.
+|       | <75>                                         |        |      |      |       |
+| Tags  | Headline                                     | Time   |      |      |     % |
+|-------+----------------------------------------------+--------+------+------+-------|
+|       | *Total time*                                 | *1:44* |      |      | 100.0 |
+|-------+----------------------------------------------+--------+------+------+-------|
+|       | Stories                                      | 1:44   |      |      | 100.0 |
+|       | Active                                       |        | 1:44 |      | 100.0 |
+| agile | Sprint and product backlog refinement        |        |      | 0:13 |  12.5 |
+| code  | Add mapping artefact to population functions |        |      | 0:30 |  28.8 |
+| code  | Add FPML export and import                   |        |      | 0:19 |  18.3 |
+| code  | Add a ORE component for import/export        |        |      | 0:24 |  23.1 |
+| code  | Base the compute approach on BOINC           |        |      | 0:18 |  17.3 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-24 Sat 23:45]
+#+CAPTION: Clock summary at [2026-01-25 Sun 02:10]
 |       | <75>                                                |         |       |      |       |
 | Tags  | Headline                                            | Time    |       |      |     % |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *40:48* |       |      | 100.0 |
+|       | *Total time*                                        | *42:46* |       |      | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 40:48   |       |      | 100.0 |
-|       | Active                                              |         | 40:48 |      | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       | 1:04 |   2.6 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  15.5 |
-| code  | Create a simple code generator                      |         |       | 7:38 |  18.7 |
-| code  | Party related schemes                               |         |       | 5:20 |  13.1 |
-| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   4.2 |
+|       | Stories                                             | 42:46   |       |      | 100.0 |
+|       | Active                                              |         | 42:46 |      | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       | 1:17 |   3.0 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  14.8 |
+| code  | Create a simple code generator                      |         |       | 7:38 |  17.8 |
+| code  | Party related schemes                               |         |       | 5:20 |  12.5 |
+| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   4.0 |
 | code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   1.0 |
-| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.3 |
-| code  | Fix issues with misspell action                     |         |       | 2:47 |   6.8 |
-| code  | Tidy-up external data storage                       |         |       | 3:33 |   8.7 |
-| code  | Coding schemes are in production tables             |         |       | 1:39 |   4.0 |
-| code  | Refactor SQL directories                            |         |       | 3:24 |   8.3 |
-| code  | Code-generate ER diagram                            |         |       | 3:01 |   7.4 |
-| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   3.3 |
+| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.2 |
+| code  | Fix issues with misspell action                     |         |       | 2:47 |   6.5 |
+| code  | Tidy-up external data storage                       |         |       | 3:33 |   8.3 |
+| code  | Coding schemes are in production tables             |         |       | 1:39 |   3.9 |
+| code  | Refactor SQL directories                            |         |       | 3:24 |   8.0 |
+| code  | Code-generate ER diagram                            |         |       | 3:01 |   7.1 |
 | code  | Add "words" to icons                                |         |       | 0:28 |   1.1 |
-| code  | Add mapping artefact to population functions        |         |       | 1:35 |   3.9 |
+| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   3.1 |
+| code  | Add mapping artefact to population functions        |         |       | 2:19 |   5.4 |
+| code  | Add FPML export and import                          |         |       | 0:19 |   0.7 |
+| code  | Add a ORE component for import/export               |         |       | 0:24 |   0.9 |
+| code  | Base the compute approach on BOINC                  |         |       | 0:18 |   0.7 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
     :LOGBOOK:
+    CLOCK: [2026-01-25 Sun 01:16]--[2026-01-25 Sun 01:29] =>  0:13
     CLOCK: [2026-01-20 Tue 20:01]--[2026-01-20 Tue 21:05] =>  1:04
     :END:
 
@@ -211,7 +214,7 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_10_tags.png]]
 
-*** STARTED OCR scan notebooks for this sprint                        :infra:
+*** COMPLETED OCR scan notebooks for this sprint                      :infra:
     :LOGBOOK:
     CLOCK: [2026-01-23 Fri 10:59]--[2026-01-23 Fri 11:20] =>  0:21
     CLOCK: [2026-01-23 Fri 10:30]--[2026-01-23 Fri 10:59] =>  0:29
@@ -685,16 +688,7 @@ Highlights:
   diagram with meaningful context.
 #+end_quote
 
-*** STARTED Add code generation support for domain types SQL           :code:
-    :LOGBOOK:
-    CLOCK: [2026-01-22 Thu 17:19]--[2026-01-22 Thu 18:30] =>  1:11
-    CLOCK: [2026-01-21 Wed 23:47]--[2026-01-21 Wed 23:56] =>  0:09
-    :END:
-
-Now that we got the basic codegen infrastructure working, we need to start code
-generating the SQL for domain types.
-
-*** STARTED Add "words" to icons                                       :code:
+*** COMPLETED Add "words" to icons                                     :code:
     :LOGBOOK:
     CLOCK: [2026-01-24 Sat 20:55]--[2026-01-24 Sat 21:23] =>  0:28
     :END:
@@ -709,12 +703,266 @@ to icons such as the icons for export and import:
 Then we could use 2 well-defined icons for import and export across the
 code-base.
 
+*** STARTED Add code generation support for domain types SQL           :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-22 Thu 17:19]--[2026-01-22 Thu 18:30] =>  1:11
+    CLOCK: [2026-01-21 Wed 23:47]--[2026-01-21 Wed 23:56] =>  0:09
+    :END:
+
+Now that we got the basic codegen infrastructure working, we need to start code
+generating the SQL for domain types.
+
 *** STARTED Add mapping artefact to population functions               :code:
     :LOGBOOK:
+    CLOCK: [2026-01-24 Sat 23:46]--[2026-01-25 Sun 00:30] =>  0:44
     CLOCK: [2026-01-24 Sat 22:10]--[2026-01-24 Sat 23:45] =>  1:35
     :END:
 
 At present this is hard-coded.
+
+*** STARTED Add FPML export and import                                 :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-25 Sun 00:31]--[2026-01-25 Sun 00:50] =>  0:19
+    :END:
+
+Where we can, we should start to add export and import functionality for FPML.
+This validates our modeling and catches aspects we may be missing.
+
+**** Create component
+
+We need a component to place all of the common infrastructure. As per Gemini
+analysis:
+
+#+begin_quote
+To achieve FpML schema validation using libxml2, you need to treat the FpML
+schemas as a "Black Box" of rules. Since FpML is highly modular, you don't just
+validate against one file; you validate against a "Root" schema that imports the
+others.
+
+Here is the most efficient path to implementing XML validation for your Identity
+Layer.
+
+1. Download the "Reporting" Schema Set
+
+FpML is divided into "Views." For party and business unit data, you want the
+Reporting View.
+
+- Go to FpML.org Download Section.
+- Download the Reporting View Zip.
+- Locate fpml-main-5-11.xsd. This is your entry point.
+
+2. The "Schema Repository" Pattern
+
+Libxml2 requires all imported .xsd files to be reachable.
+
+Place the downloaded XSDs in a folder (e.g., /schemas/fpml-5-11/).
+
+In your code, you will point the xmlSchemaNewParserCtxt to the main file.
+Libxml2 will automatically follow the <xsd:import> tags to the other files in
+that directory.
+
+3. Creating a "Wrapper" for Partial Validation
+
+FpML schemas are designed to validate full messages (like a Trade Notification),
+not just a standalone party table row. To validate just your parties, you have
+two choices:
+
+Option A: The "Fragment" Approach (Easiest for testing)
+
+Construct a minimal, valid FpML "Party Notification" message in memory that
+wraps your data.
+
+XML
+<partyNotification xmlns="http://www.fpml.org/FpML-5/reporting">
+  <header>
+    <messageId messageIdScheme="http://yourbank.com/msg-id">MSG001</messageId>
+    <sentBy>YOURBANK_LEI</sentBy>
+    <sendTo>VALIDATOR</sendTo>
+    <creationTimestamp>2026-01-23T09:00:00Z</creationTimestamp>
+  </header>
+  <party>
+    <partyId partyIdScheme="http://www.fpml.org/coding-scheme/external/iso17442">549300V5E66A3S316907</partyId>
+    <partyName>GigaBank PLC</partyName>
+  </party>
+</partyNotification>
+#+end_quote
+
+These common components should go into =ores.fpml=. We then need to figure out
+how to organise the exporters.
+
+#+begin_quote
+This pull request introduces a new 'ores.fpml' component, designed to handle
+Financial Products Markup Language operations, complete with its basic structure
+for source code, tests, and modeling. Concurrently, it updates the 'Component
+Creator' skill guide documentation to ensure it accurately reflects the latest
+logging system architecture, providing clear instructions for integrating
+logging functionality and resolving potential compilation issues for new
+components.
+
+Highlights:
+
+- New ores.fpml Component: A new component for Financial Products Markup
+  Language (FPML) operations has been added, including its source, tests, and
+  modeling setup.
+- Documentation Update for Logging: The 'Component Creator' skill guide
+  documentation has been updated to reflect current logging system changes,
+  specifically regarding the 'ores.logging.lib' dependency and the
+  'ores::logging' namespace.
+- CMake Configuration for New Component: The main 'projects/CMakeLists.txt' has
+  been updated to include the new 'ores.fpml' component, and its own CMake files
+  are set up for building the library, tests, and PlantUML diagrams.
+#+end_quote
+
+*** STARTED Add a ORE component for import/export                      :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-25 Sun 00:51]--[2026-01-25 Sun 01:15] =>  0:24
+    :END:
+
+As per FPML analysis, it is better to have all of the export/import code in one
+place rather than scattered across other components. Add a component specific to
+ORE.
+
+*** STARTED Base the compute approach on BOINC                         :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-25 Sun 01:30]--[2026-01-25 Sun 01:48] =>  0:18
+    :END:
+
+Copy the BOINC data model.
+
+**** Analysis work with Gemini
+
+- *Description*: As a QuantDev team, we want to build a distributed compute grid
+  to execute high-performance financial models (ORE, Ledger, LLM) across
+  multiple locations. We will use PostgreSQL as the central orchestrator,
+  leveraging PGMQ for task delivery and TimescaleDB for result telemetry.
+- *Architectural Components (BOINC Lexicon)*
+  - *Host (Node)*: The persistent infrastructure service running on the
+    hardware. It manages system resources and the lifecycle of task slots.
+  - *Wrapper*: A transient, task-specific supervisor that manages the
+    environment, fetches data via URIs, and monitors the engine.
+  - *App Executable (Application)*: The core calculation engine (/e.g./, ORE
+    Studio, llama.cpp) executed by the Wrapper.
+  - *Workunit*: The abstract definition of a problem, containing pointers to
+    input data and configurations.
+  - *Result*: A specific instance of a Workunit assigned to a Host.
+- Technical Stack:
+  - *Database*: PostgreSQL (Central State Machine).
+  - *Queueing*: PGMQ (for "Hot" result dispatching).
+  - *Time-Series*: TimescaleDB (for node metrics and assimilated financial
+    outputs).
+  - *Storage*: Postgres with BYTEA column (for zipped input/output bundles).
+    Let's stick with this sub-optimal approach until we hit some resource
+    issues.
+  - Communication: Server Pool (Load-balanced API) to buffer nodes from the
+    database.
+
+To provide a robust, strictly-typed orchestration layer, we must implement the
+following entities within the PostgreSQL instance.
+
+***** 1. The Host (Node) Entity
+
+Represents the physical or virtual compute resource.
+
+Table: =hosts=
+
+- =id=: UUID (Primary Key).
+- =external_id=: TEXT (User-defined name/hostname).
+- =location_id=: INTEGER (FK to site/region table).
+- =cpu_count=: INTEGER (Total logical cores).
+- =ram_mb=: BIGINT (Total system memory).
+- =gpu_type=: TEXT (e.g., 'A100', 'None').
+- =last_rpc_time=: TIMESTAMPTZ (Last heartbeat from the Node).
+- =credit_total=: NUMERIC (Total work units successfully processed).
+
+***** 2. The Application & Versioning (App Executable)
+
+Defines the "What" – the engine being wrapped.
+
+Table: =apps=
+
+- =id=: SERIAL (PK).
+- =name=: TEXT (e.g., 'ORE_STUDIO').
+
+- Table: =app_versions=
+
+- =id=: SERIAL (PK).
+- =app_id=: INTEGER (FK).
+- =wrapper_version=: TEXT (Version of our custom wrapper).
+- =engine_version=: TEXT (Version of the third-party binary).
+- =package_uri=: TEXT (Location of the zipped Wrapper + App bundle).
+- =platform=: TEXT (e.g., 'linux_x86_64').
+
+***** 3. The Workunit (Job Template)
+
+The abstract problem definition. Does not contain results.
+
+Table: =workunits=
+
+- =id=: SERIAL (PK).
+- =batch_id=: INTEGER (FK).
+- =app_version_id=: INTEGER (FK).
+- =input_uri=: TEXT (Pointer to zipped financial data/parameters).
+- =config_uri=: TEXT (Pointer to ORE/Llama XML/JSON config).
+- =priority=: INTEGER (Higher = sooner).
+- =target_redundancy=: INTEGER (Default: 1. Set > 1 for volunteer/untrusted nodes).
+- =canonical_result_id=: INTEGER (Nullable; updated by Validator).
+
+***** 4. The Result (Execution Instance)
+
+The bridge between the DB and PGMQ.
+
+Table: =results=
+
+- =id=: SERIAL (PK).
+- =workunit_id=: INTEGER (FK).
+- =host_id=: INTEGER (FK, Nullable until dispatched).
+- =pgmq_msg_id=: BIGINT (The lease ID from PGMQ).
+- =server_state=: INTEGER (1: Inactive, 2: Unsent, 4: In Progress, 5: Done).
+- =outcome=: INTEGER (Status code: Success, Compute Error, Timeout).
+- =output_uri=: TEXT (Where the Wrapper uploaded the result zip).
+- =received_at=: TIMESTAMPTZ.
+
+***** 5. The Batch & Assimilator State
+
+Handles the finance-specific "Batch" requirement and dependencies.
+
+Table: =batches=
+
+- =id=: SERIAL (PK).
+- =external_ref=: TEXT (Link to Finance UI/Project ID).
+- =status=: TEXT (Open, Processing, Assimilating, Closed).
+
+Table: =batch_dependencies=
+
+- =parent_batch_id=: INTEGER (FK).
+- =child_batch_id=: INTEGER (FK).
+
+Table: =assimilated_data= (TimescaleDB Hypertable)
+
+- =time=: TIMESTAMPTZ (Logical time of financial observation).
+- =batch_id=: INTEGER (FK).
+- =metric_key=: TEXT (e.g., 'portfolio_var').
+- =metric_value=: NUMERIC.
+
+***** Notes
+
+- Schema must enforce that a =Result= cannot be marked 'Success' without a valid
+  =output_uri=.
+- The =batch_state= must be dynamically computable via a view or updated via
+  trigger to show % completion.
+- The =app_versions= table must support "side-by-side" versions for A/B testing
+  risk engines.
+
+**** Links
+
+- [[https://boinc.berkeley.edu/trac/wiki/DataBase][wiki: DataBase]]
+- [[https://wiki.debian.org/BOINC/ServerGuide][BOINC Debian Server Guide]]
+- [[https://boinc.berkeley.edu/trac/wiki/ProjectMain][wiki: BOINC Project Main]]
+- [[https://www.reddit.com/r/BOINC/][BOINC reddit]]
+
+*** Analysis on database name service                                  :code:
+
+Is this used? If so, the service should not be connecting to the admin database.
 
 *** External data issues                                               :code:
 
@@ -758,11 +1006,6 @@ this dataset:
 While we are trying to find a good icon theme, it should be possible to change
 the icons without having to rebuild. Ideally without having to restart, but if
 we have to restart that's not too bad.
-
-*** Add FPML export and import                                         :code:
-
-Where we can, we should start to add export and import functionality for FPML.
-This validates our modeling and catches aspects we may be missing.
 
 *** Listener error in comms service                                    :code:
 
@@ -1842,6 +2085,14 @@ We should be able to completely trash all data. We probably need a special
 permission for this but admin should be able to do it. Ideally all entity
 dialogs should have a purge action.
 
+We should also have a "purge all" button which purges all data from all tables -
+ignores roles etc. This could be available on the data librarian.
+
+*** Improve icon for methodology and dimensions                        :code:
+
+At present we have icons which are not very sensible. For methodology we could
+use something that reminds one of a laboratory.
+
 *** Clicking on connection should provide info                         :code:
 
 - when never connected: nothing.
@@ -1853,6 +2104,27 @@ dialogs should have a purge action.
 At present we need to go to the shell to bootstrap. It would be easier if we
 just had a button in Qt for this. Actually we probably need a little wizard
 which takes you through choosing an initial population etc.
+
+Some analysis on this via gemini:
+
+- we should call this "Data Provisioning". The wizard could be the data
+  provisioning wizard.
+- way to improve data setup:
+
+#+begin_quote
+Large systems often use a "Vanilla vs. Flavoured" approach:
+
+- The Vanilla Step: This is the Baseline Configuration. It is non-negotiable and
+  contains ISO codes (Currencies/Countries) and FpML schemas.
+- The Flavor Step: The user chooses a Vertical or Scenario.
+
+/"Apply Financial Services Template?"/ (Adds FpML specific catalogs).
+
+/"Apply IDES/Demo Dataset?"/ (Adds the fictional entities and trades).
+#+end_quote
+
+- "Demonstration and Evaluation": it should be possible to load up the system in
+  a way that it is ready to exercise all of it's functionality.
 
 *** Add coloured icons                                                 :code:
 

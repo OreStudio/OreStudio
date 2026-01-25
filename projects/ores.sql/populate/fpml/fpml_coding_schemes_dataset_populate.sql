@@ -31,7 +31,5 @@ select ores.upsert_dq_datasets(
     'Coding scheme metadata for FpML standards',
     current_date,
     'FpML License',
-    'coding_schemes',
-    'dq_coding_schemes_tbl',
-    'dq_populate_coding_schemes'
+    'coding_schemes'
 );

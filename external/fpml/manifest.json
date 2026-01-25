@@ -30,8 +30,6 @@
             "business_context": "Coding scheme metadata for FpML standards",
             "license": "FpML License",
             "artefact_type": "coding_schemes",
-            "target_table": "dq_coding_schemes_tbl",
-            "populate_function": "dq_populate_coding_schemes",
             "tag_code": "coding_scheme",
             "tag_description": "FpML coding scheme definitions"
         }

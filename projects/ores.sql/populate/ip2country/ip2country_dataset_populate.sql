@@ -51,8 +51,6 @@ select ores.upsert_dq_datasets(
     'Geographic IP lookup for network analysis',
     '2025-01-21'::date,
     'PDDL v1.0',
-    'ip_ranges',
-    'refdata_ip2country_tbl',
-    'dq_populate_ip2country'
+    'ip2country'
 );
 

@@ -9,7 +9,7 @@
 #   - ip2country_methodology_populate.sql
 #   - ip2country_dataset_populate.sql
 #   - ip2country_dataset_tag_populate.sql
-#   - ip2country.sql (master include)
+#   - populate_ip2country.sql (master include)
 #
 # Usage:
 #   ./generate_ip2country_refdata.sh
@@ -44,7 +44,7 @@ echo "Generation complete!"
 echo "=============================================="
 echo ""
 echo "Generated files (in projects/ores.sql/populate/ip2country/):"
-echo "  - ip2country.sql (master include)"
+echo "  - populate_ip2country.sql (master include)"
 echo "  - ip2country_catalog_populate.sql"
 echo "  - ip2country_methodology_populate.sql"
 echo "  - ip2country_dataset_populate.sql"

@@ -50,7 +50,5 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Cftc Organization Type (version 2-0)',
     '2022-11-18'::date,
     'FpML Public License 2.0',
-    'entity_classifications',
-    'refdata_entity_classifications_tbl',
-    'dq_populate_entity_classifications'
+    'entity_classifications'
 );

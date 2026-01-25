@@ -1,11 +1,11 @@
 #!/bin/bash
 #
-# Validate SQL schema against conventions defined in SKILL.org
+# Validate SQL schema conventions
 #
-# This is a thin wrapper around the codegen parser that runs validation only.
-# Usage:
-#   ./validate_schema.sh           # Print warnings
-#   ./validate_schema.sh --strict  # Exit with error if any warnings
+# Runs the ER diagram parser in validation-only mode with strict checking.
+# Exits with code 1 if any validation warnings are found.
+#
+# Usage: ./validate_schema.sh
 #
 
 set -e
@@ -14,20 +14,33 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SQL_DIR="${SCRIPT_DIR}/.."
 CODEGEN_DIR="${SCRIPT_DIR}/../../ores.codegen"
 
-# Activate the virtual environment
-VENV_PATH="$CODEGEN_DIR/venv"
-if [ ! -d "$VENV_PATH" ]; then
-    echo "Error: Virtual environment not found at $VENV_PATH"
-    echo "Please set up the codegen venv first."
+# Check for Python
+if ! command -v python3 &> /dev/null; then
+    echo "Error: python3 is required but not installed"
     exit 1
 fi
 
-source "$VENV_PATH/bin/activate"
+# Set up virtual environment if needed
+VENV_PATH="$CODEGEN_DIR/venv"
+if [ ! -d "$VENV_PATH" ]; then
+    echo "Setting up virtual environment..."
+    python3 -m venv "$VENV_PATH"
+    source "$VENV_PATH/bin/activate"
+    pip install --quiet pystache
+else
+    source "$VENV_PATH/bin/activate"
+fi
 
-# Run parser in validate-only mode
-python "${CODEGEN_DIR}/src/plantuml_er_parse_sql.py" \
+echo "=== SQL Schema Validation ==="
+echo ""
+
+# Run validation in strict mode
+python3 "${CODEGEN_DIR}/src/plantuml_er_parse_sql.py" \
     --create-dir "${SQL_DIR}/create" \
     --drop-dir "${SQL_DIR}/drop" \
+    --ignore-file "${SCRIPT_DIR}/validation_ignore.txt" \
     --validate-only \
-    --warn \
-    "$@"
+    --strict
+
+echo ""
+echo "=== Validation Passed ==="

@@ -48,6 +48,9 @@
 \ir ./dq_methodology_create.sql
 \ir ./dq_methodologies_notify_trigger_create.sql
 
+-- Artefact Types (must precede datasets for FK validation)
+\ir ./dq_artefact_types_create.sql
+
 -- Datasets
 \ir ./dq_dataset_create.sql
 \ir ./dq_datasets_notify_trigger_create.sql

@@ -2471,18 +2471,6 @@ possibly different:
 
 
 
-*** Base the compute approach on BOINC                                 :code:
-
-Copy the BOINC data model.
-
-Links:
-
-- [[https://boinc.berkeley.edu/trac/wiki/DataBase][wiki: DataBase]]
-- [[https://wiki.debian.org/BOINC/ServerGuide][BOINC Debian Server Guide]]
-- [[https://boinc.berkeley.edu/trac/wiki/ProjectMain][wiki: BOINC Project Main]]
-- [[https://www.reddit.com/r/BOINC/][BOINC reddit]]
-
-
 * Footer
 
 | Previous: [[id:E5635EAC-CCE9-C0A4-A00B-C1780FF4A88E][Agile]] |

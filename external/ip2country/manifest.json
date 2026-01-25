@@ -31,9 +31,7 @@
             "business_context": "Geographic IP lookup for network analysis",
             "as_of_date": "2025-01-21",
             "license": "PDDL v1.0",
-            "artefact_type": "ip_ranges",
-            "target_table": "refdata_ip2country_tbl",
-            "populate_function": "dq_populate_ip2country",
+            "artefact_type": "ip2country",
             "tag_code": "geolocation",
             "tag_description": "IP address geolocation data"
         }

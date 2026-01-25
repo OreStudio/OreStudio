@@ -81,7 +81,7 @@ echo ""
 echo "Generated files:"
 echo "  - crypto_methodology_populate.sql"
 echo "  - crypto_dataset_populate.sql"
-echo "  - crypto.sql (master include)"
+echo "  - populate_crypto.sql (master include)"
 if [ "$SKIP_IMAGES" = false ]; then
     echo "  - crypto_images_artefact_populate.sql"
 fi

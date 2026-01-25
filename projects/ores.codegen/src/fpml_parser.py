@@ -159,6 +159,7 @@ NON_ISO_CURRENCY_ENRICHMENT = {
 # These entities have their artefact data stored in existing tables with richer schemas
 ENTITIES_WITH_SHARED_TABLES = {
     'non-iso-currencies': {
+        'artefact_type': 'currencies',
         'artefact_table': 'dq_currencies_artefact_tbl',
         'production_table': 'refdata_currencies_tbl',
         'populate_function': 'dq_populate_currencies',
@@ -384,6 +385,7 @@ class MergedEntity:
             if is_non_iso_currency:
                 dataset_entry["uses_shared_currency_table"] = True
                 dataset_entry["shared_table_config"] = {
+                    "artefact_type": "currencies",
                     "artefact_table": "dq_currencies_artefact_tbl",
                     "production_table": "refdata_currencies_tbl",
                     "populate_function": "dq_populate_currencies",
@@ -767,8 +769,6 @@ def generate_coding_schemes_dataset_sql(manifest: dict, output_path: Path):
         business_context = dataset['business_context'].replace("'", "''")
         license_info = dataset['license'].replace("'", "''")
         artefact_type = dataset['artefact_type']
-        target_table = dataset['target_table']
-        populate_function = dataset['populate_function']
 
         lines.append(f"-- {name}")
         lines.append("select ores.upsert_dq_datasets(")
@@ -787,9 +787,7 @@ def generate_coding_schemes_dataset_sql(manifest: dict, output_path: Path):
         lines.append(f"    '{business_context}',")
         lines.append("    current_date,")  # p_as_of_date
         lines.append(f"    '{license_info}',")
-        lines.append(f"    '{artefact_type}',")
-        lines.append(f"    '{target_table}',")
-        lines.append(f"    '{populate_function}'")
+        lines.append(f"    '{artefact_type}'")
         lines.append(");")
         lines.append("")
 
@@ -837,7 +835,7 @@ def generate_dataset_dependency_sql(manifest: dict, output_path: Path):
 
 
 def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files: list[str]):
-    """Generate fpml.sql master include file with all FPML files in correct order."""
+    """Generate populate_fpml.sql master include file with all FPML files in correct order."""
     lines = [
         "/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-",
         " *",
@@ -913,7 +911,7 @@ def generate_fpml_sql(output_dir: Path, dataset_files: list[str], artefact_files
 
     lines.append("")
 
-    output_path = output_dir / "fpml.sql"
+    output_path = output_dir / "populate_fpml.sql"
     output_path.write_text('\n'.join(lines))
     print(f"Generated: {output_path}")
 

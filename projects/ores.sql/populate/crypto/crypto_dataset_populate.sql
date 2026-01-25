@@ -51,9 +51,7 @@ select ores.upsert_dq_datasets(
     'Visual assets for cryptocurrency displays',
     '2024-01-15'::date,
     'MIT License',
-    'cryptocurrency_icons',
-    'refdata_images_tbl',
-    'dq_populate_images'
+    'images'
 );
 
 -- Cryptocurrencies Large
@@ -73,9 +71,7 @@ select ores.upsert_dq_datasets(
     'Full cryptocurrency reference data (~12K coins)',
     '2026-01-20'::date,
     'Public Domain',
-    'cryptocurrencies_large',
-    'refdata_currencies_tbl',
-    'dq_populate_currencies'
+    'currencies'
 );
 
 -- Cryptocurrencies Small
@@ -95,8 +91,6 @@ select ores.upsert_dq_datasets(
     'Top 100 cryptocurrency reference data by market cap',
     '2026-01-20'::date,
     'Public Domain',
-    'cryptocurrencies_small',
-    'refdata_currencies_tbl',
-    'dq_populate_currencies'
+    'currencies'
 );
 

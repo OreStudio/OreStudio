@@ -50,7 +50,5 @@ select ores.upsert_dq_datasets(
     'Reference data for FpML Local Jurisdiction (version 1-1)',
     '2013-01-15'::date,
     'FpML Public License 2.0',
-    'local_jurisdictions',
-    'refdata_local_jurisdictions_tbl',
-    'dq_populate_local_jurisdictions'
+    'local_jurisdictions'
 );

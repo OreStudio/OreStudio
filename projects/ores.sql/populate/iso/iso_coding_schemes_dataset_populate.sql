@@ -50,8 +50,6 @@ select ores.upsert_dq_datasets(
     'Coding scheme metadata for ISO standards',
     current_date,
     'CC BY-SA 3.0',
-    'coding_schemes',
-    'dq_coding_schemes_tbl',
-    'dq_populate_coding_schemes'
+    'coding_schemes'
 );
 

@@ -51,8 +51,6 @@ select ores.upsert_dq_datasets(
     'Visual assets for countries',
     '2024-12-29'::date,
     'MIT License',
-    'images',
-    'refdata_images_tbl',
-    'dq_populate_images'
+    'images'
 );
 

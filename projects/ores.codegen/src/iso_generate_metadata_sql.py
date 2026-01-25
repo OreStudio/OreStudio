@@ -275,8 +275,6 @@ set schema 'ores';
             business_context = escape_sql_string(dataset['business_context'])
             license_info = escape_sql_string(dataset['license'])
             artefact_type = dataset['artefact_type']
-            target_table = dataset['target_table']
-            populate_function = dataset['populate_function']
 
             f.write(f"""-- {name}
 select ores.upsert_dq_datasets(
@@ -295,9 +293,7 @@ select ores.upsert_dq_datasets(
     '{business_context}',
     current_date,
     '{license_info}',
-    '{artefact_type}',
-    '{target_table}',
-    '{populate_function}'
+    '{artefact_type}'
 );
 
 """)
@@ -348,8 +344,6 @@ set schema 'ores';
             business_context = escape_sql_string(dataset['business_context'])
             license_info = escape_sql_string(dataset['license'])
             artefact_type = dataset['artefact_type']
-            target_table = dataset['target_table']
-            populate_function = dataset['populate_function']
 
             f.write(f"""-- {name}
 select ores.upsert_dq_datasets(
@@ -368,9 +362,7 @@ select ores.upsert_dq_datasets(
     '{business_context}',
     current_date,
     '{license_info}',
-    '{artefact_type}',
-    '{target_table}',
-    '{populate_function}'
+    '{artefact_type}'
 );
 
 """)

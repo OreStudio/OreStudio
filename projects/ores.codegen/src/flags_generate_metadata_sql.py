@@ -6,7 +6,7 @@ Reads the manifest.json and methodology.txt from external/flags/ and generates:
   - flags_methodology_populate.sql
   - flags_dataset_populate.sql
   - flags_dataset_tag_populate.sql
-  - flags.sql (master include file)
+  - populate_flags.sql (master include file)
 
 Usage:
     python3 flags_generate_metadata_sql.py
@@ -189,8 +189,6 @@ set schema 'ores';
             as_of_date = dataset['as_of_date']
             license_info = escape_sql_string(dataset['license'])
             artefact_type = dataset['artefact_type']
-            target_table = dataset['target_table']
-            populate_function = dataset['populate_function']
 
             code = dataset['code']
 
@@ -211,9 +209,7 @@ select ores.upsert_dq_datasets(
     '{business_context}',
     '{as_of_date}'::date,
     '{license_info}',
-    '{artefact_type}',
-    '{target_table}',
-    '{populate_function}'
+    '{artefact_type}'
 );
 
 """)
@@ -322,7 +318,7 @@ set schema 'ores';
 
 
 def generate_master_sql(output_file: Path):
-    """Generate the flags.sql master include file."""
+    """Generate the populate_flags.sql master include file."""
     print(f"Generating {output_file.name}...")
 
     with open(output_file, 'w', encoding='utf-8') as f:
@@ -440,7 +436,7 @@ def main():
     generate_dataset_sql(manifest, output_dir / 'flags_dataset_populate.sql')
     generate_dataset_tag_sql(manifest, output_dir / 'flags_dataset_tag_populate.sql')
     generate_dataset_dependency_sql(manifest, output_dir / 'flags_dataset_dependency_populate.sql')
-    generate_master_sql(output_dir / 'flags.sql')
+    generate_master_sql(output_dir / 'populate_flags.sql')
 
     print()
     print("Generation complete!")

@@ -159,6 +159,7 @@ NON_ISO_CURRENCY_ENRICHMENT = {
 # These entities have their artefact data stored in existing tables with richer schemas
 ENTITIES_WITH_SHARED_TABLES = {
     'non-iso-currencies': {
+        'artefact_type': 'currencies',
         'artefact_table': 'dq_currencies_artefact_tbl',
         'production_table': 'refdata_currencies_tbl',
         'populate_function': 'dq_populate_currencies',
@@ -384,6 +385,7 @@ class MergedEntity:
             if is_non_iso_currency:
                 dataset_entry["uses_shared_currency_table"] = True
                 dataset_entry["shared_table_config"] = {
+                    "artefact_type": "currencies",
                     "artefact_table": "dq_currencies_artefact_tbl",
                     "production_table": "refdata_currencies_tbl",
                     "populate_function": "dq_populate_currencies",

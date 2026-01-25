@@ -62,8 +62,6 @@
             "business_context": "Coding scheme metadata for ISO standards",
             "license": "CC BY-SA 3.0",
             "artefact_type": "coding_schemes",
-            "target_table": "dq_coding_schemes_tbl",
-            "populate_function": "dq_populate_coding_schemes",
             "tag_code": "coding_scheme",
             "tag_description": "ISO coding scheme definitions"
         },
@@ -80,8 +78,6 @@
             "business_context": "Reference data for country codes",
             "license": "CC BY-SA 3.0",
             "artefact_type": "countries",
-            "target_table": "refdata_countries_tbl",
-            "populate_function": "dq_populate_countries",
             "tag_code": "country",
             "tag_description": "Country reference data"
         },
@@ -98,8 +94,6 @@
             "business_context": "Reference data for currency codes",
             "license": "CC BY-SA 3.0",
             "artefact_type": "currencies",
-            "target_table": "refdata_currencies_tbl",
-            "populate_function": "dq_populate_currencies",
             "tag_code": "currency",
             "tag_description": "Currency reference data"
         }

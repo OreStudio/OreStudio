@@ -33,5 +33,5 @@ select ores.upsert_dq_datasets(
     'Reference data for {{dataset.name}} (version {{dataset.source_version}})',
     {{#dataset.publication_date}}'{{dataset.publication_date}}'::date{{/dataset.publication_date}}{{^dataset.publication_date}}current_date{{/dataset.publication_date}},
     'FpML Public License 2.0',
-    '{{entity.entity_plural}}'
+    {{#shared_table_config}}'{{shared_table_config.artefact_type}}'{{/shared_table_config}}{{^shared_table_config}}'{{entity.entity_plural}}'{{/shared_table_config}}
 );

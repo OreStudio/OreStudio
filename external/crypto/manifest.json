@@ -38,9 +38,7 @@
             "business_context": "Visual assets for cryptocurrency displays",
             "as_of_date": "2024-01-15",
             "license": "MIT License",
-            "artefact_type": "cryptocurrency_icons",
-            "target_table": "refdata_images_tbl",
-            "populate_function": "dq_populate_images",
+            "artefact_type": "images",
             "tag_code": "cryptocurrency",
             "tag_description": "Cryptocurrency icon images"
         },
@@ -57,9 +55,7 @@
             "business_context": "Full cryptocurrency reference data (~12K coins)",
             "as_of_date": "2026-01-20",
             "license": "Public Domain",
-            "artefact_type": "cryptocurrencies_large",
-            "target_table": "refdata_currencies_tbl",
-            "populate_function": "dq_populate_currencies",
+            "artefact_type": "currencies",
             "tag_code": "cryptocurrency",
             "tag_description": "Cryptocurrency reference data (~12K coins)",
             "dependencies": [
@@ -79,9 +75,7 @@
             "business_context": "Top 100 cryptocurrency reference data by market cap",
             "as_of_date": "2026-01-20",
             "license": "Public Domain",
-            "artefact_type": "cryptocurrencies_small",
-            "target_table": "refdata_currencies_tbl",
-            "populate_function": "dq_populate_currencies",
+            "artefact_type": "currencies",
             "tag_code": "cryptocurrency",
             "tag_description": "Top 100 cryptocurrencies by market cap",
             "dependencies": [

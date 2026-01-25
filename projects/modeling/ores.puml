@@ -253,6 +253,20 @@ package "Domain Layer" #F2F2F2 {
     Provides centralized metadata management for data quality across all domains.
     Organized into: domain, repository, service, messaging, eventing, generators namespaces.
     end note
+
+    component [ores.fpml] as fpml #F7E5FF
+
+    note right of fpml
+    Financial Products Markup Language (FPML) processing infrastructure:
+    - Schema Support: Full support for industry-standard FPML schemas and validation
+    - Trade Representation: Domain types for representing complex financial instruments and trades
+    - Serialization: Robust serialization/deserialization of FPML documents
+    - Validation: Comprehensive validation against FPML schemas and business rules
+    - Integration: Seamless integration with ORE Studio's risk analytics and pricing engines
+    - Extensibility: Support for custom extensions and proprietary fields
+    Provides comprehensive support for parsing, validating, and processing Financial Products Markup Language documents.
+    Organized into: domain, service, repository, messaging, generators namespaces.
+    end note
 }
 
 ' Application Layer
@@ -395,6 +409,11 @@ dq --> database
 dq --> utility
 dq --> comms
 dq --> iam
+
+fpml --> variability
+fpml --> database
+fpml --> telemetry
+fpml --> platform
 
 ' Dependencies - Shell to Foundation/Domain/Infrastructure
 shell --> telemetry

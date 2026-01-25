@@ -77,6 +77,7 @@ The system is organised into four architectural layers:
 
 - [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]]: ORE domain model with XML/CSV/JSON I/O and temporal versioning.
 - [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]]: User authentication, authorisation, and session management.
+- [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]]: Financial Products Markup Language (FPML) processing infrastructure for handling derivatives and securities trade representations.
 - Depends on: Foundation, Infrastructure
 
 ** Application Layer

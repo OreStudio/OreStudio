@@ -1,0 +1,36 @@
+:PROPERTIES:
+:ID: 7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B
+:END:
+#+title: ORE Studio FPML Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Financial Products Markup Language (FPML) processing infrastructure for handling derivatives and securities trade representations in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+* About FPML
+
+Financial Products Markup Language (FPML) is a comprehensive XML-based schema
+for representing financial instruments and processes. Originally developed by
+the International Swaps and Derivatives Association (ISDA) and other industry
+participants, FPML serves as a standard for pre-trade, trade, and post-trade
+electronic commerce in the global OTC derivatives markets. The language enables
+consistent representation of complex financial instruments including interest
+rate swaps, credit derivatives, equity derivatives, foreign exchange
+derivatives, and commodity derivatives. FPML facilitates straight-through
+processing (STP), reduces operational risk, and improves efficiency in trade
+processing by providing a common language for communication between market
+participants.
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio FPML Component Diagram
+[[file:ores.fpml.png][file:ores.fpml.png]]
+
+Provides comprehensive support for parsing, validating, and processing Financial
+Products Markup Language (FPML) documents.
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

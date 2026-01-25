@@ -23,12 +23,16 @@
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.testing/project_root.hpp"
 
 namespace {
 
 const std::string_view test_suite("ores.ore.tests");
-const std::string test_data_dir = "../test_data/currencies/";
 const std::string tags("[ore][xml]");
+
+std::filesystem::path ore_path(const std::string& relative) {
+    return ores::testing::project_root::resolve("external/ore/" + relative);
+}
 
 }
 
@@ -79,7 +83,7 @@ TEST_CASE("read_currency_config_from_simple_xml", tags) {
 TEST_CASE("read_currency_config_from_currencies_xml", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto f = std::filesystem::path(test_data_dir + "currencies.xml");
+    const auto f = ore_path("examples/Input/currencies.xml");
     BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
     using ores::platform::filesystem::file;
@@ -114,15 +118,14 @@ TEST_CASE("read_currency_config_from_currencies_xml", tags) {
     CHECK(last.RoundingType == "Closest");
     CHECK(last.RoundingPrecision == 2);
 
-    REQUIRE(first.CurrencyType);
+    REQUIRE(last.CurrencyType);
     CHECK(last.CurrencyType.value() == "Crypto");
 }
 
-TEST_CASE("read_currency_config_from_currencies_01_xml", tags) {
+TEST_CASE("read_currency_config_from_example_1", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto f =
-        std::filesystem::path(test_data_dir + "currencies_01.xml");
+    const auto f = ore_path("examples/Legacy/Example_1/Input/currencies.xml");
     BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
     using ores::platform::filesystem::file;
@@ -145,16 +148,14 @@ TEST_CASE("read_currency_config_from_currencies_01_xml", tags) {
     CHECK(first.FractionsPerUnit == 100);
     CHECK(first.RoundingType == "Closest");
     CHECK(first.RoundingPrecision == 2);
-    CHECK(first.Format == "%3% %1$.2f");
 
     REQUIRE(!first.CurrencyType);
 }
 
-TEST_CASE("read_currency_config_from_currencies_41_xml", tags) {
+TEST_CASE("read_currency_config_from_example_41", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto f =
-        std::filesystem::path(test_data_dir + "currencies_41.xml");
+    const auto f = ore_path("examples/Legacy/Example_41/Input/currencies.xml");
     BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
     using ores::platform::filesystem::file;
@@ -167,11 +168,10 @@ TEST_CASE("read_currency_config_from_currencies_41_xml", tags) {
     BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 }
 
-TEST_CASE("read_currency_config_from_currencies_42_xml", tags) {
+TEST_CASE("read_currency_config_from_example_62", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto f =
-        std::filesystem::path(test_data_dir + "currencies_42.xml");
+    const auto f = ore_path("examples/Legacy/Example_62/Input/currencies.xml");
     BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
     using ores::platform::filesystem::file;
@@ -184,28 +184,10 @@ TEST_CASE("read_currency_config_from_currencies_42_xml", tags) {
     BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 }
 
-TEST_CASE("read_currency_config_from_currencies_62_xml", tags) {
+TEST_CASE("read_currency_config_from_ore_api", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto f =
-        std::filesystem::path(test_data_dir + "currencies_62.xml");
-    BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
-
-    using ores::platform::filesystem::file;
-    const std::string content = file::read_content(f);
-
-    BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
-    const auto ccy_cfg = CurrencyConfig::from_xml(content);
-    REQUIRE(!ccy_cfg.Currency.empty());
-    REQUIRE(ccy_cfg.Currency.size() == 2);
-    BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
-}
-
-TEST_CASE("read_currency_config_from_currencies_API_xml", tags) {
-    auto lg(make_logger(test_suite));
-
-    const auto f =
-        std::filesystem::path(test_data_dir + "currencies_API.xml");
+    const auto f = ore_path("examples/ORE-API/Input/currencies.xml");
     BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
 
     using ores::platform::filesystem::file;

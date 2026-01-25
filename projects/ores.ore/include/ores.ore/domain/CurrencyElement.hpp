@@ -38,7 +38,7 @@ struct CurrencyElement {
     int FractionsPerUnit;
     std::string RoundingType;
     int RoundingPrecision;
-    std::string Format;
+    std::optional<std::string> Format;
     std::optional<std::string> CurrencyType;
 };
 

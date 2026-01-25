@@ -37,7 +37,7 @@ refdata::domain::currency currency_mapper::map(const CurrencyElement& v) {
     r.fractions_per_unit = v.FractionsPerUnit;
     r.rounding_type = v.RoundingType;
     r.rounding_precision = v.RoundingPrecision;
-    r.format = v.Format;
+    r.format = v.Format ? *v.Format : "";
     r.currency_type = v.CurrencyType ? *v.CurrencyType : "";
     r.recorded_by = "ores";
     r.change_reason_code = "system.import";

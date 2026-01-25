@@ -26,7 +26,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
-#include "ores.refdata/orexml/importer.hpp"
+#include "ores.ore/xml/importer.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -54,7 +54,7 @@ ImportCurrencyDialog::ImportCurrencyDialog(
     // Validate all currencies using shared validation
     validation_errors_.reserve(currencies.size());
     for (const auto& currency : currencies) {
-        validation_errors_.push_back(refdata::orexml::importer::validate_currency(currency));
+        validation_errors_.push_back(ore::xml::importer::validate_currency(currency));
     }
 
     setupUI();

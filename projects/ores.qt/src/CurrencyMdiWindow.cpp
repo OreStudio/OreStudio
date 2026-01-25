@@ -52,8 +52,8 @@
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.refdata/csv/exporter.hpp"
-#include "ores.refdata/orexml/exporter.hpp"
-#include "ores.refdata/orexml/importer.hpp"
+#include "ores.ore/xml/exporter.hpp"
+#include "ores.ore/xml/importer.hpp"
 #include "ores.refdata/generators/currency_generator.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
@@ -671,7 +671,7 @@ void CurrencyMdiWindow::importFromXML() {
 
     try {
         // Parse the XML file using the existing importer
-        using refdata::orexml::importer;
+        using ore::xml::importer;
         std::filesystem::path path(fileName.toStdString());
         auto currencies = importer::import_currency_config(path);
 
@@ -762,7 +762,7 @@ void CurrencyMdiWindow::exportToXML() {
     }
 
     try {
-        using refdata::orexml::exporter;
+        using ore::xml::exporter;
         std::string xmlData = exporter::export_currency_config(currencies);
 
         QFile file(fileName);

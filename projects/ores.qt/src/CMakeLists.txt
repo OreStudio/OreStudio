@@ -31,6 +31,7 @@ file(GLOB RESOURCES "${ORES_QT_DIR}/resources/*.qrc")
 qt_add_executable(${exe_binary_name} ${SOURCES} ${HEADERS} ${FORMS} ${RESOURCES})
 
 target_link_libraries(${exe_binary_name} PRIVATE
+    ores.ore.lib
     ores.refdata.lib
     ores.comms.lib
     ores.dq.lib

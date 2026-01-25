@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,18 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata/orexml/importer.hpp"
+#include "ores.ore/xml/importer.hpp"
 
 #include <sstream>
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep. Must be before rfl/json.hpp
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "ores.refdata/orexml/CurrencyConfig.hpp"
-#include "ores.refdata/orexml/currency_mapper.hpp"
+#include "ores.ore/domain/CurrencyConfig.hpp"
+#include "ores.ore/domain/currency_mapper.hpp"
 
-namespace ores::refdata::orexml {
+namespace ores::ore::xml {
 
-using domain::currency;
+using refdata::domain::currency;
 using namespace ores::logging;
 
 std::string importer::validate_currency(const currency& c) {
@@ -67,8 +67,8 @@ importer::import_currency_config(const std::filesystem::path& path) {
     const std::string c(file::read_content(path));
     BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
 
-    CurrencyConfig ccy_cfg = CurrencyConfig::from_xml(c);
-    const auto r = currency_mapper::map(ccy_cfg);
+    domain::CurrencyConfig ccy_cfg = domain::CurrencyConfig::from_xml(c);
+    const auto r = domain::currency_mapper::map(ccy_cfg);
 
     BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size()
                                << " currencies. Result: " << r;

@@ -20,13 +20,11 @@
 #define ORES_REFDATA_HPP
 
 /**
- * @brief Reference data domain model for Open Risk Engine (ORE) types.
+ * @brief Reference data domain model.
  *
- * Implements the core reference data domain model following ORE (Open Source
- * Risk Engine) specifications. Key features:
+ * Implements the core reference data domain model. Key features:
  *
  * - Domain model: Currency entities with temporal versioning
- * - ORE XML support: Import/export to native ORE XML format using pugixml
  * - CSV export: Structured CSV output for currencies
  * - JSON I/O: Serialization using reflection (rfl library)
  * - Table I/O: Formatted table output using fort library
@@ -36,8 +34,8 @@
  * - Version history: Track all changes to entities with valid_from/valid_to fields
  *
  * The module is organized into namespaces: domain (core entities), repository
- * (ORM and persistence), orexml (ORE XML I/O), csv (CSV export), messaging
- * (API handlers), and generators (test data).
+ * (ORM and persistence), csv (CSV export), messaging (API handlers), and
+ * generators (test data).
  */
 namespace ores::refdata {}
 

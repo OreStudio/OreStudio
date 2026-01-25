@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata/orexml/CurrencyConfig.hpp"
+#include "ores.ore/domain/CurrencyConfig.hpp"
 
 #include <filesystem>
 #include <catch2/catch_test_macros.hpp>
@@ -26,13 +26,13 @@
 
 namespace {
 
-const std::string_view test_suite("ores.refdata.tests");
+const std::string_view test_suite("ores.ore.tests");
 const std::string test_data_dir = "../test_data/currencies/";
-const std::string tags("[orexml]");
+const std::string tags("[ore][xml]");
 
 }
 
-using ores::refdata::orexml::CurrencyConfig;
+using ores::ore::domain::CurrencyConfig;
 using namespace ores::logging;
 
 TEST_CASE("read_currency_config_from_simple_xml", tags) {

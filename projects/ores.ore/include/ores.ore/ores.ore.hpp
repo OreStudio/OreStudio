@@ -20,13 +20,12 @@
 #define ORES_ORE_HPP
 
 /**
- * @brief Brief description of the ORE (Open Source Risk Engine) component's purpose.
+ * @brief ORE (Open Source Risk Engine) component.
  *
- * More detailed description of the component's features and responsibilities.
- * Include information about:
- * - Main features and capabilities
- * - Key dependencies or relationships with other components
- * - Organization of sub-namespaces (domain, service, repository, etc.)
+ * Provides integration with the ORE project through:
+ * - Domain types for ORE XML configuration (CurrencyConfig, CurrencyElement)
+ * - XML import/export functionality for currency data
+ * - Mappers to convert between ORE and internal domain types
  */
 namespace ores::ore {}
 

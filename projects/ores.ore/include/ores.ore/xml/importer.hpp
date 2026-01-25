@@ -18,22 +18,22 @@
  * MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_OREXML_IMPORTER_HPP
-#define ORES_REFDATA_OREXML_IMPORTER_HPP
+#ifndef ORES_ORE_XML_IMPORTER_HPP
+#define ORES_ORE_XML_IMPORTER_HPP
 
 #include <vector>
 #include <filesystem>
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/currency.hpp"
 
-namespace ores::refdata::orexml {
+namespace ores::ore::xml {
 
 /**
  * @brief Imports domain objects from their ORE XML representation.
  */
 class importer {
 private:
-    inline static std::string_view logger_name = "ores.refdata.orexml.importer";
+    inline static std::string_view logger_name = "ores.ore.xml.importer";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -51,9 +51,9 @@ public:
      * @param currency Currency to validate
      * @return Empty string if valid, otherwise error message describing issues
      */
-    static std::string validate_currency(const domain::currency& currency);
+    static std::string validate_currency(const refdata::domain::currency& currency);
 
-    static std::vector<domain::currency>
+    static std::vector<refdata::domain::currency>
     import_currency_config(const std::filesystem::path& path);
 };
 

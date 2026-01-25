@@ -17,18 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata/orexml/currency_mapper.hpp"
+#include "ores.ore/domain/currency_mapper.hpp"
 
 #include "ores.refdata/domain/currency_json_io.hpp" // IWYU pragma: keep.
 
-namespace ores::refdata::orexml {
+namespace ores::ore::domain {
 
 using namespace ores::logging;
 
-domain::currency currency_mapper::map(const CurrencyElement& v) {
+refdata::domain::currency currency_mapper::map(const CurrencyElement& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping ORE XML entity: " << v;
 
-    domain::currency r;
+    refdata::domain::currency r;
     r.iso_code = v.ISOCode;
     r.name = v.Name;
     r.numeric_code = v.NumericCode;
@@ -47,7 +47,7 @@ domain::currency currency_mapper::map(const CurrencyElement& v) {
     return r;
 }
 
-CurrencyElement currency_mapper::map(const domain::currency& v) {
+CurrencyElement currency_mapper::map(const refdata::domain::currency& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     CurrencyElement r;
@@ -66,11 +66,11 @@ CurrencyElement currency_mapper::map(const domain::currency& v) {
     return r;
 }
 
-std::vector<domain::currency> currency_mapper::map(const CurrencyConfig& v) {
+std::vector<refdata::domain::currency> currency_mapper::map(const CurrencyConfig& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping ORE XML entities. Total: "
                              << v.Currency.size();
 
-    std::vector<domain::currency> r;
+    std::vector<refdata::domain::currency> r;
     r.reserve(v.Currency.size());
     std::ranges::transform(v.Currency, std::back_inserter(r),
         [](const auto& ve) { return map(ve); });
@@ -78,7 +78,7 @@ std::vector<domain::currency> currency_mapper::map(const CurrencyConfig& v) {
     return r;
 }
 
-CurrencyConfig currency_mapper::map(const std::vector<domain::currency>& v) {
+CurrencyConfig currency_mapper::map(const std::vector<refdata::domain::currency>& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entities. Total: " << v.size();
 
     CurrencyConfig r;

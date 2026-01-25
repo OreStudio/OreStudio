@@ -9,22 +9,35 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_OREXML_HPP
-#define ORES_REFDATA_OREXML_HPP
+#ifndef ORES_ORE_DOMAIN_CURRENCY_CONFIG_HPP
+#define ORES_ORE_DOMAIN_CURRENCY_CONFIG_HPP
+
+#include <vector>
+#include <ostream>
+#include "ores.ore/domain/CurrencyElement.hpp"
+
+namespace ores::ore::domain {
 
 /**
- * @brief ORE XML import/export functionality.
- *
- * Contains readers and writers for the native Open Source Risk Engine (ORE)
- * XML format using pugixml. Enables data exchange with ORE tools.
+ * @brief Represents a set of currencies in ORE XML format.
  */
-namespace ores::refdata::orexml {}
+struct CurrencyConfig {
+    std::vector<CurrencyElement> Currency;
+
+    static std::string to_xml(const CurrencyConfig& v);
+    static CurrencyConfig from_xml(const std::string& xml);
+};
+
+std::ostream& operator<<(std::ostream& s, const CurrencyConfig& v);
+
+}
 
 #endif

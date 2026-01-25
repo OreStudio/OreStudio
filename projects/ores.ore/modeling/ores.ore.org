@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 9a71f1f5-c3ed-4c07-9d7d-c5b42d4a1332
+:END:
+#+title: ORE Studio ORE Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Brief description paragraph for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]].
+
+,* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Description
+#+caption: ORE Studio ORE Component Diagram
+[[file:ores.ore.png][file:ores.ore.png]]
+
+This module provides ORE (Open Source Risk Engine) specific functionality, mainly importing and exporting capabilities. Key features include:
+
+- ORE import/export: Functions to import from and export to ORE formats
+- Format conversion: Converting between ORE-specific formats and internal representations
+- Message-based API: asynchronous request/response handlers (subsystem range =0xNNNN-0xNNNN=)
+- Temporal database support: version tracking with =valid_from= and =valid_to= fields
+- Synthetic data generation: test data generation for development
+
+The module is organized into namespaces: domain (core entities), repository ([[https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping][ORM]] and persistence), service (business logic), messaging (API handlers), and generators (test data).
+
+,* Domain Types
+
+| Type       | Description                    |
+|------------+--------------------------------|
+| =ore_data= | Representation of ORE data     |
+| =import_result= | Result of import operations  |
+
+,* Database Tables
+
+| Table      | Type     | Description                    |
+|------------+----------+--------------------------------|
+| =ore_data_table= | Temporal | Stores ORE data with historical tracking |
+
+All temporal tables use bitemporal fields (=valid_from=, =valid_to=) for historical tracking.
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

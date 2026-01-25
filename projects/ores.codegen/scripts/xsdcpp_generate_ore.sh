@@ -69,6 +69,7 @@ xsdcpp "$XSD_FULL_PATH" \
     "--header-output=$HEADER_OUTPUT" \
     "--cpp-output=$CPP_OUTPUT" \
     "--wrap-namespace=$NAMESPACE" \
+    "--include-prefix=${PROJECT}/${NAME}" \
     "--name=$NAME"
 
 echo ""

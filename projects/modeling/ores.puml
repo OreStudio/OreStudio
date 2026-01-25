@@ -213,16 +213,15 @@ package "Domain Layer" #F2F2F2 {
     component [ores.refdata] as refdata #F7E5FF
 
     note right of refdata
-    Core domain model for Open Risk Engine (ORE) types following ORE specifications:
-    - Domain: Currency entities with temporal versioning (valid_from/valid_to)
-    - ORE XML: Import/export to native ORE format using pugixml
+    Reference data domain model for currencies, countries, and other entities:
+    - Domain: Currency/country entities with temporal versioning (valid_from/valid_to)
     - CSV Export: Structured CSV output for currencies
     - JSON I/O: Serialization using reflection (rfl library)
     - Table I/O: Formatted table output using fort library
     - Persistence: ORM entities, mappers, and repositories with temporal support
-    - Message API: Request/response handlers for currency operations (0x3000-0x3FFF)
+    - Message API: Request/response handlers for currency/country operations (0x3000-0x3FFF)
     - Test Data: Synthetic data generation using faker-cxx
-    Organized into: domain, repository, orexml, csv, messaging, generators namespaces.
+    Organized into: domain, repository, csv, service, messaging, generators namespaces.
     end note
 
     component [ores.iam] as iam #F7E5FF
@@ -243,14 +242,14 @@ package "Domain Layer" #F2F2F2 {
     component [ores.ore] as ore #F7E5FF
 
     note right of ore
-    ORE (Open Source Risk Engine) specific code, mainly importing and exporting capabilities:
-    - ORE Import/Export: Functions to import from and export to ORE formats
-    - Format Conversion: Converting between ORE-specific formats and internal representations
-    - ORE Domain Model: Core types and structures specific to ORE operations
-    - Temporal Support: Version tracking with valid_from/valid_to fields
-    - Message API: Request/response handlers for ORE operations
-    Provides specialized functionality for working with ORE-specific data formats.
-    Organized into: domain, repository, orexml, csv, messaging, generators namespaces.
+    ORE (Open Source Risk Engine) specific functionality for XML import/export:
+    - ORE XML Import: Parse currency configuration from ORE XML format
+    - ORE XML Export: Generate ORE-format XML from internal domain objects
+    - Format Conversion: Map between ORE XML structures and refdata domain types
+    - Validation: Validate imported data against ORE XSD schema requirements
+    - Domain Types: CurrencyConfig, CurrencyElement for ORE XML representation
+    Uses rfl (reflect-cpp) for XML serialization/deserialization.
+    Organized into: domain (ORE XML types, mappers), xml (importer, exporter) namespaces.
     end note
 
     component [ores.dq] as dq #F7E5FF
@@ -418,15 +417,13 @@ iam --> database
 iam --> geo
 iam --> security
 ore --> refdata
-ore --> log
-ore --> platform
+ore --> telemetry
 dq --> eventing
 dq --> database
 dq --> utility
 dq --> comms
 dq --> iam
 
-fpml --> log
 fpml --> telemetry
 fpml --> platform
 
@@ -445,6 +442,7 @@ cli --> variability
 cli --> iam
 cli --> dq
 cli --> refdata
+cli --> ore
 cli --> comms
 cli --> database
 cli --> security
@@ -453,6 +451,7 @@ cli --> utility
 qt --> telemetry
 qt --> iam
 qt --> refdata
+qt --> ore
 qt --> comms
 qt --> eventing
 qt --> assets

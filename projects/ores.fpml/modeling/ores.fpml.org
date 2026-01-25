@@ -10,7 +10,17 @@ Financial Products Markup Language (FPML) processing infrastructure for handling
 
 * About FPML
 
-Financial Products Markup Language (FPML) is a comprehensive XML-based schema for representing financial instruments and processes. Originally developed by the International Swaps and Derivatives Association (ISDA) and other industry participants, FPML serves as a standard for pre-trade, trade, and post-trade electronic commerce in the global OTC derivatives markets. The language enables consistent representation of complex financial instruments including interest rate swaps, credit derivatives, equity derivatives, foreign exchange derivatives, and commodity derivatives. FPML facilitates straight-through processing (STP), reduces operational risk, and improves efficiency in trade processing by providing a common language for communication between market participants.
+Financial Products Markup Language (FPML) is a comprehensive XML-based schema
+for representing financial instruments and processes. Originally developed by
+the International Swaps and Derivatives Association (ISDA) and other industry
+participants, FPML serves as a standard for pre-trade, trade, and post-trade
+electronic commerce in the global OTC derivatives markets. The language enables
+consistent representation of complex financial instruments including interest
+rate swaps, credit derivatives, equity derivatives, foreign exchange
+derivatives, and commodity derivatives. FPML facilitates straight-through
+processing (STP), reduces operational risk, and improves efficiency in trade
+processing by providing a common language for communication between market
+participants.
 
 * Component Architecture
 
@@ -20,15 +30,7 @@ Diagram:
 #+caption: ORE Studio FPML Component Diagram
 [[file:ores.fpml.png][file:ores.fpml.png]]
 
-Provides comprehensive support for parsing, validating, and processing Financial Products Markup Language (FPML) documents. Key features:
-
-- FPML Schema Support: Full support for industry-standard FPML schemas and validation
-- Trade Representation: Domain types for representing complex financial instruments and trades
-- Serialization: Robust serialization/deserialization of FPML documents
-- Validation: Comprehensive validation against FPML schemas and business rules
-- Integration: Seamless integration with ORE Studio's risk analytics and pricing engines
-- Extensibility: Support for custom extensions and proprietary fields
-
-The domain namespace defines core FPML data structures, trade representations, and validation rules. The service namespace provides parsing, validation, and transformation services. The repository namespace offers persistence mechanisms for FPML data in ORE Studio's database infrastructure.
+Provides comprehensive support for parsing, validating, and processing Financial
+Products Markup Language (FPML) documents.
 
 | Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

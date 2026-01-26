@@ -53,7 +53,7 @@ refdata::domain::currency currency_mapper::map(const currencyDefinition& v) {
     r.format = "";  // Not in XSD
     r.currency_type = v.CurrencyType ? std::string(*v.CurrencyType) : "";
     r.recorded_by = "ores";
-    r.change_reason_code = "system.import";
+    r.change_reason_code = "system.external_data_import";
     r.change_commentary = "Imported from ORE XML";
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;

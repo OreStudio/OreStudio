@@ -1,0 +1,162 @@
+---
+name: skill-creator
+description: Guide for creating new Claude Code skills and updating of existing ones.
+license: Complete terms in LICENSE.txt
+---
+
+
+# When to use this skill
+
+When the user requests the creation of a new skill or updating of an existing skill.
+
+
+# How to use this skill
+
+1.  **Identify the skill** from the request. If it's not clear, request more information from the user.
+2.  Check the skill library to see if any skills exist that match the request. If not create a new skill.
+3.  Follow the rules under Detailed instructions to manage the request.
+
+
+# Detailed instructions
+
+The next sections contain a set of detailed instructions that must be followed when handling requests for the creation of new skills or updating existing skills.
+
+
+## ORE Studio skill setup
+
+-   All claude code skill templates are stored under `doc/skills` as org-mode documents.
+-   These then generate actual skills under `.claude/skills` via CMake targets. DO NOT EVER modify `.claude/skills` directly as your changes will be overwritten.
+
+
+## Creating new skills
+
+To create a new skill:
+
+-   Agree the skill name with the user. Help the user come up with a concise name for the skill, which does not overlap with existing skills.
+-   Create a new folder under `doc/skills/SKILL-NAME`, replacing `SKILL-NAME` with the actual skill name. Folders should be all in lower case with dashes separating words. Example `my-new-skil`.
+-   Create a new file inside the new folder called `skill.org`. The file must have the following structure:
+    -   Preamble:
+
+```fundamental
+:PROPERTIES:
+:ID: GUID
+:END:
+#+title: TITLE
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: SKILL-NAME
+description: SKILL DESCRIPTION
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+```
+
+Updating the following fields:
+
+-   `GUID`: use `python3 -c "import uuid; print(uuid.uuid4())"` to generate a new UUID.
+-   `TITLE`: title for the new skill, short and descriptive, properly capitalised.
+-   `SKILL-NAME`: must match the folder used by the new skill.
+-   `SKILL DESCRIPTION`: short one line skill description.
+
+-   Body:
+    -   Add a section called "When to use this skill". It should identify the use cases for the skill. It should be a short paragraph.
+    -   Add a section called "How to use this skill". It should be composed of a set of concise steps on how to use the skill. If the skill requires more than 2 or 3 steps, point the reader to a section called "Detailed instructions".
+    -   If necessary add a section called "Detailed instructions" with step by step description of the skill.
+
+-   Postamble:
+    -   Add the following:
+
+```fundamental
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC
+```
+
+-   Update the file `doc/skills/claude_code_skills.org` in section "Available Skills" with a link to new skill, following the pattern of the previous skills.
+-   Update the skill dependencies diagram `doc/skills/modeling/skill_dependencies.puml` to add the new skill and its dependencies on other skills. See [Skill dependencies diagram](#orgc06c58c) for details.
+
+
+## Skill dependencies diagram
+
+The skill dependencies diagram shows how skills reference each other. When creating a new skill, add it to the appropriate package and define its dependencies.
+
+Location: `doc/skills/modeling/skill_dependencies.puml`
+
+
+### Packages
+
+Skills are grouped into packages by category:
+
+| Package         | Stereotype       | Color   | Description                          |
+|--------------- |---------------- |------- |------------------------------------ |
+| Foundation      | `<<foundation>>` | #E8F5E9 | Core skills used by many others      |
+| Entity Creators | `<<entity>>`     | #E3F2FD | Skills for entity support            |
+| Recipes         | `<<recipe>>`     | #FFF3E0 | Executable documentation maintenance |
+| Utilities       | `<<utility>>`    | #F3E5F5 | Supporting skills for specific tasks |
+| Workflow        | `<<workflow>>`   | #FFEBEE | Development workflow and process     |
+
+
+### Adding a new skill
+
+1.  Add the skill component to the appropriate package:
+
+```plantuml
+[skill-name] <<stereotype>> as alias
+```
+
+1.  Add dependencies (arrows show "references" relationship):
+
+```plantuml
+alias --> other_skill
+```
+
+1.  Regenerate the diagram:
+
+```sh
+cmake --build --preset linux-clang-debug --target generate_skill_dependencies_diagram
+```
+
+
+## Updating existing skills
+
+To update an existing skill:
+
+-   Locate the skill under `doc/skills`
+-   Update the org-mode file in the desired location.
+-   Inform the user the update has been performed and that skills need to be regenerated.
+
+
+## Testing skills
+
+After creating or updating a skill, run both CMake targets to verify the changes don't break any builds:
+
+```sh
+cmake --build --preset linux-clang-debug --target deploy_skills
+cmake --build --preset linux-clang-debug --target deploy_site
+```
+
+The `deploy_skills` target generates the Claude Code skills under `.claude/skills`. The `deploy_site` target generates the documentation website and can break if there are issues with org-mode links or formatting in skill files.
+
+Both must complete successfully before committing skill changes.

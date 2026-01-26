@@ -1,0 +1,659 @@
+---
+name: component-creator
+description: Guide for creating new components that follow our project structure..
+license: Complete terms in LICENSE.txt
+---
+
+
+# When to use this skill
+
+When the user requests the creation of new components for ORE Studio. *Components* in ORE Studio terminology, are the projects under the `projects` directory. Example of existing components: `ores.accounts`, `ores.refdata`.
+
+
+# How to use this skill
+
+1.  Gather information about the new component (name, purpose, etc).
+2.  Follow the detailed instructions to create all required files and folder, and do so in order.
+3.  Build and test the new component.
+
+
+# Detailed instructions
+
+
+## Gather requirements
+
+Before starting, gather the following information from the user:
+
+-   **Component name**: the name of the new component (e.g., `ores.COMPONENT`).
+-   **Location**: unless specified otherwise, all components live under `projects`.
+-   **Type**: Is the component an executable or a library?
+-   **Purpose**: clarify the purpose of the component.
+
+Once these have been clarified, proceed with the execution steps below.
+
+
+## Step 1: Create the component top-level folder
+
+Create the folder under `projects/COMPONENT`. Component names must follow the convention `ores.COMPONENT` where `COMPONENT` is all in lower case and ideally just one word (though exceptions can be made for two words). Example: `ores.refdata`.
+
+
+## Step 2: Create the component part folders
+
+In ORE Studio, components are made up of parts. These are well-known folders with specific content type. Standard components have the following parts:
+
+| Part name  | Description                                        |
+|---------- |-------------------------------------------------- |
+| `include`  | Contains the C++  header files.                    |
+| `modeling` | Contains the PlantUML source and PNG for diagrams. |
+| `src`      | Contains the C++ implementation files.             |
+| `tests`    | Contains the Catch2 tests for the component.       |
+|            |                                                    |
+
+
+## Step 3: Create the containing folder in `include`
+
+The `include` part must have a single folder inside of it named `ores.COMPONENT`. Example: `projects/ores.accounts/include/ores.accounts`. The objective of this folder is just to make include statements more obvious as to what component we are using:
+
+```c++
+#include "ores.accounts/domain/account_json.hpp"
+```
+
+
+## Step 4: Create the namespace documentation header
+
+Every component and sub-namespace needs a documentation header file for Doxygen. These files use the naming convention `ores.COMPONENT.hpp` for the main component and `ores.COMPONENT.FACET.hpp` for sub-namespaces.
+
+Create the main namespace documentation file at `projects/ores.COMPONENT/include/ores.COMPONENT/ores.COMPONENT.hpp` with the following structure:
+
+```c++
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_COMPONENT_HPP
+#define ORES_COMPONENT_HPP
+
+/**
+ * @brief Brief description of the component's purpose.
+ *
+ * More detailed description of the component's features and responsibilities.
+ * Include information about:
+ * - Main features and capabilities
+ * - Key dependencies or relationships with other components
+ * - Organization of sub-namespaces (domain, service, repository, etc.)
+ */
+namespace ores::COMPONENT {}
+
+#endif
+```
+
+
+## Step 5: Create the facet folders in `include`
+
+In ORE Studio, parts are made up of facets. These are well-known folders with specific content type. The following are the set of well-known facets:
+
+| Part name    | Description                                                                                                         |
+|------------ |------------------------------------------------------------------------------------------------------------------- |
+| `domain`     | Contains the C++ domain types, which are typically POCOs and associated services (JSON, etc)                        |
+| `generators` | Contains C++ generators for the domain types, typically used in testing but also used in production.                |
+| `messaging`  | Contains classes related to network messaging such as requests, responses, handlers etc for this component.         |
+| `repository` | Contains database support for the domain types via sqlgen. Includes repositories, entities, mappers, etc.           |
+| `eventing`   | Contains event related classes.                                                                                     |
+| `service`    | Contains standalone types with domain operations that do not fit into a domain type.                                |
+| `app`        | If the component provides an executable, it will need standard application infrastructure such as hosting, etc.     |
+| `config`     | Contains top-level configuration, if required. If it is an executable component the command-line parser lives here. |
+| `net`        | Network-related utilities such as client/server infrastructure or network interface information.                    |
+| `orexml`     | If the component supports exporting to and from ORE (Open Source Risk Engine) the code lives here.                  |
+| `csv`        | If the component supports exporting and possibly importing from CSV, the code lives here.                           |
+
+
+## Step 6: Create the facet folders in `src`
+
+The facet folders should be created directly under the component's `src` part. Example: `projects/ores.variability/src/domain` for the `domain` facet folder in the `ores.variability` component.
+
+
+## Step 7: Add CMake support
+
+Follow the below instructions, replacing `COMPONENT` with the actual component name at the appropriate casing.
+
+
+### Step 7.1: Update projects `CMakeLists.txt`
+
+Add the new component to the `projects` `CMakeLists.txt`:
+
+```cmake
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.testing)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.utility)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.variability)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.COMPONENT)  --> new component at the end
+```
+
+
+### Step 7.2: Create component's `CMakeLists.txt`
+
+Create the component's `CMakeLists.txt` file under `projects/ores.COMPONENT/CMakeLists.txt` with the following contents:
+
+```cmake
+# -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
+#
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
+```
+
+
+### Step 7.3: Create component's modeling `CMakeLists.txt`
+
+Create the `modeling` `CMakeLists.txt` under `projects/ores.COMPONENT/modeling/CMakeLists.txt` with the following contents:
+
+```cmake
+# -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
+#
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+set(name "ores.COMPONENT")
+
+set(diagram_target generate_${name}_diagram)
+add_custom_target(${diagram_target}
+    COMMENT "Generating PlantUML diagram for ${name}" VERBATIM
+    COMMAND java ${ORES_JAVA_ARGS} -jar ${ORES_PLANTUML_JAR} ${name}.puml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
+add_dependencies(make_all_diagrams ${diagram_target})
+```
+
+
+### Step 7.4: Create component's src `CMakeLists.txt`
+
+Create the `src` `CMakeLists.txt` under `projects/ores.COMPONENT/src/CMakeLists.txt`. This file varies if the component is an executable or a library.
+
+If the component is a library, use the following contents:
+
+```cmake
+# -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
+#
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+set(name "ores.COMPONENT")
+set(lib_binary_name ${name})
+set(lib_target_name ${name}.lib)
+
+set(files "")
+file(GLOB_RECURSE files RELATIVE
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
+set(lib_files ${files})
+add_library(${lib_target_name} ${lib_files})
+set_target_properties(${lib_target_name} PROPERTIES
+    OUTPUT_NAME ${lib_binary_name})
+set_target_properties(${lib_target_name}
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+target_include_directories(${lib_target_name} PUBLIC
+    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.variability.lib
+    PRIVATE
+        ores.comms.lib
+        ores.utility.lib
+        sqlgen::sqlgen
+        faker-cxx::faker-cxx
+        libfort::fort
+        Boost::boost)
+# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
+# Do not add it explicitly to avoid duplicate library warnings on macOS.
+
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+```
+
+If the component is an executable, use the following contents:
+
+```cmake
+# -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
+#
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+set(name "ores.COMPONENT")
+set(lib_binary_name ${name})
+set(lib_target_name ${name}.lib)
+
+set(files "")
+file(GLOB_RECURSE files RELATIVE
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
+set(lib_files ${files})
+list(FILTER lib_files EXCLUDE REGEX "main.cpp")
+
+add_library(${lib_target_name} ${lib_files})
+set_target_properties(${lib_target_name} PROPERTIES
+    OUTPUT_NAME ${lib_binary_name})
+set_target_properties(${lib_target_name}
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+target_include_directories(${lib_target_name} PUBLIC
+    ${CMAKE_SOURCE_DIR}/projects/ores.cli/include)
+
+find_package(cli CONFIG REQUIRED)
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.utility.lib
+        Boost::boost
+    PRIVATE
+        magic_enum::magic_enum
+        sqlgen::sqlgen)
+# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
+# Boost::program_options comes transitively if linking ores.telemetry.lib
+# Do not add these explicitly to avoid duplicate library warnings on macOS.
+
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+
+set(exe_binary_name ${name})
+set(exe_target_name ${name}.exe)
+
+set(exe_files ${files})
+list(FILTER exe_files INCLUDE REGEX "main.cpp")
+
+add_executable(${exe_target_name} ${exe_files})
+set_target_properties(${exe_target_name} PROPERTIES
+    OUTPUT_NAME ${exe_binary_name})
+
+target_include_directories(${exe_target_name}
+    PRIVATE ${CMAKE_SOURCE_DIR}/projects)
+
+target_link_libraries(${exe_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ${CMAKE_THREAD_LIBS_INIT})
+
+install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)
+```
+
+Note that the list of dependencies is fixed for now, but some may not make sense for some components.
+
+-   Dependency visibility guidelines
+
+    When adding dependencies with `target_link_libraries`, use the correct visibility:
+    
+    -   **PUBLIC**: Use when the dependency's headers are exposed in your component's public headers. Consumers of your component will also link this dependency.
+    -   **PRIVATE**: Use when the dependency is only used in implementation files (.cpp). Consumers of your component will not see or link this dependency.
+    -   **INTERFACE**: Use when you need to expose a dependency to consumers but it's already provided at build time by another PRIVATE dependency. This avoids duplicate library warnings on macOS.
+    
+    Example using INTERFACE to avoid duplicates:
+    
+    ```cmake
+    target_link_libraries(${lib_target_name}
+        PUBLIC
+            Boost::log
+            Boost::exception
+        INTERFACE
+            # reflectcpp is provided by ores.platform.lib at build time; expose to consumers here
+            reflectcpp::reflectcpp
+        PRIVATE
+            ores.platform.lib
+            Boost::boost)
+    ```
+    
+    **Important**: Before adding a dependency explicitly, check if it already comes transitively from another linked library. Common transitive dependencies:
+    
+    -   `reflectcpp` comes from `ores.platform.lib` (PUBLIC)
+    -   `Boost::program_options` comes from `ores.telemetry.lib` (PUBLIC)
+    
+    **Note**: If your component uses logging functionality, add `ores.logging.lib` to the PRIVATE dependencies of your library's target\_link\_libraries section.
+
+
+### Step 7.5: Create component's tests `CMakeLists.txt`
+
+Create the tests `CMakeLists.txt` under `projects/ores.COMPONENT/tests/CMakeLists.txt`. This file has the following content:
+
+```cmake
+# -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
+#
+# Copyright (C) 2024 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+set(name "ores.COMPONENT")
+set(lib_target_name ${name}.lib)
+set(tests_binary_name ${name}.tests)
+set(tests_target_name ${name}.tests)
+
+set(files "")
+file(GLOB_RECURSE files RELATIVE
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
+add_executable(${tests_target_name} ${files})
+set_target_properties(${tests_target_name}
+    PROPERTIES OUTPUT_NAME ${tests_binary_name})
+
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ${CMAKE_THREAD_LIBS_INIT})
+
+add_custom_target(test_${tests_target_name}
+    COMMENT "Testing ${tests_target_name}" VERBATIM
+    COMMAND $<TARGET_FILE:${tests_binary_name}>
+    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    DEPENDS ${tests_target_name})
+
+add_dependencies(run_all_tests test_${tests_target_name})
+
+add_test(NAME ${tests_target_name}
+    COMMAND ${tests_binary_name} ${ORES_CATCH2_ARGS} -r xml::out=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml
+    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+set_tests_properties(${tests_target_name} PROPERTIES
+    PROCESSORS 1
+    ENVIRONMENT ""
+    ATTACHED_FILES_ON_FAIL "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml"
+)
+
+set_property(TEST ${tests_target_name} PROPERTY USES_XML_OUTPUT ON)
+```
+
+
+## Step 8: Create C++ files
+
+To make sure the project compiles, we need to add some basic infrastructure.
+
+
+### Step 8.1: Add domain stubs
+
+-   1. Create a domain type stub in include under `projects/ores.COMPONENT/include/ores.COMPONENT/domain/stub.hpp` with the following contents:
+
+```c++
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_COMPONENT_DOMAIN_STUB_HPP
+#define ORES_COMPONENT_DOMAIN_STUB_HPP
+
+#include <string>
+
+namespace ores::COMPONENT::domain {
+
+/**
+ * @brief Stub to be removed.
+ */
+struct stub final {
+    int version = 0;
+};
+
+std::string stub_function();
+
+}
+```
+
+-   2. Create a domain type stub in `src` under `projects/ores.COMPONENT/src/domain/stub.cpp` with the following contents:
+
+```c++
+#include "ores.COMPONENT/domain/stub.hpp"
+
+namespace ores::COMPONENT::domain {
+
+std::string stub_function() {
+    return "STUB code to be removed";
+}
+
+}
+```
+
+
+### Step 8.2: Add testing support
+
+-   1. Create tests `main.cpp` in `tests` under `/ores.COMPONENT/tests/main.cpp` with the following content:
+
+```c++
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include <openssl/crypto.h>
+#include <boost/scope_exit.hpp>
+#include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
+#include "ores.testing/logging_listener.hpp"
+#include "ores.testing/database_lifecycle_listener.hpp"
+
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
+
+int main(int argc, char* argv[]) {
+    BOOST_SCOPE_EXIT(void) {
+        OPENSSL_cleanup();
+    } BOOST_SCOPE_EXIT_END
+
+    ores::testing::logging_listener::set_test_module_name("ores.accounts.tests");
+    return Catch::Session().run(argc, argv);
+}
+```
+
+-   2. Add a test stub:
+
+```c++
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.COMPONENT/domain/stub.hpp"
+
+#include <catch2/catch_test_macros.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include "ores.logging/make_logger.hpp"
+
+namespace {
+
+const std::string test_suite("ores.COMPONENT.tests");
+const std::string tags("[domain]");
+
+}
+
+using namespace ores::COMPONENT::domain;
+using namespace ores::logging;
+
+TEST_CASE("create_stub", tags) {
+    auto lg(make_logger(test_suite));
+    BOOST_LOG_SEV(lg, warn) << stub_function();
+}
+```
+
+**Note:** The logging functionality has been moved from `ores::utility::log` to `ores::logging`. When using logging in tests, use `using namespace ores::logging;` and the severity levels (trace, debug, info, warn, error) are available in this namespace.
+
+
+## Step 9: Add PlantUML diagram
+
+In `modeling` part, under `projects/ores.COMPONENT/modeling` add a file called `ores.COMPONENT.puml` with the following contents:
+
+```plantuml
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*'
+'
+' Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+'  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' GNU Emacs; see the file COPYING. If not, write to the Free Software
+' Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+@startuml
+!pragma layout smetana
+
+title ores.COMPONENT - COMPONENT_TITLE Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    note "DESCRIPTION" as ores_SHORTNAME_note
+    SHORTNAME --- ores_SHORTNAME_note
+    namespace SHORTNAME #F2F2F2 {
+
+    }
+}
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.COMPONENT.puml"
+' End:
+@enduml
+```
+
+
+## Step 10: Create the component model documentation
+
+The new component needs a component model to document its architecture. Create the org-mode documentation file and PlantUML diagram following the [Component Model Creator](../component-model-creator/SKILL.md) skill.
+
+This will create:
+
+-   `projects/ores.COMPONENT/modeling/ores.COMPONENT.org` - Component documentation
+-   `projects/ores.COMPONENT/modeling/ores.COMPONENT.puml` - Class diagram (refine the stub created in Step 9)
+-   `projects/ores.COMPONENT/modeling/ores.COMPONENT.png` - Generated diagram
+
+
+## Step 11: Compile the new component
+
+Using the skill [CMake Runner Skill](../cmake-runner/SKILL.md):
+
+1.  configure compile ORE Studio.
+2.  Run all tests and make sure the new test is visible and passes.
+3.  Generate all PlantUML diagrams. Make sure the new diagram is created.
+4.  Commit all your changes with a commit message like: [COMPONENT] Added new component"

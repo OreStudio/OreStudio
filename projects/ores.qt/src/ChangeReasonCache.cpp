@@ -60,13 +60,13 @@ ChangeReasonCache::ChangeReasonCache(ClientManager* clientManager,
         connect(clientManager_, &ClientManager::notificationReceived,
                 this, &ChangeReasonCache::onNotificationReceived);
 
-        connect(clientManager_, &ClientManager::connected,
+        connect(clientManager_, &ClientManager::loggedIn,
                 this, &ChangeReasonCache::subscribeToEvents);
         connect(clientManager_, &ClientManager::reconnected,
                 this, &ChangeReasonCache::subscribeToEvents);
 
-        // Also subscribe if already connected
-        if (clientManager_->isConnected()) {
+        // Also subscribe if already logged in
+        if (clientManager_->isLoggedIn()) {
             subscribeToEvents();
         }
     }

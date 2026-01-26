@@ -454,6 +454,7 @@ public:
 
 signals:
     void connected();
+    void loggedIn();
     void disconnected();
     void reconnecting();
     void reconnected();

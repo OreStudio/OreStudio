@@ -242,8 +242,8 @@ CurrencyMdiWindow(ClientManager* clientManager,
         connect(clientManager_, &ClientManager::notificationReceived,
                 this, &CurrencyMdiWindow::onFeatureFlagNotification);
 
-        // Subscribe to feature flag events when connected
-        connect(clientManager_, &ClientManager::connected,
+        // Subscribe to feature flag events when logged in
+        connect(clientManager_, &ClientManager::loggedIn,
                 this, [this]() {
             clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
             updateGenerateActionVisibility();
@@ -255,8 +255,8 @@ CurrencyMdiWindow(ClientManager* clientManager,
             updateGenerateActionVisibility();
         });
 
-        // If already connected, subscribe and check flag
-        if (clientManager_->isConnected()) {
+        // If already logged in, subscribe and check flag
+        if (clientManager_->isLoggedIn()) {
             clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
             // Defer visibility check to after event loop processes
             QTimer::singleShot(0, this, &CurrencyMdiWindow::updateGenerateActionVisibility);
@@ -267,8 +267,8 @@ CurrencyMdiWindow(ClientManager* clientManager,
 
     emit statusChanged("Loading currencies...");
 
-    // Initial load
-    if (clientManager_->isConnected()) {
+    // Initial load (only if logged in, not just connected)
+    if (clientManager_->isLoggedIn()) {
         currencyModel_->refresh();
     } else {
         emit statusChanged("Disconnected - Offline");
@@ -303,8 +303,8 @@ void CurrencyMdiWindow::onConnectionStateChanged() {
 
 void CurrencyMdiWindow::reload() {
     BOOST_LOG_SEV(lg(), debug) << "Reload requested";
-    if (!clientManager_->isConnected()) {
-        emit statusChanged("Cannot reload - Disconnected");
+    if (!clientManager_->isLoggedIn()) {
+        emit statusChanged("Cannot reload - Not logged in");
         return;
     }
     emit statusChanged("Reloading currencies...");
@@ -419,8 +419,8 @@ void CurrencyMdiWindow::deleteSelected() {
         return;
     }
 
-    if (!clientManager_->isConnected()) {
-         MessageBoxHelper::warning(this, "Disconnected", "Cannot delete currency while disconnected.");
+    if (!clientManager_->isLoggedIn()) {
+         MessageBoxHelper::warning(this, "Not Logged In", "Cannot delete currency while not logged in.");
          return;
     }
 
@@ -648,8 +648,8 @@ void CurrencyMdiWindow::exportToCSV() {
 void CurrencyMdiWindow::importFromXML() {
     BOOST_LOG_SEV(lg(), debug) << "Import XML action triggered";
 
-    if (!clientManager_->isConnected()) {
-         MessageBoxHelper::warning(this, "Disconnected", "Cannot import currencies while disconnected.");
+    if (!clientManager_->isLoggedIn()) {
+         MessageBoxHelper::warning(this, "Not Logged In", "Cannot import currencies while not logged in.");
          return;
     }
 
@@ -939,7 +939,7 @@ void CurrencyMdiWindow::setupGenerateAction() {
 }
 
 void CurrencyMdiWindow::updateGenerateActionVisibility() {
-    if (!clientManager_ || !clientManager_->isConnected()) {
+    if (!clientManager_ || !clientManager_->isLoggedIn()) {
         generateAction_->setVisible(false);
         return;
     }

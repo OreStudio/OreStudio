@@ -59,8 +59,8 @@ FeatureFlagController::FeatureFlagController(
         connect(clientManager_, &ClientManager::notificationReceived,
                 this, &FeatureFlagController::onNotificationReceived);
 
-        // Subscribe to events when connected
-        connect(clientManager_, &ClientManager::connected,
+        // Subscribe to events when logged in
+        connect(clientManager_, &ClientManager::loggedIn,
                 this, [self = QPointer<FeatureFlagController>(this)]() {
             if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Subscribing to feature flag change events";

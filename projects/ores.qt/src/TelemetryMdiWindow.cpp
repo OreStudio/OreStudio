@@ -62,8 +62,8 @@ TelemetryMdiWindow(ClientManager* clientManager,
         connect(clientManager_, &ClientManager::disconnected,
                 this, &TelemetryMdiWindow::onConnectionStateChanged);
 
-        // Load sessions if already connected
-        if (clientManager_->isConnected()) {
+        // Load sessions if already logged in
+        if (clientManager_->isLoggedIn()) {
             QTimer::singleShot(0, this, &TelemetryMdiWindow::reloadSessions);
         }
     }

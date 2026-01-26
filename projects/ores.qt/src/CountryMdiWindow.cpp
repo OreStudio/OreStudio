@@ -200,8 +200,8 @@ CountryMdiWindow(ClientManager* clientManager,
 
     emit statusChanged("Loading countries...");
 
-    // Initial load
-    if (clientManager_->isConnected()) {
+    // Initial load (only if logged in, not just connected)
+    if (clientManager_->isLoggedIn()) {
         countryModel_->refresh();
     } else {
         emit statusChanged("Disconnected - Offline");

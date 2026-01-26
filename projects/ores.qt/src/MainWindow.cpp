@@ -301,8 +301,8 @@ MainWindow::MainWindow(QWidget* parent) :
         ui_->statusbar->showMessage("Reconnected to server.", 5000);
     });
 
-    // Load caches when connected
-    connect(clientManager_, &ClientManager::connected, this, [this]() {
+    // Load caches when logged in (not just connected - bootstrap mode doesn't auth)
+    connect(clientManager_, &ClientManager::loggedIn, this, [this]() {
         imageCache_->loadAll();
         // Preload all available images for the flag selector to avoid on-demand loading delay
         if (!imageCache_->hasImageList()) {
@@ -685,42 +685,43 @@ void MainWindow::onLoginTriggered() {
 
 void MainWindow::updateMenuState() {
     const bool isConnected = clientManager_ && clientManager_->isConnected();
+    const bool isLoggedIn = clientManager_ && clientManager_->isLoggedIn();
 
-    // Enable/disable menu actions based on connection state
-    ui_->CurrenciesAction->setEnabled(isConnected);
-    ui_->CountriesAction->setEnabled(isConnected);
-
-    // Enable/disable connect and disconnect actions
+    // Enable/disable connect and disconnect actions based on connection state
     ui_->ActionConnect->setEnabled(!isConnected);
     ui_->ActionDisconnect->setEnabled(isConnected);
 
-    // Data menu enabled when connected
-    ui_->menuData->menuAction()->setEnabled(isConnected);
-    ui_->ActionChangeReasonCategories->setEnabled(isConnected);
-    ui_->ActionChangeReasons->setEnabled(isConnected);
+    // Data menus require authentication (not just connection)
+    ui_->CurrenciesAction->setEnabled(isLoggedIn);
+    ui_->CountriesAction->setEnabled(isLoggedIn);
 
-    // System menu enabled when connected (contains Identity, Configuration, Telemetry)
-    ui_->menuSystem->menuAction()->setEnabled(isConnected);
-    ui_->ActionAccounts->setEnabled(isConnected);
-    ui_->ActionRoles->setEnabled(isConnected);
-    ui_->ActionFeatureFlags->setEnabled(isConnected);
-    ui_->ActionOriginDimensions->setEnabled(isConnected);
-    ui_->ActionNatureDimensions->setEnabled(isConnected);
-    ui_->ActionTreatmentDimensions->setEnabled(isConnected);
-    ui_->ActionCodingSchemeAuthorityTypes->setEnabled(isConnected);
-    ui_->ActionDataDomains->setEnabled(isConnected);
-    ui_->ActionSubjectAreas->setEnabled(isConnected);
-    ui_->ActionCatalogs->setEnabled(isConnected);
-    ui_->ActionCodingSchemes->setEnabled(isConnected);
-    ui_->ActionMethodologies->setEnabled(isConnected);
-    ui_->ActionDataLibrarian->setEnabled(isConnected);
+    // Data menu enabled when logged in
+    ui_->menuData->menuAction()->setEnabled(isLoggedIn);
+    ui_->ActionChangeReasonCategories->setEnabled(isLoggedIn);
+    ui_->ActionChangeReasons->setEnabled(isLoggedIn);
 
-    // My Account and My Sessions menu items are enabled when connected
-    ui_->ActionMyAccount->setEnabled(isConnected);
-    ui_->ActionMySessions->setEnabled(isConnected);
+    // System menu enabled when logged in (contains Identity, Configuration, Telemetry)
+    ui_->menuSystem->menuAction()->setEnabled(isLoggedIn);
+    ui_->ActionAccounts->setEnabled(isLoggedIn);
+    ui_->ActionRoles->setEnabled(isLoggedIn);
+    ui_->ActionFeatureFlags->setEnabled(isLoggedIn);
+    ui_->ActionOriginDimensions->setEnabled(isLoggedIn);
+    ui_->ActionNatureDimensions->setEnabled(isLoggedIn);
+    ui_->ActionTreatmentDimensions->setEnabled(isLoggedIn);
+    ui_->ActionCodingSchemeAuthorityTypes->setEnabled(isLoggedIn);
+    ui_->ActionDataDomains->setEnabled(isLoggedIn);
+    ui_->ActionSubjectAreas->setEnabled(isLoggedIn);
+    ui_->ActionCatalogs->setEnabled(isLoggedIn);
+    ui_->ActionCodingSchemes->setEnabled(isLoggedIn);
+    ui_->ActionMethodologies->setEnabled(isLoggedIn);
+    ui_->ActionDataLibrarian->setEnabled(isLoggedIn);
 
-    // Telemetry viewer needs connection to load sessions/logs
-    ui_->ActionTelemetryViewer->setEnabled(isConnected);
+    // My Account and My Sessions menu items require authentication
+    ui_->ActionMyAccount->setEnabled(isLoggedIn);
+    ui_->ActionMySessions->setEnabled(isLoggedIn);
+
+    // Telemetry viewer needs authentication to load sessions/logs
+    ui_->ActionTelemetryViewer->setEnabled(isLoggedIn);
 
     // Protocol recording can be enabled before connection (will start on connect)
     // Only disable when disconnecting if we were recording
@@ -736,7 +737,8 @@ void MainWindow::updateMenuState() {
         connectionStatusIconLabel_->setPixmap(disconnectedIcon_.pixmap(16, 16));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: " << isConnected;
+    BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: " << isConnected
+                              << ", LoggedIn: " << isLoggedIn;
 }
 
 void MainWindow::createControllers() {

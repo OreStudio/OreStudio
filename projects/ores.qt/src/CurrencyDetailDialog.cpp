@@ -225,14 +225,14 @@ void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
         connect(clientManager_, &ClientManager::notificationReceived,
                 this, &CurrencyDetailDialog::onFeatureFlagNotification);
 
-        // Subscribe to feature flag events when connected/reconnected
-        connect(clientManager_, &ClientManager::connected,
+        // Subscribe to feature flag events when logged in/reconnected
+        connect(clientManager_, &ClientManager::loggedIn,
                 this, &CurrencyDetailDialog::onConnectionEstablished);
         connect(clientManager_, &ClientManager::reconnected,
                 this, &CurrencyDetailDialog::onConnectionEstablished);
 
-        // If already connected, subscribe and check flag
-        if (clientManager_->isConnected()) {
+        // If already logged in, subscribe and check flag
+        if (clientManager_->isLoggedIn()) {
             onConnectionEstablished();
         }
     }

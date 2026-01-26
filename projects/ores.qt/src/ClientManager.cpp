@@ -415,6 +415,7 @@ LoginResult ClientManager::connectAndLogin(
             });
         }
         emit connected();
+        emit loggedIn();
         return {.success = true, .error_message = QString(), .password_reset_required = password_reset_required};
 
     } catch (const std::exception& e) {

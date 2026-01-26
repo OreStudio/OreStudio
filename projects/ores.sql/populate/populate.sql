@@ -21,16 +21,29 @@
 /**
  * System Population Script
  *
- * Seeds the database with essential system data required for the
- * application to function. All scripts are idempotent and can be
- * safely re-run without creating duplicate data.
+ * Seeds the database with all system and reference data required for the
+ * application to function. All scripts are idempotent and can be safely
+ * re-run without creating duplicate data.
  *
- * This script is run automatically during template creation and seeds:
- * 1. Change Control: Change reasons and categories
- * 2. Data Quality: Dimensions, domains, subject areas, methodologies, datasets
- * 3. DQ Artefacts: Images, countries, currencies (staging data)
- * 4. RBAC: Permissions, roles, role-permission assignments
- * 5. System Flags: Bootstrap mode, user signups, etc.
+ * Population Layers:
+ *
+ * 1. Foundation Layer (included in template, idempotent re-run here)
+ *    - Change Control: Categories and reasons for audit trail
+ *    - Reference Data Lookup Tables: Rounding types
+ *    - Data Governance Framework: Domains, subject areas, authority types, coding schemes
+ *    - IAM: Permissions and roles
+ *    - System Configuration: Feature flags
+ *
+ * 2. Data Governance Layer
+ *    - Dimensions: Quality classification (origin, nature, treatment)
+ *    - Methodologies: Data sourcing and processing methods
+ *    - Artefact Types: Types of data artefacts and their mappings
+ *
+ * 3. Data Catalogues Layer
+ *    - Catalogs: Groupings of datasets by source/domain
+ *    - Datasets: Data collection definitions with metadata
+ *    - Dataset Dependencies: Relationships between datasets
+ *    - Artefact Data: Actual reference data in staging tables
  *
  * NOTE: Production tables (countries, currencies, images) are NOT populated
  * here. Use the "Publish Datasets" feature in the Data Librarian window to
@@ -47,50 +60,28 @@
 \echo '=== Starting System Population ==='
 \echo ''
 
--- Data Quality Framework (change control, dimensions, domains, subject areas, coding schemes)
-\echo ''
-\echo '--- Data Quality Framework ---'
-\ir dq/populate_dq.sql
+-- =============================================================================
+-- Foundation Layer (idempotent - already in template, safe to re-run)
+-- =============================================================================
 
--- Flag Icons Reference Data (Visual Assets catalog, datasets, and images - must come before ISO)
-\echo ''
-\echo '--- Flag Icons Reference Data ---'
-\ir flags/populate_flags.sql
+\echo '--- Foundation Layer ---'
+\ir foundation/populate_foundation.sql
 
--- ISO Standards Reference Data (catalog, datasets, countries, currencies)
-\echo ''
-\echo '--- ISO Standards Reference Data ---'
-\ir iso/populate_iso.sql
+-- =============================================================================
+-- Data Governance Layer
+-- =============================================================================
 
--- Solvaris Reference Data
 \echo ''
-\echo '--- Solvaris Reference Data ---'
-\ir solvaris/populate_solvaris.sql
+\echo '--- Data Governance Layer ---'
+\ir governance/populate_governance.sql
 
--- IP to Country Reference Data (iptoasn.com)
-\echo ''
-\echo '--- IP to Country Reference Data ---'
-\ir ip2country/populate_ip2country.sql
+-- =============================================================================
+-- Data Catalogues Layer
+-- =============================================================================
 
--- FPML Reference Data (methodology, coding schemes, datasets, artefacts)
 \echo ''
-\echo '--- FPML Reference Data ---'
-\ir fpml/populate_fpml.sql
-
--- Cryptocurrency Reference Data (datasets, images, currencies)
-\echo ''
-\echo '--- Cryptocurrency Reference Data ---'
-\ir crypto/populate_crypto.sql
-
--- IAM (Identity and Access Management)
-\echo ''
-\echo '--- IAM ---'
-\ir iam/populate_iam.sql
-
--- Variability (Feature Flags)
-\echo ''
-\echo '--- Variability ---'
-\ir variability/populate_variability.sql
+\echo '--- Data Catalogues Layer ---'
+\ir catalogues/populate_catalogues.sql
 
 \echo ''
 \echo '=== System Population Complete ==='
@@ -99,107 +90,74 @@
 \pset tuples_only off
 
 \echo ''
-\echo '--- Summary ---'
+\echo '--- Overall Summary ---'
 
-select 'Change Reasons' as entity, count(*) as count
-from ores.dq_change_reasons_tbl where valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'Change Reason Categories', count(*)
+-- Foundation
+select 'Foundation: Change Reason Categories' as entity, count(*) as count
 from ores.dq_change_reason_categories_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Permissions', count(*)
-from ores.iam_permissions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+select 'Foundation: Change Reasons', count(*)
+from ores.dq_change_reasons_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'Roles', count(*)
-from ores.iam_roles_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+select 'Foundation: Rounding Types', count(*)
+from ores.refdata_rounding_types_tbl
 union all
-select 'System Flags', count(*)
-from ores.variability_feature_flags_tbl where name like 'system.%' and valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'DQ Origin Dimensions', count(*)
-from ores.dq_origin_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'DQ Nature Dimensions', count(*)
-from ores.dq_nature_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'DQ Treatment Dimensions', count(*)
-from ores.dq_treatment_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'DQ Catalogs', count(*)
-from ores.dq_catalogs_tbl where valid_to = ores.utility_infinity_timestamp_fn()
-union all
-select 'DQ Data Domains', count(*)
+select 'Foundation: Data Domains', count(*)
 from ores.dq_data_domains_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'DQ Subject Areas', count(*)
+select 'Foundation: Subject Areas', count(*)
 from ores.dq_subject_areas_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'DQ Coding Scheme Authority Types', count(*)
+select 'Foundation: Coding Scheme Authority Types', count(*)
 from ores.dq_coding_scheme_authority_types_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'DQ Coding Schemes', count(*)
+select 'Foundation: Coding Schemes', count(*)
 from ores.dq_coding_schemes_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'DQ Datasets', count(*)
+select 'Foundation: Permissions', count(*)
+from ores.iam_permissions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Foundation: Roles', count(*)
+from ores.iam_roles_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Foundation: System Flags', count(*)
+from ores.variability_feature_flags_tbl where name like 'system.%' and valid_to = ores.utility_infinity_timestamp_fn()
+-- Governance
+union all
+select 'Governance: Origin Dimensions', count(*)
+from ores.dq_origin_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Governance: Nature Dimensions', count(*)
+from ores.dq_nature_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Governance: Treatment Dimensions', count(*)
+from ores.dq_treatment_dimensions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Governance: Methodologies', count(*)
+from ores.dq_methodologies_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Governance: Artefact Types', count(*)
+from ores.dq_artefact_types_tbl
+-- Catalogues
+union all
+select 'Catalogues: Catalogs', count(*)
+from ores.dq_catalogs_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Catalogues: Datasets', count(*)
 from ores.dq_datasets_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'DQ Dataset Dependencies', count(*)
+select 'Catalogues: Dataset Dependencies', count(*)
 from ores.dq_dataset_dependencies_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
-select 'DQ Artefact: Images', count(*)
+select 'Catalogues: Artefact Images', count(*)
 from ores.dq_images_artefact_tbl
 union all
-select 'DQ Artefact: Countries', count(*)
+select 'Catalogues: Artefact Countries', count(*)
 from ores.dq_countries_artefact_tbl
 union all
-select 'DQ Artefact: Currencies', count(*)
+select 'Catalogues: Artefact Currencies', count(*)
 from ores.dq_currencies_artefact_tbl
 union all
-select 'DQ Artefact: IP Ranges', count(*)
+select 'Catalogues: Artefact IP Ranges', count(*)
 from ores.dq_ip2country_artefact_tbl
-union all
-select 'DQ Artefact: Account Types', count(*)
-from ores.dq_account_types_artefact_tbl
-union all
-select 'DQ Artefact: Asset Classes', count(*)
-from ores.dq_asset_classes_artefact_tbl
-union all
-select 'DQ Artefact: Asset Measures', count(*)
-from ores.dq_asset_measures_artefact_tbl
-union all
-select 'DQ Artefact: Benchmark Rates', count(*)
-from ores.dq_benchmark_rates_artefact_tbl
-union all
-select 'DQ Artefact: Business Centres', count(*)
-from ores.dq_business_centres_artefact_tbl
-union all
-select 'DQ Artefact: Business Processes', count(*)
-from ores.dq_business_processes_artefact_tbl
-union all
-select 'DQ Artefact: Cashflow Types', count(*)
-from ores.dq_cashflow_types_artefact_tbl
-union all
-select 'DQ Artefact: Entity Classifications', count(*)
-from ores.dq_entity_classifications_artefact_tbl
-union all
-select 'DQ Artefact: Local Jurisdictions', count(*)
-from ores.dq_local_jurisdictions_artefact_tbl
-union all
-select 'DQ Artefact: Party Relationships', count(*)
-from ores.dq_party_relationships_artefact_tbl
-union all
-select 'DQ Artefact: Party Roles', count(*)
-from ores.dq_party_roles_artefact_tbl
-union all
-select 'DQ Artefact: Person Roles', count(*)
-from ores.dq_person_roles_artefact_tbl
-union all
-select 'DQ Artefact: Regulatory Corporate Sectors', count(*)
-from ores.dq_regulatory_corporate_sectors_artefact_tbl
-union all
-select 'DQ Artefact: Reporting Regimes', count(*)
-from ores.dq_reporting_regimes_artefact_tbl
-union all
-select 'DQ Artefact: Supervisory Bodies', count(*)
-from ores.dq_supervisory_bodies_artefact_tbl
 order by entity;

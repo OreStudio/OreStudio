@@ -102,6 +102,26 @@ select ores.upsert_change_reason(
     20      -- display order
 );
 
+select ores.upsert_change_reason(
+    'system.test',
+    'Test data for automated testing',
+    'system',
+    true,   -- applies to amend
+    true,   -- applies to delete
+    false,  -- no commentary required
+    30      -- display order
+);
+
+select ores.upsert_change_reason(
+    'system.import',
+    'Data imported via CLI import command',
+    'system',
+    true,   -- applies to amend
+    false,  -- not for delete
+    false,  -- no commentary required
+    40      -- display order
+);
+
 -- =============================================================================
 -- Change Reasons: Common Category (BCBS 239 / FRTB aligned)
 -- =============================================================================

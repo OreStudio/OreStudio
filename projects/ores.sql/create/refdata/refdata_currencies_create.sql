@@ -73,6 +73,17 @@ begin
         using errcode = '23503';
     end if;
 
+    -- Validate rounding_type
+    if not exists (
+        select 1 from ores.refdata_rounding_types_tbl
+        where code = NEW.rounding_type
+    ) then
+        raise exception 'Invalid rounding_type: %. Must be one of: %', NEW.rounding_type, (
+            select string_agg(code, ', ' order by display_order) from ores.refdata_rounding_types_tbl
+        )
+        using errcode = '23503';
+    end if;
+
     select version into current_version
     from "ores"."refdata_currencies_tbl"
     where iso_code = new.iso_code

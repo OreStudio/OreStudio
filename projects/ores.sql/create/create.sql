@@ -47,3 +47,6 @@
 
 -- Seed functions
 \ir ./seed/create_seed.sql
+
+-- Summary functions (must be last - depends on all tables)
+\ir ./utility/utility_summary_functions_create.sql

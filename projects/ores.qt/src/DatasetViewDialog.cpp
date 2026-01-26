@@ -245,8 +245,8 @@ void DatasetViewDialog::updateOverviewTab() {
     addProperty(overviewTree_, tr("Catalog"),
         dataset_.catalog_name ? QString::fromStdString(*dataset_.catalog_name) : tr("-"));
 
-    // Data Quality section
-    addSectionHeader(overviewTree_, tr("Data Quality"));
+    // Data Governance section
+    addSectionHeader(overviewTree_, tr("Data Governance"));
     addProperty(overviewTree_, tr("Origin"), QString::fromStdString(dataset_.origin_code));
     addProperty(overviewTree_, tr("Nature"), QString::fromStdString(dataset_.nature_code));
     addProperty(overviewTree_, tr("Treatment"), QString::fromStdString(dataset_.treatment_code));

@@ -17,12 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
 
-drop function if exists ores.summary_all_layers_fn cascade;
-drop function if exists ores.summary_production_layer_fn cascade;
-drop function if exists ores.summary_catalogues_layer_fn cascade;
-drop function if exists ores.summary_governance_layer_fn cascade;
-drop function if exists ores.summary_foundation_layer_fn cascade;
-drop type if exists ores.layer_summary_row cascade;
-drop function if exists ores.utility_infinity_timestamp_fn cascade;
+-- =============================================================================
+-- Rounding Types Lookup Table
+-- Defines valid rounding methods per ORE XML schema (roundingType).
+-- Static configuration data - no bitemporal support required.
+-- =============================================================================
+
+create table if not exists "ores"."refdata_rounding_types_tbl" (
+    "code" text not null primary key,
+    "name" text not null,
+    "description" text not null,
+    "display_order" integer not null default 0,
+    check ("code" <> '')
+);

@@ -19,10 +19,4 @@
  */
 set schema 'ores';
 
-drop function if exists ores.summary_all_layers_fn cascade;
-drop function if exists ores.summary_production_layer_fn cascade;
-drop function if exists ores.summary_catalogues_layer_fn cascade;
-drop function if exists ores.summary_governance_layer_fn cascade;
-drop function if exists ores.summary_foundation_layer_fn cascade;
-drop type if exists ores.layer_summary_row cascade;
-drop function if exists ores.utility_infinity_timestamp_fn cascade;
+drop table if exists "ores"."refdata_rounding_types_tbl";

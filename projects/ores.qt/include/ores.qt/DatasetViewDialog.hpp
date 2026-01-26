@@ -43,7 +43,7 @@ namespace ores::qt {
  * @brief Dialog for viewing dataset details with tabbed interface.
  *
  * Displays dataset information organized into tabs:
- * - Overview: general info, classification, data quality dimensions, audit info
+ * - Overview: general info, classification, data governance dimensions, audit info
  * - Provenance: methodology, source, dates, license, lineage info
  * - Methodology: methodology details and processing steps
  * - Lineage: visual diagram
@@ -135,7 +135,7 @@ private:
     // Tab widget
     QTabWidget* tabWidget_;
 
-    // Overview tab (General + Classification + Data Quality + Audit)
+    // Overview tab (General + Classification + Data Governance + Audit)
     QTreeWidget* overviewTree_;
 
     // Provenance tab

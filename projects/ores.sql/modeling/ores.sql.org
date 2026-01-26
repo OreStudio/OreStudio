@@ -14,7 +14,6 @@ Diagram:
 
 #+attr_html: :width 100% :alt ORES Database Schema
 #+caption: ORE Studio Database Entity-Relationship Diagram
-[[file:ores_schema.png][file:ores_schema.png]]
 
 The ORES database is organised into four domains:
 
@@ -140,6 +139,86 @@ Even with Apache-only, hypertables provide:
 - Parallel chunk processing
 - Simplified data lifecycle management
 
+* Data Population Layers
+
+The ORES database uses a layered approach to data population. Each layer builds
+upon the previous, creating a clear separation of concerns:
+
+#+begin_example
+Foundation → Data Governance → Data Catalogues → Production
+(prerequisites)  (rules/metadata)   (organized data)    (live data)
+#+end_example
+
+** Foundation Layer
+
+Essential lookup and configuration data required for schema integrity. This data
+is populated in the template database and must be present before application
+data can be inserted.
+
+| Category                 | Tables                                           | Purpose                              |
+|--------------------------+--------------------------------------------------+--------------------------------------|
+| Change Control           | =dq_change_reason_categories_tbl=                | Audit trail categorization           |
+|                          | =dq_change_reasons_tbl=                          | Audit trail reasons                  |
+| Reference Data Lookups   | =refdata_rounding_types_tbl=                     | Currency rounding validation         |
+| Data Governance Framework| =dq_data_domains_tbl=                            | Data domain classification           |
+|                          | =dq_subject_areas_tbl=                           | Subject area classification          |
+|                          | =dq_coding_scheme_authority_types_tbl=           | Coding scheme authority types        |
+|                          | =dq_coding_schemes_tbl=                          | Party/entity identification schemes  |
+| IAM                      | =iam_permissions_tbl=                            | Access control permissions           |
+|                          | =iam_roles_tbl=                                  | Access control roles                 |
+| System Configuration     | =variability_feature_flags_tbl=                  | Feature flags for runtime config     |
+
+Foundation layer is populated via =populate/foundation/populate_foundation.sql=.
+
+** Data Governance Layer
+
+Metadata that defines the rules and classifications for how data is organized.
+This layer sets out the landscape for data quality management.
+
+| Category       | Tables                          | Purpose                              |
+|----------------+---------------------------------+--------------------------------------|
+| Dimensions     | =dq_origin_dimensions_tbl=      | Data origin classification           |
+|                | =dq_nature_dimensions_tbl=      | Data nature classification           |
+|                | =dq_treatment_dimensions_tbl=   | Data treatment classification        |
+| Methodologies  | =dq_methodologies_tbl=          | Data sourcing/processing methods     |
+| Artefact Types | =dq_artefact_types_tbl=         | Types of artefacts and mappings      |
+
+Data governance layer is populated via =populate/governance/populate_governance.sql=.
+
+** Data Catalogues Layer
+
+Catalogued reference data organized according to governance rules. This layer
+contains the actual data awaiting publication to production tables.
+
+| Category             | Tables                          | Purpose                              |
+|----------------------+---------------------------------+--------------------------------------|
+| Catalogs             | =dq_catalogs_tbl=               | Groupings of datasets by source      |
+| Datasets             | =dq_datasets_tbl=               | Data collection definitions          |
+| Dependencies         | =dq_dataset_dependencies_tbl=   | Relationships between datasets       |
+| Artefact Data        | =dq_*_artefact_tbl=             | Staged reference data                |
+
+Data sources include:
+- Flag Icons: Visual assets for countries
+- ISO Standards: Countries, currencies (ISO 3166, ISO 4217)
+- Solvaris: Extended currency metadata
+- IP to Country: IP geolocation mappings
+- FPML: Financial products reference data
+- Cryptocurrency: Digital currency data
+
+Data catalogues layer is populated via =populate/catalogues/populate_catalogues.sql=.
+
+** Production Layer
+
+Live reference data in production tables, published from the data catalogues
+layer via the "Publish Datasets" feature in the Data Librarian window.
+
+| Category   | Tables                          | Source Artefact Table                |
+|------------+---------------------------------+--------------------------------------|
+| Countries  | =refdata_countries_tbl=         | =dq_countries_artefact_tbl=          |
+| Currencies | =refdata_currencies_tbl=        | =dq_currencies_artefact_tbl=         |
+| Images     | =assets_images_tbl=             | =dq_images_artefact_tbl=             |
+| FPML Data  | =refdata_*_tbl=                 | =dq_*_artefact_tbl=                  |
+
 * Database Creation
 
 The database uses a template-based approach for fast instance creation.
@@ -161,11 +240,15 @@ psql -U postgres -f admin/setup_admin.sql
 
 ** Create Template Database (One-Time)
 
-Create the =ores_template= database containing all schema and reference data:
+Create the =ores_template= database containing the schema and foundation layer:
 
 #+begin_src sh
 psql -U postgres -f setup_template.sql
 #+end_src
+
+The template includes:
+- Complete database schema (tables, triggers, functions)
+- Foundation layer data (change control, rounding types, data governance framework, IAM, feature flags)
 
 ** Create Instance with Whimsical Name
 

@@ -427,6 +427,9 @@ void BundleSelectionPage::onBundleChanged(int index) {
 }
 
 void BundleSelectionPage::initializePage() {
+    // Change Next button to "Provision" to indicate action
+    wizard()->setButtonText(QWizard::NextButton, tr("Provision"));
+
     // Select the first bundle by default and show its description
     if (bundleCombo_->count() > 0) {
         bundleCombo_->setCurrentIndex(0);

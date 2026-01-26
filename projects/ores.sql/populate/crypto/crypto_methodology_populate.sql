@@ -25,7 +25,7 @@
  * This script is idempotent.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Cryptocurrency Data Sourcing Methodologies
@@ -33,7 +33,7 @@ set schema 'ores';
 
 \echo '--- Cryptocurrency Methodologies ---'
 
-select ores.upsert_dq_methodologies(
+select public.upsert_dq_methodologies(
     'GitHub Cryptocurrency Icons Download',
     'SVG images downloaded from spothq/cryptocurrency-icons GitHub repository',
     'https://github.com/spothq/cryptocurrency-icons',
@@ -119,7 +119,7 @@ Some cryptocurrencies have special Unicode symbols:
   XRP: ✕ (Ripple)'
 );
 
-select ores.upsert_dq_methodologies(
+select public.upsert_dq_methodologies(
     'GitHub Cryptocurrencies JSON Download',
     'Cryptocurrency symbol-to-name mappings from crypti/cryptocurrencies GitHub repository',
     'https://github.com/crypti/cryptocurrencies',

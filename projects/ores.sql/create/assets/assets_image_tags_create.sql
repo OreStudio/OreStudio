@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
 -- =============================================================================
 -- Many-to-many: images to tags.
 -- =============================================================================
 
-create table if not exists "ores"."assets_image_tags_tbl" (
+create table if not exists "production"."assets_image_tags_tbl" (
     "image_id" uuid not null,
     "tag_id" uuid not null,
     "assigned_by" text not null,
@@ -40,23 +40,23 @@ create table if not exists "ores"."assets_image_tags_tbl" (
 );
 
 create index if not exists assets_image_tags_image_idx
-on "ores"."assets_image_tags_tbl" (image_id)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "production"."assets_image_tags_tbl" (image_id)
+where valid_to = public.utility_infinity_timestamp_fn();
 
 create index if not exists assets_image_tags_tag_idx
-on "ores"."assets_image_tags_tbl" (tag_id)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "production"."assets_image_tags_tbl" (tag_id)
+where valid_to = public.utility_infinity_timestamp_fn();
 
-create or replace function ores.assets_image_tags_insert_fn()
+create or replace function production.assets_image_tags_insert_fn()
 returns trigger as $$
 begin
-    update "ores"."assets_image_tags_tbl"
+    update "production"."assets_image_tags_tbl"
     set valid_to = current_timestamp
     where image_id = new.image_id and tag_id = new.tag_id
-    and valid_to = ores.utility_infinity_timestamp_fn();
+    and valid_to = public.utility_infinity_timestamp_fn();
 
     new.valid_from = current_timestamp;
-    new.valid_to = ores.utility_infinity_timestamp_fn();
+    new.valid_to = public.utility_infinity_timestamp_fn();
     new.assigned_at = current_timestamp;
     if new.assigned_by is null or new.assigned_by = '' then
         new.assigned_by = current_user;
@@ -67,15 +67,15 @@ end;
 $$ language plpgsql;
 
 create or replace trigger assets_image_tags_insert_trg
-before insert on "ores"."assets_image_tags_tbl"
+before insert on "production"."assets_image_tags_tbl"
 for each row
-execute function ores.assets_image_tags_insert_fn();
+execute function production.assets_image_tags_insert_fn();
 
 create or replace rule assets_image_tags_delete_rule as
-on delete to "ores"."assets_image_tags_tbl"
+on delete to "production"."assets_image_tags_tbl"
 do instead
-  update "ores"."assets_image_tags_tbl"
+  update "production"."assets_image_tags_tbl"
   set valid_to = current_timestamp
   where image_id = old.image_id
   and tag_id = old.tag_id
-  and valid_to = ores.utility_infinity_timestamp_fn();
+  and valid_to = public.utility_infinity_timestamp_fn();

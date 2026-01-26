@@ -30,7 +30,7 @@
  * - Market Data: Pricing and market information
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Data Quality Data Domains
@@ -38,17 +38,17 @@ set schema 'ores';
 
 \echo '--- Data Quality Data Domains ---'
 
-select ores.upsert_dq_data_domains(
+select public.upsert_dq_data_domains(
     'Reference Data',
     'Standardized data used across the system.'
 );
 
-select ores.upsert_dq_data_domains(
+select public.upsert_dq_data_domains(
     'Trade Data',
     'Transaction and position data.'
 );
 
-select ores.upsert_dq_data_domains(
+select public.upsert_dq_data_domains(
     'Market Data',
     'Pricing and market information.'
 );
@@ -61,5 +61,5 @@ select ores.upsert_dq_data_domains(
 \echo '--- Summary ---'
 
 select 'Data Quality Data Domains' as entity, count(*) as count
-from ores.dq_data_domains_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_data_domains_tbl where valid_to = public.utility_infinity_timestamp_fn()
 order by entity;

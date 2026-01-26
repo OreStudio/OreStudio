@@ -19,15 +19,15 @@
  */
 
 -- Drop functions
-drop function if exists ores.dq_get_bundle_publication_history_fn(text, integer);
-drop function if exists ores.dq_populate_bundle_fn(text, text, text);
-drop function if exists ores.dq_preview_bundle_publication_fn(text);
-drop function if exists ores.dq_list_bundle_datasets_fn(text);
-drop function if exists ores.dq_list_bundles_fn();
+drop function if exists metadata.dq_get_bundle_publication_history_fn(text, integer);
+drop function if exists metadata.dq_populate_bundle_fn(text, text, text);
+drop function if exists metadata.dq_preview_bundle_publication_fn(text);
+drop function if exists metadata.dq_list_bundle_datasets_fn(text);
+drop function if exists metadata.dq_list_bundles_fn();
 
 -- Drop indexes
-drop index if exists ores.dq_bundle_publications_published_at_idx;
-drop index if exists ores.dq_bundle_publications_bundle_code_idx;
+drop index if exists metadata.dq_bundle_publications_published_at_idx;
+drop index if exists metadata.dq_bundle_publications_bundle_code_idx;
 
 -- Drop table
-drop table if exists ores.dq_bundle_publications_tbl;
+drop table if exists metadata.dq_bundle_publications_tbl;

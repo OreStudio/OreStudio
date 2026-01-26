@@ -25,9 +25,9 @@
  * Data is imported here first, then promoted to geo_ip2country_tbl.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
-create table if not exists "ores"."dq_ip2country_artefact_tbl" (
+create table if not exists "metadata"."dq_ip2country_artefact_tbl" (
     "dataset_id" uuid not null,
     "range_start" bigint not null,
     "range_end" bigint not null,
@@ -35,7 +35,7 @@ create table if not exists "ores"."dq_ip2country_artefact_tbl" (
 );
 
 create index if not exists dq_ip2country_artefact_dataset_idx
-on "ores"."dq_ip2country_artefact_tbl" (dataset_id);
+on "metadata"."dq_ip2country_artefact_tbl" (dataset_id);
 
 create index if not exists dq_ip2country_artefact_range_idx
-on "ores"."dq_ip2country_artefact_tbl" using gist (int8range(range_start, range_end + 1, '[)'));
+on "metadata"."dq_ip2country_artefact_tbl" using gist (int8range(range_start, range_end + 1, '[)'));

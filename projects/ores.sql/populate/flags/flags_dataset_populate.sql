@@ -26,7 +26,7 @@
  * This must be run before populating the artefact tables.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Flag Icons Datasets
@@ -35,7 +35,7 @@ set schema 'ores';
 \echo '--- Flag Icons Datasets ---'
 
 -- Country Flag Images
-select ores.upsert_dq_datasets(
+select public.upsert_dq_datasets(
     'assets.country_flags',
     'Visual Assets',
     'Country Flags',

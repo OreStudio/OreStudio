@@ -18,11 +18,11 @@
  *
  */
 
-create or replace function ores.refdata_cashflow_types_notify_fn()
+create or replace function production.refdata_cashflow_types_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.refdata.cashflow_type';
+    entity_name text := 'production.refdata.cashflow_type';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin
@@ -45,5 +45,5 @@ end;
 $$ language plpgsql;
 
 create or replace trigger refdata_cashflow_types_notify_trg
-after insert or update or delete on ores.refdata_cashflow_types_tbl
-for each row execute function ores.refdata_cashflow_types_notify_fn();
+after insert or update or delete on production.refdata_cashflow_types_tbl
+for each row execute function production.refdata_cashflow_types_notify_fn();

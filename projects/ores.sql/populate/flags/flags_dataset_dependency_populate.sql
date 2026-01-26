@@ -26,7 +26,7 @@
  * Must be run after flags_dataset_populate.sql.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Flag Icons Dataset Dependencies

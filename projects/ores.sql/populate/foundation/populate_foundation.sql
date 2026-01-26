@@ -105,32 +105,32 @@
 \echo '--- Foundation Layer Summary ---'
 
 select 'Change Reason Categories' as entity, count(*) as count
-from ores.dq_change_reason_categories_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_change_reason_categories_tbl where valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'Change Reasons', count(*)
-from ores.dq_change_reasons_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_change_reasons_tbl where valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'Rounding Types', count(*)
-from ores.refdata_rounding_types_tbl
+from production.refdata_rounding_types_tbl
 union all
 select 'Data Domains', count(*)
-from ores.dq_data_domains_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_data_domains_tbl where valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'Subject Areas', count(*)
-from ores.dq_subject_areas_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_subject_areas_tbl where valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'Coding Scheme Authority Types', count(*)
-from ores.dq_coding_scheme_authority_types_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_coding_scheme_authority_types_tbl where valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'Coding Schemes', count(*)
-from ores.dq_coding_schemes_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_coding_schemes_tbl where valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'Permissions', count(*)
-from ores.iam_permissions_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from production.iam_permissions_tbl where valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'Roles', count(*)
-from ores.iam_roles_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from production.iam_roles_tbl where valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'System Flags', count(*)
-from ores.variability_feature_flags_tbl where name like 'system.%' and valid_to = ores.utility_infinity_timestamp_fn()
+from production.variability_feature_flags_tbl where name like 'system.%' and valid_to = public.utility_infinity_timestamp_fn()
 order by entity;

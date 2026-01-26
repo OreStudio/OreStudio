@@ -23,7 +23,7 @@
 -- Examples: vendor, internal, regulatory.
 -- =============================================================================
 
-create table if not exists "ores"."dq_origin_dimensions_tbl" (
+create table if not exists "metadata"."dq_origin_dimensions_tbl" (
     "code" text not null,
     "version" integer not null,
     "name" text not null,
@@ -43,22 +43,22 @@ create table if not exists "ores"."dq_origin_dimensions_tbl" (
 );
 
 create unique index if not exists dq_origin_dimensions_version_uniq_idx
-on "ores"."dq_origin_dimensions_tbl" (code, version)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "metadata"."dq_origin_dimensions_tbl" (code, version)
+where valid_to = public.utility_infinity_timestamp_fn();
 
 create unique index if not exists dq_origin_dimensions_code_uniq_idx
-on "ores"."dq_origin_dimensions_tbl" (code)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "metadata"."dq_origin_dimensions_tbl" (code)
+where valid_to = public.utility_infinity_timestamp_fn();
 
-create or replace function ores.dq_origin_dimensions_insert_fn()
+create or replace function metadata.dq_origin_dimensions_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "ores"."dq_origin_dimensions_tbl"
+    from "metadata"."dq_origin_dimensions_tbl"
     where code = NEW.code
-      and valid_to = ores.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 
     if found then
         if NEW.version != 0 and NEW.version != current_version then
@@ -68,35 +68,35 @@ begin
         end if;
         NEW.version = current_version + 1;
 
-        update "ores"."dq_origin_dimensions_tbl"
+        update "metadata"."dq_origin_dimensions_tbl"
         set valid_to = current_timestamp
         where code = NEW.code
-          and valid_to = ores.utility_infinity_timestamp_fn()
+          and valid_to = public.utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
         NEW.version = 1;
     end if;
 
     NEW.valid_from = current_timestamp;
-    NEW.valid_to = ores.utility_infinity_timestamp_fn();
+    NEW.valid_to = public.utility_infinity_timestamp_fn();
 
     if NEW.modified_by is null or NEW.modified_by = '' then
         NEW.modified_by = current_user;
     end if;
 
-    NEW.change_reason_code := ores.refdata_validate_change_reason_fn(NEW.change_reason_code);
+    NEW.change_reason_code := metadata.refdata_validate_change_reason_fn(NEW.change_reason_code);
 
     return NEW;
 end;
 $$ language plpgsql;
 
 create or replace trigger dq_origin_dimensions_insert_trg
-before insert on "ores"."dq_origin_dimensions_tbl"
-for each row execute function ores.dq_origin_dimensions_insert_fn();
+before insert on "metadata"."dq_origin_dimensions_tbl"
+for each row execute function metadata.dq_origin_dimensions_insert_fn();
 
 create or replace rule dq_origin_dimensions_delete_rule as
-on delete to "ores"."dq_origin_dimensions_tbl" do instead
-    update "ores"."dq_origin_dimensions_tbl"
+on delete to "metadata"."dq_origin_dimensions_tbl" do instead
+    update "metadata"."dq_origin_dimensions_tbl"
     set valid_to = current_timestamp
     where code = OLD.code
-      and valid_to = ores.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();

@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-create or replace function ores.dq_data_domains_notify_fn()
+create or replace function metadata.dq_data_domains_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.dq.data_domain';
+    entity_name text := 'metadata.dq.data_domain';
     change_timestamp timestamptz := NOW();
     changed_name text;
 begin
@@ -44,5 +44,5 @@ end;
 $$ language plpgsql;
 
 create or replace trigger dq_data_domains_notify_trg
-after insert or update or delete on ores.dq_data_domains_tbl
-for each row execute function ores.dq_data_domains_notify_fn();
+after insert or update or delete on metadata.dq_data_domains_tbl
+for each row execute function metadata.dq_data_domains_notify_fn();

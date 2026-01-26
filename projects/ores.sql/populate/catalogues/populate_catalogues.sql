@@ -110,68 +110,68 @@
 \echo '--- Data Catalogues Layer Summary ---'
 
 select 'Catalogs' as entity, count(*) as count
-from ores.dq_catalogs_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_catalogs_tbl where valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'Datasets', count(*)
-from ores.dq_datasets_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_datasets_tbl where valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'Dataset Dependencies', count(*)
-from ores.dq_dataset_dependencies_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_dataset_dependencies_tbl where valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'Artefact: Images', count(*)
-from ores.dq_images_artefact_tbl
+from metadata.dq_images_artefact_tbl
 union all
 select 'Artefact: Countries', count(*)
-from ores.dq_countries_artefact_tbl
+from metadata.dq_countries_artefact_tbl
 union all
 select 'Artefact: Currencies', count(*)
-from ores.dq_currencies_artefact_tbl
+from metadata.dq_currencies_artefact_tbl
 union all
 select 'Artefact: IP Ranges', count(*)
-from ores.dq_ip2country_artefact_tbl
+from metadata.dq_ip2country_artefact_tbl
 union all
 select 'Artefact: Account Types', count(*)
-from ores.dq_account_types_artefact_tbl
+from metadata.dq_account_types_artefact_tbl
 union all
 select 'Artefact: Asset Classes', count(*)
-from ores.dq_asset_classes_artefact_tbl
+from metadata.dq_asset_classes_artefact_tbl
 union all
 select 'Artefact: Asset Measures', count(*)
-from ores.dq_asset_measures_artefact_tbl
+from metadata.dq_asset_measures_artefact_tbl
 union all
 select 'Artefact: Benchmark Rates', count(*)
-from ores.dq_benchmark_rates_artefact_tbl
+from metadata.dq_benchmark_rates_artefact_tbl
 union all
 select 'Artefact: Business Centres', count(*)
-from ores.dq_business_centres_artefact_tbl
+from metadata.dq_business_centres_artefact_tbl
 union all
 select 'Artefact: Business Processes', count(*)
-from ores.dq_business_processes_artefact_tbl
+from metadata.dq_business_processes_artefact_tbl
 union all
 select 'Artefact: Cashflow Types', count(*)
-from ores.dq_cashflow_types_artefact_tbl
+from metadata.dq_cashflow_types_artefact_tbl
 union all
 select 'Artefact: Entity Classifications', count(*)
-from ores.dq_entity_classifications_artefact_tbl
+from metadata.dq_entity_classifications_artefact_tbl
 union all
 select 'Artefact: Local Jurisdictions', count(*)
-from ores.dq_local_jurisdictions_artefact_tbl
+from metadata.dq_local_jurisdictions_artefact_tbl
 union all
 select 'Artefact: Party Relationships', count(*)
-from ores.dq_party_relationships_artefact_tbl
+from metadata.dq_party_relationships_artefact_tbl
 union all
 select 'Artefact: Party Roles', count(*)
-from ores.dq_party_roles_artefact_tbl
+from metadata.dq_party_roles_artefact_tbl
 union all
 select 'Artefact: Person Roles', count(*)
-from ores.dq_person_roles_artefact_tbl
+from metadata.dq_person_roles_artefact_tbl
 union all
 select 'Artefact: Regulatory Corporate Sectors', count(*)
-from ores.dq_regulatory_corporate_sectors_artefact_tbl
+from metadata.dq_regulatory_corporate_sectors_artefact_tbl
 union all
 select 'Artefact: Reporting Regimes', count(*)
-from ores.dq_reporting_regimes_artefact_tbl
+from metadata.dq_reporting_regimes_artefact_tbl
 union all
 select 'Artefact: Supervisory Bodies', count(*)
-from ores.dq_supervisory_bodies_artefact_tbl
+from metadata.dq_supervisory_bodies_artefact_tbl
 order by entity;

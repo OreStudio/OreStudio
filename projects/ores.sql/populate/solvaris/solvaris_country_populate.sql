@@ -27,7 +27,7 @@
  * This script is idempotent.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 DO $$
 declare
@@ -38,11 +38,11 @@ declare
 begin
     -- Get the countries dataset ID from the datasets model
     select id into v_dataset_id
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where name = 'Solvaris Countries'
       and subject_area_name = 'Countries'
       and domain_name = 'Reference Data'
-      and valid_to = ores.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset not found for countries';
@@ -50,11 +50,11 @@ begin
 
     -- Get the flags dataset ID (for linking images)
     select id into v_flags_dataset_id
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where name = 'Solvaris Country Flag Images'
       and subject_area_name = 'Country Flags'
       and domain_name = 'Reference Data'
-      and valid_to = ores.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_flags_dataset_id is null then
         raise exception 'Dataset not found for flag images';
@@ -62,7 +62,7 @@ begin
 
     -- Get the placeholder image (xx.svg = "no flag available")
     select image_id into v_placeholder_image_id
-    from ores.dq_images_artefact_tbl
+    from metadata.dq_images_artefact_tbl
     where dataset_id = v_flags_dataset_id
       and key = 'xx';
 
@@ -71,13 +71,13 @@ begin
     end if;
 
     -- Clear existing countries for this dataset (idempotency)
-    delete from ores.dq_countries_artefact_tbl
+    delete from metadata.dq_countries_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    raise notice 'Populating countries for dataset: %', (select name from ores.dq_datasets_tbl where id = v_dataset_id);
+    raise notice 'Populating countries for dataset: %', (select name from metadata.dq_datasets_tbl where id = v_dataset_id);
 
     -- Insert Solvaris countries with flag image links
-    insert into ores.dq_countries_artefact_tbl (
+    insert into metadata.dq_countries_artefact_tbl (
         dataset_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id
     )
     select
@@ -191,13 +191,13 @@ begin
         ('EZ', 'XEZ', 1159, 'Ezoria', 'Republic of Ezoria'),
         ('FA', 'XFA', 1135, 'Faeland', 'Republic of Faeland')
     ) as c(alpha2_code, alpha3_code, numeric_code, name, official_name)
-    left join ores.dq_images_artefact_tbl i
+    left join metadata.dq_images_artefact_tbl i
         on i.dataset_id = v_flags_dataset_id
         and i.key = lower(c.alpha2_code);
 
     get diagnostics v_count = row_count;
 
-    raise notice 'Successfully populated % countries for dataset: %', v_count, (select name from ores.dq_datasets_tbl where id = v_dataset_id);
+    raise notice 'Successfully populated % countries for dataset: %', v_count, (select name from metadata.dq_datasets_tbl where id = v_dataset_id);
 end $$;
 
 -- =============================================================================
@@ -208,8 +208,8 @@ end $$;
 \echo '--- DQ Solvaris Countries Summary ---'
 
 select 'Total Solvaris Countries' as metric, count(*) as count
-from ores.dq_countries_artefact_tbl c
-join ores.dq_datasets_tbl d on c.dataset_id = d.id
+from metadata.dq_countries_artefact_tbl c
+join metadata.dq_datasets_tbl d on c.dataset_id = d.id
 where d.subject_area_name = 'Countries'
   and d.domain_name = 'Reference Data'
-  and d.valid_to = ores.utility_infinity_timestamp_fn();
+  and d.valid_to = public.utility_infinity_timestamp_fn();

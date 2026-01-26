@@ -26,7 +26,7 @@
  * This must be run before populating the artefact table.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- FpML Regulatory Corporate Sector Dataset
@@ -34,7 +34,7 @@ set schema 'ores';
 
 \echo '--- FpML Regulatory Corporate Sector Dataset ---'
 
-select ores.upsert_dq_datasets(
+select public.upsert_dq_datasets(
     'fpml.regulatory_corporate_sector',
     'FpML Standards',
     'Regulatory',

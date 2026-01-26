@@ -25,13 +25,13 @@
  * Populates the dq_coding_schemes_artefact_tbl staging table.
  *
  * To publish to production:
- *   SELECT * FROM ores.dq_populate_coding_schemes(
- *       (SELECT id FROM ores.dq_datasets_tbl WHERE code = 'iso.coding_schemes' AND valid_to = ores.utility_infinity_timestamp_fn()),
+ *   SELECT * FROM metadata.dq_populate_coding_schemes(
+ *       (SELECT id FROM metadata.dq_datasets_tbl WHERE code = 'iso.coding_schemes' AND valid_to = public.utility_infinity_timestamp_fn()),
  *       'upsert'
  *   );
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- ISO Standards Coding Schemes Artefacts
@@ -40,13 +40,13 @@ set schema 'ores';
 \echo '--- ISO Standards Coding Schemes Artefacts ---'
 
 -- Store dataset_id in psql variable for reuse
-select id as v_dataset_id from ores.dq_datasets_tbl where code = 'iso.coding_schemes' and valid_to = ores.utility_infinity_timestamp_fn() \gset
+select id as v_dataset_id from metadata.dq_datasets_tbl where code = 'iso.coding_schemes' and valid_to = public.utility_infinity_timestamp_fn() \gset
 
 -- Clear existing artefacts for this dataset before inserting
-delete from ores.dq_coding_schemes_artefact_tbl
+delete from metadata.dq_coding_schemes_artefact_tbl
 where dataset_id = :'v_dataset_id';
 
-insert into ores.dq_coding_schemes_artefact_tbl (
+insert into metadata.dq_coding_schemes_artefact_tbl (
     dataset_id, code, version, name, authority_type,
     subject_area_name, domain_name, uri, description
 ) values (
@@ -55,7 +55,7 @@ insert into ores.dq_coding_schemes_artefact_tbl (
     'Countries', 'Reference Data', 'http://www.fpml.org/coding-scheme/external/iso3166-1-alpha-2', 'ISO 3166-1 alpha-2 country codes. Two-letter codes (e.g., US, GB, DE) for countries and dependent territories. The most commonly used country code format in financial messaging.'
 );
 
-insert into ores.dq_coding_schemes_artefact_tbl (
+insert into metadata.dq_coding_schemes_artefact_tbl (
     dataset_id, code, version, name, authority_type,
     subject_area_name, domain_name, uri, description
 ) values (
@@ -64,7 +64,7 @@ insert into ores.dq_coding_schemes_artefact_tbl (
     'Countries', 'Reference Data', 'http://www.fpml.org/coding-scheme/external/iso3166-1-alpha-3', 'ISO 3166-1 alpha-3 country codes. Three-letter codes (e.g., USA, GBR, DEU) for countries and dependent territories. More descriptive than alpha-2 codes.'
 );
 
-insert into ores.dq_coding_schemes_artefact_tbl (
+insert into metadata.dq_coding_schemes_artefact_tbl (
     dataset_id, code, version, name, authority_type,
     subject_area_name, domain_name, uri, description
 ) values (

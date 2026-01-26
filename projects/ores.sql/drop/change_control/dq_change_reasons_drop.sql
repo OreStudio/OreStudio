@@ -17,12 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'metadata';
 
-drop rule if exists dq_change_reasons_delete_rule on "ores"."dq_change_reasons_tbl";
-drop trigger if exists dq_change_reasons_insert_trg on "ores"."dq_change_reasons_tbl";
-drop function if exists ores.dq_change_reasons_insert_fn;
+drop rule if exists dq_change_reasons_delete_rule on "metadata"."dq_change_reasons_tbl";
+drop trigger if exists dq_change_reasons_insert_trg on "metadata"."dq_change_reasons_tbl";
+drop function if exists metadata.dq_change_reasons_insert_fn;
 drop index if exists dq_change_reasons_category_idx;
 drop index if exists dq_change_reasons_code_uniq_idx;
 drop index if exists dq_change_reasons_version_uniq_idx;
-drop table if exists "ores"."dq_change_reasons_tbl";
+drop table if exists "metadata"."dq_change_reasons_tbl";

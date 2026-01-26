@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'metadata';
 
-create table if not exists "ores"."dq_countries_artefact_tbl" (
+create table if not exists "metadata"."dq_countries_artefact_tbl" (
     "dataset_id" uuid not null,
     "alpha2_code" text not null,
     "version" integer not null,
@@ -31,19 +31,19 @@ create table if not exists "ores"."dq_countries_artefact_tbl" (
 );
 
 create index if not exists dq_countries_artefact_dataset_idx
-on "ores"."dq_countries_artefact_tbl" (dataset_id);
+on "metadata"."dq_countries_artefact_tbl" (dataset_id);
 
 create index if not exists dq_countries_artefact_alpha2_idx
-on "ores"."dq_countries_artefact_tbl" (alpha2_code);
+on "metadata"."dq_countries_artefact_tbl" (alpha2_code);
 
 create index if not exists dq_countries_artefact_alpha3_idx
-on "ores"."dq_countries_artefact_tbl" (alpha3_code);
+on "metadata"."dq_countries_artefact_tbl" (alpha3_code);
 
 create index if not exists dq_countries_artefact_numeric_idx
-on "ores"."dq_countries_artefact_tbl" (numeric_code);
+on "metadata"."dq_countries_artefact_tbl" (numeric_code);
 
 -- Function to insert countries into the artifact table
-create or replace function ores.dq_countries_artefact_insert_fn(
+create or replace function metadata.dq_countries_artefact_insert_fn(
     p_dataset_id uuid,
     p_alpha2_code text,
     p_version integer,
@@ -54,7 +54,7 @@ create or replace function ores.dq_countries_artefact_insert_fn(
     p_image_id uuid default null
 ) returns void as $$
 begin
-    insert into ores.dq_countries_artefact_tbl (
+    insert into metadata.dq_countries_artefact_tbl (
         dataset_id, alpha2_code, version, alpha3_code, numeric_code, name, official_name, image_id
     )
     values (

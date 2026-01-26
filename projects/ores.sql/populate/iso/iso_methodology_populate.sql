@@ -25,7 +25,7 @@
  * This script is idempotent.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- ISO Standards Methodologies
@@ -33,7 +33,7 @@ set schema 'ores';
 
 \echo '--- ISO Standards Methodologies ---'
 
-select ores.upsert_dq_methodologies(
+select public.upsert_dq_methodologies(
     'Wikipedia ISO 3166 Extraction',
     'Data extracted from Wikipedia page listing ISO 3166 country codes',
     'https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes',
@@ -42,7 +42,7 @@ select ores.upsert_dq_methodologies(
 See methodology documentation for detailed steps.'
 );
 
-select ores.upsert_dq_methodologies(
+select public.upsert_dq_methodologies(
     'Wikipedia ISO 4217 Extraction',
     'Data extracted from Wikipedia page listing ISO 4217 currency codes',
     'https://en.wikipedia.org/wiki/ISO_4217',

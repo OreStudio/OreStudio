@@ -26,7 +26,7 @@
  * This must be run before populating the artefact table.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- FpML Business Center Dataset
@@ -34,7 +34,7 @@ set schema 'ores';
 
 \echo '--- FpML Business Center Dataset ---'
 
-select ores.upsert_dq_datasets(
+select public.upsert_dq_datasets(
     'fpml.business_center',
     'FpML Standards',
     'Trading',

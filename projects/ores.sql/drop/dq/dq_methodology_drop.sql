@@ -18,9 +18,9 @@
  *
  */
 
-set schema 'ores';
+set schema 'metadata';
 
-drop trigger if exists dq_methodologies_insert_trg on "ores"."dq_methodologies_tbl";
-drop rule if exists dq_methodologies_delete_rule on "ores"."dq_methodologies_tbl";
-drop function if exists ores.dq_methodologies_insert_fn();
-drop table if exists "ores"."dq_methodologies_tbl";
+drop trigger if exists dq_methodologies_insert_trg on "metadata"."dq_methodologies_tbl";
+drop rule if exists dq_methodologies_delete_rule on "metadata"."dq_methodologies_tbl";
+drop function if exists metadata.dq_methodologies_insert_fn();
+drop table if exists "metadata"."dq_methodologies_tbl";

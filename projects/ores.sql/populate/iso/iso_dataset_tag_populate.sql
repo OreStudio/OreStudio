@@ -25,7 +25,7 @@
  * This script is idempotent.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- ISO Standards Dataset Tags
@@ -33,7 +33,7 @@ set schema 'ores';
 
 \echo '--- ISO Standards Dataset Tags ---'
 
-select ores.upsert_dq_tag(
+select public.upsert_dq_tag(
     'ISO Coding Schemes',
     'General',
     'Reference Data',
@@ -41,7 +41,7 @@ select ores.upsert_dq_tag(
     'ISO coding scheme definitions'
 );
 
-select ores.upsert_dq_tag(
+select public.upsert_dq_tag(
     'ISO 3166 Country Codes',
     'Countries',
     'Reference Data',
@@ -49,7 +49,7 @@ select ores.upsert_dq_tag(
     'Country reference data'
 );
 
-select ores.upsert_dq_tag(
+select public.upsert_dq_tag(
     'ISO 4217 Currency Codes',
     'Currencies',
     'Reference Data',

@@ -18,32 +18,24 @@
  *
  */
 
--- Geo
+-- =============================================================================
+-- 1. Production Schema (has FKs to metadata, must be dropped first)
+-- =============================================================================
 \ir ./geo/drop_geo.sql
-
--- Data Quality
-\ir ./dq/drop_dq.sql
-
--- Assets
 \ir ./assets/drop_assets.sql
-
--- Telemetry
 \ir ./telemetry/drop_telemetry.sql
-
--- IAM
-\ir ./iam/drop_iam.sql
-
--- Variability
 \ir ./variability/drop_variability.sql
-
--- Reference Data
+\ir ./iam/drop_iam.sql
 \ir ./refdata/drop_refdata.sql
 
--- Change Control (after refdata due to FK dependencies)
+-- =============================================================================
+-- 2. Metadata Schema (dropped after production)
+-- =============================================================================
+\ir ./dq/drop_dq.sql
 \ir ./change_control/drop_change_control.sql
 
--- Seed
+-- =============================================================================
+-- 3. Public Schema (utilities dropped last)
+-- =============================================================================
 \ir ./seed/drop_seed.sql
-
--- Utility
 \ir ./utility/drop_utility.sql

@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
 -- =============================================================================
 -- Feature toggles for runtime configuration.
 -- Uses name as natural key.
 -- =============================================================================
 
-create table if not exists "ores"."variability_feature_flags_tbl" (
+create table if not exists "production"."variability_feature_flags_tbl" (
     "name" text not null,
     "version" integer not null,
     "enabled" integer not null default 0,
@@ -45,23 +45,23 @@ create table if not exists "ores"."variability_feature_flags_tbl" (
 );
 
 create unique index if not exists variability_feature_flags_version_uniq_idx
-on "ores"."variability_feature_flags_tbl" (name, version)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "production"."variability_feature_flags_tbl" (name, version)
+where valid_to = public.utility_infinity_timestamp_fn();
 
 -- Unique constraint on active records for ON CONFLICT support
 create unique index if not exists variability_feature_flags_name_uniq_idx
-on "ores"."variability_feature_flags_tbl" (name)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "production"."variability_feature_flags_tbl" (name)
+where valid_to = public.utility_infinity_timestamp_fn();
 
-create or replace function ores.variability_feature_flags_insert_fn()
+create or replace function production.variability_feature_flags_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "ores"."variability_feature_flags_tbl"
+    from "production"."variability_feature_flags_tbl"
     where name = new.name
-    and valid_to = ores.utility_infinity_timestamp_fn();
+    and valid_to = public.utility_infinity_timestamp_fn();
 
     if found then
         if new.version != 0 and new.version != current_version then
@@ -71,28 +71,28 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update "ores"."variability_feature_flags_tbl"
+        update "production"."variability_feature_flags_tbl"
         set valid_to = current_timestamp
         where name = new.name
-        and valid_to = ores.utility_infinity_timestamp_fn()
+        and valid_to = public.utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = ores.utility_infinity_timestamp_fn();
+    new.valid_to = public.utility_infinity_timestamp_fn();
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
     end if;
 
-    new.change_reason_code := ores.refdata_validate_change_reason_fn(new.change_reason_code);
+    new.change_reason_code := metadata.refdata_validate_change_reason_fn(new.change_reason_code);
 
     return new;
 end;
 $$ language plpgsql;
 
 create or replace trigger variability_feature_flags_insert_trg
-before insert on "ores"."variability_feature_flags_tbl"
+before insert on "production"."variability_feature_flags_tbl"
 for each row
-execute function ores.variability_feature_flags_insert_fn();
+execute function production.variability_feature_flags_insert_fn();

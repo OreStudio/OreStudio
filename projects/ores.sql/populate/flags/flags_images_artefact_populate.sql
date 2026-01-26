@@ -31,7 +31,7 @@
 -- or with explicit parameters:
 --   python3 images_generate_sql.py --dataset-name "..." --subject-area "..." --domain "..." ...
 
-set schema 'ores';
+set schema 'metadata';
 
 DO $$
 declare
@@ -39,24 +39,24 @@ declare
 begin
     -- Get the dataset ID using (name, subject_area_name, domain_name)
     select id into v_dataset_id
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where name = 'Country Flag Images'
       and subject_area_name = 'Country Flags'
       and domain_name = 'Reference Data'
-      and valid_to = ores.utility_infinity_timestamp_fn();
+      and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset not found: name="Country Flag Images", subject_area="Country Flags", domain="Reference Data"';
     end if;
 
     -- Clear existing images for this dataset (idempotency)
-    delete from ores.dq_images_artefact_tbl
+    delete from metadata.dq_images_artefact_tbl
     where dataset_id = v_dataset_id;
 
     raise notice 'Populating images for dataset: %', 'Country Flag Images';
 
     -- Insert images
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ad', 'Flag of ad', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-ad" viewBox="0 0 640 480">
@@ -210,7 +210,7 @@ begin
   <path fill="none" stroke="#703d29" stroke-width=".5" d="M264.1 175.5h52.6V228h-52.6zm58.2 0h52.6V228h-52.6zm-58 98q.1 1.6 1.4 4.3c1 1.5.6 1.4 2.7 3.8a15 15 0 0 0 4 2.9 33 33 0 0 0 15 2.6q4-.2 6.6-.7a71 71 0 0 1 11-.6q2.2 0 4.7.6c3.5.7 7 2 7 2v-54.7h-52.6V271l.2 2.4zm110.4 0a13 13 0 0 1-1.4 4.3c-1 1.5-.6 1.4-2.7 3.8a15 15 0 0 1-4 2.9c-1.3.7-2.3 1-4.4 1.6a33 33 0 0 1-10.6 1q-4-.3-6.5-.7l-7.2-.6H334q-2.2 0-4.7.6c-3.5.7-7 2-7 2v-54.8H375v37.5l-.2 2.4z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ae', 'Flag of ae', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ae" viewBox="0 0 640 480">
@@ -220,7 +220,7 @@ begin
   <path fill="red" d="M0 0h220v480H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'af', 'Flag of af', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-af" viewBox="0 0 640 480">
@@ -305,7 +305,7 @@ begin
   <path fill="#bf0000" d="M350.8 319.4q.6.6.7 1.2l.4 1.6-.8.1-1-1.5-1.1-1.2-1.7-1.5-2-1.7q-.6-.3-.6-.5l-.3-.8-.2-1.6 2.7 2.2 2.5 2.2zm-9.5-5.8-.2 2H338l.3-2zm8.4 8.9-7.6 2.3-1.3-2 6.5-2-.7-.8-.9-.6a1 1 0 0 1-.4 1l-1 .6a3 3 0 0 1-1.8 0 2 2 0 0 1-1.3-.7 4 4 0 0 1-.7-2.2q0-1.5.9-1.8 1.1-.3 3 .7a8 8 0 0 1 3 2.4zm-5.8-4-.8-.3h-.6l-.5.3v.6l.5.2h.6l.4-.3zm-8-1.6-.5 2-3.2-.3.5-2zm7.5 7.7-1.7.4H340l-1.5-.4q-.5.8-1.5 1.2l-1.6.6-1.2.3-1-2 1.1-.3 1.3-.4.9-.5-1-.5h-.9l-.2.3h-.5q-.8-1.2-.3-2c.5-.8.9-.8 2-1a7 7 0 0 1 2.6-.2q1.2.1 1.5.9.2.3.2.7l-.4 1.2h1.1l1.7-.3zm-8 1.8-1.6.3a3 3 0 0 1-2.2-.4 6 6 0 0 1-1.7-2.6l-.8-2.2a2 2 0 0 0-.8-1l-.9-.5.6-2.1q.9.4 1.4 1l1 1.7.5 1.5 1.1 2.2q.5.4 1 .3l1.7-.2zm-7-7.5-1 1.9-3-.7 1-1.9zm1.8 8.4-7.5.7-.4-2 6.2-.7-.6-.8-1-.6.5-2q1 .6 1.6 1.3.5.8.8 2.1zm-6 1-2.2-.2-1.7-.5-1.3.4h-3.7l-1.2-.3q-.4-.3-.8-1a4 4 0 0 1-1.5 1l-1.7.1h-1.7l.2-2.1h1.7q1.2.1 2.1-.4a2 2 0 0 0 1.3-1.8l.7.1-.1 1.3q0 .4.3.7.4.3 1 .3h1.5q1.5 0 2-.2.9-.2 1-1.1l.1-.4s.3 0 .5-.2l.5-.2v.7l-.3 1.1 2 .5q.1-.3-.1-.7l-.3-.6.1-.3.3-.2 1-.9.5 1v1zm-11.3-8.7-2 1.3-1.3-.9-1.4 1-1.9-1 1.8-1.3 1.5.8 1.5-1 1.8 1m-3 8.2-7.3-1.2.8-2 6.2 1q0-.6-.2-1l-.5-.8 1.6-1.7q.6.8.7 1.6t-.5 2.1zm-6.1-1-1.6-.3q-1.3-.3-1.5-1.2-.3-.9.8-2.8l1.2-2q.4-.7.3-1.2l-.3-.7 2.2-1.6q.4.8.3 1.4 0 .8-.7 1.8l-.8 1.4a6 6 0 0 0-.9 2.2q0 .6.5.7l1.6.4zm-3.8-8-2.5 1.1-1.8-1.7 2.6-1zm-1 6.6-1.6 1.4-1.7.6-2.4-.1-2.8-.7a8 8 0 0 1-3.4-2q-.9-1.2 0-2.2a7 7 0 0 1 2-1.6q1.1-.7 3.8-1.6l.4.5-2.8 1.2q-.8.4-1.3 1t.2 1.6a11 11 0 0 0 6.3 2.2q1.8 0 2.3-.7.4-.4.5-1l.2-1.6 2.5-1.5-.1 1.5a4 4 0 0 1-1 1.6z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ag', 'Flag of ag', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ag" viewBox="0 0 640 480">
@@ -323,7 +323,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ai', 'Flag of ai', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-ai" viewBox="0 0 640 480">
@@ -356,7 +356,7 @@ begin
   <path fill="#fdc301" d="M421.2 188.2c0 94.2 10.2 126.6 30.6 148.5a187 187 0 0 0 36.5 31.1 186 186 0 0 0 36.4-31.1c20.4-21.9 30.6-54.3 30.6-148.5-14.8 6.8-23.3 10.1-35.5 10-11-.3-22.6-5.7-31.5-10-9 4.3-20.6 9.7-31.5 10-12.3.1-20.7-3.2-35.6-10m4 5c14 6.5 22 9.6 33.5 9.4a76 76 0 0 0 29.6-9.4c8.4 4 19.3 9.2 29.6 9.4 11.5.2 19.4-3 33.4-9.4 0 89-9.6 119.6-28.8 140.2a176 176 0 0 1-34.2 29.4 176 176 0 0 1-34.3-29.4c-19.2-20.6-28.7-51.3-28.7-140.2z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'al', 'Flag of al', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-al" viewBox="0 0 640 480">
@@ -365,7 +365,7 @@ begin
   <use xlink:href="#al-a" width="100%" height="100%" transform="matrix(-1 0 0 1 640 0)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'am', 'Flag of am', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-am" viewBox="0 0 640 480">
@@ -374,7 +374,7 @@ begin
   <path fill="#f2a800" d="M0 320h640v160H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ao', 'Flag of ao', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ao" viewBox="0 0 640 480">
@@ -391,7 +391,7 @@ begin
   <path fill="none" stroke="#000" stroke-width="3" d="m331.5 348.8-125-75.5m109.6 58.1L274 304.1m18.2 42.7L249.3 322"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'aq', 'Flag of aq', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-aq" viewBox="0 0 640 480">
@@ -400,7 +400,7 @@ begin
   <path fill="none" stroke="#fff" stroke-linejoin="round" stroke-width="2.5" d="M595.5 297.6q-.9 2 .1 3.6c1.1-1.7.2-2.4 0-3.6zm-476-149.4s-3-.4-2.4 2.3c1-2 2.3-2.2 2.4-2.3zm-.3-6.4c-1.7 0-3.8-.2-3 2.5 1-2.1 3-2.4 3-2.5zm12.7 36.3s2.6-.2 2 2.5c-1-2-2-2.4-2-2.5z" transform="scale(.86021 .96774)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ar', 'Flag of ar', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-ar" viewBox="0 0 640 480">
@@ -436,7 +436,7 @@ begin
   <path id="ar-g" fill="#85340a" stroke-width="1" d="M305.9 237.5c3.5 2.7 7 2.5 9 1.3 2-1.3 2-1.7 1.6-1.7s-.8.4-2.4 1.3c-1.7.8-4.1.8-8.2-.9"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'arab', 'Flag of arab', $svg$<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" version="1.0" id="flag-icons-arab" viewBox="0 0 640 480">
@@ -549,7 +549,7 @@ begin
   <path fill="#006233" d="M328 341.8v.9q-.1.9-1.4 1.2l-6.8.2v-5.7q4-.1 6.8-.4 1.2 0 1.4 1v.8m-16.4.3v-1q0-.9 1.3-1 3 .3 6.9.2v5.8H313c-.8-.2-1.4-1.3-1.4-1.9"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'as', 'Flag of as', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-as" viewBox="0 0 640 480">
@@ -625,7 +625,7 @@ begin
   <path fill="#fff" d="M451.5 267.1s-2.4-1.1.4-2.6 5.6-3 6-3.6c0 0-1.3 1.9-6.4 6.2"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'asean', 'Flag of asean', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" id="flag-icons-asean" viewBox="0 0 640 480">
@@ -642,7 +642,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'at', 'Flag of at', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-at" viewBox="0 0 640 480">
@@ -650,7 +650,7 @@ begin
   <path fill="#c8102e" d="M0 0h640v160H0zm0 320h640v160H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'au', 'Flag of au', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-au" viewBox="0 0 640 480">
@@ -662,7 +662,7 @@ begin
   <path fill="#fff" d="m527 396.7-20.5 2.6 2.2 20.5-14.8-14.4-14.7 14.5 2-20.5-20.5-2.4 17.3-11.2-10.9-17.5 19.6 6.5 6.9-19.5 7.1 19.4 19.5-6.7-10.7 17.6zm-3.7-117.2 2.7-13-9.8-9 13.2-1.5 5.5-12.1 5.5 12.1 13.2 1.5-9.8 9 2.7 13-11.6-6.6zm-104.1-60-20.3 2.2 1.8 20.3-14.4-14.5-14.8 14.1 2.4-20.3-20.2-2.7 17.3-10.8-10.5-17.5 19.3 6.8L387 178l6.7 19.3 19.4-6.3-10.9 17.3 17.1 11.2ZM623 186.7l-20.9 2.7 2.3 20.9-15.1-14.7-15 14.8 2.1-21-20.9-2.4 17.7-11.5-11.1-17.9 20 6.7 7-19.8 7.2 19.8 19.9-6.9-11 18zm-96.1-83.5-20.7 2.3 1.9 20.8-14.7-14.8-15.1 14.4 2.4-20.7-20.7-2.8 17.7-11L467 73.5l19.7 6.9 7.3-19.5 6.8 19.7 19.8-6.5-11.1 17.6zM234 385.7l-45.8 5.4 4.6 45.9-32.8-32.4-33 32.2 4.9-45.9-45.8-5.8 38.9-24.8-24-39.4 43.6 15 15.8-43.4 15.5 43.5 43.7-14.7-24.3 39.2 38.8 25.1Z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'aw', 'Flag of aw', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-aw" viewBox="0 0 640 480">
@@ -852,7 +852,7 @@ begin
   <path fill="#9cc" d="m139.7 234.7 3 3zm5.9 0 3 3zm-3 6 3 2.9z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ax', 'Flag of ax', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ax" viewBox="0 0 640 480">
@@ -874,7 +874,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'az', 'Flag of az', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-az" viewBox="0 0 640 480">
@@ -886,7 +886,7 @@ begin
   <path fill="#fff" d="m384 200 7.7 21.5 20.6-9.8-9.8 20.7L424 240l-21.5 7.7 9.8 20.6-20.6-9.8L384 280l-7.7-21.5-20.6 9.8 9.8-20.6L344 240l21.5-7.7-9.8-20.6 20.6 9.8z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ba', 'Flag of ba', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ba" viewBox="0 0 640 480">
@@ -902,7 +902,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bb', 'Flag of bb', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-bb" viewBox="0 0 640 480">
@@ -912,7 +912,7 @@ begin
   <use xlink:href="#bb-a" width="100%" height="100%" transform="matrix(-1 0 0 1 639.5 0)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bd', 'Flag of bd', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-bd" viewBox="0 0 640 480">
@@ -920,7 +920,7 @@ begin
   <circle cx="280" cy="240" r="160" fill="#f42a41"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'be', 'Flag of be', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-be" viewBox="0 0 640 480">
@@ -931,7 +931,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bf', 'Flag of bf', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-bf" viewBox="0 0 640 480">
@@ -942,7 +942,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bg', 'Flag of bg', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-bg" viewBox="0 0 640 480">
@@ -951,7 +951,7 @@ begin
   <path fill="#d62612" d="M0 320h640v160H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bh', 'Flag of bh', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-bh" viewBox="0 0 640 480">
@@ -959,7 +959,7 @@ begin
   <path fill="#ce1126" d="M640 0H96l110.7 48L96 96l110.7 48L96 192l110.7 48L96 288l110.7 48L96 384l110.7 48L96 480h544"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bi', 'Flag of bi', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-bi" viewBox="0 0 640 480">
@@ -978,7 +978,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bj', 'Flag of bj', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-bj" viewBox="0 0 640 480">
@@ -996,7 +996,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bl', 'Flag of bl', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-bl" viewBox="0 0 640 480">
@@ -1005,7 +1005,7 @@ begin
   <path fill="#e1000f" d="M426.7 0H640v480H426.7z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bm', 'Flag of bm', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-bm" viewBox="0 0 640 480">
@@ -1106,7 +1106,7 @@ begin
   <path fill="#c8102e" d="M0 96.5v48h320v-48zM136.5 0v240h48V0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bn', 'Flag of bn', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-bn" viewBox="0 0 640 480">
@@ -1146,7 +1146,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bo', 'Flag of bo', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-bo" viewBox="0 0 640 480">
@@ -1823,7 +1823,7 @@ begin
   <path fill="#574f4c" d="m323.3 194 .7.5-.1-.1-.7-.6v.1"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bq', 'Flag of bq', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-bq" viewBox="0 0 640 480">
@@ -1832,7 +1832,7 @@ begin
   <path fill="#ae1c28" d="M0 0h640v160H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'br', 'Flag of br', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-br" viewBox="0 0 640 480">
@@ -1881,7 +1881,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bs', 'Flag of bs', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-bs" viewBox="0 0 640 480">
@@ -1898,7 +1898,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bt', 'Flag of bt', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-bt" viewBox="0 0 640 480">
@@ -1991,7 +1991,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bv', 'Flag of bv', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-bv" viewBox="0 0 640 480">
@@ -2008,7 +2008,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bw', 'Flag of bw', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-bw" viewBox="0 0 640 480">
@@ -2019,7 +2019,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'by', 'Flag of by', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" id="flag-icons-by" viewBox="0 0 640 480">
@@ -2041,7 +2041,7 @@ begin
   <path fill="#007c30" d="M110 320h530v160H110Z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'bz', 'Flag of bz', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-bz" viewBox="0 0 640 480">
@@ -2190,7 +2190,7 @@ begin
   <path fill="none" stroke="#000" d="M366 205.1v53c0 10.6-1.4 52.6-46.5 69-45.3-16.4-46.7-58.4-46.7-69v-53H366"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ca', 'Flag of ca', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ca" viewBox="0 0 640 480">
@@ -2198,7 +2198,7 @@ begin
   <path fill="#d52b1e" d="M-19.7 0h169.8v480H-19.7zm509.5 0h169.8v480H489.9zM201 232l-13.3 4.4 61.4 54c4.7 13.7-1.6 17.8-5.6 25l66.6-8.4-1.6 67 13.9-.3-3.1-66.6 66.7 8c-4.1-8.7-7.8-13.3-4-27.2l61.3-51-10.7-4c-8.8-6.8 3.8-32.6 5.6-48.9 0 0-35.7 12.3-38 5.8l-9.2-17.5-32.6 35.8c-3.5.9-5-.5-5.9-3.5l15-74.8-23.8 13.4q-3.2 1.3-5.2-2.2l-23-46-23.6 47.8q-2.8 2.5-5 .7L264 130.8l13.7 74.1c-1.1 3-3.7 3.8-6.7 2.2l-31.2-35.3c-4 6.5-6.8 17.1-12.2 19.5s-23.5-4.5-35.6-7c4.2 14.8 17 39.6 9 47.7"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cc', 'Flag of cc', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-cc" viewBox="0 0 640 480">
@@ -2221,7 +2221,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cd', 'Flag of cd', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-cd" viewBox="0 0 640 480">
@@ -2230,7 +2230,7 @@ begin
   <path fill="#ce1021" d="M640 0 0 384v96L640 96z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cefta', 'Flag of cefta', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-cefta" viewBox="0 0 640 480">
@@ -2247,7 +2247,7 @@ begin
   <path fill="#fc0" d="m208.3 341.5 19.5-19.4 19.4 19.4-19.4 19.5zm204.7 21 19.5-19.5 19.5 19.5-19.5 19.4z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cf', 'Flag of cf', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-cf" viewBox="0 0 640 480">
@@ -2266,7 +2266,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cg', 'Flag of cg', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-cg" viewBox="0 0 640 480">
@@ -2282,7 +2282,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ch', 'Flag of ch', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ch" viewBox="0 0 640 480">
@@ -2295,7 +2295,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ci', 'Flag of ci', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ci" viewBox="0 0 640 480">
@@ -2306,7 +2306,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ck', 'Flag of ck', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ck" viewBox="0 0 640 480">
@@ -2319,7 +2319,7 @@ begin
   <path fill="#c8102e" d="M0 96.5v48h320v-48zM136.5 0v240h48V0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cl', 'Flag of cl', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-cl" viewBox="0 0 640 480">
@@ -2336,7 +2336,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cm', 'Flag of cm', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-cm" viewBox="0 0 640 480">
@@ -2355,7 +2355,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cn', 'Flag of cn', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-cn" viewBox="0 0 640 480">
@@ -2370,7 +2370,7 @@ begin
   <use xlink:href="#cn-a" width="30" height="20" transform="matrix(14.9991 -18.73557 18.73533 14.99929 240 216)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'co', 'Flag of co', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-co" viewBox="0 0 640 480">
@@ -2381,7 +2381,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cp', 'Flag of cp', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-cp" viewBox="0 0 640 480">
@@ -2392,7 +2392,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cr', 'Flag of cr', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-cr" viewBox="0 0 640 480">
@@ -2403,7 +2403,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cu', 'Flag of cu', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-cu" viewBox="0 0 640 480">
@@ -2420,7 +2420,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cv', 'Flag of cv', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-cv" viewBox="0 0 640 480">
@@ -2437,7 +2437,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cw', 'Flag of cw', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-cw" viewBox="0 0 640 480">
@@ -2455,7 +2455,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cx', 'Flag of cx', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-cx" viewBox="0 0 640 480">
@@ -2474,7 +2474,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cy', 'Flag of cy', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-cy" viewBox="0 0 640 480">
@@ -2484,7 +2484,7 @@ begin
   <path fill="#d47600" d="m519 76.4-1.8.7-.8.3-2.2-.1-2.2 1-3.8 2.6-.1.1-1.5.4-1.3-.6-.7.4-.3 1.5-.7 1.1-.9.6-3 .3-2.5 1.4-3.4-1-1.5.7-3.3 3-1.7.7h-.5l-2.3-.1-.9.3-1.4 1.3-2.6.2-.9.6-1.3 2.6L476 96l-.8.1-.8-.3-.7.1-.3 1.7-.6.7-1.8.6-1.4 1.2-1.3.6h-2l-1.7 1-3.1.2-1.3 1.2-.3.3-.6.3-1 .6-.2.2-1.2-.2-1.4.5-.6-.8-1 .5-1.2.1-1.6-.7-1.3-.6-.9.2-.3 1.5v.2l-1 1.2-1.7 1.1-.2.3-2 2.6-3.8 4-3.2 1.6-3.3 1-2.3 1.9-6 3-9.7 4.8-2 .6-2.8.4-5 1.9-4.4 1.3-.3.1-.8.3-6.3 1.9-2.9-.4-1.7.7-4.5-.5h-3.1l-2 .4-3.7 1.8-6.3 3-2 2-3.2 1.6-3.8 1.2v-1.6l-1.3.4-1 .3-3 .4h-1.7l-1.1-.3h-.2l-6.2 2.1-7 .7-3.5 1.1H333l-1.6.5-3.2.4-1.2-.3-.2-.1-9.4.4-4.3-.5-2 .5-3.5-1.2-5-.6-1.2-.3-2.6-.8-1.2.7-1 .1-2-.8h-.8l-1.8.6-1-.2-1-.8-2.1-.3-1.4-1.1-7.5 1-2-.6-6.9-2h-1l-1.4 1-2 .8-1.9.4-2.4.1-2.8-.7-2.8-1.4-1.1-.3-2.4.3h-.7l-4.4-2.3-5.6-3.5-3.8-1.9-1.5-.2-.2.7.7 2.2.3 2.3v2l-.1 1.3.3 1.1 1.4 1.6.6 1.5.4 4.2v4.3l-.7 6.8-.2 1-.8 3.6-.7 3.3-2.9 8.7-.7 1-2 1.3-4.3 3-3.2 1.8-1 .4-2.6.2H219l-2-1.1-2-.5-2.6-1.9-2.8-.6-3.2-1.8-.8-1-1.7-.2-2.4-.7-.9-.3-.6-.1-3-.1-2.9-1.3-1.5-.4h-2l-2.1 1-1.1.4-1.4-.5h-1l-1 1.7-.2.3-.8.4h-1.7l-.8.3-1.1.5-1 .4-.5.2h-.3l-.5.2h-.6l-1.2-.6-.6-.3-1-.2-.5.3-.1 1.9-.5 1.1-1.6 1.4-1.6 1.4-1 1.6-3 6.7-1.9 2.7-.5.7-2 2.1-1.7 1.3-3.9 3-3.7 1.5-3.2.6h-1.6l-3-.4-2.6-.8-3-1.8-3.1-2.6-4.7-4.5-.6-.4-.2-.1-1.4-1h-1.1l-.4.8-.3 1-.2.9-.5 5v.3l.3 2.1 3.6 5 1 2.6.2.3.7 1.2.6 1 1.3 3.6-.9 2 .4 1.4-1 .8-.2 1.2 3.1 4 .7 1.7-.7 2.4-1.3 1.4-.3.3.2 1 1.4 1.4 2.5 2.2 1.3 3.2 1 1 1.2-.3.6.5h1l1 1 .6.2 1 .5.8 1 .1 3.2 1.5 3.8v2.5l1 1.5.2 1.2-.5 3.3 1.2 1 1.2-.2.8.1 1.3 1.1 1.6 2.4 1.6-.2 1 .4 4.7 4.3 1 .6.9.4 1 1 1.4-1h.2l1.6-.2.7.5 1.4.9h1.7l4 1.2 1.6.4 3.4 2.1 1.5.9.8.7 1.2 1 2.2 1 2 .4 1 .2.9.3 4.2 1.7 2.3.5 2 .8 1.6.5h1.2l1.6-1.3h1.5l1.3.2 1.3-.2 2-1.2.3-.6 1.4-.6 4.8-.6 1.4.4 3.6-1.5 2.4.6 2-.7 4.7 1 1.2.9 1.4 1.5h1.7l-.7 1.1 2 2.2 1.9 2.7.1.4 1.3 3.9 1 1.4.7 1.9v1.2l-1 .9-.2.4v.2l.2.5.4-.2.7-.4 1-.2 1.6.2 1.1.1 1.7-.8 1.2-.6 1.8.8h2l.9.3 2.4 1.1 1.2.1.4-.3.3-.6-.1-.8-1-1.1-2-2.4-.8-1.2-.6-1.7-.2-2.2-.2-1.5.3-2 .5-.7.4-1.6.1-.4 1.2-1.5 3-2 3.2-2.8 2.5-1.7 2.6-1.1v-.3l.4.1 6.6-2.3 3-.5 20 1.4.7-.2.7-1.9.3-.3.3-.2 2.2-1 1-.2 2.8.7 1.2.3 1.9-1h1.3l2.7-1.5h1.7l.7-.2 3.3-2.4 3.1-.9.8-.4.3-.2 3.3-1.7 2-1.6 1.8-1 2-.4 5-.4 1.1-1.7 2.2-.3 1.3-1.5 1.5-.6 1.1-1.6 1-1.3 1.2-.7 4.1-.3 4.8.6.7-.4 1-3.9 1.2-.7 3-4.5v-1.6l.1-1.4.5-2-.3-3.4.4-3.6 1.9-4.5 1.7-1.8 2.7-1.9 1.4-.6 2-.3h.2l.5-.2h9.2l2.3-.1 5.7 1h.4l1.9.7 2.2 1.7 2.4 2.3.4.4 1.5.7.5.2 1.2-.2 1.8-1 1.4-1 1.8-1v-.2l1.1-1.5.4-.7 3.6-1.4 4.2-.2.5-.3h.2l1.1-1.4h1l2.6 1 1.7-.4 1.4.5 1.1-.1 2-.3 2.3 1.6 1.3.2 4.5 2.6h.4l.2.1.5-.2.8-.2h.1l.1.1.6.7.7.1.8-1-.3-.6-.1-.2-1.7-.3-1.4-2.5 1.4-1.5-2.2-2.6-.4-.5v-.1l-.8-1.2-3.8-5.8-5-4-1.7-1.3-.6-.5-2.7-2.7-1.9-2.5-.2-.5-.4-.9-1.1-2.4-2-1.5-1.6-1.8-3.4-4.6-.5-.7-.8-.5h-1.7l-.1-.2h-.1v-.1l.8-.8 1-.2.3-.9-1.7-4.9v-.2l-.1-1.5 1.3-7.1.2-.9 2.4-4.7 1.4-1.2 1.6-3.1 1.4-2 1.3-1.3.2-.1 2.3-1.4 2-.3 1.9-.3 3.3 1h3l.7-.1 1.4-.2 2.3-.7 1.1-.7.6-.8 1.2-4 .4-1.3.7-1.4 4.3-4.9 3.2-3 7.2-5.2 3.5-2.1 1.8-1.1 16.1-7.2 4.2-4.2 2.2-2.2 3.8-2.6 4.5-1.9 4-3 .8-1.1 1-3.5 1-.2.7-1.7.3-.5 3.1-2.2.4-.2 12.3-6.2 1.8.3 1-1.5 3.5-.6h.7l.9-.5.7-1.3v-.3l.1-3.4.8-.9.4-2.2.4-.6.4-.5 1-.7z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'cz', 'Flag of cz', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-cz" viewBox="0 0 640 480">
@@ -2493,7 +2493,7 @@ begin
   <path fill="#11457e" d="M360 240 0 0v480z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'de', 'Flag of de', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-de" viewBox="0 0 640 480">
@@ -2502,7 +2502,7 @@ begin
   <path fill="red" d="M0 160h640v160H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'dg', 'Flag of dg', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-dg" viewBox="0 0 640 480">
@@ -2636,7 +2636,7 @@ begin
   <path fill="#c8102e" d="M0 96.5v48h320v-48zM136.5 0v240h48V0Z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'dj', 'Flag of dj', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-dj" viewBox="0 0 640 480">
@@ -2653,7 +2653,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'dk', 'Flag of dk', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-dk" viewBox="0 0 640 480">
@@ -2662,7 +2662,7 @@ begin
   <path fill="#fff" d="M0 205.7h640.1v68.6H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'dm', 'Flag of dm', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-dm" viewBox="0 0 640 480">
@@ -2818,7 +2818,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'do', 'Flag of do', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-do" viewBox="0 0 640 480">
@@ -2943,7 +2943,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'dz', 'Flag of dz', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-dz" viewBox="0 0 640 480">
@@ -2952,7 +2952,7 @@ begin
   <path fill="#d21034" d="M424 180a120 120 0 1 0 0 120 96 96 0 1 1 0-120m4 60-108-35.2 67.2 92V183.2l-67.2 92z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'eac', 'Flag of eac', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-eac" viewBox="0 0 640 480">
@@ -3004,7 +3004,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ec', 'Flag of ec', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ec" viewBox="0 0 640 480">
@@ -3146,7 +3146,7 @@ begin
   <path fill="#812e00" fill-rule="evenodd" d="M307.6 125.5s-.4 5-3.6 8.3-9.8 7.1-9.8 7.1 8.9-4.2 9.8-3.3-5.7 8.3-5.7 8.3 8.7-7.7 9.8-7.7 3.6 7.5 4.6 7.3-2-9.5-1.6-11c.4-1.4 0-9.3 0-9.3l-3.4.3zm20.5-.6s-.4 5.3-3.6 8.8-9.8 7.6-9.8 7.6 8.9-4.5 9.8-3.5-5.7 8.8-5.7 8.8 8.7-8.2 9.8-8.2 3.6 8 4.6 7.8-2-10.2-1.6-11.7c.4-1.6 0-10 0-10zm-28.7-48c0 .9-1 1.7-2.1 1.7s-2.2-.8-2.2-1.8 1-1.8 2.2-1.8 2.1.8 2.1 1.8z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ee', 'Flag of ee', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ee" viewBox="0 0 640 480">
@@ -3155,7 +3155,7 @@ begin
   <path fill="#fff" d="M0 320h640v160H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'eg', 'Flag of eg', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-eg" viewBox="0 0 640 480">
@@ -3197,7 +3197,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'eh', 'Flag of eh', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-eh" viewBox="0 0 640 480">
@@ -3217,7 +3217,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'er', 'Flag of er', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-er" viewBox="0 0 640 480">
@@ -3229,7 +3229,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'es-ct', 'Flag of es-ct', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-es-ct" viewBox="0 0 640 480">
@@ -3237,7 +3237,7 @@ begin
   <path stroke="#da121a" stroke-width="60" d="M0 90h810m0 120H0m0 120h810m0 120H0" transform="scale(.79012 .88889)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'es-ga', 'Flag of es-ga', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-es-ga" viewBox="0 0 640 480">
@@ -3428,7 +3428,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'es-pv', 'Flag of es-pv', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-es-pv" viewBox="0 0 640 480">
@@ -3437,7 +3437,7 @@ begin
   <path fill="#FFF" d="M288.1 0h63.8v208.1H640v63.8H351.9V480h-63.8V271.9H0v-63.8h288.1v-104z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'es', 'Flag of es', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-es" viewBox="0 0 640 480">
@@ -3985,7 +3985,7 @@ begin
   <path fill="none" d="M279.1 217v-1m-.6 1v-1m-.4 1.1V216"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'et', 'Flag of et', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-et" viewBox="0 0 640 480">
@@ -4003,7 +4003,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'eu', 'Flag of eu', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-eu" viewBox="0 0 640 480">
@@ -4035,7 +4035,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'fi', 'Flag of fi', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-fi" viewBox="0 0 640 480">
@@ -4044,7 +4044,7 @@ begin
   <path fill="#002f6c" d="M175.5 0h130.9v480h-131z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'fj', 'Flag of fj', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-fj" viewBox="0 0 640 480">
@@ -4168,7 +4168,7 @@ begin
   <path fill="#C8102E" d="M0 96.5v48h320v-48zM136.5 0v240h48V0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'fk', 'Flag of fk', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-fk" viewBox="0 0 640 480">
@@ -4262,7 +4262,7 @@ begin
   <path fill="#C8102E" d="M0 96.5v48h320v-48zM136.5 0v240h48V0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'fm', 'Flag of fm', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-fm" viewBox="0 0 640 480">
@@ -4277,7 +4277,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'fo', 'Flag of fo', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-fo" viewBox="0 0 640 480">
@@ -4293,7 +4293,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'fr', 'Flag of fr', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-fr" viewBox="0 0 640 480">
@@ -4302,7 +4302,7 @@ begin
   <path fill="#e1000f" d="M426.7 0H640v480H426.7z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ga', 'Flag of ga', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ga" viewBox="0 0 640 480">
@@ -4313,7 +4313,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gb-eng', 'Flag of gb-eng', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gb-eng" viewBox="0 0 640 480">
@@ -4322,7 +4322,7 @@ begin
   <path fill="#ce1124" d="M0 201.6h640v76.8H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gb-nir', 'Flag of gb-nir', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-gb-nir" viewBox="0 0 640 480">
@@ -4458,7 +4458,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gb-sct', 'Flag of gb-sct', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gb-sct" viewBox="0 0 640 480">
@@ -4466,7 +4466,7 @@ begin
   <path stroke="#fff" stroke-width=".6" d="m0 0 5 3M0 3l5-3" transform="scale(128 160)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gb-wls', 'Flag of gb-wls', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gb-wls" viewBox="0 0 640 480">
@@ -4479,7 +4479,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gb', 'Flag of gb', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gb" viewBox="0 0 640 480">
@@ -4490,7 +4490,7 @@ begin
   <path fill="#C8102E" d="M0 193v96h640v-96zM273 0v480h96V0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gd', 'Flag of gd', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-gd" viewBox="0 0 640 480">
@@ -4521,7 +4521,7 @@ begin
   <use xlink:href="#gd-d" width="100%" height="100%" x="100" transform="translate(30.3 414.6)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ge', 'Flag of ge', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ge" viewBox="0 0 640 480">
@@ -4531,7 +4531,7 @@ begin
   <path fill="red" fill-rule="evenodd" d="M146.8 373.1c1-16.8 4-31.1 4-31.1s-9.8 1-14.8 1-14.8-1-14.8-1 3 14.3 4 31.2c-16.9-1-31.2-4-31.2-4s1 7.4 1 14.8-1 14.8-1 14.8 14.3-3 31.2-4c-1 16.9-4 31.2-4 31.2s7.4-1 14.8-1 14.8 1 14.8 1-3-14.3-4-31.2c16.9 1 31.2 4 31.2 4s-1-9.8-1-14.8 1-14.8 1-14.8-14.3 3-31.1 4zm368-288c1-16.8 4-31.1 4-31.1s-9.8 1-14.8 1-14.8-1-14.8-1 3 14.3 4 31.1c-16.9-1-31.2-3.9-31.2-3.9s1 7.4 1 14.8-1 14.8-1 14.8 14.3-3 31.2-4c-1 16.9-4 31.2-4 31.2s7.4-1 14.8-1 14.8 1 14.8 1-3-14.3-4-31.1c16.9 1 31.2 4 31.2 4s-1-10-1-14.9 1-14.8 1-14.8-14.3 3-31.2 4zm-368 0c1-16.8 4-31.1 4-31.1s-9.8 1-14.8 1-14.8-1-14.8-1 3 14.3 4 31.2c-16.9-1-31.2-4-31.2-4s1 7.4 1 14.8-1 14.8-1 14.8 14.3-3 31.2-4c-1 16.9-4 31.2-4 31.2s7.4-1 14.8-1 14.8 1 14.8 1-3-14.3-4-31.2c16.9 1 31.2 4 31.2 4s-1-9.8-1-14.8 1-14.8 1-14.8-14.3 3-31.1 4zm368 288c1-16.8 4-31.1 4-31.1s-9.8 1-14.8 1-14.8-1-14.8-1 3 14.3 4 31.2c-16.9-1-31.2-4-31.2-4s1 7.4 1 14.8-1 14.8-1 14.8 14.3-3 31.2-4c-1 16.9-4 31.2-4 31.2s7.4-1 14.8-1 14.8 1 14.8 1-3-14.3-4-31.2c16.9 1 31.2 4 31.2 4s-1-9.8-1-14.8 1-14.8 1-14.8-14.3 3-31.2 4z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gf', 'Flag of gf', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gf" viewBox="0 0 640 480">
@@ -4540,7 +4540,7 @@ begin
   <path fill="#e1000f" d="M426.7 0H640v480H426.7z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gg', 'Flag of gg', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-gg" viewBox="0 0 640 480">
@@ -4553,7 +4553,7 @@ begin
   <use xlink:href="#gg-a" width="36" height="24" transform="rotate(180 320 240)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gh', 'Flag of gh', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gh" viewBox="0 0 640 480">
@@ -4563,7 +4563,7 @@ begin
   <path fill="#000001" d="m320 160 52 160-136.1-98.9H404L268 320z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gi', 'Flag of gi', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-gi" viewBox="0 0 640 480">
@@ -4599,7 +4599,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gl', 'Flag of gl', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gl" viewBox="0 0 640 480">
@@ -4607,7 +4607,7 @@ begin
   <path fill="#d00c33" d="M0 240h640v240H0zm80 0a160 160 0 1 0 320 0 160 160 0 0 0-320 0"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gm', 'Flag of gm', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gm" viewBox="0 0 640 480">
@@ -4625,7 +4625,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gn', 'Flag of gn', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gn" viewBox="0 0 640 480">
@@ -4636,7 +4636,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gp', 'Flag of gp', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gp" viewBox="0 0 640 480">
@@ -4645,7 +4645,7 @@ begin
   <path fill="#e1000f" d="M426.7 0H640v480H426.7z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gq', 'Flag of gq', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gq" viewBox="0 0 640 480">
@@ -4672,7 +4672,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gr', 'Flag of gr', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gr" viewBox="0 0 640 480">
@@ -4692,7 +4692,7 @@ begin
   <path fill="#0d5eaf" d="M0 426.7h640V480H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gs', 'Flag of gs', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-gs" viewBox="0 0 640 480">
@@ -4829,7 +4829,7 @@ begin
   <path fill="#c8102e" d="M0 96.5v48h320v-48ZM136.5 0v240h48V0Z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gt', 'Flag of gt', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-gt" viewBox="0 0 640 480">
@@ -5037,7 +5037,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gu', 'Flag of gu', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gu" viewBox="0 0 640 480">
@@ -5060,7 +5060,7 @@ begin
   <path fill="#bd0728" d="M357 226h4.9l6.9 20.7 7-20.7h4.7v24.4h-3.2v-20.6l-7 20.6h-3.1l-7-20.6v20.6H357z" aria-label="M" font-family="helvetica" font-size="25.6"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gw', 'Flag of gw', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-gw" viewBox="0 0 640 480">
@@ -5077,7 +5077,7 @@ begin
   <use xlink:href="#gw-b" width="100%" height="100%" transform="rotate(-72 110 240)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'gy', 'Flag of gy', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-gy" viewBox="0 0 640 480">
@@ -5090,7 +5090,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'hk', 'Flag of hk', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-hk" viewBox="0 0 640 480">
@@ -5102,7 +5102,7 @@ begin
   <use xlink:href="#hk-a" transform="rotate(288 312.5 243.5)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'hm', 'Flag of hm', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-hm" viewBox="0 0 640 480">
@@ -5114,7 +5114,7 @@ begin
   <path fill="#fff" d="m527 396.7-20.5 2.6 2.2 20.5-14.8-14.4-14.7 14.5 2-20.5-20.5-2.4 17.3-11.2-10.9-17.5 19.6 6.5 6.9-19.5 7.1 19.4 19.5-6.7-10.7 17.6zm-3.7-117.2 2.7-13-9.8-9 13.2-1.5 5.5-12.1 5.5 12.1 13.2 1.5-9.8 9 2.7 13-11.6-6.6zm-104.1-60-20.3 2.2 1.8 20.3-14.4-14.5-14.8 14.1 2.4-20.3-20.2-2.7 17.3-10.8-10.5-17.5 19.3 6.8L387 178l6.7 19.3 19.4-6.3-10.9 17.3 17.1 11.2ZM623 186.7l-20.9 2.7 2.3 20.9-15.1-14.7-15 14.8 2.1-21-20.9-2.4 17.7-11.5-11.1-17.9 20 6.7 7-19.8 7.2 19.8 19.9-6.9-11 18zm-96.1-83.5-20.7 2.3 1.9 20.8-14.7-14.8-15.1 14.4 2.4-20.7-20.7-2.8 17.7-11L467 73.5l19.7 6.9 7.3-19.5 6.8 19.7 19.8-6.5-11.1 17.6zM234 385.7l-45.8 5.4 4.6 45.9-32.8-32.4-33 32.2 4.9-45.9-45.8-5.8 38.9-24.8-24-39.4 43.6 15 15.8-43.4 15.5 43.5 43.7-14.7-24.3 39.2 38.8 25.1Z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'hn', 'Flag of hn', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-hn" viewBox="0 0 640 480">
@@ -5136,7 +5136,7 @@ begin
   <use xlink:href="#hn-c" width="100%" height="100%" transform="translate(-133.3 37.3)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'hr', 'Flag of hr', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-hr" viewBox="0 0 640 480">
@@ -5198,7 +5198,7 @@ begin
   <path fill="#f7db17" d="m400.6 103 3.5-3 4.4 1.4zm8.5-1.7 3.4-3 4.4 1.5zm7.8-1.3-3.4 3-4.4-1.5zm-8.4 1.6-3.5 3-4.3-1.5zm-5-6.4 4.3 1.4.8 4.6zm5.5 6.4 4.4 1.5.9 4.5zm5.1 6.1-4.3-1.5-.9-4.5zm-5.6-6.4-4.3-1.5-.9-4.5zm3-7.7 1 4.6-3.5 3zm-2.7 8.1.8 4.6-3.4 3zm-2.8 7.5-.9-4.5 3.5-3zm2.8-8-.9-4.6 3.5-3z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ht', 'Flag of ht', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-ht" viewBox="0 0 640 480">
@@ -5318,7 +5318,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'hu', 'Flag of hu', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-hu" viewBox="0 0 640 480">
@@ -5329,7 +5329,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ic', 'Flag of ic', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ic" viewBox="0 0 640 480">
@@ -5340,7 +5340,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'id', 'Flag of id', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-id" viewBox="0 0 640 480">
@@ -5348,7 +5348,7 @@ begin
   <path fill="#fff" d="M0 240h640v240H0Z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ie', 'Flag of ie', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ie" viewBox="0 0 640 480">
@@ -5359,7 +5359,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'il', 'Flag of il', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-il" viewBox="0 0 640 480">
@@ -5377,7 +5377,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'im', 'Flag of im', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-im" viewBox="0 0 640 480">
@@ -5417,7 +5417,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'in', 'Flag of in', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-in" viewBox="0 0 640 480">
@@ -5446,7 +5446,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'io', 'Flag of io', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-io" viewBox="0 0 640 480">
@@ -5580,7 +5580,7 @@ begin
   <path fill="#c8102e" d="M0 96.5v48h320v-48zM136.5 0v240h48V0Z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'iq', 'Flag of iq', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-iq" viewBox="0 0 640 480">
@@ -5594,7 +5594,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ir', 'Flag of ir', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ir" viewBox="0 0 640 480">
@@ -5817,7 +5817,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'is', 'Flag of is', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-is" viewBox="0 0 640 480">
@@ -5833,7 +5833,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'it', 'Flag of it', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-it" viewBox="0 0 640 480">
@@ -5844,7 +5844,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'je', 'Flag of je', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-je" viewBox="0 0 640 480">
@@ -5910,7 +5910,7 @@ begin
   <path fill="gold" stroke="#806600" stroke-linecap="round" stroke-linejoin="round" stroke-width=".5" d="M378.7 21.3V21l.8-1.6a9 9 0 0 0-6.9 2 18 18 0 0 0-2.8 3.7 12 12 0 0 0-.8 3.2l-1.9-1.6-1.3-.4a5 5 0 0 0-3.2 1.5 6 6 0 0 0-1.5 3c-.4 1.6 0 3.2-1 4.6l-1.6 1.8a8 8 0 0 0 2.7.6 4 4 0 0 0 2.8-1.5c.6-.8.9-1.9 1.8-2.5a1 1 0 0 1 1.2-.2c.5.2.6 1.2.4 1.6l-1 3.4-1.8-.4-1.4.8-.6.3h0l1.2 1.8.5.2h0l-.4.2-3.3 1.6-.4.2h0l-2.4.1-1.6-.2-2.4-.8-.7-.4-1.3-1.4a12 12 0 0 1-2.1-4.3 6 6 0 0 0 5-5.7v-.8l-.1-.4-.3-1-.3-.6-.6-1-.4-.4a5 5 0 0 0-3.5-1.7h-1.3a6 6 0 0 0-3.2 1.6 6 6 0 0 0-1.4 2.2l-.2.8-.1 1.3h0a6 6 0 0 0 3.2 5.2l-2.7 2.6a15 15 0 0 1-8.7 4 14 14 0 0 1-10.6-3 12 12 0 0 1-2.3-2.8h1.3l1.6-1.6h.1l-.5-.4-1.2-1h-.5l.4-3.8c0-.6.4-1.6 1-1.6a2 2 0 0 1 1.4.8c.8 1 .4 2.1.8 3.2a5 5 0 0 0 2.4 2.6q1.7.5 3.3.4l-.9-2.4c-.6-1.8.5-3.2.8-5a6 6 0 0 0-.2-3.6 6 6 0 0 0-3-2.8h-1.6l-2.8.8s.8-2.4.5-3.6a15 15 0 0 0-1.6-4.8 23 23 0 0 0-3.5-3.7 23 23 0 0 0-3.5 3.7 15 15 0 0 0-1.6 4.8c-.2 1.2.5 3.6.5 3.6l-2.8-.8H311a6 6 0 0 0-3 2.8 6 6 0 0 0-.2 3.6c.3 1.8 1.4 3.2.8 5l-1 2.4q1.7.1 3.3-.4a5 5 0 0 0 2.4-2.6c.5-1 .2-2.3 1-3.2q.4-.8 1.2-.8c.7 0 1.1 1 1.1 1.6l.4 3.7h-.5l-1.6 1.6 1.6 1.5h1.3a12 12 0 0 1-2.4 2.8 14 14 0 0 1-10.6 3 15 15 0 0 1-8.6-4l-2.6-2.6a6 6 0 0 0 3.4-5.2h0a6 6 0 0 0-1.8-4.2 6 6 0 0 0-3.3-1.6l-.3-.2h-1a5 5 0 0 0-3.4 1.8 7 7 0 0 0-1.3 2l-.3 1v1.2a6 6 0 0 0 4.7 5.7 12 12 0 0 1-2.1 4.3l-1.4 1.4-.8.4-2.3.8-1.6.2-2.3-.1h0l-.4-.1-3.4-1.7-.3-.2h0l.5-.2 1.2-1.8h0l-.6-.3-1.4-.8-1.7.4-1.1-3.3c-.2-.5-.1-1.5.4-1.7a1 1 0 0 1 1.2.2c.8.6 1.2 1.8 1.8 2.5a4 4 0 0 0 2.8 1.5 8 8 0 0 0 2.7-.6l-1.6-1.8c-1.1-1.4-.6-3-1-4.7a6 6 0 0 0-1.5-3 5 5 0 0 0-3.2-1.4l-1.3.4-2 1.6a12 12 0 0 0-.7-3.2 18 18 0 0 0-2.8-3.7 9 9 0 0 0-6.8-2l.7 1.6v.3h.1l8.2 18.4-1.1.2-1.2 2 1.9 1 2.4-.6 2 5.8-2 .2h0c-.4.5-.6.5-.6 1h0q0 .6.4 1h0l.3.2h0l.5.3h1l.2 1.3-.1-.1v2l-1.2 2.6L274 59l.8 2.1.6-.4.1.7h-.3l.5 1h0l-.7.2q-.5.4-.5 1h0q0 .4.3 1h0l.8.5q5.8-.8 12.2-1.3l4-.3q10.6-.6 21.3-.6h13.6c4.3 0 13.3 0 21.4.6l2.2.2 2.3.1 5.3.5 6.4.8h0l.3-.2.7-.7v-.6h0q0-.6-.5-1h0l-.7-.1.2-.9h0l.2-.9.5.4.8-2 2-2.4-1.2-2.8V52h-.2l.3-1.3.9.1h0q.3 0 .4-.2.8-.6.8-1.3h0q0-.5-.6-1h0l-2.3-.2 2.2-5.9 2.5.7 2-1-1.2-2-1.2-.2 8.3-18.3h.1z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'jm', 'Flag of jm', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-jm" viewBox="0 0 640 480">
@@ -5922,7 +5922,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'jo', 'Flag of jo', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-jo" viewBox="0 0 640 480">
@@ -5942,7 +5942,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'jp', 'Flag of jp', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-jp" viewBox="0 0 640 480">
@@ -5957,7 +5957,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ke', 'Flag of ke', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-ke" viewBox="0 0 640 480">
@@ -5984,7 +5984,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'kg', 'Flag of kg', $svg$<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" id="flag-icons-kg" viewBox="0 0 640 480">
@@ -5992,7 +5992,7 @@ begin
   <path fill="#ff0" fill-rule="evenodd" d="m340.7 146.6 2.7-52q0-.4-.4-.5-.3 0-.5.4l-13.3 50.1-.1.5a5.9 5.9 0 1 0 11.6 1.5m14.4 4.4 10.8-51q.2-.3-.3-.5-.3 0-.5.3L344 147.2l-.2.5a5.9 5.9 0 1 0 11.3 3.3m13.5 6.6 18.7-48.6a.5.5 0 0 0-.8-.4L358.2 152l-.2.4a5.9 5.9 0 1 0 10.6 5m12.3 8.7 26-45a.5.5 0 0 0-.7-.6l-34.7 38.6-.3.4a5.9 5.9 0 1 0 9.7 6.6m10.8 10.4 32.8-40.4v-.6h-.7l-40.3 32.6-.4.4a5.9 5.9 0 1 0 8.6 8m9 12 38.7-34.8q.3-.3 0-.7h-.6L394 179l-.4.2a5.9 5.9 0 1 0 7.2 9.3m7 13.3 43.7-28.4a.5.5 0 0 0-.4-.8l-48.4 18.6-.5.3a5.9 5.9 0 1 0 5.6 10.3m5 14.2 47.5-21.2a.5.5 0 0 0-.3-.8l-50.7 10.8-.5.1a5.9 5.9 0 1 0 4 11m2.5 14.9 50.4-13.4q.3-.1.3-.5-.1-.4-.5-.4l-51.8 2.7h-.5a5.9 5.9 0 1 0 2.1 11.6m.3 15 51.8-5.4q.4-.1.4-.5 0-.3-.4-.5l-51.6-5.4h-.5a5.9 5.9 0 1 0 .3 11.8m-2.1 14.8 52 2.7a.5.5 0 0 0 .1-.9l-50.1-13.3-.5-.1a5.9 5.9 0 1 0-1.5 11.6m-4.4 14.4 51 10.8q.3.2.5-.3 0-.3-.3-.5l-47.5-21-.5-.2a5.9 5.9 0 1 0-3.3 11.3m-6.6 13.5 48.6 18.7a.5.5 0 0 0 .4-.8L408 278.2l-.4-.2a5.9 5.9 0 1 0-5 10.6m-8.7 12.3 45 26a.5.5 0 0 0 .6-.7l-38.6-34.7-.4-.3a5.9 5.9 0 1 0-6.6 9.7m-10.4 10.8 40.4 32.8a.5.5 0 0 0 .7-.7l-32.7-40.3-.4-.4a5.9 5.9 0 1 0-8 8.6m-12 9 34.8 38.7a.5.5 0 0 0 .8-.6L381 314l-.3-.4a5.9 5.9 0 1 0-9.3 7.2m-13.3 7 28.4 43.7q.2.3.6.2.3-.2.2-.6l-18.6-48.4-.3-.5a5.9 5.9 0 1 0-10.3 5.6m-14.2 5 21.2 47.5q.1.5.5.3.4 0 .3-.6l-10.8-50.7-.1-.5a5.9 5.9 0 1 0-11 4m-14.9 2.5 13.4 50.4q.1.3.5.3.4-.1.4-.5l-2.7-51.8v-.5a5.9 5.9 0 1 0-11.6 2.1m-15 .3 5.4 51.8a.5.5 0 0 0 1 0l5.4-51.6a6 6 0 0 0-5.9-6.4 6 6 0 0 0-5.9 6.2m-14.8-2.1-2.7 52a.5.5 0 0 0 .9.1l13.3-50.1.1-.5a5.9 5.9 0 1 0-11.6-1.5m-14.4-4.4-10.8 51a.5.5 0 0 0 .8.2l21.1-47.4.2-.5a5.9 5.9 0 1 0-11.3-3.3m-13.5-6.6L252.7 371q-.1.4.2.6t.6-.2l28.3-43.5a6 6 0 0 0-2.3-8.3 6 6 0 0 0-8 2.8m-12.4-8.6-26 45a.5.5 0 0 0 .7.6l34.7-38.6.3-.4a5.9 5.9 0 1 0-9.7-6.6m-10.8-10.4-32.8 40.4v.6q.4.3.7 0l40.3-32.6.4-.4a5.9 5.9 0 1 0-8.6-8m-9-12-38.7 34.8a.5.5 0 0 0 .6.8l44.9-26 .4-.3a5.9 5.9 0 1 0-7.2-9.3m-7-13.3-43.7 28.4a.5.5 0 0 0 .4.8l48.4-18.6.5-.3a5.9 5.9 0 1 0-5.6-10.3m-5-14.2-47.5 21.2q-.5.1-.3.5 0 .4.6.3l50.7-10.8.5-.1a5.9 5.9 0 1 0-4-11m-2.5-14.9-50.4 13.4a.5.5 0 0 0 .2 1l51.8-2.8h.5a5.9 5.9 0 1 0-2.1-11.6m-.3-15-51.8 5.4a.5.5 0 0 0 0 1l51.6 5.4h.5a5.9 5.9 0 1 0-.3-11.8m2.1-14.8-52-2.7a.5.5 0 0 0-.1.9l50.1 13.3.5.1a5.9 5.9 0 1 0 1.5-11.6m4.4-14.4-51-10.8q-.3-.2-.5.3 0 .3.3.5l47.4 21.1.5.2a5.9 5.9 0 1 0 3.3-11.3m6.6-13.5L189 172.7a.5.5 0 0 0-.4.8l43.5 28.3.4.2a5.9 5.9 0 1 0 5-10.6m8.7-12.3-45-26h-.7q-.1.3.1.7l38.6 34.7.4.3a5.9 5.9 0 1 0 6.6-9.7m10.4-10.8-40.4-32.8h-.6q-.3.3 0 .7l32.6 40.3.4.4a5.9 5.9 0 1 0 8-8.6m12-9-34.8-38.7a.5.5 0 0 0-.7.6l26 44.9.2.4a5.9 5.9 0 1 0 9.3-7.2m13.3-7-28.4-43.7a.5.5 0 0 0-.8.4l18.6 48.4.3.5a5.9 5.9 0 1 0 10.3-5.6m14.2-5-21.2-47.5a.5.5 0 0 0-.8.3l10.8 50.7.1.5a5.9 5.9 0 1 0 11-4m14.9-2.5-13.4-50.4q-.1-.3-.5-.3-.4.1-.4.5l2.7 51.8v.5a5.9 5.9 0 1 0 11.6-2.1m15-.3-5.4-51.8a.5.5 0 0 0-1 0l-5.4 51.6v.5a5.9 5.9 0 1 0 11.8-.3m-5.9 6.3a89.2 89.2 0 1 1 0 178.4 89.2 89.2 0 0 1 0-178.4m0 10.7a78.5 78.5 0 1 1 0 157 78.5 78.5 0 0 1 0-157m-65.6 102a155 155 0 0 1 32-44l6 4a155 155 0 0 0-34.1 48.4 70 70 0 0 1-3.9-8.3m71.1-40.6q2.8 2.3 5.4 4.8l5.8-4.5-5.4-4.7zm-11.4-8.7 5.9 4.3 5.9-4.3-5.9-4.3zm.6 18.3 5.3 5 5.3-5-5.3-5zm-11.4-9.3q3 2.2 5.8 4.5l5.4-4.8-5.8-4.4q-2.7 2.2-5.4 4.7m35.2-16.9q-3-2.3-6-4.3l-6.7 4 6 4.3zm10.4 8.6-5.3-4.6-6.4 4 5.5 4.6zm-36-16.6q3.5-2.3 7.1-4.3l7 4.3-7 4zm-11.5 8q3-2.3 6-4.3l6.7 4-6 4.3zM291 215l5.3-4.6 6.4 4-5.5 4.6zm-32.7-10.2a157 157 0 0 1 21.5 10.6 153 153 0 0 0-28.6 37.4 71 71 0 0 1 7-48m6-9.2q13 4.2 25.6 11l-5.3 4.6q-11.6-6.4-23.6-10.8 1.6-2.6 3.3-4.8m7.5-8.3q14.6 4 29.2 11.3l-6 4.2q-13.5-6.7-27.3-11.2zm11-8.4.6.2.8.2q14.8 4 29.7 11.5l-7.4 4.3a187 187 0 0 0-30.2-11.6q3-2.5 6.4-4.6m68.6-3.4-.8.3q-15.4 4.5-30.5 11.8-14.8-7.2-30-11.7l-.5-.1q-.5 0-.8-.3a70 70 0 0 1 62.6 0m12.5 8-.7.2q-15 4.4-29.6 11.4-3.6-2.3-7.4-4.3a145 145 0 0 1 31.3-11.9q3.4 2.2 6.4 4.6m8.5 8q-13.8 4.5-27.2 11.3l-6-4.2q14.5-7.4 29-11.3zm6.7 8.8q-12 4.4-23.6 10.8l-5.3-4.5q12.6-7 25.6-11 1.8 2.1 3.3 4.7m9.7 52.4a153 153 0 0 0-28.6-37.4 157 157 0 0 1 21.5-10.6 70 70 0 0 1 7.1 48m-7 19.1a155 155 0 0 0-34-48.3q3-2.2 6-4.1a157 157 0 0 1 31.9 44 70 70 0 0 1-3.9 8.4m-10.9 15c-8.6-22-20.6-39.9-34.7-54.2l5.6-4.7c14.6 14.4 27 32 35 51.9a71 71 0 0 1-5.9 7m-13.3 10.9-.9-2.5c-7.7-21-18.6-38.2-31.4-52.3l5.3-5.3a151 151 0 0 1 34 55 71 71 0 0 1-7 5m-67.9 4 .9-2.8c6.5-19 16.8-36 29.5-50.3 12.7 14.4 23 31.3 29.5 50.3l1 2.8a70 70 0 0 1-60.9 0m-14.1-9a151 151 0 0 1 34-55l5.3 5.3a158 158 0 0 0-31.4 52.3l-1 2.5a70 70 0 0 1-7-5m-12-13c8-19.9 20.3-37.4 34.9-51.8l5.6 4.7a157 157 0 0 0-34.7 54.2q-3.1-3.4-5.9-7"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'kh', 'Flag of kh', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-kh" viewBox="0 0 640 480">
@@ -6057,7 +6057,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ki', 'Flag of ki', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ki" viewBox="0 0 640 480">
@@ -6097,7 +6097,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'km', 'Flag of km', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-km" viewBox="0 0 640 480">
@@ -6117,7 +6117,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'kn', 'Flag of kn', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-kn" viewBox="0 0 640 480">
@@ -6135,7 +6135,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'kp', 'Flag of kp', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-kp" viewBox="0 0 640 480">
@@ -6154,7 +6154,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'kr', 'Flag of kr', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-kr" viewBox="0 0 640 480">
@@ -6182,7 +6182,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'kw', 'Flag of kw', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-kw" viewBox="0 0 640 480">
@@ -6199,7 +6199,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ky', 'Flag of ky', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-ky" viewBox="0 0 640 480">
@@ -6306,7 +6306,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'kz', 'Flag of kz', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-kz" viewBox="0 0 640 480">
@@ -6346,7 +6346,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'la', 'Flag of la', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-la" viewBox="0 0 640 480">
@@ -6362,7 +6362,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'lb', 'Flag of lb', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-lb" viewBox="0 0 640 480">
@@ -6381,7 +6381,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'lc', 'Flag of lc', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-lc" viewBox="0 0 640 480">
@@ -6393,7 +6393,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'li', 'Flag of li', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-li" viewBox="0 0 640 480">
@@ -6440,7 +6440,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'lk', 'Flag of lk', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-lk" viewBox="0 0 640 480">
@@ -6466,7 +6466,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'lr', 'Flag of lr', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-lr" viewBox="0 0 640 480">
@@ -6484,7 +6484,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ls', 'Flag of ls', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ls" viewBox="0 0 640 480">
@@ -6496,7 +6496,7 @@ begin
   <path fill="#fff" d="M260.5 292.1c-.6.7-4.7 8.9-4.7 8.9l7-1.5zm4 10.5-7.4 2.4 8.9 3.5zm3.3-10.3 3.7 10.9 9-2.6-2.3-5.2zm5.8 14.8 1.2 4.4 12 3-4.8-10.2zm13.2-9.3 4.3 10.2 9-3.5-3-4.5zm6 13.9 1.4 3.8 14 2-5.9-9.2-9.6 3.4zm13.4-11 5.2 9.1 13-4.8-1.4-3.5-16.8-.7zm7.6 12.4 2.7 4.8 16.2-.5-6-9-13 4.7zm17.1-12 4.4 7.6 10.4-5-2.8-4zm17 5.8-10.3 5.1 2.7 4.5 13.8-2.2zm3.3-8 5.3 6.7 8.7-6.9-3-3zm15.9 3.5-8.3 6.3 2.2 3.9 11.4-3zm11.4-13 2 2.9-5.7 8.5-5.9-7.6zm3.9 7.3 3.5 7-7 2.4-.6-3.3 4-6z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'lt', 'Flag of lt', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-lt" viewBox="0 0 640 480">
@@ -6507,7 +6507,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'lu', 'Flag of lu', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-lu" viewBox="0 0 640 480">
@@ -6516,7 +6516,7 @@ begin
   <path fill="#00a1de" d="M0 320h640v160H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'lv', 'Flag of lv', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-lv" viewBox="0 0 640 480">
@@ -6526,7 +6526,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ly', 'Flag of ly', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ly" viewBox="0 0 640 480">
@@ -6543,7 +6543,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ma', 'Flag of ma', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ma" viewBox="0 0 640 480">
@@ -6551,7 +6551,7 @@ begin
   <path fill="none" stroke="#006233" stroke-width="11.7" d="M320 179.4 284.4 289l93.2-67.6H262.4l93.2 67.6z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mc', 'Flag of mc', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-mc" viewBox="0 0 640 480">
@@ -6561,7 +6561,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'md', 'Flag of md', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-md" viewBox="0 0 640 480">
@@ -6635,7 +6635,7 @@ begin
   <path fill="#ff1900" fill-rule="evenodd" stroke="#000" stroke-width="1.1" d="M209 776c0 7.8-10.2 14.2-23 14.2s-23-6.4-23-14.2 10.3-14.2 23-14.2 23 6.4 23 14.2z" transform="matrix(.57449 -.36357 .38048 .54895 -2.3 4.2)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'me', 'Flag of me', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-me" viewBox="0 0 640 480">
@@ -6755,7 +6755,7 @@ begin
   <path fill="#d4af3a" d="M335.8 113q1.2-.2 1.9.8.5 1-1 1.4c-1.7.3-2.5-1.8-1-2.2z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mf', 'Flag of mf', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-mf" viewBox="0 0 640 480">
@@ -6764,7 +6764,7 @@ begin
   <path fill="#e1000f" d="M426.7 0H640v480H426.7z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mg', 'Flag of mg', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-mg" viewBox="0 0 640 480">
@@ -6775,7 +6775,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mh', 'Flag of mh', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-mh" viewBox="0 0 640 480">
@@ -6786,7 +6786,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mk', 'Flag of mk', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-mk" viewBox="0 0 640 480">
@@ -6795,7 +6795,7 @@ begin
   <circle cx="320" cy="240" r="77.1" fill="#ffe600" stroke="#d20000" stroke-width="17.1"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ml', 'Flag of ml', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ml" viewBox="0 0 640 480">
@@ -6806,7 +6806,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mm', 'Flag of mm', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-mm" viewBox="0 0 640 480">
@@ -6822,7 +6822,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mn', 'Flag of mn', $svg$<svg xmlns="http://www.w3.org/2000/svg" fill="#ffd900" id="flag-icons-mn" viewBox="0 0 640 480">
@@ -6840,7 +6840,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mo', 'Flag of mo', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-mo" viewBox="0 0 640 480">
@@ -6853,7 +6853,7 @@ begin
   <use xlink:href="#mo-a" width="100%" height="100%" transform="matrix(-1 0 0 1 640 0)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mp', 'Flag of mp', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-mp" viewBox="0 0 640 480">
@@ -6943,7 +6943,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mq', 'Flag of mq', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-mq" viewBox="0 0 640 480">
@@ -6952,7 +6952,7 @@ begin
   <path fill="#ef1923" d="m0 0 320 240L0 480z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mr', 'Flag of mr', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-mr" viewBox="0 0 640 480">
@@ -6962,7 +6962,7 @@ begin
   <path fill="#ffc400" d="m320 93.8-13.5 41.5H263l35.3 25.6-13.5 41.4 35.3-25.6 35.3 25.6-13.5-41.4 35.3-25.6h-43.6z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ms', 'Flag of ms', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ms" viewBox="0 0 640 480">
@@ -6995,7 +6995,7 @@ begin
   <path fill="#C8102E" d="M0 96.5v48h320v-48zM136.5 0v240h48V0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mt', 'Flag of mt', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-mt" viewBox="0 0 640 480">
@@ -7057,7 +7057,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mu', 'Flag of mu', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-mu" viewBox="0 0 640 480">
@@ -7069,7 +7069,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mv', 'Flag of mv', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-mv" viewBox="0 0 640 480">
@@ -7079,7 +7079,7 @@ begin
   <circle cx="380" cy="240" r="80" fill="#007e3a"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mw', 'Flag of mw', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-mw" viewBox="0 0 640 480">
@@ -7093,7 +7093,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mx', 'Flag of mx', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-mx" viewBox="0 0 640 480">
@@ -7479,7 +7479,7 @@ begin
   <path fill="#977c2e" d="M301 239.1s.3 0 .5-.3-.1.4-.1.4l-.3.1-.2-.2z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'my', 'Flag of my', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-my" viewBox="0 0 640 480">
@@ -7509,7 +7509,7 @@ begin
   </defs>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'mz', 'Flag of mz', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-mz" viewBox="0 0 640 480">
@@ -7534,7 +7534,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'na', 'Flag of na', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-na" viewBox="0 0 640 480">
@@ -7554,7 +7554,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'nc', 'Flag of nc', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-nc" viewBox="0 0 640 480">
@@ -7571,7 +7571,7 @@ begin
   <path d="M276.8 173.9s-4.3 12-4.8 24c-1 19.2-19.4 19.7-32 19.7V207c9.5 0 17.7-1.4 24.5-15.5q5.4-9.3 12.3-17.6m.5 154.7s-6.7-8.4-14.6-27.8c-4-10.1-13.8-16-22.7-16V270c20.3 0 30 7.5 31 18.6a329 329 0 0 0 6.3 40"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ne', 'Flag of ne', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ne" viewBox="0 0 640 480">
@@ -7581,7 +7581,7 @@ begin
   <circle cx="320" cy="240" r="68" fill="#e05206"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'nf', 'Flag of nf', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-nf" viewBox="0 0 640 480">
@@ -7594,7 +7594,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ng', 'Flag of ng', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ng" viewBox="0 0 640 480">
@@ -7604,7 +7604,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ni', 'Flag of ni', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-ni" viewBox="0 0 640 480">
@@ -7737,7 +7737,7 @@ begin
   <path fill="#c8a400" d="m320 179.9-25.7 44.5L268 270h104l-25.7-44.6zm0 2.4 25.2 43.7 24.7 42.8h-99.8l25.2-43.8z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'nl', 'Flag of nl', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-nl" viewBox="0 0 640 480">
@@ -7746,7 +7746,7 @@ begin
   <path fill="#21468b" d="M0 320h640v160H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'no', 'Flag of no', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-no" viewBox="0 0 640 480">
@@ -7757,7 +7757,7 @@ begin
   <path fill="#002664" d="M0 210h640v60H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'np', 'Flag of np', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-np" viewBox="0 0 640 480">
@@ -7774,7 +7774,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'nr', 'Flag of nr', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-nr" viewBox="0 0 640 480">
@@ -7790,7 +7790,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'nu', 'Flag of nu', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-nu" viewBox="0 0 640 480">
@@ -7804,7 +7804,7 @@ begin
   <path fill="#fedd00" d="m160 79.2 24 73.8-62.8-45.6h77.6L136 153M66.7 98.3l14 43.4L43.9 115h45.7l-37 26.8m200.7-43.5 14.1 43.4-36.9-26.8h45.7l-37 26.8M160 178.3l14.1 43.4-37-26.8h45.7l-37 26.8M160 18.3l14.1 43.4-37-26.8h45.7l-37 26.8"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'nz', 'Flag of nz', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-nz" viewBox="0 0 640 480">
@@ -7844,7 +7844,7 @@ begin
   <path fill="#c8102e" d="M0 96.5v48h320v-48zM136.5 0v240h48V0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'om', 'Flag of om', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-om" viewBox="0 0 640 480">
@@ -7963,7 +7963,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'pa', 'Flag of pa', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-pa" viewBox="0 0 640 480">
@@ -7981,7 +7981,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'pc', 'Flag of pc', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-pc" viewBox="0 0 640 480">
@@ -8018,7 +8018,7 @@ begin
   <path fill="#fff" d="M274.2 197.5s-1.4-5.3-8.3-4.5c0 0 4.4-2 6.4-1 2 1.1 2.4 1.4 2 5.5m-16.8-9.4s1.5-.5 2.2-.3c0 0 1 3.3 3.2 4.5 0 0-3.8-.3-5.4-4.2m22.2 5a13 13 0 0 0-8.7-4.8c-1.8 0-6 3.5-6 3.5-1-2-.5-3.4-.5-3.4 2 .2 3.7 1 3.7 1-.8-2.6-2-3.8-2-3.8 4-1 8.8 2.5 8.8 2.5a17 17 0 0 0-11-6.8c-1.2-.1-2.7 1.6-2.7 1.6-7.8 0-9.9 4.3-9.9 4.3 3.3 5.1 10 6.3 10 6.3-11.8-1.3-11.5 8-11.5 8l10.9-5.7c-4.2 24.1-21 35-22.4 36.3-1.4 1.4-.5 3 1.5 3.2 1.1 0 2.5 1 6.2-3.4a65 65 0 0 0 16.4-35.4l.2.2c1.2 2.9.4 5.4.6 7.3s4.4 6 4.4 6 2.3-4.5 2-7.1c-.5-2.7-5.5-7.6-5.5-7.6 7.8-1.5 8.2 11.6 8.2 11.6 3-3.5 2.4-7.3 2.4-7.3s6.3-4.6 4.9-6.4"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'pe', 'Flag of pe', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-pe" viewBox="0 0 640 480">
@@ -8026,7 +8026,7 @@ begin
   <path fill="#fff" d="M213.3 0h213.4v480H213.3z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'pf', 'Flag of pf', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-pf" viewBox="0 0 640 480">
@@ -8049,7 +8049,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'pg', 'Flag of pg', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-pg" viewBox="0 0 640 480">
@@ -8062,7 +8062,7 @@ begin
   <path fill="#fff" fill-rule="evenodd" d="m175 399-14.2-9-19 9.1 4.3-16.2-14.5-15.1 16.7-1 10-18.4 6.1 15.5 20.7 3.8-13 10.6zm36.2-79-6.6-3-6.3 3.6 1-7.2-5.4-4.9 7.1-1.3 3-6.6 3.5 6.4 7.2.8-5 5.2zm32-45.2-14.5-7-13.9 7.8 2.3-15.7-11.8-10.8 15.7-2.8 6.6-14.4 7.6 14 15.8 1.8-11 11.5zm-65.8-63-17-8.5-16.5 9.1 2.8-18.6-13.8-13 18.7-3 8-17 8.7 16.7 18.8 2.3-13.3 13.4zm-60.8 65.4-17-10-17 10.3 4.3-19.3-15.1-13 19.7-1.8 7.7-18.3 7.9 18.2 19.8 1.6-14.9 13z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ph', 'Flag of ph', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ph" viewBox="0 0 640 480">
@@ -8072,7 +8072,7 @@ begin
   <path fill="#fcd116" d="M26.7 42.4 41 55l16.6-9.2-7.4 17.5 14 13-19-1.6-8.1 17.2-4.3-18.5L14 71l16.3-10zm323.8 172.3.4 19 18 6.3-18 6.2-.4 19-11.5-15.1-18.2 5.5 10.8-15.6-10.8-15.6 18.2 5.5zM37.2 388.1l8 17.2 19-1.6-13.9 13 7.4 17.5-16.6-9.1-14.4 12.4 3.6-18.7L14 409l18.9-2.4zm114.2-249-6.2 6.2 3.1 47-3 .3-5.7-42.9-5.1 5 7.6 38.4a48 48 0 0 0-17.2 7.1l-21.7-32.4H96l26.4 34.3-2.4 2-31.1-35.5h-8.8v8.8l35.4 31-2 2.5-34.3-26.3v7.1l32.5 21.7q-5.2 7.8-7.1 17.2L66.3 223l-5.1 5 42.9 5.7q-.3 1.6-.3 3.1l-47-3-6.2 6.2 6.2 6.2 47-3.1.3 3.1-42.9 5.7 5 5 38.4-7.6a48 48 0 0 0 7.1 17.2l-32.5 21.7v7.2l34.3-26.3 2 2.4-35.4 31v8.8H89l31-35.4 2.5 2L96 312.2h7.2l21.7-32.5q7.8 5.2 17.2 7.1l-7.6 38.4 5 5 5.7-42.9q1.5.3 3.1.3l-3 47 6.1 6.2 6.3-6.2-3.1-47 3-.3 5.7 43 5.1-5.1-7.6-38.4a48 48 0 0 0 17.2-7.1l21.7 32.5h7.2l-26.4-34.3 2.4-2 31.1 35.4h8.8v-8.8l-35.4-31 2-2.4 34.3 26.3v-7.2l-32.5-21.7q5.2-7.8 7.1-17.2l38.3 7.6 5.1-5-42.9-5.7q.3-1.5.3-3.1l47 3 6.2-6.1-6.2-6.2-47 3-.3-3 42.9-5.7-5-5-38.4 7.5a48 48 0 0 0-7.1-17.2l32.5-21.7v-7.1l-34.3 26.3-2-2.4 35.4-31v-8.9H214l-31 35.5-2.5-2 26.4-34.3h-7.2L178 200.2q-7.8-5.2-17.2-7.1l7.6-38.3-5-5-5.7 42.8-3.1-.3 3-47z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'pk', 'Flag of pk', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-pk" viewBox="0 0 640 480">
@@ -8091,7 +8091,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'pl', 'Flag of pl', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-pl" viewBox="0 0 640 480">
@@ -8101,7 +8101,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'pm', 'Flag of pm', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-pm" viewBox="0 0 640 480">
@@ -8110,7 +8110,7 @@ begin
   <path fill="#e1000f" d="M426.7 0H640v480H426.7z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'pn', 'Flag of pn', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-pn" viewBox="0 0 640 480">
@@ -8167,7 +8167,7 @@ begin
   <path fill="none" stroke="#000" stroke-width=".4" d="M452.1 168.8c-1.2-1.7-2.9-4.4-5-1.5m16.1 1.7c-.8-.9-1.7-2.5-2-3.7m13.4 4c-.8-.6-2-1.7-2.6-2.9m1.6-3c2 .2 3.3 2 3.9 2.9s2 2.4 3 2.5m5.9 1.3q-1.2-1.6-1.5-2.8m.1-4.9 1.5 2.6m10.1 6.6a9 9 0 0 0-3.5-3.9m3.1-2.3c.1 3.3 4.5 3.6 4.7 6m3.5-5.4q.6 1 .6 3"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'pr', 'Flag of pr', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-pr" viewBox="0 0 640 480">
@@ -8184,7 +8184,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ps', 'Flag of ps', $svg$<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" id="flag-icons-ps" viewBox="0 0 640 480">
@@ -8194,7 +8194,7 @@ begin
   <path fill="#ed2e38" d="m0 0 320 240L0 480Z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'pt', 'Flag of pt', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-pt" viewBox="0 0 640 480">
@@ -8255,7 +8255,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'pw', 'Flag of pw', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-pw" viewBox="0 0 640 480">
@@ -8270,7 +8270,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'py', 'Flag of py', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-py" viewBox="0 0 640 480">
@@ -8431,7 +8431,7 @@ begin
   <path fill="#fedf00" stroke="#000" stroke-width=".4" d="m327.6 249.5-7.6-5.3-7.6 5.3 2.9-8.4-6.7-5.2h8.6l2.8-8.4 2.8 8.4h8.6l-6.7 5.2z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'qa', 'Flag of qa', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-qa" viewBox="0 0 640 480">
@@ -8439,7 +8439,7 @@ begin
   <path fill="#fff" d="M0 0v480h158.4l97.8-26.7-97.8-26.6 97.7-26.7-97.7-26.7 97.7-26.6-97.7-26.7 97.8-26.7-97.8-26.6 97.7-26.7-97.7-26.7 97.7-26.6-97.7-26.7 97.8-26.7-97.8-26.6L256.1 80l-97.7-26.7 97.8-26.6L158.3 0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 're', 'Flag of re', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-re" viewBox="0 0 640 480">
@@ -8448,7 +8448,7 @@ begin
   <path fill="#e1000f" d="M426.7 0H640v480H426.7z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ro', 'Flag of ro', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ro" viewBox="0 0 640 480">
@@ -8459,7 +8459,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'rs', 'Flag of rs', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-rs" viewBox="0 0 640 480">
@@ -8755,7 +8755,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ru', 'Flag of ru', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ru" viewBox="0 0 640 480">
@@ -8764,7 +8764,7 @@ begin
   <path fill="#d52b1e" d="M0 320h640v160H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'rw', 'Flag of rw', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-rw" viewBox="0 0 640 480">
@@ -8781,7 +8781,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sa', 'Flag of sa', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sa" viewBox="0 0 640 480">
@@ -8810,7 +8810,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sb', 'Flag of sb', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sb" viewBox="0 0 640 480">
@@ -8827,7 +8827,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sc', 'Flag of sc', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sc" viewBox="0 0 640 480">
@@ -8838,7 +8838,7 @@ begin
   <path fill="#007a39" d="m0 480 640-160v160z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sd', 'Flag of sd', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sd" viewBox="0 0 640 480">
@@ -8855,7 +8855,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'se', 'Flag of se', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-se" viewBox="0 0 640 480">
@@ -8863,7 +8863,7 @@ begin
   <path fill="#fecb00" d="M176 0v192H0v96h176v192h96V288h368v-96H272V0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sg', 'Flag of sg', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sg" viewBox="0 0 640 480">
@@ -8880,7 +8880,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sh-ac', 'Flag of sh-ac', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sh-ac" viewBox="0 0 640 480">
@@ -9573,7 +9573,7 @@ begin
   <path fill="#c8102e" d="M0 96.5v48h320v-48zM136.5 0v240h48V0Z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sh-hl', 'Flag of sh-hl', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sh-hl" viewBox="0 0 640 480">
@@ -9741,7 +9741,7 @@ begin
   <path fill="none" stroke="#000" stroke-width=".7" d="M492.4 135.4a41 41 0 0 1 7.1 7c1.5 1.8 2.4 4.3 4.8 5.4 3.2 3.4 16.9 7.4 17 8.5-3.2-1.3-4.6 3-7.7 2.3-2.8.8-5.2-1-7.6-2-3.8-.2-7.6 0-10.9 1.9-1.8 1-3.9-.5-5.3 0l-.2.2-.2.2m-17.5-6.5c-2.2-1.1-3.8-3.2-5.9-4.4-1.5-2.2-3.6-4.5-3.5-7.4-.2-3-1-7.2.4-10-1-2.3-2.4-3-3.6-5.1-.8-3.1-3.9-4.9-2-7.2 2-1.9 3.5-4 6.2-5a12 12 0 0 1 6.6.5c2.7.3 4.2 2.6 5.7 4.7a23 23 0 0 1 3.4 9.1c1.3 2.6 4.7 3.2 7.2 4.3 2 1 4.2 1.9 6 3.5"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sh-ta', 'Flag of sh-ta', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sh-ta" viewBox="0 0 640 480">
@@ -9821,7 +9821,7 @@ begin
   <path fill="#c8102e" d="M0 96.5v48h320v-48zM136.5 0v240h48V0Z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sh', 'Flag of sh', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sh" viewBox="0 0 640 480">
@@ -9832,7 +9832,7 @@ begin
   <path fill="#C8102E" d="M0 193v96h640v-96zM273 0v480h96V0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'si', 'Flag of si', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-si" viewBox="0 0 640 480">
@@ -9854,7 +9854,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sj', 'Flag of sj', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sj" viewBox="0 0 640 480">
@@ -9865,7 +9865,7 @@ begin
   <path fill="#002868" d="M0 210h640v60H0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sk', 'Flag of sk', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sk" viewBox="0 0 640 480">
@@ -9878,7 +9878,7 @@ begin
   <path fill="#0b4ea2" d="M233 263.3c-19.9 0-30.5 27.5-30.5 27.5s-6-13-22.2-13c-11 0-19 9.7-24.2 18.8 20 31.7 51.9 51.3 76.9 63.4 25-12 57-31.7 76.9-63.4-5.2-9-13.2-18.8-24.2-18.8-16.2 0-22.2 13-22.2 13S253 263.3 233 263.3"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sl', 'Flag of sl', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sl" viewBox="0 0 640 480">
@@ -9889,7 +9889,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sm', 'Flag of sm', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sm" viewBox="0 0 640 480">
@@ -9968,7 +9968,7 @@ begin
   <path fill="none" stroke="#00a400" stroke-linecap="round" stroke-width="2.2" d="M231.3 318.6c10.1 1.2 24.1.3 30.2 0M216 284.2c8.6 6.7 27.1 10.7 26.8 10.7m10.7 1.8c-2.8-14-5.8-17.4-8.3-26.2m-43.5-15.8c14.3 6.4 16.5 10.6 25.6 17m5.2-14c1.2-17.3 3.6-21.9 7.9-25.9m-38.7-2c5.2 5.7 22.2 23.7 22.2 23.7m-7-39.6c6.4 4.5 6.4 21 6.4 21"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sn', 'Flag of sn', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sn" viewBox="0 0 640 480">
@@ -9980,7 +9980,7 @@ begin
   <path fill="#0b7226" d="M342 218.8h71.8l-56.6 43.6 20.7 69.3-56.6-43.6-56.6 41.6 20.7-67.3-56.6-43.6h69.8l22.7-71.3z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'so', 'Flag of so', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-so" viewBox="0 0 640 480">
@@ -9995,7 +9995,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sr', 'Flag of sr', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sr" viewBox="0 0 640 480">
@@ -10005,7 +10005,7 @@ begin
   <path fill="#ecc81d" d="m320 153.2 56.4 173.6-147.7-107.3h182.6L263.6 326.8z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ss', 'Flag of ss', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ss" viewBox="0 0 640 480">
@@ -10017,7 +10017,7 @@ begin
   <path fill="#fcdd09" d="M200.7 194.8 61.7 240l139 45.1L114.9 167v146z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'st', 'Flag of st', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-st" viewBox="0 0 640 480">
@@ -10037,7 +10037,7 @@ begin
   <use xlink:href="#st-c" width="100%" height="100%" x="700" transform="translate(-523.2)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sv', 'Flag of sv', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-sv" viewBox="0 0 640 480">
@@ -10634,7 +10634,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sx', 'Flag of sx', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-sx" viewBox="0 0 640 480">
@@ -10694,7 +10694,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sy', 'Flag of sy', $svg$<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" id="flag-icons-sy" viewBox="0 0 640 480">
@@ -10704,7 +10704,7 @@ begin
   <path fill="#ce1126" d="m101 300 39-120 39 120-102-74.2h126M461 300l39-120 39 120-102-74.2h126M281 300l39-120 39 120-102.1-74.2h126.2"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'sz', 'Flag of sz', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-sz" viewBox="0 0 640 480">
@@ -10742,7 +10742,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'tc', 'Flag of tc', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-tc" viewBox="0 0 640 480">
@@ -10796,7 +10796,7 @@ begin
   <path fill="#c8102e" d="M0 96.5v48h320v-48zM136.5 0v240h48V0Z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'td', 'Flag of td', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-td" viewBox="0 0 640 480">
@@ -10807,7 +10807,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'tf', 'Flag of tf', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-tf" viewBox="0 0 640 480">
@@ -10826,7 +10826,7 @@ begin
   <use xlink:href="#tf-a" width="100%" height="100%" x="499" y="227" transform="scale(1.2)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'tg', 'Flag of tg', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-tg" viewBox="0 0 640 480">
@@ -10844,7 +10844,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'th', 'Flag of th', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-th" viewBox="0 0 640 480">
@@ -10855,7 +10855,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'tj', 'Flag of tj', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-tj" viewBox="0 0 640 480">
@@ -10881,7 +10881,7 @@ begin
   <use xlink:href="#tj-d" width="100%" height="100%" fill="#f8c300" transform="matrix(-1 0 0 1 640 0)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'tk', 'Flag of tk', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-tk" viewBox="0 0 640 480">
@@ -10890,7 +10890,7 @@ begin
   <path fill="#fff" d="m106.8 109.1-4 12.2 10.4-7.5 10.3 7.5-3.9-12.2 10.3-7.5h-12.8l-3.9-12.2-4 12.2H96.4zm78.1 57.4 8.6-6.3h-10.7l-3.3-10.1-3.3 10.1h-10.6l8.6 6.3-3.3 10.1 8.6-6.3 8.7 6.3zm-145.2 13-4-12.2-3.9 12.2H19l10.3 7.5-3.9 12.2 10.3-7.5 10.4 7.5-4-12.2 10.4-7.5zm78.1 122.3-4.6-14.2-4.6 14.2h-15l12.1 8.7-4.6 14.3 12.1-8.8 12.1 8.8-4.7-14.3 12.1-8.7z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'tl', 'Flag of tl', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-tl" viewBox="0 0 640 480">
@@ -10907,7 +10907,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'tm', 'Flag of tm', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-tm" viewBox="0 0 640 480">
@@ -11115,7 +11115,7 @@ begin
   <path fill="#ffc72c" d="M205.6 424.8c-.7 2.7-3 4.6-3.4 7.6-1-3-1.8-5.7-1-8.7 0-2.3 2.2-3.8 2.6-6.4q2.5 2.8 1.8 7.5m.4 11.4a18 18 0 0 1-6.8 5.6c.4-2.2-.7-3.8-1.9-5.6-1.1-2-1.9-3.8-.7-6.5a14 14 0 0 0 1.9 3.4c1.1 1.5 2.2 3 2.2 5.3 1.5-1.1 2-2.6 2.7-4.1a13 13 0 0 1 5.3-5.3c-.8 2.6-1.2 4.9-2.7 7.2m-9.8 7.5.4 3.8 4.1-3c2-2 4.2-2.7 5.7-5a10 10 0 0 1-3.8 7.2l-7.5 5q-.1-3.9-2-7.6a7 7 0 0 1 2-6q0 2.8 1.1 5.2zm-5.7 8.7-3 5.3q3.8-1.4 7.6-3.8c2.6-1.5 5.6-2.2 8.3-4.5-1.2 4.9-4.6 7.5-9 9-3.1.8-6.1.4-10 2a27 27 0 0 1 2.7-7.6l2.7-5.3q1.2 2.1.7 5zm-9.8 7.2a12 12 0 0 1-3.8 3.8c3.8 0 6.8-2 10.6-2.3 2.3 0 4.5.8 6.8.4-2.6 1.9-5.7 3.8-9 3.8-4.2.7-8.4 0-13 0 2.3-1.6 3.5-3.8 4.6-5.7 2-3 3.8-5 7.2-5.3-1.5 1.5-2.3 3.8-3.4 5.3m-13.2 6c6.4 1.2 12.8 2.7 19.6 2.7a30 30 0 0 1-22.3.4c-3.8-1.2-7.2-2.3-10.2-2-4.1 0-9.8 2.3-15.9 8.4l-2.2-1.9c8.7-7.6 20-9.5 31-7.6"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'tn', 'Flag of tn', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-tn" viewBox="0 0 640 480">
@@ -11123,7 +11123,7 @@ begin
   <path fill="#fff" d="M320 119.2a1 1 0 0 0-1 240.3 1 1 0 0 0 1-240.3M392 293a90 90 0 1 1 0-107 72 72 0 1 0 0 107m-4.7-21.7-37.4-12.1-23.1 31.8v-39.3l-37.4-12.2 37.4-12.2V188l23.1 31.8 37.4-12.1-23.1 31.8z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'to', 'Flag of to', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-to" viewBox="0 0 640 480">
@@ -11137,7 +11137,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'tr', 'Flag of tr', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-tr" viewBox="0 0 640 480">
@@ -11149,7 +11149,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'tt', 'Flag of tt', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-tt" viewBox="0 0 640 480">
@@ -11158,7 +11158,7 @@ begin
   <path fill="#000001" fill-rule="evenodd" d="M27.7.2h118.6l468.2 479.3H492.2z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'tv', 'Flag of tv', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-tv" viewBox="0 0 640 480">
@@ -11171,7 +11171,7 @@ begin
   <path fill="#C8102E" d="M0 96.5v48h320v-48zM136.5 0v240h48V0z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'tw', 'Flag of tw', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-tw" viewBox="0 0 640 480">
@@ -11209,7 +11209,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'tz', 'Flag of tz', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-tz" viewBox="0 0 640 480">
@@ -11226,7 +11226,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ua', 'Flag of ua', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ua" viewBox="0 0 640 480">
@@ -11236,7 +11236,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ug', 'Flag of ug', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ug" viewBox="0 0 640 480">
@@ -11270,7 +11270,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'um', 'Flag of um', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-um" viewBox="0 0 640 480">
@@ -11283,7 +11283,7 @@ begin
   <path fill="none" marker-mid="url(#um-a)" d="m0 0 16 11h61 61 61 61 60L47 37h61 61 60 61L16 63h61 61 61 61 60L47 89h61 61 60 61L16 115h61 61 61 61 60L47 141h61 61 60 61L16 166h61 61 61 61 60L47 192h61 61 60 61L16 218h61 61 61 61 60z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'un', 'Flag of un', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-un" viewBox="0 0 640 480">
@@ -11303,7 +11303,7 @@ begin
   <path fill="#fff" d="M320 242c.1 0 .3.5.6.4s.5.6.1.6q-.2.1-.2.5 0 .3-.3.8-.3.2-.7-.1-.4-.2-.9-.2c-.3 0 0 .6 0 .6s-1.6 0-1.3-.3q.6-.3.4-.4t0-.6c.1-.4.7-.2.5-.4s0-1.1.4-.6l.2-.5c-.2-.3 0-.3-.5-.5s-.1-1-.1-1v-.7c.2-.7 1.7-.8 1.8-.1v1.1l.5.2s-.1.4-.5.4 0 .2-.2.5l.2.4zm-5 .8c.3-.4.8-2.4 1.4-1.8s1 0 1 0 .3.3.1 1q-.2.9-.6 1.2l-1.2.4c-.4 0-.6-.8-.6-.8z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'us', 'Flag of us', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-us" viewBox="0 0 640 480">
@@ -11316,7 +11316,7 @@ begin
   <path fill="none" marker-mid="url(#us-a)" d="m0 0 16 11h61 61 61 61 60L47 37h61 61 60 61L16 63h61 61 61 61 60L47 89h61 61 60 61L16 115h61 61 61 61 60L47 141h61 61 60 61L16 166h61 61 61 61 60L47 192h61 61 60 61L16 218h61 61 61 61 60z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'uy', 'Flag of uy', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-uy" viewBox="0 0 640 480">
@@ -11348,7 +11348,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'uz', 'Flag of uz', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-uz" viewBox="0 0 640 480">
@@ -11382,7 +11382,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'va', 'Flag of va', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-va" viewBox="0 0 640 480">
@@ -11576,7 +11576,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'vc', 'Flag of vc', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-vc" viewBox="0 0 640 480">
@@ -11588,7 +11588,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 've', 'Flag of ve', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-ve" viewBox="0 0 640 480">
@@ -11618,7 +11618,7 @@ begin
   <use xlink:href="#ve-f" width="180" height="120" transform="rotate(-80 320 336)"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'vg', 'Flag of vg', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-vg" viewBox="0 0 640 480">
@@ -11681,7 +11681,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'vi', 'Flag of vi', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-vi" viewBox="0 0 640 480">
@@ -11713,7 +11713,7 @@ begin
   <path fill="#162667" stroke="#010002" stroke-miterlimit="10" stroke-width="1.5" d="M399.1 145.8s-36.4 19-74.3-1.6c-37.9 20.6-74.3 1.6-74.3 1.6V201h148.6z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'vn', 'Flag of vn', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-vn" viewBox="0 0 640 480">
@@ -11728,7 +11728,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'vu', 'Flag of vu', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-vu" viewBox="0 0 640 480">
@@ -11753,7 +11753,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'wf', 'Flag of wf', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-wf" viewBox="0 0 640 480">
@@ -11762,7 +11762,7 @@ begin
   <path fill="#e1000f" d="M426.7 0H640v480H426.7z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ws', 'Flag of ws', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ws" viewBox="0 0 640 480">
@@ -11773,7 +11773,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'xag', 'Flag of xag', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xag" viewBox="0 0 640 480">
@@ -11802,7 +11802,7 @@ begin
   <text x="320" y="380" font-family="Arial, sans-serif" font-size="36" fill="#c0c0c0" text-anchor="middle">SILVER</text>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'xau', 'Flag of xau', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xau" viewBox="0 0 640 480">
@@ -11831,7 +11831,7 @@ begin
   <text x="320" y="380" font-family="Arial, sans-serif" font-size="36" fill="#ffd700" text-anchor="middle">GOLD</text>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'xdr', 'Flag of xdr', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xdr" viewBox="0 0 640 480">
@@ -11863,7 +11863,7 @@ begin
   <text x="320" y="440" font-family="Arial, sans-serif" font-size="24" fill="#a0d0ff" text-anchor="middle">Special Drawing Rights</text>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'xk', 'Flag of xk', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xk" viewBox="0 0 640 480">
@@ -11872,7 +11872,7 @@ begin
   <path fill="#FFF" d="M351.9 73.4 368 123l-42.2-30.7H378L335.8 123zm62.8 11.1 16 49.6-42.1-30.7h52.1l-42.2 30.7zm59.9 21.8 16 49.6-42.1-30.7h52.1L458.4 156l16.2-49.6zM288.1 73.4 272 123l42.2-30.7H262l42.2 30.7zm-62.8 11.1-16 49.6 42.1-30.7h-52.1l42.2 30.7zm-59.6 21.8 16.2 49.6-42.2-30.7h52.1l-42.2 30.7z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'xpd', 'Flag of xpd', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xpd" viewBox="0 0 640 480">
@@ -11901,7 +11901,7 @@ begin
   <text x="320" y="380" font-family="Arial, sans-serif" font-size="36" fill="#cec8c0" text-anchor="middle">PALLADIUM</text>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'xpt', 'Flag of xpt', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xpt" viewBox="0 0 640 480">
@@ -11930,7 +11930,7 @@ begin
   <text x="320" y="380" font-family="Arial, sans-serif" font-size="36" fill="#e5e4e2" text-anchor="middle">PLATINUM</text>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'xx', 'Flag of xx', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-xx" viewBox="0 0 640 480">
@@ -11938,7 +11938,7 @@ begin
   <path fill="none" stroke="#adb5bd" stroke-width="1.1" d="m.5.5 639 479m0-479-639 479"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'ye', 'Flag of ye', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-ye" viewBox="0 0 640 480">
@@ -11949,7 +11949,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'yt', 'Flag of yt', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-yt" viewBox="0 0 640 480">
@@ -11958,7 +11958,7 @@ begin
   <path fill="#e1000f" d="M426.7 0H640v480H426.7z"/>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'za', 'Flag of za', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-za" viewBox="0 0 640 480">
@@ -11979,7 +11979,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'zm', 'Flag of zm', $svg$<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-zm" viewBox="0 0 640 480">
@@ -12010,7 +12010,7 @@ begin
   </g>
 </svg>$svg$
     );
-    insert into ores.dq_images_artefact_tbl (
+    insert into metadata.dq_images_artefact_tbl (
         dataset_id, image_id, version, key, description, svg_data
     ) values (
         v_dataset_id, gen_random_uuid(), 0, 'zw', 'Flag of zw', $svg$<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-zw" viewBox="0 0 640 480">

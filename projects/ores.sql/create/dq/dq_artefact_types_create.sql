@@ -24,7 +24,7 @@
 -- Static configuration data - no bitemporal support required.
 -- =============================================================================
 
-create table if not exists "ores"."dq_artefact_types_tbl" (
+create table if not exists "metadata"."dq_artefact_types_tbl" (
     "code" text not null primary key,
     "name" text not null,
     "description" text,

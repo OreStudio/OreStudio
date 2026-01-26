@@ -68,25 +68,35 @@ grant all privileges on database :db_name to ores;
 -- Connect to new database
 \c :db_name
 
--- Create schema
-create schema if not exists ores;
+-- Create schemas
+create schema if not exists metadata;
+create schema if not exists production;
 create extension if not exists btree_gist;
 
 -- Grant schema permissions to ores user
-grant usage on schema ores to ores;
-grant create on schema ores to ores;
+grant usage on schema metadata to ores;
+grant usage on schema production to ores;
+grant create on schema metadata to ores;
+grant create on schema production to ores;
+
+-- Set search path for convenience
+alter role ores set search_path to production, metadata, public;
 
 -- Create all tables, triggers, and functions
 \ir ./create/create.sql
 
 -- Grant table permissions to ores user
 -- Note: TRUNCATE is included for test database cleanup
-grant select, insert, update, delete, truncate on all tables in schema ores to ores;
-grant usage, select on all sequences in schema ores to ores;
+grant select, insert, update, delete, truncate on all tables in schema metadata to ores;
+grant select, insert, update, delete, truncate on all tables in schema production to ores;
+grant usage, select on all sequences in schema metadata to ores;
+grant usage, select on all sequences in schema production to ores;
 
 -- Set default privileges for any future tables
-alter default privileges in schema ores grant select, insert, update, delete, truncate on tables to ores;
-alter default privileges in schema ores grant usage, select on sequences to ores;
+alter default privileges in schema metadata grant select, insert, update, delete, truncate on tables to ores;
+alter default privileges in schema metadata grant usage, select on sequences to ores;
+alter default privileges in schema production grant select, insert, update, delete, truncate on tables to ores;
+alter default privileges in schema production grant usage, select on sequences to ores;
 
 -- Initialize instance-specific feature flags
 \ir ./instance/init_instance.sql

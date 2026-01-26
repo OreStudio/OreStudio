@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
 -- =============================================================================
 -- User session tracking with country-level geolocation.
@@ -25,7 +25,7 @@ set schema 'ores';
 -- Partitioned by start_time.
 -- =============================================================================
 
-create table if not exists "ores"."iam_sessions_tbl" (
+create table if not exists "production"."iam_sessions_tbl" (
     "id" uuid not null,
     "account_id" uuid not null,
     "start_time" timestamp with time zone not null,
@@ -42,18 +42,18 @@ create table if not exists "ores"."iam_sessions_tbl" (
 );
 
 create index if not exists iam_sessions_account_id_idx
-on "ores"."iam_sessions_tbl" (account_id, start_time desc);
+on "production"."iam_sessions_tbl" (account_id, start_time desc);
 
 create index if not exists iam_sessions_active_idx
-on "ores"."iam_sessions_tbl" (account_id)
+on "production"."iam_sessions_tbl" (account_id)
 where end_time = '';
 
 create index if not exists iam_sessions_country_idx
-on "ores"."iam_sessions_tbl" (country_code, start_time desc)
+on "production"."iam_sessions_tbl" (country_code, start_time desc)
 where country_code != '';
 
 create index if not exists iam_sessions_protocol_idx
-on "ores"."iam_sessions_tbl" (protocol, start_time desc);
+on "production"."iam_sessions_tbl" (protocol, start_time desc);
 
 do $$
 declare
@@ -69,7 +69,7 @@ begin
         raise notice '=========================================';
 
         perform public.create_hypertable(
-            'ores.iam_sessions_tbl',
+            'production.iam_sessions_tbl',
             'start_time',
             chunk_time_interval => interval '7 days',
             if_not_exists => true
@@ -82,21 +82,21 @@ begin
             select current_setting('timescaledb.license', true) into current_license;
 
             if current_license = 'timescale' then
-                alter table "ores"."iam_sessions_tbl" set (
+                alter table "production"."iam_sessions_tbl" set (
                     timescaledb.compress,
                     timescaledb.compress_segmentby = 'account_id',
                     timescaledb.compress_orderby = 'start_time desc'
                 );
 
                 perform public.add_compression_policy(
-                    'ores.iam_sessions_tbl',
+                    'production.iam_sessions_tbl',
                     compress_after => interval '7 days',
                     if_not_exists => true
                 );
                 raise notice 'Enabled compression policy (7 days)';
 
                 perform public.add_retention_policy(
-                    'ores.iam_sessions_tbl',
+                    'production.iam_sessions_tbl',
                     drop_after => interval '1 year',
                     if_not_exists => true
                 );

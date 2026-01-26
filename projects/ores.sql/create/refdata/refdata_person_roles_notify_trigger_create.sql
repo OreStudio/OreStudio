@@ -18,11 +18,11 @@
  *
  */
 
-create or replace function ores.refdata_person_roles_notify_fn()
+create or replace function production.refdata_person_roles_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.refdata.person_role';
+    entity_name text := 'production.refdata.person_role';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin
@@ -45,5 +45,5 @@ end;
 $$ language plpgsql;
 
 create or replace trigger refdata_person_roles_notify_trg
-after insert or update or delete on ores.refdata_person_roles_tbl
-for each row execute function ores.refdata_person_roles_notify_fn();
+after insert or update or delete on production.refdata_person_roles_tbl
+for each row execute function production.refdata_person_roles_notify_fn();

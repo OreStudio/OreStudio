@@ -25,7 +25,7 @@
  * This script is idempotent.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Cryptocurrency Catalog
@@ -33,7 +33,7 @@ set schema 'ores';
 
 \echo '--- Cryptocurrency Catalog ---'
 
-select ores.upsert_dq_catalogs(
+select public.upsert_dq_catalogs(
     'Cryptocurrency',
     'Digital asset reference data including cryptocurrency symbols and names from community-maintained repositories.',
     'Digital Assets Team'

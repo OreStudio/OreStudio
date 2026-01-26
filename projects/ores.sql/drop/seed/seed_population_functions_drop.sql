@@ -27,7 +27,7 @@
  * Note: This should be dropped last as other population functions may depend on it.
  */
 
-set schema 'ores';
+set schema 'public';
 
 -- Validation Helpers
-drop function if exists ores.seed_validate_not_empty(text, text);
+drop function if exists public.seed_validate_not_empty(text, text);

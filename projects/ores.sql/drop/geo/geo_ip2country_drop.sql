@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
-drop function if exists ores.geo_ip2country_lookup_fn;
-drop function if exists ores.geo_inet_to_bigint_fn;
+drop function if exists production.geo_ip2country_lookup_fn;
+drop function if exists production.geo_inet_to_bigint_fn;
 drop index if exists geo_ip2country_range_idx;
-drop table if exists "ores"."geo_ip2country_tbl";
+drop table if exists "production"."geo_ip2country_tbl";

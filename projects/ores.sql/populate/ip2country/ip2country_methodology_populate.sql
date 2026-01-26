@@ -25,7 +25,7 @@
  * This script is idempotent.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- IP Geolocation Data Sourcing Methodologies
@@ -33,7 +33,7 @@ set schema 'ores';
 
 \echo '--- IP Geolocation Methodologies ---'
 
-select ores.upsert_dq_methodologies(
+select public.upsert_dq_methodologies(
     'iptoasn.com IP to Country Database',
     'IPv4 ranges mapped to country codes from iptoasn.com',
     'https://iptoasn.com/',

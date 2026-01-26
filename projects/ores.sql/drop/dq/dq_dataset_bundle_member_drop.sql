@@ -18,10 +18,10 @@
  *
  */
 
-drop rule if exists dq_dataset_bundle_members_delete_rule on "ores"."dq_dataset_bundle_members_tbl";
-drop trigger if exists dq_dataset_bundle_members_insert_trg on "ores"."dq_dataset_bundle_members_tbl";
-drop function if exists ores.dq_dataset_bundle_members_insert_fn();
-drop index if exists ores.dq_dataset_bundle_members_uniq_idx;
-drop index if exists ores.dq_dataset_bundle_members_dataset_idx;
-drop index if exists ores.dq_dataset_bundle_members_bundle_idx;
-drop table if exists "ores"."dq_dataset_bundle_members_tbl";
+drop rule if exists dq_dataset_bundle_members_delete_rule on "metadata"."dq_dataset_bundle_members_tbl";
+drop trigger if exists dq_dataset_bundle_members_insert_trg on "metadata"."dq_dataset_bundle_members_tbl";
+drop function if exists metadata.dq_dataset_bundle_members_insert_fn();
+drop index if exists metadata.dq_dataset_bundle_members_uniq_idx;
+drop index if exists metadata.dq_dataset_bundle_members_dataset_idx;
+drop index if exists metadata.dq_dataset_bundle_members_bundle_idx;
+drop table if exists "metadata"."dq_dataset_bundle_members_tbl";

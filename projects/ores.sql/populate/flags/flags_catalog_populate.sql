@@ -25,7 +25,7 @@
  * This script is idempotent.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Visual Assets Catalog
@@ -33,7 +33,7 @@ set schema 'ores';
 
 \echo '--- Visual Assets Catalog ---'
 
-select ores.upsert_dq_catalogs(
+select public.upsert_dq_catalogs(
     'Visual Assets',
     'Visual media assets including country flag images, cryptocurrency icons, and other imagery used to enrich reference data displays.',
     'Reference Data Team'

@@ -26,7 +26,7 @@
  * This script is idempotent.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- General Methodologies
@@ -34,7 +34,7 @@ set schema 'ores';
 
 \echo '--- General Methodologies ---'
 
-select ores.upsert_dq_methodologies(
+select public.upsert_dq_methodologies(
     'Synthetic Data Generation',
     'Test data generated programmatically using the ores.synthetic library with seeded random generation',
     'https://github.com/cieslarmichal/faker-cxx',
@@ -69,5 +69,5 @@ the methodology itself.'
 -- =============================================================================
 
 select 'dq_methodologies' as entity, count(*) as count
-from ores.dq_methodologies_tbl
-where valid_to = ores.utility_infinity_timestamp_fn();
+from metadata.dq_methodologies_tbl
+where valid_to = public.utility_infinity_timestamp_fn();

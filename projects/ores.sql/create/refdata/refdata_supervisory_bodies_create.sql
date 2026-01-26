@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
 -- =============================================================================
 -- Contains a code representing a supervisory-body that may be supervising this transaction.
 -- =============================================================================
 
-create table if not exists "ores"."refdata_supervisory_bodies_tbl" (
+create table if not exists "production"."refdata_supervisory_bodies_tbl" (
     "code" text not null,
     "version" integer not null,
     "source" text null,
@@ -45,33 +45,33 @@ create table if not exists "ores"."refdata_supervisory_bodies_tbl" (
 );
 
 create unique index if not exists refdata_supervisory_bodies_version_uniq_idx
-on "ores"."refdata_supervisory_bodies_tbl" (code, version)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "production"."refdata_supervisory_bodies_tbl" (code, version)
+where valid_to = public.utility_infinity_timestamp_fn();
 
 create index if not exists refdata_supervisory_bodies_coding_scheme_idx
-on "ores"."refdata_supervisory_bodies_tbl" (coding_scheme_code)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "production"."refdata_supervisory_bodies_tbl" (coding_scheme_code)
+where valid_to = public.utility_infinity_timestamp_fn();
 
-create or replace function ores.refdata_supervisory_bodies_insert_fn()
+create or replace function production.refdata_supervisory_bodies_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     -- Validate foreign key references
     if NEW.coding_scheme_code is not null and not exists (
-        select 1 from ores.dq_coding_schemes_tbl
+        select 1 from metadata.dq_coding_schemes_tbl
         where code = NEW.coding_scheme_code
-        and valid_to = ores.utility_infinity_timestamp_fn()
+        and valid_to = public.utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid coding_scheme_code: %. Coding scheme must exist.', NEW.coding_scheme_code
         using errcode = '23503';
     end if;
 
     select version into current_version
-    from "ores"."refdata_supervisory_bodies_tbl"
+    from "production"."refdata_supervisory_bodies_tbl"
     where code = new.code
       and coding_scheme_code = new.coding_scheme_code
-    and valid_to = ores.utility_infinity_timestamp_fn()
+    and valid_to = public.utility_infinity_timestamp_fn()
     for update;
 
     if found then
@@ -82,38 +82,38 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update "ores"."refdata_supervisory_bodies_tbl"
+        update "production"."refdata_supervisory_bodies_tbl"
         set valid_to = current_timestamp
         where code = new.code
           and coding_scheme_code = new.coding_scheme_code
-        and valid_to = ores.utility_infinity_timestamp_fn()
+        and valid_to = public.utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = ores.utility_infinity_timestamp_fn();
+    new.valid_to = public.utility_infinity_timestamp_fn();
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
     end if;
 
-    new.change_reason_code := ores.refdata_validate_change_reason_fn(new.change_reason_code);
+    new.change_reason_code := metadata.refdata_validate_change_reason_fn(new.change_reason_code);
 
     return new;
 end;
 $$ language plpgsql;
 
 create or replace trigger refdata_supervisory_bodies_insert_trg
-before insert on "ores"."refdata_supervisory_bodies_tbl"
+before insert on "production"."refdata_supervisory_bodies_tbl"
 for each row
-execute function ores.refdata_supervisory_bodies_insert_fn();
+execute function production.refdata_supervisory_bodies_insert_fn();
 
 create or replace rule refdata_supervisory_bodies_delete_rule as
-on delete to "ores"."refdata_supervisory_bodies_tbl"
+on delete to "production"."refdata_supervisory_bodies_tbl"
 do instead
-  update "ores"."refdata_supervisory_bodies_tbl"
+  update "production"."refdata_supervisory_bodies_tbl"
   set valid_to = current_timestamp
   where code = old.code
   and coding_scheme_code = old.coding_scheme_code
-  and valid_to = ores.utility_infinity_timestamp_fn();
+  and valid_to = public.utility_infinity_timestamp_fn();

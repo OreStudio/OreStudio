@@ -26,7 +26,7 @@
  * This script is idempotent.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Dataset Bundles
@@ -34,19 +34,19 @@ set schema 'ores';
 
 \echo '--- Dataset Bundles ---'
 
-select ores.upsert_dq_dataset_bundle(
+select public.upsert_dq_dataset_bundle(
     'solvaris',
     'Solvaris',
     'Synthetic reference data for development and testing - an isolated fantasy world with its own countries, currencies, and reference data.'
 );
 
-select ores.upsert_dq_dataset_bundle(
+select public.upsert_dq_dataset_bundle(
     'base',
     'Base System',
     'Industry-standard reference data (ISO + FpML) for production use. Includes country codes, currency codes, and financial market standards.'
 );
 
-select ores.upsert_dq_dataset_bundle(
+select public.upsert_dq_dataset_bundle(
     'crypto',
     'Crypto',
     'Base System plus cryptocurrency reference data. Extends the production dataset with cryptocurrency symbols and icons.'
@@ -60,6 +60,6 @@ select ores.upsert_dq_dataset_bundle(
 \echo '--- Summary ---'
 
 select 'Dataset Bundles' as entity, count(*) as count
-from ores.dq_dataset_bundles_tbl
-where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_dataset_bundles_tbl
+where valid_to = public.utility_infinity_timestamp_fn()
 order by entity;

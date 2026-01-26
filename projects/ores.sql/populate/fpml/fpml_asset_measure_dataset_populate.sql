@@ -26,7 +26,7 @@
  * This must be run before populating the artefact table.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- FpML Asset Measure Dataset
@@ -34,7 +34,7 @@ set schema 'ores';
 
 \echo '--- FpML Asset Measure Dataset ---'
 
-select ores.upsert_dq_datasets(
+select public.upsert_dq_datasets(
     'fpml.asset_measure',
     'FpML Standards',
     'Market Data',

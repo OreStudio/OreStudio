@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
 do $$
 declare
@@ -43,7 +43,7 @@ begin
         raise notice 'TimescaleDB detected - creating continuous aggregates';
 
         execute $sql$
-            create materialized view if not exists "ores"."iam_session_stats_daily"
+            create materialized view if not exists "production"."iam_session_stats_daily"
             with (timescaledb.continuous) as
             select
                 public.time_bucket('1 day', start_time) as day,
@@ -55,14 +55,14 @@ begin
                 avg(bytes_sent) as avg_bytes_sent,
                 avg(bytes_received) as avg_bytes_received,
                 count(distinct country_code) filter (where country_code != '') as unique_countries
-            from "ores"."iam_sessions_tbl"
+            from "production"."iam_sessions_tbl"
             where end_time != ''
             group by day, account_id
             with no data
         $sql$;
 
         perform public.add_continuous_aggregate_policy(
-            'ores.iam_session_stats_daily',
+            'production.iam_session_stats_daily',
             start_offset => interval '3 days',
             end_offset => interval '1 hour',
             schedule_interval => interval '1 hour',
@@ -71,7 +71,7 @@ begin
         raise notice 'Created iam_session_stats_daily continuous aggregate';
 
         execute $sql$
-            create materialized view if not exists "ores"."iam_session_stats_hourly"
+            create materialized view if not exists "production"."iam_session_stats_hourly"
             with (timescaledb.continuous) as
             select
                 public.time_bucket('1 hour', start_time) as hour,
@@ -80,14 +80,14 @@ begin
                 avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
                 sum(bytes_sent) as total_bytes_sent,
                 sum(bytes_received) as total_bytes_received
-            from "ores"."iam_sessions_tbl"
+            from "production"."iam_sessions_tbl"
             where end_time != ''
             group by hour, account_id
             with no data
         $sql$;
 
         perform public.add_continuous_aggregate_policy(
-            'ores.iam_session_stats_hourly',
+            'production.iam_session_stats_hourly',
             start_offset => interval '1 day',
             end_offset => interval '15 minutes',
             schedule_interval => interval '15 minutes',
@@ -96,7 +96,7 @@ begin
         raise notice 'Created iam_session_stats_hourly continuous aggregate';
 
         execute $sql$
-            create materialized view if not exists "ores"."iam_session_stats_aggregate_daily"
+            create materialized view if not exists "production"."iam_session_stats_aggregate_daily"
             with (timescaledb.continuous) as
             select
                 public.time_bucket('1 day', start_time) as day,
@@ -109,14 +109,14 @@ begin
                 avg(bytes_received) as avg_bytes_received,
                 count(distinct country_code) filter (where country_code != '') as unique_countries,
                 count(*) as sessions_started
-            from "ores"."iam_sessions_tbl"
+            from "production"."iam_sessions_tbl"
             where end_time != ''
             group by day
             with no data
         $sql$;
 
         perform public.add_continuous_aggregate_policy(
-            'ores.iam_session_stats_aggregate_daily',
+            'production.iam_session_stats_aggregate_daily',
             start_offset => interval '3 days',
             end_offset => interval '1 hour',
             schedule_interval => interval '1 hour',
@@ -125,13 +125,13 @@ begin
         raise notice 'Created iam_session_stats_aggregate_daily continuous aggregate';
 
         perform public.add_retention_policy(
-            'ores.iam_session_stats_daily',
+            'production.iam_session_stats_daily',
             drop_after => interval '3 years',
             if_not_exists => true
         );
 
         perform public.add_retention_policy(
-            'ores.iam_session_stats_hourly',
+            'production.iam_session_stats_hourly',
             drop_after => interval '90 days',
             if_not_exists => true
         );
@@ -143,20 +143,20 @@ begin
     end if;
 end $$;
 
-create or replace function ores.iam_active_session_count_fn()
+create or replace function production.iam_active_session_count_fn()
 returns bigint
 language sql
 stable
 as $$
-    select count(*) from ores.iam_sessions_tbl where end_time = '';
+    select count(*) from production.iam_sessions_tbl where end_time = '';
 $$;
 
-create or replace function ores.iam_active_session_count_for_account_fn(p_account_id uuid)
+create or replace function production.iam_active_session_count_for_account_fn(p_account_id uuid)
 returns bigint
 language sql
 stable
 as $$
     select count(*)
-    from ores.iam_sessions_tbl
+    from production.iam_sessions_tbl
     where account_id = p_account_id and end_time = '';
 $$;

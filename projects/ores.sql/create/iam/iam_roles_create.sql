@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'production';
 
 -- =============================================================================
 -- Named roles for grouping permissions.
 -- Examples: admin, viewer, editor.
 -- =============================================================================
 
-create table if not exists "ores"."iam_roles_tbl" (
+create table if not exists "production"."iam_roles_tbl" (
     "id" uuid not null,
     "version" integer not null,
     "name" text not null,
@@ -44,22 +44,22 @@ create table if not exists "ores"."iam_roles_tbl" (
 );
 
 create unique index if not exists iam_roles_name_uniq_idx
-on "ores"."iam_roles_tbl" (name)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "production"."iam_roles_tbl" (name)
+where valid_to = public.utility_infinity_timestamp_fn();
 
 create unique index if not exists iam_roles_version_uniq_idx
-on "ores"."iam_roles_tbl" (id, version)
-where valid_to = ores.utility_infinity_timestamp_fn();
+on "production"."iam_roles_tbl" (id, version)
+where valid_to = public.utility_infinity_timestamp_fn();
 
-create or replace function ores.iam_roles_insert_fn()
+create or replace function production.iam_roles_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
 begin
     select version into current_version
-    from "ores"."iam_roles_tbl"
+    from "production"."iam_roles_tbl"
     where id = new.id
-    and valid_to = ores.utility_infinity_timestamp_fn();
+    and valid_to = public.utility_infinity_timestamp_fn();
 
     if found then
         if new.version != 0 and new.version != current_version then
@@ -69,36 +69,36 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update "ores"."iam_roles_tbl"
+        update "production"."iam_roles_tbl"
         set valid_to = current_timestamp
         where id = new.id
-        and valid_to = ores.utility_infinity_timestamp_fn()
+        and valid_to = public.utility_infinity_timestamp_fn()
         and valid_from < current_timestamp;
     else
         new.version = 1;
     end if;
 
     new.valid_from = current_timestamp;
-    new.valid_to = ores.utility_infinity_timestamp_fn();
+    new.valid_to = public.utility_infinity_timestamp_fn();
     if new.modified_by is null or new.modified_by = '' then
         new.modified_by = current_user;
     end if;
 
-    new.change_reason_code := ores.refdata_validate_change_reason_fn(new.change_reason_code);
+    new.change_reason_code := metadata.refdata_validate_change_reason_fn(new.change_reason_code);
 
     return new;
 end;
 $$ language plpgsql;
 
 create or replace trigger iam_roles_insert_trg
-before insert on "ores"."iam_roles_tbl"
+before insert on "production"."iam_roles_tbl"
 for each row
-execute function ores.iam_roles_insert_fn();
+execute function production.iam_roles_insert_fn();
 
 create or replace rule iam_roles_delete_rule as
-on delete to "ores"."iam_roles_tbl"
+on delete to "production"."iam_roles_tbl"
 do instead
-  update "ores"."iam_roles_tbl"
+  update "production"."iam_roles_tbl"
   set valid_to = current_timestamp
   where id = old.id
-  and valid_to = ores.utility_infinity_timestamp_fn();
+  and valid_to = public.utility_infinity_timestamp_fn();

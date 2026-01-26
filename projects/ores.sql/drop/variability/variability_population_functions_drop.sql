@@ -25,7 +25,7 @@
  * This script is safe to run even if functions don't exist (uses IF EXISTS).
  */
 
-set schema 'ores';
+set schema 'production';
 
 -- Feature Flags
-drop function if exists ores.upsert_system_flag(text, boolean, text);
+drop function if exists public.upsert_system_flag(text, boolean, text);

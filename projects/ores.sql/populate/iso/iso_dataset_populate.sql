@@ -27,7 +27,7 @@
  * Note: Coding schemes dataset is in iso_coding_schemes_dataset_populate.sql
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- ISO Standards Datasets
@@ -36,7 +36,7 @@ set schema 'ores';
 \echo '--- ISO Standards Datasets ---'
 
 -- ISO 3166 Country Codes
-select ores.upsert_dq_datasets(
+select public.upsert_dq_datasets(
     'iso.countries',
     'ISO Standards',
     'Countries',
@@ -56,7 +56,7 @@ select ores.upsert_dq_datasets(
 );
 
 -- ISO 4217 Currency Codes
-select ores.upsert_dq_datasets(
+select public.upsert_dq_datasets(
     'iso.currencies',
     'ISO Standards',
     'Currencies',

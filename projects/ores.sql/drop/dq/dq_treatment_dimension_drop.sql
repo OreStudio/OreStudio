@@ -18,9 +18,9 @@
  *
  */
 
-set schema 'ores';
+set schema 'metadata';
 
-drop trigger if exists dq_treatment_dimensions_insert_trg on "ores"."dq_treatment_dimensions_tbl";
-drop rule if exists dq_treatment_dimensions_delete_rule on "ores"."dq_treatment_dimensions_tbl";
-drop function if exists ores.dq_treatment_dimensions_insert_fn();
-drop table if exists "ores"."dq_treatment_dimensions_tbl";
+drop trigger if exists dq_treatment_dimensions_insert_trg on "metadata"."dq_treatment_dimensions_tbl";
+drop rule if exists dq_treatment_dimensions_delete_rule on "metadata"."dq_treatment_dimensions_tbl";
+drop function if exists metadata.dq_treatment_dimensions_insert_fn();
+drop table if exists "metadata"."dq_treatment_dimensions_tbl";

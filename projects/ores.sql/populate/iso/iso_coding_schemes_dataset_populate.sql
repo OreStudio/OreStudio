@@ -25,7 +25,7 @@
  * This must be run before other datasets that reference these coding schemes.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- ISO Coding Schemes Dataset
@@ -34,7 +34,7 @@ set schema 'ores';
 \echo '--- ISO Coding Schemes Dataset ---'
 
 -- ISO Coding Schemes
-select ores.upsert_dq_datasets(
+select public.upsert_dq_datasets(
     'iso.coding_schemes',
     'ISO Standards',
     'General',

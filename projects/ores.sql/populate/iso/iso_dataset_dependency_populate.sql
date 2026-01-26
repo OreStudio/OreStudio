@@ -25,7 +25,7 @@
  * This script is idempotent.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- ISO Standards Dataset Dependencies
@@ -33,25 +33,25 @@ set schema 'ores';
 
 \echo '--- ISO Standards Dataset Dependencies ---'
 
-select ores.upsert_dq_dataset_dependency(
+select public.upsert_dq_dataset_dependency(
     'iso.countries',
     'iso.coding_schemes',
     'coding_scheme'
 );
 
-select ores.upsert_dq_dataset_dependency(
+select public.upsert_dq_dataset_dependency(
     'iso.countries',
     'assets.country_flags',
     'visual_assets'
 );
 
-select ores.upsert_dq_dataset_dependency(
+select public.upsert_dq_dataset_dependency(
     'iso.currencies',
     'iso.coding_schemes',
     'coding_scheme'
 );
 
-select ores.upsert_dq_dataset_dependency(
+select public.upsert_dq_dataset_dependency(
     'iso.currencies',
     'assets.country_flags',
     'visual_assets'

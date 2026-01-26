@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-create or replace function ores.dq_coding_schemes_notify_fn()
+create or replace function metadata.dq_coding_schemes_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.dq.coding_scheme';
+    entity_name text := 'metadata.dq.coding_scheme';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin
@@ -44,5 +44,5 @@ end;
 $$ language plpgsql;
 
 create or replace trigger dq_coding_schemes_notify_trg
-after insert or update or delete on ores.dq_coding_schemes_tbl
-for each row execute function ores.dq_coding_schemes_notify_fn();
+after insert or update or delete on metadata.dq_coding_schemes_tbl
+for each row execute function metadata.dq_coding_schemes_notify_fn();

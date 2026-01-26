@@ -28,7 +28,7 @@
  * Use dq_populate_business_centres() to publish to production.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- DQ Artefact FpML Business Center
@@ -43,20 +43,20 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where code = 'fpml.business_center'
-    and valid_to = ores.utility_infinity_timestamp_fn();
+    and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
         raise exception 'Dataset fpml.business_center not found. Run dataset population first.';
     end if;
 
     -- Clear existing data for this dataset
-    delete from ores.dq_business_centres_artefact_tbl
+    delete from metadata.dq_business_centres_artefact_tbl
     where dataset_id = v_dataset_id;
 
     -- Insert reference data
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -67,7 +67,7 @@ begin
         'Abu Dhabi, Business Day (as defined in 2021 ISDA Definitions Section 2.1.10 (ii))'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -78,7 +78,7 @@ begin
         'Abu Dhabi, Settlement Day (as defined in 2021 ISDA Definitions Section 2.1.10 (i))'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -89,7 +89,7 @@ begin
         'Dubai, United Arab Emirates'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -100,7 +100,7 @@ begin
         'Yerevan, Armenia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -111,7 +111,7 @@ begin
         'Luanda, Angola'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -122,7 +122,7 @@ begin
         'Buenos Aires, Argentina'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -133,7 +133,7 @@ begin
         'Vienna, Austria'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -144,7 +144,7 @@ begin
         'Adelaide, Australia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -155,7 +155,7 @@ begin
         'Brisbane, Australia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -166,7 +166,7 @@ begin
         'Canberra, Australia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -177,7 +177,7 @@ begin
         'Darwin, Australia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -188,7 +188,7 @@ begin
         'Melbourne, Australia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -199,7 +199,7 @@ begin
         'Perth, Australia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -210,7 +210,7 @@ begin
         'Sydney, Australia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -221,7 +221,7 @@ begin
         'Baku, Azerbaijan'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -232,7 +232,7 @@ begin
         'Bridgetown, Barbados'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -243,7 +243,7 @@ begin
         'Dhaka, Bangladesh'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -254,7 +254,7 @@ begin
         'Brussels, Belgium'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -265,7 +265,7 @@ begin
         'Sofia, Bulgaria'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -276,7 +276,7 @@ begin
         'Manama, Bahrain'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -287,7 +287,7 @@ begin
         'Hamilton, Bermuda'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -298,7 +298,7 @@ begin
         'Bandar Seri Begawan, Brunei'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -309,7 +309,7 @@ begin
         'La Paz, Bolivia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -320,7 +320,7 @@ begin
         'Brazil Business Day.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -331,7 +331,7 @@ begin
         'Brasilia, Brazil.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -342,7 +342,7 @@ begin
         'Rio de Janeiro, Brazil.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -353,7 +353,7 @@ begin
         'Sao Paulo, Brazil.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -364,7 +364,7 @@ begin
         'Nassau, Bahamas'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -375,7 +375,7 @@ begin
         'Gaborone, Botswana'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -386,7 +386,7 @@ begin
         'Minsk, Belarus'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -397,7 +397,7 @@ begin
         'Calgary, Canada'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -408,7 +408,7 @@ begin
         'Fredericton, Canada.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -419,7 +419,7 @@ begin
         'Montreal, Canada'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -430,7 +430,7 @@ begin
         'Ottawa, Canada'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -441,7 +441,7 @@ begin
         'Toronto, Canada'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -452,7 +452,7 @@ begin
         'Vancouver, Canada'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -463,7 +463,7 @@ begin
         'Winnipeg, Canada'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -474,7 +474,7 @@ begin
         'Basel, Switzerland'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -485,7 +485,7 @@ begin
         'Geneva, Switzerland'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -496,7 +496,7 @@ begin
         'Zurich, Switzerland'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -507,7 +507,7 @@ begin
         'Abidjan, Cote d''Ivoire'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -518,7 +518,7 @@ begin
         'Santiago, Chile'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -529,7 +529,7 @@ begin
         'Yaounde, Cameroon'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -540,7 +540,7 @@ begin
         'Beijing, China'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -551,7 +551,7 @@ begin
         'Shanghai, China'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -562,7 +562,7 @@ begin
         'Bogota, Colombia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -573,7 +573,7 @@ begin
         'San Jose, Costa Rica'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -584,7 +584,7 @@ begin
         'Willemstad, Curacao'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -595,7 +595,7 @@ begin
         'Nicosia, Cyprus'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -606,7 +606,7 @@ begin
         'Prague, Czech Republic'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -617,7 +617,7 @@ begin
         'Cologne, Germany'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -628,7 +628,7 @@ begin
         'Dusseldorf, Germany'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -639,7 +639,7 @@ begin
         'Frankfurt, Germany'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -650,7 +650,7 @@ begin
         'Hannover, Germany'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -661,7 +661,7 @@ begin
         'Hamburg, Germany'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -672,7 +672,7 @@ begin
         'Leipzig, Germany'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -683,7 +683,7 @@ begin
         'Mainz, Germany'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -694,7 +694,7 @@ begin
         'Munich, Germany'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -705,7 +705,7 @@ begin
         'Stuttgart, Germany'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -716,7 +716,7 @@ begin
         'Copenhagen, Denmark'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -727,7 +727,7 @@ begin
         'Santo Domingo, Dominican Republic'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -738,7 +738,7 @@ begin
         'Algiers, Algeria'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -749,7 +749,7 @@ begin
         'Guayaquil, Ecuador'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -760,7 +760,7 @@ begin
         'Tallinn, Estonia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -771,7 +771,7 @@ begin
         'Cairo, Egypt'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -782,7 +782,7 @@ begin
         'ESAS Settlement Day (as defined in 2006 ISDA Definitions Section 7.1 and Supplement Number 15 to the 2000 ISDA Definitions)'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -793,7 +793,7 @@ begin
         'Barcelona, Spain'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -804,7 +804,7 @@ begin
         'Madrid, Spain'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -815,7 +815,7 @@ begin
         'San Sebastian, Spain'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -826,7 +826,7 @@ begin
         'Addis Ababa, Ethiopia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -837,7 +837,7 @@ begin
         'Publication dates for ICE Swap rates based on EUR-EURIBOR rates'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -848,7 +848,7 @@ begin
         'TARGET Settlement Day'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -859,7 +859,7 @@ begin
         'Helsinki, Finland'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -870,7 +870,7 @@ begin
         'Paris, France'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -881,7 +881,7 @@ begin
         'Edinburgh, Scotland'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -892,7 +892,7 @@ begin
         'London, United Kingdom'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -903,7 +903,7 @@ begin
         'Publication dates for GBP ICE Swap rates'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -914,7 +914,7 @@ begin
         'Tbilisi, Georgia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -925,7 +925,7 @@ begin
         'Saint Peter Port, Guernsey'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -936,7 +936,7 @@ begin
         'Accra, Ghana'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -947,7 +947,7 @@ begin
         'Gibraltar, Gibraltar'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -958,7 +958,7 @@ begin
         'Banjul, Gambia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -969,7 +969,7 @@ begin
         'Conakry, Guinea'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -980,7 +980,7 @@ begin
         'Athens, Greece'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -991,7 +991,7 @@ begin
         'Guatemala City, Guatemala'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1002,7 +1002,7 @@ begin
         'Guatemala City, Guatemala [DEPRECATED, to be removed in 2024. Replaced by GTGC.]'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1013,7 +1013,7 @@ begin
         'Hong Kong, Hong Kong'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1024,7 +1024,7 @@ begin
         'Tegucigalpa, Honduras'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1035,7 +1035,7 @@ begin
         'Zagreb, Republic of Croatia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1046,7 +1046,7 @@ begin
         'Budapest, Hungary'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1057,7 +1057,7 @@ begin
         'Jakarta, Indonesia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1068,7 +1068,7 @@ begin
         'Dublin, Ireland'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1079,7 +1079,7 @@ begin
         'Jerusalem, Israel'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1090,7 +1090,7 @@ begin
         'Publication dates of the ILS-SHIR index.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1101,7 +1101,7 @@ begin
         'Publication dates of the ILS-TELBOR index.'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1112,7 +1112,7 @@ begin
         'Tel Aviv, Israel'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1123,7 +1123,7 @@ begin
         'Ahmedabad, India'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1134,7 +1134,7 @@ begin
         'Bangalore, India'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1145,7 +1145,7 @@ begin
         'Chennai, India'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1156,7 +1156,7 @@ begin
         'Hyderabad, India'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1167,7 +1167,7 @@ begin
         'Kolkata, India'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1178,7 +1178,7 @@ begin
         'Mumbai, India'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1189,7 +1189,7 @@ begin
         'New Delhi, India'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1200,7 +1200,7 @@ begin
         'Baghdad, Iraq'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1211,7 +1211,7 @@ begin
         'Teheran, Iran'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1222,7 +1222,7 @@ begin
         'Reykjavik, Iceland'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1233,7 +1233,7 @@ begin
         'Milan, Italy'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1244,7 +1244,7 @@ begin
         'Rome, Italy'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1255,7 +1255,7 @@ begin
         'Turin, Italy'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1266,7 +1266,7 @@ begin
         'St. Helier, Channel Islands, Jersey'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1277,7 +1277,7 @@ begin
         'Kingston, Jamaica'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1288,7 +1288,7 @@ begin
         'Amman, Jordan'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1299,7 +1299,7 @@ begin
         'Tokyo, Japan'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1310,7 +1310,7 @@ begin
         'Nairobi, Kenya'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1321,7 +1321,7 @@ begin
         'Phnom Penh, Cambodia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1332,7 +1332,7 @@ begin
         'Seoul, Republic of Korea'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1343,7 +1343,7 @@ begin
         'Kuwait City, Kuwait'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1354,7 +1354,7 @@ begin
         'George Town, Cayman Islands'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1365,7 +1365,7 @@ begin
         'Almaty, Kazakhstan'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1376,7 +1376,7 @@ begin
         'Vientiane, Laos'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1387,7 +1387,7 @@ begin
         'Beirut, Lebanon'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1398,7 +1398,7 @@ begin
         'Colombo, Sri Lanka'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1409,7 +1409,7 @@ begin
         'Luxembourg, Luxembourg'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1420,7 +1420,7 @@ begin
         'Riga, Latvia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1431,7 +1431,7 @@ begin
         'Casablanca, Morocco'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1442,7 +1442,7 @@ begin
         'Rabat, Morocco'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1453,7 +1453,7 @@ begin
         'Monaco, Monaco'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1464,7 +1464,7 @@ begin
         'Ulan Bator, Mongolia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1475,7 +1475,7 @@ begin
         'Macau, Macao'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1486,7 +1486,7 @@ begin
         'Valletta, Malta'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1497,7 +1497,7 @@ begin
         'Port Louis, Mauritius'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1508,7 +1508,7 @@ begin
         'Male, Maldives'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1519,7 +1519,7 @@ begin
         'Lilongwe, Malawi'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1530,7 +1530,7 @@ begin
         'Mexico City, Mexico'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1541,7 +1541,7 @@ begin
         'Kuala Lumpur, Malaysia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1552,7 +1552,7 @@ begin
         'Labuan, Malaysia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1563,7 +1563,7 @@ begin
         'Maputo, Mozambique'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1574,7 +1574,7 @@ begin
         'Windhoek, Namibia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1585,7 +1585,7 @@ begin
         'Abuja, Nigeria'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1596,7 +1596,7 @@ begin
         'Lagos, Nigeria'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1607,7 +1607,7 @@ begin
         'Amsterdam, Netherlands'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1618,7 +1618,7 @@ begin
         'Rotterdam, Netherlands'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1629,7 +1629,7 @@ begin
         'Oslo, Norway'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1640,7 +1640,7 @@ begin
         'Kathmandu, Nepal'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1651,7 +1651,7 @@ begin
         'New York Fed Business Day (as defined in 2006 ISDA Definitions Section 1.9, 2000 ISDA Definitions Section 1.9, and 2021 ISDA Definitions Section 2.1.7)'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1662,7 +1662,7 @@ begin
         'New York Stock Exchange Business Day (as defined in 2006 ISDA Definitions Section 1.10, 2000 ISDA Definitions Section 1.10, and 2021 ISDA Definitions Section 2.1.8)'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1673,7 +1673,7 @@ begin
         'Auckland, New Zealand'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1684,7 +1684,7 @@ begin
         'New Zealand Business Day (proposed effective date: 2025-10-06)'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1695,7 +1695,7 @@ begin
         'Wellington, New Zealand'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1706,7 +1706,7 @@ begin
         'Muscat, Oman'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1717,7 +1717,7 @@ begin
         'Panama City, Panama'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1728,7 +1728,7 @@ begin
         'Lima, Peru'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1739,7 +1739,7 @@ begin
         'Manila, Philippines'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1750,7 +1750,7 @@ begin
         'Makati, Philippines'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1761,7 +1761,7 @@ begin
         'Karachi, Pakistan'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1772,7 +1772,7 @@ begin
         'Warsaw, Poland'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1783,7 +1783,7 @@ begin
         'San Juan, Puerto Rico'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1794,7 +1794,7 @@ begin
         'Lisbon, Portugal'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1805,7 +1805,7 @@ begin
         'Doha, Qatar'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1816,7 +1816,7 @@ begin
         'Bucharest, Romania'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1827,7 +1827,7 @@ begin
         'Belgrade, Serbia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1838,7 +1838,7 @@ begin
         'Moscow, Russian Federation'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1849,7 +1849,7 @@ begin
         'Abha, Saudi Arabia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1860,7 +1860,7 @@ begin
         'Jeddah, Saudi Arabia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1871,7 +1871,7 @@ begin
         'Riyadh, Saudi Arabia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1882,7 +1882,7 @@ begin
         'Stockholm, Sweden'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1893,7 +1893,7 @@ begin
         'Singapore, Singapore'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1904,7 +1904,7 @@ begin
         'Ljubljana, Slovenia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1915,7 +1915,7 @@ begin
         'Bratislava, Slovakia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1926,7 +1926,7 @@ begin
         'Freetown, Sierra Leone'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1937,7 +1937,7 @@ begin
         'Dakar, Senegal'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1948,7 +1948,7 @@ begin
         'San Salvador, El Salvador'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1959,7 +1959,7 @@ begin
         'Bangkok, Thailand'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1970,7 +1970,7 @@ begin
         'Tunis, Tunisia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1981,7 +1981,7 @@ begin
         'Ankara, Turkey'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -1992,7 +1992,7 @@ begin
         'Istanbul, Turkey'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2003,7 +2003,7 @@ begin
         'Port of Spain, Trinidad and Tobago'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2014,7 +2014,7 @@ begin
         'Taipei, Taiwan'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2025,7 +2025,7 @@ begin
         'Dar es Salaam, Tanzania'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2036,7 +2036,7 @@ begin
         'Dodoma, Tanzania'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2047,7 +2047,7 @@ begin
         'Kiev, Ukraine'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2058,7 +2058,7 @@ begin
         'Kampala, Uganda'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2069,7 +2069,7 @@ begin
         'Boston, Massachusetts, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2080,7 +2080,7 @@ begin
         'Chicago, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2091,7 +2091,7 @@ begin
         'Charlotte, North Carolina, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2102,7 +2102,7 @@ begin
         'Washington, District of Columbia, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2113,7 +2113,7 @@ begin
         'Publication dates for ICE Swap rates based on USD-LIBOR rates'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2124,7 +2124,7 @@ begin
         'Publication dates for the USD-Municipal Swap Index'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2135,7 +2135,7 @@ begin
         'Denver, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2146,7 +2146,7 @@ begin
         'Detroit, Michigan, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2157,7 +2157,7 @@ begin
         'U.S. Government Securities Business Day (as defined in 2006 ISDA Definitions Section 1.11 and 2000 ISDA Definitions Section 1.11)'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2168,7 +2168,7 @@ begin
         'Honolulu, Hawaii, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2179,7 +2179,7 @@ begin
         'Houston, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2190,7 +2190,7 @@ begin
         'Los Angeles, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2201,7 +2201,7 @@ begin
         'Mobile, Alabama, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2212,7 +2212,7 @@ begin
         'Minneapolis, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2223,7 +2223,7 @@ begin
         'New York, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2234,7 +2234,7 @@ begin
         'Portland, Oregon, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2245,7 +2245,7 @@ begin
         'Sacramento, California, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2256,7 +2256,7 @@ begin
         'Seattle, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2267,7 +2267,7 @@ begin
         'San Francisco, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2278,7 +2278,7 @@ begin
         'Wichita, United States'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2289,7 +2289,7 @@ begin
         'Montevideo, Uruguay'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2300,7 +2300,7 @@ begin
         'Tashkent, Uzbekistan'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2311,7 +2311,7 @@ begin
         'Caracas, Venezuela'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2322,7 +2322,7 @@ begin
         'Road Town, Virgin Islands (British)'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2333,7 +2333,7 @@ begin
         'Hanoi, Vietnam'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2344,7 +2344,7 @@ begin
         'Ho Chi Minh (formerly Saigon), Vietnam'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2355,7 +2355,7 @@ begin
         'Aden, Yemen'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2366,7 +2366,7 @@ begin
         'Johannesburg, South Africa'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2377,7 +2377,7 @@ begin
         'Lusaka, Zambia'
     );
     v_count := v_count + 1;
-    insert into ores.dq_business_centres_artefact_tbl (
+    insert into metadata.dq_business_centres_artefact_tbl (
         dataset_id, code, version, coding_scheme_code, source, description
     ) values (
         v_dataset_id,
@@ -2408,15 +2408,15 @@ declare
 begin
     -- Get the dataset ID
     select id into v_dataset_id
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where code = 'fpml.business_center'
-    and valid_to = ores.utility_infinity_timestamp_fn();
+    and valid_to = public.utility_infinity_timestamp_fn();
 
     -- Get the flags dataset ID
     select id into v_flags_dataset_id
-    from ores.dq_datasets_tbl
+    from metadata.dq_datasets_tbl
     where code = 'assets.country_flags'
-    and valid_to = ores.utility_infinity_timestamp_fn();
+    and valid_to = public.utility_infinity_timestamp_fn();
 
     if v_flags_dataset_id is null then
         raise exception 'Flags dataset assets.country_flags not found. Check dataset dependencies.';
@@ -2424,14 +2424,14 @@ begin
 
     -- Get the placeholder image
     select image_id into v_placeholder_image_id
-    from ores.dq_images_artefact_tbl
+    from metadata.dq_images_artefact_tbl
     where dataset_id = v_flags_dataset_id
       and key = 'xx';
 
     -- Update records with their flag image_id
-    update ores.dq_business_centres_artefact_tbl bc
+    update metadata.dq_business_centres_artefact_tbl bc
     set image_id = coalesce(i.image_id, v_placeholder_image_id)
-    from ores.dq_images_artefact_tbl i
+    from metadata.dq_images_artefact_tbl i
     where bc.dataset_id = v_dataset_id
       and i.dataset_id = v_flags_dataset_id
       and i.key = lower(substring(bc.code, 1, 2));
@@ -2440,7 +2440,7 @@ begin
     raise notice 'Updated % records with flag images', v_updated;
 
     -- Set placeholder for any without matching flags
-    update ores.dq_business_centres_artefact_tbl
+    update metadata.dq_business_centres_artefact_tbl
     set image_id = v_placeholder_image_id
     where dataset_id = v_dataset_id
       and image_id is null
@@ -2461,17 +2461,17 @@ $$;
 \echo '--- Summary ---'
 
 select 'dq_business_centres_artefact' as entity, count(*) as count
-from ores.dq_business_centres_artefact_tbl;
+from metadata.dq_business_centres_artefact_tbl;
 
 select coding_scheme_code, count(*) as count
-from ores.dq_business_centres_artefact_tbl
+from metadata.dq_business_centres_artefact_tbl
 group by coding_scheme_code
 order by coding_scheme_code;
 
 select 'With flag images' as status, count(*) as count
-from ores.dq_business_centres_artefact_tbl
+from metadata.dq_business_centres_artefact_tbl
 where image_id is not null
 union all
 select 'Without flag images', count(*)
-from ores.dq_business_centres_artefact_tbl
+from metadata.dq_business_centres_artefact_tbl
 where image_id is null;

@@ -26,7 +26,7 @@
  * This must be run before populating the artefact table.
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- FpML Local Jurisdiction Dataset
@@ -34,7 +34,7 @@ set schema 'ores';
 
 \echo '--- FpML Local Jurisdiction Dataset ---'
 
-select ores.upsert_dq_datasets(
+select public.upsert_dq_datasets(
     'fpml.local_jurisdiction',
     'FpML Standards',
     'Regulatory',

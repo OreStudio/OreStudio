@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-set schema 'ores';
+set schema 'metadata';
 
-drop trigger if exists dq_coding_schemes_notify_trg on "ores"."dq_coding_schemes_tbl";
-drop function if exists ores.dq_coding_schemes_notify_fn;
+drop trigger if exists dq_coding_schemes_notify_trg on "metadata"."dq_coding_schemes_tbl";
+drop function if exists metadata.dq_coding_schemes_notify_fn;

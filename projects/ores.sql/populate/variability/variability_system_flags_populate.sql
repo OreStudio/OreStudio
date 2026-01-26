@@ -34,34 +34,34 @@
  * - system.disable_password_validation: Disables strict password validation (dev only)
  */
 
-set schema 'ores';
+set schema 'production';
 
 -- Seed system flags with their default values
-select ores.upsert_system_flag(
+select public.upsert_system_flag(
     'system.bootstrap_mode',
     true,
     'Indicates whether the system is in bootstrap mode (waiting for initial admin account).'
 );
 
-select ores.upsert_system_flag(
+select public.upsert_system_flag(
     'system.user_signups',
     false,
     'Controls whether user self-registration is allowed.'
 );
 
-select ores.upsert_system_flag(
+select public.upsert_system_flag(
     'system.signup_requires_authorization',
     false,
     'Controls whether new signups require admin authorization. NOT YET IMPLEMENTED - enabling will cause signup to fail.'
 );
 
-select ores.upsert_system_flag(
+select public.upsert_system_flag(
     'system.disable_password_validation',
     false,
     'When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.'
 );
 
-select ores.upsert_system_flag(
+select public.upsert_system_flag(
     'system.synthetic_data_generation',
     false,
     'Enables synthetic test data generation in the UI. FOR TESTING/DEVELOPMENT ONLY.'
@@ -69,6 +69,6 @@ select ores.upsert_system_flag(
 
 -- Show summary
 select name, enabled, description
-from ores.variability_feature_flags_tbl
-where name like 'system.%' and valid_to = ores.utility_infinity_timestamp_fn()
+from production.variability_feature_flags_tbl
+where name like 'system.%' and valid_to = public.utility_infinity_timestamp_fn()
 order by name;

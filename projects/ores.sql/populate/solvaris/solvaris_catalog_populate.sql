@@ -18,7 +18,7 @@
  *
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Data Quality Slovaris Catalogs
@@ -26,7 +26,7 @@ set schema 'ores';
 
 \echo '--- Data Quality Slovaris Catalogs ---'
 
-select ores.upsert_dq_catalogs(
+select public.upsert_dq_catalogs(
     'Slovaris',
     'Imaginary world to test all system functions.',
     'Testing Team'
@@ -40,5 +40,5 @@ select ores.upsert_dq_catalogs(
 \echo '--- Summary ---'
 
 select 'Data Quality Total Catalogs' as entity, count(*) as count
-from ores.dq_catalogs_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_catalogs_tbl where valid_to = public.utility_infinity_timestamp_fn()
 order by entity;

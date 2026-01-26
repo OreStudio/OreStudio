@@ -18,7 +18,7 @@
  *
  */
 
-set schema 'ores';
+set schema 'metadata';
 
 -- =============================================================================
 -- Data Quality Slovaris Tags
@@ -26,21 +26,21 @@ set schema 'ores';
 
 \echo '--- Data Quality Slovaris Tags ---'
 
-select ores.upsert_dq_tag(
+select public.upsert_dq_tag(
     'Solvaris Countries',
     'Countries',
     'Reference Data',
     'country',
     'Country reference data'
 );
-select ores.upsert_dq_tag(
+select public.upsert_dq_tag(
     'Solvaris Currencies',
     'Currencies',
     'Reference Data',
     'currency',
     'Currency reference data'
 );
-select ores.upsert_dq_tag(
+select public.upsert_dq_tag(
     'Solvaris Country Flag Images',
     'Country Flags',
     'Reference Data',
@@ -56,8 +56,8 @@ select ores.upsert_dq_tag(
 \echo '--- Summary ---'
 
 select 'dq_datasets' as entity, count(*) as count
-from ores.dq_datasets_tbl
-where valid_to = ores.utility_infinity_timestamp_fn()
+from metadata.dq_datasets_tbl
+where valid_to = public.utility_infinity_timestamp_fn()
 union all
 select 'dq_tags_artefact', count(*)
-from ores.dq_tags_artefact_tbl;
+from metadata.dq_tags_artefact_tbl;

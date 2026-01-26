@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-create or replace function ores.iam_roles_notify_fn()
+create or replace function production.iam_roles_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.iam.role';
+    entity_name text := 'production.iam.role';
     change_timestamp timestamptz := NOW();
     changed_id text;
 begin
@@ -44,5 +44,5 @@ end;
 $$ language plpgsql;
 
 create or replace trigger iam_roles_notify_trg
-after insert or update or delete on ores.iam_roles_tbl
-for each row execute function ores.iam_roles_notify_fn();
+after insert or update or delete on production.iam_roles_tbl
+for each row execute function production.iam_roles_notify_fn();

@@ -18,11 +18,11 @@
  *
  */
 
-create or replace function ores.refdata_regulatory_corporate_sectors_notify_fn()
+create or replace function production.refdata_regulatory_corporate_sectors_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.refdata.regulatory_corporate_sector';
+    entity_name text := 'production.refdata.regulatory_corporate_sector';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin
@@ -45,5 +45,5 @@ end;
 $$ language plpgsql;
 
 create or replace trigger refdata_regulatory_corporate_sectors_notify_trg
-after insert or update or delete on ores.refdata_regulatory_corporate_sectors_tbl
-for each row execute function ores.refdata_regulatory_corporate_sectors_notify_fn();
+after insert or update or delete on production.refdata_regulatory_corporate_sectors_tbl
+for each row execute function production.refdata_regulatory_corporate_sectors_notify_fn();

@@ -24,11 +24,19 @@
  * Creates the ores_template database which serves as a blueprint for
  * creating new ORES database instances quickly.
  *
- * Creates the complete ORES database schema including:
- * - Schema and extensions
- * - Utility functions
- * - All tables with temporal/bitemporal support
- * - Triggers and notification functions
+ * The template includes:
+ *
+ * 1. Schema Layer:
+ *    - Schema and extensions
+ *    - Utility functions
+ *    - All tables with temporal/bitemporal support
+ *    - Triggers and notification functions
+ *
+ * 2. Foundation Layer (essential lookup and configuration data):
+ *    - Change Control: Categories and reasons for audit trail
+ *    - Reference Data Lookup Tables: Rounding types
+ *    - Data Quality Framework: Domains, subject areas, authority types, coding schemes
+ *    - IAM: Permissions and roles
  *
  * USAGE:
  *   psql -U postgres -f setup_template.sql
@@ -76,10 +84,8 @@ grant create on schema ores to ores;
 -- Create all tables, triggers, and functions
 \ir ./create/create.sql
 
--- NOTE: The template database contains schema only, no data.
--- To seed data after creating an instance:
---   psql -U ores -d your_database -f populate/populate.sql        # RBAC + system flags
---   psql -U ores -d your_database -f populate/reference_data.sql  # Currencies, flags, images
+-- Populate foundation layer (essential lookup and configuration data)
+\ir ./populate/foundation/populate_foundation.sql
 
 -- Grant table permissions to ores user
 -- Note: TRUNCATE is included for test database cleanup

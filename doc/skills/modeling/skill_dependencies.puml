@@ -73,6 +73,7 @@ package "Utilities" {
     [cmake-runner] <<utility>> as cmake
     [unit-test-writer] <<utility>> as utw
     [component-model-creator] <<utility>> as cmc
+    [test-failure-investigator] <<utility>> as tfi
 }
 
 ' =============================================================================
@@ -153,6 +154,7 @@ sad --> utw
 
 ' Utility dependencies
 cmc --> puml
+tfi --> cmake
 
 @enduml
 

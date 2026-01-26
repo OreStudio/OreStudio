@@ -1,24 +1,17 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Data Quality Framework Master Include File
+ * Data Quality Framework Population Script
  *
- * Includes all DQ framework SQL files in the correct dependency order.
- * These are the core DQ tables that other domain-specific files depend on.
+ * Includes DQ framework items that are NOT part of the foundation layer.
+ * Foundation layer items (change control, data domains, subject areas,
+ * coding scheme authority types, coding schemes) are populated separately
+ * via populate_foundation.sql.
+ *
+ * This script populates:
+ * - Dimensions (origin, nature, treatment)
+ * - Methodologies
+ * - Artefact types
  */
-
--- =============================================================================
--- Change Control (must be populated before entities that use reasons)
--- =============================================================================
-
-\echo '--- Change Control ---'
-\ir dq_change_reasons_populate.sql
-
--- =============================================================================
--- Data Domains
--- =============================================================================
-
-\echo '--- Data Domains ---'
-\ir dq_data_domain_populate.sql
 
 -- =============================================================================
 -- Dimensions (Origin, Nature, Treatment)
@@ -28,21 +21,6 @@
 \ir dq_origin_dimension_populate.sql
 \ir dq_nature_dimension_populate.sql
 \ir dq_treatment_dimension_populate.sql
-
--- =============================================================================
--- Subject Areas
--- =============================================================================
-
-\echo '--- Subject Areas ---'
-\ir dq_subject_area_populate.sql
-
--- =============================================================================
--- Coding Scheme Authority Types and Coding Schemes
--- =============================================================================
-
-\echo '--- Coding Schemes ---'
-\ir dq_coding_scheme_authority_type_populate.sql
-\ir dq_coding_scheme_populate.sql
 
 -- =============================================================================
 -- General Methodologies

@@ -21,16 +21,23 @@
 /**
  * System Population Script
  *
- * Seeds the database with essential system data required for the
- * application to function. All scripts are idempotent and can be
- * safely re-run without creating duplicate data.
+ * Seeds the database with all system and reference data required for the
+ * application to function. All scripts are idempotent and can be safely
+ * re-run without creating duplicate data.
  *
- * This script is run automatically during template creation and seeds:
- * 1. Change Control: Change reasons and categories
- * 2. Data Quality: Dimensions, domains, subject areas, methodologies, datasets
- * 3. DQ Artefacts: Images, countries, currencies (staging data)
- * 4. RBAC: Permissions, roles, role-permission assignments
- * 5. System Flags: Bootstrap mode, user signups, etc.
+ * Population Layers:
+ *
+ * 1. Foundation Layer (included in template, idempotent re-run here)
+ *    - Change Control: Categories and reasons for audit trail
+ *    - Reference Data Lookup Tables: Rounding types
+ *    - Data Quality Framework: Domains, subject areas, authority types, coding schemes
+ *    - IAM: Permissions and roles
+ *
+ * 2. Data Quality Framework (dimensions, methodologies, artefact types)
+ *
+ * 3. Reference Data (flags, ISO standards, Solvaris, FPML, crypto, etc.)
+ *
+ * 4. System Configuration (feature flags)
  *
  * NOTE: Production tables (countries, currencies, images) are NOT populated
  * here. Use the "Publish Datasets" feature in the Data Librarian window to
@@ -47,15 +54,24 @@
 \echo '=== Starting System Population ==='
 \echo ''
 
--- Data Quality Framework (change control, dimensions, domains, subject areas, coding schemes)
+-- =============================================================================
+-- Foundation Layer (idempotent - already in template, safe to re-run)
+-- =============================================================================
+
+\echo '--- Foundation Layer ---'
+\ir foundation/populate_foundation.sql
+
+-- =============================================================================
+-- Data Quality Framework (dimensions, methodologies, artefact types)
+-- =============================================================================
+
 \echo ''
 \echo '--- Data Quality Framework ---'
 \ir dq/populate_dq.sql
 
--- Reference Data Lookup Tables (must come before tables that reference them)
-\echo ''
-\echo '--- Reference Data Lookup Tables ---'
-\ir refdata/refdata_rounding_types_populate.sql
+-- =============================================================================
+-- Reference Data
+-- =============================================================================
 
 -- Flag Icons Reference Data (Visual Assets catalog, datasets, and images - must come before ISO)
 \echo ''
@@ -87,10 +103,9 @@
 \echo '--- Cryptocurrency Reference Data ---'
 \ir crypto/populate_crypto.sql
 
--- IAM (Identity and Access Management)
-\echo ''
-\echo '--- IAM ---'
-\ir iam/populate_iam.sql
+-- =============================================================================
+-- System Configuration
+-- =============================================================================
 
 -- Variability (Feature Flags)
 \echo ''

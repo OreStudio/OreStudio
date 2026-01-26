@@ -42,6 +42,8 @@ diagram:
 ** Development
 
 - [[id:654d4a70-e63d-4c18-b5a5-886066e36314][CMake Runner]]: Run CMake targets.
+- [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][Test Failure Investigator]]: Investigate unit test failures by parsing results
+  and analysing logs.
 - [[id:b1450696-8c51-4cc5-8910-84912a411ab6][Domain Type Creator]]: Create a new domain type with all of it's basic services.
 - [[id:c6adac80-f4e6-44e8-9525-3760cb98c41d][Qt Entity Creator]]: Create Qt UI components for domain entities including list
   windows, detail dialogs, history dialogs, and controllers.

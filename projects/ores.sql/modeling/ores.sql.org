@@ -14,7 +14,6 @@ Diagram:
 
 #+attr_html: :width 100% :alt ORES Database Schema
 #+caption: ORE Studio Database Entity-Relationship Diagram
-[[file:ores_schema.png][file:ores_schema.png]]
 
 The ORES database is organised into four domains:
 
@@ -140,6 +139,55 @@ Even with Apache-only, hypertables provide:
 - Parallel chunk processing
 - Simplified data lifecycle management
 
+* Data Population Layers
+
+The ORES database uses a layered approach to data population:
+
+** Foundation Layer
+
+Essential lookup and configuration data required for schema integrity. This data
+is populated in the template database and must be present before application
+data can be inserted.
+
+| Category                 | Tables                                           | Purpose                              |
+|--------------------------+--------------------------------------------------+--------------------------------------|
+| Change Control           | =dq_change_reason_categories_tbl=                | Audit trail categorization           |
+|                          | =dq_change_reasons_tbl=                          | Audit trail reasons                  |
+| Reference Data Lookups   | =refdata_rounding_types_tbl=                     | Currency rounding validation         |
+| Data Quality Framework   | =dq_data_domains_tbl=                            | Data domain classification           |
+|                          | =dq_subject_areas_tbl=                           | Subject area classification          |
+|                          | =dq_coding_scheme_authority_types_tbl=           | Coding scheme authority types        |
+|                          | =dq_coding_schemes_tbl=                          | Party/entity identification schemes  |
+| IAM                      | =iam_permissions_tbl=                            | Access control permissions           |
+|                          | =iam_roles_tbl=                                  | Access control roles                 |
+
+Foundation layer is populated via =populate/foundation/populate_foundation.sql=.
+
+** Data Quality Framework Layer
+
+DQ tables not in the foundation layer that support data quality workflows:
+
+- Dimensions (origin, nature, treatment)
+- Methodologies
+- Artefact types
+
+** Reference Data Layer
+
+Domain-specific reference data including:
+
+- Flag icons and images
+- ISO standards (countries, currencies)
+- Solvaris reference data
+- FPML coding schemes and artefacts
+- Cryptocurrency data
+- IP geolocation mappings
+
+** System Configuration Layer
+
+Runtime configuration data:
+
+- Feature flags (variability)
+
 * Database Creation
 
 The database uses a template-based approach for fast instance creation.
@@ -161,11 +209,15 @@ psql -U postgres -f admin/setup_admin.sql
 
 ** Create Template Database (One-Time)
 
-Create the =ores_template= database containing all schema and reference data:
+Create the =ores_template= database containing the schema and foundation layer:
 
 #+begin_src sh
 psql -U postgres -f setup_template.sql
 #+end_src
+
+The template includes:
+- Complete database schema (tables, triggers, functions)
+- Foundation layer data (change control, rounding types, DQ framework, IAM)
 
 ** Create Instance with Whimsical Name
 

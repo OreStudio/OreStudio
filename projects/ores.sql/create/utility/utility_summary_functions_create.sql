@@ -124,6 +124,14 @@ BEGIN
     UNION ALL
     SELECT 'Governance', 'Artefact Types', count(*)
     FROM ores.dq_artefact_types_tbl
+    UNION ALL
+    SELECT 'Governance', 'Dataset Bundles', count(*)
+    FROM ores.dq_dataset_bundles_tbl
+    WHERE valid_to = ores.utility_infinity_timestamp_fn()
+    UNION ALL
+    SELECT 'Governance', 'Dataset Bundle Members', count(*)
+    FROM ores.dq_dataset_bundle_members_tbl
+    WHERE valid_to = ores.utility_infinity_timestamp_fn()
     ORDER BY 2;
 END;
 $$ LANGUAGE plpgsql STABLE;

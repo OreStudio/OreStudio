@@ -23,6 +23,10 @@
 \ir ./dq_catalogs_notify_trigger_create.sql
 \ir ./dq_dataset_dependency_create.sql
 
+-- Dataset bundles
+\ir ./dq_dataset_bundle_create.sql
+\ir ./dq_dataset_bundle_member_create.sql
+
 -- Data domains and subject areas
 \ir ./dq_data_domain_create.sql
 \ir ./dq_data_domains_notify_trigger_create.sql
@@ -104,3 +108,4 @@
 
 -- Publication
 \ir ./dq_publication_create.sql
+\ir ./dq_bundle_publication_create.sql

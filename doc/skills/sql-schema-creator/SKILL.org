@@ -32,6 +32,7 @@ see the [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ORE Studio SQL Schema]] docum
 4. Update the corresponding C++ entity file with the new table name.
 5. Update the orchestration scripts to include the new files.
 6. Test the schema creation.
+7. Run schema validation (=./projects/ores.sql/scripts/validate_schema.sh=).
 
 * Naming conventions
 
@@ -643,6 +644,23 @@ psql -U ores -d <database_name> -c "\d ores.{component}_{entity}_tbl"
 #+begin_src sh
 psql -U ores -d <database_name> -c "LISTEN ores_{entity_plural}; INSERT INTO ores.{component}_{entity}_tbl (...) VALUES (...);"
 #+end_src
+
+** Step 8: Run schema validation
+
+Run the schema validation script to check for common issues before committing:
+
+#+begin_src sh
+./projects/ores.sql/scripts/validate_schema.sh
+#+end_src
+
+The validator checks for:
+- Temporal tables missing required columns (=version=, =modified_by=)
+- Functions created without corresponding drop statements
+- Tables created without corresponding drop statements
+- Other schema consistency issues
+
+*Important*: Fix all issues reported by the validator before committing. This
+validation also runs in CI and will fail the build if there are warnings.
 
 * SQL patterns
 

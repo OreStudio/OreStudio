@@ -33,3 +33,5 @@ drop function if exists ores.upsert_dq_coding_schemes;
 drop function if exists ores.upsert_dq_methodologies;
 drop function if exists ores.upsert_dq_datasets;
 drop function if exists ores.upsert_dq_tag;
+drop function if exists ores.upsert_dq_dataset_bundle;
+drop function if exists ores.upsert_dq_dataset_bundle_member;

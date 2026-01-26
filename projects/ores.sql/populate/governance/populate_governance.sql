@@ -68,6 +68,15 @@
 \echo '--- Artefact Types ---'
 \ir ../dq/dq_artefact_types_populate.sql
 
+-- =============================================================================
+-- Dataset Bundles
+-- =============================================================================
+
+\echo ''
+\echo '--- Dataset Bundles ---'
+\ir ./dq_dataset_bundle_populate.sql
+\ir ./dq_dataset_bundle_member_populate.sql
+
 \echo ''
 \echo '=== Data Governance Layer Population Complete ==='
 
@@ -91,4 +100,10 @@ from ores.dq_methodologies_tbl where valid_to = ores.utility_infinity_timestamp_
 union all
 select 'Artefact Types', count(*)
 from ores.dq_artefact_types_tbl
+union all
+select 'Dataset Bundles', count(*)
+from ores.dq_dataset_bundles_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'Dataset Bundle Members', count(*)
+from ores.dq_dataset_bundle_members_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

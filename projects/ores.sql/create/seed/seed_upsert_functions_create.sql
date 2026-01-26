@@ -719,3 +719,72 @@ begin
     end if;
 end;
 $$ language plpgsql;
+
+-- =============================================================================
+-- Data Quality: Dataset Bundles
+-- =============================================================================
+
+/**
+ * Upsert a dataset bundle (named collection of datasets).
+ */
+create or replace function ores.upsert_dq_dataset_bundle(
+    p_code text,
+    p_name text,
+    p_description text
+) returns void as $$
+begin
+    perform ores.seed_validate_not_empty(p_code, 'Dataset bundle code');
+    perform ores.seed_validate_not_empty(p_name, 'Dataset bundle name');
+
+    insert into ores.dq_dataset_bundles_tbl (
+        id, version, code, name, description,
+        modified_by, change_reason_code, change_commentary,
+        valid_from, valid_to
+    )
+    values (
+        gen_random_uuid(), 0, p_code, p_name, p_description,
+        'system', 'system.new_record', 'System seed data - dataset bundle',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (code) where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
+        raise notice 'Created dataset bundle: %', p_code;
+    else
+        raise notice 'Dataset bundle already exists: %', p_code;
+    end if;
+end;
+$$ language plpgsql;
+
+/**
+ * Upsert a dataset bundle member (links a dataset to a bundle).
+ */
+create or replace function ores.upsert_dq_dataset_bundle_member(
+    p_bundle_code text,
+    p_dataset_code text,
+    p_display_order integer
+) returns void as $$
+begin
+    perform ores.seed_validate_not_empty(p_bundle_code, 'Bundle code');
+    perform ores.seed_validate_not_empty(p_dataset_code, 'Dataset code');
+
+    insert into ores.dq_dataset_bundle_members_tbl (
+        bundle_code, dataset_code, version, display_order,
+        modified_by, change_reason_code, change_commentary,
+        valid_from, valid_to
+    )
+    values (
+        p_bundle_code, p_dataset_code, 0, p_display_order,
+        'system', 'system.new_record', 'System seed data - dataset bundle member',
+        current_timestamp, ores.utility_infinity_timestamp_fn()
+    )
+    on conflict (bundle_code, dataset_code)
+        where valid_to = ores.utility_infinity_timestamp_fn() do nothing;
+
+    if found then
+        raise notice 'Added dataset % to bundle %', p_dataset_code, p_bundle_code;
+    else
+        raise notice 'Dataset % already in bundle %', p_dataset_code, p_bundle_code;
+    end if;
+end;
+$$ language plpgsql;

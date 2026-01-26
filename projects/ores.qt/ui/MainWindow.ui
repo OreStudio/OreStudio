@@ -62,7 +62,7 @@
     </widget>
     <widget class="QMenu" name="menuQuality">
      <property name="title">
-      <string>Data &amp;Quality</string>
+      <string>Data &amp;Governance</string>
      </property>
      <widget class="QMenu" name="menuClassifications">
       <property name="title">

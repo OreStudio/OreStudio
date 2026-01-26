@@ -28,8 +28,9 @@
  * The foundation layer includes:
  * - Change Control: Categories and reasons for audit trail
  * - Reference Data Lookup Tables: Rounding types
- * - Data Quality Framework: Domains, subject areas, authority types, coding schemes
+ * - Data Governance Framework: Domains, subject areas, authority types, coding schemes
  * - IAM: Permissions and roles for access control
+ * - System Configuration: Feature flags for runtime configuration
  *
  * All scripts are idempotent and can be safely re-run.
  *
@@ -60,11 +61,11 @@
 \ir ../refdata/refdata_rounding_types_populate.sql
 
 -- =============================================================================
--- Data Quality Framework
+-- Data Governance Framework
 -- =============================================================================
 
 \echo ''
-\echo '--- Data Quality Framework ---'
+\echo '--- Data Governance Framework ---'
 
 -- Data domains (must come before subject areas)
 \ir ../dq/dq_data_domain_populate.sql
@@ -85,6 +86,14 @@
 \echo ''
 \echo '--- IAM ---'
 \ir ../iam/populate_iam.sql
+
+-- =============================================================================
+-- System Configuration (Feature Flags)
+-- =============================================================================
+
+\echo ''
+\echo '--- System Configuration ---'
+\ir ../variability/populate_variability.sql
 
 \echo ''
 \echo '=== Foundation Layer Population Complete ==='
@@ -121,4 +130,7 @@ from ores.iam_permissions_tbl where valid_to = ores.utility_infinity_timestamp_f
 union all
 select 'Roles', count(*)
 from ores.iam_roles_tbl where valid_to = ores.utility_infinity_timestamp_fn()
+union all
+select 'System Flags', count(*)
+from ores.variability_feature_flags_tbl where name like 'system.%' and valid_to = ores.utility_infinity_timestamp_fn()
 order by entity;

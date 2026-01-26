@@ -94,7 +94,7 @@ struct badge_colors {
     static inline const QColor locked{239, 68, 68};        // Red
     static inline const QColor unlocked{107, 114, 128};    // Gray
 
-    // Data quality dimension badges
+    // Data governance dimension badges
     static inline const QColor origin_primary{59, 130, 246};   // Blue
     static inline const QColor origin_derived{139, 92, 246};   // Purple
     static inline const QColor nature_actual{34, 197, 94};     // Green

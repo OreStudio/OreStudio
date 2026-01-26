@@ -35,8 +35,9 @@
  * 2. Foundation Layer (essential lookup and configuration data):
  *    - Change Control: Categories and reasons for audit trail
  *    - Reference Data Lookup Tables: Rounding types
- *    - Data Quality Framework: Domains, subject areas, authority types, coding schemes
+ *    - Data Governance Framework: Domains, subject areas, authority types, coding schemes
  *    - IAM: Permissions and roles
+ *    - System Configuration: Feature flags
  *
  * USAGE:
  *   psql -U postgres -f setup_template.sql

@@ -141,7 +141,13 @@ Even with Apache-only, hypertables provide:
 
 * Data Population Layers
 
-The ORES database uses a layered approach to data population:
+The ORES database uses a layered approach to data population. Each layer builds
+upon the previous, creating a clear separation of concerns:
+
+#+begin_example
+Foundation → Data Governance → Data Catalogues → Production
+(prerequisites)  (rules/metadata)   (organized data)    (live data)
+#+end_example
 
 ** Foundation Layer
 
@@ -154,39 +160,64 @@ data can be inserted.
 | Change Control           | =dq_change_reason_categories_tbl=                | Audit trail categorization           |
 |                          | =dq_change_reasons_tbl=                          | Audit trail reasons                  |
 | Reference Data Lookups   | =refdata_rounding_types_tbl=                     | Currency rounding validation         |
-| Data Quality Framework   | =dq_data_domains_tbl=                            | Data domain classification           |
+| Data Governance Framework| =dq_data_domains_tbl=                            | Data domain classification           |
 |                          | =dq_subject_areas_tbl=                           | Subject area classification          |
 |                          | =dq_coding_scheme_authority_types_tbl=           | Coding scheme authority types        |
 |                          | =dq_coding_schemes_tbl=                          | Party/entity identification schemes  |
 | IAM                      | =iam_permissions_tbl=                            | Access control permissions           |
 |                          | =iam_roles_tbl=                                  | Access control roles                 |
+| System Configuration     | =variability_feature_flags_tbl=                  | Feature flags for runtime config     |
 
 Foundation layer is populated via =populate/foundation/populate_foundation.sql=.
 
-** Data Quality Framework Layer
+** Data Governance Layer
 
-DQ tables not in the foundation layer that support data quality workflows:
+Metadata that defines the rules and classifications for how data is organized.
+This layer sets out the landscape for data quality management.
 
-- Dimensions (origin, nature, treatment)
-- Methodologies
-- Artefact types
+| Category       | Tables                          | Purpose                              |
+|----------------+---------------------------------+--------------------------------------|
+| Dimensions     | =dq_origin_dimensions_tbl=      | Data origin classification           |
+|                | =dq_nature_dimensions_tbl=      | Data nature classification           |
+|                | =dq_treatment_dimensions_tbl=   | Data treatment classification        |
+| Methodologies  | =dq_methodologies_tbl=          | Data sourcing/processing methods     |
+| Artefact Types | =dq_artefact_types_tbl=         | Types of artefacts and mappings      |
 
-** Reference Data Layer
+Data governance layer is populated via =populate/governance/populate_governance.sql=.
 
-Domain-specific reference data including:
+** Data Catalogues Layer
 
-- Flag icons and images
-- ISO standards (countries, currencies)
-- Solvaris reference data
-- FPML coding schemes and artefacts
-- Cryptocurrency data
-- IP geolocation mappings
+Catalogued reference data organized according to governance rules. This layer
+contains the actual data awaiting publication to production tables.
 
-** System Configuration Layer
+| Category             | Tables                          | Purpose                              |
+|----------------------+---------------------------------+--------------------------------------|
+| Catalogs             | =dq_catalogs_tbl=               | Groupings of datasets by source      |
+| Datasets             | =dq_datasets_tbl=               | Data collection definitions          |
+| Dependencies         | =dq_dataset_dependencies_tbl=   | Relationships between datasets       |
+| Artefact Data        | =dq_*_artefact_tbl=             | Staged reference data                |
 
-Runtime configuration data:
+Data sources include:
+- Flag Icons: Visual assets for countries
+- ISO Standards: Countries, currencies (ISO 3166, ISO 4217)
+- Solvaris: Extended currency metadata
+- IP to Country: IP geolocation mappings
+- FPML: Financial products reference data
+- Cryptocurrency: Digital currency data
 
-- Feature flags (variability)
+Data catalogues layer is populated via =populate/catalogues/populate_catalogues.sql=.
+
+** Production Layer
+
+Live reference data in production tables, published from the data catalogues
+layer via the "Publish Datasets" feature in the Data Librarian window.
+
+| Category   | Tables                          | Source Artefact Table                |
+|------------+---------------------------------+--------------------------------------|
+| Countries  | =refdata_countries_tbl=         | =dq_countries_artefact_tbl=          |
+| Currencies | =refdata_currencies_tbl=        | =dq_currencies_artefact_tbl=         |
+| Images     | =assets_images_tbl=             | =dq_images_artefact_tbl=             |
+| FPML Data  | =refdata_*_tbl=                 | =dq_*_artefact_tbl=                  |
 
 * Database Creation
 
@@ -217,7 +248,7 @@ psql -U postgres -f setup_template.sql
 
 The template includes:
 - Complete database schema (tables, triggers, functions)
-- Foundation layer data (change control, rounding types, DQ framework, IAM)
+- Foundation layer data (change control, rounding types, data governance framework, IAM, feature flags)
 
 ** Create Instance with Whimsical Name
 

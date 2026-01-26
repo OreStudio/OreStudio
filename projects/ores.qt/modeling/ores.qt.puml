@@ -969,7 +969,7 @@ namespace ores #F2F2F2 {
         Read-only dialog for viewing dataset details with tabbed interface.
 
         Displays dataset information in 4 tabs:
-        - Overview: general info, classification, data quality, audit
+        - Overview: general info, classification, data governance, audit
         - Provenance: source, dates, lineage info
         - Methodology: methodology details and processing steps
         - Lineage: visual diagram of data flow

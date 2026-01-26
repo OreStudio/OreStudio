@@ -52,6 +52,11 @@
 \echo '--- Data Quality Framework ---'
 \ir dq/populate_dq.sql
 
+-- Reference Data Lookup Tables (must come before tables that reference them)
+\echo ''
+\echo '--- Reference Data Lookup Tables ---'
+\ir refdata/refdata_rounding_types_populate.sql
+
 -- Flag Icons Reference Data (Visual Assets catalog, datasets, and images - must come before ISO)
 \echo ''
 \echo '--- Flag Icons Reference Data ---'
@@ -101,7 +106,10 @@
 \echo ''
 \echo '--- Summary ---'
 
-select 'Change Reasons' as entity, count(*) as count
+select 'Rounding Types' as entity, count(*) as count
+from ores.refdata_rounding_types_tbl
+union all
+select 'Change Reasons', count(*)
 from ores.dq_change_reasons_tbl where valid_to = ores.utility_infinity_timestamp_fn()
 union all
 select 'Change Reason Categories', count(*)

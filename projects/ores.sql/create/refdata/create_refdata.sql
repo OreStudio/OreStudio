@@ -18,6 +18,9 @@
  *
  */
 
+-- Lookup tables (no bitemporal support - static configuration)
+\ir ./refdata_rounding_types_create.sql
+
 -- Core reference data tables
 \ir ./refdata_currencies_create.sql
 \ir ./refdata_currencies_notify_trigger_create.sql

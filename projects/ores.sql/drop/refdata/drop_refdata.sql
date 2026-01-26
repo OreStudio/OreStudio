@@ -22,6 +22,9 @@
 \ir ./refdata_currencies_notify_trigger_drop.sql
 \ir ./refdata_currencies_drop.sql
 
+-- Lookup tables (must drop after tables that reference them)
+\ir ./refdata_rounding_types_drop.sql
+
 -- Countries
 \ir ./refdata_countries_notify_trigger_drop.sql
 \ir ./refdata_countries_drop.sql

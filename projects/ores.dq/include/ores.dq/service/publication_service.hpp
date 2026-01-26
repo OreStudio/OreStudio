@@ -25,6 +25,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.dq/domain/artefact_type.hpp"
 #include "ores.dq/domain/dataset.hpp"
 #include "ores.dq/domain/publication.hpp"
 #include "ores.dq/domain/publication_mode.hpp"
@@ -32,6 +33,7 @@
 #include "ores.dq/repository/dataset_repository.hpp"
 #include "ores.dq/repository/dataset_dependency_repository.hpp"
 #include "ores.dq/repository/publication_repository.hpp"
+#include "ores.dq/repository/artefact_type_repository.hpp"
 
 namespace ores::dq::service {
 
@@ -148,20 +150,23 @@ private:
         const std::string& published_by);
 
     /**
-     * @brief Calls the dataset's populate function.
+     * @brief Calls the artefact type's populate function.
      *
      * @param dataset The dataset to publish.
+     * @param artefact_type The artefact type with target_table and populate_function.
      * @param mode The publication mode.
      * @return Publication result from the database function.
      */
     domain::publication_result call_populate_function(
         const domain::dataset& dataset,
+        const domain::artefact_type& artefact_type,
         domain::publication_mode mode);
 
     context ctx_;
     repository::dataset_repository dataset_repo_;
     repository::dataset_dependency_repository dependency_repo_;
     repository::publication_repository publication_repo_;
+    repository::artefact_type_repository artefact_type_repo_;
 };
 
 }

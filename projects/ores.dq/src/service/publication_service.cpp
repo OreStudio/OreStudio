@@ -37,7 +37,8 @@ publication_service::publication_service(context ctx)
     : ctx_(std::move(ctx)),
       dataset_repo_(ctx_),
       dependency_repo_(ctx_),
-      publication_repo_(ctx_) {
+      publication_repo_(ctx_),
+      artefact_type_repo_(ctx_) {
     BOOST_LOG_SEV(lg(), debug) << "publication_service initialized";
 }
 
@@ -242,32 +243,49 @@ domain::publication_result publication_service::publish_dataset(
     domain::publication_mode mode) {
 
     BOOST_LOG_SEV(lg(), debug) << "Publishing dataset: " << dataset.code
-        << " with target_table: " << dataset.target_table.value_or("none")
-        << ", populate_function: " << dataset.populate_function.value_or("none");
+        << " with artefact_type: " << dataset.artefact_type.value_or("none");
 
     domain::publication_result result;
     result.dataset_id = dataset.id;
     result.dataset_code = dataset.code;
     result.dataset_name = dataset.name;
 
-    if (!dataset.target_table.has_value() || dataset.target_table->empty()) {
+    if (!dataset.artefact_type.has_value() || dataset.artefact_type->empty()) {
         result.success = false;
-        result.error_message = "Dataset has no target_table specified";
+        result.error_message = "Dataset has no artefact_type specified";
         BOOST_LOG_SEV(lg(), warn) << result.error_message
             << " for dataset: " << dataset.code;
         return result;
     }
 
-    if (!dataset.populate_function.has_value() || dataset.populate_function->empty()) {
+    // Look up the artefact_type to get target_table and populate_function
+    auto artefact_type = artefact_type_repo_.read_by_code(*dataset.artefact_type);
+    if (!artefact_type.has_value()) {
         result.success = false;
-        result.error_message = "Dataset has no populate_function specified";
+        result.error_message = "Unknown artefact_type: " + *dataset.artefact_type;
         BOOST_LOG_SEV(lg(), warn) << result.error_message
             << " for dataset: " << dataset.code;
         return result;
     }
 
-    result.target_table = *dataset.target_table;
-    return call_populate_function(dataset, mode);
+    if (!artefact_type->target_table.has_value() || artefact_type->target_table->empty()) {
+        result.success = false;
+        result.error_message = "Artefact type has no target_table: " + *dataset.artefact_type;
+        BOOST_LOG_SEV(lg(), warn) << result.error_message
+            << " for dataset: " << dataset.code;
+        return result;
+    }
+
+    if (!artefact_type->populate_function.has_value() || artefact_type->populate_function->empty()) {
+        result.success = false;
+        result.error_message = "Artefact type has no populate_function: " + *dataset.artefact_type;
+        BOOST_LOG_SEV(lg(), warn) << result.error_message
+            << " for dataset: " << dataset.code;
+        return result;
+    }
+
+    result.target_table = *artefact_type->target_table;
+    return call_populate_function(dataset, *artefact_type, mode);
 }
 
 void publication_service::record_publication(
@@ -304,23 +322,24 @@ void publication_service::record_publication(
 
 domain::publication_result publication_service::call_populate_function(
     const domain::dataset& dataset,
+    const domain::artefact_type& artefact_type,
     domain::publication_mode mode) {
 
     domain::publication_result result;
     result.dataset_id = dataset.id;
     result.dataset_code = dataset.code;
     result.dataset_name = dataset.name;
-    result.target_table = *dataset.target_table;
+    result.target_table = *artefact_type.target_table;
 
     const std::string mode_str = to_string(mode);
-    const std::string function_name = *dataset.populate_function;
+    const std::string function_name = *artefact_type.populate_function;
     const std::string dataset_id_str = boost::uuids::to_string(dataset.id);
 
     BOOST_LOG_SEV(lg(), debug) << "Calling populate function: "
         << function_name << ", mode: " << mode_str;
 
     const auto sql = std::format(
-        "SELECT * FROM ores.{}('{}', '{}')",
+        "SELECT * FROM ores.{}('{}'::uuid, '{}'::text)",
         function_name, dataset_id_str, mode_str);
 
     try {

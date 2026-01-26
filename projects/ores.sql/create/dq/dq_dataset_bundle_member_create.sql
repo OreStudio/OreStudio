@@ -35,8 +35,9 @@ set schema 'ores';
 create table if not exists "ores"."dq_dataset_bundle_members_tbl" (
     "bundle_code" text not null,
     "dataset_code" text not null,
+    "version" integer not null,
     "display_order" integer not null,
-    "recorded_by" text not null,
+    "modified_by" text not null,
     "change_reason_code" text not null,
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
@@ -68,20 +69,40 @@ where valid_to = ores.utility_infinity_timestamp_fn();
 
 create or replace function ores.dq_dataset_bundle_members_insert_fn()
 returns trigger as $$
+declare
+    current_version integer;
 begin
-    -- Close any existing record for this membership
-    update "ores"."dq_dataset_bundle_members_tbl"
-    set valid_to = current_timestamp
+    -- Version management
+    select version into current_version
+    from "ores"."dq_dataset_bundle_members_tbl"
     where bundle_code = new.bundle_code
     and dataset_code = new.dataset_code
-    and valid_to = ores.utility_infinity_timestamp_fn()
-    and valid_from < current_timestamp;
+    and valid_to = ores.utility_infinity_timestamp_fn();
+
+    if found then
+        if new.version != 0 and new.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                new.version, current_version
+                using errcode = 'P0002';
+        end if;
+        new.version = current_version + 1;
+
+        -- Close existing record
+        update "ores"."dq_dataset_bundle_members_tbl"
+        set valid_to = current_timestamp
+        where bundle_code = new.bundle_code
+        and dataset_code = new.dataset_code
+        and valid_to = ores.utility_infinity_timestamp_fn()
+        and valid_from < current_timestamp;
+    else
+        new.version = 1;
+    end if;
 
     new.valid_from = current_timestamp;
     new.valid_to = ores.utility_infinity_timestamp_fn();
 
-    if new.recorded_by is null or new.recorded_by = '' then
-        new.recorded_by = current_user;
+    if new.modified_by is null or new.modified_by = '' then
+        new.modified_by = current_user;
     end if;
 
     new.change_reason_code := ores.refdata_validate_change_reason_fn(new.change_reason_code);

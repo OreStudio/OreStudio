@@ -769,12 +769,12 @@ begin
     perform ores.seed_validate_not_empty(p_dataset_code, 'Dataset code');
 
     insert into ores.dq_dataset_bundle_members_tbl (
-        bundle_code, dataset_code, display_order,
-        recorded_by, change_reason_code, change_commentary,
+        bundle_code, dataset_code, version, display_order,
+        modified_by, change_reason_code, change_commentary,
         valid_from, valid_to
     )
     values (
-        p_bundle_code, p_dataset_code, p_display_order,
+        p_bundle_code, p_dataset_code, 0, p_display_order,
         'system', 'system.new_record', 'System seed data - dataset bundle member',
         current_timestamp, ores.utility_infinity_timestamp_fn()
     )

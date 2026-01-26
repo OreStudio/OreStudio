@@ -50,6 +50,7 @@ struct LoginResult {
     bool success = false;
     QString error_message;
     bool password_reset_required = false;
+    bool bootstrap_mode = false;  ///< True if system is in bootstrap mode (no admin exists)
 };
 
 /**
@@ -224,6 +225,18 @@ public:
             return "";
         }
         return connected_host_ + ":" + std::to_string(connected_port_);
+    }
+
+    /**
+     * @brief Get the connected server hostname.
+     *
+     * @return Server hostname, or empty if not connected.
+     */
+    std::string connectedHost() const {
+        if (!isConnected()) {
+            return "";
+        }
+        return connected_host_;
     }
 
     /**
@@ -453,6 +466,7 @@ public:
 
 signals:
     void connected();
+    void loggedIn();
     void disconnected();
     void reconnecting();
     void reconnected();

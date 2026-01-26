@@ -63,7 +63,7 @@ void EntityController::setupEventSubscription() {
     connect(clientManager_, &ClientManager::notificationReceived,
             this, &EntityController::onNotificationReceived);
 
-    connect(clientManager_, &ClientManager::connected,
+    connect(clientManager_, &ClientManager::loggedIn,
             this, [self = QPointer<EntityController>(this)]() {
         if (!self) return;
         BOOST_LOG_SEV(lg(), info) << "Subscribing to " << self->eventName_ << " events";

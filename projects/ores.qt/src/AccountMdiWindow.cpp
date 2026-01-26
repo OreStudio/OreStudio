@@ -216,8 +216,8 @@ AccountMdiWindow(ClientManager* clientManager,
 
     emit statusChanged("Loading accounts...");
 
-    // Initial load
-    if (clientManager_->isConnected()) {
+    // Initial load (only if logged in, not just connected)
+    if (clientManager_->isLoggedIn()) {
         accountModel_->refresh();
     } else {
         emit statusChanged("Disconnected - Offline");

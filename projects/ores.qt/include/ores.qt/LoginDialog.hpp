@@ -127,6 +127,14 @@ signals:
      */
     void savedConnectionSelected(const QString& connectionName);
 
+    /**
+     * @brief Emitted when the server is in bootstrap mode.
+     *
+     * This signal indicates that the system has no administrator account yet
+     * and the SystemProvisionerWizard should be shown instead of the login form.
+     */
+    void bootstrapModeDetected();
+
 private slots:
     void onLoginClicked();
     void onSignUpClicked();

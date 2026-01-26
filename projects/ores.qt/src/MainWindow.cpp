@@ -41,6 +41,7 @@
 #include <QStandardPaths>
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
+#include "ores.qt/SystemProvisionerWizard.hpp"
 #include "ores.qt/SignUpDialog.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
@@ -300,8 +301,8 @@ MainWindow::MainWindow(QWidget* parent) :
         ui_->statusbar->showMessage("Reconnected to server.", 5000);
     });
 
-    // Load caches when connected
-    connect(clientManager_, &ClientManager::connected, this, [this]() {
+    // Load caches when logged in (not just connected - bootstrap mode doesn't auth)
+    connect(clientManager_, &ClientManager::loggedIn, this, [this]() {
         imageCache_->loadAll();
         // Preload all available images for the flag selector to avoid on-demand loading delay
         if (!imageCache_->hasImageList()) {
@@ -684,42 +685,43 @@ void MainWindow::onLoginTriggered() {
 
 void MainWindow::updateMenuState() {
     const bool isConnected = clientManager_ && clientManager_->isConnected();
+    const bool isLoggedIn = clientManager_ && clientManager_->isLoggedIn();
 
-    // Enable/disable menu actions based on connection state
-    ui_->CurrenciesAction->setEnabled(isConnected);
-    ui_->CountriesAction->setEnabled(isConnected);
-
-    // Enable/disable connect and disconnect actions
+    // Enable/disable connect and disconnect actions based on connection state
     ui_->ActionConnect->setEnabled(!isConnected);
     ui_->ActionDisconnect->setEnabled(isConnected);
 
-    // Data menu enabled when connected
-    ui_->menuData->menuAction()->setEnabled(isConnected);
-    ui_->ActionChangeReasonCategories->setEnabled(isConnected);
-    ui_->ActionChangeReasons->setEnabled(isConnected);
+    // Data menus require authentication (not just connection)
+    ui_->CurrenciesAction->setEnabled(isLoggedIn);
+    ui_->CountriesAction->setEnabled(isLoggedIn);
 
-    // System menu enabled when connected (contains Identity, Configuration, Telemetry)
-    ui_->menuSystem->menuAction()->setEnabled(isConnected);
-    ui_->ActionAccounts->setEnabled(isConnected);
-    ui_->ActionRoles->setEnabled(isConnected);
-    ui_->ActionFeatureFlags->setEnabled(isConnected);
-    ui_->ActionOriginDimensions->setEnabled(isConnected);
-    ui_->ActionNatureDimensions->setEnabled(isConnected);
-    ui_->ActionTreatmentDimensions->setEnabled(isConnected);
-    ui_->ActionCodingSchemeAuthorityTypes->setEnabled(isConnected);
-    ui_->ActionDataDomains->setEnabled(isConnected);
-    ui_->ActionSubjectAreas->setEnabled(isConnected);
-    ui_->ActionCatalogs->setEnabled(isConnected);
-    ui_->ActionCodingSchemes->setEnabled(isConnected);
-    ui_->ActionMethodologies->setEnabled(isConnected);
-    ui_->ActionDataLibrarian->setEnabled(isConnected);
+    // Data menu enabled when logged in
+    ui_->menuData->menuAction()->setEnabled(isLoggedIn);
+    ui_->ActionChangeReasonCategories->setEnabled(isLoggedIn);
+    ui_->ActionChangeReasons->setEnabled(isLoggedIn);
 
-    // My Account and My Sessions menu items are enabled when connected
-    ui_->ActionMyAccount->setEnabled(isConnected);
-    ui_->ActionMySessions->setEnabled(isConnected);
+    // System menu enabled when logged in (contains Identity, Configuration, Telemetry)
+    ui_->menuSystem->menuAction()->setEnabled(isLoggedIn);
+    ui_->ActionAccounts->setEnabled(isLoggedIn);
+    ui_->ActionRoles->setEnabled(isLoggedIn);
+    ui_->ActionFeatureFlags->setEnabled(isLoggedIn);
+    ui_->ActionOriginDimensions->setEnabled(isLoggedIn);
+    ui_->ActionNatureDimensions->setEnabled(isLoggedIn);
+    ui_->ActionTreatmentDimensions->setEnabled(isLoggedIn);
+    ui_->ActionCodingSchemeAuthorityTypes->setEnabled(isLoggedIn);
+    ui_->ActionDataDomains->setEnabled(isLoggedIn);
+    ui_->ActionSubjectAreas->setEnabled(isLoggedIn);
+    ui_->ActionCatalogs->setEnabled(isLoggedIn);
+    ui_->ActionCodingSchemes->setEnabled(isLoggedIn);
+    ui_->ActionMethodologies->setEnabled(isLoggedIn);
+    ui_->ActionDataLibrarian->setEnabled(isLoggedIn);
 
-    // Telemetry viewer needs connection to load sessions/logs
-    ui_->ActionTelemetryViewer->setEnabled(isConnected);
+    // My Account and My Sessions menu items require authentication
+    ui_->ActionMyAccount->setEnabled(isLoggedIn);
+    ui_->ActionMySessions->setEnabled(isLoggedIn);
+
+    // Telemetry viewer needs authentication to load sessions/logs
+    ui_->ActionTelemetryViewer->setEnabled(isLoggedIn);
 
     // Protocol recording can be enabled before connection (will start on connect)
     // Only disable when disconnecting if we were recording
@@ -735,7 +737,8 @@ void MainWindow::updateMenuState() {
         connectionStatusIconLabel_->setPixmap(disconnectedIcon_.pixmap(16, 16));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: " << isConnected;
+    BOOST_LOG_SEV(lg(), debug) << "Menu state updated. Connected: " << isConnected
+                              << ", LoggedIn: " << isLoggedIn;
 }
 
 void MainWindow::createControllers() {
@@ -1627,43 +1630,19 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& environm
     // Store the connection name for the window title
     activeConnectionName_ = connectionName;
 
-    // Open login dialog pre-filled with connection details
-    auto* loginDialog = new LoginDialog();
-    loginDialog->setClientManager(clientManager_);
-    loginDialog->setServer(QString::fromStdString(env->host));
-    loginDialog->setPort(env->port);
-    loginDialog->setUsername(QString::fromStdString(env->username));
+    // Show login dialog pre-filled with connection details
+    LoginDialogOptions options;
+    options.host = QString::fromStdString(env->host);
+    options.port = env->port;
+    options.username = QString::fromStdString(env->username);
     if (!password.empty()) {
-        loginDialog->setPassword(QString::fromStdString(password));
+        options.password = QString::fromStdString(password);
     }
+    options.connectionName = connectionName;
+    options.showSavedConnections = false;  // Already selected a connection
+    options.showSignUpButton = false;      // Connecting to known server
 
-    auto* subWindow = new DetachableMdiSubWindow(this);
-    subWindow->setWidget(loginDialog);
-    subWindow->setWindowTitle(tr("Login"));
-    subWindow->setAttribute(Qt::WA_DeleteOnClose);
-    subWindow->resize(400, 520);
-    subWindow->setWindowFlags(Qt::FramelessWindowHint);
-
-    mdiArea_->addSubWindow(subWindow);
-    subWindow->show();
-
-    QPoint center = mdiArea_->viewport()->rect().center();
-    subWindow->move(center.x() - subWindow->width() / 2,
-                    center.y() - subWindow->height() / 2);
-
-    connect(loginDialog, &LoginDialog::closeRequested, subWindow, &QWidget::close);
-
-    connect(loginDialog, &LoginDialog::loginSucceeded,
-            this, [this, connectionName](const QString& username) {
-        onLoginSuccess(username);
-        ui_->statusbar->showMessage(tr("Connected to %1").arg(connectionName));
-    });
-
-    allDetachableWindows_.append(subWindow);
-    connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
-        allDetachableWindows_.removeOne(subWindow);
-        activeConnectionName_.clear();
-    });
+    showLoginDialog(options);
 }
 
 void MainWindow::onLoginSuccess(const QString& username) {
@@ -1772,25 +1751,68 @@ void MainWindow::showSignUpDialog(const QString& host, int port) {
     });
 }
 
-void MainWindow::onModernLoginTriggered() {
-    BOOST_LOG_SEV(lg(), debug) << "Modern Login action triggered";
+void MainWindow::showSystemProvisionerWizard() {
+    BOOST_LOG_SEV(lg(), info) << "Showing System Provisioner Wizard (bootstrap mode detected)";
 
-    // If already connected, ask user to disconnect first
-    if (clientManager_ && clientManager_->isConnected()) {
-        auto result = MessageBoxHelper::question(this,
-            tr("Already Connected"),
-            tr("You are already connected to a server. Disconnect and connect to a new server?"),
-            QMessageBox::Yes | QMessageBox::No);
+    auto* wizard = new SystemProvisionerWizard(clientManager_, this);
+    wizard->setWindowModality(Qt::ApplicationModal);
+    wizard->setAttribute(Qt::WA_DeleteOnClose);
 
-        if (result != QMessageBox::Yes) {
-            return;
+    // Connect completion signal - on success, proceed with normal flow
+    connect(wizard, &SystemProvisionerWizard::provisioningCompleted,
+            this, [this](const QString& username) {
+        BOOST_LOG_SEV(lg(), info) << "System provisioning completed, logging in as: "
+                                  << username.toStdString();
+        ui_->statusbar->showMessage(
+            tr("System provisioned. Administrator account '%1' created.").arg(username));
+
+        // The system is now provisioned - show login dialog again for the user to log in
+        // with their new admin credentials
+        showLoginDialog();
+    });
+
+    // Connect failure signal
+    connect(wizard, &SystemProvisionerWizard::provisioningFailed,
+            this, [this](const QString& errorMessage) {
+        BOOST_LOG_SEV(lg(), error) << "System provisioning failed: "
+                                   << errorMessage.toStdString();
+        ui_->statusbar->showMessage(tr("Provisioning failed: %1").arg(errorMessage));
+
+        // Disconnect and allow retry
+        if (clientManager_) {
+            clientManager_->disconnect();
         }
+    });
 
-        performDisconnectCleanup();
-    }
+    wizard->show();
+}
+
+void MainWindow::showLoginDialog() {
+    showLoginDialog(LoginDialogOptions{});
+}
+
+void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
+    BOOST_LOG_SEV(lg(), debug) << "Showing login dialog";
 
     auto* loginWidget = new LoginDialog();
     loginWidget->setClientManager(clientManager_);
+
+    // Pre-fill connection details if provided
+    if (!options.host.isEmpty()) {
+        loginWidget->setServer(options.host);
+    }
+    if (options.port > 0) {
+        loginWidget->setPort(options.port);
+    }
+    if (!options.username.isEmpty()) {
+        loginWidget->setUsername(options.username);
+    }
+    if (!options.password.isEmpty()) {
+        loginWidget->setPassword(options.password);
+    }
+
+    // Store connection name for status messages
+    const QString connectionName = options.connectionName;
 
     // Create MDI sub-window
     auto* subWindow = new DetachableMdiSubWindow(this);
@@ -1798,8 +1820,6 @@ void MainWindow::onModernLoginTriggered() {
     subWindow->setWindowTitle(tr("Login"));
     subWindow->setAttribute(Qt::WA_DeleteOnClose);
     subWindow->resize(400, 520);
-
-    // Remove window frame for cleaner look
     subWindow->setWindowFlags(Qt::FramelessWindowHint);
 
     mdiArea_->addSubWindow(subWindow);
@@ -1813,24 +1833,34 @@ void MainWindow::onModernLoginTriggered() {
     // Connect close signal
     connect(loginWidget, &LoginDialog::closeRequested, subWindow, &QWidget::close);
 
-    // Connect login success signal to update application state
+    // Connect login success signal
     connect(loginWidget, &LoginDialog::loginSucceeded,
-            this, [this](const QString& username) {
+            this, [this, connectionName](const QString& username) {
         onLoginSuccess(username);
-        ui_->statusbar->showMessage("Successfully connected and logged in.");
+        if (!connectionName.isEmpty()) {
+            ui_->statusbar->showMessage(tr("Connected to %1").arg(connectionName));
+        } else {
+            ui_->statusbar->showMessage(tr("Successfully connected and logged in."));
+        }
     });
 
-    // Connect sign up request to open registration widget
-    connect(loginWidget, &LoginDialog::signUpRequested,
-            this, [this, subWindow, loginWidget]() {
-        const QString host = loginWidget->getServer();
-        const int port = loginWidget->getPort();
-        subWindow->close();
-        showSignUpDialog(host, port);
-    });
+    // Connect bootstrap mode signal
+    connect(loginWidget, &LoginDialog::bootstrapModeDetected,
+            this, &MainWindow::showSystemProvisionerWizard);
 
-    // Populate saved connections if connection manager is available
-    if (initializeConnectionManager() && connectionManager_) {
+    // Connect sign up request if enabled
+    if (options.showSignUpButton) {
+        connect(loginWidget, &LoginDialog::signUpRequested,
+                this, [this, subWindow, loginWidget]() {
+            const QString host = loginWidget->getServer();
+            const int port = loginWidget->getPort();
+            subWindow->close();
+            showSignUpDialog(host, port);
+        });
+    }
+
+    // Populate saved connections if enabled
+    if (options.showSavedConnections && initializeConnectionManager() && connectionManager_) {
         auto environments = connectionManager_->get_all_environments();
         QStringList connectionNames;
         for (const auto& env : environments) {
@@ -1850,7 +1880,6 @@ void MainWindow::onModernLoginTriggered() {
                     loginWidget->setPort(env.port);
                     loginWidget->setUsername(QString::fromStdString(env.username));
 
-                    // Get the saved password (empty if not saved)
                     auto password = connectionManager_->get_password(env.id);
                     if (!password.empty()) {
                         loginWidget->setPassword(QString::fromStdString(password));
@@ -1863,9 +1892,33 @@ void MainWindow::onModernLoginTriggered() {
 
     // Track window
     allDetachableWindows_.append(subWindow);
-    connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
+    connect(subWindow, &QObject::destroyed, this, [this, subWindow, connectionName]() {
         allDetachableWindows_.removeOne(subWindow);
+        if (!connectionName.isEmpty()) {
+            activeConnectionName_.clear();
+        }
     });
+}
+
+void MainWindow::onModernLoginTriggered() {
+    BOOST_LOG_SEV(lg(), debug) << "Modern Login action triggered";
+
+    // If already connected, ask user to disconnect first
+    if (clientManager_ && clientManager_->isConnected()) {
+        auto result = MessageBoxHelper::question(this,
+            tr("Already Connected"),
+            tr("You are already connected to a server. Disconnect and connect to a new server?"),
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (result != QMessageBox::Yes) {
+            return;
+        }
+
+        performDisconnectCleanup();
+    }
+
+    // Show login dialog with default options (saved connections, sign up enabled)
+    showLoginDialog();
 }
 
 }

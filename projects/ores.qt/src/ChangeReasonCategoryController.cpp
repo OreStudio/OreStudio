@@ -58,8 +58,8 @@ ChangeReasonCategoryController::ChangeReasonCategoryController(
         connect(clientManager_, &ClientManager::notificationReceived,
                 this, &ChangeReasonCategoryController::onNotificationReceived);
 
-        // Subscribe to events when connected
-        connect(clientManager_, &ClientManager::connected,
+        // Subscribe to events when logged in
+        connect(clientManager_, &ClientManager::loggedIn,
                 this, [self = QPointer<ChangeReasonCategoryController>(this)]() {
             if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Subscribing to category change events";

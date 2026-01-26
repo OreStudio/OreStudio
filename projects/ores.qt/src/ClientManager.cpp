@@ -30,6 +30,7 @@
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
+#include "ores.iam/messaging/bootstrap_protocol.hpp"
 
 namespace ores::qt {
 
@@ -212,6 +213,47 @@ LoginResult ClientManager::connectAndLogin(
             }, Qt::QueuedConnection);
         });
 
+        // Check bootstrap status before attempting login
+        // The bootstrap_status_request does not require authentication
+        BOOST_LOG_SEV(lg(), debug) << "Checking bootstrap status...";
+        iam::messaging::bootstrap_status_request bootstrap_request;
+        auto bootstrap_payload = bootstrap_request.serialize();
+        comms::messaging::frame bootstrap_frame(
+            comms::messaging::message_type::bootstrap_status_request,
+            0,
+            std::move(bootstrap_payload)
+        );
+
+        auto bootstrap_response_result = new_client->send_request_sync(std::move(bootstrap_frame));
+        if (bootstrap_response_result) {
+            auto bootstrap_payload_result = bootstrap_response_result->decompressed_payload();
+            if (bootstrap_payload_result) {
+                auto bootstrap_response = iam::messaging::bootstrap_status_response::deserialize(
+                    *bootstrap_payload_result);
+                if (bootstrap_response && bootstrap_response->is_in_bootstrap_mode) {
+                    BOOST_LOG_SEV(lg(), info)
+                        << "System is in bootstrap mode - skipping login";
+
+                    // Store the client and connection info even though we're not logging in
+                    client_ = new_client;
+                    session_.attach_client(client_);
+                    connected_host_ = host;
+                    connected_port_ = port;
+
+                    // Emit connected signal
+                    QMetaObject::invokeMethod(this, "connected", Qt::QueuedConnection);
+
+                    return {
+                        .success = false,
+                        .error_message = QString::fromStdString(bootstrap_response->message),
+                        .password_reset_required = false,
+                        .bootstrap_mode = true
+                    };
+                }
+            }
+        }
+        BOOST_LOG_SEV(lg(), debug) << "System is not in bootstrap mode, proceeding with login";
+
         // Perform Login
         iam::messaging::login_request request{
             .username = username,
@@ -373,6 +415,7 @@ LoginResult ClientManager::connectAndLogin(
             });
         }
         emit connected();
+        emit loggedIn();
         return {.success = true, .error_message = QString(), .password_reset_required = password_reset_required};
 
     } catch (const std::exception& e) {

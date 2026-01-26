@@ -66,8 +66,8 @@ CurrencyController::CurrencyController(
         connect(clientManager_, &ClientManager::notificationReceived,
                 this, &CurrencyController::onNotificationReceived);
 
-        // Subscribe to events when connected (event adapter only available after login)
-        connect(clientManager_, &ClientManager::connected,
+        // Subscribe to events when logged in (event adapter only available after login)
+        connect(clientManager_, &ClientManager::loggedIn,
                 this, [self = QPointer<CurrencyController>(this)]() {
             if (!self) return;
             BOOST_LOG_SEV(lg(), info) << "Subscribing to currency change events";

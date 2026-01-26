@@ -1,0 +1,94 @@
+i want to model "person" as per FPML in my trading system. what fields do I need?
+
+In Financial products Markup Language (FpML), a Person is typically modeled as a component of a Party. While a Party represents a legal entity (like a bank or a hedge fund), the Person structure is used to identify specific individuals associated with that party—such as a trader, a confirmer, or a compliance officer.
+
+The structure is defined in the fpml-shared schema. Here is the breakdown of the fields you need to implement this in your trading system:
+
+1. The Person Complex Type Fields
+The FpML Person model is relatively lean, focusing on identification and contact rather than full HR details.
+
+Field Name	Type	Description
+honorific	String	Optional (e.g., Mr, Ms, Dr).
+firstName	String	The individual's first name.
+surname	String	The individual's last name.
+suffix	String	Optional (e.g., Jr, III).
+id	PersonId	A unique identifier (unbounded). Often used for internal trader IDs or regulatory IDs.
+businessUnitReference	Reference	A link to a BusinessUnit defined within the same Party.
+contactInfo	ContactInformation	Contains address, phone, and email details.
+country	CountryCode	ISO country code representing the person's location.
+2. Identifying the Person (PersonId)
+In a trading system, the id field is the most critical for straight-through processing (STP). In FpML, this is an extension of the Scheme type:
+
+personIdScheme: A URI that identifies the source of the ID (e.g., http://www.yourbank.com/person-id).
+
+Value: The actual string ID (e.g., TRADER123).
+
+3. XML Structure Example
+If you are building a database schema or a class model, it should be able to produce or consume XML similar to this:
+
+XML
+<person id="p1">
+    <honorific>Mr.</honorific>
+    <firstName>John</firstName>
+    <surname>Doe</surname>
+    <id personIdScheme="http://www.fpml.org/coding-scheme/external/person-id-mifir-1-0">ABC12345</id>
+    <businessUnitReference href="bu1"/>
+    <contactInfo>
+        <telephone>
+            <type>Work</type>
+            <number>+44-20-7123-4567</number>
+        </telephone>
+        <email>john.doe@bank.com</email>
+    </contactInfo>
+    <country countryScheme="http://www.fpml.org/coding-scheme/external/iso3166">GB</country>
+</person>
+4. Implementation Tips for Trading Systems
+Role Mapping: FpML doesn't define a "Role" inside the Person object. Instead, roles are usually defined at the message level or within partyTradeInformation (e.g., who is the "Execution Agent" or "Trader").
+
+Regulatory Requirements: If you are modeling this for MiFID II or EMIR reporting, ensure your PersonId can accommodate the LEI of the firm combined with the person's national identifier (often referred to as the "Natural Person Identifier").
+
+Cardinality: Note that id is "unbounded" (maxOccurs="unbounded"), meaning one person can have multiple IDs (an internal system ID, a REUTERS ID, and a regulatory ID).
+
+Would you like me to provide the SQL DDL or a Python/Java class structure based on this FpML definition?
+
+can you show me the fields for contact info as well
+
+Modeling Person Contact Information (FpML)
+
+In FpML, the ContactInformation complex type is designed to be highly structured to support automated routing and regulatory reporting. It is used not just for people, but also for parties and business units.
+
+Note: I have formatted this output in org-mode as per your instructions.
+
+** Table of Fields: ContactInformation | Field Name | Type | Multiplicity | Description | | :--- | :--- | :--- | :--- | | telephone | TelephoneNumber | 0..* | Supports multiple numbers (Work, Mobile, Fax). | | email | String | 0..* | Standard email address format. | | address | Address | 0..1 | The physical/mailing address. | | webPage | AnyURI | 0..* | URL for the person or business unit. |
+
+** The TelephoneNumber Structure FpML doesn't just use a single string for phones; it breaks them down by type:
+
+type: A code indicating the purpose (e.g., Work, Mobile, Fax, Personal).
+
+number: The actual digits, preferably in E.164 format (e.g., +12125551234).
+
+** The Address Structure The physical address is broken down to ensure global compatibility:
+
+streetAddress: A list of strings (unbounded) for Line 1, Line 2, etc.
+
+city: The town or city name.
+
+state: The state, province, or county.
+
+country: The ISO 3166 Country Code.
+
+postalCode: The ZIP or Postcode.
+
+** Org-Mode Example Representation Below is how this data maps to a structured format for your system:
+
+#+BEGIN_SRC xml <contactInfo> <telephone> <type>Work</type> <number>+44-20-7946-0123</number> </telephone> <telephone> <type>Mobile</type> <number>+44-7700-900123</number> </telephone> <email>trader.one@example-bank.com</email>
+
+<address> <streetAddress>100 Liverpool Street</streetAddress> <streetAddress>Floor 5</streetAddress> <city>London</city> <postalCode>EC2M 2RH</postalCode> <country countryScheme="http://www.fpml.org/coding-scheme/external/iso3166">GB</country> </address> </contactInfo> #+END_SRC
+
+** Implementation Considerations
+
+Multiple Emails: Even though the schema allows multiple emails, most trading systems designate the first entry as the primary "Electronic Confirmations" address.
+
+Address Validation: For regulatory reporting (like MiFID II), the country field is mandatory to determine the jurisdiction of the natural person.
+
+Would you like me to generate the SQL schema (DDL) to store these specific contact fields in your database?

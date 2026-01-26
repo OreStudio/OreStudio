@@ -150,67 +150,43 @@ returns table (
     metric text,
     value bigint
 ) as $$
-declare
-    v_bundle_exists boolean;
-    v_total_datasets bigint;
-    v_publishable_datasets bigint;
-    v_missing_datasets bigint;
-    v_no_function_datasets bigint;
 begin
     -- Check bundle exists
-    select exists (
+    if not exists (
         select 1 from ores.dq_dataset_bundles_tbl
         where code = p_bundle_code
         and valid_to = ores.utility_infinity_timestamp_fn()
-    ) into v_bundle_exists;
-
-    if not v_bundle_exists then
+    ) then
         raise exception 'Bundle not found: %', p_bundle_code;
     end if;
 
-    -- Count datasets
-    select count(*) into v_total_datasets
-    from ores.dq_dataset_bundle_members_tbl
-    where bundle_code = p_bundle_code
-    and valid_to = ores.utility_infinity_timestamp_fn();
-
-    -- Count publishable datasets
-    select count(*) into v_publishable_datasets
-    from ores.dq_dataset_bundle_members_tbl m
-    join ores.dq_datasets_tbl d on d.code = m.dataset_code
-        and d.valid_to = ores.utility_infinity_timestamp_fn()
-    join ores.dq_artefact_types_tbl at on at.code = d.artefact_type
-    where m.bundle_code = p_bundle_code
-    and m.valid_to = ores.utility_infinity_timestamp_fn()
-    and at.populate_function is not null;
-
-    -- Count missing datasets (in bundle but not in dq_datasets_tbl)
-    select count(*) into v_missing_datasets
-    from ores.dq_dataset_bundle_members_tbl m
-    left join ores.dq_datasets_tbl d on d.code = m.dataset_code
-        and d.valid_to = ores.utility_infinity_timestamp_fn()
-    where m.bundle_code = p_bundle_code
-    and m.valid_to = ores.utility_infinity_timestamp_fn()
-    and d.id is null;
-
-    -- Count datasets without populate function
-    select count(*) into v_no_function_datasets
-    from ores.dq_dataset_bundle_members_tbl m
-    join ores.dq_datasets_tbl d on d.code = m.dataset_code
-        and d.valid_to = ores.utility_infinity_timestamp_fn()
-    left join ores.dq_artefact_types_tbl at on at.code = d.artefact_type
-    where m.bundle_code = p_bundle_code
-    and m.valid_to = ores.utility_infinity_timestamp_fn()
-    and (at.populate_function is null or d.artefact_type = 'none');
-
+    -- Use CTE to compute all counts in a single pass
     return query
-    select 'total_datasets'::text, v_total_datasets
+    with bundle_members as (
+        select
+            m.dataset_code,
+            d.id as dataset_id,
+            d.artefact_type,
+            at.populate_function
+        from ores.dq_dataset_bundle_members_tbl m
+        left join ores.dq_datasets_tbl d
+            on d.code = m.dataset_code
+            and d.valid_to = ores.utility_infinity_timestamp_fn()
+        left join ores.dq_artefact_types_tbl at
+            on at.code = d.artefact_type
+        where m.bundle_code = p_bundle_code
+          and m.valid_to = ores.utility_infinity_timestamp_fn()
+    )
+    select 'total_datasets'::text, count(*)::bigint from bundle_members
     union all
-    select 'publishable_datasets', v_publishable_datasets
+    select 'publishable_datasets', count(*)::bigint from bundle_members
+        where dataset_id is not null and populate_function is not null
     union all
-    select 'missing_datasets', v_missing_datasets
+    select 'missing_datasets', count(*)::bigint from bundle_members
+        where dataset_id is null
     union all
-    select 'no_populate_function', v_no_function_datasets;
+    select 'no_populate_function', count(*)::bigint from bundle_members
+        where dataset_id is not null and (populate_function is null or artefact_type = 'none');
 end;
 $$ language plpgsql;
 

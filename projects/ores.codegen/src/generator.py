@@ -284,19 +284,19 @@ def get_relative_path(abs_path, base_path):
 
 # Diverse pool of currency defaults based on common patterns
 CURRENCY_DEFAULTS_POOL = [
-    {'symbol': '$', 'fraction_symbol': '¢', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': '$#,##0.00', 'currency_type': 'fiat.emerging'},
-    {'symbol': '€', 'fraction_symbol': 'c', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': '€#,##0.00', 'currency_type': 'fiat.major'},
-    {'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': '£#,##0.00', 'currency_type': 'fiat.major'},
-    {'symbol': '¥', 'fraction_symbol': '', 'fractions_per_unit': 0, 'rounding_type': 'standard', 'rounding_precision': 0, 'format': '¥#,##0', 'currency_type': 'fiat.emerging'},
-    {'symbol': 'kr', 'fraction_symbol': 'ø', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': 'kr #,##0.00', 'currency_type': 'fiat.major'},
-    {'symbol': 'zł', 'fraction_symbol': 'gr', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': '#,##0.00 zł', 'currency_type': 'fiat.emerging'},
-    {'symbol': '₹', 'fraction_symbol': 'p', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': '₹#,##0.00', 'currency_type': 'fiat.emerging'},
-    {'symbol': 'د.إ', 'fraction_symbol': 'ف', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': 'د.إ#,##0.00', 'currency_type': 'fiat.emerging'},
-    {'symbol': 'R', 'fraction_symbol': 'c', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': 'R#,##0.00', 'currency_type': 'fiat.emerging'},
-    {'symbol': 'ƒ', 'fraction_symbol': '¢', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': 'ƒ#,##0.00', 'currency_type': 'fiat.emerging'},
-    {'symbol': 'د.ك', 'fraction_symbol': 'ف', 'fractions_per_unit': 1000, 'rounding_type': 'standard', 'rounding_precision': 3, 'format': 'د.ك#,##0.000', 'currency_type': 'fiat.emerging'},
-    {'symbol': 'S/', 'fraction_symbol': '¢', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': 'S/#,##0.00', 'currency_type': 'fiat.emerging'},
-    {'symbol': '฿', 'fraction_symbol': 'ส', 'fractions_per_unit': 100, 'rounding_type': 'standard', 'rounding_precision': 2, 'format': '฿#,##0.00', 'currency_type': 'fiat.emerging'},
+    {'symbol': '$', 'fraction_symbol': '¢', 'fractions_per_unit': 100, 'rounding_type': 'Closest', 'rounding_precision': 2, 'format': '$#,##0.00', 'currency_type': 'fiat.emerging'},
+    {'symbol': '€', 'fraction_symbol': 'c', 'fractions_per_unit': 100, 'rounding_type': 'Closest', 'rounding_precision': 2, 'format': '€#,##0.00', 'currency_type': 'fiat.major'},
+    {'symbol': '£', 'fraction_symbol': 'p', 'fractions_per_unit': 100, 'rounding_type': 'Closest', 'rounding_precision': 2, 'format': '£#,##0.00', 'currency_type': 'fiat.major'},
+    {'symbol': '¥', 'fraction_symbol': '', 'fractions_per_unit': 0, 'rounding_type': 'Closest', 'rounding_precision': 0, 'format': '¥#,##0', 'currency_type': 'fiat.emerging'},
+    {'symbol': 'kr', 'fraction_symbol': 'ø', 'fractions_per_unit': 100, 'rounding_type': 'Closest', 'rounding_precision': 2, 'format': 'kr #,##0.00', 'currency_type': 'fiat.major'},
+    {'symbol': 'zł', 'fraction_symbol': 'gr', 'fractions_per_unit': 100, 'rounding_type': 'Closest', 'rounding_precision': 2, 'format': '#,##0.00 zł', 'currency_type': 'fiat.emerging'},
+    {'symbol': '₹', 'fraction_symbol': 'p', 'fractions_per_unit': 100, 'rounding_type': 'Closest', 'rounding_precision': 2, 'format': '₹#,##0.00', 'currency_type': 'fiat.emerging'},
+    {'symbol': 'د.إ', 'fraction_symbol': 'ف', 'fractions_per_unit': 100, 'rounding_type': 'Closest', 'rounding_precision': 2, 'format': 'د.إ#,##0.00', 'currency_type': 'fiat.emerging'},
+    {'symbol': 'R', 'fraction_symbol': 'c', 'fractions_per_unit': 100, 'rounding_type': 'Closest', 'rounding_precision': 2, 'format': 'R#,##0.00', 'currency_type': 'fiat.emerging'},
+    {'symbol': 'ƒ', 'fraction_symbol': '¢', 'fractions_per_unit': 100, 'rounding_type': 'Closest', 'rounding_precision': 2, 'format': 'ƒ#,##0.00', 'currency_type': 'fiat.emerging'},
+    {'symbol': 'د.ك', 'fraction_symbol': 'ف', 'fractions_per_unit': 1000, 'rounding_type': 'Closest', 'rounding_precision': 3, 'format': 'د.ك#,##0.000', 'currency_type': 'fiat.emerging'},
+    {'symbol': 'S/', 'fraction_symbol': '¢', 'fractions_per_unit': 100, 'rounding_type': 'Closest', 'rounding_precision': 2, 'format': 'S/#,##0.00', 'currency_type': 'fiat.emerging'},
+    {'symbol': '฿', 'fraction_symbol': 'ส', 'fractions_per_unit': 100, 'rounding_type': 'Closest', 'rounding_precision': 2, 'format': '฿#,##0.00', 'currency_type': 'fiat.emerging'},
 ]
 
 

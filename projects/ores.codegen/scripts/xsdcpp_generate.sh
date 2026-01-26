@@ -26,17 +26,13 @@ set -e
 
 # Find git repository root
 find_git_root() {
-    local dir="$PWD"
-    while [ "$dir" != "/" ]; do
-        # Check for .git directory or file (worktree)
-        if [ -d "$dir/.git" ] || [ -f "$dir/.git" ]; then
-            echo "$dir"
-            return 0
-        fi
-        dir="$(dirname "$dir")"
-    done
-    echo "Error: Not inside a git repository" >&2
-    return 1
+    local root
+    root=$(git rev-parse --show-toplevel 2>/dev/null)
+    if [ -z "$root" ]; then
+        echo "Error: Not inside a git repository" >&2
+        return 1
+    fi
+    echo "$root"
 }
 
 # Show usage

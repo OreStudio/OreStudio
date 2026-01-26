@@ -19,6 +19,7 @@
  */
 #include "ores.ore/domain/currency_mapper.hpp"
 
+#include <map>
 #include "ores.refdata/domain/currency_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::ore::domain {
@@ -28,11 +29,17 @@ using namespace ores::logging;
 namespace {
 
 roundingType parse_rounding_type(const std::string& s) {
-    if (s == "Up") return roundingType::Up;
-    if (s == "Down") return roundingType::Down;
-    if (s == "Closest") return roundingType::Closest;
-    if (s == "Floor") return roundingType::Floor;
-    if (s == "Ceiling") return roundingType::Ceiling;
+    static const std::map<std::string, roundingType> rounding_map = {
+        {"Up", roundingType::Up},
+        {"Down", roundingType::Down},
+        {"Closest", roundingType::Closest},
+        {"Floor", roundingType::Floor},
+        {"Ceiling", roundingType::Ceiling}
+    };
+
+    if (auto it = rounding_map.find(s); it != rounding_map.end()) {
+        return it->second;
+    }
     throw std::runtime_error("Invalid rounding type: " + s);
 }
 

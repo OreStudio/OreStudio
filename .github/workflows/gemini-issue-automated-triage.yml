@@ -63,7 +63,7 @@ jobs:
 
     steps:
       - name: 'Checkout repository'
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
 
       - name: 'Generate GitHub App Token'
         id: generate-token

@@ -221,6 +221,56 @@ def is_entity_data_model(model_filename):
     return model_filename.endswith("_data.json")
 
 
+def is_domain_entity_model(model_filename):
+    """
+    Check if a model file is a domain entity model.
+
+    Args:
+        model_filename (str): The model filename
+
+    Returns:
+        bool: True if this is a domain entity model
+    """
+    return model_filename.endswith("_domain_entity.json")
+
+
+def is_junction_model(model_filename):
+    """
+    Check if a model file is a junction table model.
+
+    Args:
+        model_filename (str): The model filename
+
+    Returns:
+        bool: True if this is a junction table model
+    """
+    return model_filename.endswith("_junction.json")
+
+
+def get_domain_entity_template_mappings():
+    """
+    Define the mapping for domain entity schema templates.
+
+    Returns:
+        list: List of tuples (template_name, output_suffix) for domain entity generation
+    """
+    return [
+        ("sql_schema_domain_entity_create.mustache", "_create.sql"),
+    ]
+
+
+def get_junction_template_mappings():
+    """
+    Define the mapping for junction table schema templates.
+
+    Returns:
+        list: List of tuples (template_name, output_suffix) for junction table generation
+    """
+    return [
+        ("sql_schema_junction_create.mustache", "_create.sql"),
+    ]
+
+
 def get_populate_template_mappings():
     """
     Define the mapping for entity populate templates (per-dataset).
@@ -313,6 +363,37 @@ def _mark_last_item(data_list):
             data_list[-1]['last'] = True
 
 
+def _format_description_as_comment(description):
+    """
+    Format a multi-line description as SQL comment block content.
+
+    Adds ' * ' prefix to each line after the first, handling empty lines
+    as ' *' (just asterisk).
+
+    Args:
+        description (str): Multi-line description text
+
+    Returns:
+        str: Formatted description with comment prefixes
+    """
+    if not description:
+        return description
+
+    lines = description.split('\n')
+    formatted_lines = []
+    for i, line in enumerate(lines):
+        if i == 0:
+            # First line doesn't get prefix (it follows the title line)
+            formatted_lines.append(line)
+        elif line.strip():
+            # Non-empty lines get ' * ' prefix
+            formatted_lines.append(' * ' + line)
+        else:
+            # Empty lines get just ' *'
+            formatted_lines.append(' *')
+    return '\n'.join(formatted_lines)
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None):
     """
     Generate output files from a model using the appropriate templates.
@@ -374,10 +455,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     # Check if this is an entity schema model or data model
     is_schema_model = is_entity_schema_model(model_filename)
     is_data_model = is_entity_data_model(model_filename)
+    is_domain_entity = is_domain_entity_model(model_filename)
+    is_junction = is_junction_model(model_filename)
 
     # Determine which templates to process
     if target_template:
         templates_to_process = [target_template]
+    elif is_domain_entity:
+        # Domain entity models use a specific template
+        templates_to_process = [t[0] for t in get_domain_entity_template_mappings()]
+    elif is_junction:
+        # Junction table models use a specific template
+        templates_to_process = [t[0] for t in get_junction_template_mappings()]
     elif is_schema_model:
         # Entity schema models use a different template set
         templates_to_process = [t[0] for t in get_schema_template_mappings()]
@@ -532,6 +621,28 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if 'image_linking' in entity:
             data['image_linking'] = entity['image_linking']
 
+    # Special processing for domain entity models
+    if is_domain_entity and isinstance(model, dict) and 'domain_entity' in model:
+        domain_entity = model['domain_entity']
+        if 'columns' in domain_entity:
+            _mark_last_item(domain_entity['columns'])
+        if 'natural_keys' in domain_entity:
+            _mark_last_item(domain_entity['natural_keys'])
+        # Format description as comment block lines
+        if 'description' in domain_entity:
+            domain_entity['description'] = _format_description_as_comment(domain_entity['description'])
+        data['domain_entity'] = domain_entity
+
+    # Special processing for junction models
+    if is_junction and isinstance(model, dict) and 'junction' in model:
+        junction = model['junction']
+        if 'columns' in junction:
+            _mark_last_item(junction['columns'])
+        # Format description as comment block lines
+        if 'description' in junction:
+            junction['description'] = _format_description_as_comment(junction['description'])
+        data['junction'] = junction
+
     # Special processing for entity data models (populate scripts)
     if is_data_model and isinstance(model, dict):
         # New format: model has 'dataset', 'entity' and 'items' keys (per-coding-scheme)
@@ -647,6 +758,24 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # Determine output filename
         if target_output:
             output_filename = target_output
+        elif is_domain_entity and 'domain_entity' in data:
+            # For domain entity models, derive filename from domain_entity definition
+            # Use entity_singular for filename (table/indexes/functions use entity_plural)
+            domain_entity = data['domain_entity']
+            component = domain_entity.get('component', 'unknown')
+            entity_singular = domain_entity.get('entity_singular', 'unknown')
+            domain_entity_mappings = get_domain_entity_template_mappings()
+            suffix = next((s for t, s in domain_entity_mappings if t == template_name), '_create.sql')
+            output_filename = f"{component}_{entity_singular}{suffix}"
+        elif is_junction and 'junction' in data:
+            # For junction table models, derive filename from junction definition
+            # Use name_singular for filename (table/indexes/functions use name)
+            junction = data['junction']
+            component = junction.get('component', 'unknown')
+            name_singular = junction.get('name_singular', 'unknown')
+            junction_mappings = get_junction_template_mappings()
+            suffix = next((s for t, s in junction_mappings if t == template_name), '_create.sql')
+            output_filename = f"{component}_{name_singular}{suffix}"
         elif is_schema_model and 'entity' in data:
             # For entity schema models, derive filename from entity definition
             entity = data['entity']
@@ -688,8 +817,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             output_filename = template_name.replace('.mustache', output_ext)
 
         # Apply prefix if provided, replacing 'sql_' with prefix + '_'
-        # Skip prefix handling for schema models (they use entity-based naming)
-        if prefix and not is_schema_model:
+        # Skip prefix handling for schema/domain_entity/junction models (they use entity-based naming)
+        if prefix and not is_schema_model and not is_domain_entity and not is_junction:
             # Special case: master include file should be just {prefix}.sql
             if template_name == 'sql_batch_execute.mustache':
                 output_filename = f"{prefix}.sql"

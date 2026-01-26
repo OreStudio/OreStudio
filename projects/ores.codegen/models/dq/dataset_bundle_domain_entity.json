@@ -1,0 +1,30 @@
+{
+  "domain_entity": {
+    "component": "dq",
+    "entity_singular": "dataset_bundle",
+    "entity_singular_title": "Dataset Bundle",
+    "entity_plural": "dataset_bundles",
+    "description": "A named collection of datasets designed to work together. Installing a bundle\ngets the system into a ready state with a coherent set of reference data.\n\nExamples:\n- \"solvaris\": Synthetic reference data for development and testing\n- \"base\": Industry-standard reference data (ISO + FpML) for production\n- \"crypto\": Base system plus cryptocurrency reference data",
+    "primary_key": {
+      "column": "id",
+      "type": "uuid"
+    },
+    "natural_keys": [
+      {
+        "column": "code",
+        "type": "text"
+      },
+      {
+        "column": "name",
+        "type": "text"
+      }
+    ],
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "nullable": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "junction": {
+    "component": "dq",
+    "name": "dataset_bundle_members",
+    "name_singular": "dataset_bundle_member",
+    "name_title": "Dataset Bundle Member",
+    "description": "Junction table linking bundles to their constituent datasets.\nUses codes for loose coupling - allows declaring membership for datasets\nthat may not yet exist in the system.\n\nExamples:\n- Bundle \"solvaris\" contains \"slovaris.countries\", \"slovaris.currencies\", etc.\n- Bundle \"base\" contains \"iso.countries\", \"iso.currencies\", all FpML datasets",
+    "left": {
+      "column": "bundle_code",
+      "column_short": "bundle",
+      "type": "text",
+      "index_comment": "Index for looking up datasets in a bundle"
+    },
+    "right": {
+      "column": "dataset_code",
+      "column_short": "dataset",
+      "type": "text",
+      "index_comment": "Index for finding bundles containing a dataset"
+    },
+    "columns": [
+      {
+        "name": "display_order",
+        "type": "integer",
+        "nullable": false
+      }
+    ]
+  }
+}

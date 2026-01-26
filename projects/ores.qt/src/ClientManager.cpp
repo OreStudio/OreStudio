@@ -236,7 +236,7 @@ LoginResult ClientManager::connectAndLogin(
 
                     // Store the client and connection info even though we're not logging in
                     client_ = new_client;
-                    session_.attach(client_);
+                    session_.attach_client(client_);
                     connected_host_ = host;
                     connected_port_ = port;
 

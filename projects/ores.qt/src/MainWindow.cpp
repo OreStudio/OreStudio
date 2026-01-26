@@ -1785,6 +1785,10 @@ void MainWindow::showSystemProvisionerWizard() {
     wizard->show();
 }
 
+void MainWindow::showLoginDialog() {
+    showLoginDialog(LoginDialogOptions{});
+}
+
 void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
     BOOST_LOG_SEV(lg(), debug) << "Showing login dialog";
 

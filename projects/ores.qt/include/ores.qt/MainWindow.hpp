@@ -288,6 +288,14 @@ private:
     };
 
     /**
+     * @brief Shows the login dialog with default options.
+     *
+     * Creates and displays a LoginDialog in an MDI subwindow, handling all
+     * signal connections for login success, bootstrap mode, etc.
+     */
+    void showLoginDialog();
+
+    /**
      * @brief Shows the login dialog with the specified options.
      *
      * Creates and displays a LoginDialog in an MDI subwindow, handling all
@@ -295,7 +303,7 @@ private:
      *
      * @param options Configuration options for the dialog
      */
-    void showLoginDialog(const LoginDialogOptions& options = {});
+    void showLoginDialog(const LoginDialogOptions& options);
 
     /**
      * @brief Updates menu and toolbar action states based on connection status.

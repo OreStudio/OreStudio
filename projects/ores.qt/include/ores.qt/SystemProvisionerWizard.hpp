@@ -194,6 +194,15 @@ private:
 class ApplyProvisioningPage final : public QWizardPage {
     Q_OBJECT
 
+private:
+    inline static std::string_view logger_name = "ores.qt.apply_provisioning_page";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     explicit ApplyProvisioningPage(SystemProvisionerWizard* wizard);
     void initializePage() override;

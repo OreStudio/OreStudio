@@ -252,7 +252,6 @@ declare
     v_bundle_pub_id uuid;
     v_dataset record;
     v_artefact_type record;
-    v_populate_result record;
     v_result_row record;
     v_sql text;
     v_datasets_processed integer := 0;

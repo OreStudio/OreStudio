@@ -228,6 +228,18 @@ public:
     }
 
     /**
+     * @brief Get the connected server hostname.
+     *
+     * @return Server hostname, or empty if not connected.
+     */
+    std::string connectedHost() const {
+        if (!isConnected()) {
+            return "";
+        }
+        return connected_host_;
+    }
+
+    /**
      * @brief Send a request if connected.
      *
      * @param request The request frame to send

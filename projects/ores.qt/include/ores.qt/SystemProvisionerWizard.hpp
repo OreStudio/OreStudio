@@ -29,6 +29,8 @@
 #include <QButtonGroup>
 #include <QProgressBar>
 #include <QTextEdit>
+#include <QCheckBox>
+#include <QComboBox>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 
@@ -99,6 +101,7 @@ signals:
 public:
     // Page IDs
     enum PageId {
+        Page_Welcome,
         Page_AdminAccount,
         Page_BundleSelection,
         Page_Apply
@@ -143,9 +146,25 @@ private:
 };
 
 // Forward declarations of page classes
+class WelcomePage;
 class AdminAccountPage;
 class BundleSelectionPage;
 class ApplyProvisioningPage;
+
+/**
+ * @brief Welcome page explaining bootstrap mode and system initialization.
+ */
+class WelcomePage final : public QWizardPage {
+    Q_OBJECT
+
+public:
+    explicit WelcomePage(SystemProvisionerWizard* wizard);
+
+private:
+    void setupUI();
+
+    SystemProvisionerWizard* wizard_;
+};
 
 /**
  * @brief Page for creating the initial administrator account.
@@ -157,14 +176,21 @@ public:
     explicit AdminAccountPage(SystemProvisionerWizard* wizard);
     bool validatePage() override;
 
+private slots:
+    void onShowPasswordToggled(bool checked);
+    void onPasswordChanged();
+
 private:
     void setupUI();
+    void updatePasswordMatchIndicator();
 
     SystemProvisionerWizard* wizard_;
     QLineEdit* usernameEdit_;
     QLineEdit* emailEdit_;
     QLineEdit* passwordEdit_;
     QLineEdit* confirmPasswordEdit_;
+    QCheckBox* showPasswordCheckbox_;
+    QLabel* passwordMatchLabel_;
     QLabel* validationLabel_;
 };
 
@@ -179,12 +205,14 @@ public:
     void initializePage() override;
     bool validatePage() override;
 
+private slots:
+    void onBundleChanged(int index);
+
 private:
     void setupUI();
 
     SystemProvisionerWizard* wizard_;
-    QButtonGroup* bundleGroup_;
-    std::vector<QRadioButton*> bundleRadios_;
+    QComboBox* bundleCombo_;
     QLabel* descriptionLabel_;
 };
 

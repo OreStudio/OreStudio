@@ -60,11 +60,12 @@ SystemProvisionerWizard::SystemProvisionerWizard(
 }
 
 void SystemProvisionerWizard::setupPages() {
+    setPage(Page_Welcome, new WelcomePage(this));
     setPage(Page_AdminAccount, new AdminAccountPage(this));
     setPage(Page_BundleSelection, new BundleSelectionPage(this));
     setPage(Page_Apply, new ApplyProvisioningPage(this));
 
-    setStartId(Page_AdminAccount);
+    setStartId(Page_Welcome);
 }
 
 void SystemProvisionerWizard::setAdminCredentials(
@@ -101,6 +102,78 @@ std::vector<BundleInfo> SystemProvisionerWizard::availableBundles() {
             "definitions and related assets."
         }
     };
+}
+
+// ============================================================================
+// WelcomePage
+// ============================================================================
+
+WelcomePage::WelcomePage(SystemProvisionerWizard* wizard)
+    : QWizardPage(wizard), wizard_(wizard) {
+
+    setTitle(tr("Welcome"));
+    setupUI();
+}
+
+void WelcomePage::setupUI() {
+    auto* layout = new QVBoxLayout(this);
+    layout->setSpacing(20);
+
+    // Get hostname from client manager
+    QString hostname = "the server";
+    if (wizard_->clientManager()) {
+        auto host = wizard_->clientManager()->connectedHost();
+        if (!host.empty()) {
+            hostname = QString::fromStdString(host);
+        }
+    }
+
+    // Welcome header
+    auto* welcomeLabel = new QLabel(
+        tr("Welcome to <b>%1</b>").arg(hostname), this);
+    welcomeLabel->setStyleSheet("font-size: 18pt; margin-bottom: 10px;");
+    welcomeLabel->setAlignment(Qt::AlignCenter);
+    layout->addWidget(welcomeLabel);
+
+    layout->addSpacing(10);
+
+    // Bootstrap mode explanation
+    auto* explanationLabel = new QLabel(this);
+    explanationLabel->setWordWrap(true);
+    explanationLabel->setText(
+        tr("This system is in <b>bootstrap mode</b>. This means it has not yet "
+           "been initialised and requires setup before it can be used.\n\n"
+           "The setup process will guide you through the following steps:"));
+    layout->addWidget(explanationLabel);
+
+    // Steps list
+    auto* stepsLabel = new QLabel(this);
+    stepsLabel->setWordWrap(true);
+    stepsLabel->setTextFormat(Qt::RichText);
+    stepsLabel->setText(
+        tr("<ol>"
+           "<li><b>Create Administrator Account</b> - Set up the initial admin "
+           "user who will have full access to manage the system.</li>"
+           "<li><b>Select Data Bundle</b> - Choose a reference data bundle to "
+           "populate the system with initial data.</li>"
+           "<li><b>Apply Configuration</b> - The system will be provisioned "
+           "with your chosen settings.</li>"
+           "</ol>"));
+    layout->addWidget(stepsLabel);
+
+    layout->addStretch();
+
+    // Info box
+    auto* infoBox = new QGroupBox(tr("Note"), this);
+    auto* infoLayout = new QVBoxLayout(infoBox);
+    auto* infoLabel = new QLabel(
+        tr("This wizard only appears during initial system setup. Once "
+           "provisioning is complete, you will be able to log in with the "
+           "administrator account you create."),
+        this);
+    infoLabel->setWordWrap(true);
+    infoLayout->addWidget(infoLabel);
+    layout->addWidget(infoBox);
 }
 
 // ============================================================================
@@ -147,12 +220,25 @@ void AdminAccountPage::setupUI() {
     passwordEdit_->setMaxLength(128);
     formLayout->addRow(tr("Password:"), passwordEdit_);
 
-    // Confirm password
+    // Confirm password with match indicator
+    auto* confirmLayout = new QHBoxLayout();
     confirmPasswordEdit_ = new QLineEdit(this);
     confirmPasswordEdit_->setPlaceholderText(tr("Confirm password"));
     confirmPasswordEdit_->setEchoMode(QLineEdit::Password);
     confirmPasswordEdit_->setMaxLength(128);
-    formLayout->addRow(tr("Confirm Password:"), confirmPasswordEdit_);
+    confirmLayout->addWidget(confirmPasswordEdit_);
+
+    // Password match indicator
+    passwordMatchLabel_ = new QLabel(this);
+    passwordMatchLabel_->setFixedWidth(24);
+    passwordMatchLabel_->setAlignment(Qt::AlignCenter);
+    confirmLayout->addWidget(passwordMatchLabel_);
+
+    formLayout->addRow(tr("Confirm Password:"), confirmLayout);
+
+    // Show password checkbox
+    showPasswordCheckbox_ = new QCheckBox(tr("Show password"), this);
+    formLayout->addRow("", showPasswordCheckbox_);
 
     layout->addLayout(formLayout);
     layout->addSpacing(20);
@@ -164,6 +250,14 @@ void AdminAccountPage::setupUI() {
     layout->addWidget(validationLabel_);
 
     layout->addStretch();
+
+    // Connect signals
+    connect(showPasswordCheckbox_, &QCheckBox::toggled,
+            this, &AdminAccountPage::onShowPasswordToggled);
+    connect(passwordEdit_, &QLineEdit::textChanged,
+            this, &AdminAccountPage::onPasswordChanged);
+    connect(confirmPasswordEdit_, &QLineEdit::textChanged,
+            this, &AdminAccountPage::onPasswordChanged);
 
     // Info box
     auto* infoBox = new QGroupBox(tr("Important"), this);
@@ -249,6 +343,35 @@ bool AdminAccountPage::validatePage() {
     return true;
 }
 
+void AdminAccountPage::onShowPasswordToggled(bool checked) {
+    auto mode = checked ? QLineEdit::Normal : QLineEdit::Password;
+    passwordEdit_->setEchoMode(mode);
+    confirmPasswordEdit_->setEchoMode(mode);
+}
+
+void AdminAccountPage::onPasswordChanged() {
+    updatePasswordMatchIndicator();
+}
+
+void AdminAccountPage::updatePasswordMatchIndicator() {
+    const QString password = passwordEdit_->text();
+    const QString confirm = confirmPasswordEdit_->text();
+
+    if (confirm.isEmpty()) {
+        // No input yet, show nothing
+        passwordMatchLabel_->clear();
+        passwordMatchLabel_->setStyleSheet("");
+    } else if (password == confirm) {
+        // Passwords match - green checkmark
+        passwordMatchLabel_->setText(QString::fromUtf8("\u2713")); // ✓
+        passwordMatchLabel_->setStyleSheet("QLabel { color: #228B22; font-weight: bold; font-size: 14pt; }");
+    } else {
+        // Passwords don't match - red X
+        passwordMatchLabel_->setText(QString::fromUtf8("\u2717")); // ✗
+        passwordMatchLabel_->setStyleSheet("QLabel { color: #cc0000; font-weight: bold; font-size: 14pt; }");
+    }
+}
+
 // ============================================================================
 // BundleSelectionPage
 // ============================================================================
@@ -266,66 +389,59 @@ BundleSelectionPage::BundleSelectionPage(SystemProvisionerWizard* wizard)
 void BundleSelectionPage::setupUI() {
     auto* layout = new QVBoxLayout(this);
 
-    // Bundle selection group
-    auto* bundleBox = new QGroupBox(tr("Available Bundles"), this);
-    auto* bundleLayout = new QVBoxLayout(bundleBox);
+    // Bundle selection
+    auto* selectionLayout = new QFormLayout();
 
-    bundleGroup_ = new QButtonGroup(this);
-
+    bundleCombo_ = new QComboBox(this);
     const auto bundles = SystemProvisionerWizard::availableBundles();
-    for (std::size_t i = 0; i < bundles.size(); ++i) {
-        const auto& bundle = bundles[i];
-        auto* radio = new QRadioButton(bundle.name, this);
-        radio->setProperty("bundleCode", bundle.code);
-        radio->setProperty("bundleDescription", bundle.description);
-        bundleGroup_->addButton(radio, static_cast<int>(i));
-        bundleRadios_.push_back(radio);
-        bundleLayout->addWidget(radio);
+    for (const auto& bundle : bundles) {
+        bundleCombo_->addItem(bundle.name, bundle.code);
     }
+    selectionLayout->addRow(tr("Data Bundle:"), bundleCombo_);
 
-    layout->addWidget(bundleBox);
-    layout->addSpacing(10);
+    layout->addLayout(selectionLayout);
+    layout->addSpacing(20);
 
     // Description area
     auto* descBox = new QGroupBox(tr("Description"), this);
     auto* descLayout = new QVBoxLayout(descBox);
     descriptionLabel_ = new QLabel(this);
     descriptionLabel_->setWordWrap(true);
-    descriptionLabel_->setMinimumHeight(80);
+    descriptionLabel_->setMinimumHeight(100);
     descLayout->addWidget(descriptionLabel_);
     layout->addWidget(descBox);
 
     layout->addStretch();
 
-    // Connect radio buttons to update description
-    connect(bundleGroup_, &QButtonGroup::idClicked,
-            this, [this](int id) {
-        if (id >= 0 && id < static_cast<int>(bundleRadios_.size())) {
-            const QString desc = bundleRadios_[id]->property("bundleDescription").toString();
-            descriptionLabel_->setText(desc);
-        }
-        emit completeChanged();
-    });
+    // Connect combo box to update description
+    connect(bundleCombo_, &QComboBox::currentIndexChanged,
+            this, &BundleSelectionPage::onBundleChanged);
+}
+
+void BundleSelectionPage::onBundleChanged(int index) {
+    const auto bundles = SystemProvisionerWizard::availableBundles();
+    if (index >= 0 && index < static_cast<int>(bundles.size())) {
+        descriptionLabel_->setText(bundles[index].description);
+    }
+    emit completeChanged();
 }
 
 void BundleSelectionPage::initializePage() {
-    // Select the first bundle by default
-    if (!bundleRadios_.empty()) {
-        bundleRadios_[0]->setChecked(true);
-        descriptionLabel_->setText(
-            bundleRadios_[0]->property("bundleDescription").toString());
+    // Select the first bundle by default and show its description
+    if (bundleCombo_->count() > 0) {
+        bundleCombo_->setCurrentIndex(0);
+        onBundleChanged(0);
     }
 }
 
 bool BundleSelectionPage::validatePage() {
-    QAbstractButton* selected = bundleGroup_->checkedButton();
-    if (!selected) {
+    if (bundleCombo_->currentIndex() < 0) {
         QMessageBox::warning(this, tr("Selection Required"),
                              tr("Please select a data bundle to continue."));
         return false;
     }
 
-    const QString bundleCode = selected->property("bundleCode").toString();
+    const QString bundleCode = bundleCombo_->currentData().toString();
     wizard_->setSelectedBundleCode(bundleCode);
 
     return true;
@@ -503,6 +619,14 @@ void ApplyProvisioningPage::onProvisioningResult(const ProvisioningResult& resul
         provisioningComplete_ = true;
         provisioningSuccess_ = true;
         emit completeChanged();
+
+        // Show next steps message
+        appendLog("");
+        appendLog(tr("=== Setup Complete ==="));
+        appendLog(tr("You can now log in to the system using the administrator account:"));
+        appendLog(tr("  Username: %1").arg(wizard_->adminUsername()));
+        appendLog("");
+        appendLog(tr("Click 'Finish' to close this wizard and return to the login screen."));
 
         BOOST_LOG_SEV(lg(), info) << "System provisioning completed successfully";
         emit wizard_->provisioningCompleted(wizard_->adminUsername());

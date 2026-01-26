@@ -20,4 +20,4 @@
 set schema 'ores';
 
 drop function if exists ores.dq_preview_business_centre_population;
-drop function if exists ores.dq_populate_business_centres;
+drop function if exists ores.dq_populate_business_centres_fn;

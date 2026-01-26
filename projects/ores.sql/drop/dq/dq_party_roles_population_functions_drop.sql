@@ -20,4 +20,4 @@
 set schema 'ores';
 
 drop function if exists ores.dq_preview_party_role_population;
-drop function if exists ores.dq_populate_party_roles;
+drop function if exists ores.dq_populate_party_roles_fn;

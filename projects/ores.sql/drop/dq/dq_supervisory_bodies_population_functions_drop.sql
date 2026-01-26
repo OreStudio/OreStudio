@@ -20,4 +20,4 @@
 set schema 'ores';
 
 drop function if exists ores.dq_preview_supervisory_body_population;
-drop function if exists ores.dq_populate_supervisory_bodies;
+drop function if exists ores.dq_populate_supervisory_bodies_fn;

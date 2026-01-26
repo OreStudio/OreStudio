@@ -23,7 +23,7 @@
  * @brief ORE (Open Source Risk Engine) component.
  *
  * Provides integration with the ORE project through:
- * - Domain types for ORE XML configuration (CurrencyConfig, CurrencyElement)
+ * - Domain types for ORE XML configuration (generated from XSD via xsdcpp)
  * - XML import/export functionality for currency data
  * - Mappers to convert between ORE and internal domain types
  */

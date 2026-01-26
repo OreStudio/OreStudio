@@ -20,4 +20,4 @@
 set schema 'ores';
 
 drop function if exists ores.dq_preview_entity_classification_population;
-drop function if exists ores.dq_populate_entity_classifications;
+drop function if exists ores.dq_populate_entity_classifications_fn;

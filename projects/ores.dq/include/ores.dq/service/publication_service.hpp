@@ -20,11 +20,13 @@
 #ifndef ORES_DQ_SERVICE_PUBLICATION_SERVICE_HPP
 #define ORES_DQ_SERVICE_PUBLICATION_SERVICE_HPP
 
+#include <map>
 #include <string>
 #include <vector>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.dq/domain/artefact_type.hpp"
 #include "ores.dq/domain/dataset.hpp"
 #include "ores.dq/domain/publication.hpp"
 #include "ores.dq/domain/publication_mode.hpp"
@@ -32,6 +34,7 @@
 #include "ores.dq/repository/dataset_repository.hpp"
 #include "ores.dq/repository/dataset_dependency_repository.hpp"
 #include "ores.dq/repository/publication_repository.hpp"
+#include "ores.dq/repository/artefact_type_repository.hpp"
 
 namespace ores::dq::service {
 
@@ -122,6 +125,15 @@ public:
 
 private:
     /**
+     * @brief Builds a cache of artefact types for the given datasets.
+     *
+     * @param datasets The datasets to build cache for.
+     * @return Map from artefact type code to artefact type.
+     */
+    std::map<std::string, domain::artefact_type> build_artefact_type_cache(
+        const std::vector<domain::dataset>& datasets);
+
+    /**
      * @brief Publishes a single dataset.
      *
      * Determines the artefact type and calls the appropriate
@@ -129,11 +141,13 @@ private:
      *
      * @param dataset The dataset to publish.
      * @param mode The publication mode.
+     * @param artefact_type_cache Cache of artefact types to avoid DB queries.
      * @return Publication result with counts.
      */
     domain::publication_result publish_dataset(
         const domain::dataset& dataset,
-        domain::publication_mode mode);
+        domain::publication_mode mode,
+        const std::map<std::string, domain::artefact_type>& artefact_type_cache);
 
     /**
      * @brief Records a publication in the audit table.
@@ -148,20 +162,23 @@ private:
         const std::string& published_by);
 
     /**
-     * @brief Calls the dataset's populate function.
+     * @brief Calls the artefact type's populate function.
      *
      * @param dataset The dataset to publish.
+     * @param artefact_type The artefact type with target_table and populate_function.
      * @param mode The publication mode.
      * @return Publication result from the database function.
      */
     domain::publication_result call_populate_function(
         const domain::dataset& dataset,
+        const domain::artefact_type& artefact_type,
         domain::publication_mode mode);
 
     context ctx_;
     repository::dataset_repository dataset_repo_;
     repository::dataset_dependency_repository dependency_repo_;
     repository::publication_repository publication_repo_;
+    repository::artefact_type_repository artefact_type_repo_;
 };
 
 }

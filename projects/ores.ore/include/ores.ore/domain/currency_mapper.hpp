@@ -22,8 +22,7 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/currency.hpp"
-#include "ores.ore/domain/CurrencyConfig.hpp"
-#include "ores.ore/domain/CurrencyElement.hpp"
+#include "ores.ore/domain/domain.hpp"
 
 namespace ores::ore::domain {
 
@@ -41,12 +40,12 @@ private:
     }
 
 public:
-    static refdata::domain::currency map(const CurrencyElement& v);
-    static CurrencyElement map(const refdata::domain::currency& v);
+    static refdata::domain::currency map(const currencyDefinition& v);
+    static currencyDefinition map(const refdata::domain::currency& v);
 
     static std::vector<refdata::domain::currency>
-    map(const CurrencyConfig& v);
-    static CurrencyConfig map(const std::vector<refdata::domain::currency>& v);
+    map(const currencyConfig& v);
+    static currencyConfig map(const std::vector<refdata::domain::currency>& v);
 };
 
 }

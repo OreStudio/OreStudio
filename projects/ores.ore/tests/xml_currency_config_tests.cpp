@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore/domain/CurrencyConfig.hpp"
+#include "ores.ore/domain/domain.hpp"
 
 #include <filesystem>
 #include <catch2/catch_test_macros.hpp>
@@ -36,7 +36,8 @@ std::filesystem::path ore_path(const std::string& relative) {
 
 }
 
-using ores::ore::domain::CurrencyConfig;
+using ores::ore::domain::currencyConfig;
+using ores::ore::domain::roundingType;
 using namespace ores::logging;
 
 TEST_CASE("read_currency_config_from_simple_xml", tags) {
@@ -53,34 +54,33 @@ TEST_CASE("read_currency_config_from_simple_xml", tags) {
     <FractionsPerUnit>100</FractionsPerUnit>
     <RoundingType>Closest</RoundingType>
     <RoundingPrecision>2</RoundingPrecision>
-    <Format></Format>
     <CurrencyType>Major</CurrencyType>
   </Currency>
 </CurrencyConfig>
 )";
 
     BOOST_LOG_SEV(lg, debug) << "Parsing simple XML string";
-    const auto ccy_cfg = CurrencyConfig::from_xml(simple_xml);
+    currencyConfig ccy_cfg;
+    ores::ore::domain::load_data(simple_xml, ccy_cfg);
 
     REQUIRE(!ccy_cfg.Currency.empty());
     REQUIRE(ccy_cfg.Currency.size() == 1);
     BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 
     const auto& first = ccy_cfg.Currency.front();
-    BOOST_LOG_SEV(lg, debug) << "Currency: " << first.ISOCode << " - " << first.Name;
+    BOOST_LOG_SEV(lg, debug) << "Currency: " << std::string(first.ISOCode)
+                             << " - " << std::string(first.Name);
 
-    CHECK(first.Name == "United Arab Emirates dirham");
-    CHECK(first.ISOCode == "AED");
-    CHECK(first.NumericCode == "784");
+    CHECK(std::string(first.Name) == "United Arab Emirates dirham");
+    CHECK(std::string(first.ISOCode) == "AED");
+    REQUIRE(first.NumericCode);
+    CHECK(*first.NumericCode == 784);
     CHECK(first.FractionsPerUnit == 100);
-    CHECK(first.RoundingType == "Closest");
+    CHECK(first.RoundingType == roundingType::Closest);
     CHECK(first.RoundingPrecision == 2);
 
-    REQUIRE(first.Format);
-    CHECK(first.Format.value().empty());
-
     REQUIRE(first.CurrencyType);
-    CHECK(first.CurrencyType.value() == "Major");
+    CHECK(std::string(*first.CurrencyType) == "Major");
 }
 
 TEST_CASE("read_currency_config_from_currencies_xml", tags) {
@@ -93,36 +93,42 @@ TEST_CASE("read_currency_config_from_currencies_xml", tags) {
     const std::string content = file::read_content(f);
 
     BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
-    const auto ccy_cfg = CurrencyConfig::from_xml(content);
+    currencyConfig ccy_cfg;
+    ores::ore::domain::load_data(content, ccy_cfg);
     REQUIRE(!ccy_cfg.Currency.empty());
     REQUIRE(ccy_cfg.Currency.size() == 179);
     BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 
     const auto& first = ccy_cfg.Currency.front();
-    BOOST_LOG_SEV(lg, debug) << "First currency: " << first.ISOCode << " - " << first.Name;
+    BOOST_LOG_SEV(lg, debug) << "First currency: " << std::string(first.ISOCode)
+                             << " - " << std::string(first.Name);
 
-    CHECK(first.Name == "United Arab Emirates dirham");
-    CHECK(first.ISOCode == "AED");
-    CHECK(first.NumericCode == "784");
+    CHECK(std::string(first.Name) == "United Arab Emirates dirham");
+    CHECK(std::string(first.ISOCode) == "AED");
+    REQUIRE(first.NumericCode);
+    CHECK(*first.NumericCode == 784);
     CHECK(first.FractionsPerUnit == 100);
-    CHECK(first.RoundingType == "Closest");
+    CHECK(first.RoundingType == roundingType::Closest);
     CHECK(first.RoundingPrecision == 2);
 
     REQUIRE(first.CurrencyType);
-    CHECK(first.CurrencyType.value() == "Major");
+    CHECK(std::string(*first.CurrencyType) == "Major");
 
     const auto& last = ccy_cfg.Currency.back();
-    BOOST_LOG_SEV(lg, debug) << "Last currency: " << last.ISOCode << " - " << last.Name;
+    BOOST_LOG_SEV(lg, debug) << "Last currency: " << std::string(last.ISOCode)
+                             << " - " << std::string(last.Name);
 
-    CHECK(last.Name == "Bitcoin");
-    CHECK(last.ISOCode == "BTC");
-    CHECK(last.NumericCode == "000");
+    CHECK(std::string(last.Name) == "Bitcoin");
+    CHECK(std::string(last.ISOCode) == "BTC");
+    // Bitcoin has NumericCode 000 which is parsed as 0
+    REQUIRE(last.NumericCode);
+    CHECK(*last.NumericCode == 0);
     CHECK(last.FractionsPerUnit == 100000000);
-    CHECK(last.RoundingType == "Closest");
+    CHECK(last.RoundingType == roundingType::Closest);
     CHECK(last.RoundingPrecision == 2);
 
     REQUIRE(last.CurrencyType);
-    CHECK(last.CurrencyType.value() == "Crypto");
+    CHECK(std::string(*last.CurrencyType) == "Crypto");
 }
 
 TEST_CASE("read_currency_config_from_example_1", tags) {
@@ -135,24 +141,26 @@ TEST_CASE("read_currency_config_from_example_1", tags) {
     const std::string content = file::read_content(f);
 
     BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
-    const auto ccy_cfg = CurrencyConfig::from_xml(content);
+    currencyConfig ccy_cfg;
+    ores::ore::domain::load_data(content, ccy_cfg);
     REQUIRE(!ccy_cfg.Currency.empty());
     REQUIRE(ccy_cfg.Currency.size() == 2);
     BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
 
     const auto& first = ccy_cfg.Currency.front();
-    BOOST_LOG_SEV(lg, debug) << "Currency: " << first.ISOCode << " - " << first.Name;
+    BOOST_LOG_SEV(lg, debug) << "Currency: " << std::string(first.ISOCode)
+                             << " - " << std::string(first.Name);
 
-    CHECK(first.Name == "Papua New Guinean kina");
-    CHECK(first.ISOCode == "PGK");
-    CHECK(first.NumericCode == "598");
-    CHECK(first.Symbol == "K");
-    CHECK(first.FractionSymbol == "");
+    CHECK(std::string(first.Name) == "Papua New Guinean kina");
+    CHECK(std::string(first.ISOCode) == "PGK");
+    REQUIRE(first.NumericCode);
+    CHECK(*first.NumericCode == 598);
+    CHECK(std::string(first.Symbol) == "K");
+    CHECK(std::string(first.FractionSymbol).empty());
     CHECK(first.FractionsPerUnit == 100);
-    CHECK(first.RoundingType == "Closest");
+    CHECK(first.RoundingType == roundingType::Closest);
     CHECK(first.RoundingPrecision == 2);
 
-    REQUIRE(!first.Format);
     REQUIRE(!first.CurrencyType);
 }
 
@@ -166,7 +174,8 @@ TEST_CASE("read_currency_config_from_example_41", tags) {
     const std::string content = file::read_content(f);
 
     BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
-    const auto ccy_cfg = CurrencyConfig::from_xml(content);
+    currencyConfig ccy_cfg;
+    ores::ore::domain::load_data(content, ccy_cfg);
     REQUIRE(!ccy_cfg.Currency.empty());
     REQUIRE(ccy_cfg.Currency.size() == 2);
     BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
@@ -182,7 +191,8 @@ TEST_CASE("read_currency_config_from_example_62", tags) {
     const std::string content = file::read_content(f);
 
     BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
-    const auto ccy_cfg = CurrencyConfig::from_xml(content);
+    currencyConfig ccy_cfg;
+    ores::ore::domain::load_data(content, ccy_cfg);
     REQUIRE(!ccy_cfg.Currency.empty());
     REQUIRE(ccy_cfg.Currency.size() == 2);
     BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
@@ -198,7 +208,8 @@ TEST_CASE("read_currency_config_from_ore_api", tags) {
     const std::string content = file::read_content(f);
 
     BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
-    const auto ccy_cfg = CurrencyConfig::from_xml(content);
+    currencyConfig ccy_cfg;
+    ores::ore::domain::load_data(content, ccy_cfg);
     REQUIRE(!ccy_cfg.Currency.empty());
     REQUIRE(ccy_cfg.Currency.size() == 178);
     BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";

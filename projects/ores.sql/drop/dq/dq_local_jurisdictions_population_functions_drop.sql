@@ -20,4 +20,4 @@
 set schema 'ores';
 
 drop function if exists ores.dq_preview_local_jurisdiction_population;
-drop function if exists ores.dq_populate_local_jurisdictions;
+drop function if exists ores.dq_populate_local_jurisdictions_fn;

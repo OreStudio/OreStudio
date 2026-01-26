@@ -39,6 +39,21 @@ Implementation details:
 - Follow the pattern in
   =projects/ores.accounts/src/repository/account_repository.cpp=
 
+** Required includes for the repository implementation
+
+#+begin_src cpp
+#include <sqlgen/postgres.hpp>
+#include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "COMPONENT/domain/TYPE_NAME_json_io.hpp" // IWYU pragma: keep.
+#include "COMPONENT/repository/TYPE_NAME_entity.hpp"
+#include "COMPONENT/repository/TYPE_NAME_mapper.hpp"
+#+end_src
+
+Note: =bitemporal_operations.hpp= provides =execute_read_query= and
+=execute_write_query= helpers. The =helpers.hpp= provides
+=generate_create_table_sql= and other utilities.
+
 ** Implementing read_latest_since for incremental loading
 
 The =read_latest_since= method supports incremental cache loading by returning

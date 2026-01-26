@@ -20,4 +20,4 @@
 set schema 'ores';
 
 drop function if exists ores.dq_preview_cashflow_type_population;
-drop function if exists ores.dq_populate_cashflow_types;
+drop function if exists ores.dq_populate_cashflow_types_fn;

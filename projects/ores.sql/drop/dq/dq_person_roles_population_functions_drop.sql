@@ -20,4 +20,4 @@
 set schema 'ores';
 
 drop function if exists ores.dq_preview_person_role_population;
-drop function if exists ores.dq_populate_person_roles;
+drop function if exists ores.dq_populate_person_roles_fn;

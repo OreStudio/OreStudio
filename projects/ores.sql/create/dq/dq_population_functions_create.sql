@@ -25,7 +25,7 @@
  * Designed to support a future UI for dataset management.
  *
  * Usage pattern:
- *   1. List available datasets: SELECT * FROM ores.dq_list_populatable_datasets();
+ *   1. List available datasets: SELECT * FROM ores.dq_list_populatable_datasets_fn();
  *   2. Preview what will be copied: SELECT * FROM ores.dq_preview_*_population(dataset_id);
  *   3. Execute the copy: SELECT * FROM ores.dq_populate_*(dataset_id, mode);
  *
@@ -45,7 +45,7 @@ set schema 'ores';
  * Lists all DQ datasets that can be populated into production tables.
  * Returns dataset metadata and record counts for UI display.
  */
-create or replace function ores.dq_list_populatable_datasets()
+create or replace function ores.dq_list_populatable_datasets_fn()
 returns table (
     dataset_id uuid,
     dataset_name text,
@@ -164,7 +164,7 @@ $$ language plpgsql;
  * Preview what images would be copied from a DQ dataset.
  * Shows the action that would be taken for each record.
  */
-create or replace function ores.dq_preview_image_population(p_dataset_id uuid)
+create or replace function ores.dq_preview_image_population_fn(p_dataset_id uuid)
 returns table (
     action text,
     image_key text,
@@ -207,7 +207,7 @@ $$ language plpgsql;
  * For upsert mode with existing keys, we use the existing image_id to
  * preserve referential integrity with countries/currencies tables.
  */
-create or replace function ores.dq_populate_images(
+create or replace function ores.dq_populate_images_fn(
     p_dataset_id uuid,
     p_mode text default 'upsert'
 )
@@ -313,7 +313,7 @@ $$ language plpgsql;
 /**
  * Preview what countries would be copied from a DQ dataset.
  */
-create or replace function ores.dq_preview_country_population(p_dataset_id uuid)
+create or replace function ores.dq_preview_country_population_fn(p_dataset_id uuid)
 returns table (
     action text,
     alpha2_code text,
@@ -356,7 +356,7 @@ $$ language plpgsql;
  *
  * The coding_scheme_code is copied from the dataset to track data provenance.
  */
-create or replace function ores.dq_populate_countries(
+create or replace function ores.dq_populate_countries_fn(
     p_dataset_id uuid,
     p_mode text default 'upsert'
 )
@@ -483,7 +483,7 @@ $$ language plpgsql;
 /**
  * Preview what currencies would be copied from a DQ dataset.
  */
-create or replace function ores.dq_preview_currency_population(p_dataset_id uuid)
+create or replace function ores.dq_preview_currency_population_fn(p_dataset_id uuid)
 returns table (
     action text,
     iso_code text,
@@ -534,7 +534,7 @@ $$ language plpgsql;
  *
  * The coding_scheme_code is copied from the dataset to track data provenance.
  */
-create or replace function ores.dq_populate_currencies(
+create or replace function ores.dq_populate_currencies_fn(
     p_dataset_id uuid,
     p_mode text default 'upsert',
     p_currency_type_filter text default null
@@ -671,7 +671,7 @@ $$ language plpgsql;
  * Preview what IP ranges would be copied from a DQ dataset.
  * Shows summary statistics rather than individual ranges (too many rows).
  */
-create or replace function ores.dq_preview_ip2country_population(p_dataset_id uuid)
+create or replace function ores.dq_preview_ip2country_population_fn(p_dataset_id uuid)
 returns table (
     metric text,
     value bigint
@@ -707,7 +707,7 @@ $$ language plpgsql;
  * @param p_dataset_id  The DQ dataset to populate from.
  * @param p_mode        Ignored - always performs replace_all.
  */
-create or replace function ores.dq_populate_ip2country(
+create or replace function ores.dq_populate_ip2country_fn(
     p_dataset_id uuid,
     p_mode text default 'replace_all'
 )

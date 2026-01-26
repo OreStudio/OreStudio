@@ -36,7 +36,7 @@
 
 -- Publish coding schemes to production (required before other datasets can reference them)
 \echo '--- Publishing FPML Coding Schemes ---'
-select * from ores.dq_populate_coding_schemes(
+select * from ores.dq_populate_coding_schemes_fn(
     (select id from ores.dq_datasets_tbl where code = 'fpml.coding_schemes' and valid_to = ores.utility_infinity_timestamp_fn()),
     'upsert'
 );

@@ -164,26 +164,10 @@ struct dataset final {
     /**
      * @brief Type of artefact this dataset populates.
      *
-     * Used for categorization. Actual publication uses target_table and
-     * populate_function fields.
+     * Used for categorization. Links to artefact_type which provides
+     * target_table and populate_function for publication.
      */
     std::optional<std::string> artefact_type;
-
-    /**
-     * @brief Target table where data is published.
-     *
-     * The production table that receives published data from the artefact table.
-     * Example: "refdata_currencies_tbl", "assets_images_tbl".
-     */
-    std::optional<std::string> target_table;
-
-    /**
-     * @brief SQL function that publishes data from artefact to production.
-     *
-     * The function name (without schema) to call for publication.
-     * Example: "dq_populate_currencies", "dq_populate_images".
-     */
-    std::optional<std::string> populate_function;
 
     /**
      * @brief Username of the person who last modified this dataset.

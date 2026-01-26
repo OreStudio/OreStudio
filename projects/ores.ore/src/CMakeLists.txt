@@ -31,6 +31,10 @@ set_target_properties(${lib_target_name} PROPERTIES
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
+if(MSVC)
+    target_compile_options(${lib_target_name} PRIVATE /bigobj)
+endif()
+
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 

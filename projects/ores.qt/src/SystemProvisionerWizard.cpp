@@ -25,7 +25,8 @@
 #include <QGroupBox>
 #include <QMessageBox>
 #include <QTimer>
-#include <QApplication>
+#include <QtConcurrent>
+#include <QFutureWatcher>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <boost/uuid/uuid_io.hpp>
@@ -370,6 +371,9 @@ ApplyProvisioningPage::ApplyProvisioningPage(SystemProvisionerWizard* wizard)
 
     // Hide navigation buttons during provisioning
     setCommitPage(true);
+
+    // Register ProvisioningResult for cross-thread signal/slot
+    qRegisterMetaType<ProvisioningResult>("ProvisioningResult");
 }
 
 void ApplyProvisioningPage::initializePage() {
@@ -379,7 +383,7 @@ void ApplyProvisioningPage::initializePage() {
     progressBar_->setRange(0, 0);  // Indeterminate
 
     // Start provisioning after a short delay
-    QTimer::singleShot(100, this, &ApplyProvisioningPage::performProvisioning);
+    QTimer::singleShot(100, this, &ApplyProvisioningPage::startProvisioning);
 }
 
 bool ApplyProvisioningPage::isComplete() const {
@@ -388,7 +392,6 @@ bool ApplyProvisioningPage::isComplete() const {
 
 void ApplyProvisioningPage::setStatus(const QString& status) {
     statusLabel_->setText(status);
-    QApplication::processEvents();
 }
 
 void ApplyProvisioningPage::appendLog(const QString& message) {
@@ -397,96 +400,120 @@ void ApplyProvisioningPage::appendLog(const QString& message) {
     auto cursor = logOutput_->textCursor();
     cursor.movePosition(QTextCursor::End);
     logOutput_->setTextCursor(cursor);
-    QApplication::processEvents();
 }
 
-void ApplyProvisioningPage::performProvisioning() {
-    BOOST_LOG_SEV(lg(), info) << "Starting system provisioning";
+void ApplyProvisioningPage::startProvisioning() {
+    BOOST_LOG_SEV(lg(), info) << "Starting system provisioning (async)";
 
-    // Set progress to determinate mode with steps
+    setStatus(tr("Provisioning system..."));
+    appendLog(tr("Starting provisioning..."));
+
+    // Capture values needed for background thread (avoid accessing wizard_ from thread)
+    const std::string username = wizard_->adminUsername().toStdString();
+    const std::string password = wizard_->adminPassword().toStdString();
+    const std::string email = wizard_->adminEmail().toStdString();
+    const QString bundleCode = wizard_->selectedBundleCode();
+    ClientManager* clientManager = wizard_->clientManager();
+
+    // Perform provisioning asynchronously
+    auto* watcher = new QFutureWatcher<ProvisioningResult>(this);
+    connect(watcher, &QFutureWatcher<ProvisioningResult>::finished,
+            [this, watcher]() {
+        const auto result = watcher->result();
+        watcher->deleteLater();
+        onProvisioningResult(result);
+    });
+
+    QFuture<ProvisioningResult> future = QtConcurrent::run(
+        [clientManager, username, password, email, bundleCode]() -> ProvisioningResult {
+            ProvisioningResult result;
+
+            // Step 1: Create administrator account
+            result.log_messages.append(
+                QString("[1/3] Creating administrator account: %1").arg(QString::fromStdString(username)));
+
+            iam::messaging::create_initial_admin_request adminRequest;
+            adminRequest.username = username;
+            adminRequest.password = password;
+            adminRequest.email = email;
+
+            auto adminResult = clientManager->process_request(std::move(adminRequest));
+
+            if (!adminResult) {
+                result.success = false;
+                result.error_message = "Failed to communicate with server.";
+                result.log_messages.append("ERROR: Failed to communicate with server.");
+                return result;
+            }
+
+            if (!adminResult->success) {
+                result.success = false;
+                result.error_message = QString::fromStdString(adminResult->error_message);
+                result.log_messages.append(QString("ERROR: %1").arg(result.error_message));
+                return result;
+            }
+
+            result.admin_account_id = adminResult->account_id;
+            result.log_messages.append(QString("SUCCESS: Administrator account created (ID: %1)")
+                .arg(QString::fromStdString(boost::uuids::to_string(adminResult->account_id))));
+
+            // Step 2: Apply selected bundle
+            result.log_messages.append(QString("[2/3] Applying data bundle: %1").arg(bundleCode));
+
+            // TODO: Server-side bundle application is not yet implemented.
+            // When implemented, this will send an apply_bundle_request to the server.
+            result.log_messages.append("NOTE: Bundle application server message not yet implemented.");
+            result.log_messages.append(QString("TODO: Implement apply_bundle_request for bundle '%1'").arg(bundleCode));
+
+            // Step 3: Finalize
+            result.log_messages.append("[3/3] Finalizing provisioning...");
+            result.log_messages.append("SUCCESS: System provisioning completed.");
+            result.log_messages.append("");
+            result.log_messages.append("You can now log in with the administrator account.");
+
+            result.success = true;
+            return result;
+        }
+    );
+
+    watcher->setFuture(future);
+}
+
+ProvisioningResult ApplyProvisioningPage::performProvisioning() {
+    // This method is now only used as a helper if needed
+    // The actual work is done in the lambda passed to QtConcurrent::run
+    return {};
+}
+
+void ApplyProvisioningPage::onProvisioningResult(const ProvisioningResult& result) {
+    BOOST_LOG_SEV(lg(), debug) << "Provisioning result received";
+
+    // Display all log messages
+    for (const QString& msg : result.log_messages) {
+        appendLog(msg);
+    }
+
+    // Set progress bar to complete
     progressBar_->setRange(0, 3);
-    progressBar_->setValue(0);
-
-    // =========================================================================
-    // Step 1: Create administrator account
-    // =========================================================================
-    setStatus(tr("Creating administrator account..."));
-    appendLog(tr("[1/3] Creating administrator account: %1").arg(wizard_->adminUsername()));
-
-    iam::messaging::create_initial_admin_request adminRequest;
-    adminRequest.username = wizard_->adminUsername().toStdString();
-    adminRequest.password = wizard_->adminPassword().toStdString();
-    adminRequest.email = wizard_->adminEmail().toStdString();
-
-    auto adminResult = wizard_->clientManager()->process_request(std::move(adminRequest));
-
-    if (!adminResult) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to send create_initial_admin_request";
-        setStatus(tr("Provisioning failed!"));
-        appendLog(tr("ERROR: Failed to communicate with server."));
-        provisioningComplete_ = true;
-        provisioningSuccess_ = false;
-        emit completeChanged();
-        emit wizard_->provisioningFailed(tr("Failed to communicate with server."));
-        return;
-    }
-
-    if (!adminResult->success) {
-        BOOST_LOG_SEV(lg(), error) << "create_initial_admin_request failed: "
-                                   << adminResult->error_message;
-        setStatus(tr("Provisioning failed!"));
-        appendLog(tr("ERROR: %1").arg(QString::fromStdString(adminResult->error_message)));
-        provisioningComplete_ = true;
-        provisioningSuccess_ = false;
-        emit completeChanged();
-        emit wizard_->provisioningFailed(QString::fromStdString(adminResult->error_message));
-        return;
-    }
-
-    wizard_->setAdminAccountId(adminResult->account_id);
-    appendLog(tr("SUCCESS: Administrator account created (ID: %1)")
-                  .arg(QString::fromStdString(boost::uuids::to_string(adminResult->account_id))));
-    progressBar_->setValue(1);
-
-    // =========================================================================
-    // Step 2: Apply selected bundle
-    // =========================================================================
-    setStatus(tr("Applying data bundle: %1...").arg(wizard_->selectedBundleCode()));
-    appendLog(tr("[2/3] Applying data bundle: %1").arg(wizard_->selectedBundleCode()));
-
-    // TODO: Server-side bundle application is not yet implemented.
-    // When implemented, this will send an apply_bundle_request to the server.
-    // For now, we log a placeholder message.
-    appendLog(tr("NOTE: Bundle application server message not yet implemented."));
-    appendLog(tr("TODO: Implement apply_bundle_request for bundle '%1'")
-                  .arg(wizard_->selectedBundleCode()));
-
-    progressBar_->setValue(2);
-
-    // =========================================================================
-    // Step 3: Finalize
-    // =========================================================================
-    setStatus(tr("Finalizing provisioning..."));
-    appendLog(tr("[3/3] Finalizing provisioning..."));
-
-    // At this point, bootstrap mode should be exited (done automatically by
-    // create_initial_admin_request on the server side)
-    appendLog(tr("SUCCESS: System provisioning completed."));
-    appendLog(tr(""));
-    appendLog(tr("You can now log in with the administrator account."));
-
     progressBar_->setValue(3);
 
-    // =========================================================================
-    // Complete
-    // =========================================================================
-    setStatus(tr("Provisioning completed successfully!"));
-    provisioningComplete_ = true;
-    provisioningSuccess_ = true;
-    emit completeChanged();
+    if (result.success) {
+        wizard_->setAdminAccountId(result.admin_account_id);
+        setStatus(tr("Provisioning completed successfully!"));
+        provisioningComplete_ = true;
+        provisioningSuccess_ = true;
+        emit completeChanged();
 
-    BOOST_LOG_SEV(lg(), info) << "System provisioning completed successfully";
-    emit wizard_->provisioningCompleted(wizard_->adminUsername());
+        BOOST_LOG_SEV(lg(), info) << "System provisioning completed successfully";
+        emit wizard_->provisioningCompleted(wizard_->adminUsername());
+    } else {
+        BOOST_LOG_SEV(lg(), error) << "Provisioning failed: " << result.error_message.toStdString();
+        setStatus(tr("Provisioning failed!"));
+        provisioningComplete_ = true;
+        provisioningSuccess_ = false;
+        emit completeChanged();
+        emit wizard_->provisioningFailed(result.error_message);
+    }
 }
 
 }

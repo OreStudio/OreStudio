@@ -275,6 +275,29 @@ private:
     void showSystemProvisionerWizard();
 
     /**
+     * @brief Options for configuring the login dialog.
+     */
+    struct LoginDialogOptions {
+        QString host;
+        int port = 5433;
+        QString username;
+        QString password;
+        QString connectionName;       ///< If set, shown in status message on success
+        bool showSavedConnections = true;  ///< Whether to populate saved connections list
+        bool showSignUpButton = true;      ///< Whether to enable sign up flow
+    };
+
+    /**
+     * @brief Shows the login dialog with the specified options.
+     *
+     * Creates and displays a LoginDialog in an MDI subwindow, handling all
+     * signal connections for login success, bootstrap mode, etc.
+     *
+     * @param options Configuration options for the dialog
+     */
+    void showLoginDialog(const LoginDialogOptions& options = {});
+
+    /**
      * @brief Updates menu and toolbar action states based on connection status.
      *
      * Enables/disables actions like Currencies, Connect/Disconnect based on

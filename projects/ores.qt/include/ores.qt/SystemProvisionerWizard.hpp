@@ -46,6 +46,16 @@ struct BundleInfo {
 };
 
 /**
+ * @brief Result of a provisioning operation.
+ */
+struct ProvisioningResult {
+    bool success = false;
+    QString error_message;
+    boost::uuids::uuid admin_account_id;
+    QStringList log_messages;
+};
+
+/**
  * @brief Wizard for initial system provisioning when in bootstrap mode.
  *
  * Multi-page wizard that guides users through:
@@ -189,8 +199,12 @@ public:
     void initializePage() override;
     bool isComplete() const override;
 
+private slots:
+    void onProvisioningResult(const ProvisioningResult& result);
+
 private:
-    void performProvisioning();
+    void startProvisioning();
+    ProvisioningResult performProvisioning();
     void appendLog(const QString& message);
     void setStatus(const QString& status);
 

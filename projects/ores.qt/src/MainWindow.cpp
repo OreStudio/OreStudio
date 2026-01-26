@@ -1628,47 +1628,19 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& environm
     // Store the connection name for the window title
     activeConnectionName_ = connectionName;
 
-    // Open login dialog pre-filled with connection details
-    auto* loginDialog = new LoginDialog();
-    loginDialog->setClientManager(clientManager_);
-    loginDialog->setServer(QString::fromStdString(env->host));
-    loginDialog->setPort(env->port);
-    loginDialog->setUsername(QString::fromStdString(env->username));
+    // Show login dialog pre-filled with connection details
+    LoginDialogOptions options;
+    options.host = QString::fromStdString(env->host);
+    options.port = env->port;
+    options.username = QString::fromStdString(env->username);
     if (!password.empty()) {
-        loginDialog->setPassword(QString::fromStdString(password));
+        options.password = QString::fromStdString(password);
     }
+    options.connectionName = connectionName;
+    options.showSavedConnections = false;  // Already selected a connection
+    options.showSignUpButton = false;      // Connecting to known server
 
-    auto* subWindow = new DetachableMdiSubWindow(this);
-    subWindow->setWidget(loginDialog);
-    subWindow->setWindowTitle(tr("Login"));
-    subWindow->setAttribute(Qt::WA_DeleteOnClose);
-    subWindow->resize(400, 520);
-    subWindow->setWindowFlags(Qt::FramelessWindowHint);
-
-    mdiArea_->addSubWindow(subWindow);
-    subWindow->show();
-
-    QPoint center = mdiArea_->viewport()->rect().center();
-    subWindow->move(center.x() - subWindow->width() / 2,
-                    center.y() - subWindow->height() / 2);
-
-    connect(loginDialog, &LoginDialog::closeRequested, subWindow, &QWidget::close);
-
-    connect(loginDialog, &LoginDialog::loginSucceeded,
-            this, [this, connectionName](const QString& username) {
-        onLoginSuccess(username);
-        ui_->statusbar->showMessage(tr("Connected to %1").arg(connectionName));
-    });
-
-    // Connect bootstrap mode signal to show system provisioner wizard
-    connect(loginDialog, &LoginDialog::bootstrapModeDetected,
-            this, &MainWindow::showSystemProvisionerWizard);
-
-    allDetachableWindows_.append(subWindow);
-    connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
-        allDetachableWindows_.removeOne(subWindow);
-        activeConnectionName_.clear();
-    });
+    showLoginDialog(options);
 }
 
 void MainWindow::onLoginSuccess(const QString& username) {
@@ -1794,7 +1766,7 @@ void MainWindow::showSystemProvisionerWizard() {
 
         // The system is now provisioned - show login dialog again for the user to log in
         // with their new admin credentials
-        onModernLoginTriggered();
+        showLoginDialog();
     });
 
     // Connect failure signal
@@ -1813,25 +1785,28 @@ void MainWindow::showSystemProvisionerWizard() {
     wizard->show();
 }
 
-void MainWindow::onModernLoginTriggered() {
-    BOOST_LOG_SEV(lg(), debug) << "Modern Login action triggered";
-
-    // If already connected, ask user to disconnect first
-    if (clientManager_ && clientManager_->isConnected()) {
-        auto result = MessageBoxHelper::question(this,
-            tr("Already Connected"),
-            tr("You are already connected to a server. Disconnect and connect to a new server?"),
-            QMessageBox::Yes | QMessageBox::No);
-
-        if (result != QMessageBox::Yes) {
-            return;
-        }
-
-        performDisconnectCleanup();
-    }
+void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
+    BOOST_LOG_SEV(lg(), debug) << "Showing login dialog";
 
     auto* loginWidget = new LoginDialog();
     loginWidget->setClientManager(clientManager_);
+
+    // Pre-fill connection details if provided
+    if (!options.host.isEmpty()) {
+        loginWidget->setServer(options.host);
+    }
+    if (options.port > 0) {
+        loginWidget->setPort(options.port);
+    }
+    if (!options.username.isEmpty()) {
+        loginWidget->setUsername(options.username);
+    }
+    if (!options.password.isEmpty()) {
+        loginWidget->setPassword(options.password);
+    }
+
+    // Store connection name for status messages
+    const QString connectionName = options.connectionName;
 
     // Create MDI sub-window
     auto* subWindow = new DetachableMdiSubWindow(this);
@@ -1839,8 +1814,6 @@ void MainWindow::onModernLoginTriggered() {
     subWindow->setWindowTitle(tr("Login"));
     subWindow->setAttribute(Qt::WA_DeleteOnClose);
     subWindow->resize(400, 520);
-
-    // Remove window frame for cleaner look
     subWindow->setWindowFlags(Qt::FramelessWindowHint);
 
     mdiArea_->addSubWindow(subWindow);
@@ -1854,28 +1827,34 @@ void MainWindow::onModernLoginTriggered() {
     // Connect close signal
     connect(loginWidget, &LoginDialog::closeRequested, subWindow, &QWidget::close);
 
-    // Connect login success signal to update application state
+    // Connect login success signal
     connect(loginWidget, &LoginDialog::loginSucceeded,
-            this, [this](const QString& username) {
+            this, [this, connectionName](const QString& username) {
         onLoginSuccess(username);
-        ui_->statusbar->showMessage("Successfully connected and logged in.");
+        if (!connectionName.isEmpty()) {
+            ui_->statusbar->showMessage(tr("Connected to %1").arg(connectionName));
+        } else {
+            ui_->statusbar->showMessage(tr("Successfully connected and logged in."));
+        }
     });
 
-    // Connect bootstrap mode signal to show system provisioner wizard
+    // Connect bootstrap mode signal
     connect(loginWidget, &LoginDialog::bootstrapModeDetected,
             this, &MainWindow::showSystemProvisionerWizard);
 
-    // Connect sign up request to open registration widget
-    connect(loginWidget, &LoginDialog::signUpRequested,
-            this, [this, subWindow, loginWidget]() {
-        const QString host = loginWidget->getServer();
-        const int port = loginWidget->getPort();
-        subWindow->close();
-        showSignUpDialog(host, port);
-    });
+    // Connect sign up request if enabled
+    if (options.showSignUpButton) {
+        connect(loginWidget, &LoginDialog::signUpRequested,
+                this, [this, subWindow, loginWidget]() {
+            const QString host = loginWidget->getServer();
+            const int port = loginWidget->getPort();
+            subWindow->close();
+            showSignUpDialog(host, port);
+        });
+    }
 
-    // Populate saved connections if connection manager is available
-    if (initializeConnectionManager() && connectionManager_) {
+    // Populate saved connections if enabled
+    if (options.showSavedConnections && initializeConnectionManager() && connectionManager_) {
         auto environments = connectionManager_->get_all_environments();
         QStringList connectionNames;
         for (const auto& env : environments) {
@@ -1895,7 +1874,6 @@ void MainWindow::onModernLoginTriggered() {
                     loginWidget->setPort(env.port);
                     loginWidget->setUsername(QString::fromStdString(env.username));
 
-                    // Get the saved password (empty if not saved)
                     auto password = connectionManager_->get_password(env.id);
                     if (!password.empty()) {
                         loginWidget->setPassword(QString::fromStdString(password));
@@ -1908,9 +1886,33 @@ void MainWindow::onModernLoginTriggered() {
 
     // Track window
     allDetachableWindows_.append(subWindow);
-    connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
+    connect(subWindow, &QObject::destroyed, this, [this, subWindow, connectionName]() {
         allDetachableWindows_.removeOne(subWindow);
+        if (!connectionName.isEmpty()) {
+            activeConnectionName_.clear();
+        }
     });
+}
+
+void MainWindow::onModernLoginTriggered() {
+    BOOST_LOG_SEV(lg(), debug) << "Modern Login action triggered";
+
+    // If already connected, ask user to disconnect first
+    if (clientManager_ && clientManager_->isConnected()) {
+        auto result = MessageBoxHelper::question(this,
+            tr("Already Connected"),
+            tr("You are already connected to a server. Disconnect and connect to a new server?"),
+            QMessageBox::Yes | QMessageBox::No);
+
+        if (result != QMessageBox::Yes) {
+            return;
+        }
+
+        performDisconnectCleanup();
+    }
+
+    // Show login dialog with default options (saved connections, sign up enabled)
+    showLoginDialog();
 }
 
 }

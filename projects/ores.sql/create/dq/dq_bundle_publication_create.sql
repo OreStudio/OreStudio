@@ -230,6 +230,15 @@ $$ language plpgsql;
  * @param p_published_by User/system publishing the bundle
  *
  * @returns Summary of publication results per dataset
+ *
+ * Note: This function dynamically calls populate functions registered in
+ * dq_artefact_types_tbl. All populate functions must conform to this signature:
+ *
+ *   function(dataset_id uuid, mode text)
+ *   RETURNS TABLE (action text, record_count bigint)
+ *
+ * Where action is one of: 'inserted', 'updated', 'skipped', 'deleted'
+ * See dq_population_functions_create.sql for reference implementations.
  */
 create or replace function ores.dq_populate_bundle_fn(
     p_bundle_code text,

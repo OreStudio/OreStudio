@@ -17,49 +17,48 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-01-25 Sun 03:55], for Sunday, January 25, 2026.
-|       | <75>                                         |        |      |      |       |
-| Tags  | Headline                                     | Time   |      |      |     % |
-|-------+----------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                 | *5:20* |      |      | 100.0 |
-|-------+----------------------------------------------+--------+------+------+-------|
-|       | Stories                                      | 5:20   |      |      | 100.0 |
-|       | Active                                       |        | 5:20 |      | 100.0 |
-| agile | Sprint and product backlog refinement        |        |      | 0:13 |   4.1 |
-| code  | Add mapping artefact to population functions |        |      | 0:30 |   9.4 |
-| code  | Add a ORE component for import/export        |        |      | 4:00 |  75.0 |
-| code  | Add FPML export and import                   |        |      | 0:19 |   5.9 |
-| code  | Base the compute approach on BOINC           |        |      | 0:18 |   5.6 |
+#+CAPTION: Clock summary at [2026-01-26 Mon 01:32], for Monday, January 26, 2026.
+|      | <75>                      |        |      |      |       |
+| Tags | Headline                  | Time   |      |      |     % |
+|------+---------------------------+--------+------+------+-------|
+|      | *Total time*              | *1:30* |      |      | 100.0 |
+|------+---------------------------+--------+------+------+-------|
+|      | Stories                   | 1:30   |      |      | 100.0 |
+|      | Active                    |        | 1:30 |      | 100.0 |
+| code | Generate C++ code for ORE |        |      | 1:10 |  77.8 |
+| code | Add rounding type table   |        |      | 0:20 |  22.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-01-25 Sun 03:55]
+#+CAPTION: Clock summary at [2026-01-26 Mon 01:32]
 |       | <75>                                                |         |       |      |       |
 | Tags  | Headline                                            | Time    |       |      |     % |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                        | *46:22* |       |      | 100.0 |
+|       | *Total time*                                        | *53:25* |       |      | 100.0 |
 |-------+-----------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                             | 46:22   |       |      | 100.0 |
-|       | Active                                              |         | 46:22 |      | 100.0 |
-| agile | Sprint and product backlog refinement               |         |       | 1:17 |   2.8 |
-| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  13.7 |
-| code  | Create a simple code generator                      |         |       | 7:38 |  16.5 |
-| code  | Party related schemes                               |         |       | 5:20 |  11.5 |
-| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   3.7 |
-| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   0.9 |
-| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.1 |
-| code  | Fix issues with misspell action                     |         |       | 2:47 |   6.0 |
-| code  | Tidy-up external data storage                       |         |       | 3:33 |   7.7 |
-| code  | Coding schemes are in production tables             |         |       | 1:39 |   3.6 |
-| code  | Refactor SQL directories                            |         |       | 3:24 |   7.3 |
-| code  | Code-generate ER diagram                            |         |       | 3:01 |   6.5 |
-| code  | Add "words" to icons                                |         |       | 0:28 |   1.0 |
-| code  | Add mapping artefact to population functions        |         |       | 2:19 |   5.0 |
-| code  | Add a ORE component for import/export               |         |       | 4:00 |   8.6 |
-| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   2.9 |
-| code  | Add FPML export and import                          |         |       | 0:19 |   0.7 |
+|       | Stories                                             | 53:25   |       |      | 100.0 |
+|       | Active                                              |         | 53:25 |      | 100.0 |
+| agile | Sprint and product backlog refinement               |         |       | 1:17 |   2.4 |
+| infra | OCR scan notebooks for this sprint                  |         |       | 6:20 |  11.9 |
+| code  | Create a simple code generator                      |         |       | 7:38 |  14.3 |
+| code  | Party related schemes                               |         |       | 5:20 |  10.0 |
+| code  | Image cache not reloading on new datasets           |         |       | 1:43 |   3.2 |
+| code  | Create a script to download and split GLEIF data    |         |       | 0:25 |   0.8 |
+| code  | Incremental image cache loading with modified_since |         |       | 0:31 |   1.0 |
+| code  | Fix issues with misspell action                     |         |       | 2:47 |   5.2 |
+| code  | Tidy-up external data storage                       |         |       | 3:33 |   6.6 |
+| code  | Coding schemes are in production tables             |         |       | 1:39 |   3.1 |
+| code  | Refactor SQL directories                            |         |       | 3:24 |   6.4 |
+| code  | Code-generate ER diagram                            |         |       | 3:01 |   5.6 |
+| code  | Add "words" to icons                                |         |       | 0:28 |   0.9 |
+| code  | Add mapping artefact to population functions        |         |       | 2:19 |   4.3 |
+| code  | Add a ORE component for import/export               |         |       | 4:00 |   7.5 |
+| code  | Generate C++ code for ORE                           |         |       | 6:43 |  12.6 |
+| code  | Add code generation support for domain types SQL    |         |       | 1:20 |   2.5 |
+| code  | Add FPML export and import                          |         |       | 0:19 |   0.6 |
 | code  | Base the compute approach on BOINC                  |         |       | 0:18 |   0.6 |
+| code  | Add rounding type table                             |         |       | 0:20 |   0.6 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -749,6 +748,55 @@ Highlights:
   from the outset.
 #+end_quote
 
+*** COMPLETED Generate C++ code for ORE                                :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-26 Mon 00:55]--[2026-01-26 Mon 01:10] =>  0:15
+    CLOCK: [2026-01-25 Sun 20:01]--[2026-01-26 Mon 00:55] =>  4:54
+    CLOCK: [2026-01-25 Sun 10:06]--[2026-01-25 Sun 10:35] =>  0:29
+    CLOCK: [2026-01-25 Sun 09:00]--[2026-01-25 Sun 10:05] =>  1:05
+    :END:
+
+It seems a bit painful to have to manually craft entities for parsing ORE and
+FPML code. Explore tooling in this area.
+
+#+begin_quote
+This pull request significantly upgrades the system's data handling capabilities
+by integrating xsdcpp for automated C++ type generation from XML schemas. This
+change not only modernizes the way ORE XML types are managed but also enhances
+the data quality publication process by introducing a dedicated artefact_type
+mechanism for managing target tables and population functions. Additionally, it
+standardizes SQL function naming and corrects currency rounding logic, leading
+to a more robust and maintainable codebase.
+
+Highlights:
+
+- XSDCPP Code Generation Integration: Introduced infrastructure to automatically
+  generate C++ types from XSD schemas using the xsdcpp tool, streamlining the
+  creation and maintenance of domain types for ORE XML configurations.
+- Refactored ORE XML Types: Replaced manually crafted CurrencyConfig and
+  CurrencyElement C++ types with automatically generated currencyConfig and
+  currencyDefinition types, improving consistency and reducing manual effort.
+- Enhanced Data Quality (DQ) Publication Infrastructure: Added a new
+  artefact_type domain, entity, mapper, and repository to centralize the lookup
+  of target_table and populate_function for dataset publication, removing these
+  fields directly from the dataset entity.
+- SQL Naming Convention Enforcement: Renamed all dq_populate_* SQL functions to
+  follow a consistent dq_populate_*_fn suffix convention across the database
+  schema.
+- Currency Rounding Type Correction: Fixed invalid currency rounding types in
+  the CURRENCY_DEFAULTS_POOL within generator.py and in SQL populate scripts,
+  changing 'standard' and 'swedish' to 'Closest', and 'none' to 'Down' for
+  commodity currencies.
+#+end_quote
+Links:
+
+- [[https://www.codesynthesis.com/products/xsd/][codesynthesis xsd]]: good but requires their own library at runtime and it's not
+  on vcpg.
+- [[https://www.codesynthesis.com/products/xsde/][codesynthesis xsde]]: good but requires their own library at runtime and it's
+  not on vcpg.
+- [[https://github.com/craflin/xsdcpp/issues/11][#11: Issues parsing XSD for ORE (Open Source Risk Engine)]]: raised issue
+  against xsdcpp project for ORE schema.
+
 *** STARTED Add code generation support for domain types SQL           :code:
     :LOGBOOK:
     CLOCK: [2026-01-22 Thu 17:19]--[2026-01-22 Thu 18:30] =>  1:11
@@ -1021,6 +1069,127 @@ Table: =assimilated_data= (TimescaleDB Hypertable)
 - [[https://wiki.debian.org/BOINC/ServerGuide][BOINC Debian Server Guide]]
 - [[https://boinc.berkeley.edu/trac/wiki/ProjectMain][wiki: BOINC Project Main]]
 - [[https://www.reddit.com/r/BOINC/][BOINC reddit]]
+
+*** STARTED Add rounding type table                                    :code:
+    :LOGBOOK:
+    CLOCK: [2026-01-26 Mon 01:11]--[2026-01-26 Mon 01:31] =>  0:20
+    :END:
+
+Values:
+
+- Up, Down, Closest, Floor, Ceiling. Maybe none?
+
+Notes:
+
+- Currency should check against these.
+- Supply the mapping table to mappers?
+
+Grok:
+
+#+begin_quote
+Your current list covers several of the most commonly used rounding behaviors in
+applications:
+
+- *Up* → typically means always round away from zero (positive direction) — also
+  called Round Up / Towards +∞ / Ceiling-like but always positive direction
+- *Down* → always round toward zero (truncation) — also called Round Down /
+  Truncation / Towards 0
+- *Closest* → round to nearest (with some tie-breaking rule — usually
+  unspecified/default in casual UIs)
+- *Floor* → round down toward −∞ (always toward more negative)
+- *Ceiling* → round up toward +∞ (always toward more positive)
+
+These are already very solid for most general-purpose apps. However, depending
+on your audience (especially finance, accounting, statistics, or scientific
+users), you are likely missing one or two very frequently requested/expected
+options.
+
+### Commonly missing but important ones to consider adding
+
+1. *Bankers* (or Banker's Rounding / Round Half Even / Round Half to Even) →
+   Round to nearest, but ties (exactly .5) round to the nearest *even* digit.
+   This is the statistically unbiased method, required or strongly preferred in:
+   - Financial applications (interest calculations, totals)
+   - Many accounting systems
+   - IEEE 754 default for binary floating-point
+   - Java BigDecimal.HALF_EVEN, .NET MidpointRounding.ToEven, Python round(),
+     SQL ROUND() in many databases
+
+   Very commonly expected when users see "Closest" is not enough.
+
+2. *Half Up* (or Round Half Away from Zero / Commercial Rounding) → Round to
+   nearest, ties (.5) always round away from zero (2.5 → 3, -2.5 → -3) This is
+   what most people intuitively think "normal rounding" means in school and is
+   the most common tie-breaking rule in non-financial UIs.
+
+   Many users expect this when they choose "Closest".
+
+### Less common but occasionally requested
+
+- *Half Down* — ties round toward zero (2.5 → 2, -2.5 → -2) — rare in business apps
+- *Half Toward Zero* — same as Half Down
+- *Half Away from Zero* — same as Half Up
+- *Half to Odd* — ties round to odd digit (very rare)
+
+### Suggested final list (modern, user-friendly set)
+
+Most applications end up offering roughly these 5–7 options in a dropdown:
+
+- Up (always away from zero / toward +∞ for positive numbers)
+- Down (always toward zero / truncation)
+- Floor (toward −∞)
+- Ceiling (toward +∞)
+- Closest / Nearest (usually implies Half Up in simple UIs)
+- *Half Up* (explicitly — very popular)
+- *Bankers* / Round Half Even / Banker's Rounding (critically important for
+  finance/accounting)
+
+A very clean and common 6-item list seen in many tools:
+
+1. Up
+2. Down
+3. Floor
+4. Ceiling
+5. Nearest, Half Up
+6. Nearest, Half Even (Bankers)
+
+If you want to keep the list very short, adding just *Bankers* to your current
+five is already a big improvement for serious users.
+#+end_quote
+
+FPML via Gemini:
+
+#+begin_quote
+FpML does not use a "Coding Scheme" (like a URL-referenced list) for rounding in
+the same way it does for Currencies or Business Centers. Instead, it uses a
+Complex Type called Rounding and a fixed Enumeration for the direction.
+
+Because rounding logic is typically a structural part of a calculation (e.g.,
+how to round a floating rate or a payout amount), it is "baked into" the schema
+itself rather than being an external lookup table.
+
+1. The Rounding Complex Type
+
+To model rounding in your database or XML, you need two pieces of data:
+
+- precision: An integer representing the number of decimal places.
+- roundingDirection: A fixed value from the RoundingDirectionEnum.
+
+Allowed Values for roundingDirection:
+
+- Up: Round away from zero (or to the next higher number).
+- Down: Round toward zero (truncate).
+- Nearest: Standard mathematical rounding (0.5 rounds up).
+#+end_quote
+
+*** Generate C++ code for FPML                                         :code:
+
+We need to fix any limitations we may have in xsdcpp.
+
+*** Clicking save on connections causes exit                           :code:
+
+Asks if we want to exit. Also clicking save several times creates folders with
+the same name.
 
 *** Analysis on database name service                                  :code:
 
@@ -2124,7 +2293,7 @@ Notes:
 - crypto currencies sometimes overlap with countries and iso currencies. we
   should "namespace" them somehow to avoid having a country flag being
   overwritten by a crypto icon (happens with AE).
-
+- when publish fails we can't see the errors.
 
 *** Management of roles                                                :code:
 

@@ -659,7 +659,8 @@ The validator checks for:
 - Tables created without corresponding drop statements
 - Other schema consistency issues
 
-Fix any warnings before committing. This validation also runs in CI.
+*Important*: Fix all issues reported by the validator before committing. This
+validation also runs in CI and will fail the build if there are warnings.
 
 * SQL patterns
 

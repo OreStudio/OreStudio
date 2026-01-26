@@ -21,7 +21,8 @@
 -- DQ Functions
 \ir ./dq_functions_drop.sql
 
--- Publications
+-- Publications (bundle before individual)
+\ir ./dq_bundle_publication_drop.sql
 \ir ./dq_publication_drop.sql
 
 -- Artefacts
@@ -60,6 +61,10 @@
 -- Data domains
 \ir ./dq_data_domains_notify_trigger_drop.sql
 \ir ./dq_data_domain_drop.sql
+
+-- Dataset bundles (members before bundles)
+\ir ./dq_dataset_bundle_member_drop.sql
+\ir ./dq_dataset_bundle_drop.sql
 
 -- Dataset dependencies
 \ir ./dq_dataset_dependency_drop.sql

@@ -74,11 +74,13 @@ begin
     end if;
 
     -- Validate rounding_type
-    if NEW.rounding_type is not null and not exists (
+    if not exists (
         select 1 from ores.refdata_rounding_types_tbl
         where code = NEW.rounding_type
     ) then
-        raise exception 'Invalid rounding_type: %. Must be one of: Up, Down, Closest, Floor, Ceiling.', NEW.rounding_type
+        raise exception 'Invalid rounding_type: %. Must be one of: %', NEW.rounding_type, (
+            select string_agg(code, ', ' order by display_order) from ores.refdata_rounding_types_tbl
+        )
         using errcode = '23503';
     end if;
 

@@ -380,6 +380,15 @@ void LoginDialog::onLoginClicked() {
 void LoginDialog::onLoginResult(const LoginResult& result) {
     BOOST_LOG_SEV(lg(), debug) << "Login result received";
 
+    // Check for bootstrap mode first - this is not a failure, just needs provisioning
+    if (result.bootstrap_mode) {
+        BOOST_LOG_SEV(lg(), info) << "System is in bootstrap mode - provisioning required";
+        statusLabel_->setText("System requires provisioning...");
+        emit bootstrapModeDetected();
+        emit closeRequested();
+        return;
+    }
+
     if (result.success) {
         BOOST_LOG_SEV(lg(), debug) << "Login was successful";
 

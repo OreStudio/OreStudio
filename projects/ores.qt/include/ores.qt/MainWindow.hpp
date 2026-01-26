@@ -267,6 +267,14 @@ private:
     void showSignUpDialog(const QString& host, int port);
 
     /**
+     * @brief Shows the system provisioner wizard when in bootstrap mode.
+     *
+     * Displays the SystemProvisionerWizard to create the initial admin account
+     * and provision the system with reference data.
+     */
+    void showSystemProvisionerWizard();
+
+    /**
      * @brief Updates menu and toolbar action states based on connection status.
      *
      * Enables/disables actions like Currencies, Connect/Disconnect based on

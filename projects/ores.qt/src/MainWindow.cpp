@@ -41,6 +41,7 @@
 #include <QStandardPaths>
 #include "ui_MainWindow.h"
 #include "ores.qt/LoginDialog.hpp"
+#include "ores.qt/SystemProvisionerWizard.hpp"
 #include "ores.qt/SignUpDialog.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
@@ -1659,6 +1660,10 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& environm
         ui_->statusbar->showMessage(tr("Connected to %1").arg(connectionName));
     });
 
+    // Connect bootstrap mode signal to show system provisioner wizard
+    connect(loginDialog, &LoginDialog::bootstrapModeDetected,
+            this, &MainWindow::showSystemProvisionerWizard);
+
     allDetachableWindows_.append(subWindow);
     connect(subWindow, &QObject::destroyed, this, [this, subWindow]() {
         allDetachableWindows_.removeOne(subWindow);
@@ -1772,6 +1777,42 @@ void MainWindow::showSignUpDialog(const QString& host, int port) {
     });
 }
 
+void MainWindow::showSystemProvisionerWizard() {
+    BOOST_LOG_SEV(lg(), info) << "Showing System Provisioner Wizard (bootstrap mode detected)";
+
+    auto* wizard = new SystemProvisionerWizard(clientManager_, this);
+    wizard->setWindowModality(Qt::ApplicationModal);
+    wizard->setAttribute(Qt::WA_DeleteOnClose);
+
+    // Connect completion signal - on success, proceed with normal flow
+    connect(wizard, &SystemProvisionerWizard::provisioningCompleted,
+            this, [this](const QString& username) {
+        BOOST_LOG_SEV(lg(), info) << "System provisioning completed, logging in as: "
+                                  << username.toStdString();
+        ui_->statusbar->showMessage(
+            tr("System provisioned. Administrator account '%1' created.").arg(username));
+
+        // The system is now provisioned - show login dialog again for the user to log in
+        // with their new admin credentials
+        onModernLoginTriggered();
+    });
+
+    // Connect failure signal
+    connect(wizard, &SystemProvisionerWizard::provisioningFailed,
+            this, [this](const QString& errorMessage) {
+        BOOST_LOG_SEV(lg(), error) << "System provisioning failed: "
+                                   << errorMessage.toStdString();
+        ui_->statusbar->showMessage(tr("Provisioning failed: %1").arg(errorMessage));
+
+        // Disconnect and allow retry
+        if (clientManager_) {
+            clientManager_->disconnect();
+        }
+    });
+
+    wizard->show();
+}
+
 void MainWindow::onModernLoginTriggered() {
     BOOST_LOG_SEV(lg(), debug) << "Modern Login action triggered";
 
@@ -1819,6 +1860,10 @@ void MainWindow::onModernLoginTriggered() {
         onLoginSuccess(username);
         ui_->statusbar->showMessage("Successfully connected and logged in.");
     });
+
+    // Connect bootstrap mode signal to show system provisioner wizard
+    connect(loginWidget, &LoginDialog::bootstrapModeDetected,
+            this, &MainWindow::showSystemProvisionerWizard);
 
     // Connect sign up request to open registration widget
     connect(loginWidget, &LoginDialog::signUpRequested,

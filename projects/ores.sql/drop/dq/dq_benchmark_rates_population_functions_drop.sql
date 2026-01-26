@@ -20,4 +20,4 @@
 set schema 'ores';
 
 drop function if exists ores.dq_preview_benchmark_rate_population;
-drop function if exists ores.dq_populate_benchmark_rates;
+drop function if exists ores.dq_populate_benchmark_rates_fn;

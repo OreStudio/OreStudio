@@ -28,7 +28,7 @@
  *   SELECT * FROM ores.dq_preview_supervisory_body_population(dataset_id);
  *
  *   -- Publish to production
- *   SELECT * FROM ores.dq_populate_supervisory_bodies(dataset_id, 'upsert');
+ *   SELECT * FROM ores.dq_populate_supervisory_bodies_fn(dataset_id, 'upsert');
  */
 
 set schema 'ores';
@@ -82,7 +82,7 @@ $$ language plpgsql;
  * @param p_dataset_id  The DQ dataset to populate from.
  * @param p_mode        Population mode: 'upsert', 'insert_only', or 'replace_all'.
  */
-create or replace function ores.dq_populate_supervisory_bodies(
+create or replace function ores.dq_populate_supervisory_bodies_fn(
     p_dataset_id uuid,
     p_mode text default 'upsert'
 )

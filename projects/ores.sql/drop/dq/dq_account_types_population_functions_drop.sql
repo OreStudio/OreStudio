@@ -20,4 +20,4 @@
 set schema 'ores';
 
 drop function if exists ores.dq_preview_account_type_population;
-drop function if exists ores.dq_populate_account_types;
+drop function if exists ores.dq_populate_account_types_fn;

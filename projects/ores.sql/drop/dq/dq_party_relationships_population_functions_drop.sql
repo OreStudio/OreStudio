@@ -20,4 +20,4 @@
 set schema 'ores';
 
 drop function if exists ores.dq_preview_party_relationship_population;
-drop function if exists ores.dq_populate_party_relationships;
+drop function if exists ores.dq_populate_party_relationships_fn;

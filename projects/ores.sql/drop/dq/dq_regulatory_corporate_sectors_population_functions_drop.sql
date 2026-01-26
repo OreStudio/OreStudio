@@ -20,4 +20,4 @@
 set schema 'ores';
 
 drop function if exists ores.dq_preview_regulatory_corporate_sector_population;
-drop function if exists ores.dq_populate_regulatory_corporate_sectors;
+drop function if exists ores.dq_populate_regulatory_corporate_sectors_fn;

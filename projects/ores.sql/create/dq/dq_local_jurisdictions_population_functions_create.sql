@@ -28,7 +28,7 @@
  *   SELECT * FROM ores.dq_preview_local_jurisdiction_population(dataset_id);
  *
  *   -- Publish to production
- *   SELECT * FROM ores.dq_populate_local_jurisdictions(dataset_id, 'upsert');
+ *   SELECT * FROM ores.dq_populate_local_jurisdictions_fn(dataset_id, 'upsert');
  */
 
 set schema 'ores';
@@ -82,7 +82,7 @@ $$ language plpgsql;
  * @param p_dataset_id  The DQ dataset to populate from.
  * @param p_mode        Population mode: 'upsert', 'insert_only', or 'replace_all'.
  */
-create or replace function ores.dq_populate_local_jurisdictions(
+create or replace function ores.dq_populate_local_jurisdictions_fn(
     p_dataset_id uuid,
     p_mode text default 'upsert'
 )

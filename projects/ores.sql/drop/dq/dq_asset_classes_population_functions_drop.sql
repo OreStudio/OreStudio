@@ -20,4 +20,4 @@
 set schema 'ores';
 
 drop function if exists ores.dq_preview_asset_class_population;
-drop function if exists ores.dq_populate_asset_classes;
+drop function if exists ores.dq_populate_asset_classes_fn;

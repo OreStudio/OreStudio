@@ -20,4 +20,4 @@
 set schema 'ores';
 
 drop function if exists ores.dq_preview_reporting_regime_population;
-drop function if exists ores.dq_populate_reporting_regimes;
+drop function if exists ores.dq_populate_reporting_regimes_fn;

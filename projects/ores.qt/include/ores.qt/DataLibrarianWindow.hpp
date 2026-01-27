@@ -20,6 +20,7 @@
 #ifndef ORES_QT_DATA_LIBRARIAN_WINDOW_HPP
 #define ORES_QT_DATA_LIBRARIAN_WINDOW_HPP
 
+#include <map>
 #include <QWidget>
 #include <QSplitter>
 #include <QTreeView>
@@ -37,6 +38,10 @@
 #include "ores.qt/ClientCatalogModel.hpp"
 #include "ores.qt/ClientDatasetDependencyModel.hpp"
 #include "ores.qt/ClientMethodologyModel.hpp"
+#include "ores.qt/ClientDatasetBundleModel.hpp"
+#include "ores.qt/ClientOriginDimensionModel.hpp"
+#include "ores.qt/ClientNatureDimensionModel.hpp"
+#include "ores.qt/ClientTreatmentDimensionModel.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/dataset.hpp"
 #include "ores.dq/domain/methodology.hpp"
@@ -60,7 +65,7 @@ class DataLibrarianWindow final : public QWidget {
 
 private:
     inline static std::string_view logger_name = "ores.qt.data_librarian_window";
-    static constexpr int total_model_loads = 6;
+    static constexpr int total_model_loads = 10;  // 6 original + 4 new (bundle, 3 dimensions)
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -117,6 +122,11 @@ private slots:
     void onCatalogsLoaded();
     void onDatasetDependenciesLoaded();
     void onMethodologiesLoaded();
+    void onBundlesLoaded();
+    void onBundleMembersLoaded();
+    void onOriginDimensionsLoaded();
+    void onNatureDimensionsLoaded();
+    void onTreatmentDimensionsLoaded();
 
     // Column visibility context menu
     void showHeaderContextMenu(const QPoint& pos);
@@ -135,10 +145,15 @@ private:
     void filterDatasetsByCatalog(const QString& catalogName);
     void filterDatasetsByDomain(const QString& domainName);
     void filterDatasetsBySubjectArea(const QString& subjectAreaName);
+    void filterDatasetsByBundle(const QString& bundleCode);
+    void filterDatasetsByOrigin(const QString& originCode);
+    void filterDatasetsByNature(const QString& natureCode);
+    void filterDatasetsByTreatment(const QString& treatmentCode);
     void clearDatasetFilter();
     void selectFirstDataset();
     void setupColumnVisibility();
     void applyDefaultColumnVisibility();
+    void fetchBundleMembers();
 
     ClientManager* clientManager_;
     QString username_;
@@ -174,6 +189,13 @@ private:
     ClientCatalogModel* catalogModel_;
     ClientDatasetDependencyModel* datasetDependencyModel_;
     ClientMethodologyModel* methodologyModel_;
+    ClientDatasetBundleModel* bundleModel_;
+    ClientOriginDimensionModel* originDimensionModel_;
+    ClientNatureDimensionModel* natureDimensionModel_;
+    ClientTreatmentDimensionModel* treatmentDimensionModel_;
+
+    // Bundle member cache for filtering (bundle_code -> list of dataset_codes)
+    std::map<QString, QStringList> bundleMemberCache_;
 
     // Status bar with loading indicator
     QStatusBar* statusBar_;
@@ -186,6 +208,10 @@ private:
     QString selectedCatalogName_;
     QString selectedDomainName_;
     QString selectedSubjectAreaName_;
+    QString selectedBundleCode_;
+    QString selectedOriginCode_;
+    QString selectedNatureCode_;
+    QString selectedTreatmentCode_;
 };
 
 }

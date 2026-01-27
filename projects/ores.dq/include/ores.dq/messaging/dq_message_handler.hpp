@@ -32,6 +32,7 @@
 #include "ores.dq/service/coding_scheme_service.hpp"
 #include "ores.dq/service/dimension_service.hpp"
 #include "ores.dq/service/publication_service.hpp"
+#include "ores.dq/service/dataset_bundle_service.hpp"
 
 namespace ores::dq::messaging {
 
@@ -434,6 +435,47 @@ private:
     handle_resolve_dependencies_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    // =========================================================================
+    // Dataset Bundle Handlers
+    // =========================================================================
+
+    handler_result
+    handle_get_dataset_bundles_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_save_dataset_bundle_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_delete_dataset_bundle_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_dataset_bundle_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // =========================================================================
+    // Dataset Bundle Member Handlers
+    // =========================================================================
+
+    handler_result
+    handle_get_dataset_bundle_members_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_get_dataset_bundle_members_by_bundle_request(
+        std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_save_dataset_bundle_member_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    handler_result
+    handle_delete_dataset_bundle_member_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     /**
      * @brief Result type for authentication checks.
      *
@@ -482,6 +524,7 @@ private:
     service::coding_scheme_service coding_scheme_service_;
     service::dimension_service dimension_service_;
     service::publication_service publication_service_;
+    service::dataset_bundle_service dataset_bundle_service_;
 };
 
 }

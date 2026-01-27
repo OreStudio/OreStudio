@@ -28,6 +28,7 @@
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq/messaging/dimension_protocol.hpp"
 #include "ores.dq/messaging/publication_protocol.hpp"
+#include "ores.dq/messaging/dataset_bundle_protocol.hpp"
 
 namespace ores::dq::messaging {
 
@@ -44,7 +45,8 @@ dq_message_handler::dq_message_handler(database::context ctx,
       dataset_service_(ctx),
       coding_scheme_service_(ctx),
       dimension_service_(ctx),
-      publication_service_(ctx) {}
+      publication_service_(ctx),
+      dataset_bundle_service_(ctx) {}
 
 dq_message_handler::handler_result
 dq_message_handler::handle_message(message_type type,
@@ -190,6 +192,26 @@ dq_message_handler::handle_message(message_type type,
         co_return co_await handle_get_publications_request(payload, remote_address);
     case message_type::resolve_dependencies_request:
         co_return co_await handle_resolve_dependencies_request(payload, remote_address);
+
+    // Dataset bundle messages
+    case message_type::get_dataset_bundles_request:
+        co_return co_await handle_get_dataset_bundles_request(payload, remote_address);
+    case message_type::save_dataset_bundle_request:
+        co_return co_await handle_save_dataset_bundle_request(payload, remote_address);
+    case message_type::delete_dataset_bundle_request:
+        co_return co_await handle_delete_dataset_bundle_request(payload, remote_address);
+    case message_type::get_dataset_bundle_history_request:
+        co_return co_await handle_get_dataset_bundle_history_request(payload, remote_address);
+
+    // Dataset bundle member messages
+    case message_type::get_dataset_bundle_members_request:
+        co_return co_await handle_get_dataset_bundle_members_request(payload, remote_address);
+    case message_type::get_dataset_bundle_members_by_bundle_request:
+        co_return co_await handle_get_dataset_bundle_members_by_bundle_request(payload, remote_address);
+    case message_type::save_dataset_bundle_member_request:
+        co_return co_await handle_save_dataset_bundle_member_request(payload, remote_address);
+    case message_type::delete_dataset_bundle_member_request:
+        co_return co_await handle_delete_dataset_bundle_member_request(payload, remote_address);
 
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown DQ message type " << type;
@@ -2261,6 +2283,271 @@ handle_resolve_dependencies_request(std::span<const std::byte> payload,
         BOOST_LOG_SEV(lg(), error) << "Failed to resolve dependencies: " << e.what();
         co_return std::unexpected(
             ores::utility::serialization::error_code::handler_error);
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Dataset Bundle Handlers
+// ============================================================================
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_dataset_bundles_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_dataset_bundles_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address, "List bundles");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_dataset_bundles_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_dataset_bundles_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto bundles = dataset_bundle_service_.list_bundles();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << bundles.size() << " bundles.";
+
+    get_dataset_bundles_response response{.bundles = std::move(bundles)};
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_save_dataset_bundle_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_dataset_bundle_request from "
+                               << remote_address;
+
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::dataset_bundles_write, "Save bundle");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = save_dataset_bundle_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_dataset_bundle_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    save_dataset_bundle_response response;
+    try {
+        dataset_bundle_service_.save_bundle(request_result->bundle);
+        response.success = true;
+        response.message = "Bundle saved successfully.";
+        BOOST_LOG_SEV(lg(), info) << "Saved bundle: " << request_result->bundle.id;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to save bundle: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_delete_dataset_bundle_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_dataset_bundle_request from "
+                               << remote_address;
+
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::dataset_bundles_delete, "Delete bundle");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = delete_dataset_bundle_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_dataset_bundle_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    delete_dataset_bundle_response response;
+    for (const auto& id : request_result->ids) {
+        delete_dataset_bundle_result result{.id = id};
+        try {
+            dataset_bundle_service_.remove_bundle(id);
+            result.success = true;
+            result.message = "Bundle deleted successfully.";
+            BOOST_LOG_SEV(lg(), info) << "Deleted bundle: " << id;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to delete bundle " << id
+                                       << ": " << e.what();
+            result.success = false;
+            result.message = e.what();
+        }
+        response.results.push_back(std::move(result));
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_dataset_bundle_history_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_dataset_bundle_history_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address, "Get bundle history");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_dataset_bundle_history_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_dataset_bundle_history_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    get_dataset_bundle_history_response response;
+    try {
+        response.versions = dataset_bundle_service_.get_bundle_history(request_result->id);
+        response.success = true;
+        response.message = "";
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.versions.size()
+                                  << " versions for bundle: " << request_result->id;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to get bundle history: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Dataset Bundle Member Handlers
+// ============================================================================
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_dataset_bundle_members_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_dataset_bundle_members_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address, "List bundle members");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_dataset_bundle_members_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_dataset_bundle_members_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto members = dataset_bundle_service_.list_members();
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << members.size() << " bundle members.";
+
+    get_dataset_bundle_members_response response{.members = std::move(members)};
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_get_dataset_bundle_members_by_bundle_request(
+    std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_dataset_bundle_members_by_bundle_request from "
+                               << remote_address;
+
+    auto auth_result = get_authenticated_session(remote_address, "List bundle members");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = get_dataset_bundle_members_by_bundle_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize get_dataset_bundle_members_by_bundle_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    auto members = dataset_bundle_service_.list_members_by_bundle(
+        request_result->bundle_code);
+    BOOST_LOG_SEV(lg(), info) << "Retrieved " << members.size()
+                              << " members for bundle: " << request_result->bundle_code;
+
+    get_dataset_bundle_members_by_bundle_response response{.members = std::move(members)};
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_save_dataset_bundle_member_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing save_dataset_bundle_member_request from "
+                               << remote_address;
+
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::dataset_bundle_members_write, "Save bundle member");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = save_dataset_bundle_member_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_dataset_bundle_member_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    save_dataset_bundle_member_response response;
+    try {
+        dataset_bundle_service_.save_member(request_result->member);
+        response.success = true;
+        response.message = "Bundle member saved successfully.";
+        BOOST_LOG_SEV(lg(), info) << "Saved bundle member: "
+                                  << request_result->member.bundle_code << "/"
+                                  << request_result->member.dataset_code;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to save bundle member: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+dq_message_handler::handler_result dq_message_handler::
+handle_delete_dataset_bundle_member_request(std::span<const std::byte> payload,
+    const std::string& remote_address) {
+    BOOST_LOG_SEV(lg(), debug) << "Processing delete_dataset_bundle_member_request from "
+                               << remote_address;
+
+    auto auth_result = check_authorization(remote_address,
+        iam::domain::permissions::dataset_bundle_members_delete, "Delete bundle member");
+    if (!auth_result) {
+        co_return std::unexpected(auth_result.error());
+    }
+
+    auto request_result = delete_dataset_bundle_member_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize delete_dataset_bundle_member_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    delete_dataset_bundle_member_response response;
+    for (const auto& key : request_result->keys) {
+        delete_dataset_bundle_member_result result{
+            .bundle_code = key.bundle_code,
+            .dataset_code = key.dataset_code
+        };
+        try {
+            dataset_bundle_service_.remove_member(key.bundle_code, key.dataset_code);
+            result.success = true;
+            result.message = "Bundle member deleted successfully.";
+            BOOST_LOG_SEV(lg(), info) << "Deleted bundle member: "
+                                      << key.bundle_code << "/" << key.dataset_code;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to delete bundle member "
+                                       << key.bundle_code << "/" << key.dataset_code
+                                       << ": " << e.what();
+            result.success = false;
+            result.message = e.what();
+        }
+        response.results.push_back(std::move(result));
     }
 
     co_return response.serialize();

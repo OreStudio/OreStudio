@@ -1,0 +1,161 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_upper}}_DOMAIN_{{entity_singular_upper}}_HPP
+#define ORES_{{component_upper}}_DOMAIN_{{entity_singular_upper}}_HPP
+
+{{#cpp.includes.domain}}
+#include {{{.}}}
+{{/cpp.includes.domain}}
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief {{{brief}}}
+ *
+{{#description_lines}}
+ * {{{.}}}
+{{/description_lines}}
+ */
+struct {{entity_singular}} final {
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
+    int version = 0;
+
+    /**
+     * @brief {{{primary_key.description}}}
+{{#primary_key.detail}}
+     *
+     * {{{primary_key.detail}}}
+{{/primary_key.detail}}
+     */
+    {{primary_key.cpp_type}} {{primary_key.column}};
+
+{{#natural_keys}}
+    /**
+     * @brief {{{description}}}
+{{#detail}}
+     *
+     * {{{detail}}}
+{{/detail}}
+     */
+    {{cpp_type}} {{column}};
+
+{{/natural_keys}}
+{{#columns}}
+    /**
+     * @brief {{{description}}}
+{{#detail}}
+     *
+     * {{{detail}}}
+{{/detail}}
+     */
+    {{cpp_type}} {{name}}{{#default_value}} = {{default_value}}{{/default_value}};
+
+{{/columns}}
+    /**
+     * @brief Username of the person who last modified this {{entity_singular_words}}.
+     */
+    std::string recorded_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     */
+    std::chrono::system_clock::time_point recorded_at;
+};
+
+}
+
+#endif
+{{/domain_entity}}
+{{#junction}}
+#ifndef ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_HPP
+#define ORES_{{component_upper}}_DOMAIN_{{name_singular_upper}}_HPP
+
+{{#cpp.includes.domain}}
+#include {{{.}}}
+{{/cpp.includes.domain}}
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief {{{brief}}}
+ *
+{{#description_lines}}
+ * {{{.}}}
+{{/description_lines}}
+ */
+struct {{name_singular}} final {
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
+    int version = 0;
+
+    /**
+     * @brief {{{left.description}}}
+{{#left.detail}}
+     *
+     * {{{left.detail}}}
+{{/left.detail}}
+     */
+    {{left.cpp_type}} {{left.column}};
+
+    /**
+     * @brief {{{right.description}}}
+{{#right.detail}}
+     *
+     * {{{right.detail}}}
+{{/right.detail}}
+     */
+    {{right.cpp_type}} {{right.column}};
+
+{{#columns}}
+    /**
+     * @brief {{{description}}}
+{{#detail}}
+     *
+     * {{{detail}}}
+{{/detail}}
+     */
+    {{cpp_type}} {{name}}{{#default_value}} = {{default_value}}{{/default_value}};
+
+{{/columns}}
+    /**
+     * @brief Username of the person who last modified this {{name_singular_words}}.
+     */
+    std::string recorded_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     */
+    std::chrono::system_clock::time_point recorded_at;
+};
+
+}
+
+#endif
+{{/junction}}

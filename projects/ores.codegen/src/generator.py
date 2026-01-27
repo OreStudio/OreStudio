@@ -279,6 +279,8 @@ def get_cpp_domain_entity_template_mappings():
         list: List of tuples (template_name, output_dir, output_suffix) for C++ generation
     """
     return [
+        # Class definition facet
+        ("cpp_domain_type_class.hpp.mustache", "include/{component}/domain", ".hpp"),
         # JSON I/O facet
         ("cpp_domain_type_json_io.hpp.mustache", "include/{component}/domain", "_json_io.hpp"),
         ("cpp_domain_type_json_io.cpp.mustache", "src/domain", "_json_io.cpp"),
@@ -298,6 +300,8 @@ def get_cpp_junction_template_mappings():
         list: List of tuples (template_name, output_dir, output_suffix) for C++ generation
     """
     return [
+        # Class definition facet
+        ("cpp_domain_type_class.hpp.mustache", "include/{component}/domain", ".hpp"),
         # JSON I/O facet
         ("cpp_domain_type_json_io.hpp.mustache", "include/{component}/domain", "_json_io.hpp"),
         ("cpp_domain_type_json_io.cpp.mustache", "src/domain", "_json_io.cpp"),
@@ -448,6 +452,46 @@ def _prepare_table_display(cpp_section):
     iter_var = cpp_section.get('iterator_var', 'e')
     for item in cpp_section['table_display']:
         item['iter_var'] = iter_var
+
+
+def _format_detail_for_doxygen(detail):
+    """
+    Format a multi-line detail string for doxygen comments.
+
+    Adds '     * ' prefix to continuation lines.
+
+    Args:
+        detail (str): Multi-line detail text
+
+    Returns:
+        str: Formatted detail with proper doxygen prefixes
+    """
+    if not detail or '\n' not in detail:
+        return detail
+
+    lines = detail.split('\n')
+    formatted_lines = [lines[0]]  # First line as-is
+    for line in lines[1:]:
+        if line.strip():
+            formatted_lines.append('     * ' + line)
+        else:
+            formatted_lines.append('     *')
+    return '\n'.join(formatted_lines)
+
+
+def _format_columns_for_doxygen(columns):
+    """
+    Format detail fields in columns for doxygen comments.
+
+    Args:
+        columns (list): List of column dictionaries
+    """
+    if not columns:
+        return
+
+    for col in columns:
+        if 'detail' in col:
+            col['detail'] = _format_detail_for_doxygen(col['detail'])
 
 
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None):
@@ -695,16 +739,22 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity = model['domain_entity']
         if 'columns' in domain_entity:
             _mark_last_item(domain_entity['columns'])
+            _format_columns_for_doxygen(domain_entity['columns'])
         if 'natural_keys' in domain_entity:
             _mark_last_item(domain_entity['natural_keys'])
         # Format description as comment block lines (for SQL)
         if 'description' in domain_entity:
             domain_entity['description_formatted'] = _format_description_as_comment(domain_entity['description'])
+            # Split description into lines for C++ doxygen comments
+            domain_entity['description_lines'] = domain_entity['description'].split('\n')
         # Add uppercase versions for C++ include guards
         if 'component' in domain_entity:
             domain_entity['component_upper'] = domain_entity['component'].upper()
         if 'entity_singular' in domain_entity:
             domain_entity['entity_singular_upper'] = domain_entity['entity_singular'].upper()
+            # Human-readable version (last word, e.g., "dataset_bundle" -> "bundle")
+            words = domain_entity['entity_singular'].split('_')
+            domain_entity['entity_singular_words'] = words[-1] if words else domain_entity['entity_singular']
         if 'entity_plural' in domain_entity:
             domain_entity['entity_plural_upper'] = domain_entity['entity_plural'].upper()
         # Prepare table display items for C++ templates
@@ -717,14 +767,21 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         junction = model['junction']
         if 'columns' in junction:
             _mark_last_item(junction['columns'])
+            _format_columns_for_doxygen(junction['columns'])
         # Format description as comment block lines (for SQL)
         if 'description' in junction:
             junction['description_formatted'] = _format_description_as_comment(junction['description'])
+            # Split description into lines for C++ doxygen comments
+            junction['description_lines'] = junction['description'].split('\n')
         # Add uppercase versions for C++ include guards
         if 'component' in junction:
             junction['component_upper'] = junction['component'].upper()
         if 'name_singular' in junction:
             junction['name_singular_upper'] = junction['name_singular'].upper()
+            # Human-readable version - use explicit value or derive from last word
+            if 'name_singular_words' not in junction:
+                words = junction['name_singular'].split('_')
+                junction['name_singular_words'] = words[-1] if words else junction['name_singular']
         if 'name' in junction:
             junction['name_upper'] = junction['name'].upper()
         # Prepare table display items for C++ templates

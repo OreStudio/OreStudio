@@ -5,7 +5,7 @@
     "entity_plural": "dataset_bundles",
     "entity_title": "Dataset Bundle",
     "brief": "A named collection of datasets designed to work together.",
-    "description": "A named collection of datasets designed to work together. Installing a bundle\ngets the system into a ready state with a coherent set of reference data.\n\nExamples:\n- \"slovaris\": Synthetic reference data for development and testing\n- \"base\": Industry-standard reference data (ISO + FpML) for production\n- \"crypto\": Base system plus cryptocurrency reference data",
+    "description": "Installing a bundle gets the system into a ready state with a coherent set\nof reference data. Bundles provide a way to group related datasets that\nshould be installed together.\n\nExamples:\n- \"slovaris\": Synthetic reference data for development and testing\n- \"base\": Industry-standard reference data (ISO + FpML) for production\n- \"crypto\": Base system plus cryptocurrency reference data",
 
     "primary_key": {
       "column": "id",

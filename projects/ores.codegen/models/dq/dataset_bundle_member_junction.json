@@ -5,7 +5,8 @@
     "name_singular": "dataset_bundle_member",
     "name_title": "Dataset Bundle Member",
     "brief": "Links a dataset to a bundle.",
-    "description": "Junction table linking bundles to their constituent datasets.\nUses codes for loose coupling - allows declaring membership for datasets\nthat may not yet exist in the system.\n\nExamples:\n- Bundle \"slovaris\" contains \"slovaris.countries\", \"slovaris.currencies\", etc.\n- Bundle \"base\" contains \"iso.countries\", \"iso.currencies\", all FpML datasets",
+    "description": "Junction table linking bundles to their constituent datasets. Uses codes\nfor loose coupling - allows declaring membership for datasets that may not\nyet exist in the system.\n\nExamples:\n- Bundle \"slovaris\" contains \"slovaris.countries\", \"slovaris.currencies\", etc.\n- Bundle \"base\" contains \"iso.countries\", \"iso.currencies\", all FpML datasets",
+    "name_singular_words": "membership",
 
     "left": {
       "column": "bundle_code",
@@ -35,7 +36,7 @@
         "nullable": false,
         "default_value": "0",
         "description": "Order in which this dataset should be displayed or processed.",
-        "detail": "Lower numbers appear first. Used for controlling installation order and UI presentation."
+        "detail": "Lower numbers appear first. Used for controlling installation order\nand UI presentation."
       }
     ],
 

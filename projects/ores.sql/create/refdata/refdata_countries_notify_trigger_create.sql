@@ -21,7 +21,7 @@ create or replace function production.refdata_countries_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.refdata.country';
+    entity_name text := 'ores.refdata.country';
     change_timestamp timestamptz := NOW();
     changed_alpha2_code text;
 begin

@@ -22,7 +22,7 @@ create or replace function production.refdata_asset_measures_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.refdata.asset_measure';
+    entity_name text := 'ores.refdata.asset_measure';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin

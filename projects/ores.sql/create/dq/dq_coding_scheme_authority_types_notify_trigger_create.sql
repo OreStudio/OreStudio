@@ -21,7 +21,7 @@ create or replace function metadata.dq_coding_scheme_authority_types_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'metadata.dq.coding_scheme_authority_type';
+    entity_name text := 'ores.dq.coding_scheme_authority_type';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin

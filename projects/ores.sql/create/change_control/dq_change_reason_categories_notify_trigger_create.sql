@@ -21,7 +21,7 @@ create or replace function metadata.dq_change_reason_categories_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'metadata.change_control.change_reason_category';
+    entity_name text := 'ores.change_control.change_reason_category';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin

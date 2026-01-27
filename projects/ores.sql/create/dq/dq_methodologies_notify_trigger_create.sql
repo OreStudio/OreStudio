@@ -21,7 +21,7 @@ create or replace function metadata.dq_methodologies_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'metadata.dq.methodology';
+    entity_name text := 'ores.dq.methodology';
     change_timestamp timestamptz := NOW();
     changed_id text;
 begin

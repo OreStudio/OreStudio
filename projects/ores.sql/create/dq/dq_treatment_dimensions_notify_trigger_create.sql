@@ -21,7 +21,7 @@ create or replace function metadata.dq_treatment_dimensions_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'metadata.dq.treatment_dimension';
+    entity_name text := 'ores.dq.treatment_dimension';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin

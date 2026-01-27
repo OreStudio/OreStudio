@@ -22,7 +22,7 @@ create or replace function production.refdata_benchmark_rates_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.refdata.benchmark_rate';
+    entity_name text := 'ores.refdata.benchmark_rate';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin

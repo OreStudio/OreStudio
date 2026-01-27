@@ -21,7 +21,7 @@ create or replace function metadata.dq_subject_areas_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'metadata.dq.subject_area';
+    entity_name text := 'ores.dq.subject_area';
     change_timestamp timestamptz := NOW();
     changed_key text;
 begin

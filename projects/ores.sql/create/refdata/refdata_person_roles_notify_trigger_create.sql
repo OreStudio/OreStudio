@@ -22,7 +22,7 @@ create or replace function production.refdata_person_roles_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.refdata.person_role';
+    entity_name text := 'ores.refdata.person_role';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin

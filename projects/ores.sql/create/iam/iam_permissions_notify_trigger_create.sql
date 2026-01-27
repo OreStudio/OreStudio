@@ -21,7 +21,7 @@ create or replace function production.iam_permissions_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.iam.permission';
+    entity_name text := 'ores.iam.permission';
     change_timestamp timestamptz := NOW();
     changed_id text;
 begin

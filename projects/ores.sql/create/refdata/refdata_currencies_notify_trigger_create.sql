@@ -21,7 +21,7 @@ create or replace function production.refdata_currencies_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.refdata.currency';
+    entity_name text := 'ores.refdata.currency';
     change_timestamp timestamptz := NOW();
     changed_iso_code text;
 begin

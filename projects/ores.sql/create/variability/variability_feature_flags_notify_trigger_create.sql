@@ -23,7 +23,7 @@ create or replace function production.variability_feature_flags_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.variability.feature_flag';
+    entity_name text := 'ores.variability.feature_flag';
     change_timestamp timestamptz := NOW();
     changed_flag_name text;
 begin

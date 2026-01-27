@@ -22,7 +22,7 @@ create or replace function production.refdata_reporting_regimes_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.refdata.reporting_regime';
+    entity_name text := 'ores.refdata.reporting_regime';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin

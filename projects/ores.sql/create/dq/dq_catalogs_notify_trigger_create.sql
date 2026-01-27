@@ -21,7 +21,7 @@ create or replace function metadata.dq_catalogs_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'metadata.dq.catalog';
+    entity_name text := 'ores.dq.catalog';
     change_timestamp timestamptz := NOW();
     changed_name text;
 begin

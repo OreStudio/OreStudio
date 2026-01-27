@@ -21,7 +21,7 @@ create or replace function production.iam_accounts_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.iam.account';
+    entity_name text := 'ores.iam.account';
     change_timestamp timestamptz := NOW();
     changed_account_id text;
 begin

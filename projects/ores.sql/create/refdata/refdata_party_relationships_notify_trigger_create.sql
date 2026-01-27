@@ -22,7 +22,7 @@ create or replace function production.refdata_party_relationships_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.refdata.party_relationship';
+    entity_name text := 'ores.refdata.party_relationship';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin

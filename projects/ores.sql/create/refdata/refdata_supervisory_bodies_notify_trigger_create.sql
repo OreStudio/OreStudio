@@ -22,7 +22,7 @@ create or replace function production.refdata_supervisory_bodies_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.refdata.supervisory_body';
+    entity_name text := 'ores.refdata.supervisory_body';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin

@@ -21,7 +21,7 @@ create or replace function metadata.dq_datasets_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'metadata.dq.dataset';
+    entity_name text := 'ores.dq.dataset';
     change_timestamp timestamptz := NOW();
     changed_id text;
 begin

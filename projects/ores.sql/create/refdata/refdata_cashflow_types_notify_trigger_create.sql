@@ -22,7 +22,7 @@ create or replace function production.refdata_cashflow_types_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.refdata.cashflow_type';
+    entity_name text := 'ores.refdata.cashflow_type';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin

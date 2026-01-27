@@ -22,7 +22,7 @@ create or replace function production.refdata_regulatory_corporate_sectors_notif
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.refdata.regulatory_corporate_sector';
+    entity_name text := 'ores.refdata.regulatory_corporate_sector';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin

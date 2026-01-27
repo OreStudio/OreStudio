@@ -22,7 +22,7 @@ create or replace function production.refdata_account_types_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'production.refdata.account_type';
+    entity_name text := 'ores.refdata.account_type';
     change_timestamp timestamptz := NOW();
     changed_code text;
 begin

@@ -28,6 +28,10 @@ skinparam linetype ortho
 note as SchemaNote
 ORES Database Schema
 
+Schemas:
+- metadata: Data governance, classification, staging (dq_*)
+- production: Operational data (refdata_*, iam_*, assets_*, etc.)
+
 All temporal tables use valid_from/valid_to
 for bitemporal data management. Junction tables enable
 soft deletes via validity period closure.

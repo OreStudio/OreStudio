@@ -33,6 +33,7 @@
 #include "ores.dq/service/dimension_service.hpp"
 #include "ores.dq/service/publication_service.hpp"
 #include "ores.dq/service/dataset_bundle_service.hpp"
+#include "ores.dq/service/dataset_bundle_member_service.hpp"
 
 namespace ores::dq::messaging {
 
@@ -525,6 +526,7 @@ private:
     service::dimension_service dimension_service_;
     service::publication_service publication_service_;
     service::dataset_bundle_service dataset_bundle_service_;
+    service::dataset_bundle_member_service dataset_bundle_member_service_;
 };
 
 }

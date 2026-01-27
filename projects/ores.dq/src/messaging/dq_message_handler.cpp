@@ -29,6 +29,7 @@
 #include "ores.dq/messaging/dimension_protocol.hpp"
 #include "ores.dq/messaging/publication_protocol.hpp"
 #include "ores.dq/messaging/dataset_bundle_protocol.hpp"
+#include "ores.dq/messaging/dataset_bundle_member_protocol.hpp"
 
 namespace ores::dq::messaging {
 
@@ -46,7 +47,8 @@ dq_message_handler::dq_message_handler(database::context ctx,
       coding_scheme_service_(ctx),
       dimension_service_(ctx),
       publication_service_(ctx),
-      dataset_bundle_service_(ctx) {}
+      dataset_bundle_service_(ctx),
+      dataset_bundle_member_service_(ctx) {}
 
 dq_message_handler::handler_result
 dq_message_handler::handle_message(message_type type,
@@ -2441,7 +2443,7 @@ handle_get_dataset_bundle_members_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    auto members = dataset_bundle_service_.list_members();
+    auto members = dataset_bundle_member_service_.list_members();
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << members.size() << " bundle members.";
 
     get_dataset_bundle_members_response response{.members = std::move(members)};
@@ -2466,7 +2468,7 @@ handle_get_dataset_bundle_members_by_bundle_request(
         co_return std::unexpected(request_result.error());
     }
 
-    auto members = dataset_bundle_service_.list_members_by_bundle(
+    auto members = dataset_bundle_member_service_.list_members_by_bundle(
         request_result->bundle_code);
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << members.size()
                               << " members for bundle: " << request_result->bundle_code;
@@ -2495,7 +2497,7 @@ handle_save_dataset_bundle_member_request(std::span<const std::byte> payload,
 
     save_dataset_bundle_member_response response;
     try {
-        dataset_bundle_service_.save_member(request_result->member);
+        dataset_bundle_member_service_.save_member(request_result->member);
         response.success = true;
         response.message = "Bundle member saved successfully.";
         BOOST_LOG_SEV(lg(), info) << "Saved bundle member: "
@@ -2535,7 +2537,7 @@ handle_delete_dataset_bundle_member_request(std::span<const std::byte> payload,
             .dataset_code = key.dataset_code
         };
         try {
-            dataset_bundle_service_.remove_member(key.bundle_code, key.dataset_code);
+            dataset_bundle_member_service_.remove_member(key.bundle_code, key.dataset_code);
             result.success = true;
             result.message = "Bundle member deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted bundle member: "

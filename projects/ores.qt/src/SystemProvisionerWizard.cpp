@@ -32,6 +32,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
+#include "ores.iam/messaging/login_protocol.hpp"
+#include "ores.dq/messaging/publish_bundle_protocol.hpp"
 
 namespace ores::qt {
 
@@ -549,7 +551,7 @@ void ApplyProvisioningPage::startProvisioning() {
 
             // Step 1: Create administrator account
             result.log_messages.append(
-                QString("[1/3] Creating administrator account: %1").arg(QString::fromStdString(username)));
+                QString("[1/4] Creating administrator account: %1").arg(QString::fromStdString(username)));
 
             iam::messaging::create_initial_admin_request adminRequest;
             adminRequest.username = username;
@@ -576,19 +578,68 @@ void ApplyProvisioningPage::startProvisioning() {
             result.log_messages.append(QString("SUCCESS: Administrator account created (ID: %1)")
                 .arg(QString::fromStdString(boost::uuids::to_string(adminResult->account_id))));
 
-            // Step 2: Apply selected bundle
-            result.log_messages.append(QString("[2/3] Applying data bundle: %1").arg(bundleCode));
+            // Step 2: Login as admin to establish session
+            result.log_messages.append(QString("[2/4] Logging in as administrator..."));
 
-            // TODO: Server-side bundle application is not yet implemented.
-            // When implemented, this will send an apply_bundle_request to the server.
-            result.log_messages.append("NOTE: Bundle application server message not yet implemented.");
-            result.log_messages.append(QString("TODO: Implement apply_bundle_request for bundle '%1'").arg(bundleCode));
+            iam::messaging::login_request loginRequest;
+            loginRequest.username = username;
+            loginRequest.password = password;
 
-            // Step 3: Finalize
-            result.log_messages.append("[3/3] Finalizing provisioning...");
+            auto loginResult = clientManager->process_request(std::move(loginRequest));
+
+            if (!loginResult) {
+                result.success = false;
+                result.error_message = "Failed to communicate with server for login.";
+                result.log_messages.append("ERROR: Failed to communicate with server.");
+                return result;
+            }
+
+            if (!loginResult->success) {
+                result.success = false;
+                result.error_message = QString::fromStdString(loginResult->error_message);
+                result.log_messages.append(QString("ERROR: %1").arg(result.error_message));
+                return result;
+            }
+
+            result.log_messages.append("SUCCESS: Logged in as administrator.");
+
+            // Step 3: Apply selected bundle (atomic by default for all-or-nothing semantics)
+            result.log_messages.append(QString("[3/4] Applying data bundle: %1").arg(bundleCode));
+
+            dq::messaging::publish_bundle_request bundleRequest;
+            bundleRequest.bundle_code = bundleCode.toStdString();
+            bundleRequest.mode = dq::domain::publication_mode::upsert;
+            bundleRequest.published_by = username;
+
+            auto bundleResult = clientManager->process_request(std::move(bundleRequest));
+
+            if (!bundleResult) {
+                result.success = false;
+                result.error_message = "Failed to communicate with server for bundle publication.";
+                result.log_messages.append("ERROR: Failed to communicate with server.");
+                return result;
+            }
+
+            if (!bundleResult->success) {
+                result.success = false;
+                result.error_message = QString::fromStdString(bundleResult->error_message);
+                result.log_messages.append(QString("ERROR: %1").arg(result.error_message));
+                return result;
+            }
+
+            result.log_messages.append(QString("SUCCESS: Published %1 datasets (%2 succeeded, %3 skipped)")
+                .arg(bundleResult->datasets_processed)
+                .arg(bundleResult->datasets_succeeded)
+                .arg(bundleResult->datasets_skipped));
+            result.log_messages.append(QString("  Records: %1 inserted, %2 updated")
+                .arg(bundleResult->total_records_inserted)
+                .arg(bundleResult->total_records_updated));
+
+            // Step 4: Finalize
+            result.log_messages.append("[4/4] Finalizing provisioning...");
             result.log_messages.append("SUCCESS: System provisioning completed.");
             result.log_messages.append("");
-            result.log_messages.append("You can now log in with the administrator account.");
+            result.log_messages.append("You are now logged in as administrator.");
 
             result.success = true;
             return result;
@@ -613,8 +664,8 @@ void ApplyProvisioningPage::onProvisioningResult(const ProvisioningResult& resul
     }
 
     // Set progress bar to complete
-    progressBar_->setRange(0, 3);
-    progressBar_->setValue(3);
+    progressBar_->setRange(0, 4);
+    progressBar_->setValue(4);
 
     if (result.success) {
         wizard_->setAdminAccountId(result.admin_account_id);
@@ -626,16 +677,21 @@ void ApplyProvisioningPage::onProvisioningResult(const ProvisioningResult& resul
         // Show next steps message
         appendLog("");
         appendLog(tr("=== Setup Complete ==="));
-        appendLog(tr("You can now log in to the system using the administrator account:"));
-        appendLog(tr("  Username: %1").arg(wizard_->adminUsername()));
+        appendLog(tr("You are logged in as: %1").arg(wizard_->adminUsername()));
         appendLog("");
-        appendLog(tr("Click 'Finish' to close this wizard and return to the login screen."));
+        appendLog(tr("Click 'Finish' to close this wizard and start using the system."));
 
         BOOST_LOG_SEV(lg(), info) << "System provisioning completed successfully";
         emit wizard_->provisioningCompleted(wizard_->adminUsername());
     } else {
         BOOST_LOG_SEV(lg(), error) << "Provisioning failed: " << result.error_message.toStdString();
         setStatus(tr("Provisioning failed!"));
+
+        // Make progress bar red to indicate failure
+        progressBar_->setStyleSheet(
+            "QProgressBar { border: 1px solid #8B0000; border-radius: 3px; background: #2d2d2d; }"
+            "QProgressBar::chunk { background-color: #CD5C5C; }");
+
         provisioningComplete_ = true;
         provisioningSuccess_ = false;
         emit completeChanged();

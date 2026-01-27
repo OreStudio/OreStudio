@@ -221,8 +221,13 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // get_dataset_bundle_members_by_bundle_request/response (0x60B2-0x60B3),
 // save_dataset_bundle_member_request/response (0x60B4-0x60B5),
 // delete_dataset_bundle_member_request/response (0x60B6-0x60B7).
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 22;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 6;
+//
+// Version 23.0 adds publish_bundle_request/response (0x60B8-0x60B9) for atomic
+// transactional publishing of dataset bundles. Also adds atomic field to
+// publish_datasets_request for atomic individual dataset publishing. This is
+// a breaking change due to the new field in publish_datasets_request.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 23;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -533,6 +538,10 @@ enum class message_type {
     save_dataset_bundle_member_response = 0x60B5,
     delete_dataset_bundle_member_request = 0x60B6,
     delete_dataset_bundle_member_response = 0x60B7,
+
+    // Bundle Publication (0x60B8 - 0x60B9)
+    publish_bundle_request = 0x60B8,
+    publish_bundle_response = 0x60B9,
 
     last_value
 };

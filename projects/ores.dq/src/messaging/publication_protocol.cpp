@@ -124,6 +124,9 @@ std::vector<std::byte> publish_datasets_request::serialize() const {
     // Write resolve_dependencies
     writer::write_bool(buffer, resolve_dependencies);
 
+    // Write atomic
+    writer::write_bool(buffer, atomic);
+
     return buffer;
 }
 
@@ -158,6 +161,11 @@ publish_datasets_request::deserialize(std::span<const std::byte> data) {
     auto resolve_deps_result = reader::read_bool(data);
     if (!resolve_deps_result) return std::unexpected(resolve_deps_result.error());
     request.resolve_dependencies = *resolve_deps_result;
+
+    // Read atomic
+    auto atomic_result = reader::read_bool(data);
+    if (!atomic_result) return std::unexpected(atomic_result.error());
+    request.atomic = *atomic_result;
 
     return request;
 }

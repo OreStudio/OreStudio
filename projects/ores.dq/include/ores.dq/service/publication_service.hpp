@@ -31,6 +31,7 @@
 #include "ores.dq/domain/publication.hpp"
 #include "ores.dq/domain/publication_mode.hpp"
 #include "ores.dq/domain/publication_result.hpp"
+#include "ores.dq/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq/repository/dataset_repository.hpp"
 #include "ores.dq/repository/dataset_dependency_repository.hpp"
 #include "ores.dq/repository/publication_repository.hpp"
@@ -91,6 +92,26 @@ public:
         domain::publication_mode mode,
         const std::string& published_by,
         bool resolve_dependencies = true);
+
+    /**
+     * @brief Publishes all datasets in a bundle.
+     *
+     * Calls the SQL dq_populate_bundle_fn() which:
+     * 1. Processes datasets in display_order to respect dependencies
+     * 2. Publishes each dataset individually
+     * 3. Records publication history for auditing
+     *
+     * @param bundle_code The bundle to publish (e.g., 'base', 'solvaris')
+     * @param mode How to handle conflicts with existing data.
+     * @param published_by Username of the person initiating publication.
+     * @param atomic If true, first failure causes entire bundle to rollback.
+     * @return Publication result with per-dataset details.
+     */
+    messaging::publish_bundle_response publish_bundle(
+        const std::string& bundle_code,
+        domain::publication_mode mode,
+        const std::string& published_by,
+        bool atomic = true);
 
     /**
      * @brief Resolves the publication order for datasets.

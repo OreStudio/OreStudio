@@ -74,6 +74,14 @@ struct publish_datasets_request final {
     bool resolve_dependencies = true;
 
     /**
+     * @brief If true, first failure causes entire publication to abort.
+     *
+     * In atomic mode, all datasets succeed or all fail together.
+     * Defaults to true for safer behavior.
+     */
+    bool atomic = true;
+
+    /**
      * @brief Serialize request to bytes.
      *
      * Format:
@@ -83,6 +91,7 @@ struct publish_datasets_request final {
      * - 2 bytes: published_by length
      * - N bytes: published_by (UTF-8)
      * - 1 byte: resolve_dependencies
+     * - 1 byte: atomic
      */
     std::vector<std::byte> serialize() const;
 
